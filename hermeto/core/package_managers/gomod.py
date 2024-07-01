@@ -642,14 +642,6 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             docs=GOMOD_INPUT_DOC,
         )
 
-    env_vars = {
-        "GOCACHE": "${output_dir}/deps/gomod",
-        "GOPATH": "${output_dir}/deps/gomod",
-        "GOMODCACHE": "${output_dir}/deps/gomod/pkg/mod",
-        "GOPROXY": "file://${GOMODCACHE}/cache/download",
-    }
-    env_vars.update(config.default_environment_variables.get("gomod", {}))
-
     components: list[Component] = []
 
     repo_name = _get_repository_name(request.source_dir)
@@ -708,10 +700,18 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 dirs_exist_ok=True,
             )
 
+    env_vars_template = {
+        "GOCACHE": "${output_dir}/deps/gomod",
+        "GOPATH": "${output_dir}/deps/gomod",
+        "GOMODCACHE": "${output_dir}/deps/gomod/pkg/mod",
+        "GOPROXY": "file://${GOMODCACHE}/cache/download",
+    }
+    env_vars_template.update(config.default_environment_variables.get("gomod", {}))
+
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[
-            EnvironmentVariable(name=key, value=value) for key, value in env_vars.items()
+            EnvironmentVariable(name=key, value=value) for key, value in env_vars_template.items()
         ],
         project_files=[],
     )
