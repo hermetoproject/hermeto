@@ -7,7 +7,7 @@ import tempfile
 from collections import UserDict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime, timezone
-from functools import cached_property
+from functools import cache, cached_property
 from itertools import chain
 from pathlib import Path
 from types import TracebackType
@@ -221,6 +221,67 @@ class StandardPackage(NamedTuple):
         return Component(name=self.name, purl=self.purl)
 
 
+class GoVersion(version.Version):
+    """packaging.version.Version wrapper handling Go version/release reporting aspects.
+
+    >>> v = GoVersion("1.21")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 0)
+
+    >>> v = GoVersion("go1.21.4")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 4)
+
+    >>> v = GoVersion("1.21")
+    >>> str(v.to_language_version)
+    '1.21'
+
+    >>> v = GoVersion("go1.22.1")
+    >>> str(v.to_language_version)
+    '1.22'
+
+    >>> GoVersion("1.21") < GoVersion("1.22")
+    True
+    >>> GoVersion("1.21.4") > GoVersion("1.21.0")
+    True
+    >>> GoVersion("go1.21") == GoVersion("1.21")
+    True
+    """
+
+    # NOTE: It might not be obvious at first glance why we need this wrapper to represent a Go
+    # language/toolchain version string instead of semver - semver requires all parts to be
+    # specified, i.e. 'major.minor.patch' which golang historically didn't use to represent
+    # language versions, only toolchains, e.g. 1.22 is still an acceptable way of specifying a
+    # required Go version in one's go.mod file.
+
+    # !THIS IS WHERE THE SUPPORTED GO VERSION BY HERMETO NEEDS TO BE BUMPED!
+    MAX_VERSION: str = "1.25"
+
+    def __init__(self, version_str: str) -> None:
+        """Initialize the GoVersion instance.
+
+        :param version_str: version string in the form of X.Y(.Z)?
+                            Note we also accept standard Go release strings prefixed with 'go'
+        """
+        ver = version_str if not version_str.startswith("go") else version_str[2:]
+        super().__init__(ver)
+
+    @classmethod
+    def max(cls) -> "GoVersion":
+        """Instantiate and return a GoVersion object with the maximum supported version of Go."""
+        return cls(cls.MAX_VERSION)
+
+    @cache
+    def to_language_version(self) -> version.Version:
+        """
+        Language version for the given Go version.
+
+        Go differentiates between Go language versions (major, minor) and toolchain versions (major,
+        minor, micro).
+        """
+        return version.Version(f"{self.major}.{self.minor}")
+
+
 # NOTE: Skim the class once we don't need to work with multiple versions of Go
 class Go:
     """High level wrapper over the 'go' CLI command.
@@ -244,7 +305,7 @@ class Go:
         self._bin = str(binary)
         self._release = release
 
-        self._version: Optional[version.Version] = None
+        self._version: Optional[GoVersion] = None
         self._install_toolchain: bool = False
 
         if self._release:
@@ -277,10 +338,10 @@ class Go:
         return self._run(cmd, **params)
 
     @property
-    def version(self) -> version.Version:
-        """Version of the Go toolchain as a packaging.version.Version object."""
+    def version(self) -> GoVersion:
+        """Version of the Go toolchain as a GoVersion object."""
         if not self._version:
-            self._version = version.Version(self.release[2:])
+            self._version = GoVersion(self.release)
         return self._version
 
     @property
@@ -857,10 +918,10 @@ def _find_missing_gomod_files(source_path: RootedPath, subpaths: list[str]) -> l
 
 
 def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
-    GO_121 = version.Version("1.21")
+    GO_121 = GoVersion("1.21")
     go = Go()
     target_version = None
-    go_max_version = version.Version("1.25")
+    go_max_version = GoVersion.max()
     go_base_version = go.version
     go_mod_version_msg = "go.mod reported versions: '%s'[go], '%s'[toolchain]"
 
@@ -882,15 +943,15 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
     if not toolchain_version_str:
         toolchain_version_str = go_version_str
 
-    go_mod_version = version.Version(go_version_str)
-    go_mod_toolchain_version = version.Version(toolchain_version_str)
+    go_mod_version = GoVersion(go_version_str)
+    go_mod_toolchain_version = GoVersion(toolchain_version_str)
 
     if go_mod_version >= go_mod_toolchain_version:
         target_version = go_mod_version
     else:
         target_version = go_mod_toolchain_version
 
-    if target_version.major > go_max_version.major or target_version.minor > go_max_version.minor:
+    if target_version.to_language_version() > go_max_version.to_language_version():
         raise PackageManagerError(
             f"Required/recommended Go toolchain version '{target_version}' is not supported yet.",
             solution=(
