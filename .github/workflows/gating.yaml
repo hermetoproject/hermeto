@@ -25,9 +25,7 @@ jobs:
         # We need to install git inside the container otherwise the checkout action will use Git
         # REST API and the .git directory won't be present which fails due to setuptools-scm
         apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
-        python3 -m pip install --upgrade pip
-        pip install nox
-        pip install tomlkit
+        pip install --upgrade pip nox tomlkit
 
     - uses: actions/checkout@v4
       with:
@@ -67,9 +65,7 @@ jobs:
         # We need to install git inside the container otherwise the checkout action will use Git
         # REST API and the .git directory won't be present which fails due to setuptools-scm
         apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
-        python3 -m pip install --upgrade pip
-        pip install nox
-        pip install tomlkit
+        pip install --upgrade pip nox tomlkit
 
     - uses: actions/checkout@v4
       with:
@@ -103,9 +99,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install createrepo-c
           python3 -m venv /var/tmp/venv
-          /var/tmp/venv/bin/pip3 install --upgrade pip
-          /var/tmp/venv/bin/pip3 install nox
-          /var/tmp/venv/bin/pip3 install tomlkit
+          /var/tmp/venv/bin/pip3 install --upgrade pip nox tomlkit
 
       - name: add checkout action...
         uses: actions/checkout@v4
