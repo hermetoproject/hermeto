@@ -308,7 +308,7 @@ GIT
 
 #### Platform (i.e. pre-compiled) gems
 By default, binary gems are ignored for similar reasons as with [pip
-wheels](https://github.com/containerbuildsystem/cachi2/blob/main/docs/pip.md#distribution-formats),
+wheels](https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#distribution-formats),
 i.e. lacking sources which report in the SBOM.
 Platforms that relate to specific architectures will contain
 binaries that were pre-compiled for that architecture (see [Platforms](#platforms)).

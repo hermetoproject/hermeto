@@ -67,7 +67,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/cachi2@0.0.1?vcs_url=git%2Bssh://git%40github.com/containerbuildsystem/cachi2%40fc0d6079c2dc9b2a491c0848e550ad3509986110"
+          "referenceLocator": "pkg:pypi/cachi2@0.0.1?vcs_url=git%2Bssh://git%40github.com/hermetoproject/cachi2%40fc0d6079c2dc9b2a491c0848e550ad3509986110"
         }
       ]
     },

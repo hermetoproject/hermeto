@@ -143,7 +143,7 @@ The user build can be configured to use the offline mirror by configuring the fo
     YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
 ## Implementation Scoping
- - Since we're executing Yarn commands directly, process the request in an [isolated temporary directory](https://github.com/containerbuildsystem/cachi2/blob/6953607b6ef52fd3f0bef7059d2c926767b1022b/cachi2/core/resolver.py#L41) to avoid any potential changes to the repository
+ - Since we're executing Yarn commands directly, process the request in an [isolated temporary directory](https://github.com/hermetoproject/cachi2/blob/6953607b6ef52fd3f0bef7059d2c926767b1022b/cachi2/core/resolver.py#L41) to avoid any potential changes to the repository
  - Determine whether to process the request with yarn v1 or yarn v2+
  - Read the project files
    - Read/Require package.json

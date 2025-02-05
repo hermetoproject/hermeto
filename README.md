@@ -259,8 +259,8 @@ See [docs/yarn.md](docs/yarn.md) for more details.
 
 Cachi2 was derived (but is not a direct fork) from [Cachito](https://github.com/containerbuildsystem/cachito).
 
-[cachi2-coverage-badge]: https://codecov.io/github/containerbuildsystem/cachi2/graph/badge.svg?token=VJKRTZQBMY
-[cachi2-coverage-status]: https://codecov.io/github/containerbuildsystem/cachi2
+[cachi2-coverage-badge]: https://codecov.io/github/hermetoproject/cachi2/graph/badge.svg?token=VJKRTZQBMY
+[cachi2-coverage-status]: https://codecov.io/github/hermetoproject/cachi2
 
 [cachi2-container-badge]: https://img.shields.io/badge/container-latest-blue
 [cachi2-container-status]: https://quay.io/repository/konflux-ci/cachi2/tag/latest

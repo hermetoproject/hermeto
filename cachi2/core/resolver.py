@@ -51,7 +51,7 @@ def resolve_packages(request: Request) -> RequestOutput:
 
             # Temporary solution to project files paths that are pointing to the work copy.
             # Should be replaced once we extend the work copy solution to other package managers.
-            # https://github.com/containerbuildsystem/cachi2/issues/712
+            # https://github.com/hermetoproject/cachi2/issues/712
             for project_file in output.build_config.project_files:
                 subpath = project_file.abspath.relative_to(source_backup)
                 project_file.abspath = original_source_dir / subpath

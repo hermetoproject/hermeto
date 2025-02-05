@@ -118,7 +118,7 @@ cachi2 merge-sboms <cachi2_sbom_1.json> ... <cachi2_sbom_n.json>
 
 The subcommand expects at least two SBOMs, all produced by Cachi2, and will exit with error
 otherwise. The reason for this is that Cachi2 supports a
-[limited set](https://github.com/containerbuildsystem/cachi2/blob/main/cachi2/core/models/sbom.py#L7-L13)
+[limited set](https://github.com/hermetoproject/cachi2/blob/main/cachi2/core/models/sbom.py#L7-L13)
 of component [properties](https://cyclonedx.org/docs/1.4/json/#components_items_properties),
 and it validates that no other properties exist in the SBOM. By default the result of a merge
 will be printed to stdout. To save it to a file use `-o` option:

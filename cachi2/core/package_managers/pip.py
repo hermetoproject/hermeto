@@ -70,16 +70,14 @@ SDIST_EXT_PATTERN = r"|".join(map(re.escape, SDIST_FILE_EXTENSIONS))
 
 PYPI_URL = "https://pypi.org"
 
-PIP_METADATA_DOC = (
-    "https://github.com/containerbuildsystem/cachi2/blob/main/docs/pip.md#project-metadata"
-)
+PIP_METADATA_DOC = "https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#project-metadata"
 PIP_REQUIREMENTS_TXT_DOC = (
-    "https://github.com/containerbuildsystem/cachi2/blob/main/docs/pip.md#requirementstxt"
+    "https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#requirementstxt"
 )
 PIP_EXTERNAL_DEPS_DOC = (
-    "https://github.com/containerbuildsystem/cachi2/blob/main/docs/pip.md#external-dependencies"
+    "https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#external-dependencies"
 )
-PIP_NO_SDIST_DOC = "https://github.com/containerbuildsystem/cachi2/blob/main/docs/pip.md#dependency-does-not-distribute-sources"
+PIP_NO_SDIST_DOC = "https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#dependency-does-not-distribute-sources"
 
 
 @dataclass

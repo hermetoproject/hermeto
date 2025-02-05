@@ -48,7 +48,7 @@ from cachi2.core.utils import get_cache_dir, load_json_stream, run_cmd
 log = logging.getLogger(__name__)
 
 
-GOMOD_DOC = "https://github.com/containerbuildsystem/cachi2/blob/main/docs/gomod.md"
+GOMOD_DOC = "https://github.com/hermetoproject/cachi2/blob/main/docs/gomod.md"
 GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
 VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
 
