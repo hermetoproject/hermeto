@@ -1,5 +1,4 @@
 import logging
-import textwrap
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
@@ -58,10 +57,11 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        components.extend(_resolve_cargo_package(package_dir, request.output_dir))
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        project_files.append(_use_vendored_sources(package_dir))
+        fetched_components, cfg_template = _resolve_cargo_package(package_dir, request.output_dir)
+        components.extend(fetched_components)
+        project_files.append(_use_vendored_sources(package_dir, cfg_template))
 
     return RequestOutput.from_obj_list(components, environment_variables, project_files)
 
@@ -104,13 +104,14 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
 def _resolve_cargo_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
-) -> chain[Component]:
+) -> tuple[chain[Component], dict]:
     """Resolve a single cargo package."""
     _verify_lockfile_is_present_or_fail(package_dir)
     vendor_dir = output_dir.join_within_root("deps/cargo")
     cmd = ["cargo", "vendor", "--locked", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
-    run_cmd(cmd=cmd, params={"cwd": package_dir})
+    # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
+    config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)
@@ -126,26 +127,23 @@ def _resolve_cargo_package(
 
     components = chain((main_component,), deps_components)
 
-    return components
+    return components, _swap_sources_directory_for_subsitution_slot(config_template)
 
 
-def _use_vendored_sources(package_dir: RootedPath) -> ProjectFile:
+def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
+    toml_template = tomlkit.parse(template).value
+    # Absolute path has to be replaced with relative path for sources relocation to work:
+    toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
+    # A correct output_dir value will be supplied by cachi2 during a later stage.
+    return toml_template
+
+
+def _use_vendored_sources(package_dir: RootedPath, config_template: dict) -> ProjectFile:
     """Make sure cargo will use the vendored sources when building the project."""
     cargo_config = package_dir.join_within_root(".cargo/config.toml")
-    cargo_config.path.parent.mkdir(parents=True, exist_ok=True)
-    cargo_config.path.touch(exist_ok=True)
-
-    template = """
-    [source.crates-io]
-    replace-with = "vendored-sources"
-
-    [source.vendored-sources]
-    directory = "${output_dir}/deps/cargo"
-    """
 
     toml_file = TOMLFile(cargo_config)
-    original_content = toml_file.read()
-    original_content.update(tomlkit.parse(textwrap.dedent(template)))
-    toml_file.write(original_content)
+    original_content = toml_file.read() if cargo_config.path.exists() else {}
+    original_content.update(config_template)
 
-    return ProjectFile(abspath=cargo_config.path, template=template)
+    return ProjectFile(abspath=cargo_config.path, template=tomlkit.dumps(config_template))
