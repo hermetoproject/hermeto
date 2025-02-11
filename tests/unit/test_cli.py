@@ -964,8 +964,7 @@ class TestMergeSboms:
         self,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile(delete=False) as fp:
-            fp.close()
+        with tempfile.NamedTemporaryFile() as fp:
             invoke_expecting_sucess(app, ["merge-sboms", "-o", fp.name, *sbom_files_to_merge])
             assert Path(fp.name).lstat().st_size > 0, "SBOM failed to be written to output file!"
 
@@ -982,8 +981,7 @@ class TestMergeSboms:
         self,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile(delete=False) as fp:
-            fp.close()
+        with tempfile.NamedTemporaryFile() as fp:
             invoke_expecting_sucess(
                 app,
                 ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
@@ -1003,8 +1001,7 @@ class TestMergeSboms:
         self,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile(delete=False) as fp:
-            fp.close()
+        with tempfile.NamedTemporaryFile() as fp:
             invoke_expecting_sucess(
                 app,
                 ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
