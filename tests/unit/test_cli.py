@@ -949,22 +949,30 @@ class TestMergeSboms:
     @pytest.mark.parametrize(
         "sbom_files_to_merge",
         [
-            [
-                "./tests/unit/data/sboms/cachi2.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
-            ],
-            [
-                "./tests/unit/data/sboms/cachi2.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
-            ],
+            pytest.param(
+                [
+                    "./tests/unit/data/sboms/cachi2.bom.json",
+                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                ],
+                id="merge_our_own_cyclonedx",
+            ),
+            pytest.param(
+                [
+                    "./tests/unit/data/sboms/cachi2.bom.json",
+                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                    "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
+                ],
+                id="merge_our_own_cyclonedx_more",
+            ),
         ],
     )
     def test_a_user_can_successfully_save_sboms_merge_results_to_a_file(
         self,
+        request: pytest.FixtureRequest,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile() as fp:
+        prefix = f"cachi2-{Path(__file__).stem}-{request.node.callspec.id}-"
+        with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
             invoke_expecting_sucess(app, ["merge-sboms", "-o", fp.name, *sbom_files_to_merge])
             assert Path(fp.name).lstat().st_size > 0, "SBOM failed to be written to output file!"
 
@@ -979,9 +987,11 @@ class TestMergeSboms:
     )
     def test_a_user_can_successfully_save_sboms_merge_results_to_a_file_in_spdx_format(
         self,
+        request: pytest.FixtureRequest,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile() as fp:
+        prefix = f"cachi2-{Path(__file__).stem}-{request.node.callspec.id}-"
+        with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
             invoke_expecting_sucess(
                 app,
                 ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
@@ -991,17 +1001,22 @@ class TestMergeSboms:
     @pytest.mark.parametrize(
         "sbom_files_to_merge",
         [
-            [
-                "./tests/unit/data/sboms/cachi2.bom.json",
-                "./tests/unit/data/sboms/syft.bom.spdx.json",
-            ],
+            pytest.param(
+                [
+                    "./tests/unit/data/sboms/cachi2.bom.json",
+                    "./tests/unit/data/sboms/syft.bom.spdx.json",
+                ],
+                id="merge_mixed_format",
+            ),
         ],
     )
     def test_a_user_can_successfully_save_mixed_sboms_merge_results_to_a_file_in_spdx_format(
         self,
+        request: pytest.FixtureRequest,
         sbom_files_to_merge: list[str],
     ) -> None:
-        with tempfile.NamedTemporaryFile() as fp:
+        prefix = f"cachi2-{Path(__file__).stem}-{request.node.callspec.id}-"
+        with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
             invoke_expecting_sucess(
                 app,
                 ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
