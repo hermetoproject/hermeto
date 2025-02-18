@@ -131,6 +131,7 @@ when downloading Go modules. See [Go environment variables](https://go.dev/ref/m
 | Package manager                                | Ecosystem            |
 |------------------------------------------------|----------------------|
 | [bundler](#bundler)                            | Ruby                 |
+| [cargo](#cargo)                                | Rust                 |
 | [generic](#generic-fetcher)                    | N/A                  |
 | [gomod](#gomod)                                | Go                   |
 | [npm](#npm)                                    | JavaScript           |
@@ -153,6 +154,17 @@ on the dependencies specified in the [Gemfile](https://bundler.io/v2.5/man/gemfi
 Both files must be present in the source repository so you should check them into your git repository.
 
 See [docs/bundler.md](docs/bundler.md) for more details.
+
+### cargo
+
+<https://doc.rust-lang.org/cargo/>
+
+Cachi2 supports Cargo by invoking the Cargo CLI to fetch Rust dependencies as
+declared in your project, ensuring reproducible builds with explicitly defined
+versions. Make sure to have up-to-date [Cargo.lock](https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html)
+present in your project.
+
+See [docs/cargo.md](docs/cargo.md) for more details.
 
 ### generic fetcher
 
