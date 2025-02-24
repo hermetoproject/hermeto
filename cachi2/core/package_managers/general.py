@@ -81,7 +81,7 @@ async def _async_download_binary_file(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
         )
         async with session.get(
-            url, timeout=timeout, auth=auth, raise_for_status=True, ssl=ssl_context
+            url, timeout=timeout, auth=auth, raise_for_status=True, verify_ssl=getattr(ssl_context, 'ssl_verify', True)
         ) as resp:
             with open(download_path, "wb") as f:
                 while True:

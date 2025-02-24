@@ -19,6 +19,97 @@ T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
 
 
+class SSLOptions(pydantic.BaseModel, extra="forbid"):
+    """SSL options model.
+
+    Defines extra options fields for client TLS authentication.
+    """
+
+    client_cert: Optional[str] = None
+    client_key: Optional[str] = None
+    ca_bundle: Optional[str] = None
+    ssl_verify: bool = True
+
+    @pydantic.field_validator("client_key", "client_cert", "ca_bundle")
+    @classmethod
+    def _validate_auth_file_paths(cls, val: str, info: pydantic.ValidationInfo) -> Optional[str]:
+        if val is None:
+            return val
+
+        if not Path(val).is_file():
+            raise ValueError(
+                (
+                    f"Specified ssl auth file '{info.field_name}':'{val}' is not a regular file.",
+                    "Make sure the file exists and that it has correct permissions.",
+                )
+            )
+
+        return val
+
+    @pydantic.model_validator(mode="after")
+    def _validate_ssl_options(self) -> Self:
+
+        cert_and_key = (self.client_cert, self.client_key)
+        if any(cert_and_key) and not all(cert_and_key):
+            raise ValueError(
+                "When using client certificates, client_key and client_cert must both be provided."
+            )
+
+        return self
+
+
+class ExtraOptions(pydantic.BaseModel, extra="forbid"):
+    """Global package manager extra options model.
+
+    This model takes care of carrying and parsing various kind of extra options that need to be
+    passed through to CLI commands/services we interact with underneath to tweak their behaviour
+    rather than our own. Each option set is namespaced by the corresponding tool/service it is
+    related to.
+
+    TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
+    """
+
+    dnf: Optional[Dict[Union[Literal["main"], str], Dict[str, Any]]] = None
+    ssl: Optional[SSLOptions] = None
+
+    @pydantic.model_validator(mode="before")
+    def _validate_dnf_options(cls, data: Any, info: pydantic.ValidationInfo) -> Any:
+        """DNF options model.
+
+        DNF options can be provided via 2 'streams':
+            1) global /etc/dnf/dnf.conf OR
+            2) /etc/yum.repos.d/.repo files
+
+        Config options are specified via INI format based on sections. There are 2 types of sections:
+            1) global 'main' - either global repo options or DNF control-only options
+                - NOTE: there must always ever be a single "main" section
+
+            2) <repoid> sections - options tied specifically to a given defined repo
+
+        [1] https://man7.org/linux/man-pages/man5/dnf.conf.5.html
+        """
+
+        def _raise_unexpected_type(repr_: str, *prefixes: str) -> None:
+            loc = ".".join(prefixes + (repr_,))
+            raise ValueError(f"Unexpected data type for '{loc}' in input JSON: expected 'dict'")
+
+        if "dnf" not in data:
+            return data
+
+        prefixes: list[str] = ["options", "dnf"]
+        dnf_opts = data["dnf"]
+
+        if not isinstance(dnf_opts, dict):
+            _raise_unexpected_type(str(dnf_opts), *prefixes)
+
+        for repo, repo_options in dnf_opts.items():
+            prefixes.append(repo)
+            if not isinstance(repo_options, dict):
+                _raise_unexpected_type(str(repo_options), *prefixes)
+
+        return data
+
+
 def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
     """Parse user input into a model, re-raise validation errors as InvalidInput."""
     try:
@@ -127,6 +218,7 @@ class GenericPackageInput(_PackageInputBase):
 
     type: Literal["generic"]
     lockfile: Optional[Path] = None
+    options: Optional[ExtraOptions] = None
 
 
 class GomodPackageInput(_PackageInputBase):
@@ -162,58 +254,6 @@ class PipPackageInput(_PackageInputBase):
         for p in paths:
             check_sane_relpath(p)
         return paths
-
-
-class ExtraOptions(pydantic.BaseModel, extra="forbid"):
-    """Global package manager extra options model.
-
-    This model takes care of carrying and parsing various kind of extra options that need to be
-    passed through to CLI commands/services we interact with underneath to tweak their behaviour
-    rather than our own. Each option set is namespaced by the corresponding tool/service it is
-    related to.
-
-    TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
-    """
-
-    dnf: Optional[Dict[Union[Literal["main"], str], Dict[str, Any]]] = None
-    ssl: Optional[SSLOptions] = None
-
-    @pydantic.model_validator(mode="before")
-    def _validate_dnf_options(cls, data: Any, info: pydantic.ValidationInfo) -> Any:
-        """DNF options model.
-
-        DNF options can be provided via 2 'streams':
-            1) global /etc/dnf/dnf.conf OR
-            2) /etc/yum.repos.d/.repo files
-
-        Config options are specified via INI format based on sections. There are 2 types of sections:
-            1) global 'main' - either global repo options or DNF control-only options
-                - NOTE: there must always ever be a single "main" section
-
-            2) <repoid> sections - options tied specifically to a given defined repo
-
-        [1] https://man7.org/linux/man-pages/man5/dnf.conf.5.html
-        """
-
-        def _raise_unexpected_type(repr_: str, *prefixes: str) -> None:
-            loc = ".".join(prefixes + (repr_,))
-            raise ValueError(f"Unexpected data type for '{loc}' in input JSON: expected 'dict'")
-
-        if "dnf" not in data:
-            return data
-
-        prefixes: list[str] = ["options", "dnf"]
-        dnf_opts = data["dnf"]
-
-        if not isinstance(dnf_opts, dict):
-            _raise_unexpected_type(str(dnf_opts), *prefixes)
-
-        for repo, repo_options in dnf_opts.items():
-            prefixes.append(repo)
-            if not isinstance(repo_options, dict):
-                _raise_unexpected_type(str(repo_options), *prefixes)
-
-        return data
 
 
 class RpmPackageInput(_PackageInputBase):

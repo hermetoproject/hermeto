@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import os
+import ssl
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import yaml
 from pydantic import ValidationError
@@ -10,7 +11,7 @@ from pydantic import ValidationError
 from cachi2.core.checksum import must_match_any_checksum
 from cachi2.core.config import get_config
 from cachi2.core.errors import PackageRejected
-from cachi2.core.models.input import Request
+from cachi2.core.models.input import Request, SSLOptions
 from cachi2.core.models.output import RequestOutput
 from cachi2.core.models.sbom import Component
 from cachi2.core.package_managers.general import async_download_files
@@ -37,11 +38,15 @@ def fetch_generic_source(request: Request) -> RequestOutput:
                 f"Supplied generic lockfile path '{lockfile}' is not absolute, refusing to continue.",
                 solution="Make sure the supplied path to the generic lockfile is absolute.",
             )
-        components.extend(_resolve_generic_lockfile(lockfile, request.output_dir))
+        if package.options is None:
+            ssl_context = SSLOptions
+        else:
+            ssl_context = package.options.ssl
+        components.extend(_resolve_generic_lockfile(lockfile, request.output_dir, ssl_context=ssl_context))
     return RequestOutput.from_obj_list(components=components)
 
 
-def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> list[Component]:
+def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath, ssl_context: Optional[ssl.SSLContext] = None) -> list[Component]:
     """
     Resolve the generic lockfile and pre-fetch the dependencies.
 
@@ -69,7 +74,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
         Path.mkdir(Path(artifact.filename).parent, parents=True, exist_ok=True)
         to_download[str(artifact.download_url)] = artifact.filename
 
-    asyncio.run(async_download_files(to_download, get_config().concurrency_limit))
+    asyncio.run(async_download_files(files_to_download=to_download, concurrency_limit=get_config().concurrency_limit, ssl_context=ssl_context))
 
     # verify checksums
     for artifact in lockfile.artifacts:
