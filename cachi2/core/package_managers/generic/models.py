@@ -55,7 +55,7 @@ class LockfileArtifactBase(BaseModel, ABC):
         :return: the validated checksum dict
         """
         if not CHECKSUM_FORMAT.match(value):
-            raise ValueError("Checksum must be in the format 'algorithm:hash'")
+            raise ValueError(f"Checksum must be in the format 'algorithm:hash' (got '{value}')")
         return value
 
     @abstractmethod
