@@ -147,12 +147,12 @@ def generate_test_data(session: Session) -> None:
 def pip_compile(session: Session) -> None:
     """Update requirements.txt and requirements-extras.txt files."""
     PWD = session.env["PWD"]
-    # git must be installed in the image due to setuptools-scm that has it as a direct dependency
-    pip_compile_cmd = (
-        "apk add git && "
-        "pip3 install pip-tools && "
-        "pip-compile --generate-hashes --output-file=requirements.txt --rebuild pyproject.toml && "
-        "pip-compile --all-extras --generate-hashes --output-file=requirements-extras.txt --rebuild pyproject.toml"
+    uv_pip_compile_cmd = (
+        "pip install uv && "
+        # requirements.txt
+        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.9 --refresh pyproject.toml && "
+        # requirements-extras.txt
+        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.9 --refresh pyproject.toml"
     )
     cmd = [
         "podman",
@@ -165,6 +165,6 @@ def pip_compile(session: Session) -> None:
         "docker.io/library/python:3.9-alpine",
         "sh",
         "-c",
-        pip_compile_cmd,
+        uv_pip_compile_cmd,
     ]
     session.run(*cmd, external=True)

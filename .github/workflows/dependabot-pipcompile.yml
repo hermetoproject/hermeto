@@ -35,19 +35,26 @@ jobs:
       - name: Install pip-tools
         run: |
           pip install --upgrade pip
-          pip install --no-cache-dir pip-tools
+          pip install --no-cache-dir uv
 
         # This step uses multi-line string injection to GitHub environment [1]
         # [1] https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#multiline-strings
       - name: Run pip-compile to update requirements.txt
         run: |
           git config --global --add safe.directory "*"
-          pip-compile --generate-hashes --output-file=requirements.txt pyproject.toml
-          pip-compile \
-              --all-extras \
-              --generate-hashes \
-              --output-file=requirements-extras.txt \
-              pyproject.toml
+          uv pip compile \
+            --generate-hashes \
+            --output-file=requirements.txt \
+            --python=3.9 \
+            --refresh \
+            pyproject.toml
+          uv pip compile \
+            --all-extras \
+            --generate-hashes \
+            --output-file=requirements-extras.txt \
+            --python=3.9 \
+            --refresh \
+            pyproject.toml
           {
             echo 'GIT_DIFF<<EOF'
             git diff -p
