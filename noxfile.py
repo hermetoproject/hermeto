@@ -147,7 +147,6 @@ def generate_test_data(session: Session) -> None:
 def pip_compile(session: Session) -> None:
     """Update requirements.txt and requirements-extras.txt files."""
     PWD = session.env["PWD"]
-    PYTHON_VERSION_MINIMAL = parse_supported_python_versions()[0]
     # git must be installed in the image due to setuptools-scm that has it as a direct dependency
     pip_compile_cmd = (
         "apk add git && "
@@ -163,7 +162,7 @@ def pip_compile(session: Session) -> None:
         f"{PWD}:/cachi2:rw,Z",
         "--workdir",
         "/cachi2",
-        f"docker.io/library/python:{PYTHON_VERSION_MINIMAL}-alpine",
+        "docker.io/library/python:3.9-alpine",
         "sh",
         "-c",
         pip_compile_cmd,
