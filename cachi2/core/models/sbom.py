@@ -196,11 +196,10 @@ class Sbom(pydantic.BaseModel):
             args = dict(annotator=annottr, annotationDate=now, annotationType="OTHER")
             pAnnotation = partial(SPDXPackageAnnotation, **args)
 
-            # noqa for trivial helpers.
-            mkcomm = lambda p: json.dumps(dict(name=f"{p.name}", value=f"{p.value}"))  # noqa: E731
-            hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)  # noqa: E731
+            mkcomm = lambda p: json.dumps(dict(name=f"{p.name}", value=f"{p.value}"))
+            hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
             erefbase = dict(referenceCategory="PACKAGE-MANAGER", referenceType="purl")
-            erefdict = lambda c: dict(referenceLocator=c.purl, **erefbase)  # noqa: E731
+            erefdict = lambda c: dict(referenceLocator=c.purl, **erefbase)
 
             for component in libraries:
                 package_hash = SPDXPackage._calculate_package_hash_from_dict(hashdict(component))
@@ -226,8 +225,7 @@ class Sbom(pydantic.BaseModel):
         # Main function body.
         packages = [create_document_root()] + libs_to_packages(self.components)
         relationships = [create_root_relationship()] + link_to_root(packages)
-        # noqa for a trivial helper.
-        creator = lambda tool: [f"Tool: {tool.name}", f"Organization: {tool.vendor}"]  # noqa: E731
+        creator = lambda tool: [f"Tool: {tool.name}", f"Organization: {tool.vendor}"]
         return SPDXSbom(
             packages=packages,
             relationships=relationships,
@@ -550,11 +548,7 @@ class SPDXSbom(pydantic.BaseModel):
         for rel in self.relationships:
             direct_relationships[rel.spdxElementId].append(rel.relatedSpdxElement)
             inverse_relationships[rel.relatedSpdxElement] = rel.spdxElementId
-        # noqa because the name is bound to make local intent clearer and
-        # first_for() call easier to follow.
-        unidirectionally_related_package = (
-            lambda p: inverse_relationships.get(p) == self.SPDXID  # noqa: E731
-        )
+        unidirectionally_related_package = lambda p: inverse_relationships.get(p) == self.SPDXID
         # Note: defaulting to top-level SPDXID is inherited from the original implementation.
         # It is unclear if it is really needed, but is left around to match the precedent.
         root_id = first_for(unidirectionally_related_package, direct_relationships, self.SPDXID)

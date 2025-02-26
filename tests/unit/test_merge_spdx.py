@@ -16,7 +16,7 @@ def _find_roots(sbom: SPDXSbom) -> list[str]:
         spdx_id, related_spdx = rel.spdxElementId, rel.relatedSpdxElement
         direct_rel_map[spdx_id].append(related_spdx)
         inverse_map[related_spdx] = spdx_id
-    unidirectionally_related_package = lambda p: inverse_map.get(p) == sbom.SPDXID  # noqa: E731
+    unidirectionally_related_package = lambda p: inverse_map.get(p) == sbom.SPDXID
     roots = list(filter(unidirectionally_related_package, direct_rel_map))
     return roots
 
@@ -95,8 +95,7 @@ def _assert_root_is_present(sbom: SPDXSbom) -> None:
     # DocumentRoot can be File or Directory:
     fail_msg = "Document root is missing"
     root_pfx = "SPDXRef-DocumentRoot-"
-    # The inline would be too long otherwise, thus lambda, thus noqa.
-    is_root = lambda p: p.SPDXID is not None and p.SPDXID.startswith(root_pfx)  # noqa: E731
+    is_root = lambda p: p.SPDXID is not None and p.SPDXID.startswith(root_pfx)
     assert any(is_root(p) for p in sbom.packages), fail_msg
 
 

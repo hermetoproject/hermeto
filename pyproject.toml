@@ -123,6 +123,7 @@ ignore = [
   "W503", # line break before binary operator
   "E203", # whitespace before ':'
   "E501", # line too long
+  "E731", # do not assign a lambda expression
 ]
 per-file-ignores = [
   "tests/*:D101,D102,D103", # missing docstring in public class, method, function
