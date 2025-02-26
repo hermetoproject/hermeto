@@ -1,0 +1,61 @@
+# Project information
+site_name: Cachi2
+repo_name: hermetoproject/cachi2
+repo_url: https://github.com/hermetoproject/cachi2
+edit_uri: edit/main/docs
+
+# Theme configuration
+theme:
+  name: material
+  locale: en
+  palette:
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-5
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - content.tooltips
+
+# Navigation bar
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Package managers:
+      - bundler: bundler.md
+      - cargo: cargo.md
+      - generic: generic.md
+      - gomod: gomod.md
+      - npm: npm.md
+      - pip: pip.md
+      - yarn classic: yarn_classic.md
+      - yarn berry: yarn.md
+
+# Markdown extensions
+markdown_extensions:
+  - toc:
+      permalink: true
+
+# Markdown validation
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+# Irrelevant files
+exclude_docs: |
+  dependency_confusion.md
+  adr/
+  design/
