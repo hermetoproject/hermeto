@@ -9,7 +9,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Literal, Union
+from typing import Any, Union
 
 from pyarn import lockfile  # type: ignore
 
@@ -17,8 +17,6 @@ from cachi2.core.errors import PackageRejected
 from cachi2.core.rooted_path import RootedPath
 
 log = logging.getLogger(name=__name__)
-
-ConfigKind = Literal["package_json", "yarnlock"]
 
 
 @dataclass
@@ -40,11 +38,6 @@ class _CommonConfigFile(ABC):
     def path(self) -> RootedPath:
         return self._path
 
-    @property
-    @abstractmethod
-    def config_kind(self) -> ConfigKind:
-        """Return kind of ConfigFile instance."""
-
     @classmethod
     @abstractmethod
     def from_file(cls, path: RootedPath) -> "_CommonConfigFile":
@@ -57,11 +50,6 @@ class PackageJson(_CommonConfigFile):
     This class abstracts the underlying attributes and only exposes what
     is relevant for the request processing.
     """
-
-    @property
-    def config_kind(self) -> ConfigKind:
-        """Return kind of this ConfigFile."""
-        return "package_json"
 
     @property
     def install_config(self) -> dict[str, Any]:
@@ -101,11 +89,6 @@ class YarnLock(_CommonConfigFile):
     """
 
     yarn_lockfile: lockfile.Lockfile
-
-    @property
-    def config_kind(self) -> ConfigKind:
-        """Return kind of this ConfigFile."""
-        return "yarnlock"
 
     @classmethod
     def from_file(cls, path: RootedPath) -> "YarnLock":

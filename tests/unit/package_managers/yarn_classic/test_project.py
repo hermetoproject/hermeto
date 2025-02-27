@@ -70,12 +70,10 @@ def _setup_pnp_installs(rooted_tmp_path: RootedPath, pnp_kind: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content, config_kind",
+    "config_file_class, config_file_name, config_file_content",
     [
-        pytest.param(
-            PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, "package_json", id="package_json"
-        ),
-        pytest.param(YarnLock, "yarn.lock", VALID_YARN_LOCK_FILE, "yarnlock", id="yarnlock"),
+        pytest.param(PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, id="package_json"),
+        pytest.param(YarnLock, "yarn.lock", VALID_YARN_LOCK_FILE, id="yarnlock"),
     ],
 )
 def test_config_file_attributes(
@@ -83,7 +81,6 @@ def test_config_file_attributes(
     config_file_class: ConfigFile,
     config_file_name: str,
     config_file_content: str,
-    config_kind: str,
 ) -> None:
     found_config = _prepare_config_file(
         rooted_tmp_path,
@@ -92,7 +89,6 @@ def test_config_file_attributes(
         config_file_content,
     )
     assert found_config.path.root == rooted_tmp_path.root
-    assert found_config.config_kind == config_kind
 
 
 @pytest.mark.parametrize(
