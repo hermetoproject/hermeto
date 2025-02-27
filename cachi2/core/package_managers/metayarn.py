@@ -15,7 +15,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     # looks now). To preserve this behavior each request is split into individual
     # packages which are assessed one by one.
     fetched_packages = []
-    for package in request.packages:
+    for package in request.yarn_packages:
         new_request = request.model_copy(update={"packages": [package]})
         try:
             fetched_packages.append(fetch_yarn_classic_source(new_request))
