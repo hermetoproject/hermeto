@@ -512,7 +512,9 @@ def _replace_tmp_path_with_placeholder(
             item["abspath"] = "${test_case_tmp_path}/cachi2-output/bundler/config_override/config"
             continue
 
-        relative_path = Path(item["abspath"]).relative_to(test_repo_dir)
+        # Walking up is necessary when one package manager triggers another one
+        # (e.g. when dealing with Rust-based Python extensions).
+        relative_path = Path(item["abspath"]).relative_to(test_repo_dir, walk_up=True)
         item["abspath"] = "${test_case_tmp_path}/" + str(relative_path)
 
 

@@ -1,0 +1,16 @@
+# Need a modified cachi2:latest, namely the one with exposed builder layer
+FROM localhost/cachi2:latest
+
+# Test disabled network access
+RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+
+WORKDIR /src
+
+RUN . /tmp/cachi2.env \
+    # This creates a cargo config on the same level as cavhi2-output
+    && mkdir /tmp/.cargo \
+    && echo "[source.crates-io]" > /tmp/.cargo/config.toml \
+    && echo 'replace-with = "local"' >> /tmp/.cargo/config.toml \
+    && echo "[source.local]" >> /tmp/.cargo/config.toml \
+    && echo 'directory = "/tmp/cachi2-output/deps/cargo"' >> /tmp/.cargo/config.toml \
+    && python3 -m pip install -r requirements.txt

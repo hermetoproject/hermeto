@@ -3781,10 +3781,11 @@ def test_default_requirement_file_list(
 @mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
 def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     mock_metadata.return_value = ("foo", "1.0")
-    pkg_info = pip._resolve_pip(rooted_tmp_path, rooted_tmp_path.join_within_root("output"))
+    pkg_info = pip._resolve_pip(rooted_tmp_path, rooted_tmp_path.join_within_root("output"), rooted_tmp_path.join_within_root("."))
     expected = {
         "package": {"name": "foo", "version": "1.0", "type": "pip"},
         "dependencies": [],
+        "packages_containing_rust_code": [],
         "requirements": [],
     }
     assert pkg_info == expected
@@ -3802,7 +3803,7 @@ def test_resolve_pip_invalid_req_file_path(
     requirement_files = [invalid_path]
     with pytest.raises(PackageRejected, match=expected_error):
         pip._resolve_pip(
-            rooted_tmp_path, rooted_tmp_path.join_within_root("output"), requirement_files, None
+            rooted_tmp_path, rooted_tmp_path.join_within_root("output"), rooted_tmp_path.join_within_root("."), requirement_files, None
         )
 
 
@@ -3820,6 +3821,7 @@ def test_resolve_pip_invalid_bld_req_file_path(
         pip._resolve_pip(
             rooted_tmp_path,
             rooted_tmp_path.join_within_root("output"),
+            rooted_tmp_path.join_within_root("."),
             None,
             build_requirement_files,
         )
@@ -3828,7 +3830,9 @@ def test_resolve_pip_invalid_bld_req_file_path(
 @pytest.mark.parametrize("custom_requirements", [True, False])
 @mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
 @mock.patch("cachi2.core.package_managers.pip._download_dependencies")
+@mock.patch("cachi2.core.package_managers.pip._filter_packages_with_rust_code")
 def test_resolve_pip(
+    mock_filter_cargo_packages: mock.Mock,
     mock_download: mock.Mock,
     mock_metadata: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -3844,6 +3848,7 @@ def test_resolve_pip(
 
     req_file.path.write_text("bar==2.1")
     build_req_file.path.write_text("baz==0.0.5")
+    mock_filter_cargo_packages.return_value = []
     mock_metadata.return_value = ("foo", "1.0")
     mock_download.side_effect = [
         [
@@ -3875,11 +3880,12 @@ def test_resolve_pip(
         pkg_info = pip._resolve_pip(
             rooted_tmp_path,
             rooted_tmp_path.join_within_root("output"),
+            rooted_tmp_path.join_within_root("."),
             requirement_files=[relative_req_file_path],
             build_requirement_files=[relative_build_req_file_path],
         )
     else:
-        pkg_info = pip._resolve_pip(rooted_tmp_path, rooted_tmp_path.join_within_root("output"))
+        pkg_info = pip._resolve_pip(rooted_tmp_path, rooted_tmp_path.join_within_root("output"), rooted_tmp_path.join_within_root("."))
 
     expected = {
         "package": {"name": "foo", "version": "1.0", "type": "pip"},
@@ -3907,6 +3913,7 @@ def test_resolve_pip(
                 "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
             },
         ],
+        "packages_containing_rust_code": [],
         "requirements": [req_file, build_req_file],
     }
     assert pkg_info == expected
@@ -4084,7 +4091,9 @@ def test_replace_external_requirements(
 @mock.patch("cachi2.core.scm.Repo")
 @mock.patch("cachi2.core.package_managers.pip._replace_external_requirements")
 @mock.patch("cachi2.core.package_managers.pip._resolve_pip")
+@mock.patch("cachi2.core.package_managers.pip._filter_packages_with_rust_code")
 def test_fetch_pip_source(
+    mock_filter_cargo_packages: mock.Mock,
     mock_resolve_pip: mock.Mock,
     mock_replace_requirements: mock.Mock,
     mock_git_repo: mock.Mock,
@@ -4099,6 +4108,7 @@ def test_fetch_pip_source(
 
     request = Request(source_dir=source_dir, output_dir=output_dir, packages=packages)
 
+    mock_filter_cargo_packages.return_value = []
     resolved_a = {
         "package": {"name": "foo", "version": "1.0", "type": "pip"},
         "dependencies": [
@@ -4124,6 +4134,7 @@ def test_fetch_pip_source(
                 "package_type": "wheel",
             },
         ],
+        "packages_containing_rust_code": [],
         "requirements": ["/package_a/requirements.txt", "/package_a/requirements-build.txt"],
     }
     resolved_b = {
@@ -4151,6 +4162,7 @@ def test_fetch_pip_source(
                 "package_type": "",
             },
         ],
+        "packages_containing_rust_code": [],
         "requirements": ["/package_b/requirements.txt"],
     }
 

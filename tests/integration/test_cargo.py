@@ -68,6 +68,29 @@ def test_cargo_packages(
 @pytest.mark.parametrize(
     "test_params,check_cmd,expected_cmd_output",
     [
+        # This is an experimental test case, there is no branch for it outside of my fork.
+        # It exists solely to let me experiment with the new combo manager
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/e2e_cargo",
+                packages=(
+                    {
+                        "type": "pip",
+                        "requirements_files": ["requirements.txt"],
+                        "requirements_build_files": ["requirements-build.txt"],
+                    },
+                ),
+                flags=[],
+                check_output=True,
+                check_deps_checksums=False,
+                check_vendor_checksums=False,
+                expected_exit_code=0,
+                expected_output="",
+            ),
+            [],  # No additional commands are run to verify the build
+            [],
+            id="rustpython",
+        ),
         pytest.param(
             utils.TestParameters(
                 branch="cargo/mixed-git-crate-dependency",
