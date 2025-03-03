@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Generator, Optional
 
 import tomlkit
+from git.exc import InvalidGitRepositoryError
 from packageurl import PackageURL
 from tomlkit.toml_file import TOMLFile
 
@@ -95,6 +96,8 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
     # contain just a workspace and could even lack a name) could arrive without
     # a lock file. A user could try and fix this by explicitly locking the
     # package first.
+    if not package_dir.path.exists():
+        raise ValueError(f"Path does not exist: {package_dir.path=}")
     if not (package_dir.path / "Cargo.lock").exists():
         raise PackageRejected(
             f"{package_dir.path} is not locked",
@@ -127,7 +130,9 @@ def _resolve_cargo_package(
     """Resolve a single cargo package."""
     _verify_lockfile_is_present_or_fail(package_dir)
     vendor_dir = output_dir.join_within_root("deps/cargo")
-    cmd = ["cargo", "vendor", "--locked", str(vendor_dir)]
+    # --no-delete to keep everything already present. It does not matter for a fresh
+    # single package, but it does matter when there is pip interaction.
+    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
         # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
@@ -135,12 +140,15 @@ def _resolve_cargo_package(
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)
-    vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     is_a_dep = lambda p: p["name"] != main_package["name"]
+    try:
+        vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+    # Could become invalid when directories are swapped for nested package managers
+    except InvalidGitRepositoryError:
+        vcs_url = None
     deps_components = (
         CargoPackage(**p, vcs_url=vcs_url).to_component() for p in packages if is_a_dep(p)
     )
-
     main_component = CargoPackage(
         name=main_package["name"], version=main_package["version"], vcs_url=vcs_url
     ).to_component()
