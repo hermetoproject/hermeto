@@ -101,11 +101,13 @@ def test_generate_build_environment_variables(
     ),
     indirect=["input_request"],
 )
+@mock.patch("cachi2.core.package_managers.yarn_classic.main._verify_repository")
 @mock.patch("cachi2.core.package_managers.yarn_classic.main._resolve_yarn_project")
 @mock.patch("cachi2.core.package_managers.yarn_classic.main.Project.from_source_dir")
 def test_fetch_yarn_source(
     mock_create_project: mock.Mock,
     mock_resolve_yarn: mock.Mock,
+    mock_verify_repository: mock.Mock,
     input_request: Request,
     package_components: list[Component],
     yarn_classic_env_variables: list[EnvironmentVariable],
@@ -122,6 +124,7 @@ def test_fetch_yarn_source(
 
     mock_create_project.assert_has_calls([mock.call(path) for path in package_dirs])
     mock_resolve_yarn.assert_has_calls([mock.call(p, input_request.output_dir) for p in projects])
+    mock_verify_repository.assert_has_calls([mock.call(p) for p in projects])
 
     expected_output = RequestOutput(
         components=list(itertools.chain.from_iterable(package_components)),
@@ -135,9 +138,7 @@ def test_fetch_yarn_source(
 @mock.patch("cachi2.core.package_managers.yarn_classic.main._verify_corepack_yarn_version")
 @mock.patch("cachi2.core.package_managers.yarn_classic.main._get_prefetch_environment_variables")
 @mock.patch("cachi2.core.package_managers.yarn_classic.main._fetch_dependencies")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._verify_repository")
 def test_resolve_yarn_project(
-    mock_verify_repository: mock.Mock,
     mock_fetch_dependencies: mock.Mock,
     mock_prefetch_env_vars: mock.Mock,
     mock_verify_yarn_version: mock.Mock,
@@ -149,7 +150,6 @@ def test_resolve_yarn_project(
 
     _resolve_yarn_project(project, output_dir)
 
-    mock_verify_repository.assert_called_once_with(project)
     mock_prefetch_env_vars.assert_called_once_with(output_dir)
     mock_verify_yarn_version.assert_called_once_with(
         project.source_dir, mock_prefetch_env_vars.return_value

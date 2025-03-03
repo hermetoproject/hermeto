@@ -61,10 +61,11 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
 
     for package in request.yarn_packages:
         package_path = request.source_dir.join_within_root(package.path)
+        project = Project.from_source_dir(package_path)
+
+        _verify_repository(project)
         _ensure_mirror_dir_exists(request.output_dir)
-        components.extend(
-            _resolve_yarn_project(Project.from_source_dir(package_path), request.output_dir)
-        )
+        components.extend(_resolve_yarn_project(project, request.output_dir))
 
     return RequestOutput.from_obj_list(
         components, _generate_build_environment_variables(), project_files=[]
@@ -75,7 +76,6 @@ def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Comp
     """Process a request for a single yarn source directory."""
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
-    _verify_repository(project)
     prefetch_env = _get_prefetch_environment_variables(output_dir)
     _verify_corepack_yarn_version(project.source_dir, prefetch_env)
     _fetch_dependencies(project.source_dir, prefetch_env)
