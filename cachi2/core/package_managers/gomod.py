@@ -1252,7 +1252,7 @@ class ModuleVersionResolver:
         repo = git.Repo(repo_path)
         commit = repo.commit(repo.rev_parse("HEAD").hexsha)
         try:
-            repo.remote().fetch(force=True, tags=True)
+            repo.remote().fetch(force=True, tags=True, recurse_submodules="no")
         except Exception as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
