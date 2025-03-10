@@ -63,6 +63,7 @@ cachi2 = "cachi2.interface.cli:app"
 packages = ["cachi2"]
 
 [tool.setuptools_scm]
+fallback_version = "0.0.0+dev.fallback"
 
 [tool.black]
 line-length = 100
