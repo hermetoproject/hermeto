@@ -1,6 +1,7 @@
 *
 
 !.git/
+!.git_archival.txt
 !cachi2/
 !pyproject.toml
 !requirements.txt
