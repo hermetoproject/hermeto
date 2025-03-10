@@ -14,6 +14,7 @@ Handler = Callable[[Request], RequestOutput]
 
 _package_managers: dict[PackageManagerType, Handler] = {
     "bundler": bundler.fetch_bundler_source,
+    "cargo": cargo.fetch_cargo_source,
     "gomod": gomod.fetch_gomod_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
@@ -24,7 +25,6 @@ _package_managers: dict[PackageManagerType, Handler] = {
 # This is where we put package managers currently under development in order to
 # invoke them via CLI
 _dev_package_managers: dict[PackageManagerType, Handler] = {
-    "cargo": cargo.fetch_cargo_source,
     "rpm": rpm.fetch_rpm_source,
 }
 

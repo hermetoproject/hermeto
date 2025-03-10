@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="cargo/just-a-crate-dependency",
                 packages=({"path": ".", "type": "cargo"},),
-                flags=["--dev-package-managers"],
                 check_output=False,
                 check_deps_checksums=False,
                 check_vendor_checksums=False,
@@ -28,7 +27,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="cargo/just-a-git-dependency",
                 packages=({"path": ".", "type": "cargo"},),
-                flags=["--dev-package-managers"],
                 check_output=False,
                 check_deps_checksums=False,
                 check_vendor_checksums=False,
@@ -41,7 +39,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="cargo/mixed-git-crate-dependency",
                 packages=({"path": ".", "type": "cargo"},),
-                flags=["--dev-package-managers"],
                 check_output=False,
                 check_deps_checksums=False,
                 check_vendor_checksums=False,
@@ -75,7 +72,6 @@ def test_cargo_packages(
             utils.TestParameters(
                 branch="cargo/mixed-git-crate-dependency",
                 packages=({"path": ".", "type": "cargo"},),
-                flags=["--dev-package-managers"],
                 check_output=True,
                 check_deps_checksums=False,
                 check_vendor_checksums=False,
