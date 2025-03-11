@@ -1,0 +1,7 @@
+# setuptools should no longer need a MANIFEST.in file, but sadly when paired with the
+# setuptools-scm plugin and specifically in a scenario where the fallback_version string needs to
+# be applied setuptools doesn't properly exercise its default package discovery behaviour leading
+# to empty installations, that's where this MANIFEST.in hack comes in and makes sure that our
+# project is properly installed inside the container image environment on this rare occasion.
+
+graft cachi2
