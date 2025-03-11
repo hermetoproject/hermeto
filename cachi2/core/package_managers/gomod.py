@@ -24,13 +24,13 @@ from typing import (
     Union,
 )
 
-import backoff
 import git
 import pydantic
 import semver
 from packageurl import PackageURL
 from packaging import version
 from pydantic.alias_generators import to_pascal
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -391,12 +391,11 @@ class Go:
         """
         n_tries = get_config().gomod_download_max_tries
 
-        @backoff.on_exception(
-            backoff.expo,
-            PackageManagerError,
-            jitter=None,  # use deterministic backoff, do not apply jitter
-            max_tries=n_tries,
-            logger=log,
+        @retry(
+            stop=stop_after_attempt(n_tries),
+            wait=wait_exponential(),
+            retry=retry_if_exception_type(PackageManagerError),
+            reraise=True,
         )
         def run_go(_cmd: list[str], **kwargs: Any) -> str:
             return self._run(_cmd, **kwargs)
