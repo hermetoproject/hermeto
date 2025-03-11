@@ -18,7 +18,6 @@ dynamic = ["version"]
 dependencies = [
   "aiohttp",
   "aiohttp-retry",
-  "backoff",
   "beautifulsoup4",
   "gitpython",
   "packageurl-python",

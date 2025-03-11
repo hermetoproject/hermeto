@@ -118,10 +118,6 @@ attrs==25.1.0 \
     #   mailbits
     #   nox
     #   referencing
-backoff==2.2.1 \
-    --hash=sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba \
-    --hash=sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8
-    # via cachi2 (pyproject.toml)
 bandit==1.8.3 \
     --hash=sha256:28f04dc0d258e1dd0f99dee8eefa13d1cb5e3fde1a5ab0c523971f97b289bcd8 \
     --hash=sha256:f5847beb654d309422985c36644649924e0ea4425c76dec2e89110b87506193a
