@@ -63,7 +63,6 @@ cachi2 = "cachi2.interface.cli:app"
 packages = ["cachi2"]
 
 [tool.setuptools_scm]
-version_scheme = "post-release"
 
 [tool.black]
 line-length = 100
