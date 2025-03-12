@@ -30,9 +30,23 @@ In order to support this class of hermetic builds, not only does Cachi2 need to 
 build flows will need additional changes (i.e. leveraging defined [environment variables](#generate-environment-variables)
 or using Cachi2 to [inject project files](#inject-project-files)).
 
+### Pre-requirements
+
+The first step in creating hermetic builds is to have a git repo from which to get sources, as Cachi2 relies on git metadata.
+
+If your sources have not already been fetched from a remote git repo, Cachi2 will get confused about the name of 
+the main package, throwing an error: ``InvalidGitRepositoryError for file: URL``. 
+
+As workaround, run the following to create a local-only git repo:
+
+```shell
+git init && git add -A && git commit -m "initial commit" && \
+git remote add origin https://github.com/someorg/somerepo
+```
+
 ### Pre-fetch dependencies
 
-The first step in creating hermetic builds is to fetch the dependencies for one of the [supported package managers](../README.md#package-managers).
+Once you have a repo for your sources, the next step in creating hermetic builds is to fetch the *dependencies* for one of the [supported package managers](../README.md#package-managers).
 
 ```shell
 cachi2 fetch-deps \
@@ -41,7 +55,7 @@ cachi2 fetch-deps \
   '{"path": ".", "type": "<supported package manager>"}'
 ```
 
-* `--source` - the path to a *git repository* on the local disk
+* `--source` - the path to a *git repository* on the local disk, checked out to the branch or tag you wish to process
 * `--output` - the path to the directory where Cachi2 will write all output
 * `{JSON}`   - specifies a *package* (a directory) within the repository to process
 
