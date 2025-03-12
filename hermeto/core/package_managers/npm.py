@@ -11,16 +11,16 @@ from urllib.parse import urlparse
 
 from packageurl import PackageURL
 
-from cachi2.core.checksum import ChecksumInfo, must_match_any_checksum
-from cachi2.core.config import get_config
-from cachi2.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import ProjectFile, RequestOutput
-from cachi2.core.models.property_semantics import PropertySet
-from cachi2.core.models.sbom import Component
-from cachi2.core.package_managers.general import async_download_files
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
+from hermeto.core.config import get_config
+from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
 
 DEPENDENCY_TYPES = (
     "dependencies",

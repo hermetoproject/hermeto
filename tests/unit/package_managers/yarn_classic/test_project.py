@@ -3,15 +3,15 @@ import json
 import pytest
 from pyarn import lockfile  # type: ignore
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.package_managers.yarn_classic.main import _verify_repository
-from cachi2.core.package_managers.yarn_classic.project import (
+from hermeto.core.errors import PackageRejected
+from hermeto.core.package_managers.yarn_classic.main import _verify_repository
+from hermeto.core.package_managers.yarn_classic.project import (
     ConfigFile,
     PackageJson,
     Project,
     YarnLock,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 VALID_PACKAGE_JSON_FILE = """
 {

@@ -21,9 +21,9 @@ import pydantic
 from packageurl import PackageURL
 from semver import Version
 
-from cachi2.core.errors import PackageManagerError, PackageRejected, UnsupportedFeature
-from cachi2.core.models.sbom import Component, Patch, PatchDiff, Pedigree
-from cachi2.core.package_managers.yarn.locators import (
+from hermeto.core.errors import PackageManagerError, PackageRejected, UnsupportedFeature
+from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
+from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
     HttpsLocator,
     LinkLocator,
@@ -34,10 +34,10 @@ from cachi2.core.package_managers.yarn.locators import (
     WorkspaceLocator,
     parse_locator,
 )
-from cachi2.core.package_managers.yarn.project import Optional, Project
-from cachi2.core.package_managers.yarn.utils import extract_yarn_version_from_env, run_yarn_cmd
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import get_repo_id
+from hermeto.core.package_managers.yarn.project import Optional, Project
+from hermeto.core.package_managers.yarn.utils import extract_yarn_version_from_env, run_yarn_cmd
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import get_repo_id
 
 if TYPE_CHECKING:
     # Import conditionally so that we don't have to introduce a runtime dependency on

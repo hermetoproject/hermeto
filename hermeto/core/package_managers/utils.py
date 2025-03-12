@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from cachi2.core.models.output import RequestOutput
+from hermeto.core.models.output import RequestOutput
 
 
 def merge_outputs(outputs: Iterable[RequestOutput]) -> RequestOutput:

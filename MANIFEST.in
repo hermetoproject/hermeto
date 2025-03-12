@@ -4,4 +4,4 @@
 # to empty installations, that's where this MANIFEST.in hack comes in and makes sure that our
 # project is properly installed inside the container image environment on this rare occasion.
 
-graft cachi2
+graft hermeto

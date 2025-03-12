@@ -6,7 +6,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Iterable, NamedTuple, Optional, Union
 
-from cachi2.core.errors import PackageRejected
+from hermeto.core.errors import PackageRejected
 
 log = logging.getLogger(__name__)
 

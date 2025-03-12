@@ -20,7 +20,7 @@ def setup_logging(level: LogLevel, additional_modules: Iterable[str] = ()) -> No
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
-    for module in ["cachi2", *additional_modules]:
+    for module in ["hermeto", *additional_modules]:
         logger = logging.getLogger(module)
         logger.setLevel(level.value)
 

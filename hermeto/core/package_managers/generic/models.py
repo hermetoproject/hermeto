@@ -18,10 +18,10 @@ from pydantic import (
 from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import Annotated
 
-from cachi2.core.checksum import ChecksumInfo
-from cachi2.core.errors import PackageManagerError
-from cachi2.core.models.sbom import Component, ExternalReference
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import PackageManagerError
+from hermeto.core.models.sbom import Component, ExternalReference
+from hermeto.core.rooted_path import RootedPath
 
 CHECKSUM_FORMAT = re.compile(r"^[a-zA-Z0-9]+:[a-zA-Z0-9]+$")
 

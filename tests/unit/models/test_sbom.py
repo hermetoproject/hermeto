@@ -5,7 +5,7 @@ from unittest import mock
 import pydantic
 import pytest
 
-from cachi2.core.models.sbom import (
+from hermeto.core.models.sbom import (
     FOUND_BY_APP_PROPERTY,
     Component,
     Metadata,
@@ -274,7 +274,7 @@ class TestSPDXPackage:
             )
 
 
-@mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+@mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSbom:
     def test_sort_and_dedupe_components(self, mock_spdx_now: str) -> None:
         sbom = Sbom(
@@ -592,7 +592,7 @@ def _root_contains(spdxid: str) -> SPDXRelation:
     )
 
 
-@mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+@mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSPDXSbom:
     def test_sort_and_dedupe_packages(self, mock_spdx_now: str) -> None:
         sbom = SPDXSbom(

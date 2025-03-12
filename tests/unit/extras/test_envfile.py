@@ -3,9 +3,9 @@ from textwrap import dedent
 
 import pytest
 
-from cachi2.core.errors import UnsupportedFeature
-from cachi2.core.extras.envfile import EnvFormat, generate_envfile
-from cachi2.core.models.output import BuildConfig
+from hermeto.core.errors import UnsupportedFeature
+from hermeto.core.extras.envfile import EnvFormat, generate_envfile
+from hermeto.core.models.output import BuildConfig
 
 
 @pytest.mark.parametrize(

@@ -6,7 +6,7 @@ from typing import List
 
 import pytest
 
-from cachi2.interface.cli import DEFAULT_OUTPUT
+from hermeto.interface.cli import DEFAULT_OUTPUT
 
 from . import utils
 

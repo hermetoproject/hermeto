@@ -4,7 +4,7 @@ from typing import Literal
 import pydantic
 import pytest
 
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 
 @pytest.fixture

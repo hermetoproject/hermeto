@@ -6,11 +6,11 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import PackageManagerError
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from cachi2.core.models.sbom import Component
-from cachi2.core.package_managers.yarn_classic.main import (
+from hermeto.core.errors import PackageManagerError
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
+from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.yarn_classic.main import (
     MIRROR_DIR,
     _fetch_dependencies,
     _generate_build_environment_variables,
@@ -20,15 +20,15 @@ from cachi2.core.package_managers.yarn_classic.main import (
     _verify_no_offline_mirror_collisions,
     fetch_yarn_source,
 )
-from cachi2.core.package_managers.yarn_classic.project import Project
-from cachi2.core.package_managers.yarn_classic.resolver import (
+from hermeto.core.package_managers.yarn_classic.project import Project
+from hermeto.core.package_managers.yarn_classic.resolver import (
     FilePackage,
     LinkPackage,
     RegistryPackage,
     UrlPackage,
     YarnClassicPackage,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 
 def _prepare_project(source_dir: RootedPath, package_json: dict[str, Any]) -> Project:
@@ -101,9 +101,9 @@ def test_generate_build_environment_variables(
     ),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._verify_repository")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._resolve_yarn_project")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main.Project.from_source_dir")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._verify_repository")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._resolve_yarn_project")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main.Project.from_source_dir")
 def test_fetch_yarn_source(
     mock_create_project: mock.Mock,
     mock_resolve_yarn: mock.Mock,
@@ -134,10 +134,10 @@ def test_fetch_yarn_source(
     assert input_request.output_dir.join_within_root(MIRROR_DIR).path.exists()
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.main.resolve_packages")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._verify_corepack_yarn_version")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._get_prefetch_environment_variables")
-@mock.patch("cachi2.core.package_managers.yarn_classic.main._fetch_dependencies")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main.resolve_packages")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._verify_corepack_yarn_version")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._get_prefetch_environment_variables")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._fetch_dependencies")
 def test_resolve_yarn_project(
     mock_fetch_dependencies: mock.Mock,
     mock_prefetch_env_vars: mock.Mock,
@@ -160,7 +160,7 @@ def test_resolve_yarn_project(
     mock_resolve_packages.assert_called_once_with(project, output_dir.join_within_root(MIRROR_DIR))
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.main.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main.run_yarn_cmd")
 def test_fetch_dependencies(mock_run_yarn_cmd: mock.Mock, tmp_path: Path) -> None:
     env = {"foo": "bar"}
     rooted_tmp_path = RootedPath(tmp_path)
@@ -205,7 +205,7 @@ def test_get_prefetch_environment_variables(tmp_path: Path) -> None:
         pytest.param("1.22.0\n", id="valid_version_with_whitespace"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_yarn_cmd")
 def test_verify_corepack_yarn_version(
     mock_run_yarn_cmd: mock.Mock, yarn_version_output: str, tmp_path: Path
 ) -> None:
@@ -224,7 +224,7 @@ def test_verify_corepack_yarn_version(
         pytest.param("2.0.0", id="version_too_high"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_yarn_cmd")
 def test_verify_corepack_yarn_version_disallowed_version(
     mock_run_yarn_cmd: mock.Mock, yarn_version_output: str, tmp_path: Path
 ) -> None:
@@ -238,7 +238,7 @@ def test_verify_corepack_yarn_version_disallowed_version(
         _verify_corepack_yarn_version(RootedPath(tmp_path), env={"foo": "bar"})
 
 
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_yarn_cmd")
 def test_verify_corepack_yarn_version_invalid_version(
     mock_run_yarn_cmd: mock.Mock, tmp_path: Path
 ) -> None:

@@ -8,8 +8,8 @@ from urllib.parse import urlsplit
 import pytest
 from git.repo import Repo
 
-from cachi2.core.errors import FetchError, UnsupportedFeature
-from cachi2.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.errors import FetchError, UnsupportedFeature
+from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 

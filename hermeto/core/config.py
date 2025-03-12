@@ -5,7 +5,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, model_validator
 
-from cachi2.core.models.input import parse_user_input
+from hermeto.core.models.input import parse_user_input
 
 log = logging.getLogger(__name__)
 config = None

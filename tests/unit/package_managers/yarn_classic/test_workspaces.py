@@ -3,18 +3,18 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import PathOutsideRoot
-from cachi2.core.package_managers.yarn_classic.project import PackageJson
-from cachi2.core.package_managers.yarn_classic.workspaces import (
+from hermeto.core.errors import PathOutsideRoot
+from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.package_managers.yarn_classic.workspaces import (
     Workspace,
     _extract_workspaces_globs,
     _get_workspace_paths,
     extract_workspace_metadata,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
+@mock.patch("hermeto.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
 def test_packages_with_workspaces_outside_source_dir_are_rejected(
     mock_get_ws_paths: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -27,9 +27,9 @@ def test_packages_with_workspaces_outside_source_dir_are_rejected(
         extract_workspace_metadata(rooted_tmp_path)
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
+@mock.patch("hermeto.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
 @mock.patch(
-    "cachi2.core.package_managers.yarn_classic.workspaces._ensure_workspaces_are_well_formed"
+    "hermeto.core.package_managers.yarn_classic.workspaces._ensure_workspaces_are_well_formed"
 )
 def test_workspaces_could_be_parsed(
     mock_workspaces_ok: mock.Mock,

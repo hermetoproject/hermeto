@@ -4,7 +4,7 @@ from typing import Any, TypeVar, Union
 
 from pydantic_core import CoreSchema, core_schema
 
-from cachi2.core.errors import PathOutsideRoot
+from hermeto.core.errors import PathOutsideRoot
 
 StrPath = Union[str, PathLike[str]]
 RootedPathT = TypeVar("RootedPathT", bound="RootedPath")

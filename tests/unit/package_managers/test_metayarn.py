@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.models.input import Request
-from cachi2.core.package_managers.metayarn import fetch_yarn_source
-from cachi2.core.package_managers.yarn_classic.main import NotV1Lockfile
+from hermeto.core.errors import PackageRejected
+from hermeto.core.models.input import Request
+from hermeto.core.package_managers.metayarn import fetch_yarn_source
+from hermeto.core.package_managers.yarn_classic.main import NotV1Lockfile
 
 
 @pytest.mark.parametrize(
@@ -13,9 +13,9 @@ from cachi2.core.package_managers.yarn_classic.main import NotV1Lockfile
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.metayarn.merge_outputs")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarnberry_source")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarn_classic_source")
+@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_detects_yarn_classic(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
@@ -34,9 +34,9 @@ def test_fetch_yarn_source_detects_yarn_classic(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.metayarn.merge_outputs")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarnberry_source")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarn_classic_source")
+@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_detects_yarnberry(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
@@ -56,9 +56,9 @@ def test_fetch_yarn_source_detects_yarnberry(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.metayarn.merge_outputs")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarnberry_source")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarn_classic_source")
+@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_propagates_yarn_classic_error(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
@@ -81,9 +81,9 @@ def test_fetch_yarn_source_propagates_yarn_classic_error(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.metayarn.merge_outputs")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarnberry_source")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarn_classic_source")
+@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_propagates_yarnberry_error(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
@@ -107,10 +107,10 @@ def test_fetch_yarn_source_propagates_yarnberry_error(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.metayarn.merge_outputs")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarnberry_source")
-@mock.patch("cachi2.core.package_managers.metayarn.fetch_yarn_classic_source")
-@mock.patch("cachi2.core.package_managers.metayarn.get_config")
+@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
+@mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
+@mock.patch("hermeto.core.package_managers.metayarn.get_config")
 def test_fetch_yarn_source_propagates_yarn_classic_rejection_when_yarnberry_is_forbidden(
     mock_get_config: mock.Mock,
     mock_yarnclassic_fetch_source: mock.Mock,

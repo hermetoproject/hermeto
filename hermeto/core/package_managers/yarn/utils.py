@@ -4,9 +4,9 @@ from typing import Optional, Union
 
 from semver import Version
 
-from cachi2.core.errors import PackageManagerError
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.utils import run_cmd
+from hermeto.core.errors import PackageManagerError
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import run_cmd
 
 
 def run_yarn_cmd(

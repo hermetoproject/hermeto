@@ -3,8 +3,8 @@ import shlex
 from enum import Enum
 from pathlib import Path
 
-from cachi2.core.errors import UnsupportedFeature
-from cachi2.core.models.output import BuildConfig
+from hermeto.core.errors import UnsupportedFeature
+from hermeto.core.models.output import BuildConfig
 
 
 class EnvFormat(str, Enum):

@@ -12,9 +12,9 @@ import aiohttp_retry
 import requests
 from requests.auth import AuthBase
 
-from cachi2.core.config import get_config
-from cachi2.core.errors import FetchError
-from cachi2.core.http_requests import (
+from hermeto.core.config import get_config
+from hermeto.core.errors import FetchError
+from hermeto.core.http_requests import (
     DEFAULT_RETRY_OPTIONS,
     SAFE_REQUEST_METHODS,
     get_requests_session,

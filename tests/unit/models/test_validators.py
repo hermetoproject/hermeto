@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from cachi2.core.models.validators import unique, unique_sorted
+from hermeto.core.models.validators import unique, unique_sorted
 
 DATA_WIHOUT_DUPES = [
     {"a": 2, "b": 1},

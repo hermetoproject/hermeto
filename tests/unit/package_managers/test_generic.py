@@ -4,17 +4,17 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import BaseError, PackageRejected
-from cachi2.core.models.input import GenericPackageInput
-from cachi2.core.models.sbom import Component
-from cachi2.core.package_managers.generic.main import (
+from hermeto.core.errors import BaseError, PackageRejected
+from hermeto.core.models.input import GenericPackageInput
+from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.generic.main import (
     DEFAULT_DEPS_DIR,
     DEFAULT_LOCKFILE_NAME,
     _load_lockfile,
     _resolve_generic_lockfile,
     fetch_generic_source,
 )
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 LOCKFILE_WRONG_VERSION = """
 metadata:
@@ -123,8 +123,8 @@ artifacts:
         pytest.param(GenericPackageInput.model_construct(type="generic"), [], id="single_input"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.generic.main.RequestOutput.from_obj_list")
-@mock.patch("cachi2.core.package_managers.generic.main._resolve_generic_lockfile")
+@mock.patch("hermeto.core.package_managers.generic.main.RequestOutput.from_obj_list")
+@mock.patch("hermeto.core.package_managers.generic.main._resolve_generic_lockfile")
 def test_fetch_generic_source(
     mock_resolve_generic_lockfile: mock.Mock,
     mock_from_obj_list: mock.Mock,
@@ -160,7 +160,7 @@ def test_fetch_generic_source_relative_lockfile_path() -> None:
     )
 
 
-@mock.patch("cachi2.core.package_managers.generic.main._load_lockfile")
+@mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")
 def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
     with pytest.raises(PackageRejected) as exc_info:
@@ -214,8 +214,8 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.generic.main.asyncio.run")
-@mock.patch("cachi2.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 def test_resolve_generic_lockfile_invalid(
     mock_download: mock.Mock,
     mock_asyncio_run: mock.Mock,
@@ -305,9 +305,9 @@ def test_resolve_generic_lockfile_invalid(
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.generic.main.asyncio.run")
-@mock.patch("cachi2.core.package_managers.generic.main.async_download_files")
-@mock.patch("cachi2.core.package_managers.generic.main.must_match_any_checksum")
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_valid(
     mock_checksums: mock.Mock,
     mock_download: mock.Mock,

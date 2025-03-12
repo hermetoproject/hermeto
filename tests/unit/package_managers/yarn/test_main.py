@@ -9,10 +9,10 @@ from unittest import mock
 import pytest
 import semver
 
-from cachi2.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
-from cachi2.core.package_managers.yarn.main import (
+from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
+from hermeto.core.package_managers.yarn.main import (
     _check_lockfile,
     _check_zero_installs,
     _configure_yarn_version,
@@ -23,9 +23,9 @@ from cachi2.core.package_managers.yarn.main import (
     _verify_yarnrc_paths,
     fetch_yarn_source,
 )
-from cachi2.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
-from cachi2.core.package_managers.yarn.utils import VersionsRange
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
+from hermeto.core.package_managers.yarn.utils import VersionsRange
+from hermeto.core.rooted_path import RootedPath
 
 
 @pytest.fixture(scope="module")
@@ -90,10 +90,10 @@ plugins:
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.main._verify_corepack_yarn_version")
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_package_manager")
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_yarn_path")
-@mock.patch("cachi2.core.package_managers.yarn.project.PackageJson.write")
+@mock.patch("hermeto.core.package_managers.yarn.main._verify_corepack_yarn_version")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_yarn_path")
+@mock.patch("hermeto.core.package_managers.yarn.project.PackageJson.write")
 def test_configure_yarn_version(
     mock_package_json_write: mock.Mock,
     mock_yarn_path_semver: mock.Mock,
@@ -129,7 +129,7 @@ def test_configure_yarn_version(
         pytest.param("1.0.0\n", id="yarn_versions_match_with_whitespace"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_yarn_cmd")
 def test_corepack_installed_correct_yarn_version(
     mock_run_yarn_cmd: mock.Mock,
     corepack_yarn_version: str,
@@ -151,7 +151,7 @@ def test_corepack_installed_correct_yarn_version(
         pytest.param("2", id="invalid_semver"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_yarn_cmd")
 def test_corepack_installed_correct_yarn_version_fail(
     mock_run_yarn_cmd: mock.Mock,
     corepack_yarn_version: str,
@@ -197,8 +197,8 @@ def test_corepack_installed_correct_yarn_version_fail(
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_package_manager")
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_yarn_path")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_yarn_path")
 def test_configure_yarn_version_fail(
     mock_yarn_path_semver: mock.Mock,
     mock_package_manager_semver: mock.Mock,
@@ -230,8 +230,8 @@ YARN_VERSIONS = [yarn_version.value for yarn_version in YarnVersions.unsupported
         for pkg_mgr_version, yarn_path_version in zip_longest(YARN_VERSIONS, YARN_VERSIONS[:1])
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_package_manager")
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_yarn_path")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_yarn_path")
 def test_yarn_unsupported_version_fail(
     mock_yarn_path_semver: mock.Mock,
     mock_package_manager_semver: mock.Mock,
@@ -250,7 +250,7 @@ def test_yarn_unsupported_version_fail(
         _configure_yarn_version(mock_project)
 
 
-@mock.patch("cachi2.core.package_managers.yarn.main.run_yarn_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.main.run_yarn_cmd")
 def test_fetch_dependencies(mock_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     mock_yarn_cmd.side_effect = PackageManagerError("berryscary")
 
@@ -290,7 +290,7 @@ def test_resolve_zero_installs_fail() -> None:
         pytest.param("", [], "4.0.0-rc1", id="yarn_v4_rc1"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.project.YarnRc.write")
+@mock.patch("hermeto.core.package_managers.yarn.project.YarnRc.write")
 def test_set_yarnrc_configuration(
     mock_write: mock.Mock,
     yarn_rc_content: str,
@@ -332,7 +332,7 @@ def test_set_yarnrc_configuration(
     mock_write.assert_called_once()
 
 
-@mock.patch("cachi2.core.package_managers.yarn.main.get_semver_from_package_manager")
+@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
 def test_verify_yarnrc_paths(mock_get_semver: mock.Mock) -> None:
     output_dir = RootedPath("/tmp/output")
     yarn_rc = YarnRc(RootedPath("/tmp/.yarnrc.yml"), {})
@@ -434,8 +434,8 @@ def test_generate_environment_variables(yarn_env_variables: list[EnvironmentVari
     ),
     indirect=["input_request"],
 )
-@mock.patch("cachi2.core.package_managers.yarn.main._resolve_yarn_project")
-@mock.patch("cachi2.core.package_managers.yarn.project.Project.from_source_dir")
+@mock.patch("hermeto.core.package_managers.yarn.main._resolve_yarn_project")
+@mock.patch("hermeto.core.package_managers.yarn.project.Project.from_source_dir")
 def test_fetch_yarn_source(
     mock_project_from_source_dir: mock.Mock,
     mock_resolve_yarn: mock.Mock,

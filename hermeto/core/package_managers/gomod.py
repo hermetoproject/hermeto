@@ -35,15 +35,15 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-from cachi2.core.config import get_config
-from cachi2.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import EnvironmentVariable, RequestOutput
-from cachi2.core.models.property_semantics import PropertySet
-from cachi2.core.models.sbom import Component
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import get_repo_id
-from cachi2.core.utils import get_cache_dir, load_json_stream, run_cmd
+from hermeto.core.config import get_config
+from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import EnvironmentVariable, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import get_repo_id
+from hermeto.core.utils import get_cache_dir, load_json_stream, run_cmd
 
 log = logging.getLogger(__name__)
 

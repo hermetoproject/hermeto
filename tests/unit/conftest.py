@@ -5,8 +5,8 @@ from pathlib import Path
 import git
 import pytest
 
-from cachi2.core.models.input import Request
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.models.input import Request
+from hermeto.core.rooted_path import RootedPath
 
 
 @pytest.fixture

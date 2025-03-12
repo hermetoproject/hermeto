@@ -9,11 +9,11 @@ import git
 import pytest
 from pyarn.lockfile import Package as PYarnPackage
 
-from cachi2.core.checksum import ChecksumInfo
-from cachi2.core.errors import PackageRejected, UnexpectedFormat
-from cachi2.core.package_managers.yarn_classic.main import MIRROR_DIR
-from cachi2.core.package_managers.yarn_classic.project import PackageJson
-from cachi2.core.package_managers.yarn_classic.resolver import (
+from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.yarn_classic.main import MIRROR_DIR
+from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.package_managers.yarn_classic.resolver import (
     FilePackage,
     GitPackage,
     LinkPackage,
@@ -31,9 +31,9 @@ from cachi2.core.package_managers.yarn_classic.resolver import (
     _YarnClassicPackageFactory,
     resolve_packages,
 )
-from cachi2.core.package_managers.yarn_classic.workspaces import Workspace
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
-from cachi2.core.scm import get_repo_id
+from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.scm import get_repo_id
 
 VALID_GIT_URLS = [
     "git://git.host.com/some/path",
@@ -111,7 +111,7 @@ def test_is_from_npm_registry_can_parse_incorrect_registry_urls() -> None:
     assert not _is_from_npm_registry("https://example.org/fecha.tar.gz")
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver._read_name_from_tarball")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._read_name_from_tarball")
 def test_create_package_from_pyarn_package(
     mock_read_name_from_tarball: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -244,7 +244,7 @@ def test_create_package_from_pyarn_package_fail_unexpected_format(
 
 
 @mock.patch(
-    "cachi2.core.package_managers.yarn_classic.resolver._YarnClassicPackageFactory.create_package_from_pyarn_package"
+    "hermeto.core.package_managers.yarn_classic.resolver._YarnClassicPackageFactory.create_package_from_pyarn_package"
 )
 def test_get_packages_from_lockfile(
     mock_create_package: mock.Mock, rooted_tmp_path: RootedPath
@@ -272,12 +272,12 @@ def test_get_packages_from_lockfile(
     assert output == [mock_package_1, mock_package_2]
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.project.YarnLock.from_file")
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver._get_workspace_packages")
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver.extract_workspace_metadata")
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver._get_packages_from_lockfile")
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver._get_main_package")
-@mock.patch("cachi2.core.package_managers.yarn_classic.resolver.find_runtime_deps")
+@mock.patch("hermeto.core.package_managers.yarn_classic.project.YarnLock.from_file")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_workspace_packages")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.extract_workspace_metadata")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_packages_from_lockfile")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_main_package")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.find_runtime_deps")
 def test_resolve_packages(
     find_runtime_deps: mock.Mock,
     mock_get_main_package: mock.Mock,

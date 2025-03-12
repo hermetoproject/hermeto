@@ -4,9 +4,9 @@ from typing import Any, Generator, Iterable
 
 import pydantic
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.package_managers.yarn_classic.project import PackageJson
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.errors import PackageRejected
+from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.rooted_path import RootedPath
 
 
 class Workspace(pydantic.BaseModel):

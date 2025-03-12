@@ -1,9 +1,9 @@
 from unittest import mock
 
-from cachi2.core.package_managers.yarn_classic.project import PackageJson
-from cachi2.core.package_managers.yarn_classic.utils import find_runtime_deps
-from cachi2.core.package_managers.yarn_classic.workspaces import Workspace
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.package_managers.yarn_classic.utils import find_runtime_deps
+from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
+from hermeto.core.rooted_path import RootedPath
 
 PACKAGE_JSON = """
 {
@@ -24,7 +24,7 @@ PACKAGE_JSON = """
 """
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.project.YarnLock")
+@mock.patch("hermeto.core.package_managers.yarn_classic.project.YarnLock")
 def test_find_runtime_deps(
     mock_yarn_lock: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -96,7 +96,7 @@ WORKSPACE_PACKAGE_JSON = """
 """
 
 
-@mock.patch("cachi2.core.package_managers.yarn_classic.project.YarnLock")
+@mock.patch("hermeto.core.package_managers.yarn_classic.project.YarnLock")
 def test_find_runtime_deps_with_workspace(
     mock_yarn_lock: mock.Mock,
     rooted_tmp_path: RootedPath,

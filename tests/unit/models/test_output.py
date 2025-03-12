@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 import pydantic
 import pytest
 
-from cachi2.core.errors import BaseError
-from cachi2.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.errors import BaseError
+from hermeto.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
 
 
 class TestProjectFile:

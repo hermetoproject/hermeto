@@ -8,11 +8,11 @@ import pytest
 import yaml
 from _pytest.logging import LogCaptureFixture
 
-from cachi2.core.errors import PackageManagerError, PackageRejected
-from cachi2.core.models.input import ExtraOptions, RpmPackageInput, SSLOptions
-from cachi2.core.models.sbom import Component, Property
-from cachi2.core.package_managers.rpm import fetch_rpm_source, inject_files_post
-from cachi2.core.package_managers.rpm.main import (
+from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import ExtraOptions, RpmPackageInput, SSLOptions
+from hermeto.core.models.sbom import Component, Property
+from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
+from hermeto.core.package_managers.rpm.main import (
     DEFAULT_LOCKFILE_NAME,
     DEFAULT_PACKAGE_DIR,
     _createrepo,
@@ -25,8 +25,8 @@ from cachi2.core.package_managers.rpm.main import (
     _resolve_rpm_project,
     _verify_downloaded,
 )
-from cachi2.core.package_managers.rpm.redhat import RedhatRpmsLock
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
+from hermeto.core.rooted_path import RootedPath
 
 RPM_LOCK_FILE_DATA = """
 lockfileVersion: 1
@@ -89,8 +89,8 @@ arches:
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.rpm.main.RequestOutput.from_obj_list")
-@mock.patch("cachi2.core.package_managers.rpm.main._resolve_rpm_project")
+@mock.patch("hermeto.core.package_managers.rpm.main.RequestOutput.from_obj_list")
+@mock.patch("hermeto.core.package_managers.rpm.main._resolve_rpm_project")
 def test_fetch_rpm_source(
     mock_resolve_rpm_project: mock.Mock,
     mock_from_obj_list: mock.Mock,
@@ -302,7 +302,7 @@ def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
     )
 
 
-@mock.patch("cachi2.core.package_managers.rpm.main._download")
+@mock.patch("hermeto.core.package_managers.rpm.main._download")
 def test_resolve_rpm_project_correct_format(
     mock_download: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -334,13 +334,13 @@ def test_resolve_rpm_project_correct_format(
 
 
 @mock.patch(
-    "cachi2.core.package_managers.rpm.main.open",
+    "hermeto.core.package_managers.rpm.main.open",
     new_callable=mock.mock_open,
 )
-@mock.patch("cachi2.core.package_managers.rpm.main._download")
-@mock.patch("cachi2.core.package_managers.rpm.main._verify_downloaded")
-@mock.patch("cachi2.core.package_managers.rpm.main.RedhatRpmsLock.model_validate")
-@mock.patch("cachi2.core.package_managers.rpm.main._generate_sbom_components")
+@mock.patch("hermeto.core.package_managers.rpm.main._download")
+@mock.patch("hermeto.core.package_managers.rpm.main._verify_downloaded")
+@mock.patch("hermeto.core.package_managers.rpm.main.RedhatRpmsLock.model_validate")
+@mock.patch("hermeto.core.package_managers.rpm.main._generate_sbom_components")
 def test_resolve_rpm_project(
     mock_generate_sbom_components: mock.Mock,
     mock_model_validate: mock.Mock,
@@ -364,7 +364,7 @@ def test_resolve_rpm_project(
     mock_generate_sbom_components.assert_called_once_with({}, Path("rpms.lock.yaml"), False)
 
 
-@mock.patch("cachi2.core.package_managers.rpm.main.run_cmd")
+@mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")
 def test_createrepo(mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     repodir = rooted_tmp_path
     repoid = "repo1"
@@ -372,7 +372,7 @@ def test_createrepo(mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> Non
     mock_run_cmd.assert_called_once_with(["createrepo_c", str(repodir)], params={})
 
 
-@mock.patch("cachi2.core.package_managers.rpm.main._createrepo")
+@mock.patch("hermeto.core.package_managers.rpm.main._createrepo")
 def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     package_dir = rooted_tmp_path.join_within_root(DEFAULT_PACKAGE_DIR)
     arch_dir = package_dir.path.joinpath("x86_64")
@@ -507,7 +507,7 @@ DOWNLOAD_URL = f"https://example.com/{RPM_FILE}"
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.rpm.main.run_cmd")
+@mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")
 def test_generate_sbom_components(
     mock_run_cmd: mock.Mock,
     opt_rpm_tags: dict[str, str],
@@ -545,9 +545,9 @@ def test_generate_sbom_components(
     ]
 
 
-@mock.patch("cachi2.core.package_managers.rpm.main.Path")
-@mock.patch("cachi2.core.package_managers.rpm.main._generate_repofiles")
-@mock.patch("cachi2.core.package_managers.rpm.main._generate_repos")
+@mock.patch("hermeto.core.package_managers.rpm.main.Path")
+@mock.patch("hermeto.core.package_managers.rpm.main._generate_repofiles")
+@mock.patch("hermeto.core.package_managers.rpm.main._generate_repos")
 def test_inject_files_post(
     mock_generate_repos: mock.Mock,
     mock_generate_repofiles: mock.Mock,
@@ -562,8 +562,8 @@ def test_inject_files_post(
 
 
 @mock.patch("ssl.create_default_context")
-@mock.patch("cachi2.core.package_managers.rpm.main.asyncio.run")
-@mock.patch("cachi2.core.package_managers.rpm.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
 def test_download(
     mock_async_download_files: mock.Mock, mock_asyncio: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -610,7 +610,7 @@ def test_verify_downloaded_unsupported_hash_alg() -> None:
 
 
 @mock.patch(
-    "cachi2.core.package_managers.rpm.main.open",
+    "hermeto.core.package_managers.rpm.main.open",
     new_callable=mock.mock_open,
     read_data=b"test",
 )
@@ -626,13 +626,13 @@ class TestRedhatRpmsLock:
     def raw_content(self) -> dict:
         return {"lockfileVendor": "redhat", "lockfileVersion": 1, "arches": []}
 
-    @mock.patch("cachi2.core.package_managers.rpm.redhat.uuid")
+    @mock.patch("hermeto.core.package_managers.rpm.redhat.uuid")
     def test_internal_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
         assert lock.generated_repoid == "cachi2-abcdef"
 
-    @mock.patch("cachi2.core.package_managers.rpm.redhat.uuid")
+    @mock.patch("hermeto.core.package_managers.rpm.redhat.uuid")
     def test_internal_source_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
@@ -686,8 +686,8 @@ class TestRepofile:
         actual._apply_defaults()
         assert actual == expected_r
 
-    @mock.patch("cachi2.core.package_managers.rpm.main._Repofile._apply_defaults")
-    @mock.patch("cachi2.core.package_managers.rpm.main.ConfigParser.write")
+    @mock.patch("hermeto.core.package_managers.rpm.main._Repofile._apply_defaults")
+    @mock.patch("hermeto.core.package_managers.rpm.main.ConfigParser.write")
     def test_write(
         self, mock_superclass_write: mock.Mock, mock_apply_defaults: mock.Mock, tmp_path: Path
     ) -> None:

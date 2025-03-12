@@ -3,8 +3,8 @@ from typing import Literal
 
 import pytest
 
-from cachi2.core.checksum import SUPPORTED_ALGORITHMS, ChecksumInfo, must_match_any_checksum
-from cachi2.core.errors import PackageRejected
+from hermeto.core.checksum import SUPPORTED_ALGORITHMS, ChecksumInfo, must_match_any_checksum
+from hermeto.core.errors import PackageRejected
 
 FILE_CONTENT = "Beetlejuice! Beetlejuice! Beetlejuice!"
 

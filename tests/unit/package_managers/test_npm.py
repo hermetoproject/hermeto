@@ -8,12 +8,12 @@ from unittest import mock
 import pytest
 from packageurl import PackageURL
 
-from cachi2.core.checksum import ChecksumInfo
-from cachi2.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import ProjectFile, RequestOutput
-from cachi2.core.models.sbom import Component, Property
-from cachi2.core.package_managers.npm import (
+from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.sbom import Component, Property
+from hermeto.core.package_managers.npm import (
     NormalizedUrl,
     NpmComponentInfo,
     Package,
@@ -31,8 +31,8 @@ from cachi2.core.package_managers.npm import (
     _update_vcs_url_with_full_hostname,
     fetch_npm_source,
 )
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import RepoID
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import RepoID
 from tests.common_utils import GIT_REF
 
 MOCK_REPO_ID = RepoID("https://github.com/foolish/bar.git", "abcdef1234")
@@ -55,7 +55,7 @@ def npm_request(rooted_tmp_path: RootedPath, npm_input_packages: list[dict[str, 
 
 @pytest.fixture
 def mock_get_repo_id() -> Iterator[mock.Mock]:
-    with mock.patch("cachi2.core.package_managers.npm.get_repo_id") as mocked_get_repo_id:
+    with mock.patch("hermeto.core.package_managers.npm.get_repo_id") as mocked_get_repo_id:
         mocked_get_repo_id.return_value = MOCK_REPO_ID
         yield mocked_get_repo_id
 
@@ -858,7 +858,7 @@ def test_generate_component_list(
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.npm._resolve_npm")
+@mock.patch("hermeto.core.package_managers.npm._resolve_npm")
 def test_fetch_npm_source(
     mock_resolve_npm: mock.Mock,
     npm_request: Request,
@@ -1393,9 +1393,9 @@ def test_resolve_npm_validation(
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.npm._get_npm_dependencies")
-@mock.patch("cachi2.core.package_managers.npm._update_package_lock_with_local_paths")
-@mock.patch("cachi2.core.package_managers.npm._update_package_json_files")
+@mock.patch("hermeto.core.package_managers.npm._get_npm_dependencies")
+@mock.patch("hermeto.core.package_managers.npm._update_package_lock_with_local_paths")
+@mock.patch("hermeto.core.package_managers.npm._update_package_json_files")
 def test_resolve_npm(
     update_package_json_files: mock.Mock,
     update_package_lock_with_local_paths: mock.Mock,
@@ -1503,7 +1503,7 @@ def test_update_vcs_url_with_full_hostname(vcs: str, expected: str) -> None:
     assert _update_vcs_url_with_full_hostname(vcs) == expected
 
 
-@mock.patch("cachi2.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
 def test_clone_repo_pack_archive(
     mock_clone_as_tarball: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -1604,10 +1604,10 @@ def test_should_replace_dependency(dependency_version: str, expected_result: boo
         ),
     ],
 )
-@mock.patch("cachi2.core.package_managers.npm.async_download_files")
-@mock.patch("cachi2.core.package_managers.npm.must_match_any_checksum")
-@mock.patch("cachi2.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("cachi2.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.must_match_any_checksum")
+@mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
+@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
 def test_get_npm_dependencies(
     mock_clone_as_tarball: mock.Mock,
     mock_from_sri: mock.Mock,

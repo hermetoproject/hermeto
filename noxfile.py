@@ -99,7 +99,7 @@ def unit_tests(session: Session) -> None:
     session.install(".")
     # disable color output in GitHub Actions
     env = {"TERM": "dumb"} if os.getenv("CI") == "true" else None
-    cmd = "pytest --log-level=DEBUG --cov=cachi2 --cov-config=pyproject.toml --cov-report=term --cov-report=html --cov-report=xml --no-cov-on-fail tests/unit"
+    cmd = "pytest --log-level=DEBUG --cov=hermeto --cov-config=pyproject.toml --cov-report=term --cov-report=html --cov-report=xml --no-cov-on-fail tests/unit"
     session.run(*cmd.split(), *session.posargs, env=env)
 
 

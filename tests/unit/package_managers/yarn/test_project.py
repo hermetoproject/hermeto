@@ -6,15 +6,15 @@ import pytest
 import semver
 import yaml
 
-from cachi2.core.errors import PackageRejected, UnexpectedFormat
-from cachi2.core.package_managers.yarn.project import (
+from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.yarn.project import (
     PackageJson,
     Project,
     YarnRc,
     get_semver_from_package_manager,
     get_semver_from_yarn_path,
 )
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 VALID_YARNRC_FILE = """cacheFolder: ./.custom/cache
 checksumBehavior: ignore

@@ -12,19 +12,19 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from git import Repo
 
-from cachi2.core.checksum import ChecksumInfo
-from cachi2.core.errors import (
+from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import (
     BaseError,
     FetchError,
     PackageRejected,
     UnexpectedFormat,
     UnsupportedFeature,
 )
-from cachi2.core.models.input import PackageInput, Request
-from cachi2.core.models.output import ProjectFile
-from cachi2.core.models.sbom import Component, Property
-from cachi2.core.package_managers import pip
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.models.input import PackageInput, Request
+from hermeto.core.models.output import ProjectFile
+from hermeto.core.models.sbom import Component, Property
+from hermeto.core.package_managers import pip
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
 CUSTOM_PYPI_ENDPOINT = "https://my-pypi.org/simple/"
@@ -54,7 +54,7 @@ def make_dpi(
     )
 
 
-@mock.patch("cachi2.core.package_managers.pip.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
 def test_get_pip_metadata_from_pyproject_toml(
     mock_pyproject_toml: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -75,7 +75,7 @@ def test_get_pip_metadata_from_pyproject_toml(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("cachi2.core.package_managers.pip.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.SetupPY")
 def test_get_pip_metadata_from_setup_py(
     mock_setup_py: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -96,7 +96,7 @@ def test_get_pip_metadata_from_setup_py(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("cachi2.core.package_managers.pip.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
 def test_get_pip_metadata_from_setup_cfg(
     mock_setup_cfg: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -117,9 +117,9 @@ def test_get_pip_metadata_from_setup_cfg(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("cachi2.core.package_managers.pip.PyProjectTOML")
-@mock.patch("cachi2.core.package_managers.pip.SetupCFG")
-@mock.patch("cachi2.core.package_managers.pip.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.SetupPY")
 def test_extract_metadata_from_config_files_with_fallbacks(
     mock_setup_py: mock.Mock,
     mock_setup_cfg: mock.Mock,
@@ -180,9 +180,9 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     "origin_exists",
     [True, False],
 )
-@mock.patch("cachi2.core.package_managers.pip.PyProjectTOML")
-@mock.patch("cachi2.core.package_managers.pip.SetupPY")
-@mock.patch("cachi2.core.package_managers.pip.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
 def test_get_pip_metadata_from_remote_origin(
     mock_setup_cfg: mock.Mock,
     mock_setup_py: mock.Mock,
@@ -3003,7 +3003,7 @@ class TestDownload:
         sdists.sort(key=pip._sdist_preference)
         assert sdists == expect_order
 
-    @mock.patch("cachi2.core.package_managers.pip.clone_as_tarball")
+    @mock.patch("hermeto.core.package_managers.pip.clone_as_tarball")
     def test_download_vcs_package(
         self,
         mock_clone_as_tarball: Any,
@@ -3049,7 +3049,7 @@ class TestDownload:
             ("example.org:443", ["example.org"], True),
         ],
     )
-    @mock.patch("cachi2.core.package_managers.pip.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.pip.download_binary_file")
     def test_download_url_package(
         self,
         mock_download_file: Any,
@@ -3315,11 +3315,11 @@ class TestDownload:
         "index_url", [None, pypi_simple.PYPI_SIMPLE_ENDPOINT, CUSTOM_PYPI_ENDPOINT]
     )
     @pytest.mark.parametrize("missing_req_file_checksum", [True, False])
-    @mock.patch("cachi2.core.package_managers.pip._process_package_distributions")
-    @mock.patch("cachi2.core.package_managers.pip.must_match_any_checksum")
+    @mock.patch("hermeto.core.package_managers.pip._process_package_distributions")
+    @mock.patch("hermeto.core.package_managers.pip.must_match_any_checksum")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("cachi2.core.package_managers.pip.async_download_files")
-    @mock.patch("cachi2.core.package_managers.pip._check_metadata_in_sdist")
+    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip._check_metadata_in_sdist")
     def test_download_dependencies_pypi(
         self,
         mock_check_metadata_in_sdist: mock.Mock,
@@ -3509,11 +3509,11 @@ class TestDownload:
 
     @pytest.mark.parametrize("checksum_match", [True, False])
     @pytest.mark.parametrize("trusted_hosts", [[], ["example.org"]])
-    @mock.patch("cachi2.core.package_managers.pip._download_url_package")
-    @mock.patch("cachi2.core.package_managers.pip.must_match_any_checksum")
+    @mock.patch("hermeto.core.package_managers.pip._download_url_package")
+    @mock.patch("hermeto.core.package_managers.pip.must_match_any_checksum")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("cachi2.core.package_managers.pip.async_download_files")
-    @mock.patch("cachi2.core.package_managers.pip.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip.download_binary_file")
     def test_download_dependencies_url(
         self,
         mock_download_binary_file: mock.Mock,
@@ -3625,10 +3625,10 @@ class TestDownload:
         ) in caplog.text
         # </check basic logging output>
 
-    @mock.patch("cachi2.core.package_managers.pip._download_vcs_package")
+    @mock.patch("hermeto.core.package_managers.pip._download_vcs_package")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("cachi2.core.package_managers.pip.async_download_files")
-    @mock.patch("cachi2.core.scm.clone_as_tarball")
+    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
+    @mock.patch("hermeto.core.scm.clone_as_tarball")
     def test_download_dependencies_vcs(
         self,
         mock_clone_as_tarball: mock.Mock,
@@ -3709,9 +3709,9 @@ class TestDownload:
         ) in caplog.text
         # </check basic logging output>
 
-    @mock.patch("cachi2.core.package_managers.pip._process_package_distributions")
-    @mock.patch("cachi2.core.package_managers.pip.async_download_files")
-    @mock.patch("cachi2.core.package_managers.pip._check_metadata_in_sdist")
+    @mock.patch("hermeto.core.package_managers.pip._process_package_distributions")
+    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip._check_metadata_in_sdist")
     def test_download_from_requirement_files(
         self,
         _check_metadata_in_sdist: mock.Mock,
@@ -3777,7 +3777,7 @@ def test_default_requirement_file_list(
     assert req_files == expected
 
 
-@mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
 def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     pkg_info = pip._resolve_pip(rooted_tmp_path, rooted_tmp_path.join_within_root("output"))
@@ -3789,7 +3789,7 @@ def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPa
     assert pkg_info == expected
 
 
-@mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
 def test_resolve_pip_invalid_req_file_path(
     mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -3805,7 +3805,7 @@ def test_resolve_pip_invalid_req_file_path(
         )
 
 
-@mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
 def test_resolve_pip_invalid_bld_req_file_path(
     mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -3825,8 +3825,8 @@ def test_resolve_pip_invalid_bld_req_file_path(
 
 
 @pytest.mark.parametrize("custom_requirements", [True, False])
-@mock.patch("cachi2.core.package_managers.pip._get_pip_metadata")
-@mock.patch("cachi2.core.package_managers.pip._download_dependencies")
+@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip._download_dependencies")
 def test_resolve_pip(
     mock_download: mock.Mock,
     mock_metadata: mock.Mock,
@@ -4080,9 +4080,9 @@ def test_replace_external_requirements(
         ),
     ],
 )
-@mock.patch("cachi2.core.scm.Repo")
-@mock.patch("cachi2.core.package_managers.pip._replace_external_requirements")
-@mock.patch("cachi2.core.package_managers.pip._resolve_pip")
+@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.package_managers.pip._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.pip._resolve_pip")
 def test_fetch_pip_source(
     mock_resolve_pip: mock.Mock,
     mock_replace_requirements: mock.Mock,
@@ -4337,7 +4337,7 @@ def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: s
         ),
     ],
 )
-@mock.patch("cachi2.core.scm.Repo")
+@mock.patch("hermeto.core.scm.Repo")
 def test_generate_purl_main_package(
     mock_git_repo: Any, subpath: Path, expected_purl: str, rooted_tmp_path: RootedPath
 ) -> None:

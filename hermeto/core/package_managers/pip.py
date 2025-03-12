@@ -30,8 +30,8 @@ from typing import (
 import tomlkit
 from packageurl import PackageURL
 
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import clone_as_tarball, get_repo_id
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import clone_as_tarball, get_repo_id
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -41,14 +41,14 @@ import requests
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name, canonicalize_version
 
-from cachi2.core.checksum import ChecksumInfo, must_match_any_checksum
-from cachi2.core.config import get_config
-from cachi2.core.errors import FetchError, PackageRejected, UnexpectedFormat, UnsupportedFeature
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
-from cachi2.core.models.property_semantics import PropertySet
-from cachi2.core.models.sbom import Component
-from cachi2.core.package_managers.general import (
+from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
+from hermeto.core.config import get_config
+from hermeto.core.errors import FetchError, PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
     extract_git_info,

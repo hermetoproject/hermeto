@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from cachi2.core.errors import UnexpectedFormat, UnsupportedFeature
-from cachi2.core.package_managers.yarn.locators import (
+from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
+from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
     HttpsLocator,
     LinkLocator,

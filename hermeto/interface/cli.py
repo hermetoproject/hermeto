@@ -11,15 +11,15 @@ from typing import Any, Callable, List, Optional, Union
 import pydantic
 import typer
 
-import cachi2.core.config as config
-from cachi2.core.errors import BaseError, InvalidInput, UnexpectedFormat
-from cachi2.core.extras.envfile import EnvFormat, generate_envfile
-from cachi2.core.models.input import Flag, PackageInput, Request, parse_user_input
-from cachi2.core.models.output import BuildConfig
-from cachi2.core.models.sbom import Sbom, SPDXSbom, spdx_now
-from cachi2.core.resolver import inject_files_post, resolve_packages, supported_package_managers
-from cachi2.core.rooted_path import RootedPath
-from cachi2.interface.logging import LogLevel, setup_logging
+import hermeto.core.config as config
+from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
+from hermeto.core.extras.envfile import EnvFormat, generate_envfile
+from hermeto.core.models.input import Flag, PackageInput, Request, parse_user_input
+from hermeto.core.models.output import BuildConfig
+from hermeto.core.models.sbom import Sbom, SPDXSbom, spdx_now
+from hermeto.core.resolver import inject_files_post, resolve_packages, supported_package_managers
+from hermeto.core.rooted_path import RootedPath
+from hermeto.interface.logging import LogLevel, setup_logging
 
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 log = logging.getLogger(__name__)

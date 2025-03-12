@@ -1,6 +1,6 @@
 from textwrap import dedent
 
-from cachi2.core import errors
+from hermeto.core import errors
 
 
 def test_package_rejected_friendly_msg() -> None:

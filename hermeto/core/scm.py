@@ -10,7 +10,7 @@ from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 from git.repo import Repo
 
-from cachi2.core.errors import FetchError, UnsupportedFeature
+from hermeto.core.errors import FetchError, UnsupportedFeature
 
 log = logging.getLogger(__name__)
 

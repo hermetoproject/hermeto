@@ -2,23 +2,23 @@ import logging
 
 import semver
 
-from cachi2.core.errors import PackageManagerError, PackageRejected
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import Component, EnvironmentVariable, RequestOutput
-from cachi2.core.package_managers.yarn.project import (
+from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.package_managers.yarn.project import (
     Plugin,
     Project,
     YarnRc,
     get_semver_from_package_manager,
     get_semver_from_yarn_path,
 )
-from cachi2.core.package_managers.yarn.resolver import create_components, resolve_packages
-from cachi2.core.package_managers.yarn.utils import (
+from hermeto.core.package_managers.yarn.resolver import create_components, resolve_packages
+from hermeto.core.package_managers.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 

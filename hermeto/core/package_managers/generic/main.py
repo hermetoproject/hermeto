@@ -7,15 +7,15 @@ from typing import Union
 import yaml
 from pydantic import ValidationError
 
-from cachi2.core.checksum import must_match_any_checksum
-from cachi2.core.config import get_config
-from cachi2.core.errors import PackageRejected
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import RequestOutput
-from cachi2.core.models.sbom import Component
-from cachi2.core.package_managers.general import async_download_files
-from cachi2.core.package_managers.generic.models import GenericLockfileV1
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.checksum import must_match_any_checksum
+from hermeto.core.config import get_config
+from hermeto.core.errors import PackageRejected
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import RequestOutput
+from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.generic.models import GenericLockfileV1
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 DEFAULT_LOCKFILE_NAME = "artifacts.lock.yaml"

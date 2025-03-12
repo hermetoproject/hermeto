@@ -6,8 +6,8 @@ from unittest import mock
 import pydantic
 import pytest as pytest
 
-from cachi2.core.errors import InvalidInput
-from cachi2.core.models.input import (
+from hermeto.core.errors import InvalidInput
+from hermeto.core.models.input import (
     GomodPackageInput,
     NpmPackageInput,
     PackageInput,
@@ -17,7 +17,7 @@ from cachi2.core.models.input import (
     SSLOptions,
     parse_user_input,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 
 def test_parse_user_input() -> None:

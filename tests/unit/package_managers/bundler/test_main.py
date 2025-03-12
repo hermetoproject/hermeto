@@ -4,27 +4,27 @@ from unittest import mock
 import pytest
 from git.repo import Repo
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.package_managers.bundler.main import (
+from hermeto.core.errors import PackageRejected
+from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
     _prepare_for_hermetic_build,
     _resolve_bundler_package,
 )
-from cachi2.core.package_managers.bundler.parser import (
+from hermeto.core.package_managers.bundler.parser import (
     GemDependency,
     GitDependency,
     ParseResult,
     PathDependency,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
 
-@mock.patch("cachi2.core.package_managers.bundler.main._get_main_package_name_and_version")
-@mock.patch("cachi2.core.package_managers.bundler.main.parse_lockfile")
-@mock.patch("cachi2.core.package_managers.bundler.parser.GemDependency.download_to")
-@mock.patch("cachi2.core.package_managers.bundler.parser.GitDependency.download_to")
-@mock.patch("cachi2.core.package_managers.bundler.parser.PathDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.main._get_main_package_name_and_version")
+@mock.patch("hermeto.core.package_managers.bundler.main.parse_lockfile")
+@mock.patch("hermeto.core.package_managers.bundler.parser.GemDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.parser.GitDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.parser.PathDependency.download_to")
 def test_resolve_bundler_package(
     mock_path_dep_download_to: mock.Mock,
     mock_git_dep_download_to: mock.Mock,
@@ -203,7 +203,7 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alt
     expected_alternate_config_location.parent.mkdir()
     expected_alternate_config_location.write_text(existing_preamble)
 
-    with mock.patch("cachi2.core.package_managers.bundler.main.os.getenv") as ge:
+    with mock.patch("hermeto.core.package_managers.bundler.main.os.getenv") as ge:
         ge.return_value = str(expected_alternate_config_location.parent)
         result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
 

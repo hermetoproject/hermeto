@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Annotated, Any, Callable, Dict, Literal, Optio
 import pydantic
 from typing_extensions import Self
 
-from cachi2.core.errors import InvalidInput
-from cachi2.core.models.validators import check_sane_relpath, unique
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.errors import InvalidInput
+from hermeto.core.models.validators import check_sane_relpath, unique
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict

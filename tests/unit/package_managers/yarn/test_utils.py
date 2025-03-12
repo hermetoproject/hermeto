@@ -5,8 +5,8 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.package_managers.yarn.utils import PackageManagerError, run_yarn_cmd
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.package_managers.yarn.utils import PackageManagerError, run_yarn_cmd
+from hermeto.core.rooted_path import RootedPath
 
 
 @pytest.mark.parametrize(
@@ -18,7 +18,7 @@ from cachi2.core.rooted_path import RootedPath
         ({"PATH": "/bin"}, "/bin"),
     ],
 )
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_cmd")
 def test_run_yarn_cmd(
     mock_run_cmd: mock.Mock,
     env: Optional[dict[str, str]],
@@ -33,7 +33,7 @@ def test_run_yarn_cmd(
     )
 
 
-@mock.patch("cachi2.core.package_managers.yarn.utils.run_cmd")
+@mock.patch("hermeto.core.package_managers.yarn.utils.run_cmd")
 def test_run_yarn_cmd_fail(
     mock_run_cmd: mock.Mock,
     rooted_tmp_path: RootedPath,

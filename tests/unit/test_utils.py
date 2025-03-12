@@ -7,8 +7,8 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import BaseError
-from cachi2.core.utils import (
+from hermeto.core.errors import BaseError
+from hermeto.core.utils import (
     _fast_copy,
     _FastCopyFailedFallback,
     copy_directory,
@@ -90,7 +90,7 @@ def test_run_cmd_executable_not_found(
         run_cmd(["foo"], params={})
 
 
-@mock.patch("cachi2.core.utils._get_blocksize")
+@mock.patch("hermeto.core.utils._get_blocksize")
 def test_fast_copy(mock_blocksize: mock.Mock, tmp_path: Path) -> None:
     mock_blocksize.return_value = 4
     src = tmp_path / "src/test"
@@ -132,7 +132,7 @@ def test_fast_copy_fail_errno(mock_copy_range: mock.Mock, tmp_path: Path, errno_
             assert isinstance(ex, _FastCopyFailedFallback)
 
 
-@mock.patch("cachi2.core.utils.open")
+@mock.patch("hermeto.core.utils.open")
 def test_fast_copy_fail_io_fileno(mock_open: mock.MagicMock, tmp_path: Path) -> None:
     """Test that we correctly signal a fallback to regular copy with a irregular files."""
     # inherits OSError
@@ -145,7 +145,7 @@ def test_fast_copy_fail_io_fileno(mock_open: mock.MagicMock, tmp_path: Path) -> 
 
 
 @mock.patch("os.copy_file_range")
-@mock.patch("cachi2.core.utils.open")
+@mock.patch("hermeto.core.utils.open")
 def test_fast_copy_fail_no_data_copied(
     mock_open: mock.MagicMock, mock_copy_range: mock.Mock, tmp_path: Path
 ) -> None:

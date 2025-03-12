@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from cachi2.core.models.sbom import SPDXSbom
+from hermeto.core.models.sbom import SPDXSbom
 
 
 def _find_roots(sbom: SPDXSbom) -> list[str]:

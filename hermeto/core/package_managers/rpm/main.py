@@ -14,15 +14,15 @@ import yaml
 from packageurl import PackageURL
 from pydantic import ValidationError
 
-from cachi2.core.config import get_config
-from cachi2.core.errors import PackageManagerError, PackageRejected
-from cachi2.core.models.input import ExtraOptions, Request, SSLOptions
-from cachi2.core.models.output import RequestOutput
-from cachi2.core.models.sbom import Component, Property
-from cachi2.core.package_managers.general import async_download_files
-from cachi2.core.package_managers.rpm.redhat import RedhatRpmsLock
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.utils import run_cmd
+from hermeto.core.config import get_config
+from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import ExtraOptions, Request, SSLOptions
+from hermeto.core.models.output import RequestOutput
+from hermeto.core.models.sbom import Component, Property
+from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
 

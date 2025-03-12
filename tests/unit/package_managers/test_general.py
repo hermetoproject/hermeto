@@ -13,10 +13,10 @@ import pytest
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 
-from cachi2.core.config import get_config
-from cachi2.core.errors import FetchError
-from cachi2.core.package_managers import general
-from cachi2.core.package_managers.general import (
+from hermeto.core.config import get_config
+from hermeto.core.errors import FetchError
+from hermeto.core.package_managers import general
+from hermeto.core.package_managers.general import (
     _async_download_binary_file,
     async_download_files,
     download_binary_file,
@@ -206,7 +206,7 @@ async def test_async_download_binary_file_exception(
 
 
 @pytest.mark.asyncio
-@mock.patch("cachi2.core.package_managers.general._async_download_binary_file")
+@mock.patch("hermeto.core.package_managers.general._async_download_binary_file")
 async def test_async_download_files(
     mock_download_file: MagicMock,
     tmp_path: Path,

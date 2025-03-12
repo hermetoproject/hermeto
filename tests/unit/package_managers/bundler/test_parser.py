@@ -10,8 +10,8 @@ import pydantic
 import pytest
 from git.repo import Repo
 
-from cachi2.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
-from cachi2.core.package_managers.bundler.parser import (
+from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.bundler.parser import (
     GEMFILE,
     GEMFILE_LOCK,
     BundlerDependency,
@@ -21,7 +21,7 @@ from cachi2.core.package_managers.bundler.parser import (
     PathDependency,
     parse_lockfile,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
 RegexpStr = str  # a string representing a regular expression.
@@ -69,7 +69,7 @@ def test_parse_lockfile_without_bundler_files(rooted_tmp_path: RootedPath) -> No
     )
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_lockfile_os_error(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
@@ -83,7 +83,7 @@ def test_parse_lockfile_os_error(
     assert f"Failed to parse {empty_bundler_files[1]}" in exc_info.value.friendly_msg()
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 @pytest.mark.parametrize(
     "error, expected_error_msg",
     [
@@ -140,7 +140,7 @@ def test_parse_lockfile_invalid_format(
     assert expected_error_msg in str(exc_info.value)
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
@@ -194,7 +194,7 @@ def test_parse_gemlock(
     assert result == expected_deps
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_empty(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
@@ -215,7 +215,7 @@ def test_parse_gemlock_empty(
         "https://dedicatedprivategemrepo.com",
     ],
 )
-@mock.patch("cachi2.core.package_managers.bundler.parser.download_binary_file")
+@mock.patch("hermeto.core.package_managers.bundler.parser.download_binary_file")
 def test_source_gem_dependencies_could_be_downloaded(
     mock_downloader: mock.MagicMock,
     caplog: pytest.LogCaptureFixture,
@@ -232,7 +232,7 @@ def test_source_gem_dependencies_could_be_downloaded(
     mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.download_binary_file")
+@mock.patch("hermeto.core.package_managers.bundler.parser.download_binary_file")
 def test_binary_gem_dependencies_could_be_downloaded(
     mock_downloader: mock.MagicMock,
     caplog: pytest.LogCaptureFixture,
@@ -255,7 +255,7 @@ def test_binary_gem_dependencies_could_be_downloaded(
     mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.parser.Repo.clone_from")
 def test_download_git_dependency_works(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -280,7 +280,7 @@ def test_download_git_dependency_works(
     assert dep_path.exists()
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.parser.Repo.clone_from")
 def test_download_duplicate_git_dependency_is_skipped(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -344,7 +344,7 @@ def test_purls(rooted_tmp_path_repo: RootedPath) -> None:
         assert dep.purl == expected_purl
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
@@ -379,7 +379,7 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
     assert result == expected_deps
 
 
-@mock.patch("cachi2.core.package_managers.bundler.parser.run_cmd")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],

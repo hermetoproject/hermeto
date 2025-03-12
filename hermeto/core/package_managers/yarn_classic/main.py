@@ -3,28 +3,28 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
-from cachi2.core.errors import PackageManagerError, PackageRejected
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import Component, EnvironmentVariable, RequestOutput
-from cachi2.core.models.property_semantics import PropertySet
-from cachi2.core.package_managers.yarn.utils import (
+from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.package_managers.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
-from cachi2.core.package_managers.yarn_classic.project import Project
-from cachi2.core.package_managers.yarn_classic.resolver import (
+from hermeto.core.package_managers.yarn_classic.project import Project
+from hermeto.core.package_managers.yarn_classic.resolver import (
     GitPackage,
     RegistryPackage,
     UrlPackage,
     YarnClassicPackage,
     resolve_packages,
 )
-from cachi2.core.package_managers.yarn_classic.utils import (
+from hermeto.core.package_managers.yarn_classic.utils import (
     get_git_tarball_mirror_name,
     get_tarball_mirror_name,
 )
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 

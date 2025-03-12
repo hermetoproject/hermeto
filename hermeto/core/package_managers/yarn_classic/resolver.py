@@ -10,21 +10,21 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 from pyarn.lockfile import Package as PYarnPackage
 
-from cachi2.core.checksum import ChecksumInfo
-from cachi2.core.errors import PackageRejected, UnexpectedFormat
-from cachi2.core.package_managers.npm import NPM_REGISTRY_CNAMES
-from cachi2.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
-from cachi2.core.package_managers.yarn_classic.utils import (
+from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
+from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
+from hermeto.core.package_managers.yarn_classic.utils import (
     find_runtime_deps,
     get_git_tarball_mirror_name,
     get_tarball_mirror_name,
 )
-from cachi2.core.package_managers.yarn_classic.workspaces import (
+from hermeto.core.package_managers.yarn_classic.workspaces import (
     Workspace,
     extract_workspace_metadata,
 )
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import get_repo_id
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import get_repo_id
 
 # https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/resolvers/exotics/git-resolver.js#L15-L17
 GIT_HOSTS = frozenset(("github.com", "gitlab.com", "bitbucket.com", "bitbucket.org"))

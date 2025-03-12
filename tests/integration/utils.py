@@ -18,8 +18,8 @@ import requests
 import yaml
 from git import Repo
 
-from cachi2.core import resolver
-from cachi2.interface.cli import DEFAULT_OUTPUT
+from hermeto.core import resolver
+from hermeto.interface.cli import DEFAULT_OUTPUT
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"

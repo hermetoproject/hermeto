@@ -3,7 +3,7 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools", "setuptools-scm"]
 
 [project]
-name = "cachi2"
+name = "hermeto"
 license = { text = "GPLv3+" }
 requires-python = ">=3.9"
 classifiers = [
@@ -58,10 +58,10 @@ test = [
   "pyyaml",
 ]
 [project.scripts]
-cachi2 = "cachi2.interface.cli:app"
+cachi2 = "hermeto.interface.cli:app"
 
 [tool.setuptools]
-packages = ["cachi2"]
+packages = ["hermeto"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0+dev.fallback"

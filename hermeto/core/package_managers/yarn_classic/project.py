@@ -13,8 +13,8 @@ from typing import Any, Union
 
 from pyarn import lockfile  # type: ignore
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.errors import PackageRejected
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(name=__name__)
 

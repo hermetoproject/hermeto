@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import NamedTuple, Optional, Sequence, Union
 from urllib.parse import parse_qs, unquote
 
-from cachi2.core.errors import UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 
 # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-http/sources/constants.ts
 TARBALL_RE = re.compile(r"^[^?]*\.(?:tar\.gz|tgz)(?:\?.*)?(?:#.*)?$")

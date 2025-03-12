@@ -15,8 +15,8 @@ from typing import Any, Literal, NamedTuple, Optional, TypedDict
 import semver
 import yaml
 
-from cachi2.core.errors import PackageRejected, UnexpectedFormat
-from cachi2.core.rooted_path import RootedPath
+from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 

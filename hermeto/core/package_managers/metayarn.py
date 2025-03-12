@@ -1,10 +1,10 @@
-from cachi2.core.config import get_config
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import RequestOutput
-from cachi2.core.package_managers.utils import merge_outputs
-from cachi2.core.package_managers.yarn.main import fetch_yarn_source as fetch_yarnberry_source
-from cachi2.core.package_managers.yarn_classic.main import MissingLockfile, NotV1Lockfile
-from cachi2.core.package_managers.yarn_classic.main import (
+from hermeto.core.config import get_config
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import RequestOutput
+from hermeto.core.package_managers.utils import merge_outputs
+from hermeto.core.package_managers.yarn.main import fetch_yarn_source as fetch_yarnberry_source
+from hermeto.core.package_managers.yarn_classic.main import MissingLockfile, NotV1Lockfile
+from hermeto.core.package_managers.yarn_classic.main import (
     fetch_yarn_source as fetch_yarn_classic_source,
 )
 

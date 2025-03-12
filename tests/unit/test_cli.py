@@ -14,17 +14,17 @@ import pytest
 import typer.testing
 import yaml
 
-import cachi2.core.config as config_file
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import (
+import hermeto.core.config as config_file
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import (
     BuildConfig,
     Component,
     EnvironmentVariable,
     RequestOutput,
     Sbom,
 )
-from cachi2.core.models.sbom import SPDXSbom
-from cachi2.interface.cli import DEFAULT_OUTPUT, DEFAULT_SOURCE, app
+from hermeto.core.models.sbom import SPDXSbom
+from hermeto.interface.cli import DEFAULT_OUTPUT, DEFAULT_SOURCE, app
 
 runner = typer.testing.CliRunner()
 
@@ -49,7 +49,7 @@ def mock_fetch_deps(
 ) -> Iterator[mock.MagicMock]:
     output = output or RequestOutput.empty()
 
-    with mock.patch("cachi2.interface.cli.resolve_packages") as mock_resolve_packages:
+    with mock.patch("hermeto.interface.cli.resolve_packages") as mock_resolve_packages:
         mock_resolve_packages.return_value = output
         yield mock_resolve_packages
 
@@ -135,7 +135,7 @@ class TestTopLevelOpts:
 
             return output
 
-        with mock.patch("cachi2.interface.cli.resolve_packages") as mock_resolve_packages:
+        with mock.patch("hermeto.interface.cli.resolve_packages") as mock_resolve_packages:
             mock_resolve_packages.side_effect = side_effect
             invoke_expecting_sucess(app, args)
 
@@ -198,7 +198,7 @@ class TestTopLevelOpts:
         with mock_fetch_deps():
             invoke_expecting_sucess(app, args)
 
-        loglevel = logging.getLogger("cachi2").getEffectiveLevel()
+        loglevel = logging.getLogger("hermeto").getEffectiveLevel()
         loglevel_name = logging.getLevelName(loglevel)
         assert loglevel_name == expected_level
 
@@ -638,7 +638,7 @@ class TestFetchDeps:
             ),
         ],
     )
-    @mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+    @mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
     def test_write_json_output_spdx(
         self,
         mock_spdx_now: str,

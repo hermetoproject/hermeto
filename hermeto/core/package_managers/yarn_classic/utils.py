@@ -6,8 +6,8 @@ from urllib.parse import urlparse
 
 from pyarn.lockfile import Package as PYarnPackage
 
-from cachi2.core.package_managers.yarn_classic.project import PackageJson, YarnLock
-from cachi2.core.package_managers.yarn_classic.workspaces import Workspace
+from hermeto.core.package_managers.yarn_classic.project import PackageJson, YarnLock
+from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
 
 
 def find_runtime_deps(

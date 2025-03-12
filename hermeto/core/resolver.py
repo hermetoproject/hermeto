@@ -2,13 +2,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Callable
 
-from cachi2.core.errors import UnsupportedFeature
-from cachi2.core.models.input import PackageManagerType, Request
-from cachi2.core.models.output import RequestOutput
-from cachi2.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
-from cachi2.core.package_managers.utils import merge_outputs
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.utils import copy_directory
+from hermeto.core.errors import UnsupportedFeature
+from hermeto.core.models.input import PackageManagerType, Request
+from hermeto.core.models.output import RequestOutput
+from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
+from hermeto.core.package_managers.utils import merge_outputs
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import copy_directory
 
 Handler = Callable[[Request], RequestOutput]
 

@@ -1,7 +1,7 @@
 import pytest
 
-from cachi2.core.models.property_semantics import Property, PropertyEnum, PropertySet
-from cachi2.core.models.sbom import Component, merge_component_properties
+from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
+from hermeto.core.models.sbom import Component, merge_component_properties
 
 
 @pytest.mark.parametrize(

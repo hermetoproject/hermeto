@@ -11,8 +11,8 @@ from itertools import filterfalse, tee
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Optional, Sequence
 
-from cachi2.core.config import get_config
-from cachi2.core.errors import BaseError
+from hermeto.core.config import get_config
+from hermeto.core.errors import BaseError
 
 log = logging.getLogger(__name__)
 

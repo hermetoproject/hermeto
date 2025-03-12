@@ -10,12 +10,12 @@ import tomlkit
 from packageurl import PackageURL
 from tomlkit.toml_file import TOMLFile
 
-from cachi2.core.errors import PackageRejected
-from cachi2.core.models.input import Request
-from cachi2.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
-from cachi2.core.rooted_path import RootedPath
-from cachi2.core.scm import get_repo_id
-from cachi2.core.utils import run_cmd
+from hermeto.core.errors import PackageRejected
+from hermeto.core.models.input import Request
+from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import get_repo_id
+from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
 

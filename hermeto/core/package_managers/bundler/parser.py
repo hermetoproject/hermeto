@@ -11,11 +11,11 @@ from git import Repo
 from packageurl import PackageURL
 from typing_extensions import Self
 
-from cachi2.core.errors import PackageManagerError, PackageRejected
-from cachi2.core.package_managers.general import download_binary_file
-from cachi2.core.rooted_path import PathOutsideRoot, RootedPath
-from cachi2.core.scm import get_repo_id
-from cachi2.core.utils import run_cmd
+from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.package_managers.general import download_binary_file
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.scm import get_repo_id
+from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
 
