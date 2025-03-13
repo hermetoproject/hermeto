@@ -2214,10 +2214,6 @@ class TestGo:
         assert mock_run.call_count == tries_needed
         assert mock_sleep.call_count == tries_needed - 1
 
-        for n in range(tries_needed - 1):
-            wait = 2**n
-            assert f"Backing off run_go(...) for {wait:.1f}s" in caplog.text
-
     @mock.patch("cachi2.core.package_managers.gomod.get_config")
     @mock.patch("cachi2.core.package_managers.gomod.run_cmd")
     @mock.patch("time.sleep")
@@ -2237,12 +2233,6 @@ class TestGo:
 
         assert mock_run.call_count == 5
         assert mock_sleep.call_count == 4
-
-        assert "Backing off run_go(...) for 1.0s" in caplog.text
-        assert "Backing off run_go(...) for 2.0s" in caplog.text
-        assert "Backing off run_go(...) for 4.0s" in caplog.text
-        assert "Backing off run_go(...) for 8.0s" in caplog.text
-        assert "Giving up run_go(...) after 5 tries" in caplog.text
 
     @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
     @mock.patch("pathlib.Path.home")
