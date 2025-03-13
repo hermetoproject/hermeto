@@ -5,3 +5,4 @@
 !cachi2/
 !pyproject.toml
 !requirements.txt
+!MANIFEST.in
