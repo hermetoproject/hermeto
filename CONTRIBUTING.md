@@ -16,7 +16,7 @@
   * [Running unit tests](#running-unit-tests)
   * [Running integration tests](#running-integration-tests)
   * [Adding new dependencies to the project](#adding-new-dependencies-to-the-project)
-* [Releasing](#releasing)
+* [Release schedule](#release-schedule)
 
 ## How to start a contribution
 
@@ -270,23 +270,6 @@ re-generate the set of dependencies, run the following in the repository and com
 ```shell
 nox -s pip-compile
 ```
-
-## Releasing
-
-To release a new version of Cachi2, simply create a [GitHub release](https://github.com/hermetoproject/cachi2/releases).
-Note that Cachi2 follows [semantic versioning](https://semver.org/) rules.
-
-Upon release, the [.tekton/release.yaml](.tekton/release.yaml) pipeline tags the corresponding
-image with the newly released version tag (after validating that the
-tag follows the expected format: `$major.$minor.$patch`, without a `v` prefix).
-
-*You apply a release tag to a specific commit. The [.tekton/push.yaml](.tekton/push.yaml) pipeline
-should have built the image for that commit already. This is the "corresponding image" that receives
-the new version tag. If the image for the tagged commit does not exist, the release pipeline will fail.*
-
-*⚠ The release pipeline runs as soon as you push a tag into the repository. Do not push the new version
-tag until you are ready to publish the release. You can use GitHub's ability to auto-create the tag
-upon publishment.*
 
 ## Release schedule
 
