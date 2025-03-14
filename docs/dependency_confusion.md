@@ -75,9 +75,9 @@ tell Cachi2 to process them.
 Cachi2 further restricts what you can put in your requirements.txt files. All of the dependencies
 must be
 [pinned](https://github.com/release-engineering/cachito/blob/master/docs/pip.md#pinning-versions)
-to an exact version. Cachi2 will refuse to process requirements files that use the --index-url or
---extra-index-url options, which means private registries are out of the question. These two
-restrictions should eliminate most attack vectors.
+to an exact version. Cachi2 will refuse to process requirements files that use the
+--extra-index-url option, which means that if a private registry is to be specified, only a single
+one supported and the `--index-url` option should be used.
 
 To protect yourself even further, use pip’s
 [hash-checking mode](https://pip.pypa.io/en/stable/reference/pip_install/#hash-checking-mode). Note
