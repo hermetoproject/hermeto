@@ -37,27 +37,27 @@ def top_level_test_dir() -> Path:
     """Path to the top-level tests directory inside our repository.
 
     This is useful in tests which have to reference particular test data directories, e.g. the
-    simple PyPI server which may contain other data that have to be mount to either the cachi2
+    simple PyPI server which may contain other data that have to be mount to either the hermeto
     image during a test execution or to some other service container we may need for testing.
     """
     return Path(__file__).parents[1]
 
 
 @pytest.fixture(scope="session")
-def cachi2_image() -> utils.Cachi2Image:
+def hermeto_image() -> utils.HermetoImage:
     if not (image_ref := os.environ.get("HERMETO_IMAGE")):
         image_ref = "localhost/cachi2:latest"
         log.info("Building local cachi2:latest image")
-        # <arbitrary_path>/cachi2/tests/integration/conftest.py
+        # <arbitrary_path>/hermeto/tests/integration/conftest.py
         #                   [2] <- [1]  <-  [0]  <- parents
         repo_root = Path(__file__).parents[2]
         utils.build_image(repo_root, tag=image_ref)
 
-    cachi2 = utils.Cachi2Image(image_ref)
+    hermeto = utils.HermetoImage(image_ref)
     if not image_ref.startswith("localhost/"):
-        cachi2.pull_image()
+        hermeto.pull_image()
 
-    return cachi2
+    return hermeto
 
 
 # autouse=True: It's nicer to see the pypiserver setup logs at the beginning of the test suite.

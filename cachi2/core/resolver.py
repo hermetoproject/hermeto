@@ -28,7 +28,7 @@ _dev_package_managers: dict[PackageManagerType, Handler] = {
     "rpm": rpm.fetch_rpm_source,
 }
 
-# This is *only* used to provide a list for `cachi2 --version`
+# This is *only* used to provide a list for `hermeto --version`
 supported_package_managers = list(_package_managers)
 
 

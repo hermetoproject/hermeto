@@ -142,7 +142,7 @@ log = logging.getLogger(__name__)
 )
 def test_pip_packages(
     test_params: utils.TestParameters,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -157,7 +157,7 @@ def test_pip_packages(
     test_case = request.node.callspec.id
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
 
@@ -210,7 +210,7 @@ def test_e2e_pip(
     test_params: utils.TestParameters,
     check_cmd: List[str],
     expected_cmd_output: str,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -225,7 +225,7 @@ def test_e2e_pip(
     test_case = request.node.callspec.id
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
@@ -235,5 +235,5 @@ def test_e2e_pip(
         test_case,
         check_cmd,
         expected_cmd_output,
-        cachi2_image,
+        hermeto_image,
     )

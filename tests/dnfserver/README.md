@@ -1,5 +1,5 @@
 To start the testing nginx DNF repo container use our test helper script:
-Note: make sure you have `createrepo_c` installed (cachi2 has a hard dependency on this)
+Note: make sure you have `createrepo_c` installed (hermeto has a hard dependency on this)
 ```
 $ start.sh
 ```

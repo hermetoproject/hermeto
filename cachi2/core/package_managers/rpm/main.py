@@ -448,7 +448,7 @@ def _generate_repofiles(
 
     Search structure at 'path' and generate one repofile content for each arch.
     Each repofile contains all arch's repoids (including repoids with source RPMs).
-    Repofile (cachi2.repo) for particular arch will be stored in arch's dir in 'repos.d' subdir.
+    Repofile (hermeto.repo) for particular arch will be stored in arch's dir in 'repos.d' subdir.
     Repofiles are not directly created from the templates in this method - templates are stored
     in the project file.
     """

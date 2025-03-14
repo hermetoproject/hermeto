@@ -48,7 +48,7 @@ from cachi2.core.utils import get_cache_dir, load_json_stream, run_cmd
 log = logging.getLogger(__name__)
 
 
-GOMOD_DOC = "https://github.com/hermetoproject/cachi2/blob/main/docs/gomod.md"
+GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
 GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
 VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
 
@@ -317,7 +317,7 @@ class Go:
 
         Locate an alternative Go toolchain under the one of the following locations:
             - /usr/local/go/                    for container environments (pre-installed)
-            - $XDG_CACHE_HOME/cachi2/go         for local environments (download & cache)
+            - $XDG_CACHE_HOME/hermeto/go         for local environments (download & cache)
         """
         local_cache = get_cache_dir()
         go_path_stub = f"go/{release}/bin/go"
@@ -341,8 +341,8 @@ class Go:
                directory as we're going to dispose of the shim later
             2) we use the downloaded shim to actually fetch the whole SDK for the desired version
                of Go toolchain
-            3) we move the installed SDK to cachi2's cache directory
-               (i.e. $HOME/.cache/cachi2/go/<version>) to reuse the toolchains in subsequent runs
+            3) we move the installed SDK to our cache directory
+               (i.e. $HOME/.cache/hermeto/go/<version>) to reuse the toolchains in subsequent runs
             4) we delete the downloaded shim as we're not going to execute the toolchain through
                that any longer
             5) we delete any build artifacts go created as part of downloading the SDK as those
@@ -370,7 +370,7 @@ class Go:
             log.debug(f"Downloading Go {release} SDK")
             self._retry([f"{td}/bin/{release}", "download"], env=env)
 
-            # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/cachi2/go
+            # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/hermeto/go
             sdk_download_dir = Path.home() / f"sdk/{release}"
             go_dest_dir = get_cache_dir() / "go" / release
             shutil.move(sdk_download_dir, go_dest_dir)

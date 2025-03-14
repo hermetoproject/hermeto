@@ -119,7 +119,7 @@ class ProjectFile(pydantic.BaseModel):
             baz==1.0.0  # comment with $ invalid placeholder
 
             =>
-            foo @ file:///cachi2/output/deps/pip/...
+            foo @ file:///hermeto/output/deps/pip/...
             bar==1.0.0  # comment with $placeholder
             baz==1.0.0  # comment with $ invalid placeholder
         """

@@ -140,7 +140,7 @@ class DistributionPackageInfo:
         """Determine if we have checksums to match against.
 
         This decides whether or not we
-        call `cachi2.core.checksum.must_match_any_checksum()`
+        call `hermeto.core.checksum.must_match_any_checksum()`
         """
         return len(self.checksums_to_match) > 0
 

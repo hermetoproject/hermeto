@@ -127,7 +127,7 @@ from . import utils
 )
 def test_rpm_packages(
     test_params: utils.TestParameters,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -148,7 +148,7 @@ def test_rpm_packages(
         test_params,
         test_repo_dir,
         test_data_dir,
-        cachi2_image,
+        hermeto_image,
         mounts=[(top_level_test_dir / "dnfserver/certificates", "/certificates")],
     )
 
@@ -172,7 +172,7 @@ def test_rpm_packages(
 )
 def test_repo_files(
     test_params: utils.TestParameters,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -183,7 +183,7 @@ def test_repo_files(
     output_dir = tmp_path.joinpath(DEFAULT_OUTPUT)
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     # call inject-files to create the .repo file
@@ -193,13 +193,13 @@ def test_repo_files(
         "--for-output-dir",
         f"/tmp/{DEFAULT_OUTPUT}",
     ]
-    (output, exit_code) = cachi2_image.run_cmd_on_image(cmd, tmp_path)
+    (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path)
     assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     # load .repo file contents
     def read_and_normalize_repofile(path: Path) -> str:
         with open(path) as file:
-            # whenever an RPM lacks a repoid in the lockfile, Cachi2 will resort to a randomly
+            # whenever an RPM lacks a repoid in the lockfile, Hermeto will resort to a randomly
             # generated internal repoid, which needs to be replaced by a constant string so it can
             # be tested consistently.
             return re.sub(r"cachi2-[a-f0-9]{6}", "cachi2-aaa000", file.read())
@@ -274,7 +274,7 @@ def test_e2e_rpm(
     test_params: utils.TestParameters,
     check_cmd: List[str],
     expected_cmd_output: str,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -289,7 +289,7 @@ def test_e2e_rpm(
     test_case = request.node.callspec.id
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
@@ -299,5 +299,5 @@ def test_e2e_rpm(
         test_case,
         check_cmd,
         expected_cmd_output,
-        cachi2_image,
+        hermeto_image,
     )

@@ -848,8 +848,8 @@ class TestMergeSboms:
     #
     # Feature: user-input errors are handled gracefully.
     #     Scenario outine: a user tries to merge SBOMs, but does not provide correct SBOM files.
-    #     # A user can merge SBOMs with "cachi2 merge-sboms" subcommand.
-    #         When a user invokes "cachi2 merge-sboms" with "incorrect_arguments"
+    #     # A user can merge SBOMs with "hermeto merge-sboms" subcommand.
+    #         When a user invokes "hermeto merge-sboms" with "incorrect_arguments"
     #         Then a user sees "error_pattern" in cacho2 response
     #     Examples:
     #             | incorrect_arguments         | error_message             |
@@ -857,20 +857,20 @@ class TestMergeSboms:
     #             | single file                 | Need at least two         |
     #             | same file multiple times    | Need at least two         |
     #             | not a JSON among some JSONS | does not look like        |
-    #             | unsupported SBOM format     | a valid Cachi2 SBOM       |
+    #             | unsupported SBOM format     | a valid Hermeto SBOM       |
     #
     # Feature: user can merge SBOMS with a CLI command.
     #     Scenario outline: a user can merge several SBOMs.
-    #         When a user invokes "cachi2 merge-sboms" with "some_sbom_filenames"
-    #         Then cachi2 exits with return code of success.
+    #         When a user invokes "hermeto merge-sboms" with "some_sbom_filenames"
+    #         Then hermeto exits with return code of success.
     #     Examples:
     #             | some_sbom_filenames         |
     #             | two valid file names        |
     #             | three valid file names      |
     #
     #     Scenario outline: a user can merge several SBOMs and save results to a file.
-    #         When a user invokes "cachi2 merge-sboms -o tempfile" with "some_sbom_filenames".
-    #         Then cachi2 exits with return code of success.
+    #         When a user invokes "hermeto merge-sboms -o tempfile" with "some_sbom_filenames".
+    #         Then hermeto exits with return code of success.
     #          And tempfile contains merge result.
     #     Examples:
     #             | some_sbom_filenames         |
@@ -924,7 +924,7 @@ class TestMergeSboms:
             ),
         ],
     )
-    def test_a_user_sees_error_when_they_provide_a_non_cachi2_sbom_for_a_merge(
+    def test_a_user_sees_error_when_they_provide_a_non_hermeto_sbom_for_a_merge(
         self,
         sbom_files_to_merge: list[str],
         pattern: str,
@@ -946,7 +946,7 @@ class TestMergeSboms:
             ],
         ],
     )
-    def test_a_user_can_successfully_merge_several_cachi2_sboms(
+    def test_a_user_can_successfully_merge_several_hermeto_sboms(
         self,
         sbom_files_to_merge: list[str],
     ) -> None:

@@ -93,7 +93,7 @@ log = logging.getLogger(__name__)
         ),
         # Test case checks if fetching dependencies will not fail if non-existent package is
         # imported. main.go imports foobar here as a dependency, but foobar was not generated
-        # on the source repository with `go generate`. Cachi2 should recognize here `main` as
+        # on the source repository with `go generate`. Hermeto should recognize here `main` as
         # a package and `foobar` as its dependency.
         pytest.param(
             utils.TestParameters(
@@ -105,8 +105,8 @@ log = logging.getLogger(__name__)
             ),
             id="gomod_go_generate_imported",
         ),
-        # Test the handling of missing checksums. Cachi2 should report them via
-        # cachi2:missing_hash:in_file properties in the SBOM.
+        # Test the handling of missing checksums. Hermeto should report them via
+        # hermeto:missing_hash:in_file properties in the SBOM.
         # See also https://github.com/cachito-testing/gomod-multiple-modules/tree/missing-checksums
         pytest.param(
             utils.TestParameters(
@@ -122,7 +122,7 @@ log = logging.getLogger(__name__)
             ),
             id="gomod_multiple_modules_missing_checksums",
         ),
-        # Test case checks if cachi2 can process go workspaces properly.
+        # Test case checks if hermeto can process go workspaces properly.
         pytest.param(
             utils.TestParameters(
                 branch="gomod/workspaces",
@@ -137,7 +137,7 @@ log = logging.getLogger(__name__)
 )
 def test_gomod_packages(
     test_params: utils.TestParameters,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -152,7 +152,7 @@ def test_gomod_packages(
     test_case = request.node.callspec.id
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
 
@@ -242,7 +242,7 @@ def test_e2e_gomod(
     test_params: utils.TestParameters,
     check_cmd: List[str],
     expected_cmd_output: str,
-    cachi2_image: utils.ContainerImage,
+    hermeto_image: utils.ContainerImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -257,7 +257,7 @@ def test_e2e_gomod(
     test_case = request.node.callspec.id
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, cachi2_image
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
@@ -267,5 +267,5 @@ def test_e2e_gomod(
         test_case,
         check_cmd,
         expected_cmd_output,
-        cachi2_image,
+        hermeto_image,
     )
