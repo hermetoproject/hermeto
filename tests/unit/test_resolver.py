@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Callable
 from unittest import mock
 
 import pytest
@@ -70,50 +69,40 @@ COMBINED_OUTPUT = RequestOutput.from_obj_list(
 )
 
 
-def test_resolve_packages(tmp_path: Path) -> None:
+@mock.patch("cachi2.core.resolver._resolve_packages")
+def test_resolve_packages_updates_project_files(
+    mock_resolve_packages: mock.Mock, tmp_path: Path
+) -> None:
     request = Request(
         source_dir=tmp_path,
         output_dir=tmp_path,
         packages=[{"type": "pip"}, {"type": "npm"}, {"type": "gomod"}],
     )
 
-    calls_by_pkgtype = []
+    def fake_resolve_packages(request: Request) -> RequestOutput:
+        output = COMBINED_OUTPUT
+        for project_file in output.build_config.project_files:
+            project_file.abspath = request.source_dir.path / project_file.abspath.name
 
-    def mock_fetch(pkgtype: str, output: RequestOutput) -> Callable[[Request], RequestOutput]:
-        def fetch(req: Request) -> RequestOutput:
-            assert req == request
-            calls_by_pkgtype.append(pkgtype)
-            return output
+        return output
 
-        return fetch
+    mock_resolve_packages.side_effect = fake_resolve_packages
 
-    with mock.patch.dict(
-        resolver._package_managers,
-        {
-            "gomod": mock_fetch("gomod", GOMOD_OUTPUT),
-            "npm": mock_fetch("npm", NPM_OUTPUT),
-            "pip": mock_fetch("pip", PIP_OUTPUT),
-        },
-    ):
-        assert resolver.resolve_packages(request) == COMBINED_OUTPUT
-
-    assert calls_by_pkgtype == ["gomod", "npm", "pip"]
+    assert resolver.resolve_packages(request) == COMBINED_OUTPUT
+    assert request.source_dir == RootedPath(tmp_path)
 
 
 @pytest.mark.parametrize(
-    "packages, copy_exists",
+    "packages",
     [
-        pytest.param([{"type": "yarn"}], True, id="single_package"),
-        pytest.param(
-            [{"type": "gomod"}, {"type": "pip"}, {"type": "npm"}], False, id="multiple_packages"
-        ),
+        pytest.param([{"type": "yarn"}], id="single_package"),
+        pytest.param([{"type": "gomod"}, {"type": "pip"}, {"type": "npm"}], id="multiple_packages"),
     ],
 )
 @mock.patch("cachi2.core.resolver._resolve_packages")
 def test_source_dir_copy(
     mock_resolve_packages: mock.Mock,
     packages: list[dict[str, str]],
-    copy_exists: bool,
     tmp_path: Path,
 ) -> None:
     request = Request(
@@ -123,16 +112,12 @@ def test_source_dir_copy(
     )
 
     def _resolve_packages(request: Request) -> RequestOutput:
-        if copy_exists:
-            tmp_dir_name = request.source_dir.path.name
+        tmp_dir_name = request.source_dir.path.name
 
-            # assert a temporary directory is being used
-            assert tmp_dir_name != tmp_path.name
-            assert tmp_dir_name.startswith("tmp")
-            assert tmp_dir_name.endswith(".cachi2-source-copy")
-        else:
-            # assert the original source_dir is being used
-            assert request.source_dir == RootedPath(tmp_path)
+        # assert a temporary directory is being used
+        assert tmp_dir_name != tmp_path.name
+        assert tmp_dir_name.startswith("tmp")
+        assert tmp_dir_name.endswith(".cachi2-source-copy")
 
         return RequestOutput.empty()
 

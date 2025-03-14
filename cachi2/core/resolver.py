@@ -39,26 +39,22 @@ def resolve_packages(request: Request) -> RequestOutput:
     This function performs the operations in a working copy of the source directory in case
     a package manager that can make unwanted modifications will be used.
     """
-    if request.yarn_packages:
-        original_source_dir = request.source_dir
+    original_source_dir = request.source_dir
 
-        with TemporaryDirectory(".cachi2-source-copy", dir=".") as temp_dir:
-            source_backup = copy_directory(original_source_dir.path, Path(temp_dir).resolve())
+    with TemporaryDirectory(".cachi2-source-copy", dir=".") as temp_dir:
+        source_backup = copy_directory(original_source_dir.path, Path(temp_dir).resolve())
 
-            request.source_dir = RootedPath(source_backup)
-            output = _resolve_packages(request)
-            request.source_dir = original_source_dir
+        request.source_dir = RootedPath(source_backup)
+        output = _resolve_packages(request)
+        request.source_dir = original_source_dir
 
-            # Temporary solution to project files paths that are pointing to the work copy.
-            # Should be replaced once we extend the work copy solution to other package managers.
-            # https://github.com/hermetoproject/cachi2/issues/712
-            for project_file in output.build_config.project_files:
+        for project_file in output.build_config.project_files:
+            # if the project file is in the output directory, we don't need to update the path
+            if not project_file.abspath.is_relative_to(request.output_dir):
                 subpath = project_file.abspath.relative_to(source_backup)
                 project_file.abspath = original_source_dir / subpath
 
-            return output
-    else:
-        return _resolve_packages(request)
+        return output
 
 
 def _resolve_packages(request: Request) -> RequestOutput:
