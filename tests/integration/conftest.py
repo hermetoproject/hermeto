@@ -45,7 +45,7 @@ def top_level_test_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def cachi2_image() -> utils.Cachi2Image:
-    cachi2_image_ref = os.environ.get("CACHI2_IMAGE")
+    cachi2_image_ref = os.environ.get("HERMETO_IMAGE")
     if not cachi2_image_ref:
         cachi2_image_ref = "localhost/cachi2:latest"
         log.info("Building local cachi2:latest image")
@@ -69,7 +69,7 @@ def local_pypiserver() -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("CACHI2_TEST_LOCAL_PYPISERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "true"
     ):
         yield
         return
@@ -121,7 +121,7 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("CACHI2_TEST_LOCAL_DNF_SERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true"
     ):
         yield
         return

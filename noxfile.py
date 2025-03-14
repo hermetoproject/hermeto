@@ -106,7 +106,7 @@ def unit_tests(session: Session) -> None:
 def _run_integration_tests(session: Session, env: dict[str, str]) -> None:
     install_requirements(session)
     netrc = "machine 127.0.0.1 login cachi2-user password cachi2-pass"
-    default_env = {"CACHI2_TEST_NETRC_CONTENT": os.getenv("CACHI2_TEST_NETRC_CONTENT", netrc)}
+    default_env = {"HERMETO_TEST_NETRC_CONTENT": os.getenv("HERMETO_TEST_NETRC_CONTENT", netrc)}
     default_env.update(env)
     cmd = "pytest --log-cli-level=WARNING tests/integration"
     session.run(*cmd.split(), *session.posargs, env=default_env)
@@ -124,9 +124,9 @@ def all_integration_tests(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "CACHI2_RUN_ALL_INTEGRATION_TESTS": "true",
-            "CACHI2_TEST_LOCAL_PYPISERVER": "true",
-            "CACHI2_TEST_LOCAL_DNF_SERVER": "true",
+            "HERMETO_RUN_ALL_INTEGRATION_TESTS": "true",
+            "HERMETO_TEST_LOCAL_PYPISERVER": "true",
+            "HERMETO_TEST_LOCAL_DNF_SERVER": "true",
         },
     )
 
@@ -137,8 +137,8 @@ def generate_test_data(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "CACHI2_RUN_ALL_INTEGRATION_TESTS": "true",
-            "CACHI2_GENERATE_TEST_DATA": "true",
+            "HERMETO_RUN_ALL_INTEGRATION_TESTS": "true",
+            "HERMETO_GENERATE_TEST_DATA": "true",
         },
     )
 

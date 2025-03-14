@@ -124,7 +124,7 @@ class Cachi2Image(ContainerImage):
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = "host",
     ) -> Tuple[str, int]:
-        netrc_content = os.getenv("CACHI2_TEST_NETRC_CONTENT")
+        netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
             with tempfile.TemporaryDirectory() as netrc_tmpdir:
                 netrc_path = Path(netrc_tmpdir, ".netrc")
@@ -320,7 +320,7 @@ def update_test_data_if_needed(path: Path, data: dict[str, Any]) -> None:
     else:
         raise ValueError(f"Don't know how to serialize data to {path.name} :(")
 
-    if os.getenv("CACHI2_GENERATE_TEST_DATA") == "true":
+    if os.getenv("HERMETO_GENERATE_TEST_DATA") == "true":
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as file:
             file.write(serialize(data))
@@ -693,7 +693,7 @@ def just_some_package_managers_were_affected_by(changes: tuple[Path, ...]) -> bo
 
 
 def must_test_all() -> bool:
-    return os.getenv("CACHI2_RUN_ALL_INTEGRATION_TESTS", "false").lower() == "true"
+    return os.getenv("HERMETO_RUN_ALL_INTEGRATION_TESTS", "false").lower() == "true"
 
 
 def determine_integration_tests_to_skip() -> Any:

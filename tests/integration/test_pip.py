@@ -134,8 +134,8 @@ log = logging.getLogger(__name__)
             ),
             id="pip_custom_index",
             marks=pytest.mark.skipif(
-                os.getenv("CACHI2_TEST_LOCAL_PYPISERVER") != "true",
-                reason="CACHI2_TEST_LOCAL_PYPISERVER!=true",
+                os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "true",
+                reason="HERMETO_TEST_LOCAL_PYPISERVER!=true",
             ),
         ),
     ],

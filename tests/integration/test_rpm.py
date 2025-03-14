@@ -104,8 +104,8 @@ from . import utils
             ),
             id="rpm_with_cert_auth",
             marks=pytest.mark.skipif(
-                os.getenv("CACHI2_TEST_LOCAL_DNF_SERVER") != "true",
-                reason="CACHI2_TEST_LOCAL_DNF_SERVER!=true",
+                os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true",
+                reason="HERMETO_TEST_LOCAL_DNF_SERVER!=true",
             ),
         ),
         pytest.param(
@@ -211,7 +211,7 @@ def test_repo_files(
     # update test data if needed
     expected_repo_file_path = test_data_dir.joinpath(test_case, "cachi2.repo")
 
-    if os.getenv("CACHI2_GENERATE_TEST_DATA") == "true":
+    if os.getenv("HERMETO_GENERATE_TEST_DATA") == "true":
         expected_repo_file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(expected_repo_file_path, "w") as file:
             file.write(repo_file_content)

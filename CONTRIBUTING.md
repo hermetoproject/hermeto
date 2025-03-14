@@ -248,11 +248,11 @@ nox -s all-integration-tests
 Note: while developing, you can run the PyPI server with `tests/pypiserver/start.sh &`
 and DNF server with `tests/dnfserver/start.sh &` to speed up the tests.
 
-To run integration-tests with custom image, specify the CACHI2\_IMAGE environment variable. Examples:
+To run integration-tests with custom image, specify the HERMETO\_IMAGE environment variable. Examples:
 
 ```shell
-CACHI2_IMAGE=quay.io/konflux-ci/cachi2:{tag} nox -s integration-tests
-CACHI2_IMAGE=localhost/cachi2:latest nox -s  integration-tests
+HERMETO_IMAGE=quay.io/konflux-ci/cachi2:{tag} nox -s integration-tests
+HERMETO_IMAGE=localhost/cachi2:latest nox -s  integration-tests
 ```
 
 ### Adding new dependencies to the project

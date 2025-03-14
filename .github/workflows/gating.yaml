@@ -169,9 +169,9 @@ jobs:
 
       - name: Run integration tests on built image
         env:
-          CACHI2_IMAGE: localhost/cachi2:${{ github.sha }}
-          CACHI2_TEST_LOCAL_PYPISERVER: 'true'
-          CACHI2_TEST_LOCAL_DNF_SERVER: 'true'
+          HERMETO_IMAGE: localhost/cachi2:${{ github.sha }}
+          HERMETO_TEST_LOCAL_PYPISERVER: 'true'
+          HERMETO_TEST_LOCAL_DNF_SERVER: 'true'
         run: |
           git config --global --add safe.directory "*"
           /var/tmp/venv/bin/nox -s integration-tests
