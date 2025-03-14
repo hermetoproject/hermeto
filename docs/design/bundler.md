@@ -612,7 +612,3 @@ PATH
 
 ### References
 This design doc was partially based on the original implementation done in [Cachito](https://github.com/containerbuildsystem/cachito/blob/master/cachito/workers/pkg_managers/rubygems.py). Since Cachi2 has different design goals from Cachito, the implementation here will deviate from the original one, with a key difference being that Cachi2 needs to provide a way to perform an [offline install](#providing-the-content-for-the-hermetic-build) from the local prefetched content.
-
-Cachito parses the `Gemfile.lock` via [gemlock-parser](https://github.com/containerbuildsystem/gemlock-parser),
-which is vendored from
-[scancode-toolkit](https://github.com/nexB/scancode-toolkit/blob/develop/src/packagedcode/gemfile_lock.py), which can also be leveraged by Cachi2.
