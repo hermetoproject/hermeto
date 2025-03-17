@@ -93,7 +93,7 @@ class RootedPath(PathLike[str]):
             s_self = str(self)
             s_root = str(self.root)
             raise PathOutsideRoot(
-                f"Joining path {s_other!r} to {s_self!r}: target is outside {s_root!r}"
+                f"Path {s_self!r}/{s_other!r} outside {s_root!r}, refusing to proceed"
             )
         cls = type(self)
         return cls(subpath)

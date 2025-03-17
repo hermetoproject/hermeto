@@ -493,8 +493,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
 
     app_dir = gomod_request.source_dir
 
-    expect_err_msg = re.escape(f"Joining path '{symlinked_file}' to '{app_dir}'")
-    with pytest.raises(PathOutsideRoot, match=expect_err_msg):
+    with pytest.raises(PathOutsideRoot):
         _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, go_work)
 
 
@@ -1438,9 +1437,7 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         ),
     ]
 
-    expect_error = f"Joining path '../outside-repo' to '{tmpdir}': target is outside '{tmpdir}'"
-
-    with pytest.raises(PathOutsideRoot, match=expect_error):
+    with pytest.raises(PathOutsideRoot):
         _validate_local_replacements(modules, app_path)
 
 

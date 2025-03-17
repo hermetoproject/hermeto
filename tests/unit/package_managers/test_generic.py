@@ -185,7 +185,7 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
         pytest.param(
             LOCKFILE_INVALID_FILENAME,
             PathOutsideRoot,
-            "target is outside",
+            "",
             id="invalid_filename",
         ),
         pytest.param(

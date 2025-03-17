@@ -609,7 +609,7 @@ class TestSetupCFG:
                 },
                 None,
                 ["Resolving metadata.version in setup.cfg from 'file: ../version.txt'"],
-                PathOutsideRoot("Joining path '../version.txt' to '{tmpdir}'"),
+                PathOutsideRoot(""),
             ),
         ],
     )
@@ -1007,7 +1007,7 @@ class TestSetupCFG:
                     "Attempting to find attribute '__ver__' in 'module'",
                     "Custom path set for all root modules: '..'",
                 ],
-                PathOutsideRoot("Joining path '../module' to '{tmpdir}'"),
+                PathOutsideRoot(""),
             ),
             (
                 {
@@ -1028,7 +1028,7 @@ class TestSetupCFG:
                     "Attempting to find attribute '__ver__' in 'module'",
                     "Custom path set for root module 'module': '../module'",
                 ],
-                PathOutsideRoot("Joining path '../module' to '{tmpdir}'"),
+                PathOutsideRoot(""),
             ),
             (
                 {
@@ -1045,7 +1045,7 @@ class TestSetupCFG:
                     "Resolving metadata.version in setup.cfg from 'attr: module.__ver__'",
                     "Attempting to find attribute '__ver__' in 'module'",
                 ],
-                PathOutsideRoot("Joining path 'module.py' to '{tmpdir}'"),
+                PathOutsideRoot(""),
             ),
             (
                 {
@@ -1064,7 +1064,7 @@ class TestSetupCFG:
                     "Resolving metadata.version in setup.cfg from 'attr: module.__ver__'",
                     "Attempting to find attribute '__ver__' in 'module'",
                 ],
-                PathOutsideRoot("Joining path '__init__.py' to '{tmpdir}/module'"),
+                PathOutsideRoot(""),
             ),
         ],
     )

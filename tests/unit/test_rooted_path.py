@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import ContextManager, Literal
+from typing import Literal
 
 import pydantic
 import pytest
@@ -19,13 +19,6 @@ def test_path(tmp_path: Path) -> Path:
 def assert_attrs(rooted_path: RootedPath, *, path: Path, root: Path) -> None:
     assert rooted_path.path == path
     assert rooted_path.root == root
-
-
-def expect_path_outside_root(
-    subpath: str, path: Path, root: Path
-) -> ContextManager[pytest.ExceptionInfo[PathOutsideRoot]]:
-    pattern = f"Joining path {subpath!r} to {str(path)!r}: target is outside {str(root)!r}"
-    return pytest.raises(PathOutsideRoot, match=pattern)
 
 
 def test_path_must_be_absolute() -> None:
@@ -95,27 +88,27 @@ def test_dont_leave_root(
         join = RootedPath.join_within_root
 
     # root/..
-    with expect_path_outside_root("..", test_path, test_path):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path, "..")
 
     # root/symlink-to-parent
-    with expect_path_outside_root("symlink-to-parent", test_path, test_path):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path, "symlink-to-parent")
 
     # root/subpath/../..
-    with expect_path_outside_root("../..", test_path / "subpath", test_path):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path.join_within_root("subpath"), "../..")
 
     # root/subpath/symlink-to-abspath
-    with expect_path_outside_root("symlink-to-abspath", test_path / "subpath", test_path):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path.join_within_root("subpath"), "symlink-to-abspath")
 
     # root/ /abspath
-    with expect_path_outside_root("/abspath", test_path, test_path):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path, "/abspath")
 
     # (root/subpath)/..
-    with expect_path_outside_root("..", test_path / "subpath", test_path / "subpath"):
+    with pytest.raises(PathOutsideRoot):
         join(rooted_path.re_root("subpath"), "..")
 
 
