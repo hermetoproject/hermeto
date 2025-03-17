@@ -3,7 +3,6 @@
 !.git/
 !.git_archival.txt
 !hermeto/
-!cachi2/
 !pyproject.toml
 !requirements.txt
 !MANIFEST.in
