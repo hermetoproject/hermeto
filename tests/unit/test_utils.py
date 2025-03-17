@@ -7,6 +7,7 @@ from unittest import mock
 
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import BaseError
 from hermeto.core.utils import (
     _fast_copy,
@@ -195,8 +196,8 @@ def test_get_cache_dir(
     mock_home_path.return_value = tmp_path
 
     if environ:
-        expected = Path(environ["XDG_CACHE_HOME"], "cachi2")
+        expected = Path(environ["XDG_CACHE_HOME"], f"{APP_NAME}")
     else:
-        expected = Path(tmp_path, ".cache/cachi2")
+        expected = Path(tmp_path, f".cache/{APP_NAME}")
 
     assert get_cache_dir() == expected

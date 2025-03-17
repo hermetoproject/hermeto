@@ -12,6 +12,7 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from git import Repo
 
+from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import (
     BaseError,
@@ -3133,12 +3134,12 @@ class TestDownload:
             pip._download_dependencies(RootedPath("/output"), req_file)
 
         err_msg = (
-            "Cachi2 does not support the following options: --extra-index-url, "
+            f"{APP_NAME} does not support the following options: --extra-index-url, "
             "--no-index, -f, --find-links, --only-binary"
         )
         assert str(exc_info.value) == err_msg
 
-        log_msg = "Cachi2 will ignore the following options: -c, --use-feature, --foo"
+        log_msg = f"{APP_NAME} will ignore the following options: -c, --use-feature, --foo"
         assert log_msg in caplog.text
 
     @pytest.mark.parametrize(
@@ -4187,8 +4188,8 @@ def test_fetch_pip_source(
             version="0.0.5",
             purl="pkg:pypi/baz@0.0.5",
             properties=[
-                Property(name="cachi2:pip:package:binary", value="true"),
-                Property(name="cachi2:pip:package:build-dependency", value="true"),
+                Property(name=f"{APP_NAME}:pip:package:binary", value="true"),
+                Property(name=f"{APP_NAME}:pip:package:build-dependency", value="true"),
             ],
         ),
     ]
@@ -4203,12 +4204,16 @@ def test_fetch_pip_source(
             name="ham",
             version="3.2",
             purl=f"pkg:pypi/ham@3.2?repository_url={CUSTOM_PYPI_ENDPOINT}",
-            properties=[Property(name="cachi2:missing_hash:in_file", value="requirements.txt")],
+            properties=[
+                Property(name=f"{APP_NAME}:missing_hash:in_file", value="requirements.txt")
+            ],
         ),
         Component(
             name="eggs",
             purl="pkg:pypi/eggs?checksum=sha256:aaaaaaaaaa&download_url=https://x.org/eggs.zip",
-            properties=[Property(name="cachi2:missing_hash:in_file", value="requirements.txt")],
+            properties=[
+                Property(name=f"{APP_NAME}:missing_hash:in_file", value="requirements.txt")
+            ],
         ),
     ]
 

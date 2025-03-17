@@ -117,7 +117,7 @@ def test_source_dir_copy(
         # assert a temporary directory is being used
         assert tmp_dir_name != tmp_path.name
         assert tmp_dir_name.startswith("tmp")
-        assert tmp_dir_name.endswith(".cachi2-source-copy")
+        assert tmp_dir_name.endswith(".hermeto-source-copy")
 
         return RequestOutput.empty()
 
@@ -151,7 +151,7 @@ def test_project_files_fix_for_work_copy(
     def _resolve_packages(request: Request) -> RequestOutput:
         # assert request is based on a copy of the source dir
         assert request.source_dir.path != tmp_path
-        assert request.source_dir.path.name.endswith(".cachi2-source-copy")
+        assert request.source_dir.path.name.endswith(".hermeto-source-copy")
 
         abspath = request.source_dir.path if with_path_replacement else request.output_dir.path
         return RequestOutput(

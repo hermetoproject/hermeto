@@ -32,6 +32,8 @@ from packaging import version
 from pydantic.alias_generators import to_pascal
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from hermeto import APP_NAME
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -307,7 +309,7 @@ class Go:
                 # extracting Go version
                 raise PackageManagerError(
                     f"Could not extract Go toolchain version from Go's output: '{output}'",
-                    solution="This is a fatal error, please open a bug report against cachi2",
+                    solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
                 )
         return self._release
 
@@ -358,7 +360,7 @@ class Go:
         # Download the go<release> shim to a temporary directory and wipe it after we're done
         # Go would download the shim to $HOME too, but unlike 'go download' we can at least adjust
         # 'go install' to point elsewhere using $GOPATH
-        with tempfile.TemporaryDirectory(prefix="cachi2", suffix="go-download") as td:
+        with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
             log.debug(f"Installing Go {release} toolchain shim from '{url}'")
             env = {
                 "PATH": os.environ.get("PATH", ""),
@@ -404,7 +406,7 @@ class Go:
             return run_go(cmd, **kwargs)
         except PackageManagerError:
             err_msg = (
-                f"Go execution failed: Cachi2 re-tried running `{' '.join(cmd)}` command "
+                f"Go execution failed: {APP_NAME} re-tried running `{' '.join(cmd)}` command "
                 f"{n_tries} times."
             )
             raise PackageManagerError(err_msg) from None
@@ -662,7 +664,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     repo_name = _get_repository_name(request.source_dir)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
 
-    with GoCacheTemporaryDirectory(prefix="cachi2-") as tmp_dir:
+    with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
         gomod_download_dir = request.output_dir.join_within_root(
             "deps/gomod/pkg/mod/cache/download"
         )
@@ -1546,7 +1548,7 @@ def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
     def fail_for_unexpected_format(msg: str) -> NoReturn:
         solution = (
             "Does `go mod vendor` make any changes to modules.txt?\n"
-            "If not, please let the maintainers know that Cachi2 fails to parse valid modules.txt"
+            f"If not, please let the maintainers know that {APP_NAME} fails to parse valid modules.txt"
         )
         raise UnexpectedFormat(f"vendor/modules.txt: {msg}", solution=solution)
 

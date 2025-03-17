@@ -5,8 +5,8 @@
       "name": "ansi-regex",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ansi-regex@2.0.0",
@@ -17,8 +17,8 @@
       "name": "builtin-modules",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/builtin-modules@1.1.1",
@@ -29,12 +29,12 @@
       "name": "bundle-dependencies",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/bundle-dependencies@1.0.2",
@@ -45,16 +45,16 @@
       "name": "camelcase",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/camelcase@2.1.0",
@@ -65,16 +65,16 @@
       "name": "cliui",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/cliui@3.1.0",
@@ -85,16 +85,16 @@
       "name": "code-point-at",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/code-point-at@1.0.0",
@@ -105,16 +105,16 @@
       "name": "decamelize",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/decamelize@1.1.2",
@@ -125,16 +125,16 @@
       "name": "error-ex",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/error-ex@1.3.0",
@@ -145,16 +145,16 @@
       "name": "escape-string-regexp",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/escape-string-regexp@1.0.5",
@@ -165,8 +165,8 @@
       "name": "fecha",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/fecha@4.2.3",
@@ -177,16 +177,16 @@
       "name": "find-up",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/find-up@1.1.0",
@@ -197,16 +197,16 @@
       "name": "graceful-fs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/graceful-fs@4.1.3",
@@ -217,16 +217,16 @@
       "name": "hosted-git-info",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/hosted-git-info@2.1.4",
@@ -237,16 +237,16 @@
       "name": "invert-kv",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/invert-kv@1.0.0",
@@ -257,16 +257,16 @@
       "name": "is-arrayish",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-arrayish@0.2.1",
@@ -277,16 +277,16 @@
       "name": "is-builtin-module",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-builtin-module@1.0.0",
@@ -297,16 +297,16 @@
       "name": "is-fullwidth-code-point",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-fullwidth-code-point@1.0.0",
@@ -317,16 +317,16 @@
       "name": "is-utf8",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-utf8@0.2.1",
@@ -337,16 +337,16 @@
       "name": "lcid",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/lcid@1.0.0",
@@ -357,16 +357,16 @@
       "name": "load-json-file",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/load-json-file@1.1.0",
@@ -377,16 +377,16 @@
       "name": "lodash.assign",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/lodash.assign@4.0.3",
@@ -397,16 +397,16 @@
       "name": "lodash.keys",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/lodash.keys@4.0.3",
@@ -417,16 +417,16 @@
       "name": "lodash.rest",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/lodash.rest@4.0.1",
@@ -437,16 +437,16 @@
       "name": "normalize-package-data",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/normalize-package-data@2.3.5",
@@ -457,8 +457,8 @@
       "name": "npm-cachi2-bundled",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40de68ac6aa88a81272660b6d0f6d44ce157207799",
@@ -469,16 +469,16 @@
       "name": "number-is-nan",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/number-is-nan@1.0.0",
@@ -489,16 +489,16 @@
       "name": "object-assign",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/object-assign@4.0.1",
@@ -509,16 +509,16 @@
       "name": "os-locale",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/os-locale@1.4.0",
@@ -529,16 +529,16 @@
       "name": "parse-json",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/parse-json@2.2.0",
@@ -549,16 +549,16 @@
       "name": "path-exists",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/path-exists@2.1.0",
@@ -569,16 +569,16 @@
       "name": "path-type",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/path-type@1.1.0",
@@ -589,16 +589,16 @@
       "name": "pify",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/pify@2.3.0",
@@ -609,16 +609,16 @@
       "name": "pinkie-promise",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/pinkie-promise@2.0.0",
@@ -629,16 +629,16 @@
       "name": "pinkie",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/pinkie@2.0.4",
@@ -649,16 +649,16 @@
       "name": "pkg-conf",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/pkg-conf@1.1.1",
@@ -669,16 +669,16 @@
       "name": "read-pkg-up",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/read-pkg-up@1.0.1",
@@ -689,16 +689,16 @@
       "name": "read-pkg",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/read-pkg@1.1.0",
@@ -709,16 +709,16 @@
       "name": "require-main-filename",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/require-main-filename@1.0.1",
@@ -729,16 +729,16 @@
       "name": "semver",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/semver@5.1.0",
@@ -749,16 +749,16 @@
       "name": "spdx-correct",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/spdx-correct@1.0.2",
@@ -769,16 +769,16 @@
       "name": "spdx-exceptions",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/spdx-exceptions@1.0.4",
@@ -789,16 +789,16 @@
       "name": "spdx-expression-parse",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/spdx-expression-parse@1.0.2",
@@ -809,16 +809,16 @@
       "name": "spdx-license-ids",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/spdx-license-ids@1.2.0",
@@ -829,16 +829,16 @@
       "name": "string-width",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/string-width@1.0.1",
@@ -849,16 +849,16 @@
       "name": "strip-ansi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/strip-ansi@3.0.1",
@@ -869,16 +869,16 @@
       "name": "strip-bom",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/strip-bom@2.0.0",
@@ -889,16 +889,16 @@
       "name": "symbol",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/symbol@0.2.1",
@@ -909,16 +909,16 @@
       "name": "validate-npm-package-license",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/validate-npm-package-license@3.0.1",
@@ -929,16 +929,16 @@
       "name": "window-size",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/window-size@0.2.0",
@@ -949,16 +949,16 @@
       "name": "wrap-ansi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/wrap-ansi@1.0.0",
@@ -969,16 +969,16 @@
       "name": "y18n",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/y18n@3.2.0",
@@ -989,16 +989,16 @@
       "name": "yargs-parser",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/yargs-parser@2.1.0",
@@ -1009,16 +1009,16 @@
       "name": "yargs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:bundled",
           "value": "true"
         },
         {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/yargs@4.1.0",
@@ -1029,7 +1029,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

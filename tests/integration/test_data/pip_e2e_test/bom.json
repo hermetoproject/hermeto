@@ -5,8 +5,8 @@
       "name": "certifi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/certifi@2022.12.7",
@@ -17,8 +17,8 @@
       "name": "charset-normalizer",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/charset-normalizer@3.0.1",
@@ -29,8 +29,8 @@
       "name": "dockerfile-parse",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/dockerfile-parse?checksum=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d&download_url=https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz",
@@ -40,11 +40,11 @@
       "name": "flit-core",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:build-dependency",
+          "name": "hermeto:pip:package:build-dependency",
           "value": "true"
         }
       ],
@@ -56,8 +56,8 @@
       "name": "idna",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/idna@3.4",
@@ -68,8 +68,8 @@
       "name": "requests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/requests@2.28.2",
@@ -80,11 +80,11 @@
       "name": "setuptools",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:build-dependency",
+          "name": "hermeto:pip:package:build-dependency",
           "value": "true"
         }
       ],
@@ -96,8 +96,8 @@
       "name": "test_package_cachi2",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/test-package-cachi2@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%401ecda839ba9ca55070d75c86c26a1bb07d777bba",
@@ -108,8 +108,8 @@
       "name": "urllib3",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/urllib3@1.26.14",
@@ -120,11 +120,11 @@
       "name": "wheel",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:build-dependency",
+          "name": "hermeto:pip:package:build-dependency",
           "value": "true"
         }
       ],
@@ -136,7 +136,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

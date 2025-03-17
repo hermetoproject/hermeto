@@ -5,8 +5,8 @@
       "name": "github.com/cachito-testing/cachito-gomod-without-deps",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=module",
@@ -17,8 +17,8 @@
       "name": "github.com/cachito-testing/cachito-gomod-without-deps",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=package",
@@ -29,7 +29,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

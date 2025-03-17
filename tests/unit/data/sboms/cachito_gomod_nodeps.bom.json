@@ -7,8 +7,8 @@
       "version": "v0.0.0-20200925115855-a888f7261b9a",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "type": "library"
@@ -19,8 +19,8 @@
       "version": "v0.0.0-20200925115855-a888f7261b9a",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "type": "library"
@@ -30,7 +30,7 @@
     "tools": [
       {
         "vendor": "red hat",
-        "name": "cachi2"
+        "name": "hermeto"
       }
     ]
   },

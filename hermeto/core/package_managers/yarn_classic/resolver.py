@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 from pyarn.lockfile import Package as PYarnPackage
 
+from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnexpectedFormat
 from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
@@ -273,11 +274,11 @@ class _YarnClassicPackageFactory:
         else:
             raise UnexpectedFormat(
                 (
-                    "Cachi2 could not determine the package type for the following package in "
+                    f"{APP_NAME} could not determine the package type for the following package in "
                     f"yarn.lock: {vars(package)}"
                 ),
                 solution=(
-                    "Ensure yarn.lock is well-formed and if so, report this error to the Cachi2 team"
+                    f"Ensure yarn.lock is well-formed and if so, report this error to the {APP_NAME} team"
                 ),
             )
 

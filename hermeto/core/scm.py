@@ -10,6 +10,7 @@ from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 from git.repo import Repo
 
+from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, UnsupportedFeature
 
 log = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ def get_repo_id(repo: Union[str, PathLike[str], Repo]) -> RepoID:
         origin = repo.remote("origin")
     except ValueError:
         raise UnsupportedFeature(
-            "Cachi2 cannot process repositories that don't have an 'origin' remote",
+            f"{APP_NAME} cannot process repositories that don't have an 'origin' remote",
             solution=(
                 "Repositories cloned via git clone should always have one.\n"
                 "Otherwise, please `git remote add origin` with a url that reflects the origin."

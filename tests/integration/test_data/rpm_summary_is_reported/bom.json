@@ -5,11 +5,11 @@
       "name": "glibc-common",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:rpm_summary",
+          "name": "hermeto:rpm_summary",
           "value": "Common binaries and locale data for glibc"
         }
       ],
@@ -21,11 +21,11 @@
       "name": "glibc-common",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "another-project/rpms.lock.yaml"
         }
       ],
@@ -37,8 +37,8 @@
       "name": "glibc-minimal-langpack",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:rpm/fedora/glibc-minimal-langpack@2.38-7.fc39?arch=x86_64&checksum=sha256:6f9b45618d3b46fbbfb44407e05dd7054f3bd6a4df4f7291b576858b88deadc5&repository_id=releases",
@@ -49,11 +49,11 @@
       "name": "glibc-minimal-langpack",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:rpm_summary",
+          "name": "hermeto:rpm_summary",
           "value": "Minimal language packs for glibc."
         }
       ],
@@ -65,11 +65,11 @@
       "name": "gzip",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:rpm_summary",
+          "name": "hermeto:rpm_summary",
           "value": "GNU data compression program"
         }
       ],
@@ -81,7 +81,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

@@ -202,14 +202,14 @@ def test_repo_files(
             # whenever an RPM lacks a repoid in the lockfile, Hermeto will resort to a randomly
             # generated internal repoid, which needs to be replaced by a constant string so it can
             # be tested consistently.
-            return re.sub(r"cachi2-[a-f0-9]{6}", "cachi2-aaa000", file.read())
+            return re.sub(r"hermeto-[a-f0-9]{6}", "hermeto-aaa000", file.read())
 
     repo_file_content = read_and_normalize_repofile(
-        output_dir.joinpath("deps/rpm/x86_64/repos.d/cachi2.repo")
+        output_dir.joinpath("deps/rpm/x86_64/repos.d/hermeto.repo")
     )
 
     # update test data if needed
-    expected_repo_file_path = test_data_dir.joinpath(test_case, "cachi2.repo")
+    expected_repo_file_path = test_data_dir.joinpath(test_case, "hermeto.repo")
 
     if os.getenv("HERMETO_GENERATE_TEST_DATA") == "true":
         expected_repo_file_path.parent.mkdir(parents=True, exist_ok=True)

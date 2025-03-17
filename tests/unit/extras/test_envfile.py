@@ -3,6 +3,7 @@ from textwrap import dedent
 
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.output import BuildConfig
@@ -37,7 +38,7 @@ def test_cannot_determine_format(filename: str, expect_reason: str) -> None:
         f"""
         Cannot determine envfile format, {expect_reason}
           Please use one of the supported suffixes: json, env, sh[==env]
-          You can also define the format explicitly instead of letting Cachi2 choose.
+          You can also define the format explicitly instead of letting {APP_NAME} choose.
         """
     ).strip()
     assert exc_info.value.friendly_msg() == expect_friendly_msg

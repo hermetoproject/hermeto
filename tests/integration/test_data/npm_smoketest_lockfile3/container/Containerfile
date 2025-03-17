@@ -5,4 +5,4 @@ RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
 
-RUN . /tmp/cachi2.env && npm install && npm ls
+RUN . /tmp/hermeto.env && npm install && npm ls

@@ -5,8 +5,8 @@
       "name": "data-encoding",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:cargo/data-encoding@2.7.0?checksum=0e60eed09d8c01d3cee5b7d30acb059b76614c918fa0f992e0dd6eeb10daad6f&source=registry%2Bhttps://github.com/rust-lang/crates.io-index",
@@ -17,8 +17,8 @@
       "name": "integration-tests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:cargo/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4009c8cf923df4bb74ceac204e8d8be5732d90e740",
@@ -29,8 +29,8 @@
       "name": "uuid",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:cargo/uuid@1.12.1?source=git%2Bhttps://github.com/uuid-rs/uuid%2370831d21b373a06149885e8aec18c9084ac918c3",
@@ -41,7 +41,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

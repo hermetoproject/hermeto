@@ -30,6 +30,7 @@ from typing import (
 import tomlkit
 from packageurl import PackageURL
 
+from hermeto import APP_NAME
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball, get_repo_id
 
@@ -1412,7 +1413,7 @@ class PipRequirement:
             raise UnsupportedFeature(
                 reason=(
                     f"Dependency name could not be determined from the requirement {line!r} "
-                    "(Cachi2 needs the name to be explicitly declared)"
+                    f"({APP_NAME} needs the name to be explicitly declared)"
                 ),
                 solution="Please specify the name of the dependency: <name> @ <url>",
                 docs=PIP_EXTERNAL_DEPS_DOC,
@@ -1708,11 +1709,11 @@ def _process_options(options: list[str]) -> dict[str, Any]:
         i += 1
 
     if ignored:
-        msg = f"Cachi2 will ignore the following options: {', '.join(ignored)}"
+        msg = f"{APP_NAME} will ignore the following options: {', '.join(ignored)}"
         log.info(msg)
 
     if rejected:
-        msg = f"Cachi2 does not support the following options: {', '.join(rejected)}"
+        msg = f"{APP_NAME} does not support the following options: {', '.join(rejected)}"
         raise UnsupportedFeature(msg)
 
     return opts

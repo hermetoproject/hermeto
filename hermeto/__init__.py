@@ -11,9 +11,9 @@ def _get_app_name() -> str:
     installed package (e.g. during pytest invocations) or a hardcoded value if spec is not
     available (to satisfy mypy).
     """
-    if (name := Path(sys.argv[0]).name) not in ("cachi2",):
+    if (name := Path(sys.argv[0]).name) not in ("cachi2", "hermeto"):
         spec = imputil.find_spec(__name__)
-        name = spec.name if spec else "cachi2"
+        name = spec.name if spec else "hermeto"
     return name
 
 

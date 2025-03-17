@@ -1,6 +1,8 @@
 import textwrap
 from typing import ClassVar, Optional
 
+from hermeto import APP_NAME
+
 _argument_not_specified = "__argument_not_specified__"
 
 
@@ -70,7 +72,7 @@ class PathOutsideRoot(UsageError):
         super().__init__(reason, solution=solution, docs=docs)
 
     default_solution = (
-        "With security in mind, Cachi2 will not access files outside the "
+        f"With security in mind, {APP_NAME} will not access files outside the "
         "specified source/output directories."
     )
 
@@ -103,7 +105,7 @@ class UnexpectedFormat(UsageError):
 
     default_solution = (
         "Please check if the format of your file is correct.\n"
-        "If yes, please let the maintainers know that Cachi2 doesn't handle it properly."
+        f"If yes, please let the maintainers know that {APP_NAME} doesn't handle it properly."
     )
 
 
@@ -113,7 +115,9 @@ class UnsupportedFeature(UsageError):
     The requested feature might be valid, but application doesn't implement it.
     """
 
-    default_solution = "If you need Cachi2 to support this feature, please contact the maintainers."
+    default_solution = (
+        f"If you need {APP_NAME} to support this feature, please contact the maintainers."
+    )
 
 
 class FetchError(BaseError):
@@ -121,7 +125,7 @@ class FetchError(BaseError):
 
     default_solution = (
         "The error might be intermittent, please try again.\n"
-        "If the issue seems to be on the Cachi2 side, please contact the maintainers."
+        f"If the issue seems to be on the {APP_NAME} side, please contact the maintainers."
     )
 
 
@@ -151,9 +155,9 @@ class PackageManagerError(BaseError):
         super().__init__(reason, solution=solution, docs=docs)
 
     default_solution = textwrap.dedent(
-        """
+        f"""
         The cause of the failure could be:
-        - something is broken in Cachi2
+        - something is broken in {APP_NAME}
         - something is wrong with your repository
         - communication with an external service failed (please try again)
         The output of the failing command should provide more details, please check the logs.

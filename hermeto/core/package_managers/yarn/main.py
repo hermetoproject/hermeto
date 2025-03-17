@@ -2,6 +2,7 @@ import logging
 
 import semver
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -68,7 +69,7 @@ def _verify_yarnrc_paths(project: Project) -> None:
 def _check_zero_installs(project: Project) -> None:
     if project.is_zero_installs:
         raise PackageRejected(
-            ("Yarn zero install detected, PnP zero installs are unsupported by cachi2"),
+            (f"Yarn zero install detected, PnP zero installs are unsupported by {APP_NAME}"),
             solution=(
                 "Please convert your project to a regular install-based one.\n"
                 "Depending on whether you use Yarn's PnP or a different node linker Yarn setting "
@@ -252,7 +253,7 @@ def _verify_corepack_yarn_version(expected_version: semver.Version, source_dir: 
     installed_yarn_version = extract_yarn_version_from_env(source_dir)
     if installed_yarn_version != expected_version:
         raise PackageManagerError(
-            f"Cachi2 expected corepack to install yarn@{expected_version} but instead "
+            f"{APP_NAME} expected corepack to install yarn@{expected_version} but instead "
             f"found yarn@{installed_yarn_version}."
         )
 

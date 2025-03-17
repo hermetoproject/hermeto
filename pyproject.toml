@@ -59,6 +59,7 @@ test = [
 ]
 [project.scripts]
 cachi2 = "hermeto.interface.cli:app"
+hermeto = "hermeto.interface.cli:app"
 
 [tool.setuptools]
 packages = ["hermeto"]

@@ -2,6 +2,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Callable
 
+from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
@@ -41,7 +42,7 @@ def resolve_packages(request: Request) -> RequestOutput:
     """
     original_source_dir = request.source_dir
 
-    with TemporaryDirectory(".cachi2-source-copy", dir=original_source_dir) as temp_dir:
+    with TemporaryDirectory(f".{APP_NAME}-source-copy", dir=".") as temp_dir:
         source_backup = copy_directory(original_source_dir.path, Path(temp_dir).resolve())
 
         request.source_dir = RootedPath(source_backup)

@@ -3,6 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -155,7 +156,7 @@ def _generate_build_environment_variables() -> list[EnvironmentVariable]:
 def _reject_if_pnp_install(project: Project) -> None:
     if project.is_pnp_install:
         raise PackageRejected(
-            reason=("Yarn PnP install detected; PnP installs are unsupported by cachi2"),
+            reason=(f"Yarn PnP install detected; PnP installs are unsupported by {APP_NAME}"),
             solution=(
                 "Please convert your project to a regular install-based one.\n"
                 "If you use Yarn's PnP, please remove `installConfig.pnp: true`"
@@ -194,7 +195,7 @@ def _verify_corepack_yarn_version(source_dir: RootedPath, env: dict[str, str]) -
 
     if installed_yarn_version not in VersionsRange("1.22.0", "2.0.0"):
         raise PackageManagerError(
-            "Cachi2 expected corepack to install yarn >=1.22.0,<2.0.0, but instead "
+            f"{APP_NAME} expected corepack to install yarn >=1.22.0,<2.0.0, but instead "
             f"found yarn@{installed_yarn_version}."
         )
 

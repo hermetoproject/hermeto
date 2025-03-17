@@ -5,11 +5,11 @@
       "name": "absl-py",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -21,11 +21,11 @@
       "name": "grpcio",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -37,11 +37,11 @@
       "name": "markdown",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -53,11 +53,11 @@
       "name": "markupsafe",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -69,11 +69,11 @@
       "name": "numpy",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -85,8 +85,8 @@
       "name": "package",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40eee59273542ee7d412fb359d471386b645cf166e",
@@ -97,11 +97,11 @@
       "name": "protobuf",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -113,11 +113,11 @@
       "name": "setuptools",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -129,11 +129,11 @@
       "name": "six",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -145,11 +145,11 @@
       "name": "tensorboard-data-server",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -161,11 +161,11 @@
       "name": "tensorboard",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -177,11 +177,11 @@
       "name": "werkzeug",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -193,7 +193,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

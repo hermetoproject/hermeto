@@ -36,7 +36,7 @@ def test_resolve_bundler_package(
     Repo(rooted_tmp_path_repo).create_remote("origin", "git@github.com:user/repo.git")
 
     package_dir = rooted_tmp_path_repo
-    output_dir = rooted_tmp_path_repo.join_within_root("cachi2-output")
+    output_dir = rooted_tmp_path_repo.join_within_root("hermeto-output")
     deps_dir = output_dir.join_within_root("deps", "bundler")
 
     gem_dep = GemDependency(

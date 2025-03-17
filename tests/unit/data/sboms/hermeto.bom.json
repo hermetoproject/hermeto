@@ -5,8 +5,8 @@
             "name": "aiowsgi",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "0.8",
@@ -17,8 +17,8 @@
             "name": "appr",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "purl": "pkg:pypi/appr?checksum=sha256:ee6a0a38bed8cff46a562ed3620bc453141a02262ab0c8dd055824af2829ee5c&download_url=https://github.com/quay/appr/archive/37ff9a487a54ad41b59855ecd76ee092fe206a84.zip",
@@ -28,31 +28,31 @@
             "name": "archive/tar",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "purl": "pkg:golang/archive/tar?type=package",
             "type": "library"
         },
         {
-            "name": "cachi2",
+            "name": "hermeto",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "0.0.1",
-            "purl": "pkg:pypi/cachi2@0.0.1?vcs_url=git%2Bssh://git%40github.com/hermetoproject/cachi2%40fc0d6079c2dc9b2a491c0848e550ad3509986110",
+            "purl": "pkg:pypi/hermeto@0.0.1?vcs_url=git%2Bssh://git%40github.com/hermetoproject/hermeto%40fc0d6079c2dc9b2a491c0848e550ad3509986110",
             "type": "library"
         },
         {
             "name": "cachito-npm-without-deps",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "purl": "pkg:npm/cachito-npm-without-deps?vcs_url=git%2Bhttps://github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6",
@@ -62,8 +62,8 @@
             "name": "code.gitea.io/sdk/gitea",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.15.1",
@@ -74,8 +74,8 @@
             "name": "code.gitea.io/sdk/gitea",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.15.1",
@@ -86,8 +86,8 @@
             "name": "fecha",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "purl": "pkg:npm/fecha?checksum=sha512:8ae71e98d68e38e1f6e4c629187684dd85e4dc96647c7219b1dd189598ea52865e947f0ad94a7001fa8fb5eccf58467fe34ad10066e831af3374120134604bd5&download_url=https://github.com/taylorhakes/fecha/archive/91680e4db1415fea33eac878cfd889c80a7b55c7.tar.gz",
@@ -97,8 +97,8 @@
             "name": "github.com/docker/cli/cli/config",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v23.0.0-rc.3+incompatible",
@@ -109,8 +109,8 @@
             "name": "github.com/docker/cli",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v23.0.0-rc.3+incompatible",
@@ -121,8 +121,8 @@
             "name": "knative.dev/pkg/metrics",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.0.0-20230125083639-408ad0773f47",
@@ -133,8 +133,8 @@
             "name": "knative.dev/pkg",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.0.0-20230125083639-408ad0773f47",
@@ -145,8 +145,8 @@
             "name": "github.com/redhat-appstudio/build-service",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.0.0-20230503110830-d1a9e858489d",
@@ -157,8 +157,8 @@
             "name": "github.com/redhat-appstudio/build-service",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v0.0.0-20230503110830-d1a9e858489d",
@@ -169,8 +169,8 @@
             "name": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v1.0.0",
@@ -181,8 +181,8 @@
             "name": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "v1.0.0",
@@ -193,8 +193,8 @@
             "name": "PyYAML",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "6.0",
@@ -205,8 +205,8 @@
             "name": "test_package_cachi2",
             "properties": [
                 {
-                    "name": "cachi2:found_by",
-                    "value": "cachi2"
+                    "name": "hermeto:found_by",
+                    "value": "hermeto"
                 }
             ],
             "version": "1.0.0",
@@ -218,7 +218,7 @@
         "tools": [
             {
                 "vendor": "red hat",
-                "name": "cachi2"
+                "name": "hermeto"
             }
         ]
     },

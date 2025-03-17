@@ -3,6 +3,7 @@ import shlex
 from enum import Enum
 from pathlib import Path
 
+from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.output import BuildConfig
 
@@ -28,7 +29,7 @@ class EnvFormat(str, Enum):
                 f"Cannot determine envfile format, {reason}",
                 solution=(
                     f"Please use one of the supported suffixes: {cls._suffixes_repr()}\n"
-                    "You can also define the format explicitly instead of letting Cachi2 choose."
+                    f"You can also define the format explicitly instead of letting {APP_NAME} choose."
                 ),
             ) from e
 

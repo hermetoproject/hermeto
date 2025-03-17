@@ -14,6 +14,7 @@ import yaml
 from packageurl import PackageURL
 from pydantic import ValidationError
 
+from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import ExtraOptions, Request, SSLOptions
@@ -62,7 +63,9 @@ class Package:
             # Red Hat PURL RPM guideline suggests injecting 'src' into the arch qualifier for SRPMS
             kwargs["arch"] = "src"
 
-        kwargs["repository_id"] = repoid if repoid and not repoid.startswith("cachi2") else None
+        kwargs["repository_id"] = (
+            repoid if repoid and not repoid.startswith(f"{APP_NAME}") else None
+        )
         kwargs["download_url"] = rpm_download_metadata["url"]
         kwargs["checksum"] = rpm_download_metadata.get("checksum")
 
@@ -152,7 +155,9 @@ class Package:
         """Create an SBOM component for this package."""
         properties = []
         if not self.checksum:
-            properties = [Property(name="cachi2:missing_hash:in_file", value=str(lockfile_path))]
+            properties = [
+                Property(name=f"{APP_NAME}:missing_hash:in_file", value=str(lockfile_path))
+            ]
 
         return Component(
             name=self.name, version=self.version, purl=self.purl, properties=properties
@@ -404,7 +409,7 @@ def _generate_sbom_components(
         package = Package.from_filepath(file_path, file_metadata)
         component = package.to_component(lockfile_path)
         if include_summary_in_sbom:
-            summary = Property(name="cachi2:rpm_summary", value=str(package.summary))
+            summary = Property(name=f"{APP_NAME}:rpm_summary", value=str(package.summary))
             component.properties.append(summary)
         components.append(component)
     return components
@@ -482,11 +487,11 @@ def _generate_repofiles(
             repofile[repoid]["baseurl"] = f"file://{localpath}"
 
             # repoid directory matches the internal repoid
-            if repoid.startswith("cachi2-"):
+            if repoid.startswith(f"{APP_NAME}-"):
                 repofile[repoid]["name"] = "Packages unaffiliated with an official repository"
 
         if not repofile.empty:
-            repo_file_path = arch.joinpath("repos.d", "cachi2.repo")
+            repo_file_path = arch.joinpath("repos.d", f"{APP_NAME}.repo")
             if repo_file_path.exists():
                 log.warning(f"Overwriting {repo_file_path}")
             else:

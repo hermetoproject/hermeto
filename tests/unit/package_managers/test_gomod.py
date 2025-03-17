@@ -13,6 +13,7 @@ import git
 import pytest
 from packaging import version
 
+from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Flag, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
@@ -1712,7 +1713,7 @@ def test_missing_gomod_file(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[Property(name="cachi2:missing_hash:in_file", value="go.sum")],
+                    properties=[Property(name=f"{APP_NAME}:missing_hash:in_file", value="go.sum")],
                 ),
                 Component(
                     name="golang.org/x/tools",
@@ -1777,7 +1778,9 @@ def test_missing_gomod_file(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[Property(name="cachi2:missing_hash:in_file", value="path/go.sum")],
+                    properties=[
+                        Property(name=f"{APP_NAME}:missing_hash:in_file", value="path/go.sum")
+                    ],
                 ),
                 Component(
                     name="golang.org/x/tools",
@@ -2223,7 +2226,7 @@ class TestGo:
         mock_run.side_effect = [failure] * 5
         go = Go()
 
-        error_msg = f"Go execution failed: Cachi2 re-tried running `{go._bin} mod download` command 5 times."
+        error_msg = f"Go execution failed: {APP_NAME} re-tried running `{go._bin} mod download` command 5 times."
 
         with pytest.raises(PackageManagerError, match=error_msg):
             go._retry([go._bin, "mod", "download"])
@@ -2331,7 +2334,7 @@ class TestGo:
         cmd = ["go", *opts]
         error_msg = "Go execution failed: "
         if retry:
-            error_msg += f"Cachi2 re-tried running `{' '.join(cmd)}` command {tries} times."
+            error_msg += f"{APP_NAME} re-tried running `{' '.join(cmd)}` command {tries} times."
         else:
             error_msg += f"`{' '.join(cmd)}` failed with rc=1"
 
@@ -2345,7 +2348,7 @@ class TestGo:
         "base_path",
         [
             pytest.param("usr/local", id="locate_in_system_path"),
-            pytest.param("cachi2", id="locate_in_XDG_CACHE_HOME"),
+            pytest.param(f"{APP_NAME}", id="locate_in_XDG_CACHE_HOME"),
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
@@ -2362,7 +2365,7 @@ class TestGo:
             return Path(tmp_path, *my_args)
 
         mock_path.side_effect = prefix_path
-        mock_cache_dir.return_value = "cachi2"
+        mock_cache_dir.return_value = f"{APP_NAME}"
 
         release = "go1.20"
         go_bin_dir = tmp_path / f"{base_path}/go/{release}/bin"
@@ -2379,7 +2382,7 @@ class TestGo:
         self,
         mock_cache_dir: mock.Mock,
     ) -> None:
-        mock_cache_dir.return_value = "cachi2"
+        mock_cache_dir.return_value = f"{APP_NAME}"
 
         release = "go1.20"
         go = Go(release=release)

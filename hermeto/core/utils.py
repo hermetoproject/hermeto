@@ -11,6 +11,7 @@ from itertools import filterfalse, tee
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Optional, Sequence
 
+from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.errors import BaseError
 
@@ -45,7 +46,7 @@ def run_cmd(cmd: Sequence[str], params: dict) -> str:
             f"{executable!r} executable not found in PATH",
             solution=(
                 f"Please make sure that the {executable!r} executable is installed in your PATH.\n"
-                "If you are using Cachi2 via its container image, this should not happen - please report this bug."
+                f"If you are using {APP_NAME} via its container image, this should not happen - please report this bug."
             ),
         )
 
@@ -195,7 +196,7 @@ def get_cache_dir() -> Path:
         cache_dir = Path(os.environ["XDG_CACHE_HOME"])
     except KeyError:
         cache_dir = Path.home().joinpath(".cache")
-    return cache_dir.joinpath("cachi2")
+    return cache_dir.joinpath(f"{APP_NAME}")
 
 
 def first_for(predicate: Callable, iterable: Iterable, fallback: Any) -> Any:

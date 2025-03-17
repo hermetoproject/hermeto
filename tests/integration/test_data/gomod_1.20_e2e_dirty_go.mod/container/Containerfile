@@ -5,6 +5,6 @@ RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src/twenty
 
-RUN . /tmp/cachi2.env && go build -o /usr/bin/twenty
+RUN . /tmp/hermeto.env && go build -o /usr/bin/twenty
 
 CMD twenty

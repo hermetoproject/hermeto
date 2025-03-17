@@ -7,6 +7,7 @@ from typing import Union
 import yaml
 from pydantic import ValidationError
 
+from hermeto import APP_NAME
 from hermeto.core.checksum import must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.errors import PackageRejected
@@ -50,9 +51,9 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     """
     if not lockfile_path.exists():
         raise PackageRejected(
-            f"Cachi2 generic lockfile '{lockfile_path}' does not exist, refusing to continue.",
+            f"{APP_NAME} generic lockfile '{lockfile_path}' does not exist, refusing to continue.",
             solution=(
-                f"Make sure your repository has cachi2 generic lockfile '{DEFAULT_LOCKFILE_NAME}' "
+                f"Make sure your repository has {APP_NAME} generic lockfile '{DEFAULT_LOCKFILE_NAME}' "
                 f"checked in to the repository, or the supplied lockfile path is correct."
             ),
         )
@@ -89,7 +90,7 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
             lockfile_data = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise PackageRejected(
-                f"Cachi2 lockfile '{lockfile_path}' yaml format is not correct: {e}",
+                f"{APP_NAME} lockfile '{lockfile_path}' yaml format is not correct: {e}",
                 solution="Check correct 'yaml' syntax in the lockfile.",
             )
 
@@ -101,7 +102,7 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
             loc = e.errors()[0]["loc"]
             msg = e.errors()[0]["msg"]
             raise PackageRejected(
-                f"Cachi2 lockfile '{lockfile_path}' format is not valid: '{loc}: {msg}'",
+                f"{APP_NAME} lockfile '{lockfile_path}' format is not valid: '{loc}: {msg}'",
                 solution=(
                     "Check the correct format and whether any keys are missing in the lockfile."
                 ),

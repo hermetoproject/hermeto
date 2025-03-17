@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
                 check_deps_checksums=False,
                 check_vendor_checksums=False,
                 expected_exit_code=2,
-                expected_output="PackageRejected: Yarn zero install detected, PnP zero installs are unsupported by cachi2",
+                expected_output="PackageRejected: Yarn zero install detected, PnP zero installs are unsupported by hermeto",
             ),
             id="yarn_zero_installs",
         ),

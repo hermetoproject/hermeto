@@ -2,7 +2,7 @@ environment_variables:
 - name: BUNDLE_APP_CONFIG
   value: ${output_dir}/bundler/config_override
 project_files:
-- abspath: ${test_case_tmp_path}/cachi2-output/bundler/config_override/config
+- abspath: ${test_case_tmp_path}/hermeto-output/bundler/config_override/config
   template: |2
 
     BUNDLE_CACHE_PATH: "${output_dir}/deps/bundler"

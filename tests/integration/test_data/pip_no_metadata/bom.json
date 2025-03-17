@@ -5,8 +5,8 @@
       "name": "aiowsgi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/aiowsgi@0.8",
@@ -17,8 +17,8 @@
       "name": "certifi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/certifi@2023.7.22",
@@ -29,8 +29,8 @@
       "name": "charset-normalizer",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/charset-normalizer@3.2.0",
@@ -41,8 +41,8 @@
       "name": "idna",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/idna@3.4",
@@ -53,8 +53,8 @@
       "name": "integration-tests-subpath1-subpath2",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/integration-tests-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc#subpath1/subpath2",
@@ -64,8 +64,8 @@
       "name": "integration-tests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc",
@@ -75,8 +75,8 @@
       "name": "requests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/requests@2.31.0",
@@ -87,8 +87,8 @@
       "name": "six",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/six@1.16.0",
@@ -99,8 +99,8 @@
       "name": "urllib3",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/urllib3@2.0.4",
@@ -111,8 +111,8 @@
       "name": "waitress",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/waitress@2.1.2",
@@ -123,8 +123,8 @@
       "name": "webob",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/webob@1.8.7",
@@ -135,7 +135,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

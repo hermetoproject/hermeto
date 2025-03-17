@@ -4,7 +4,7 @@ FROM docker.io/golang:1.18.1
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
-RUN . /tmp/cachi2.env && \
+RUN . /tmp/hermeto.env && \
     cd spam-module && go build -o /usr/bin/spam-module && \
     cd ../eggs-module && go build -o /usr/bin/eggs-module
 

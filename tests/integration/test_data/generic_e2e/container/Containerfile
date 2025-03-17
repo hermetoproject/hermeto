@@ -3,6 +3,6 @@ FROM registry.fedoraproject.org/fedora:40
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
-RUN cp -r /tmp/cachi2-output/deps/generic/ /deps
+RUN cp -r /tmp/hermeto-output/deps/generic/ /deps
 
 CMD ["ls", "-al", "/deps"]

@@ -8,6 +8,7 @@ from unittest import mock
 import pytest
 from packageurl import PackageURL
 
+from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
@@ -659,7 +660,7 @@ class TestPurlifier:
                     purl="pkg:npm/foo@1.0.0",
                     properties=[
                         Property(name="cdx:npm:package:development", value="true"),
-                        Property(name="cachi2:found_by", value="cachi2"),
+                        Property(name=f"{APP_NAME}:found_by", value=f"{APP_NAME}"),
                     ],
                 ),
             ],
@@ -682,7 +683,7 @@ class TestPurlifier:
                     purl="pkg:npm/foo@1.0.0",
                     properties=[
                         Property(name="cdx:npm:package:bundled", value="true"),
-                        Property(name="cachi2:found_by", value="cachi2"),
+                        Property(name=f"{APP_NAME}:found_by", value=f"{APP_NAME}"),
                     ],
                 ),
             ],
@@ -705,7 +706,7 @@ class TestPurlifier:
                     purl="pkg:npm/foo@1.0.0",
                     properties=[
                         Property(
-                            name="cachi2:missing_hash:in_file",
+                            name=f"{APP_NAME}:missing_hash:in_file",
                             value="path/to/foo/package-lock.json",
                         ),
                     ],
@@ -1589,7 +1590,7 @@ def test_should_replace_dependency(dependency_version: str, expected_result: boo
                 # The name of the package is different from the repo name, we expect the result archive to have the repo name in it
                 "git+ssh://git@gitlab.foo.bar.com/osbs/cachito-tests.git#c300503": {
                     "integrity": "sha512-FOOOOOOOOOYOLO==",
-                    "name": "gitlab-cachi2-npm-without-deps-second",
+                    "name": "gitlab-hermeto-npm-without-deps-second",
                 },
             },
             {

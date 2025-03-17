@@ -4,7 +4,7 @@ FROM docker.io/node:17
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src/first_pkg
-RUN . /tmp/cachi2.env && npm install && npm ls
+RUN . /tmp/hermeto.env && npm install && npm ls
 
 WORKDIR /src/second_pkg
-RUN . /tmp/cachi2.env && npm install && npm ls
+RUN . /tmp/hermeto.env && npm install && npm ls

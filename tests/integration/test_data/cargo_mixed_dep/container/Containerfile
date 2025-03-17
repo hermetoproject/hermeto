@@ -4,4 +4,4 @@ FROM docker.io/rust:1-alpine
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
-RUN . /tmp/cachi2.env && cargo build --offline
+RUN . /tmp/hermeto.env && cargo build --offline

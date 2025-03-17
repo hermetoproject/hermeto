@@ -1,0 +1,13 @@
+[releases]
+baseurl = file:///tmp/hermeto-output/deps/rpm/x86_64/releases
+gpgcheck = 1
+
+[another-repoid]
+baseurl = file:///tmp/hermeto-output/deps/rpm/x86_64/another-repoid
+gpgcheck = 1
+
+[hermeto-aaa000]
+baseurl = file:///tmp/hermeto-output/deps/rpm/x86_64/hermeto-aaa000
+name = Packages unaffiliated with an official repository
+gpgcheck = 1
+

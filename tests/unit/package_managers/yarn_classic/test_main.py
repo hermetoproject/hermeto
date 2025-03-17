@@ -6,6 +6,7 @@ from unittest import mock
 
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
@@ -230,7 +231,7 @@ def test_verify_corepack_yarn_version_disallowed_version(
 ) -> None:
     mock_run_yarn_cmd.return_value = yarn_version_output
     error_message = (
-        "Cachi2 expected corepack to install yarn >=1.22.0,<2.0.0, but "
+        f"{APP_NAME} expected corepack to install yarn >=1.22.0,<2.0.0, but "
         f"instead found yarn@{yarn_version_output}"
     )
 

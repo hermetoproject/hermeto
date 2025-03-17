@@ -6,6 +6,7 @@ from typing import Optional
 
 from packageurl import PackageURL
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
@@ -120,9 +121,9 @@ def _get_main_package_name_and_version(
         raise PackageRejected(
             reason="Failed to extract package name from origin remote",
             solution=(
-                "Please specify package name and version in a way that Cachi2 understands,\n"
-                "or make sure that the directory Cachi2 is processing is a git repository with\n"
-                "an 'origin' remote, in which case Cachi2 will infer the package name from the remote URL."
+                f"Please specify package name and version in a way that {APP_NAME} understands,\n"
+                f"or make sure that the directory {APP_NAME} is processing is a git repository with\n"
+                f"an 'origin' remote, in which case {APP_NAME} will infer the package name from the remote URL."
             ),
         )
 

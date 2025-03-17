@@ -14,6 +14,7 @@ import pydantic
 from packageurl import PackageURL
 from typing_extensions import Self
 
+from hermeto import APP_NAME
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.models.validators import unique_sorted
 from hermeto.core.utils import first_for
@@ -47,7 +48,7 @@ class Pedigree(pydantic.BaseModel):
     patches: list[Patch]
 
 
-FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value="cachi2")
+FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}")
 
 
 class Component(pydantic.BaseModel):
@@ -104,7 +105,7 @@ class Tool(pydantic.BaseModel):
 class Metadata(pydantic.BaseModel):
     """Metadata field in a SBOM."""
 
-    tools: list[Tool] = [Tool(vendor="red hat", name="cachi2")]
+    tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
 
 
 def spdx_now() -> str:
@@ -192,7 +193,7 @@ class Sbom(pydantic.BaseModel):
             return relationships
 
         def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
-            packages, annottr, now = [], "Tool: cachi2:jsonencoded", spdx_now()
+            packages, annottr, now = [], f"Tool: {APP_NAME}:jsonencoded", spdx_now()
             args = dict(annotator=annottr, annotationDate=now, annotationType="OTHER")
             pAnnotation = partial(SPDXPackageAnnotation, **args)
 

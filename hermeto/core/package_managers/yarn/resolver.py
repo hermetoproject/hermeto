@@ -21,6 +21,7 @@ import pydantic
 from packageurl import PackageURL
 from semver import Version
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected, UnsupportedFeature
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
@@ -141,8 +142,8 @@ def resolve_packages(source_dir: RootedPath) -> list[Package]:
             raise UnsupportedFeature(
                 "Found an unsupported dependency, more details in the logs.",
                 solution=dedent(
-                    """
-                    Please note that Cachi2 disables all Yarn plugins, which might be needed for
+                    f"""
+                    Please note that {APP_NAME} disables all Yarn plugins, which might be needed for
                     the correct processing of a dependency. This is done to avoid arbitrary code
                     execution, which would affect the accuracy of the SBOM.
                     """
@@ -265,7 +266,7 @@ class _ComponentResolver:
                 f"Failed to resolve the name and version for {package.raw_locator}: {e}",
                 solution=(
                     "Please try running 'yarn install' to see if yarn makes any changes.\n"
-                    "If yarn succeeds and doesn't make any changes, please report this Cachi2 bug."
+                    f"If yarn succeeds and doesn't make any changes, please report this {APP_NAME} bug."
                 ),
             ) from e
 
@@ -459,7 +460,7 @@ class _ComponentResolver:
             raise UnsupportedFeature(
                 (
                     f"{patch_locator} is missing an associated workspace locator "
-                    "and Cachi2 expects all non-builtin yarn patches to have one"
+                    "and {APP_NAME} expects all non-builtin yarn patches to have one"
                 )
             )
 

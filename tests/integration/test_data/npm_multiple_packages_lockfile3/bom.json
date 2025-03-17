@@ -5,8 +5,8 @@
       "name": "@types/prop-types",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/%40types/prop-types@15.7.5",
@@ -17,8 +17,8 @@
       "name": "@types/react-dom",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/%40types/react-dom@18.2.7",
@@ -29,8 +29,8 @@
       "name": "@types/react",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/%40types/react@18.2.18",
@@ -41,8 +41,8 @@
       "name": "@types/scheduler",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/%40types/scheduler@0.16.3",
@@ -53,8 +53,8 @@
       "name": "accepts",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/accepts@1.3.8",
@@ -65,8 +65,8 @@
       "name": "array-flatten",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/array-flatten@1.1.1",
@@ -77,11 +77,11 @@
       "name": "assertion-error",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -93,8 +93,8 @@
       "name": "bitbucket-cachi2-npm-without-deps-second",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps-second.git%4009992d418fc44a2895b7a9ff27c4e32d6f74a982",
@@ -105,8 +105,8 @@
       "name": "body-parser",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/body-parser@1.20.1",
@@ -117,8 +117,8 @@
       "name": "bytes",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/bytes@3.1.2",
@@ -129,8 +129,8 @@
       "name": "cachito-npm-without-deps",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/cachito-npm-without-deps@1.0.0?checksum=sha512:43e71f90ad5f9eb349ab18a283f8954994def373962ddc61b866bdea4d48249e67913c6b84dca1e8c519e981ca1fcc62b438292104a88ee9ed72db76a41efede&download_url=https://github.com/cachito-testing/cachito-npm-without-deps/raw/tarball/cachito-npm-without-deps-1.0.0.tgz",
@@ -141,8 +141,8 @@
       "name": "call-bind",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/call-bind@1.0.2",
@@ -153,11 +153,11 @@
       "name": "chai",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -169,11 +169,11 @@
       "name": "check-error",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -185,8 +185,8 @@
       "name": "content-disposition",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/content-disposition@0.5.4",
@@ -197,8 +197,8 @@
       "name": "content-type",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/content-type@1.0.5",
@@ -209,8 +209,8 @@
       "name": "cookie-signature",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/cookie-signature@1.0.6",
@@ -221,8 +221,8 @@
       "name": "cookie",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/cookie@0.5.0",
@@ -233,8 +233,8 @@
       "name": "csstype",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/csstype@3.1.2",
@@ -245,8 +245,8 @@
       "name": "debug",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/debug@2.6.9",
@@ -257,8 +257,8 @@
       "name": "debug",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/debug@4.3.4",
@@ -269,11 +269,11 @@
       "name": "deep-eql",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -285,8 +285,8 @@
       "name": "depd",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/depd@2.0.0",
@@ -297,8 +297,8 @@
       "name": "destroy",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/destroy@1.2.0",
@@ -309,8 +309,8 @@
       "name": "ee-first",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ee-first@1.1.1",
@@ -321,8 +321,8 @@
       "name": "encodeurl",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/encodeurl@1.0.2",
@@ -333,8 +333,8 @@
       "name": "escape-html",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/escape-html@1.0.3",
@@ -345,8 +345,8 @@
       "name": "etag",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/etag@1.8.1",
@@ -357,8 +357,8 @@
       "name": "express",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/express@4.18.2",
@@ -369,8 +369,8 @@
       "name": "fecha",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg/fecha-4.2.3.tgz",
@@ -381,8 +381,8 @@
       "name": "finalhandler",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/finalhandler@1.2.0",
@@ -393,8 +393,8 @@
       "name": "forwarded",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/forwarded@0.2.0",
@@ -405,8 +405,8 @@
       "name": "fresh",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/fresh@0.5.2",
@@ -417,8 +417,8 @@
       "name": "function-bind",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/function-bind@1.1.1",
@@ -429,11 +429,11 @@
       "name": "get-func-name",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -445,8 +445,8 @@
       "name": "get-intrinsic",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/get-intrinsic@1.2.1",
@@ -457,8 +457,8 @@
       "name": "has-proto",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/has-proto@1.0.1",
@@ -469,8 +469,8 @@
       "name": "has-symbols",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/has-symbols@1.0.3",
@@ -481,8 +481,8 @@
       "name": "has",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/has@1.0.3",
@@ -493,8 +493,8 @@
       "name": "http-errors",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/http-errors@2.0.0",
@@ -505,8 +505,8 @@
       "name": "iconv-lite",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/iconv-lite@0.4.24",
@@ -517,8 +517,8 @@
       "name": "inherits",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/inherits@2.0.4",
@@ -529,8 +529,8 @@
       "name": "ipaddr.js",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ipaddr.js@1.9.1",
@@ -541,8 +541,8 @@
       "name": "is-positive",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-positive@3.1.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%4097edff6f525f192a3f83cea1944765f769ae2678",
@@ -553,8 +553,8 @@
       "name": "media-typer",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/media-typer@0.3.0",
@@ -565,8 +565,8 @@
       "name": "merge-descriptors",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/merge-descriptors@1.0.1",
@@ -577,8 +577,8 @@
       "name": "methods",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/methods@1.1.2",
@@ -589,8 +589,8 @@
       "name": "mime-db",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/mime-db@1.52.0",
@@ -601,8 +601,8 @@
       "name": "mime-types",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/mime-types@2.1.35",
@@ -613,8 +613,8 @@
       "name": "mime",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/mime@1.6.0",
@@ -625,8 +625,8 @@
       "name": "ms",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ms@2.0.0",
@@ -637,8 +637,8 @@
       "name": "ms",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ms@2.1.2",
@@ -649,8 +649,8 @@
       "name": "ms",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ms@2.1.3",
@@ -661,8 +661,8 @@
       "name": "negotiator",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/negotiator@0.6.3",
@@ -673,8 +673,8 @@
       "name": "npm-cachi2-first-package",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/npm-cachi2-first-package@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#first_pkg",
@@ -685,8 +685,8 @@
       "name": "npm-cachi2-second-pkg",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/npm-cachi2-second-pkg@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#second_pkg",
@@ -697,8 +697,8 @@
       "name": "npm-cachi2-third-package",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/npm-cachi2-third-package@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg",
@@ -709,8 +709,8 @@
       "name": "object-inspect",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/object-inspect@1.12.3",
@@ -721,8 +721,8 @@
       "name": "on-finished",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/on-finished@2.4.1",
@@ -733,8 +733,8 @@
       "name": "parseurl",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/parseurl@1.3.3",
@@ -745,8 +745,8 @@
       "name": "path-to-regexp",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/path-to-regexp@0.1.7",
@@ -757,11 +757,11 @@
       "name": "pathval",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -773,8 +773,8 @@
       "name": "proxy-addr",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/proxy-addr@2.0.7",
@@ -785,8 +785,8 @@
       "name": "qs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/qs@6.11.0",
@@ -797,8 +797,8 @@
       "name": "range-parser",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/range-parser@1.2.1",
@@ -809,8 +809,8 @@
       "name": "raw-body",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/raw-body@2.5.1",
@@ -821,8 +821,8 @@
       "name": "safe-buffer",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/safe-buffer@5.2.1",
@@ -833,8 +833,8 @@
       "name": "safer-buffer",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/safer-buffer@2.1.2",
@@ -845,11 +845,11 @@
       "name": "sax",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -861,8 +861,8 @@
       "name": "send",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/send@0.18.0",
@@ -873,8 +873,8 @@
       "name": "serve-static",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/serve-static@1.15.0",
@@ -885,8 +885,8 @@
       "name": "setprototypeof",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/setprototypeof@1.2.0",
@@ -897,8 +897,8 @@
       "name": "side-channel",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/side-channel@1.0.4",
@@ -909,8 +909,8 @@
       "name": "statuses",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/statuses@2.0.1",
@@ -921,8 +921,8 @@
       "name": "toidentifier",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/toidentifier@1.0.1",
@@ -933,11 +933,11 @@
       "name": "type-detect",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "third_pkg/package-lock.json"
         }
       ],
@@ -949,8 +949,8 @@
       "name": "type-is",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/type-is@1.6.18",
@@ -961,8 +961,8 @@
       "name": "unpipe",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/unpipe@1.0.0",
@@ -973,8 +973,8 @@
       "name": "utils-merge",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/utils-merge@1.0.1",
@@ -985,8 +985,8 @@
       "name": "vary",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/vary@1.1.2",
@@ -997,7 +997,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
@@ -515,7 +516,7 @@ def test_parse_locator(locator_str: str, expect_locator: Locator) -> None:
 @pytest.mark.parametrize("locator_str", UNSUPPORTED_LOCATORS)
 def test_parse_unsupported_locator(locator_str: str) -> None:
     with pytest.raises(
-        UnsupportedFeature, match="Cachi2 does not support Git or Exec dependencies"
+        UnsupportedFeature, match=f"{APP_NAME} does not support Git or Exec dependencies"
     ):
         parse_locator(locator_str)
 
@@ -566,13 +567,13 @@ def test_parse_unknown_protocol(locator_str: str) -> None:
         (
             "name@patch:name@git@github.com/foo/bar%23commit=abcdef#builtin<foo>",
             UnsupportedFeature(
-                "Cachi2 does not support Git or Exec dependencies for Yarn Berry: name@git@github.com/foo/bar#commit=abcdef"
+                f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: name@git@github.com/foo/bar#commit=abcdef"
             ),
         ),
         (
             "name@patch:name@npm%3A1.0.0#./my-custom.patch::locator=name@npm%3A1.0.0",
             UnsupportedFeature(
-                "Cachi2 only supports Patch dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
+                f"{APP_NAME} only supports Patch dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
                 "name@patch:name@npm%3A1.0.0#./my-custom.patch::locator=name@npm%3A1.0.0"
             ),
         ),
@@ -605,14 +606,14 @@ def test_fail_to_parse_patch_locator(locator_str: str, expect_err: Exception) ->
         (
             "name@file:./path/to/file.tar.gz::locator=name@npm%3A1.0.0",
             UnsupportedFeature(
-                "Cachi2 only supports File dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
+                f"{APP_NAME} only supports File dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
                 "name@file:./path/to/file.tar.gz::locator=name@npm%3A1.0.0"
             ),
         ),
         (
             "name@portal:./path/to/directory::locator=name@npm%3A1.0.0",
             UnsupportedFeature(
-                "Cachi2 only supports Portal dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
+                f"{APP_NAME} only supports Portal dependencies bound to a WorkspaceLocator, not to a(n) NpmLocator: "
                 "name@portal:./path/to/directory::locator=name@npm%3A1.0.0"
             ),
         ),

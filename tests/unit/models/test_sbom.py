@@ -5,6 +5,7 @@ from unittest import mock
 import pydantic
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.models.sbom import (
     FOUND_BY_APP_PROPERTY,
     Component,
@@ -18,6 +19,7 @@ from hermeto.core.models.sbom import (
     SPDXRelation,
     SPDXSbom,
     Tool,
+    merge_component_properties,
 )
 
 SPDX_EPOCH_STRFTIME = datetime.datetime.fromtimestamp(0).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -91,9 +93,9 @@ class TestComponent:
                 [FOUND_BY_APP_PROPERTY],
             ),
             (
-                [Property(name="cachi2:missing_hash:in_file", value="go.sum")],
+                [Property(name=f"{APP_NAME}:missing_hash:in_file", value="go.sum")],
                 [
-                    Property(name="cachi2:missing_hash:in_file", value="go.sum"),
+                    Property(name=f"{APP_NAME}:missing_hash:in_file", value="go.sum"),
                     FOUND_BY_APP_PROPERTY,
                 ],
             ),
@@ -335,7 +337,7 @@ class TestSbom:
                         },
                     ],
                     "name": "archive.zip",
-                    "properties": [{"name": "cachi2:found_by", "value": "cachi2"}],
+                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
                     "purl": "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
                     "type": "file",
                 },
@@ -366,10 +368,10 @@ class TestSbom:
                 ],
                 annotations=[
                     SPDXPackageAnnotation(
-                        annotator="Tool: cachi2:jsonencoded",
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
                         annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
-                        comment='{"name": "cachi2:found_by", "value": "cachi2"}',
+                        comment=f'{{"name": "{APP_NAME}:found_by", "value": "{APP_NAME}"}}',
                     ),
                 ],
                 downloadLocation="NOASSERTION",
@@ -424,16 +426,18 @@ class TestSbom:
                 ],
                 annotations=[
                     SPDXPackageAnnotation(
-                        annotator="Tool: cachi2:jsonencoded",
-                        annotationDate=SPDX_EPOCH_STRFTIME,
-                        annotationType="OTHER",
-                        comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
-                    ),
-                    SPDXPackageAnnotation(
-                        annotator="Tool: cachi2:jsonencoded",
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
                         annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment=json.dumps({"name": "cdx:npm:package:bundled", "value": "true"}),
+                    ),
+                    SPDXPackageAnnotation(
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
+                        annotationType="OTHER",
+                        comment=json.dumps(
+                            {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}
+                        ),
                     ),
                 ],
             ),
@@ -450,10 +454,12 @@ class TestSbom:
                 ],
                 annotations=[
                     SPDXPackageAnnotation(
-                        annotator="Tool: cachi2:jsonencoded",
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
                         annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
-                        comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
+                        comment=json.dumps(
+                            {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}
+                        ),
                     ),
                 ],
             ),
@@ -470,10 +476,12 @@ class TestSbom:
                 ],
                 annotations=[
                     SPDXPackageAnnotation(
-                        annotator="Tool: cachi2:jsonencoded",
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
                         annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
-                        comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
+                        comment=json.dumps(
+                            {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}
+                        ),
                     ),
                 ],
             ),
@@ -533,22 +541,27 @@ class TestSbom:
             ]
         )
         cyclonedx_sbom = sbom.to_spdx("NOASSERTION").to_cyclonedx()
+
+        # We have to re-order components because 'hermeto' now comes alphabetically later
+        # TODO: Stop storing components/properties as a list and use sets; that, however, will
+        # cause issues with the JSON encoder/decoder.
+        sbom.components = merge_component_properties(sbom.components)
         assert cyclonedx_sbom == sbom
 
 
 # Some partially constructed objects to streamline test cases definitions.
 STOCK_ANNOTATION = {
-    "annotator": "Tool: cachi2:jsonencoded",
+    "annotator": f"Tool: {APP_NAME}:jsonencoded",
     "annotationDate": SPDX_EPOCH_STRFTIME,
     "annotationType": "OTHER",
-    "comment": '{"name": "cachi2:found_by", "value": "cachi2"}',
+    "comment": f'{{"name": "{APP_NAME}:found_by", "value": "{APP_NAME}"}}',
 }
 
 BLANK_SPDX_SBOM = SPDXSbom(
     SPDXID="SPDXRef-DOCUMENT",
     documentNamespace="NOASSERTION",
     creationInfo={
-        "creators": ["Tool: cachi2", "Organization: cachi2"],
+        "creators": [f"Tool: {APP_NAME}", "Organization: hermetoproject"],
         "created": SPDX_EPOCH_STRFTIME,
     },
 )
@@ -813,7 +826,7 @@ class TestSPDXSbom:
         sbom = SPDXSbom(
             documentNamespace="NOASSERTION",
             creationInfo={
-                "creators": ["Tool: cachi2", "Organization: cachi2"],
+                "creators": [f"Tool: {APP_NAME}", "Organization: hermetoproject"],
                 "created": SPDX_EPOCH_STRFTIME,
             },
             packages=[
@@ -934,7 +947,7 @@ class TestSPDXSbom:
                 ),
             ],
             metadata=Metadata(
-                tools=[Tool(vendor="cachi2", name="cachi2")],
+                tools=[Tool(vendor="hermetoproject", name=f"{APP_NAME}")],
             ),
         )
 
@@ -1245,7 +1258,6 @@ class TestSPDXSbom:
     def test_spdx_sbom_can_be_converted_to_cyclonedx_and_back_without_loosing_any_data(
         self, mock_spdx_now: str, original_sbom: SPDXSbom
     ) -> None:
-
         converted_sbom = original_sbom.to_cyclonedx().to_spdx("NOASSERTION")
 
         assert json.dumps(original_sbom.model_dump(), sort_keys=True, indent=4) == json.dumps(

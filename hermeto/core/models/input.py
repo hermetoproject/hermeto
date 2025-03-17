@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Callable, Dict, Literal, Optio
 import pydantic
 from typing_extensions import Self
 
+from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
@@ -292,7 +293,7 @@ class Request(pydantic.BaseModel):
         if "gomod-vendor-check" in flags:
             log.warning(
                 "The `gomod-vendor-check` flag is deprecated and will be removed in future versions. "
-                "Its use is no longer necessary, Cachi2 will automatically check the contents of the "
+                f"Its use is no longer necessary, {APP_NAME} will automatically check the contents of the "
                 "vendor directory in case it is present."
             )
 

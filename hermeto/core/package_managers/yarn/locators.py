@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import NamedTuple, Optional, Sequence, Union
 from urllib.parse import parse_qs, unquote
 
+from hermeto import APP_NAME
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 
 # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-http/sources/constants.ts
@@ -171,7 +172,7 @@ def parse_locator(locator_str: str) -> Locator:
 
         if "commit" in parse_qs(parsed_reference.selector) or protocol == "exec":
             raise UnsupportedFeature(
-                f"Cachi2 does not support Git or Exec dependencies for Yarn Berry: {locator_str}",
+                f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: {locator_str}",
                 docs=None,  # TODO: docs needed
             )
         elif protocol == "npm":
@@ -223,7 +224,7 @@ def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
         parent_locator = parse_locator(locator_param)
         if not isinstance(parent_locator, WorkspaceLocator):
             raise UnsupportedFeature(
-                f"Cachi2 only supports Patch dependencies bound to a WorkspaceLocator, "
+                f"{APP_NAME} only supports Patch dependencies bound to a WorkspaceLocator, "
                 f"not to a(n) {type(parent_locator).__name__}: {locator}"
             )
     else:
@@ -250,7 +251,7 @@ def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
         protocol = locator.parsed_reference.protocol or "file:"
         dep_type = protocol.removesuffix(":").title()
         raise UnsupportedFeature(
-            f"Cachi2 only supports {dep_type} dependencies bound to a WorkspaceLocator, "
+            f"{APP_NAME} only supports {dep_type} dependencies bound to a WorkspaceLocator, "
             f"not to a(n) {type(parent_locator).__name__}: {locator}"
         )
     return FileLocator(relpath, parent_locator)

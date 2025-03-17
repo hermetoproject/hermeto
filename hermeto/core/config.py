@@ -5,6 +5,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, model_validator
 
+from hermeto import APP_NAME
 from hermeto.core.models.input import parse_user_input
 
 log = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class Config(BaseModel, extra="forbid"):
         if "gomod_strict_vendor" in data:
             log.warning(
                 "The `gomod_strict_vendor` config option is deprecated and will be removed in "
-                "future versions. Note that it no longer has any effect when set, Cachi2 will "
+                f"future versions. Note that it no longer has any effect when set, {APP_NAME} will "
                 "always check the vendored contents and fail if they are not up-to-date."
             )
 

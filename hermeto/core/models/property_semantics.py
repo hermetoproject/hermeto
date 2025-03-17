@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Iterable, Optional
 
 import pydantic
 
+from hermeto import APP_NAME
+
 if TYPE_CHECKING:
     from typing_extensions import Self, assert_never
 
@@ -11,12 +13,12 @@ if TYPE_CHECKING:
 class PropertyEnum(str, Enum):
     """Property names literals. Workarounds Literals inflexibility."""
 
-    PROP_BUNDLER_PACKAGE_BINARY = "cachi2:bundler:package:binary"
-    PROP_FOUND_BY = "cachi2:found_by"
-    PROP_RPM_SUMMARY = "cachi2:rpm_summary"
-    PROP_MISSING_HASH_IN_FILE = "cachi2:missing_hash:in_file"
-    PROP_PIP_PACKAGE_BINARY = "cachi2:pip:package:binary"
-    PROP_PIP_PACKAGE_BUILD_DEPENDENCY = "cachi2:pip:package:build-dependency"
+    PROP_BUNDLER_PACKAGE_BINARY = f"{APP_NAME}:bundler:package:binary"
+    PROP_FOUND_BY = f"{APP_NAME}:found_by"
+    PROP_RPM_SUMMARY = f"{APP_NAME}:rpm_summary"
+    PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
+    PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
+    PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
     PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
 

@@ -5,6 +5,8 @@ from typing import List
 
 import pytest
 
+from hermeto import APP_NAME
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -74,7 +76,7 @@ log = logging.getLogger(__name__)
                 expected_output=(
                     "UnsupportedFeature: Direct references with 'file' scheme are not supported, "
                     "'file:///tmp/packages.zip'\n  "
-                    "If you need Cachi2 to support this feature, please contact the maintainers."
+                    f"If you need {APP_NAME} to support this feature, please contact the maintainers."
                 ),
             ),
             id="pip_local_path",

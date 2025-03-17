@@ -5,8 +5,8 @@
       "name": "errors",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/errors?type=package",
@@ -16,8 +16,8 @@
       "name": "github.com/cachito-testing/gomod-multiple-modules/eggs-module",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -28,8 +28,8 @@
       "name": "github.com/cachito-testing/gomod-multiple-modules/eggs-module",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
@@ -40,8 +40,8 @@
       "name": "github.com/cachito-testing/gomod-multiple-modules/spam-module",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -52,8 +52,8 @@
       "name": "github.com/cachito-testing/gomod-multiple-modules/spam-module",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
@@ -64,8 +64,8 @@
       "name": "github.com/cachito-testing/gomod-multiple-modules",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -76,8 +76,8 @@
       "name": "golang.org/x/text/language",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
@@ -88,15 +88,15 @@
       "name": "golang.org/x/text",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "eggs-module/go.sum"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "spam-module/go.sum"
         }
       ],
@@ -108,8 +108,8 @@
       "name": "internal/abi",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/abi?type=package",
@@ -119,8 +119,8 @@
       "name": "internal/bytealg",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/bytealg?type=package",
@@ -130,8 +130,8 @@
       "name": "internal/coverage/rtcov",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/coverage/rtcov?type=package",
@@ -141,8 +141,8 @@
       "name": "internal/cpu",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/cpu?type=package",
@@ -152,8 +152,8 @@
       "name": "internal/goarch",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/goarch?type=package",
@@ -163,8 +163,8 @@
       "name": "internal/goexperiment",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/goexperiment?type=package",
@@ -174,8 +174,8 @@
       "name": "internal/goos",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/goos?type=package",
@@ -185,8 +185,8 @@
       "name": "internal/itoa",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/itoa?type=package",
@@ -196,8 +196,8 @@
       "name": "internal/oserror",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/oserror?type=package",
@@ -207,8 +207,8 @@
       "name": "internal/poll",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/poll?type=package",
@@ -218,8 +218,8 @@
       "name": "internal/race",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/race?type=package",
@@ -229,8 +229,8 @@
       "name": "internal/reflectlite",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/reflectlite?type=package",
@@ -240,8 +240,8 @@
       "name": "internal/safefilepath",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/safefilepath?type=package",
@@ -251,8 +251,8 @@
       "name": "internal/syscall/execenv",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/syscall/execenv?type=package",
@@ -262,8 +262,8 @@
       "name": "internal/syscall/unix",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/syscall/unix?type=package",
@@ -273,8 +273,8 @@
       "name": "internal/testlog",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/testlog?type=package",
@@ -284,8 +284,8 @@
       "name": "internal/unsafeheader",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/internal/unsafeheader?type=package",
@@ -295,8 +295,8 @@
       "name": "io/fs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/io/fs?type=package",
@@ -306,8 +306,8 @@
       "name": "io",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/io?type=package",
@@ -317,8 +317,8 @@
       "name": "math/bits",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/math/bits?type=package",
@@ -328,8 +328,8 @@
       "name": "os",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/os?type=package",
@@ -339,8 +339,8 @@
       "name": "path",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/path?type=package",
@@ -350,8 +350,8 @@
       "name": "rsc.io/quote",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.1?type=module",
@@ -362,8 +362,8 @@
       "name": "rsc.io/quote",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.1?type=package",
@@ -374,8 +374,8 @@
       "name": "rsc.io/quote",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.2?type=module",
@@ -386,8 +386,8 @@
       "name": "rsc.io/quote",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.2?type=package",
@@ -398,11 +398,11 @@
       "name": "rsc.io/sampler",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "eggs-module/go.sum"
         }
       ],
@@ -414,8 +414,8 @@
       "name": "rsc.io/sampler",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/rsc.io/sampler@v1.3.0?type=package",
@@ -426,8 +426,8 @@
       "name": "runtime/internal/atomic",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/runtime/internal/atomic?type=package",
@@ -437,8 +437,8 @@
       "name": "runtime/internal/math",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/runtime/internal/math?type=package",
@@ -448,8 +448,8 @@
       "name": "runtime/internal/sys",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/runtime/internal/sys?type=package",
@@ -459,8 +459,8 @@
       "name": "runtime/internal/syscall",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/runtime/internal/syscall?type=package",
@@ -470,8 +470,8 @@
       "name": "runtime",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/runtime?type=package",
@@ -481,8 +481,8 @@
       "name": "sort",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/sort?type=package",
@@ -492,8 +492,8 @@
       "name": "strings",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/strings?type=package",
@@ -503,8 +503,8 @@
       "name": "sync/atomic",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/sync/atomic?type=package",
@@ -514,8 +514,8 @@
       "name": "sync",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/sync?type=package",
@@ -525,8 +525,8 @@
       "name": "syscall",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/syscall?type=package",
@@ -536,8 +536,8 @@
       "name": "time",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/time?type=package",
@@ -547,8 +547,8 @@
       "name": "unicode/utf8",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/unicode/utf8?type=package",
@@ -558,8 +558,8 @@
       "name": "unicode",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/unicode?type=package",
@@ -569,8 +569,8 @@
       "name": "unsafe",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:golang/unsafe?type=package",
@@ -580,7 +580,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

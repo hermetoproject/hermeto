@@ -5,8 +5,8 @@
       "name": "integration-tests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4055376bc13904c2f450aac6ee89969d539c8d9f05",
@@ -16,11 +16,11 @@
       "name": "requests",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:pip:package:binary",
+          "name": "hermeto:pip:package:binary",
           "value": "true"
         }
       ],
@@ -32,7 +32,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

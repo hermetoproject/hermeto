@@ -266,7 +266,7 @@ def test_resolve_zero_installs_fail() -> None:
 
     with pytest.raises(
         PackageRejected,
-        match=("Yarn zero install detected, PnP zero installs are unsupported by cachi2"),
+        match=("Yarn zero install detected, PnP zero installs are unsupported by hermeto"),
     ):
         _check_zero_installs(project)
 

@@ -5,6 +5,8 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt, field_validator, model_validator
 
+from hermeto import APP_NAME
+
 log = logging.getLogger(__name__)
 
 
@@ -59,7 +61,7 @@ class RedhatRpmsLock(BaseModel):
         'repoid' key is not mandatory in the lockfile format. When not present,
         we fallback to a (partly) random string based on a UUID.
         """
-        return f"cachi2-{uuid.uuid4().hex[:6]}"
+        return f"{APP_NAME}-{uuid.uuid4().hex[:6]}"
 
     @cached_property
     def generated_source_repoid(self) -> str:

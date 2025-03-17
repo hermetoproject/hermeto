@@ -4,7 +4,7 @@ FROM docker.io/node:22.8.0
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
-RUN . /tmp/cachi2.env && yarn install
+RUN . /tmp/hermeto.env && yarn install
 
 # During the build, the source code is only mounted, not copied
 # Some integration tests use CMD that requires the source code to be present

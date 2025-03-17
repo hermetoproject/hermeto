@@ -4,6 +4,6 @@ FROM docker.io/golang:1.21.5
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
-RUN . /tmp/cachi2.env && go build -o /usr/bin/retrodep
+RUN . /tmp/hermeto.env && go build -o /usr/bin/retrodep
 
 CMD retrodep --help

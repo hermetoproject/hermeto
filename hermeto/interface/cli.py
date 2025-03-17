@@ -12,6 +12,7 @@ import pydantic
 import typer
 
 import hermeto.core.config as config
+from hermeto import APP_NAME
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.input import Flag, PackageInput, Request, parse_user_input
@@ -25,46 +26,46 @@ app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 log = logging.getLogger(__name__)
 
 DEFAULT_SOURCE = "."
-DEFAULT_OUTPUT = "./cachi2-output"
+DEFAULT_OUTPUT = f"./{APP_NAME}-output"
 
 FETCH_DEPS_HELP = """\
     fetch dependencies for supported package managers.
 
     \b
     # gomod package in the current directory
-    cachi2 fetch-deps gomod
+    {APP_NAME} fetch-deps gomod
 
     \b
     # pip package in the root of the source directory
-    cachi2 fetch-deps --source ./my-repo pip
+    {APP_NAME} fetch-deps --source ./my-repo pip
 
     \b
     # gomod package in a subpath of the source directory (./my-repo/subpath)
-    cachi2 fetch-deps --source ./my-repo '{
+    {APP_NAME} fetch-deps --source ./my-repo '{{
         "type": "gomod",
         "path": "subpath"
-    }'
+    }}'
 
     \b
-    # multiple packages as a json list
-    cachi2 fetch-deps '[
-        {"type": "gomod"},
-        {"type": "gomod", "path": "subpath"},
-        {"type": "pip", "path": "other-path"}
+    # multiple packages as a JSON list
+    {APP_NAME} fetch-deps '[
+        {{"type": "gomod"}},
+        {{"type": "gomod", "path": "subpath"}},
+        {{"type": "pip", "path": "other-path"}}
     ]'
 
     \b
-    # multiple packages and flags as a json list
-    cachi2 fetch-deps '{
+    # multiple packages and flags as a JSON list
+    {APP_NAME} fetch-deps '{{
         "packages": [
-            {"type": "gomod"},
-            {"type": "gomod", "path": "subpath"},
-            {"type": "pip", "path": "other-path"}
+            {{"type": "gomod"}},
+            {{"type": "gomod", "path": "subpath"}},
+            {{"type": "pip", "path": "other-path"}}
         ],
         "flags": [
             "gomod-vendor"
         ]
-    }'
+    }}'
     """
 
 MERGE_SBOMS_HELP = """\
@@ -75,7 +76,7 @@ MERGE_SBOMS_HELP = """\
         SPDX SBOMs. You might want to run
 
             \b
-            cachi2 fetch-deps <args...>
+            {APP_NAME} fetch-deps <args...>
 
         \b
         first to produce SBOMs to merge.
@@ -143,7 +144,7 @@ def version_callback(value: bool) -> None:
     if not value:
         return
 
-    print("cachi2", importlib.metadata.version("cachi2"))
+    print(f"{APP_NAME}", importlib.metadata.version("hermeto"))
     print("Supported package managers:", ", ".join(supported_package_managers))
     raise typer.Exit()
 
@@ -199,7 +200,7 @@ class _Input(pydantic.BaseModel, extra="forbid"):
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
-def fetch_deps(
+def fetch_deps(  # noqa: D103; docstring becomes part of --help message
     raw_input: str = typer.Argument(
         ...,
         help="Specify package (within the source repo) to process. See usage examples.",
@@ -424,7 +425,7 @@ def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
 
 @app.command(help=MERGE_SBOMS_HELP)
 @handle_errors
-def merge_sboms(
+def merge_sboms(  # noqa: D103; docstring becomes part of --help message
     sbom_files_to_merge: Paths = typer.Argument(
         ...,
         callback=_prevalidate_sbom_files_args,
@@ -454,7 +455,9 @@ def merge_sboms(
             try:
                 sboms_to_merge.append(SPDXSbom(**sbom_dict))
             except pydantic.ValidationError:
-                raise UnexpectedFormat(f"{sbom_file} does not appear to be a valid Cachi2 SBOM.")
+                raise UnexpectedFormat(
+                    f"{sbom_file} does not appear to be a valid {APP_NAME} SBOM."
+                )
     # start_sbom will later coerce every other SBOM to its type.
     start_sbom: Union[Sbom, SPDXSbom]  # this visual noise is demanded by mypy.
     if sbom_type == SBOMFormat.cyclonedx:

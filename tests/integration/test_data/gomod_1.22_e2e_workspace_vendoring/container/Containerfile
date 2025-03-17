@@ -4,6 +4,6 @@ FROM docker.io/golang:1.22.0
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src/hi/hiii
-RUN . /tmp/cachi2.env && go build -o /usr/bin/hiii
+RUN . /tmp/hermeto.env && go build -o /usr/bin/hiii
 
 CMD hiii

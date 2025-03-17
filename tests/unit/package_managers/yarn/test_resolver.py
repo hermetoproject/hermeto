@@ -9,6 +9,7 @@ from urllib.parse import quote
 import pytest
 from semver import Version
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
@@ -247,9 +248,9 @@ def test_validate_unsupported_locators(
         resolve_packages(rooted_tmp_path)
 
     assert caplog.messages == [
-        "Cachi2 does not support Git or Exec dependencies for Yarn Berry: ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
-        "Cachi2 does not support Git or Exec dependencies for Yarn Berry: ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
-        "Cachi2 does not support Git or Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
+        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
     ]
 
 

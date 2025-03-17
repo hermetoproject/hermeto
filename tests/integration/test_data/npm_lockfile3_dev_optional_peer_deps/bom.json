@@ -5,12 +5,12 @@
       "name": "ansi-regex",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ansi-regex@6.0.1",
@@ -21,12 +21,12 @@
       "name": "ansi-styles",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ansi-styles@6.2.1",
@@ -37,8 +37,8 @@
       "name": "balanced-match",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/balanced-match@2.0.0",
@@ -49,12 +49,12 @@
       "name": "chalk",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/chalk@5.3.0?vcs_url=git%2Bssh://git%40github.com/chalk/chalk.git%40f399cd0ff69841e88cca89d43a49f1cc9ba2efd5",
@@ -65,8 +65,8 @@
       "name": "emoji-regex",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/emoji-regex@10.2.1",
@@ -77,8 +77,8 @@
       "name": "foo",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4077018bf73295ef1248d24479da897d960576f933#foo",
@@ -89,8 +89,8 @@
       "name": "graceful-fs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/graceful-fs@4.2.11",
@@ -101,8 +101,8 @@
       "name": "is-interactive",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/is-interactive@2.0.0?vcs_url=git%2Bssh://git%40github.com/sindresorhus/is-interactive.git%408bf082e07e144a196a27b9cbddde2db11223806b",
@@ -113,8 +113,8 @@
       "name": "jsonfile",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/jsonfile@6.1.0",
@@ -125,8 +125,8 @@
       "name": "minimist",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/minimist@1.2.8?checksum=sha512:375b4478a7a1ac2b4b70ceca1ec00f4cfb47a35b4e288a956ade508bba4020ce1bacfb86ec3ee0c332644f9c43aab068512e4139bcb0c6ba53a736894df43af7&download_url=https://github.com/minimistjs/minimist/archive/refs/tags/v1.2.8.tar.gz",
@@ -137,12 +137,12 @@
       "name": "ms",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
-        },
-        {
           "name": "cdx:npm:package:development",
           "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/ms@2.1.3?checksum=sha512:372daa086c6f3afe8cefef52e04b50eddb95d4510ae4bad074f32870344bcf488242cc0e2dd9b38b955fbeaf40f252fbc9e3950bb37b29767ec5b8504d7041c8&download_url=https://github.com/vercel/ms/archive/refs/tags/2.1.3.tar.gz",
@@ -153,8 +153,8 @@
       "name": "npm-dev-optional-peer-deps",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/npm-dev-optional-peer-deps@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4077018bf73295ef1248d24479da897d960576f933",
@@ -165,8 +165,8 @@
       "name": "universalify",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:npm/universalify@2.0.0",
@@ -177,7 +177,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

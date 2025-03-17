@@ -18,6 +18,7 @@ import requests
 import yaml
 from git import Repo
 
+from hermeto import APP_NAME
 from hermeto.core import resolver
 from hermeto.interface.cli import DEFAULT_OUTPUT
 
@@ -165,7 +166,7 @@ def build_image_for_test_case(
     ]
 
     # this should be extended to support more archs when we have the means of testing it in our CI
-    rpm_repos_path = f"{output_dir}/cachi2-output/deps/rpm/x86_64/repos.d"
+    rpm_repos_path = f"{output_dir}/hermeto-output/deps/rpm/x86_64/repos.d"
     if Path(rpm_repos_path).exists():
         cmd.extend(
             [
@@ -460,8 +461,8 @@ def build_image_and_check_cmd(
     """
     output_dir = tmp_path.joinpath(DEFAULT_OUTPUT)
 
-    log.info("Creating cachi2.env file")
-    env_vars_file = tmp_path.joinpath("cachi2.env")
+    log.info(f"Creating {APP_NAME}.env file")
+    env_vars_file = tmp_path.joinpath(f"{APP_NAME}.env")
     cmd = [
         "generate-env",
         str(output_dir),
@@ -509,7 +510,7 @@ def _replace_tmp_path_with_placeholder(
     for item in project_files:
         if "bundler" in item["abspath"]:
             # special case for bundler, as it is not a real project file
-            item["abspath"] = "${test_case_tmp_path}/cachi2-output/bundler/config_override/config"
+            item["abspath"] = "${test_case_tmp_path}/hermeto-output/bundler/config_override/config"
             continue
 
         relative_path = Path(item["abspath"]).relative_to(test_repo_dir)

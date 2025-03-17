@@ -5,11 +5,11 @@
       "name": "gpm-libs",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "rpms.lock.yaml"
         }
       ],
@@ -21,11 +21,11 @@
       "name": "gpm",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         },
         {
-          "name": "cachi2:missing_hash:in_file",
+          "name": "hermeto:missing_hash:in_file",
           "value": "rpms.lock.yaml"
         }
       ],
@@ -37,8 +37,8 @@
       "name": "libsodium",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:rpm/fedora/libsodium@1.0.19-4.fc40?arch=src&checksum=sha256:9158cc55b14fe31e53d127521c29e25abe6a7e13d56e9d8630f89a1082cfc3c2&repository_id=releases",
@@ -49,8 +49,8 @@
       "name": "libsodium",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "purl": "pkg:rpm/fedora/libsodium@1.0.19-4.fc40?arch=x86_64&checksum=sha256:91d67f2a3be65b2904c432f4585189540978dcfb6ef994c2eaac5b7cfb4010a5&repository_id=releases",
@@ -61,7 +61,7 @@
   "metadata": {
     "tools": [
       {
-        "name": "cachi2",
+        "name": "hermeto",
         "vendor": "red hat"
       }
     ]

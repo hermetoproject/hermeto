@@ -8,6 +8,7 @@ import pytest
 import yaml
 from _pytest.logging import LogCaptureFixture
 
+from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import ExtraOptions, RpmPackageInput, SSLOptions
 from hermeto.core.models.sbom import Component, Property
@@ -392,8 +393,8 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
             baseurl=file://{output_dir}/repo1
             gpgcheck=1
 
-            [cachi2-repo]
-            baseurl=file://{output_dir}/cachi2-repo
+            [hermeto-repo]
+            baseurl=file://{output_dir}/hermeto-repo
             gpgcheck=1
             name=Packages unaffiliated with an official repository
             """,
@@ -404,7 +405,7 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
                 "rpm": {
                     "dnf": {
                         "repo1": {"gpgcheck": 0},
-                        "cachi2-repo": {"sslverify": False, "timeout": 4},
+                        "hermeto-repo": {"sslverify": False, "timeout": 4},
                     }
                 }
             },
@@ -413,9 +414,9 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
              baseurl=file://{output_dir}/repo1
              gpgcheck=0
 
-             [cachi2-repo]
+             [hermeto-repo]
              name=Packages unaffiliated with an official repository
-             baseurl=file://{output_dir}/cachi2-repo
+             baseurl=file://{output_dir}/hermeto-repo
              gpgcheck=1
              sslverify=False
              timeout=4
@@ -429,11 +430,11 @@ def test_generate_repofiles(
 ) -> None:
     package_dir = rooted_tmp_path.join_within_root(DEFAULT_PACKAGE_DIR)
     arch_dir = Path(package_dir.path, "x86_64")
-    for dir_ in ["repo1", "cachi2-repo", "repos.d"]:
+    for dir_ in ["repo1", "hermeto-repo", "repos.d"]:
         Path(arch_dir, dir_).mkdir(parents=True)
 
     _generate_repofiles(rooted_tmp_path.path, rooted_tmp_path.path, options)
-    repopath = arch_dir.joinpath("repos.d", "cachi2.repo")
+    repopath = arch_dir.joinpath("repos.d", f"{APP_NAME}.repo")
     with open(repopath) as f:
         actual = ConfigParser()
         expected = ConfigParser()
@@ -502,7 +503,7 @@ DOWNLOAD_URL = f"https://example.com/{RPM_FILE}"
             {},
             {"repoid": "foorepo", "url": DOWNLOAD_URL},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&repository_id={repoid}",
-            [Property(name="cachi2:missing_hash:in_file", value="rpms.lock.yaml")],
+            [Property(name=f"{APP_NAME}:missing_hash:in_file", value="rpms.lock.yaml")],
             id="no_checksum",
         ),
     ],
@@ -630,13 +631,13 @@ class TestRedhatRpmsLock:
     def test_internal_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.generated_repoid == "cachi2-abcdef"
+        assert lock.generated_repoid == f"{APP_NAME}-abcdef"
 
     @mock.patch("hermeto.core.package_managers.rpm.redhat.uuid")
     def test_internal_source_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.generated_source_repoid == "cachi2-abcdef-source"
+        assert lock.generated_source_repoid == f"{APP_NAME}-abcdef-source"
 
 
 class TestRepofile:

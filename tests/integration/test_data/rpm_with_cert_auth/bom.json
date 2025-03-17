@@ -1,27 +1,27 @@
 {
-  "bomFormat":"CycloneDX",
-  "components":[
-     {
-        "name":"redhat-release",
-        "purl":"pkg:rpm/redhat/redhat-release@9.4-0.5.el9?arch=x86_64&checksum=sha256:6fd4c0937fb4ec4b4c487fbd915af35bdba1133255f5e7c2e13b6c320086ea53&repository_id=test-repo",
-        "version":"9.4",
-        "properties":[
-           {
-              "name":"cachi2:found_by",
-              "value":"cachi2"
-           }
-        ],
-        "type":"library"
-     }
-  ],
-  "metadata":{
-     "tools":[
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "name": "redhat-release",
+      "purl": "pkg:rpm/redhat/redhat-release@9.4-0.5.el9?arch=x86_64&checksum=sha256:6fd4c0937fb4ec4b4c487fbd915af35bdba1133255f5e7c2e13b6c320086ea53&repository_id=test-repo",
+      "version": "9.4",
+      "properties": [
         {
-           "vendor":"red hat",
-           "name":"cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
-     ]
+      ],
+      "type": "library"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "red hat",
+        "name": "hermeto"
+      }
+    ]
   },
-  "specVersion":"1.4",
-  "version":1
+  "specVersion": "1.4",
+  "version": 1
 }
