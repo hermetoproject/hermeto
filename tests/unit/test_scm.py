@@ -27,8 +27,8 @@ class TestRepoID:
             ("https://git.host.com/some/path", "https://git.host.com/some/path"),
             # credentials
             (
-                "https://student:redhat@github.com/student/cachi2.git",
-                "https://github.com/student/cachi2.git",
+                "https://student:password@github.com/student/repo.git",
+                "https://github.com/student/repo.git",
             ),
             # unsupported
             (

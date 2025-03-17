@@ -24,8 +24,8 @@ def test_format_based_on_suffix(filename: str, expect_format: EnvFormat) -> None
     "filename, expect_reason",
     [
         (".env", "file has no suffix: .env"),
-        ("cachi2.", "file has no suffix: cachi2."),
-        ("cachi2.yaml", "unsupported suffix: yaml"),
+        ("file.", "file has no suffix: file."),
+        ("file.yaml", "unsupported suffix: yaml"),
     ],
 )
 def test_cannot_determine_format(filename: str, expect_reason: str) -> None:
