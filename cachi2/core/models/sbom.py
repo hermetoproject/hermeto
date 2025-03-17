@@ -14,7 +14,7 @@ import pydantic
 from packageurl import PackageURL
 from typing_extensions import Self
 
-from cachi2.core.models.property_semantics import Property, PropertySet
+from cachi2.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from cachi2.core.models.validators import unique_sorted
 from cachi2.core.utils import first_for
 
@@ -47,7 +47,7 @@ class Pedigree(pydantic.BaseModel):
     patches: list[Patch]
 
 
-FOUND_BY_APP_PROPERTY: Property = Property(name="cachi2:found_by", value="cachi2")
+FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value="cachi2")
 
 
 class Component(pydantic.BaseModel):

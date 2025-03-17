@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Iterable, Literal, Optional
+from enum import Enum
+from typing import TYPE_CHECKING, Iterable, Optional
 
 import pydantic
 
@@ -7,22 +8,26 @@ if TYPE_CHECKING:
     from typing_extensions import Self, assert_never
 
 
-PropertyName = Literal[
-    "cachi2:bundler:package:binary",
-    "cachi2:found_by",
-    "cachi2:rpm_summary",
-    "cachi2:missing_hash:in_file",
-    "cachi2:pip:package:binary",
-    "cachi2:pip:package:build-dependency",
-    "cdx:npm:package:bundled",
-    "cdx:npm:package:development",
-]
+class PropertyEnum(str, Enum):
+    """Property names literals. Workarounds Literals inflexibility."""
+
+    PROP_BUNDLER_PACKAGE_BINARY = "cachi2:bundler:package:binary"
+    PROP_FOUND_BY = "cachi2:found_by"
+    PROP_RPM_SUMMARY = "cachi2:rpm_summary"
+    PROP_MISSING_HASH_IN_FILE = "cachi2:missing_hash:in_file"
+    PROP_PIP_PACKAGE_BINARY = "cachi2:pip:package:binary"
+    PROP_PIP_PACKAGE_BUILD_DEPENDENCY = "cachi2:pip:package:build-dependency"
+    PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
+    PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Property(pydantic.BaseModel):
     """A property inside an SBOM component."""
 
-    name: PropertyName
+    name: PropertyEnum
     value: str
 
 
@@ -52,21 +57,21 @@ class PropertySet:
         rpm_summary = ""
 
         for prop in props:
-            if prop.name == "cachi2:found_by":
+            if prop.name == PropertyEnum.PROP_FOUND_BY:
                 found_by = prop.value
-            elif prop.name == "cachi2:missing_hash:in_file":
+            elif prop.name == PropertyEnum.PROP_MISSING_HASH_IN_FILE:
                 missing_hash_in_file.append(prop.value)
-            elif prop.name == "cdx:npm:package:bundled":
+            elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED:
                 npm_bundled = True
-            elif prop.name == "cdx:npm:package:development":
+            elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT:
                 npm_development = True
-            elif prop.name == "cachi2:pip:package:binary":
+            elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BINARY:
                 pip_package_binary = True
-            elif prop.name == "cachi2:pip:package:build-dependency":
+            elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY:
                 pip_build_dependency = True
-            elif prop.name == "cachi2:bundler:package:binary":
+            elif prop.name == PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY:
                 bundler_package_binary = True
-            elif prop.name == "cachi2:rpm_summary":
+            elif prop.name == PropertyEnum.PROP_RPM_SUMMARY:
                 rpm_summary = prop.value
             else:
                 assert_never(prop.name)
@@ -86,23 +91,25 @@ class PropertySet:
         """Convert a PropertySet to a list of SBOM component properties."""
         props = []
         if self.found_by:
-            props.append(Property(name="cachi2:found_by", value=self.found_by))
+            props.append(Property(name=PropertyEnum.PROP_FOUND_BY, value=self.found_by))
         props.extend(
-            Property(name="cachi2:missing_hash:in_file", value=filepath)
+            Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value=filepath)
             for filepath in self.missing_hash_in_file
         )
         if self.npm_bundled:
-            props.append(Property(name="cdx:npm:package:bundled", value="true"))
+            props.append(Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED, value="true"))
         if self.npm_development:
-            props.append(Property(name="cdx:npm:package:development", value="true"))
+            props.append(Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT, value="true"))
         if self.pip_package_binary:
-            props.append(Property(name="cachi2:pip:package:binary", value="true"))
+            props.append(Property(name=PropertyEnum.PROP_PIP_PACKAGE_BINARY, value="true"))
         if self.pip_build_dependency:
-            props.append(Property(name="cachi2:pip:package:build-dependency", value="true"))
+            props.append(
+                Property(name=PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY, value="true")
+            )
         if self.bundler_package_binary:
-            props.append(Property(name="cachi2:bundler:package:binary", value="true"))
+            props.append(Property(name=PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY, value="true"))
         if self.rpm_summary:
-            props.append(Property(name="cachi2:rpm_summary", value=self.rpm_summary))
+            props.append(Property(name=PropertyEnum.PROP_RPM_SUMMARY, value=self.rpm_summary))
 
         return sorted(props, key=lambda p: (p.name, p.value))
 
