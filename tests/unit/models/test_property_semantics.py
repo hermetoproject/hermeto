@@ -7,8 +7,8 @@ from cachi2.core.models.sbom import Component, Property, merge_component_propert
 @pytest.mark.parametrize(
     "components, expect_merged",
     [
-        ([], []),
-        (
+        pytest.param([], [], id="empty_components"),
+        pytest.param(
             # don't merge different components, just sort them by purl and sort their properties
             [
                 Component(
@@ -50,8 +50,9 @@ from cachi2.core.models.sbom import Component, Property, merge_component_propert
                     ],
                 ),
             ],
+            id="no_merging_just_sorted_components",
         ),
-        (
+        pytest.param(
             # do merge identical components
             [
                 Component(
@@ -102,8 +103,9 @@ from cachi2.core.models.sbom import Component, Property, merge_component_propert
                     ],
                 ),
             ],
+            id="merge_identical_components",
         ),
-        (
+        pytest.param(
             # validate that "wheel" property is merged correctly
             [
                 # sdist
@@ -137,6 +139,7 @@ from cachi2.core.models.sbom import Component, Property, merge_component_propert
                     ],
                 )
             ],
+            id="merge_pip_sdist_and_wheel",
         ),
     ],
 )

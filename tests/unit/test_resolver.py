@@ -103,8 +103,10 @@ def test_resolve_packages(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "packages, copy_exists",
     [
-        ([{"type": "yarn"}], True),
-        ([{"type": "gomod"}, {"type": "pip"}, {"type": "npm"}], False),
+        pytest.param([{"type": "yarn"}], True, id="single_package"),
+        pytest.param(
+            [{"type": "gomod"}, {"type": "pip"}, {"type": "npm"}], False, id="multiple_packages"
+        ),
     ],
 )
 @mock.patch("cachi2.core.resolver._resolve_packages")

@@ -4061,14 +4061,23 @@ def test_replace_external_requirements(
 @pytest.mark.parametrize(
     "packages, n_pip_packages",
     [
-        ([{"type": "gomod"}], 0),
-        ([{"type": "pip", "requirements_files": ["requirements.txt"]}], 1),
-        (
+        pytest.param(
+            [{"type": "gomod"}],
+            0,
+            id="not_python_project",
+        ),
+        pytest.param(
+            [{"type": "pip", "requirements_files": ["requirements.txt"]}],
+            1,
+            id="single_python_package",
+        ),
+        pytest.param(
             [
                 {"type": "pip", "requirements_files": ["requirements.txt"]},
                 {"type": "pip", "path": "foo", "requirements_build_files": []},
             ],
             2,
+            id="multiple_python_packages",
         ),
     ],
 )
