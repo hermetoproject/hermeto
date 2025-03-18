@@ -814,7 +814,7 @@ class SetupPY(SetupFile):
         https://github.com/pypa/setuptools/blob/5e60dc50e540a942aeb558aabe7d92ab7eb13d4b/setuptools/dist.py#L462
 
         Rather than trying to keep edge cases consistent with setuptools, treat them
-        consistently within Cachi2.
+        consistently in our application.
         """
         version = self._get_setup_kwarg("version")
         if not version:
@@ -1720,7 +1720,7 @@ def _process_options(options: list[str]) -> dict[str, Any]:
 
 def _validate_requirements(requirements: list[PipRequirement]) -> None:
     """
-    Validate that all requirements meet Cachi2 expectations.
+    Validate that all requirements meet our expectations.
 
     :param list[PipRequirement] requirements: All requirements from a file
     :raise PackageRejected: If any requirement does not meet expectations
@@ -1971,7 +1971,7 @@ def _download_vcs_package(requirement: PipRequirement, pip_deps_dir: RootedPath)
     Fetch the source for a Python package from VCS (only git is supported).
 
     :param PipRequirement requirement: VCS requirement from a requirements.txt file
-    :param RootedPath pip_deps_dir: The deps/pip directory in a Cachi2 request bundle
+    :param RootedPath pip_deps_dir: The deps/pip directory in an application request bundle
 
     :return: Dict with package name, download path and git info
     """
@@ -1996,7 +1996,7 @@ def _download_url_package(
     Download a Python package from a URL.
 
     :param PipRequirement requirement: URL requirement from a requirements.txt file
-    :param RootedPath pip_deps_dir: The deps/pip directory in a Cachi2 request bundle
+    :param RootedPath pip_deps_dir: The deps/pip directory in an application request bundle
     :param set[str] trusted_hosts: If host (or host:port) is trusted, do not verify SSL
 
     :return: Dict with package name, download path, original URL and URL with hash
@@ -2111,7 +2111,8 @@ def _resolve_pip(
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
         ``requirements`` which is a list of absolute paths for the processed requirement files
-    :raises PackageRejected | UnsupportedFeature: if the package is not cachi2-pip compatible
+    :raises PackageRejected | UnsupportedFeature: if the package is not compatible with our
+    requirements/expectations
     """
     pkg_name, pkg_version = _get_pip_metadata(app_path)
 
@@ -2237,7 +2238,7 @@ def _check_metadata_in_sdist(sdist_path: Path) -> None:
     elif any(map(sdist_path.name.endswith, SDIST_FILE_EXTENSIONS)):
         files_iter = _iter_tar_file(sdist_path)
     else:
-        # Invalid usage of the method (Cachi2 doesn't download files without a known extension)
+        # Invalid usage of the method (we don't download files without a known extension)
         raise ValueError(
             f"Cannot check metadata from {sdist_path}, "
             f"which does not have a known supported extension.",

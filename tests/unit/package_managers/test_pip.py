@@ -14,7 +14,7 @@ from git import Repo
 
 from cachi2.core.checksum import ChecksumInfo
 from cachi2.core.errors import (
-    Cachi2Error,
+    BaseError,
     FetchError,
     PackageRejected,
     UnexpectedFormat,
@@ -503,7 +503,7 @@ class TestSetupCFG:
         project_tree: dict[str, Any],
         expect_version: Optional[str],
         expect_logs: list[str],
-        expect_error: Optional[Cachi2Error],
+        expect_error: Optional[BaseError],
         rooted_tmpdir: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -618,7 +618,7 @@ class TestSetupCFG:
         project_tree: dict[str, Any],
         expect_version: Optional[str],
         expect_logs: list[str],
-        expect_error: Optional[Cachi2Error],
+        expect_error: Optional[BaseError],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -905,7 +905,7 @@ class TestSetupCFG:
         project_tree: dict[str, Any],
         expect_version: Optional[str],
         expect_logs: list[str],
-        expect_error: Optional[Cachi2Error],
+        expect_error: Optional[BaseError],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -1073,7 +1073,7 @@ class TestSetupCFG:
         project_tree: dict[str, Any],
         expect_version: Optional[str],
         expect_logs: list[str],
-        expect_error: Optional[Cachi2Error],
+        expect_error: Optional[BaseError],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -2177,7 +2177,7 @@ class TestPipRequirementsFile:
                 "cnr_server@foo@https://github.com/quay/appr/archive/58c88e49.tar.gz",
                 "Unable to extract scheme from direct access requirement",
             ),
-            # Valid format but Cachi2 doesn't support it
+            # Valid format but we don't support it
             (
                 "pip @ file:///localbuilds/pip-1.3.1.zip",
                 UnsupportedFeature("Direct references with 'file' scheme are not supported"),

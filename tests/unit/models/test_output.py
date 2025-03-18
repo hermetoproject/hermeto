@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import pydantic
 import pytest
 
-from cachi2.core.errors import Cachi2Error
+from cachi2.core.errors import BaseError
 from cachi2.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
 
 
@@ -203,5 +203,5 @@ class TestEnvironmentVariable:
         mappings = {e.name: e.value for e in envs}
 
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
-        with pytest.raises(Cachi2Error, match=err_msg):
+        with pytest.raises(BaseError, match=err_msg):
             envs[0].resolve_value(mappings)

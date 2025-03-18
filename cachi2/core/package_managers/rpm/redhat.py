@@ -52,7 +52,7 @@ class RedhatRpmsLock(BaseModel):
     arches: list[LockfileArch]
 
     @cached_property
-    def cachi2_repoid(self) -> str:
+    def generated_repoid(self) -> str:
         """
         Generate a short random repoid string.
 
@@ -62,9 +62,9 @@ class RedhatRpmsLock(BaseModel):
         return f"cachi2-{uuid.uuid4().hex[:6]}"
 
     @cached_property
-    def cachi2_source_repoid(self) -> str:
+    def generated_source_repoid(self) -> str:
         """Generate a short random source repoid string."""
-        return self.cachi2_repoid + "-source"
+        return self.generated_repoid + "-source"
 
     @field_validator("lockfileVersion")
     def _version_redhat(cls, version: PositiveInt) -> PositiveInt:

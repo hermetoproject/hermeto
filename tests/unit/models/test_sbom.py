@@ -6,7 +6,7 @@ import pydantic
 import pytest
 
 from cachi2.core.models.sbom import (
-    FOUND_BY_CACHI2_PROPERTY,
+    FOUND_BY_APP_PROPERTY,
     Component,
     Metadata,
     Property,
@@ -88,18 +88,18 @@ class TestComponent:
         [
             (
                 [],
-                [FOUND_BY_CACHI2_PROPERTY],
+                [FOUND_BY_APP_PROPERTY],
             ),
             (
                 [Property(name="cachi2:missing_hash:in_file", value="go.sum")],
                 [
                     Property(name="cachi2:missing_hash:in_file", value="go.sum"),
-                    FOUND_BY_CACHI2_PROPERTY,
+                    FOUND_BY_APP_PROPERTY,
                 ],
             ),
             (
-                [FOUND_BY_CACHI2_PROPERTY],
-                [FOUND_BY_CACHI2_PROPERTY],
+                [FOUND_BY_APP_PROPERTY],
+                [FOUND_BY_APP_PROPERTY],
             ),
         ],
     )

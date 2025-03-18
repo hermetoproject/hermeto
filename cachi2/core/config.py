@@ -12,7 +12,7 @@ config = None
 
 
 class Config(BaseModel, extra="forbid"):
-    """Singleton that provides default configuration for the Cachi2 process."""
+    """Singleton that provides default configuration for the application process."""
 
     goproxy_url: str = "https://proxy.golang.org,direct"
     default_environment_variables: dict = {}

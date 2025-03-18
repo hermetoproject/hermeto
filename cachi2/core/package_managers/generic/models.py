@@ -218,7 +218,7 @@ class LockfileArtifactMaven(LockfileArtifactBase):
 
 
 class GenericLockfileV1(BaseModel):
-    """Defines format of the cachi2 generic lockfile, version 1.0."""
+    """Defines format of our generic lockfile, version 1.0."""
 
     metadata: LockfileMetadata
     artifacts: list[Union[LockfileArtifactUrl, LockfileArtifactMaven]]

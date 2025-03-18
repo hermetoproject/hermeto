@@ -79,7 +79,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
 
 def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfileV1:
     """
-    Load the cachi2 generic lockfile from the given path.
+    Load the generic lockfile from the given path.
 
     :param lockfile_path: the path to the lockfile
     :param output_dir: path to output directory

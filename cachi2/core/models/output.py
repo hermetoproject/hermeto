@@ -5,7 +5,7 @@ from typing import Any, Dict, Literal, Optional, Set
 
 import pydantic
 
-from cachi2.core.errors import Cachi2Error
+from cachi2.core.errors import BaseError
 from cachi2.core.models.sbom import Component, Sbom, merge_component_properties
 from cachi2.core.models.validators import unique_sorted
 
@@ -81,7 +81,7 @@ class EnvironmentVariable(pydantic.BaseModel):
 
             substituted |= get_placeholders(t_old) & mappings.keys()
             if substituted & p_new:
-                raise Cachi2Error(
+                raise BaseError(
                     f"Detected a cycle in environment variable expansion of '{self.name}'",
                     solution=(
                         "Inspect all relevant environment variables and make sure their "

@@ -160,7 +160,7 @@ def parse_locator(locator_str: str) -> Locator:
         if the locator or the reference in the locator doesn't match the expected format
         if the type of the locator cannot be determined
         if the locator doesn't follow the form we expect for the locator's type
-    :raises UnsupportedFeature: if the locator has a type that Cachi2 does not support
+    :raises UnsupportedFeature: if the locator has a type that we don't support
     """
     try:
         locator = _parse_locator(locator_str)

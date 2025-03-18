@@ -16,7 +16,7 @@ class LogLevel(str, enum.Enum):
 
 
 def setup_logging(level: LogLevel, additional_modules: Iterable[str] = ()) -> None:
-    """Set up logging. By default, enables only the cachi2 root logger."""
+    """Set up logging. By default, enables only the application root logger."""
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
 

@@ -45,17 +45,16 @@ def top_level_test_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def cachi2_image() -> utils.Cachi2Image:
-    cachi2_image_ref = os.environ.get("HERMETO_IMAGE")
-    if not cachi2_image_ref:
-        cachi2_image_ref = "localhost/cachi2:latest"
+    if not (image_ref := os.environ.get("HERMETO_IMAGE")):
+        image_ref = "localhost/cachi2:latest"
         log.info("Building local cachi2:latest image")
         # <arbitrary_path>/cachi2/tests/integration/conftest.py
         #                   [2] <- [1]  <-  [0]  <- parents
-        cachi2_repo_root = Path(__file__).parents[2]
-        utils.build_image(cachi2_repo_root, tag=cachi2_image_ref)
+        repo_root = Path(__file__).parents[2]
+        utils.build_image(repo_root, tag=image_ref)
 
-    cachi2 = utils.Cachi2Image(cachi2_image_ref)
-    if not cachi2_image_ref.startswith("localhost/"):
+    cachi2 = utils.Cachi2Image(image_ref)
+    if not image_ref.startswith("localhost/"):
         cachi2.pull_image()
 
     return cachi2

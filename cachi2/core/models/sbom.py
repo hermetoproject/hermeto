@@ -47,7 +47,7 @@ class Pedigree(pydantic.BaseModel):
     patches: list[Patch]
 
 
-FOUND_BY_CACHI2_PROPERTY: Property = Property(name="cachi2:found_by", value="cachi2")
+FOUND_BY_APP_PROPERTY: Property = Property(name="cachi2:found_by", value="cachi2")
 
 
 class Component(pydantic.BaseModel):
@@ -76,16 +76,16 @@ class Component(pydantic.BaseModel):
 
     @pydantic.field_validator("properties")
     def _add_found_by_property(cls, properties: list[Property]) -> list[Property]:
-        if FOUND_BY_CACHI2_PROPERTY not in properties:
-            properties.append(FOUND_BY_CACHI2_PROPERTY)
+        if FOUND_BY_APP_PROPERTY not in properties:
+            properties.append(FOUND_BY_APP_PROPERTY)
 
         return properties
 
     @classmethod
     def from_package_dict(cls, package: dict[str, Any]) -> "Component":
-        """Create a Component from a Cachi2 package dictionary.
+        """Create a Component from our package dictionary.
 
-        A Cachi2 package has extra fields which are unnecessary and can cause validation errors.
+        A package has extra fields which are unnecessary and can cause validation errors.
         """
         return cls(
             name=package.get("name", None),
@@ -404,7 +404,7 @@ class SPDXPackage(pydantic.BaseModel):
 
     @classmethod
     def from_package_dict(cls, package: dict[str, Any]) -> "SPDXPackage":
-        """Create a SPDXPackage from a Cachi2 package dictionary."""
+        """Create a SPDXPackage from our dictionary."""
         external_refs = package.get("externalRefs", [])
         annotations = [SPDXPackageAnnotation(**an) for an in package.get("annotations", [])]
         if package.get("SPDXID") is None:

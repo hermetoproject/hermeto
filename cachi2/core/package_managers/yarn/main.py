@@ -174,7 +174,7 @@ def _get_plugin_allowlist(yarn_rc: YarnRc) -> list[Plugin]:
 
     Some plugins are required for processing a specific protocol (e.g. exec), and their absence
     would make yarn commands such as 'install' and 'info' fail. Keeping this whitelist allows
-    Cachi2 to get the list of packages from 'yarn info' and properly inform the user if his request
+    our application to get the list of packages from 'yarn info' and properly inform the user if his request
     is not processable in case it contains disallowed protocols.
 
     This list should only have official plugins that add new protocols and that also do not

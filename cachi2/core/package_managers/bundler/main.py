@@ -105,7 +105,7 @@ def _get_main_package_name_and_version(
     """
     Get main package name and version.
 
-    The main package is the package that is being processed by cachi2.
+    The main package is the package that is being processed by our application.
     Not any of its dependencies.
     """
     name_and_version = _get_name_and_version_from_lockfile(dependencies)
@@ -211,7 +211,7 @@ def _prepare_for_hermetic_build(
         config_data += hermetic_config
     elif (alternative_config := os.getenv("BUNDLE_APP_CONFIG")) is not None:
         # Corner case: a user decides to define their own alternate config.
-        # In this scenario cachi2 must try to copy over user-defined variables
+        # In this scenario the application must try to copy over user-defined variables
         # to its overriding alternate config.
         config_data = Path(alternative_config, "config").read_text()
         config_data += hermetic_config

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Optional, Sequence
 
 from cachi2.core.config import get_config
-from cachi2.core.errors import Cachi2Error
+from cachi2.core.errors import BaseError
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def run_cmd(cmd: Sequence[str], params: dict) -> str:
     executable, *args = cmd
     executable_path = shutil.which(executable)
     if executable_path is None:
-        raise Cachi2Error(
+        raise BaseError(
             f"{executable!r} executable not found in PATH",
             solution=(
                 f"Please make sure that the {executable!r} executable is installed in your PATH.\n"
@@ -190,7 +190,7 @@ def copy_directory(origin: Path, destination: Path) -> Path:
 
 
 def get_cache_dir() -> Path:
-    """Return cachi2's global cache directory, useful for storing reusable data."""
+    """Return our application's global cache directory, useful for storing reusable data."""
     try:
         cache_dir = Path(os.environ["XDG_CACHE_HOME"])
     except KeyError:

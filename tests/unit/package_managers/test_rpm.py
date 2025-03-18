@@ -630,13 +630,13 @@ class TestRedhatRpmsLock:
     def test_internal_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.cachi2_repoid == "cachi2-abcdef"
+        assert lock.generated_repoid == "cachi2-abcdef"
 
     @mock.patch("cachi2.core.package_managers.rpm.redhat.uuid")
     def test_internal_source_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.cachi2_source_repoid == "cachi2-abcdef-source"
+        assert lock.generated_source_repoid == "cachi2-abcdef-source"
 
 
 class TestRepofile:

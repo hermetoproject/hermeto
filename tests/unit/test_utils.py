@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import Cachi2Error
+from cachi2.core.errors import BaseError
 from cachi2.core.utils import (
     _fast_copy,
     _FastCopyFailedFallback,
@@ -86,7 +86,7 @@ def test_run_cmd_executable_not_found(
 ) -> None:
     mock_shutil_which.return_value = None
 
-    with pytest.raises(Cachi2Error, match="'foo' executable not found in PATH"):
+    with pytest.raises(BaseError, match="'foo' executable not found in PATH"):
         run_cmd(["foo"], params={})
 
 

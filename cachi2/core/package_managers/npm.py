@@ -698,7 +698,7 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
         ``package_lock_file`` which is the (updated) package-lock.json as a ProjectFile
-    :raises PackageRejected: if the npm package is not cachi2 compatible
+    :raises PackageRejected: if the npm package is not compatible with our requirements
     """
     # npm-shrinkwrap.json and package-lock.json share the same format but serve slightly
     # different purposes. See the following documentation for more information:

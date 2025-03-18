@@ -327,9 +327,9 @@ def _download(
             repoid = pkg.repoid
             if not repoid:
                 if tag == "rpm":
-                    repoid = lockfile.cachi2_repoid
+                    repoid = lockfile.generated_repoid
                 else:
-                    repoid = lockfile.cachi2_source_repoid
+                    repoid = lockfile.generated_source_repoid
 
             dest = output_dir.joinpath(arch.arch, repoid, Path(pkg.url).name)
             files[pkg.url] = str(dest)

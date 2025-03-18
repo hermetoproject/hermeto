@@ -333,7 +333,7 @@ class Go:
     def _install(self, release: str) -> str:
         """Fetch and install an alternative version of main Go toolchain.
 
-        This method should only ever be needed on local cachi2 installs, but not in container
+        This method should only ever be needed with local installs, but not in container
         environment installs where we pre-install multiple Go versions.
         Because Go can't really be told where the toolchain should be installed to, the process is
         as follows:
@@ -372,11 +372,11 @@ class Go:
 
             # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/cachi2/go
             sdk_download_dir = Path.home() / f"sdk/{release}"
-            cachi2_go_dest_dir = get_cache_dir() / "go" / release
-            shutil.move(sdk_download_dir, cachi2_go_dest_dir)
+            go_dest_dir = get_cache_dir() / "go" / release
+            shutil.move(sdk_download_dir, go_dest_dir)
 
-        log.debug(f"Go {release} toolchain installed at: {cachi2_go_dest_dir}")
-        return str(cachi2_go_dest_dir / "bin/go")
+        log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
+        return str(go_dest_dir / "bin/go")
 
     def _retry(self, cmd: list[str], **kwargs: Any) -> str:
         """Run gomod command in a networking context.
@@ -386,7 +386,7 @@ class Go:
         number of times.
 
         The same cache directory will be use between retries, so Go will not have to download the
-        same artifact (e.g. dependency) twice. The backoff is exponential, Cachi2 will wait 1s ->
+        same artifact (e.g. dependency) twice. The backoff is exponential, we will wait 1s ->
         2s -> 4s -> ... before retrying.
         """
         n_tries = get_config().gomod_download_max_tries
@@ -972,7 +972,7 @@ def _resolve_gomod(
     Resolve and fetch gomod dependencies for given app source archive.
 
     :param app_dir: the full path to the application source code
-    :param request: the Cachi2 request this is for
+    :param request: app request this is for
     :param tmp_dir: one temporary directory for all go modules
     :return: a dict containing the Go module itself ("module" key), the list of dictionaries
         representing the dependencies ("module_deps" key), the top package level dependency
@@ -1604,14 +1604,15 @@ def _vendor_deps(
     """
     Vendor golang dependencies.
 
-    Cachi2 checks the vendor directory for updated content, failing if Go'd be to make any changes.
+    Application checks the vendor directory for updated content, failing if Go'd be to make any
+    changes.
 
     :param app_dir: path to the module directory
     :param run_params: common params for the subprocess calls to `go`
     :param has_workspace: whether we detected Go workspaces in the repo (affects @context_dir)
     :return: the list of Go modules parsed from vendor/modules.txt
     :raise PackageRejected: if vendor directory changed
-    :raise UnexpectedFormat: if Cachi2 fails to parse vendor/modules.txt
+    :raise UnexpectedFormat: if application fails to parse vendor/modules.txt
     """
     log.info("Vendoring the gomod dependencies")
 

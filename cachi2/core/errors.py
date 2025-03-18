@@ -4,7 +4,7 @@ from typing import ClassVar, Optional
 _argument_not_specified = "__argument_not_specified__"
 
 
-class Cachi2Error(Exception):
+class BaseError(Exception):
     """Root of the error hierarchy. Don't raise this directly, use more specific error types."""
 
     is_invalid_usage: ClassVar[bool] = False
@@ -17,7 +17,7 @@ class Cachi2Error(Exception):
         solution: Optional[str] = _argument_not_specified,
         docs: Optional[str] = None,
     ) -> None:
-        """Initialize a Cachi2 error.
+        """Initialize BaseError.
 
         :param reason: explain what went wrong
         :param solution: politely suggest a potential solution to the user
@@ -40,8 +40,8 @@ class Cachi2Error(Exception):
         return msg
 
 
-class UsageError(Cachi2Error):
-    """Generic error for "Cachi2 was used incorrectly." Prefer more specific errors."""
+class UsageError(BaseError):
+    """Generic error for "Hermeto was used incorrectly." Prefer more specific errors."""
 
     is_invalid_usage: ClassVar[bool] = True
 
@@ -60,10 +60,10 @@ class InvalidInput(UsageError):
 
 
 class PackageRejected(UsageError):
-    """Cachi2 refused to process the package the user requested.
+    """The Application refused to process the package the user requested.
 
     a) The package appears invalid (e.g. missing go.mod for a Go module).
-    b) The package does not meet Cachi2's extra requirements (e.g. missing checksums).
+    b) The package does not meet our extra requirements (e.g. missing checksums).
     """
 
     def __init__(self, reason: str, *, solution: Optional[str], docs: Optional[str] = None) -> None:
@@ -79,7 +79,7 @@ class PackageRejected(UsageError):
 
 
 class UnexpectedFormat(UsageError):
-    """Cachi2 failed to parse a file in the user's package (e.g. requirements.txt)."""
+    """The Application failed to parse a file in the user's package (e.g. requirements.txt)."""
 
     default_solution = (
         "Please check if the format of your file is correct.\n"
@@ -88,16 +88,16 @@ class UnexpectedFormat(UsageError):
 
 
 class UnsupportedFeature(UsageError):
-    """Cachi2 doesn't support a feature the user requested.
+    """The Application doesn't support a feature the user requested.
 
-    The requested feature might be valid, but Cachi2 doesn't implement it.
+    The requested feature might be valid, but application doesn't implement it.
     """
 
     default_solution = "If you need Cachi2 to support this feature, please contact the maintainers."
 
 
-class FetchError(Cachi2Error):
-    """Cachi2 failed to fetch a dependency or other data needed to process a package."""
+class FetchError(BaseError):
+    """The Application failed to fetch a dependency or other data needed to process a package."""
 
     default_solution = (
         "The error might be intermittent, please try again.\n"
@@ -105,7 +105,7 @@ class FetchError(Cachi2Error):
     )
 
 
-class PackageManagerError(Cachi2Error):
+class PackageManagerError(BaseError):
     """The package manager subprocess returned an error.
 
     Maybe some configuration is invalid, maybe the package manager was unable to fetch a dependency,

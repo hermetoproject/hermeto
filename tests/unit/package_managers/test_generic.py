@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from cachi2.core.errors import Cachi2Error, PackageRejected
+from cachi2.core.errors import BaseError, PackageRejected
 from cachi2.core.models.input import GenericPackageInput
 from cachi2.core.models.sbom import Component
 from cachi2.core.package_managers.generic.main import (
@@ -220,7 +220,7 @@ def test_resolve_generic_lockfile_invalid(
     mock_download: mock.Mock,
     mock_asyncio_run: mock.Mock,
     lockfile: str,
-    expected_exception: Type[Cachi2Error],
+    expected_exception: Type[BaseError],
     expected_err: str,
     rooted_tmp_path: RootedPath,
 ) -> None:

@@ -134,7 +134,7 @@ def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
     toml_template = tomlkit.parse(template).value
     # Absolute path has to be replaced with relative path for sources relocation to work:
     toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
-    # A correct output_dir value will be supplied by cachi2 during a later stage.
+    # A correct output_dir value will be supplied by the application during a later stage.
     return toml_template
 
 
