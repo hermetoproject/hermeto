@@ -29,6 +29,9 @@ from cachi2.interface.cli import DEFAULT_OUTPUT, DEFAULT_SOURCE, app
 runner = typer.testing.CliRunner()
 
 
+SPDX_EPOCH_STRFTIME = datetime.datetime.fromtimestamp(0).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 @pytest.fixture
 def tmp_cwd(tmp_path: Path) -> Iterator[Path]:
     """Temporarily change working directory to a pytest tmpdir."""
@@ -635,8 +638,12 @@ class TestFetchDeps:
             ),
         ],
     )
+    @mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
     def test_write_json_output_spdx(
-        self, request_output: RequestOutput, tmp_cwd: Path, isodate: datetime.datetime
+        self,
+        mock_spdx_now: str,
+        request_output: RequestOutput,
+        tmp_cwd: Path,
     ) -> None:
         with mock_fetch_deps(output=request_output):
             invoke_expecting_sucess(app, ["fetch-deps", "--sbom-output-type", "spdx", "gomod"])

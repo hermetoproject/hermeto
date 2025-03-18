@@ -1,5 +1,6 @@
 import datetime
 import json
+from unittest import mock
 
 import pydantic
 import pytest
@@ -18,6 +19,8 @@ from cachi2.core.models.sbom import (
     SPDXSbom,
     Tool,
 )
+
+SPDX_EPOCH_STRFTIME = datetime.datetime.fromtimestamp(0).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class TestComponent:
@@ -271,8 +274,9 @@ class TestSPDXPackage:
             )
 
 
+@mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSbom:
-    def test_sort_and_dedupe_components(self) -> None:
+    def test_sort_and_dedupe_components(self, mock_spdx_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -320,7 +324,7 @@ class TestSbom:
         ]
 
     # Handles generic PM use-case.
-    def test_to_spdx_when_a_file_is_present(self, isodate: datetime.datetime) -> None:
+    def test_to_spdx_when_a_file_is_present(self, mock_spdx_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -363,7 +367,7 @@ class TestSbom:
                 annotations=[
                     SPDXPackageAnnotation(
                         annotator="Tool: cachi2:jsonencoded",
-                        annotationDate="2021-07-01T00:00:00Z",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment='{"name": "cachi2:found_by", "value": "cachi2"}',
                     ),
@@ -372,7 +376,7 @@ class TestSbom:
             ),
         ]
 
-    def test_to_spdx(self, isodate: datetime.datetime) -> None:
+    def test_to_spdx(self, mock_spdx_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -421,13 +425,13 @@ class TestSbom:
                 annotations=[
                     SPDXPackageAnnotation(
                         annotator="Tool: cachi2:jsonencoded",
-                        annotationDate="2021-07-01T00:00:00Z",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
                     ),
                     SPDXPackageAnnotation(
                         annotator="Tool: cachi2:jsonencoded",
-                        annotationDate="2021-07-01T00:00:00Z",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment=json.dumps({"name": "cdx:npm:package:bundled", "value": "true"}),
                     ),
@@ -447,7 +451,7 @@ class TestSbom:
                 annotations=[
                     SPDXPackageAnnotation(
                         annotator="Tool: cachi2:jsonencoded",
-                        annotationDate="2021-07-01T00:00:00Z",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
                     ),
@@ -467,7 +471,7 @@ class TestSbom:
                 annotations=[
                     SPDXPackageAnnotation(
                         annotator="Tool: cachi2:jsonencoded",
-                        annotationDate="2021-07-01T00:00:00Z",
+                        annotationDate=SPDX_EPOCH_STRFTIME,
                         annotationType="OTHER",
                         comment=json.dumps({"name": "cachi2:found_by", "value": "cachi2"}),
                     ),
@@ -502,7 +506,7 @@ class TestSbom:
         ]
 
     def test_cyclonedx_sbom_can_be_converted_to_spdx_and_back_without_loosing_any_data(
-        self, isodate: datetime.datetime
+        self, mock_spdx_now: str
     ) -> None:
         sbom = Sbom(
             components=[
@@ -535,7 +539,7 @@ class TestSbom:
 # Some partially constructed objects to streamline test cases definitions.
 STOCK_ANNOTATION = {
     "annotator": "Tool: cachi2:jsonencoded",
-    "annotationDate": "2021-07-01T00:00:00Z",
+    "annotationDate": SPDX_EPOCH_STRFTIME,
     "annotationType": "OTHER",
     "comment": '{"name": "cachi2:found_by", "value": "cachi2"}',
 }
@@ -545,7 +549,7 @@ BLANK_SPDX_SBOM = SPDXSbom(
     documentNamespace="NOASSERTION",
     creationInfo={
         "creators": ["Tool: cachi2", "Organization: cachi2"],
-        "created": "2021-07-01T00:00:00Z",
+        "created": SPDX_EPOCH_STRFTIME,
     },
 )
 
@@ -588,10 +592,11 @@ def _root_contains(spdxid: str) -> SPDXRelation:
     )
 
 
+@mock.patch("cachi2.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSPDXSbom:
-    def test_sort_and_dedupe_packages(self) -> None:
+    def test_sort_and_dedupe_packages(self, mock_spdx_now: str) -> None:
         sbom = SPDXSbom(
-            creationInfo={"creators": [], "created": "2021-07-01T00:00:00Z"},
+            creationInfo={"creators": [], "created": SPDX_EPOCH_STRFTIME},
             documentNamespace="NOASSERTION",
             packages=[
                 {
@@ -761,7 +766,9 @@ class TestSPDXSbom:
         assert len(sbom.packages) == len(expected_packages)
         assert sbom.packages == expected_packages
 
-    def test_package_external_ref_invalid_reference_type_for_category(self) -> None:
+    def test_package_external_ref_invalid_reference_type_for_category(
+        self, mock_spdx_now: str
+    ) -> None:
         adapter: pydantic.TypeAdapter = pydantic.TypeAdapter(SPDXPackageExternalRefType)
 
         with pytest.raises(pydantic.ValidationError):
@@ -789,7 +796,7 @@ class TestSPDXSbom:
                 )
             )
 
-    def test_package_external_ref_invalid_reference(self) -> None:
+    def test_package_external_ref_invalid_reference(self, mock_spdx_now: str) -> None:
         adapter: pydantic.TypeAdapter = pydantic.TypeAdapter(SPDXPackageExternalRefType)
         with pytest.raises(
             pydantic.ValidationError,
@@ -802,12 +809,12 @@ class TestSPDXSbom:
                 )
             )
 
-    def test_to_cyclonedx(self) -> None:
+    def test_to_cyclonedx(self, mock_spdx_now: str) -> None:
         sbom = SPDXSbom(
             documentNamespace="NOASSERTION",
             creationInfo={
                 "creators": ["Tool: cachi2", "Organization: cachi2"],
-                "created": "2021-07-01T00:00:00Z",
+                "created": SPDX_EPOCH_STRFTIME,
             },
             packages=[
                 {
@@ -1236,7 +1243,7 @@ class TestSPDXSbom:
         ),
     )
     def test_spdx_sbom_can_be_converted_to_cyclonedx_and_back_without_loosing_any_data(
-        self, original_sbom: SPDXSbom, isodate: datetime.datetime
+        self, mock_spdx_now: str, original_sbom: SPDXSbom
     ) -> None:
 
         converted_sbom = original_sbom.to_cyclonedx().to_spdx("NOASSERTION")
