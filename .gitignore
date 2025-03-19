@@ -124,6 +124,10 @@ settings.py
 *.swo
 tags
 
-# cachi2 default files
+# our default files
+# TODO: Drop the cachi2 variants when we get rid of the legacy entrypoint
 cachi2-output/
 cachi2.env
+
+hermeto-output/
+hermeto.env
