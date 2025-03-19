@@ -3,7 +3,7 @@
 Contents:
 
 1. [Ruby ecosystem overview](#i-ruby-ecosystem-overview)
-2. [Design for the Cachi2 implementation](#ii-design-for-the-implementation-in-cachi2)
+2. [Design for the Hermeto implementation](#ii-design-for-the-implementation-in-hermeto)
 
 ## I. Ruby ecosystem overview
 
@@ -227,7 +227,7 @@ CHECKSUMS
 This feature is available since Bundler [v2.5.0](https://github.com/rubygems/rubygems/blob/master/bundler/lib/bundler/lockfile_parser.rb#L55),
 from this [PR](https://github.com/rubygems/rubygems/pull/6374) being merged on Oct 21, 2023.
 
-## II. Design for the implementation in Cachi2
+## II. Design for the implementation in Hermeto
 
 ### Prefetching
 
@@ -256,7 +256,7 @@ Gems from the internet.
 #### Output folder structure
 
 Bundler has a built-in feature to cache all dependencies locally. This is done with the `bundle cache --all` command or
-`bundle package --all` alias. In order to make bundler use the prefetched dependencies during the build, Cachi2 needs
+`bundle package --all` alias. In order to make bundler use the prefetched dependencies during the build, Hermeto needs
 to recreate the exact same folder structure as bundler does.
 
 Here's an example of how the output folder should look like:
@@ -308,7 +308,7 @@ GIT
 
 #### Platform (i.e. pre-compiled) gems
 By default, binary gems are ignored for similar reasons as with [pip
-wheels](https://github.com/hermetoproject/cachi2/blob/main/docs/pip.md#distribution-formats),
+wheels](https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#distribution-formats),
 i.e. lacking sources which report in the SBOM.
 Platforms that relate to specific architectures will contain
 binaries that were pre-compiled for that architecture (see [Platforms](#platforms)).
@@ -331,7 +331,7 @@ identical behaviour as with our pip backend.
 #### Plugins
 Bundler has support for using [plugins](https://bundler.io/guides/bundler_plugins.html), which allows users to extend
 Bundler's functionality in any way that they seem fit. Since this can open the possibility for security issues, plugins
-will not be supported by Cachi2.
+will not be supported by Hermeto.
 
 Since we're not proposing the direct usage of Bundler to fetch the dependencies, no other actions are needed in the
 prefetch phase, existing plugin definitions will be ignored.
@@ -356,7 +356,7 @@ to perform the install. When doing an offline install from cache, a warning mess
 will usually perform the install as expected.
 
 To allow users to use the pinned version instead of only relying on the Bundler version present in the base image,
-Cachi2 could also prefetch the specific Bundler version needed for that project. This is easy to achieve, since Bundler
+Hermeto could also prefetch the specific Bundler version needed for that project. This is easy to achieve, since Bundler
 is treated as an ordinary Gem: https://rubygems.org/gems/bundler.
 
 This feature, however, is out of scope for the initial implementation, and could be added if there's user demand for
@@ -377,7 +377,7 @@ Since the local configuration takes higher precedence than the environment varia
 need to set the Bundler configuration options to make the build work.
 
 In order to do this, we can either use `inject-files` to overwrite the `.bundle/config` directory in the source folder,
-or use `BUNDLE_APP_CONFIG` to point Bundler to a config directory within the Cachi2 output directory. The latter has
+or use `BUNDLE_APP_CONFIG` to point Bundler to a config directory within the Hermeto output directory. The latter has
 the benefit of not needing to dirty the cloned sources, but it wouldn't be able to support a multiple Ruby project per
 repository scenario (since we would need to keep multiple configuration files).
 
@@ -405,7 +405,7 @@ There are some considerations and consequences when it comes to enforcing the de
 see [Offline installation using deployment mode](#offline-installation-using-deployment-mode).
 
 - **BUNDLE_NO_PRUNE**: Whether Bundler should leave outdated gems unpruned when caching. Since we're potentially using
-a single cache folder for multiple Gems ("input packages" in Cachi2's terms), we need to make sure that the first
+a single cache folder for multiple Gems ("input packages" in Hermeto's terms), we need to make sure that the first
 install won't prune any cached dependencies that are unrelated to it.
 
 - **BUNDLE_ALLOW_OFFLINE_INSTALL**: Explicitly allow bundler to use cached packages during offline
@@ -543,7 +543,7 @@ the `name` and `version` for the SBOM component. In case this block is absent, w
 repository's remote `origin` to retrieve the main package's name, and leave the version empty, since it is not a
 mandatory field.
 
-[^main-package]: In Cachi2's terms, the **main package** is the path in the repository that is currently being
+[^main-package]: In Hermeto's terms, the **main package** is the path in the repository that is currently being
   processed.
 
 #### PURLs
@@ -611,4 +611,4 @@ PATH
 - proper support for plugins
 
 ### References
-This design doc was partially based on the original implementation done in [Cachito](https://github.com/containerbuildsystem/cachito/blob/master/cachito/workers/pkg_managers/rubygems.py). Since Cachi2 has different design goals from Cachito, the implementation here will deviate from the original one, with a key difference being that Cachi2 needs to provide a way to perform an [offline install](#providing-the-content-for-the-hermetic-build) from the local prefetched content.
+This design doc was partially based on the original implementation done in [Cachito](https://github.com/containerbuildsystem/cachito/blob/master/cachito/workers/pkg_managers/rubygems.py). Since Hermeto has different design goals from Cachito, the implementation here will deviate from the original one, with a key difference being that Hermeto needs to provide a way to perform an [offline install](#providing-the-content-for-the-hermetic-build) from the local prefetched content.

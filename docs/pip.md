@@ -12,17 +12,17 @@
 
 ## Specifying packages to process
 
-The "pip packages" that Cachi2 can process are root directories of Python projects. They should have:
+The "pip packages" that Hermeto can process are root directories of Python projects. They should have:
 
 * One or more requirements files (unless the project has no dependencies)
-  * See [what Cachi2 requires](#requirementstxt)
+  * See [what Hermeto requires](#requirementstxt)
 * A file defining the project metadata
-  * See [what Cachi2 supports](#project-metadata)
+  * See [what Hermeto supports](#project-metadata)
 
 ```shell
-cachi2 fetch-deps \
+hermeto fetch-deps \
   --source ./my-repo \
-  --output ./cachi2-output \
+  --output ./hermeto-output \
   '<JSON input>'
 ```
 
@@ -53,7 +53,7 @@ The main argument accepts alternative forms of input, see [usage: Pre-fetch depe
 
 ## requirements.txt
 
-Cachi2 downloads dependencies explicitly declared in lockfiles. For pip, the closest thing to a lockfile would be
+Hermeto downloads dependencies explicitly declared in lockfiles. For pip, the closest thing to a lockfile would be
 a "fully resolved" requirements.txt - must contain all the transitive dependencies, must pin them to exact versions.
 
 A good way to generate requirements.txt is via [pip-compile](https://pip-tools.readthedocs.io/en/stable/). Note that
@@ -227,7 +227,7 @@ If using pip-compile, use the `--generate-hashes` option.
 
 ### External dependencies
 
-For dependencies coming from somewhere other than PyPI, Cachi2 supports a subset of the
+For dependencies coming from somewhere other than PyPI, Hermeto supports a subset of the
 [PEP 440](https://peps.python.org/pep-0440/#direct-references) direct references.
 
 #### https urls
@@ -237,12 +237,12 @@ dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/arch
     --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
 ```
 
-For https dependencies, Cachi2 requires *exactly one* --hash option as protection from remote tampering.
+For https dependencies, Hermeto requires *exactly one* --hash option as protection from remote tampering.
 
 Note that if at least one dependency in your requirements file uses --hash, pip requires hashes for all dependencies.
 Use `pip-compile --generate-hashes` to generate compliant requirements files.
 
-*Cachi2 does not support PEP 440 hashes in the url fragment, only --hash options.*
+*Hermeto does not support PEP 440 hashes in the url fragment, only --hash options.*
 
 #### git urls
 
@@ -258,12 +258,12 @@ Git dependencies are incompatible with pip's hash checking. Please use an https 
 +     --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
 ```
 
-If you do need to use a git url, Cachi2 requires that it specifies a full commit hash.
+If you do need to use a git url, Hermeto requires that it specifies a full commit hash.
 
-*Cachi2 does not support PEP 440 commit hashes in the url fragment (the `#` part), only directly after `@`.*
+*Hermeto does not support PEP 440 commit hashes in the url fragment (the `#` part), only directly after `@`.*
 
 *Note: it's impossible to craft a requirements.txt file that would download dependencies from both https urls and
-git urls. Cachi2 requires hashes for https. Using one --hash makes pip require hashes for everything. Pip does not
+git urls. Hermeto requires hashes for https. Using one --hash makes pip require hashes for everything. Pip does not
 support hashes for git dependencies. Please use https urls instead.*
 
 ### Supported options
@@ -271,19 +271,19 @@ support hashes for git dependencies. Please use https urls instead.*
 Requirements files support some `pip install` options - see
 <https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options>.
 
-Cachi2 supports a small subset of them, ignores those that are not relevant for prefetching, and raises an error for
+Hermeto supports a small subset of them, ignores those that are not relevant for prefetching, and raises an error for
 those that *are* relevant but aren't supported.
 
 #### Global
 
 ##### [`--index-url`](https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url)
 
-*Supported since cachi2-v0.8.0.*
+*Supported since v0.8.0.*
 
-Make Cachi2 download packages from the specified Python Package Index server.
+Make Hermeto download packages from the specified Python Package Index server.
 
 Note: applies to all the packages (and only the packages) from the file which contains the `--index-url` option.
-If file A contains `--index-url` and file B does not, Cachi2 will download the packages declared in B from the default
+If file A contains `--index-url` and file B does not, Hermeto will download the packages declared in B from the default
 index server (<https://pypi.org/simple/>).
 
 :warning: **Do not include credentials in the index url.** If needed, provide authentication via a `.netrc` file:
@@ -306,15 +306,15 @@ Specifies the expected hashes for package archives. See also the [hashes](#hashe
 
 ## Project metadata
 
-Cachi2 looks for the name and version of your project in the following project files:
+Hermeto looks for the name and version of your project in the following project files:
 
 * [pyproject.toml](#pyprojecttoml-pep-621-metadata)
 * [setup.cfg](#setupcfg)
 * [setup.py](#setuppy)
 
-If Cachi2 fails to resolve the project name, it will generate a name based
+If Hermeto fails to resolve the project name, it will generate a name based
 on the git repository origin url (and package subpath if the package is not in the repository root).
-If Cachi2 fails to resolve the version, it will omit the version.
+If Hermeto fails to resolve the version, it will omit the version.
 
 ### pyproject.toml: [PEP 621 metadata](https://packaging.python.org/en/latest/specifications/declaring-project-metadata/)
 
@@ -400,12 +400,12 @@ Sdists are more difficult to install. Pip must first build a wheel from the sdis
 a [PEP 517](https://peps.python.org/pep-0517/) build system. To do that, pip has to install the build system and
 its dependencies (defined via [PEP 518](https://peps.python.org/pep-0518/)).
 
-Cachi2 (unlike the older Cachito) can download both wheels and sdists. The `allow_binary` option controls this behavior.
+Hermeto (unlike the older Cachito) can download both wheels and sdists. The `allow_binary` option controls this behavior.
 
 * `"allow_binary": "true"` - download both wheels and sdists
 * `"allow_binary": "false"` - download only sdists (default)
 
-*Note: Cachi2 currently downloads one sdist and all the available wheels per
+*Note: Hermeto currently downloads one sdist and all the available wheels per
 dependency (no filtering is being made by platform or Python version).*
 
 ### Building with wheels
@@ -423,10 +423,10 @@ This can be especially important for Python packages implemented in C or other c
 
 #### requirements-build.txt
 
-To allow building from source in a network-isolated environment, Cachi2 must download all the PEP 517 build dependencies
+To allow building from source in a network-isolated environment, Hermeto must download all the PEP 517 build dependencies
 before the build starts.
 
-Cachi2 requires a fully resolved requirements-build.txt to do this. The file follows the same rules as requirements.txt,
+Hermeto requires a fully resolved requirements-build.txt to do this. The file follows the same rules as requirements.txt,
 but contains build dependencies rather than runtime dependencies.
 
 *Note: this file must contain all the transitive build dependencies of each of your transitive runtime dependencies
@@ -437,17 +437,17 @@ It will automatically generate build requirements from your requirements.txt fil
 
 *Adding a requirements-build.txt should not require changes in your build process. Pip should install the build
 dependencies automatically as needed, you don't have to install them explicitly. The purpose of requirements-build.txt
-is to make Cachi2 fetch the build dependencies and provide them to pip for offline installation.*
+is to make Hermeto fetch the build dependencies and provide them to pip for offline installation.*
 
 ## Using fetched dependencies
 
-See also [usage.md](usage.md) for a complete example of Cachi2 usage.
+See also [usage.md](usage.md) for a complete example of Hermeto usage.
 
-Cachi2 downloads the Python dependencies into the deps/pip/ subpath of the output directory. The directory is a flat
+Hermeto downloads the Python dependencies into the deps/pip/ subpath of the output directory. The directory is a flat
 list of the downloaded distributions of your runtime and build dependencies.
 
 ```text
-cachi2-output/deps/pip
+hermeto-output/deps/pip
 ├── certifi-2022.12.7.tar.gz
 ├── ...
 ├── pdm-pep517-1.0.6.tar.gz
@@ -459,25 +459,25 @@ cachi2-output/deps/pip
 To make pip use the downloaded archives, use the [--find-links](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f)
 and [--no-index](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index) options. The --find-links option
 tells pip to look for dependency archives in a directory, --no-index prevents pip from preferring PyPI over the local
-directory. Pip also accepts environment variables; Cachi2 generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you. See
+directory. Pip also accepts environment variables; Hermeto generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you. See
 [usage: generate environment variables][usage-genenv] for more details.
 
 ### Using external dependencies
 
 It gets a bit trickier with [external dependencies](#external-dependencies). Pip does not respect the --find-links
-option for dependencies specified via urls. Instead, Cachi2 rewrites your requirements.txt file(s) in place to replace
-the urls with file paths (after you call the [cachi2 inject-files][usage-inject] subcommand).
+option for dependencies specified via urls. Instead, Hermeto rewrites your requirements.txt file(s) in place to replace
+the urls with file paths (after you call the [hermeto inject-files][usage-inject] subcommand).
 
 ```diff
 - dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \
-+ dockerfile-parse @ file:///absolute-path/cachi2-output/deps/pip/.../dockerfile-parse-...tar.gz
++ dockerfile-parse @ file:///absolute-path/hermeto-output/deps/pip/.../dockerfile-parse-...tar.gz
 ```
 
 External dependencies are stored a bit further down the deps/pip tree to avoid mixing them with PyPI dependencies. The
 path and filename is an implementation detail.
 
 ```text
-cachi2-output/deps/pip
+hermeto-output/deps/pip
 ├── ...
 ├── external-dockerfile-parse
 │   └── dockerfile-parse-external-sha256-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
@@ -488,7 +488,7 @@ cachi2-output/deps/pip
 
 Common issues you may face when fetching dependencies or when installing the fetched dependencies.
 
-First, please make sure that your project meets Cachi2's requirements (this document) and that you are using Cachi2
+First, please make sure that your project meets Hermeto's requirements (this document) and that you are using Hermeto
 as intended ([usage.md](usage.md)).
 
 ### Miscellaneous errors while building from source
@@ -519,7 +519,7 @@ Problem: you've found out that some build errors are caused by bugs in an older 
 your container build comes with `pip==<old>` and you cannot upgrade during the build because you're building with
 network isolation.
 
-Solution: make Cachi2 fetch a newer pip for you. Then you can upgrade pip from the prefetched archive.
+Solution: make Hermeto fetch a newer pip for you. Then you can upgrade pip from the prefetched archive.
 
 ```requirements.txt
 # add to requirements-build.txt or use a separate file
@@ -527,7 +527,7 @@ pip==22.3.1 --hash=...
 ```
 
 ```Dockerfile
-RUN source /tmp/cachi2.env && \
+RUN source /tmp/hermeto.env && \
     pip install -U pip && \
     pip install .
 ```
@@ -537,7 +537,7 @@ dependencies other than pip should be part or [requirements-build.txt](#requirem
 
 ### Failing to compile a dependency
 
-Building dependencies written in C typically requires gcc, CPython headers and other development libraries. Cachi2
+Building dependencies written in C typically requires gcc, CPython headers and other development libraries. Hermeto
 does not fetch these, getting them into the build is up to you. The best case scenario, if you're building a container,
 is that the base image already contains everything you need. For example, the
 [ubi8/python-39](https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f) image contains

@@ -1,4 +1,4 @@
-# Adding Cargo support to Cachi2
+# Adding Cargo support to Hermeto
 
 ## Background
 
@@ -270,7 +270,7 @@ in the Cargo.toml file or via the `cargo metadata` command.
 ## Features
 
 [Features](https://doc.rust-lang.org/cargo/reference/features.html) allow
-conditional compilation of projects. From cachi2's perspective the most
+conditional compilation of projects. From hermeto's perspective the most
 important aspect of features is optional dependencies. Optional dependency is
 such dependency which will not be processed unless explicitly requested.  The
 safest way to deal with optional dependencies in the context of hermetic builds
@@ -314,7 +314,7 @@ Note that each git dependency has its own separate configuration in the generate
 Also, vendoring does not trigger any builds scripts.
 
 
-# Cargo support in Cachi2
+# Cargo support in Hermeto
 
 ## Approach 1 (preferred): use cargo commands
 
@@ -495,7 +495,7 @@ dependency in this output.
 Prefetching the packages can be done by simply using the `cargo vendor` command:
 
 ```
-$ cargo vendor --locked ./cachi2-output/deps/cargo'
+$ cargo vendor --locked ./hermeto-output/deps/cargo'
 ```
 
 The command will handle all types of dependencies and allow them to be used
@@ -535,7 +535,7 @@ Cons:
 - Relying on a built-in command brings it's own disadvantages:
   - We have less control on what will be executed when invoking `cargo` commands
   - We need to account for cargo behavior changes more closely
-  - We need to install cargo in the Cachi2 image and keep its version up to date
+  - We need to install cargo in the Hermeto image and keep its version up to date
 - Might make it harder to build Pip+Rust projects
   - Cargo will refuse to vendor an empty directory with a single `Cargo.toml` file, which
   means we'd need to minimally provide a minimal `src/main.rs` file to it.
@@ -666,7 +666,7 @@ Using Rust as an extension language gains popularity in part of Python
 community.  At the moment of writing a number of popular Python projects
 contain Rust extensions ([cryptography](https://github.com/pyca/cryptography)
 and [pydantic-core](https://github.com/pydantic/pydantic-core) among others).
-Since it is Cachi2's goal to build as much as possible from source Python Rust
+Since it is Hermeto's goal to build as much as possible from source Python Rust
 extensions must be also built from sources. This is not strictly Rust work
 since it will be happening in Python ecosystem, however it is related to the
 proposed Rust package manager and could leverage its functionality. Let us
@@ -684,7 +684,7 @@ will be present in output directory. When extracted it will contain
 
 ```
 $ pwd
-../cachi2-output/deps/pip/cryptography-44.0.0
+../hermeto-output/deps/pip/cryptography-44.0.0
 $ ls
 Cargo.lock        LICENSE.APACHE  release.py
 Cargo.toml        LICENSE.BSD     src
@@ -732,7 +732,7 @@ to enforce any rule to prohibit crates being uploaded with binaries. This
 happened at least once with [serde][serde-with-binaries], one of the most
 popular rust libraries.
 
-## Appendix C. Pip + Cargo support in Cachi2
+## Appendix C. Pip + Cargo support in Hermeto
 
 This appendix contains the original research into the problem of support for
 Python extensions written in Rust. It is kept intact for posterity.
@@ -757,7 +757,7 @@ Addressing the integration challenges of Rust in Python projects is crucial to
 enhancing the performance, safety, and concurrency of Python applications. The
 "rustification" of Python libraries is here to stay.
 
-On the other hand Cachi2 in its current shape does not mandate the presence of
+On the other hand Hermeto in its current shape does not mandate the presence of
 the sources for all dependencies. For example both Bundler and Pip will ignore
 all binary dependencies unless requested otherwise. Once requested only the
 binaries themselves will be collected during the prefetch phase.  They will be
@@ -766,7 +766,7 @@ larger topic and is out of scope for this document.  A general description of
 how this could be achieved for Python packages depending on Rust is presented
 in this section.
 
-### The challenge and cachi2 boundaries
+### The challenge and hermeto boundaries
 
 Building projects that do DIRECTLY depend on both rust and python should be
 straightforward and similar to build with pip and cargo independently. The
@@ -787,7 +787,7 @@ even calling directly - that will be made by the python build backend
 In the following sections we are going to expose a bit of how `maturin` and
 `setuptools-rust` are configured in order to come with ideas on how to tackle
 the problem of FINDING rust dependencies on a pure-python project. This is
-probably outside of the scope of cachi2, but we will need to at very least come
+probably outside of the scope of hermeto, but we will need to at very least come
 up with a way for those users to share the (potential) multiple Cargo.locks the
 package indirectly depends or a file format designed for this. Also
 [pybuild-deps][pybuild-deps] might evolve to help solving this problem, so it
@@ -930,7 +930,7 @@ cargo vendor --manifest-path=dependencies/cryptography-43.0.0/src/rust/Cargo.tom
 ```
 
 Alternatively, we could prefetch dependencies in a custom code, like what was done in the [original
-cachi2-rust PoC][cachi2-rust-poc] - see usage [here][cachi2-rust-poc-usage]. That would remove the
+hermeto-rust PoC][hermeto-rust-poc] - see usage [here][hermeto-rust-poc-usage]. That would remove the
 need for downloading all python sources and we could rely only on manifest files.
 
 If we go in that direction, we could even go one step further and expect a specific file format for
@@ -960,7 +960,7 @@ That's a bit tricky with pip because (AFAIK) there's no way to control where the
 hence in which exact folder) the build will occur. For pure rust projects, placing
 `.cargo/config.toml` relative to project root folder is enough. For python+rust, we need to place
 this config under `/tmp/`, which is the closest place where builds occur. Example container image
-(from [cachi2-rust PoC][cachi2-rust-poc-usage]):
+(from [hermeto-rust PoC][hermeto-rust-poc-usage]):
 
 ```Dockerfile
 FROM dummy-base-image:latest
@@ -971,7 +971,7 @@ COPY dummy /app
 # to the place where python run builds
 COPY dummy/.cargo/config.toml /tmp/.cargo/config.toml
 WORKDIR /app
-RUN source /tmp/cachi2.env && \
+RUN source /tmp/hermeto.env && \
     pip3 install -r requirements.txt
 
 ```

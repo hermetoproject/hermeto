@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-To use Cachi2 with Bundler locally, ensure you have Ruby and Bundler installed
+To use Hermeto with Bundler locally, ensure you have Ruby and Bundler installed
 on your system.
 
 ```bash
@@ -23,7 +23,7 @@ dependencies. The command will download all dependencies specified in the
 
 ```bash
 cd path-to-your-ruby-project
-cachi2 fetch-deps bundler
+hermeto fetch-deps bundler
 ```
 
 In addition, it will prepare the necessary environment variables and
@@ -44,7 +44,7 @@ the `allow_binary` option set to `true` when running the `fetch-deps` command.
 
 ```bash
 cd path-to-your-ruby-project
-cachi2 fetch-deps '{"type": "bundler", "allow_binary": "true"}'
+hermeto fetch-deps '{"type": "bundler", "allow_binary": "true"}'
 ```
 
 By default, the `allow_binary` option is disabled.
@@ -121,7 +121,7 @@ result in unexpected failures._
 To create the configuration file, run the following command.
 
 ```bash
-cachi2 inject-files --for-output-dir /tmp/cachi2-output cachi2-output
+hermeto inject-files --for-output-dir /tmp/hermeto-output hermeto-output
 ```
 
 You should see a log message that the file was created successfully.
@@ -129,12 +129,12 @@ Lastly, you need to set the `BUNDLE_APP_CONFIG` environment variable to point
 to the copied configuration file.
 
 ```bash
-cachi2 generate-env --output ./cachi2.env --for-output-dir /tmp/cachi2-output ./cachi2-output
+hermeto generate-env --output ./hermeto.env --for-output-dir /tmp/hermeto-output ./hermeto-output
 ```
 
 ```bash
-# cat cachi2.env
-export BUNDLE_APP_CONFIG=/tmp/cachi2-output/bundler/config_override
+# cat hermeto.env
+export BUNDLE_APP_CONFIG=/tmp/hermeto-output/bundler/config_override
 ```
 
 The generated environment file should be sourced before running any Bundler command.
@@ -167,18 +167,18 @@ COPY Gemfile.lock .
 
 ...
 
-RUN . /tmp/cachi2.env && bundle install
+RUN . /tmp/hermeto.env && bundle install
 
 ...
 ```
 
-Assuming `cachi2-output` and `cachi2.env` are in the same directory as the
+Assuming `hermeto-output` and `hermeto.env` are in the same directory as the
 Dockerfile, build the image with the following command:
 
 ```bash
 podman build . \
-  --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \
-  --volume "$(realpath ./cachi2.env)":/tmp/cachi2.env:Z \
+  --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
+  --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
   --network none \
   --tag my-ruby-app
 ```

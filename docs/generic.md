@@ -5,15 +5,15 @@
 * [Using fetched dependencies](#using-fetched-dependencies)
 
 ## Support scope
-Generic fetcher is made specifically for use cases where cachi2 will not implement a full package manager support, or
+Generic fetcher is made specifically for use cases where hermeto will not implement a full package manager support, or
 for ecosystems where no such package manager exists. It is highly discouraged for this feature to be used for anything
-already supported by cachi2 in other ways (such as e.g. pip packages), because the produced SBOM component will not be
+already supported by hermeto in other ways (such as e.g. pip packages), because the produced SBOM component will not be
 accurate. 
 
 ## Specifying artifacts to fetch
 The generic fetcher requires a lockfile `artifacts.lock.yaml` that specifies which files to download. This file is expected
 to be in the source repository. Alternatively, it can be supplied as an absolute path via the `lockfile` key in the JSON
-input to cachi2.
+input to hermeto.
 
 Below are sections for each type of supported artifact. Several artifacts of different types can be specified in a single
 lockfile.
@@ -28,13 +28,13 @@ metadata:
 artifacts: []
 ```
 
-Cachi2 can be then ran as follows:
+Hermeto can be then ran as follows:
 
 ```shell
 
-cachi2 fetch-deps \
+hermeto fetch-deps \
 --source ./my-repo \
---output ./cachi2-output \
+--output ./hermeto-output \
 '<JSON input>'
 ```
 
@@ -115,8 +115,8 @@ provided attributes and therefore the file can be assumed to be a maven artifact
 
 ## Using fetched dependencies
 
-Cachi2 downloads the files into the `deps/generic/` subpath of the output directory. Files are named according to the
-`filename` field if specified, otherwise derived from the URL. During your build, you would typically mount cachi2's
+Hermeto downloads the files into the `deps/generic/` subpath of the output directory. Files are named according to the
+`filename` field if specified, otherwise derived from the URL. During your build, you would typically mount hermeto's
 output directory into your container image and reference the individual files. For a detailed example, see [usage.md][usage-example].
 
 [readme-generic]: ../README.md#generic-fetcher
