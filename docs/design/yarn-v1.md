@@ -1,4 +1,4 @@
-# Cachi2 Yarn v1 (Yarn Classic) Prefetch Design
+# Hermeto Yarn v1 (Yarn Classic) Prefetch Design
 
 ## Yarn Overview
 [Yarn](https://github.com/yarnpkg/yarn) is a package manager for JavaScript. While Yarn v1.x is no longer actively developed and has been
@@ -6,18 +6,18 @@ succeeded by [Yarn v2+ (Berry)](https://github.com/yarnpkg/berry), it [remains w
 
 The [official documentation](https://classic.yarnpkg.com/en/docs) contains information about the various features of Yarn, configuration settings, and CLI commands.
 
-## Proposed Cachi2 Implementation Overview
+## Proposed Hermeto Implementation Overview
 
-### Specifying a Yarn Package in a Cachi2 Request
-Cachi2 users will specify `yarn` as the package manager or package type for all versions of Yarn. In yarn.lock, the presence of the [`__metadata`](https://github.com/yarnpkg/berry/blob/13d5b3041794c33171808fdce635461ff4ab5c4e/packages/yarnpkg-core/sources/Project.ts#L374) field can be used to presume a Yarn v2+ lockfile as can the presence of the string [`yarn lockfile v1`](https://github.com/yarnpkg/berry/blob/13d5b3041794c33171808fdce635461ff4ab5c4e/packages/yarnpkg-core/sources/Project.ts#L434) for a Yarn v1.x lockfile. The request can then be routed to the correct Yarn module in Cachi2.
+### Specifying a Yarn Package in a Hermeto Request
+Hermeto users will specify `yarn` as the package manager or package type for all versions of Yarn. In yarn.lock, the presence of the [`__metadata`](https://github.com/yarnpkg/berry/blob/13d5b3041794c33171808fdce635461ff4ab5c4e/packages/yarnpkg-core/sources/Project.ts#L374) field can be used to presume a Yarn v2+ lockfile as can the presence of the string [`yarn lockfile v1`](https://github.com/yarnpkg/berry/blob/13d5b3041794c33171808fdce635461ff4ab5c4e/packages/yarnpkg-core/sources/Project.ts#L434) for a Yarn v1.x lockfile. The request can then be routed to the correct Yarn module in Hermeto.
 
 ### Offline Mirror
-Prefetching dependencies for Yarn in Cachi2 will be done using Yarn's [offline mirror](https://classic.yarnpkg.com/blog/2016/11/24/offline-mirror/)
+Prefetching dependencies for Yarn in Hermeto will be done using Yarn's [offline mirror](https://classic.yarnpkg.com/blog/2016/11/24/offline-mirror/)
 feature. When a project is configured to use the offline mirror, Yarn will store compressed archives in the mirror directory and can install
 cached project dependencies from there later without network access.
 
 The offline mirror also has a setting that controls [whether it removes package archives](https://classic.yarnpkg.com/en/docs/prune-offline-mirror/)
-from the mirror directory when they are no longer needed. Cachi2 will want to disable automatic pruning of the offline mirror since we support multiple
+from the mirror directory when they are no longer needed. Hermeto will want to disable automatic pruning of the offline mirror since we support multiple
 yarn projects in a single request.
 
 To enable the offline mirror, the following settings need to be applied either via .yarnrc or from environment variables:
@@ -29,8 +29,8 @@ To enable the offline mirror, the following settings need to be applied either v
     YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
 ### Installing Yarn (via Corepack)
-Yarn commands will be executed in order to populate the offline mirror, so Yarn will need to be installed in the Cachi2 image. Corepack is
-already being used to install Yarn in the Cachi2 Yarn v2+ implementation, so a similar approach is suggested.
+Yarn commands will be executed in order to populate the offline mirror, so Yarn will need to be installed in the Hermeto image. Corepack is
+already being used to install Yarn in the Hermeto Yarn v2+ implementation, so a similar approach is suggested.
 
 Corepack installs the latest known-good Yarn v1.x release by default if no other version is specified explicitly. It seems reasonable to always
 use the latest 1.x release for the prefetch, since 1.x is no longer under active development and we never previously allowed users to specify a specific
@@ -41,7 +41,7 @@ Corepack could be configured to ignore user project configuration and use the gl
 
     COREPACK_ENABLE_PROJECT_SPEC=0
 
-Alternatively we could configure corepack explicitly using the packageManager field in package.json like is done in Cachi2's Yarn v2+ implementation.
+Alternatively we could configure corepack explicitly using the packageManager field in package.json like is done in Hermeto's Yarn v2+ implementation.
 
 We will also need to set the following to prevent corepack from prompting for interactive user input when downloading Yarn:
 
@@ -50,7 +50,7 @@ We will also need to set the following to prevent corepack from prompting for in
 ### Configuring Yarn (Using Environment Variables)
 The behavior of Yarn can be configured through the use of environment variables, configuration files, and CLI options for specific commands.
 
-Environment variables will be preferred by Cachi2 when available.
+Environment variables will be preferred by Hermeto when available.
 
 Unfortunately the official Yarn documentation is quite limited or non-existent concerning environment variables.
 
@@ -69,7 +69,7 @@ Yarn projects using the [Plug'n'Play (PnP)](https://classic.yarnpkg.com/lang/en/
 Any additional configuration settings in the repository via [.yarnrc](https://classic.yarnpkg.com/en/docs/yarnrc) or .npmrc
 files should be ignored (at least initially) for the prefetch by specifying [`--no-default-rc`](https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/cli/index.js#L73) for the yarn install command.
 
-We never previously honored user-defined settings with Cachito, but this can be investigated and implemented in Cachi2 in a follow-up. At minimum, the
+We never previously honored user-defined settings with Cachito, but this can be investigated and implemented in Hermeto in a follow-up. At minimum, the
 limitation should be documented.
 
 ### SBOM Generation
@@ -143,7 +143,7 @@ The user build can be configured to use the offline mirror by configuring the fo
     YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
 ## Implementation Scoping
- - Since we're executing Yarn commands directly, process the request in an [isolated temporary directory](https://github.com/hermetoproject/cachi2/blob/6953607b6ef52fd3f0bef7059d2c926767b1022b/cachi2/core/resolver.py#L41) to avoid any potential changes to the repository
+ - Since we're executing Yarn commands directly, process the request in an [isolated temporary directory](https://github.com/hermetoproject/hermeto/blob/6953607b6ef52fd3f0bef7059d2c926767b1022b/hermeto/core/resolver.py#L41) to avoid any potential changes to the repository
  - Determine whether to process the request with yarn v1 or yarn v2+
  - Read the project files
    - Read/Require package.json

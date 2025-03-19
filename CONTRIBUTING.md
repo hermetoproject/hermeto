@@ -1,10 +1,10 @@
-# Contributing to Cachi2
+# Contributing to Hermeto
 
 ## Table of contents
 
 * [How to start a contribution](#how-to-start-a-contribution)
   * [How we deal with larger features](#how-we-deal-with-larger-features)
-  * [Cachi2's ethos](#cachi2s-ethos)
+  * [Hermeto's ethos](#hermetos-ethos)
 * [Development](#development)
   * [Virtual environment](#virtual-environment)
   * [Developer flags](#developer-flags)
@@ -53,13 +53,13 @@ When a feature's development has reached a stable point, you can propose making 
 
 Once maintainers are confident that they have enough information to maintain the new feature as officially supported they will accept it and help with moving it out from under experimental flag.
 
-### Cachi2's Ethos
+### Hermeto's Ethos
 
-Whenever adding a new feature to Cachi2, it is important to keep these fundamental aspects in mind
+Whenever adding a new feature to Hermeto, it is important to keep these fundamental aspects in mind
 
 1. Report prefetched dependencies as accurately as possible
 
-    Cachi2's primary goal is to prefetch content and enable hermetic builds. But hermetic builds are only useful if they end up providing a more accurate SBOM than a non-hermetic build would. Cachi2 strives to download only what's explicitly declared in a project's source code, and accurately report it in the resulting SBOM.
+    Hermeto's primary goal is to prefetch content and enable hermetic builds. But hermetic builds are only useful if they end up providing a more accurate SBOM than a non-hermetic build would. Hermeto strives to download only what's explicitly declared in a project's source code, and accurately report it in the resulting SBOM.
 
 2. Avoid arbitrary code execution
 
@@ -67,7 +67,7 @@ Whenever adding a new feature to Cachi2, it is important to keep these fundament
 
 3. Always perform checksum validation
 
-    The content provided to the build will only be safe if all of the downloaded packages have their checksums verified. In case a mismatch is found, the entire request must be failed, since the prefetched content is tainted and is potentially malicious. There are two types of checksums: server-provided and user-provided. Cachi2 prefers but does not require the latter. Every dependency which does not have a user-provided checksum verified, must be clearly marked as such in the resulting SBOM (e.g. see 'pip' support). All dependencies must have at least one checksum in order to be considered validated.
+    The content provided to the build will only be safe if all of the downloaded packages have their checksums verified. In case a mismatch is found, the entire request must be failed, since the prefetched content is tainted and is potentially malicious. There are two types of checksums: server-provided and user-provided. Hermeto prefers but does not require the latter. Every dependency which does not have a user-provided checksum verified, must be clearly marked as such in the resulting SBOM (e.g. see 'pip' support). All dependencies must have at least one checksum in order to be considered validated.
 
 4. Favor reproducibility
 
@@ -86,7 +86,7 @@ venv/bin/pip install -r requirements-extras.txt
 venv/bin/pip install -e .
 ```
 
-This installs the Cachi2 CLI in [editable mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html),
+This installs the Hermeto CLI in [editable mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html),
 which means changes to the source code will reflect in the behavior of the CLI without the need for reinstalling.
 
 You may need to install Python 3.9 in case you want to test your changes against Python 3.9 locally
@@ -108,7 +108,7 @@ dnf install golang-bin git
   for test. Please refer to other existing package managers to see how they're
   enabled and wired to the CLI.
 
-  Invoke it as `cachi2 fetch-deps --dev-package-managers FOO`
+  Invoke it as `hermeto fetch-deps --dev-package-managers FOO`
 
   More explicitly
 
@@ -117,7 +117,7 @@ dnf install golang-bin git
 
 ### Coding standards
 
-Cachi2's codebase conforms to standards enforced by a collection of formatters, linters and other code checkers:
+Hermeto's codebase conforms to standards enforced by a collection of formatters, linters and other code checkers:
 
 * [black](https://black.readthedocs.io/en/stable/) (with a line-length of 100) for consistent formatting
 * [isort](https://pycqa.github.io/isort/) to keep imports sorted
@@ -163,7 +163,7 @@ We try to keep error messages friendly and actionable.
 * If there is no known solution, suggest where to look for help
 * If retrying is a possible solution, suggest retrying and where to look for help if the issue persists
 
-The error classes aim to encourage these guidelines. See the [errors.py](cachi2/core/errors.py) module.
+The error classes aim to encourage these guidelines. See the [errors.py](hermeto/core/errors.py) module.
 
 ### Comment guidelines
 
@@ -233,13 +233,13 @@ nox -s generate-test-data -- -k test_e2e_gomod
 
 ### Running integration tests
 
-Build Cachi2 image (localhost/cachi2:latest) and run most integration tests:
+Build Hermeto image (localhost/hermeto:latest) and run most integration tests:
 
 ```shell
 nox -s integration-tests
 ```
 
-Build Cachi2 image (localhost/cachi2:latest) and run **all** integration tests:
+Build Hermeto image (localhost/hermeto:latest) and run **all** integration tests:
 
 ```shell
 nox -s all-integration-tests
@@ -251,8 +251,8 @@ and DNF server with `tests/dnfserver/start.sh &` to speed up the tests.
 To run integration-tests with custom image, specify the HERMETO\_IMAGE environment variable. Examples:
 
 ```shell
-HERMETO_IMAGE=quay.io/konflux-ci/cachi2:{tag} nox -s integration-tests
-HERMETO_IMAGE=localhost/cachi2:latest nox -s  integration-tests
+HERMETO_IMAGE=quay.io/konflux-ci/hermeto:{tag} nox -s integration-tests
+HERMETO_IMAGE=localhost/hermeto:latest nox -s  integration-tests
 ```
 
 ### Adding new dependencies to the project
@@ -273,8 +273,8 @@ nox -s pip-compile
 
 ## Releasing
 
-To release a new version of Cachi2, simply create a [GitHub release](https://github.com/hermetoproject/cachi2/releases).
-Note that Cachi2 follows [semantic versioning](https://semver.org/) rules.
+To release a new version of Hermeto, simply create a [GitHub release](https://github.com/hermetoproject/hermeto/releases).
+Note that Hermeto follows [semantic versioning](https://semver.org/) rules.
 
 Upon release, the [.tekton/release.yaml](.tekton/release.yaml) pipeline tags the corresponding
 image with the newly released version tag (after validating that the

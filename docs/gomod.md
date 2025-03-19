@@ -8,14 +8,14 @@
 * [gomod flags](#gomod-flags)
 * [Vendoring](#vendoring)
 * [Understanding reported dependencies](#understanding-reported-dependencies)
-* [Go 1.21+](#go-121-since-cachi2-v050)
+* [Go 1.21+](#go-121-since-v050)
 
 ## Specifying modules to process
 
 ```shell
-cachi2 fetch-deps \
+hermeto fetch-deps \
   --source ./my-repo \
-  --output ./cachi2-output \
+  --output ./hermeto-output \
   '<modules JSON>'
 ```
 
@@ -23,7 +23,7 @@ Module[^misnomer] JSON:
 
 ```jsonc
 {
-  // "gomod" tells Cachi2 to process a go module
+  // "gomod" tells Hermeto to process a go module
   "type": "gomod",
   // path to the module (relative to the --source directory)
   // defaults to "."
@@ -37,19 +37,19 @@ The main argument accepts alternative forms of input, see [usage: pre-fetch-depe
   process. Even worse, Go has packages as well (see [gomod vs go-package](#gomod-vs-go-package)). What gives?
   As far as we know, most languages/package managers use the opposite naming. For example, in [Python][py-modules],
   modules are `*.py` files, packages are collections of modules. In [npm][npm-modules], modules are directories/files
-  you can `require()`, packages are the top-level directories with `package.json`. In Cachi2, we stick to the more
+  you can `require()`, packages are the top-level directories with `package.json`. In Hermeto, we stick to the more
   common naming.
 
 ## Using fetched dependencies
 
-See also [usage.md](usage.md) for a complete example of Cachi2 usage.
+See also [usage.md](usage.md) for a complete example of Hermeto usage.
 
-Cachi2 downloads the required modules into the deps/gomod/ subpath of the output directory (`cachi2-output/deps/gomod`).
-Further down the file tree, at `cachi2-output/deps/gomod/pkg/mod`, is a directory formatted as the Go
+Hermeto downloads the required modules into the deps/gomod/ subpath of the output directory (`hermeto-output/deps/gomod`).
+Further down the file tree, at `hermeto-output/deps/gomod/pkg/mod`, is a directory formatted as the Go
 [module cache](https://go.dev/ref/mod#module-cache).
 
 ```text
-cachi2-output/deps/gomod/pkg/mod
+hermeto-output/deps/gomod/pkg/mod
 └── cache
     └── download
         ├── github.com
@@ -58,7 +58,7 @@ cachi2-output/deps/gomod/pkg/mod
             └── ...
 ```
 
-To use this module cache during your build, set the GOMODCACHE environment variable. Cachi2 generates GOMODCACHE along
+To use this module cache during your build, set the GOMODCACHE environment variable. Hermeto generates GOMODCACHE along
 with other expected environment variables for you. See [usage: generate environment variables][usage-genenv] for more
 details.
 
@@ -83,11 +83,11 @@ my-repo
 ```
 
 Go will use the vendored dependencies automatically, but it's not a bad idea to set the environment variables generated
-by Cachi2 anyway.
+by Hermeto anyway.
 
 ## gomod flags
 
-The `cachi2 fetch-deps` command accepts the following gomod-related flags:
+The `hermeto fetch-deps` command accepts the following gomod-related flags:
 
 * [--cgo-disable](#--cgo-disable)
 
@@ -102,11 +102,11 @@ compatibility reasons and will be removed in future releases.
 
 ### --cgo-disable
 
-Makes Cachi2 internally disable [cgo](https://pkg.go.dev/cmd/cgo) while processing your Go modules. Typically, you would
-want to use this flag if your modules *do* use C code and Cachi2 is failing to process them. Cachi2 will not attempt to
+Makes Hermeto internally disable [cgo](https://pkg.go.dev/cmd/cgo) while processing your Go modules. Typically, you would
+want to use this flag if your modules *do* use C code and Hermeto is failing to process them. Hermeto will not attempt to
 disable cgo in your build (nor should you disable it yourself if you rely on C).
 
-Disabling cgo should not prevent Cachi2 from fetching your Go dependencies as usual. Note that Cachi2 will not make any
+Disabling cgo should not prevent Hermeto from fetching your Go dependencies as usual. Note that Hermeto will not make any
 attempts to fetch missing C libraries. If required, you would need to get them through other means.
 
 ## Vendoring
@@ -115,13 +115,13 @@ Go supports [vendoring](https://go.dev/ref/mod#vendoring) to store the source co
 directory alongside your module. Before go 1.17, `go mod vendor` used to download fewer dependencies than
 `go mod download`. Starting with 1.17, that is no longer true - see the [overview][readme-gomod] in the README.
 
-We generally discourage vendoring, but Cachi2 does support processing repositories that contain vendored content. In
-this case, instead of a regular prefetching of dependencies, Cachi2 will only validate if the contents of the vendor
+We generally discourage vendoring, but Hermeto does support processing repositories that contain vendored content. In
+this case, instead of a regular prefetching of dependencies, Hermeto will only validate if the contents of the vendor
 directory are consistent with what `go mod vendor` would produce.
 
 ## Understanding reported dependencies
 
-Cachi2 reports two (arguably three) different types of dependencies in the generated SBOM for your Go modules:
+Hermeto reports two (arguably three) different types of dependencies in the generated SBOM for your Go modules:
 
 * **gomod** dependencies (Go modules)
 * **go-package** dependencies (Go packages)
@@ -135,17 +135,17 @@ Best explained by the Go [modules documentation][go-modules-overview]:
 > A module is a collection of packages that are released, versioned, and distributed together.
 
 Your Go code imports individual *packages*, which come from *modules*. You might import a single package from a module
-that provides many, but Go (and Cachi2) has to download the whole module anyway. Effectively, modules are the smallest
-"unit of distribution." Go does have the ability to list the individual packages that your project imports. Cachi2 makes
+that provides many, but Go (and Hermeto) has to download the whole module anyway. Effectively, modules are the smallest
+"unit of distribution." Go does have the ability to list the individual packages that your project imports. Hermeto makes
 use of this ability to report both the downloaded modules and the required packages.
 
-The list of **go-package** dependencies reported by Cachi2 is the full set of packages (transitively) required by your
+The list of **go-package** dependencies reported by Hermeto is the full set of packages (transitively) required by your
 project. *⚠ If any of your module dependencies is [missing a checksum](#missing-checksums) in go.sum, the list may be
 incomplete.*
 
-The list of **gomod** dependencies is the set of modules that Cachi2 downloaded to satisfy the go-package dependencies.
+The list of **gomod** dependencies is the set of modules that Hermeto downloaded to satisfy the go-package dependencies.
 
-Note that versioning applies to modules, not packages. When reporting the versions of Go packages, Cachi2 uses the
+Note that versioning applies to modules, not packages. When reporting the versions of Go packages, Hermeto uses the
 version of the module that provides the package.
 
 #### How to match a package to a module?
@@ -167,8 +167,8 @@ To simplify a little:
 
 ### stdlib dependencies
 
-Go is able to list even the standard library packages that your project imports. Cachi2 exposes these as **go-package**
-dependencies, with caveats. Cachi2 uses some version of Go to list the dependencies. This may or may not be the same
+Go is able to list even the standard library packages that your project imports. Hermeto exposes these as **go-package**
+dependencies, with caveats. Hermeto uses some version of Go to list the dependencies. This may or may not be the same
 version that you will use to build your project. We do not presume that the versions would be the same, hence why:
 
 * the reported stdlib packages may be slightly inaccurate (e.g. new packages in new Go versions)
@@ -184,14 +184,14 @@ version that you will use to build your project. We do not presume that the vers
 ### Missing checksums
 
 Go stores the checksums of all your dependency modules in the [go.sum file][go-sum-file]. Go typically manages this
-file entirely on its own, but if any of your dependencies do end up missing, it can cause issues for Cachi2 and for
+file entirely on its own, but if any of your dependencies do end up missing, it can cause issues for Hermeto and for
 Go itself.
 
-For Cachi2, a missing checksum means that the offending module gets downloaded without checksum verification (or with
-partial checksum verification - Cachi2 does consult the [Go checksum database][gosumdb]). Due to `go list` behavior,
+For Hermeto, a missing checksum means that the offending module gets downloaded without checksum verification (or with
+partial checksum verification - Hermeto does consult the [Go checksum database][gosumdb]). Due to `go list` behavior,
 it also means that the [go-package](#gomod-vs-go-package) dependency listing may be incomplete[^why-incomplete].
 
-<!-- TODO: link the cachi2:missing_hash:in_file property once the taxonomy doc exists -->
+<!-- TODO: link the hermeto:missing_hash:in_file property once the taxonomy doc exists -->
 
 For Go, a missing checksum will cause the `go build` or `go run` commands to fail.
 
@@ -200,10 +200,10 @@ workflow.
 
 [^why-incomplete]: When a module does not have a checksum in go.sum, the `go list` command returns only basic
   information and an error for the packages from said module. Go doesn't return any information about the dependencies
-  of the affected packages. This can cause Cachi2 to miss the transitive package dependencies of packages from
+  of the affected packages. This can cause Hermeto to miss the transitive package dependencies of packages from
   checksum-less modules.
 
-### Go 1.21+ *(since cachi2-v0.5.0)*
+### Go 1.21+ *(since v0.5.0)*
   Starting with [Go 1.21][go121-changelog], Go changed the meaning of the `go 1.X` directive in
   that it now specifies the [minimum required version](https://go.dev/ref/mod#go-mod-file-go) of Go
   rather than a suggested version as it originally did. The format of the version string in the
@@ -212,16 +212,16 @@ workflow.
   it automatically inside the file. Last but not least, Go 1.21 also introduced a new keyword
   [`toolchain`](https://go.dev/ref/mod#go-mod-file-toolchain) to the `go.mod` file. What this all
   means in practice for end users is that you may not be able to process your `go.mod` file with an
-  older version of Go (and hence older cachi2) as you could in the past for various reasons.
+  older version of Go (and hence older hermeto) as you could in the past for various reasons.
   Many projects bump their required Go toolchain's micro release as soon as it becomes available
-  upstream (i.e. not waiting for distributions to bundle them properly). This caused problems for
-  *cachi2-v0.5.0* because the container image's version simply may not have been high enough to
-  process a given project's `go.mod` file. Therefore, *cachi2-v0.7.0* implemented a mechanism to
+  upstream (i.e. not waiting for distributions to bundle them properly). This caused problems in
+  version *v0.5.0* because the container image's version simply may not have been high enough to
+  process a given project's `go.mod` file. Therefore, version *v0.7.0* introduced a mechanism to
   always rely on the origin 0th release of a toolchain (e.g. 1.21.0) and use the `GOTOOLCHAIN=auto`
   setting to instruct Go to fetch any toolchain as specified by the `go.mod` file automatically,
   hence allowing us to keep up with frequent micro version bumps. **Note that such a language
-  version would still need to be officially marked as supported by cachi2, i.e. we'd not allow Go
-  to fetch e.g. a 1.22 toolchain if the maximum supported Go version by cachi2 were 1.21!**
+  version would still need to be officially marked as supported by hermeto, i.e. we'd not allow Go
+  to fetch e.g. a 1.22 toolchain if the maximum supported Go version by hermeto were 1.21!**
 
 [readme-gomod]: ../README.md#gomod
 [usage-prefetch]: usage.md#pre-fetch-dependencies

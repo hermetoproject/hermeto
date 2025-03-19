@@ -2,8 +2,8 @@
 
 In February 2021, a [blog post](https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610)
 popularized a novel way to inject malicious content into applications. The question was raised as to
-whether using Cachi2 makes this issue worse. This document is an analysis of each package manager
-supported by Cachi2 to address the security concern named *dependency confusion*.
+whether using Hermeto makes this issue worse. This document is an analysis of each package manager
+supported by Hermeto to address the security concern named *dependency confusion*.
 
 # Dependency Confusion
 
@@ -18,8 +18,8 @@ of the internal one.
 
 ## Potential Impact
 
-What happens when Cachi2 is tricked into downloading a malicious version of one of your dependencies?
-To the system that runs Cachi2, nothing. Cachi2 never executes your code, or the code of any of your
+What happens when Hermeto is tricked into downloading a malicious version of one of your dependencies?
+To the system that runs Hermeto, nothing. Hermeto never executes your code, or the code of any of your
 dependencies. What about your build?
 
 Hopefully, you are building your application in an isolated environment (such as a container build
@@ -27,19 +27,19 @@ with no network access) to protect your own system. In the best case scenario, t
 will manifest at build time and the build will fail. In the worst case scenario, the build will succeed
 but the built product will contain malicious code, which may then affect whoever tries to run it.
 
-## Dependency Confusion vs Cachi2
+## Dependency Confusion vs Hermeto
 
 Before delving into the specifics of each supported package manager, let us make a general statement
-about Cachi2’s stance towards dependency confusion.
+about Hermeto’s stance towards dependency confusion.
 
-Cachi2 aims to match the behaviour of your package manager as closely as possible. Generally
-speaking, Cachi2 is as vulnerable to dependency confusion as your package manager, not more, not
+Hermeto aims to match the behaviour of your package manager as closely as possible. Generally
+speaking, Hermeto is as vulnerable to dependency confusion as your package manager, not more, not
 less. However, all the supported package managers provide means to protect yourself by following
 best practices. For example, you can remove all known attack vectors by simply verifying the
 checksums of your dependencies.
 
-Cachi2 enforces *some* of these best practices. Typically, each package manager provides a lockfile
-or other mechanism for pinning dependency versions. Cachi2 requires this. Verifying checksums is
+Hermeto enforces *some* of these best practices. Typically, each package manager provides a lockfile
+or other mechanism for pinning dependency versions. Hermeto requires this. Verifying checksums is
 usually up to you.
 
 # Package Managers
@@ -63,19 +63,19 @@ dependency attacks.
 
 ## pip
 
-*TL;DR: if your package is Cachi2 compliant, it is most likely safe. If you want to be sure, verify
+*TL;DR: if your package is Hermeto compliant, it is most likely safe. If you want to be sure, verify
 checksums.*
 
 Python packages can have various formats, which are specified across multiple PEPs. Pip supports
-most of them. Cachi2 support for pip, on the other hand, is quite simple. You must define all the
+most of them. Hermeto support for pip, on the other hand, is quite simple. You must define all the
 direct and indirect dependencies of your package in
 [requirements.txt](https://pip.pypa.io/en/stable/user_guide/#requirements-files) style files and
-tell Cachi2 to process them.
+tell Hermeto to process them.
 
-Cachi2 further restricts what you can put in your requirements.txt files. All of the dependencies
+Hermeto further restricts what you can put in your requirements.txt files. All of the dependencies
 must be
 [pinned](https://github.com/release-engineering/cachito/blob/master/docs/pip.md#pinning-versions)
-to an exact version. Cachi2 will refuse to process requirements files that use the
+to an exact version. Hermeto will refuse to process requirements files that use the
 --extra-index-url option, which means that if a private registry is to be specified, only a single
 one supported and the `--index-url` option should be used.
 
@@ -88,22 +88,22 @@ specific commit.
 
 ## npm
 
-*TL;DR: do not use unofficial registries. Even if you try to do so via .npmrc, Cachi2 will ignore
+*TL;DR: do not use unofficial registries. Even if you try to do so via .npmrc, Hermeto will ignore
 it.*
 
 Npm packages follow the typical package file + lock file approach. The package file is
 [package.json](https://docs.npmjs.com/cli/v6/configuring-npm/package-json), the lock file is
 [package-lock.json](https://docs.npmjs.com/cli/v6/configuring-npm/package-lock-json) or
-[npm-shrinkwrap.json](https://docs.npmjs.com/cli/v6/configuring-npm/shrinkwrap-json). Cachi2
+[npm-shrinkwrap.json](https://docs.npmjs.com/cli/v6/configuring-npm/shrinkwrap-json). Hermeto
 requires the lock file.
 
 The lock file pins all dependencies to exact versions. For https dependencies, which are impossible
-to pin, Cachi2 requires the integrity value (a checksum). For dependencies from the npm registry,
-Cachi2 does not require integrity values, but newer versions of npm will always include them. Check
+to pin, Hermeto requires the integrity value (a checksum). For dependencies from the npm registry,
+Hermeto does not require integrity values, but newer versions of npm will always include them. Check
 if all your dependencies have an integrity value, update your lock file if not.
 
 Do not try to use private registries. If you point npm to a private registry (or any registry other
-than the official one) via [.npmrc](https://docs.npmjs.com/cli/v6/configuring-npm/npmrc), Cachi2
+than the official one) via [.npmrc](https://docs.npmjs.com/cli/v6/configuring-npm/npmrc), Hermeto
 will ignore it and look in the official registry anyway.
 
 ## yarn
@@ -117,9 +117,9 @@ applies to npm applies to yarn.
 
 The one difference is the handling of unofficial registries. If you point yarn to an unofficial
 registry via .npmrc or [.yarnrc](https://classic.yarnpkg.com/en/docs/yarnrc), this will be reflected
-in the resolved url in the lock file. Cachi2 will see that the url does not point to the official
+in the resolved url in the lock file. Hermeto will see that the url does not point to the official
 registry and will treat the dependency as a plain https dependency. If the url is accessible to
-Cachi2, it will download the dependency directly without relying on npm/yarn dependency resolution.
+Hermeto, it will download the dependency directly without relying on npm/yarn dependency resolution.
 That does not necessarily make using unofficial registries a good idea. If the registry is private,
 your build will either fail or leak internal package names.
 
@@ -127,7 +127,7 @@ your build will either fail or leak internal package names.
 
 *TL;DR: allowing `https://rubygems.org` as the only source should mitigate the issue for GEM dependencies*
 
-Cachi2 parses `Gemfile.lock` which pins all dependencies to exact versions. Cachi2 allows GEM dependencies
+Hermeto parses `Gemfile.lock` which pins all dependencies to exact versions. Hermeto allows GEM dependencies
 to be fetched only from `https://rubygems.org`, otherwise raises an error. GIT dependencies are specified using
 a repo URL and pinned to a commit hash.
 

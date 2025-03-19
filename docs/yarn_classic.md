@@ -20,16 +20,16 @@ in this document, any other versions of Yarn will be explicitly mentioned.
 ## Overview
 
 Yarn Classic package manager (PM) relies on Yarn Classic being installed on the system
-where Cachi2 is run. If requested to process a package with Yarn Classic PM it will
+where Hermeto is run. If requested to process a package with Yarn Classic PM it will
 check for yarn version and will refuse to proceed if necessary version is missing.
-Yarn itself is used by Cachi2 under the hood to organize package processing with
+Yarn itself is used by Hermeto under the hood to organize package processing with
 some tweaks to ensure that the packages are prepared to be built in isolation.
 
-Cachi2 expects to find well-formed `package.json` and `yarn.lock` checked in into a
+Hermeto expects to find well-formed `package.json` and `yarn.lock` checked in into a
 repository and will not continue if any of the files are missing. `yarn.lock` must be up to
 date and all file or path dependencies must be confined to the project repository.
 
-Prefetching dependencies for Yarn in Cachi2 is done using Yarn's [offline mirror feature].
+Prefetching dependencies for Yarn in Hermeto is done using Yarn's [offline mirror feature].
 The project must be configured to use the offline mirror feature. Refer to
 [Prerequisites for an offline build] for details.
 
@@ -50,19 +50,19 @@ The process of fetching dependencies for Yarn Classic is similar to that for any
 package manager. The name of package manager is `yarn_classic`, and it does not expect
 any additional arguments.
 
-Cachi2 ``fetch-deps`` shell command:
+Hermeto ``fetch-deps`` shell command:
 
 ```shell
-cachi2 fetch-deps \
+hermeto fetch-deps \
   --source ./my-repo \
-  --output ./cachi2-output \
+  --output ./hermeto-output \
   '<JSON input>'
 ```
 
 where JSON input is:
 ```jsonc
 {
-  // "yarn_classic" tells Cachi2 to process Yarn packages
+  // "yarn_classic" tells Hermeto to process Yarn packages
   "type": "yarn_classic",
   // path to the package (relative to the --source directory)
   // defaults to "."
@@ -71,7 +71,7 @@ where JSON input is:
 ```
 
 or more simply by just invoking:
-``cachi2 fetch-deps yarn_classic``
+``hermeto fetch-deps yarn_classic``
 
 For complete example of how to pre-fetch dependencies, see [Pre-fetch dependencies].
 
@@ -105,14 +105,14 @@ variables must be set:
 YARN_YARN_OFFLINE_MIRROR=<absolute path to the request output directory>
 YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 ```
-Cachi2 provides a helper that [generates these variables] and places them into a file.
+Hermeto provides a helper that [generates these variables] and places them into a file.
 Sourcing this file is enough to set them.
 
 ## Limitations and caveats
 
 ### Yarn version specified anywhere in the package will be ignored by prefetch
 
-Unlike in the case of Yarn v3 Cachi2 will used whichever version is available system-wide
+Unlike in the case of Yarn v3 Hermeto will used whichever version is available system-wide
 on a system where a package is prefetched. In most practical cases this will default to
 the latest stable version of Yarn Classic (which is not under active
 development anymore).
@@ -125,7 +125,7 @@ it will be rejected. For further details please refer to [Yarn v3 documentation]
 ### Handling of yarn-specific config files
 
 Yarn Classic allows a user to provide additional configuration via [.yarnrc]
-and [.npmrc].  **Cachi2 ignores these settings during prefetch phase**.
+and [.npmrc].  **Hermeto ignores these settings during prefetch phase**.
 However a `.yarnrc` could be used for setting up an offline mirror
 ([Prerequisites for an offline build]).  These settings will be applied during
 a build phase.
@@ -148,7 +148,7 @@ The following variables are set for Yarn in the fetch phase:
  * `YARN_YARN_OFFLINE_MIRROR_PRUNING` is set to "false" which prevents Yarn from attempting to
    ensure that dependencies are up to date.
 
-Once fetch phase is completed Cachi2 will need to generate an
+Once fetch phase is completed Hermeto will need to generate an
 [environment file] with variables pointing to the mirror
 and instructing Yarn not to prune it:
 

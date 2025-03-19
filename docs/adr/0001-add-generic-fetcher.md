@@ -2,9 +2,9 @@
 
 ## Context
 
-Some users need to download arbitrary files that don't fit within an established package ecosystem cachi2 could
-potentially otherwise support. The target audience is users that want to use cachi2 to achieve hermetic builds
-and also want an easy way to include these arbitrary files, that cachi2 will account for in the SBOM it produces.
+Some users need to download arbitrary files that don't fit within an established package ecosystem hermeto could
+potentially otherwise support. The target audience is users that want to use hermeto to achieve hermetic builds
+and also want an easy way to include these arbitrary files, that hermeto will account for in the SBOM it produces.
 
 ## Decision
 
@@ -14,7 +14,7 @@ Below is a more detailed overview of the implementation.
 
 ### Lockfile format
 
-Cachi2 expects the lockfile to be named `artifacts.lock.yaml`.
+Hermeto expects the lockfile to be named `artifacts.lock.yaml`.
 In order to account for possible future breaking changes, the lockfile will contain a `metadata` section with a `version`
 field that will indicate the version of the lockfile format. It will also contain a list of artifacts (files) to download,
 each of the artifacts to having a URL, a checksum, and optionally output filename specified.
@@ -44,13 +44,13 @@ Specified as string in the format of "algorithm:hash". Must be provided to ensur
 #### filename (optional)
 
 This key is provided mainly for the users convenience, so the files end up in expected locations. It is optional and if
-not specified, it will be derived from the download_url. Filename here is a path inside cachi2's output directory for
-the generic fetcher (`{cachi2-output-dir}/deps/generic`). Cachi2 will verify that the resulting filenames, including those
+not specified, it will be derived from the download_url. Filename here is a path inside hermeto's output directory for
+the generic fetcher (`{hermeto-output-dir}/deps/generic`). Hermeto will verify that the resulting filenames, including those
 derived from download urls do not overlap.
 
 ### SBOM components
 
-Artifacts fetched with the generic fetcher will all be recorded in the SBOM cachi2 produces. Given the inability to derive
+Artifacts fetched with the generic fetcher will all be recorded in the SBOM hermeto produces. Given the inability to derive
 any extra information about these files beyond a download location and a filename, these files will always be recorded
 as SBOM components with purl of type generic.
 
@@ -68,8 +68,8 @@ Here's an example SBOM generated for above file.
       "purl": "pkg:generic/granite-model-1.safetensors?checksum=sha256:d16bf783cb6670f7f692ad7d6885ab957c63cfc1b9649bc4a3ba1cfbdfd5230c&download_url=https://huggingface.co/instructlab/granite-7b-lab/resolve/main/model-00001-of-00003.safetensors",
       "properties": [
         {
-          "name": "cachi2:found_by",
-          "value": "cachi2"
+          "name": "hermeto:found_by",
+          "value": "hermeto"
         }
       ],
       "type": "file",
@@ -85,7 +85,7 @@ Here's an example SBOM generated for above file.
     "tools": [
       {
         "vendor": "red hat",
-        "name": "cachi2"
+        "name": "hermeto"
       }
     ]
   },
@@ -96,7 +96,7 @@ Here's an example SBOM generated for above file.
 
 ## Consequences
 
-As mentioned before, this package manager enables users to fetch arbitrary files with cachi2 and have them accounted for
+As mentioned before, this package manager enables users to fetch arbitrary files with hermeto and have them accounted for
 in the SBOM.
 
 [externalReferences]: https://cyclonedx.org/docs/1.6/json/#components_items_externalReferences

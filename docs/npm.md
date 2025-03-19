@@ -20,21 +20,21 @@ A package is a file or directory that is described by a package.json file.
   * See [package-lock.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json)
 
 Notice that the package-lock.json version must be **higher than v1** (Node.js 15 or higher)!
-Package-lock.json v1 is not supported in Cachi2.
+Package-lock.json v1 is not supported in Hermeto.
 
-Cachi2 fetch-deps shell command:
+Hermeto fetch-deps shell command:
 
 ```shell
-cachi2 fetch-deps \
+hermeto fetch-deps \
   --source ./my-repo \
-  --output ./cachi2-output \
+  --output ./hermeto-output \
   '<JSON input>'
 ```
 
 JSON input:
 ```jsonc
 {
-  // "npm" tells Cachi2 to process npm packages
+  // "npm" tells Hermeto to process npm packages
   "type": "npm",
   // path to the package (relative to the --source directory)
   // defaults to "."
@@ -44,14 +44,14 @@ JSON input:
 
 ## Project files
 
-Cachi2 downloads dependencies explicitly declared in project files - package.json and package-lock.json.
+Hermeto downloads dependencies explicitly declared in project files - package.json and package-lock.json.
 The npm CLI manages the package-lock.json file automatically. To make sure the file is up to date, you can use [npm install](https://docs.npmjs.com/cli/v9/commands/npm-install?v=true).
 
 Possible dependency types in the above-mentioned files are described in the following section.
 
 ### Dependencies
 
-The "npm package" formats that Cachi2 can process are the following:
+The "npm package" formats that Hermeto can process are the following:
 ```
 1. A folder containing a program described by a package.json file.
 2. A gzipped tarball containing (1.).
@@ -128,7 +128,7 @@ Examples of (package.json) dependency formats:
 
 ```jsonc
 {
-  "name": "cachi2-npm-demo",
+  "name": "npm-demo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -322,42 +322,42 @@ Examples of (package.json) dependency formats:
 
 ## Using fetched dependencies
 
-See also [usage.md](usage.md) for a complete example of Cachi2 usage.
+See also [usage.md](usage.md) for a complete example of Hermeto usage.
 
-Cachi2 downloads the npm dependencies as tar archives into the `deps/npm/` subpath of the output directory.
+Hermeto downloads the npm dependencies as tar archives into the `deps/npm/` subpath of the output directory.
 
 1. Dependencies fetched from npm registries are placed directly to this directory (array-flatten in the following example).
-1. Dependencies downloaded from other HTTPS URL are placed to subdirectory `external-<tarball_name>` (cachi2-bar in the following example).
-1. Dependencies retrieved from Git repository are placed to `host, namespace, repo` subdirectories (cachi2-foo in the following example).
+1. Dependencies downloaded from other HTTPS URL are placed to subdirectory `external-<tarball_name>` (bar-project in the following example).
+1. Dependencies retrieved from Git repository are placed to `host, namespace, repo` subdirectories (foo-project in the following example).
 
 ```text
-cachi2-output/deps/npm
+hermeto-output/deps/npm
 ├── array-flatten-1.1.1.tgz
 ├── bitbucket.org
 │        └── foo-testing
-│             └── cachi2-foo
-│                       └── cachi2-foo-external-gitcommit-9e164b97043a2d91bbeb992f6cc68a3d1015086a.tgz
+│             └── foo-project
+│                       └── foo-project-external-gitcommit-9e164b97043a2d91bbeb992f6cc68a3d1015086a.tgz
 ├── body-parser-1.20.1.tgz
 ├── bytes-3.1.2.tgz
 │   ...
-├── external-cachi2-bar
-│        └── cachi2-bar-external-sha512-43e71f90ad5YOLO.tgz
+├── external-bar-project
+│        └── bar-project-external-sha512-43e71f90ad5YOLO.tgz
 │   ...
 ```
 
 In order for the `npm install` command to use the fetched dependencies instead of reaching for the npm registry,
-Cachi2 needs to update [project files](#project-files). These updates happen **automatically** when we call the Cachi2's [inject-files command](usage.md#inject-project-files-npm).
+Hermeto needs to update [project files](#project-files). These updates happen **automatically** when we call the Hermeto's [inject-files command](usage.md#inject-project-files-npm).
 
 ### Changes made by the inject-files command
 
 The root `package.json` file is updated together with package.json files for each [workspace](https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true) with changes:
 * For git repositories and HTTPS URLs in dependencies update their value to an empty string
 
-Cachi2 command updates the following in the `package-lock.json` file:
+Hermeto command updates the following in the `package-lock.json` file:
 * Replace URLs found in resolved items with local paths to [fetched dependencies](#using-fetched-dependencies).
 * Similarly to the above package.json changes, for git repositories and HTTPS URLs in package dependencies update their value to an empty string.
 * There is a corner case [bug](https://github.com/npm/cli/issues/2846) which happens in older npm versions (spotted in 8.12.1 version and lower) where npm mistakenly adds integrity checksum to git sources. To avoid errors while recreating git repository content as a tar archive and changing the integrity checksum,
-  Cachi2 deletes integrity items, which should not be there in the first place.
+  Hermeto deletes integrity items, which should not be there in the first place.
 
 ### Updated project example
 
