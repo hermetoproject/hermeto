@@ -146,7 +146,7 @@ def generate_test_data(session: Session) -> None:
 @nox.session(name="pip-compile")
 def pip_compile(session: Session) -> None:
     """Update requirements.txt and requirements-extras.txt files."""
-    PWD = session.env["PWD"]
+    PWD = os.environ["PWD"]
     uv_pip_compile_cmd = (
         "pip install uv && "
         # requirements.txt
