@@ -23,7 +23,6 @@ RUN dnf -y install \
 ######################
 FROM base as builder
 WORKDIR /src
-COPY . .
 RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
@@ -35,6 +34,7 @@ RUN dnf -y install \
     python3-setuptools \
     && dnf clean all
 
+COPY . .
 RUN python3 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
     /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes && \
