@@ -1,9 +1,10 @@
 import logging
+from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import Optional
+from typing import Generator, Optional
 
 import tomlkit
 from packageurl import PackageURL
@@ -101,6 +102,24 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
         )
 
 
+@contextmanager
+def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
+    """Hide the cargo config file if it exists.
+
+    The file may contain various settings that could result in potential attack vectors.
+    Therefore, it is better to "hide" it before running the `cargo vendor` command.
+    """
+    do_nothing = None
+
+    config = package_dir.join_within_root(".cargo/config.toml")
+    data = config.path.read_text() if config.path.exists() else None
+    config.path.unlink() if data is not None else do_nothing
+    try:
+        yield
+    finally:
+        config.path.write_text(data) if data is not None else do_nothing
+
+
 def _resolve_cargo_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
@@ -110,8 +129,9 @@ def _resolve_cargo_package(
     vendor_dir = output_dir.join_within_root("deps/cargo")
     cmd = ["cargo", "vendor", "--locked", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
-    # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
-    config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
+    with _hidden_cargo_config_file(package_dir):
+        # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
+        config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)
