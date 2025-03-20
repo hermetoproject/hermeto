@@ -34,11 +34,14 @@ RUN dnf -y install \
     python3-setuptools \
     && dnf clean all
 
-COPY . .
+# Install dependencies in a separate layer to maximize layer caching
+COPY requirements.txt .
 RUN python3 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
-    /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes && \
-    /venv/bin/pip install --no-cache-dir .
+    /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes
+
+COPY . .
+RUN /venv/bin/pip install --no-cache-dir .
 
 ##########################
 # ASSEMBLE THE FINAL IMAGE
