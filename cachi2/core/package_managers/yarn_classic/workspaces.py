@@ -60,7 +60,7 @@ def _get_workspace_paths(workspaces_globs: list[str], source_dir: RootedPath) ->
     """Resolve globs within source directory."""
 
     def all_paths_matching(glob: str) -> Generator[Path, None, None]:
-        return (path.resolve() for path in source_dir.path.glob(glob))
+        return (path.resolve() for path in source_dir.path.glob(glob) if path.is_dir())
 
     return list(chain.from_iterable(map(all_paths_matching, workspaces_globs)))
 
