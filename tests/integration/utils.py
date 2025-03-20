@@ -134,15 +134,6 @@ class Cachi2Image(ContainerImage):
                 )
         return super().run_cmd_on_image(cmd, tmp_path, mounts, net)
 
-    def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
-        """Override the context manager exit to remove any dangling layers as build side effect."""
-        remove_dangling = "podman rmi --force $(podman images -q --filter 'dangling=true')"
-
-        # Best effort: ignore the return code, because if the dangling filter returns an empty set
-        # podman exits with 125 which is an internal podman error
-        # (in this case: "image name or ID must be specified")
-        run_cmd(remove_dangling, shell=True)
-
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
     return _build_image(["podman", "build", str(context_dir)], tag=tag)
@@ -479,22 +470,20 @@ def build_image_and_check_cmd(
         "--for-output-dir",
         f"/tmp/{DEFAULT_OUTPUT}",
     ]
+    (output, exit_code) = cachi2_image.run_cmd_on_image(cmd, tmp_path)
+    assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
 
-    with cachi2_image:
-        (output, exit_code) = cachi2_image.run_cmd_on_image(cmd, tmp_path)
-        assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
-
-        log.info("Injecting project files")
-        cmd = [
-            "inject-files",
-            str(output_dir),
-            "--for-output-dir",
-            f"/tmp/{DEFAULT_OUTPUT}",
-        ]
-        (output, exit_code) = cachi2_image.run_cmd_on_image(
-            cmd, tmp_path, [(test_repo_dir, test_repo_dir)]
-        )
-        assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
+    log.info("Injecting project files")
+    cmd = [
+        "inject-files",
+        str(output_dir),
+        "--for-output-dir",
+        f"/tmp/{DEFAULT_OUTPUT}",
+    ]
+    (output, exit_code) = cachi2_image.run_cmd_on_image(
+        cmd, tmp_path, [(test_repo_dir, test_repo_dir)]
+    )
+    assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     log.info("Build container image with all prerequisites retrieved in previous steps")
     container_folder = test_data_dir.joinpath(test_case, "container")
