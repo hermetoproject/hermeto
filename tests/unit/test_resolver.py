@@ -129,11 +129,18 @@ def test_source_dir_copy(
     assert request.source_dir == RootedPath(tmp_path)
 
 
+@pytest.mark.parametrize(
+    "with_path_replacement",
+    (
+        pytest.param(True, id="with_path_replacement"),
+        pytest.param(False, id="without_path_replacement"),
+    ),
+)
 @mock.patch("cachi2.core.resolver._resolve_packages")
-@pytest.mark.skip(reason="Temporary - HEAD is broken and the test would uncover it")
 def test_project_files_fix_for_work_copy(
     mock_resolve_packages: mock.Mock,
     tmp_path: Path,
+    with_path_replacement: bool,
 ) -> None:
     request = Request(
         source_dir=tmp_path,
@@ -146,13 +153,13 @@ def test_project_files_fix_for_work_copy(
         assert request.source_dir.path != tmp_path
         assert request.source_dir.path.name.endswith(".cachi2-source-copy")
 
-        # return a project file pointing to the source dir copy
+        abspath = request.source_dir.path if with_path_replacement else request.output_dir.path
         return RequestOutput(
             components=[],
             build_config=BuildConfig(
                 environment_variables=[],
                 project_files=[
-                    ProjectFile(abspath=request.source_dir.path / "package.json", template="n/a"),
+                    ProjectFile(abspath=abspath / "package.json", template="n/a"),
                 ],
             ),
         )

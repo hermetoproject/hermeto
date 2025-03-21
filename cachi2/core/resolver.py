@@ -48,11 +48,15 @@ def resolve_packages(request: Request) -> RequestOutput:
         output = _resolve_packages(request)
         request.source_dir = original_source_dir
 
+        # Update all project file paths that end up directly in the source repository
         for project_file in output.build_config.project_files:
-            # if the project file is in the output directory, we don't need to update the path
-            if not project_file.abspath.is_relative_to(request.output_dir):
+            try:
                 subpath = project_file.abspath.relative_to(source_backup)
                 project_file.abspath = original_source_dir / subpath
+            except ValueError:
+                # '<project_file.abspath> is not in the subpath of <source_backup>', i.e the file
+                # is referenced directly from the output directory and doesn't need replacing
+                continue
 
         return output
 
