@@ -49,6 +49,26 @@ class UsageError(BaseError):
 class PathOutsideRoot(UsageError):
     """Afer joining a subpath, the result is outside the root of a rooted path."""
 
+    def __init__(
+        self,
+        s_self: str,
+        s_other: str = "",
+        s_root: str = "",
+        *,
+        solution: Optional[str] = _argument_not_specified,
+        docs: Optional[str] = None,
+    ) -> None:
+        """Initialize a PathOutsideRoot.
+
+        :param s_self: The current path before joining.
+        :param s_other: The path component that was joined.
+        :param s_root: The root directory that must not be left.
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        reason = f"Path {s_self}/{s_other} outside {s_root}, refusing to proceed"
+        super().__init__(reason, solution=solution, docs=docs)
+
     default_solution = (
         "With security in mind, Cachi2 will not access files outside the "
         "specified source/output directories."

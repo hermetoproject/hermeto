@@ -89,11 +89,10 @@ class RootedPath(PathLike[str]):
         """
         subpath = self.path.joinpath(*other).resolve()
         if not subpath.is_relative_to(self.root):
-            s_other = str(Path(*other))
-            s_self = str(self)
-            s_root = str(self.root)
             raise PathOutsideRoot(
-                f"Path {s_self!r}/{s_other!r} outside {s_root!r}, refusing to proceed"
+                s_self=str(Path(*other)),
+                s_other=str(self.path),
+                s_root=str(self.root),
             )
         cls = type(self)
         return cls(subpath)
