@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: cachi2-on-tag-latest
+  name: on-tag-latest
   annotations:
     build.appstudio.redhat.com/commit_sha: "{{revision}}"
     build.appstudio.redhat.com/target_branch: "{{target_branch}}"
@@ -32,8 +32,8 @@ spec:
               image: registry.access.redhat.com/ubi9/skopeo:latest@sha256:23c9ed4af1f42614bdc56309452568b2110a67f23102f42f6a6582a63b63dcdb
               script: |
                 #!/usr/bin/env bash
-                SRC_REF="quay.io/konflux-ci/cachi2:$(params.revision)"
-                TARGET_REF="quay.io/konflux-ci/cachi2:latest"
+                SRC_REF="quay.io/konflux-ci/hermeto:$(params.revision)"
+                TARGET_REF="quay.io/konflux-ci/hermeto:latest"
 
                 echo "Waiting until ${SRC_REF} is pushed"
 

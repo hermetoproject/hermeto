@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: cachi2-on-push
+  name: on-push
   annotations:
     build.appstudio.redhat.com/commit_sha: "{{revision}}"
     build.appstudio.redhat.com/target_branch: "{{target_branch}}"
@@ -15,7 +15,7 @@ spec:
     - name: revision
       value: "{{revision}}"
     - name: output-image
-      value: "quay.io/konflux-ci/cachi2:{{revision}}"
+      value: "quay.io/konflux-ci/hermeto:{{revision}}"
     - name: dockerfile
       value: Containerfile
     - name: slack-webhook-notification-team

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: cachi2-on-pull-request
+  name: on-pull-request
   annotations:
     build.appstudio.redhat.com/commit_sha: "{{revision}}"
     build.appstudio.redhat.com/pull_request_number: "{{pull_request_number}}"
@@ -16,7 +16,7 @@ spec:
     - name: revision
       value: "{{revision}}"
     - name: output-image
-      value: "quay.io/konflux-ci/pull-request-builds:cachi2-build-{{revision}}"
+      value: "quay.io/konflux-ci/pull-request-builds:hermeto-build-{{revision}}"
     - name: dockerfile
       value: Containerfile
   pipelineRef:
