@@ -1,5 +1,5 @@
 """
-Flexible test automation with Python for cachi2.
+Flexible test automation with Python for this project.
 
 To run all sessions, run the following command:
 $ nox
@@ -53,41 +53,41 @@ def parse_supported_python_versions() -> list[str]:
 
 @nox.session()
 def bandit(session: Session) -> None:
-    """Run bandit on cachi2 directory and noxfile.py."""
+    """Run bandit."""
     install_requirements(session)
-    cmd = "bandit -c pyproject.toml -r cachi2 noxfile.py"
+    cmd = "bandit -c pyproject.toml -r hermeto noxfile.py"
     session.run(*cmd.split(), *session.posargs, silent=True)
 
 
 @nox.session()
 def black(session: Session) -> None:
-    """Run black on cachi2 and tests directories and noxfile.py."""
+    """Run black."""
     install_requirements(session)
-    cmd = "black --check --diff cachi2 tests noxfile.py"
+    cmd = "black --check --diff hermeto tests noxfile.py"
     session.run(*cmd.split(), *session.posargs, silent=True)
 
 
 @nox.session()
 def flake8(session: Session) -> None:
-    """Run flake8 on cachi2 and tests directories and noxfile.py."""
+    """Run flake8."""
     install_requirements(session)
-    cmd = "flake8 cachi2 tests noxfile.py"
+    cmd = "flake8 hermeto tests noxfile.py"
     session.run(*cmd.split(), *session.posargs, silent=True)
 
 
 @nox.session()
 def isort(session: Session) -> None:
-    """Run isort on cachi2 and tests directories and noxfile.py."""
+    """Run isort."""
     install_requirements(session)
-    cmd = "isort --check --diff --color cachi2 tests noxfile.py"
+    cmd = "isort --check --diff --color hermeto tests noxfile.py"
     session.run(*cmd.split(), *session.posargs, silent=True)
 
 
 @nox.session()
 def mypy(session: Session) -> None:
-    """Run mypy on cachi2 and tests directories and noxfile.py."""
+    """Run mypy."""
     install_requirements(session)
-    cmd = "mypy --install-types --non-interactive cachi2 tests noxfile.py"
+    cmd = "mypy --install-types --non-interactive hermeto tests noxfile.py"
     session.run(*cmd.split(), *session.posargs, silent=True)
 
 
@@ -95,7 +95,7 @@ def mypy(session: Session) -> None:
 def unit_tests(session: Session) -> None:
     """Run unit tests and generate coverage report."""
     install_requirements(session)
-    # install cachi2 package
+    # install the application package
     session.install(".")
     # disable color output in GitHub Actions
     env = {"TERM": "dumb"} if os.getenv("CI") == "true" else None
@@ -159,9 +159,9 @@ def pip_compile(session: Session) -> None:
         "run",
         "--rm",
         "--volume",
-        f"{PWD}:/cachi2:rw,Z",
+        f"{PWD}:/hermeto:rw,Z",
         "--workdir",
-        "/cachi2",
+        "/hermeto",
         "docker.io/library/python:3.9-alpine",
         "sh",
         "-c",

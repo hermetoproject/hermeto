@@ -92,7 +92,7 @@ jobs:
         failure-threshold: warning
 
   build-image:
-    name: Build Cachi2 image and run integration tests on it
+    name: Build container image and run integration tests on it
 
     # TODO: Replace this with ubuntu-latest once GH completes the migration of the VM runners to
     # ubuntu 24.04 and respect the YAML tag (revert the commit that added this)
@@ -158,18 +158,18 @@ jobs:
                         https://127.0.0.1:8443/pkg/redhat-release-9.4-0.5.el9.x86_64.rpm)
           [[ ${status} == "200" ]] || exit 1
 
-      - name: Build Cachi2 image
+      - name: Build container image
         run: |
-          podman build -t cachi2:${{ github.sha }} .
+          podman build -t hermeto:${{ github.sha }} .
 
-      - name: Check image created and Cachi2 version
+      - name: Check image created and application version
         run: |
-          podman images | grep 'cachi2'
-          podman run -t cachi2:${{ github.sha }} --version
+          podman images | grep 'hermeto'
+          podman run -t hermeto:${{ github.sha }} --version
 
       - name: Run integration tests on built image
         env:
-          HERMETO_IMAGE: localhost/cachi2:${{ github.sha }}
+          HERMETO_IMAGE: localhost/hermeto:${{ github.sha }}
           HERMETO_TEST_LOCAL_PYPISERVER: 'true'
           HERMETO_TEST_LOCAL_DNF_SERVER: 'true'
         run: |
