@@ -630,8 +630,7 @@ artifacts:
 ```
 
 As with other examples, the command to fetch dependencies is very similar. The default path
-is assumed to be `.`. Since generic fetcher is still an experimental feature, it needs to be
-enabled with the `--dev-package-managers` flag.
+is assumed to be `.`.
 
 ```
 cachi2 fetch-deps --source ./cachi2-generic --output ./cachi2-output generic
