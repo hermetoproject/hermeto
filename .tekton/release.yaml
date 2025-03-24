@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: cachi2-on-release
+  name: on-release
   annotations:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-event: "[push]"
@@ -81,9 +81,9 @@ spec:
                 #!/usr/bin/env bash
                 set -eufx
 
-                version=$(cat $(results.version.path)) 
-                skopeo copy docker://quay.io/konflux-ci/cachi2:$PARAM_REVISION \
-                  docker://quay.io/konflux-ci/cachi2:$version
+                version=$(cat $(results.version.path))
+                skopeo copy docker://quay.io/konflux-ci/hermeto:$PARAM_REVISION \
+                  docker://quay.io/konflux-ci/hermeto:$version
 
     finally:
       - name: slack-webhook-notification
