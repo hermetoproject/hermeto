@@ -91,11 +91,11 @@ and nowhere else.
 cachi2 fetch-deps \
   --source ./my-repo \
   --output ./cachi2-output \
+  --sbom-output-type cyclonedx \
   gomod
 ```
 
-The `fetch-deps` command fetches your project's dependencies and stores them on your disk. You can then use these
-outputs to, say, build a container image.
+The `fetch-deps` command fetches your project's dependencies and stores them on your disk. Cachi2 also produces a detailed SBOM containing information about all the project's components and packages. You can find the SBOM in the output directory.
 
 See [docs/usage.md](docs/usage.md) for a more detailed, practical (*cough*) example of Cachi2 usage.
 

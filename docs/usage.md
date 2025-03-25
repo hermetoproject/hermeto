@@ -38,12 +38,14 @@ The first step in creating hermetic builds is to fetch the dependencies for one 
 cachi2 fetch-deps \
   --source ./foo \
   --output ./cachi2-output \
+  --sbom-output-type cyclonedx \
   '{"path": ".", "type": "<supported package manager>"}'
 ```
 
-* `--source` - the path to a *git repository* on the local disk
-* `--output` - the path to the directory where Cachi2 will write all output
-* `{JSON}`   - specifies a *package* (a directory) within the repository to process
+* `--source`           - the path to a *git repository* on the local disk `[default: .]`
+* `--output`           - the path to the directory where Cachi2 will write all output `[default: ./cachi2-output]`
+* `--sbom-output-type` - the format of generated SBOM, supported values are `cyclonedx` (outputs [CycloneDX v1.4](https://cyclonedx.org/docs/1.4/json)) and `spdx` (outputs [SPDX v2.3](https://spdx.github.io/spdx-spec/v2.3/)). `[default: cyclonedx]`
+* `{JSON}`             - specifies a *package* (a directory) within the repository to process
 
 Note that Cachi2 does not auto-detect which package managers your project uses. You need to tell Cachi2 what to process
 when calling fetch-deps. In the example above, the package path is located at the root of the foo repo,
