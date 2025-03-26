@@ -21,17 +21,21 @@ RUN dnf -y install \
 ######################
 # BUILD/INSTALL CACHI2
 ######################
+# libffi-devel    is necessary to build a rust dependency of Py project (cryptography)
+# openssl-devel   is necessary to build a rust dependency of Py project (cryptography)
 FROM base as builder
 WORKDIR /src
 RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
     gcc \
-    # not a build dependency, but we copy the binary to the final image
     cargo \
     python3-devel \
     python3-pip \
     python3-setuptools \
+    python3-wheel \
+    libffi-devel \
+    openssl-devel \
     && dnf clean all
 
 # Install dependencies in a separate layer to maximize layer caching
@@ -46,7 +50,9 @@ RUN /venv/bin/pip install --no-cache-dir .
 ##########################
 # ASSEMBLE THE FINAL IMAGE
 ##########################
-FROM base
+# Only builder contains all the packages necessary for building a Rust extension for Python
+# FROM base
+FROM builder
 LABEL maintainer="Red Hat"
 
 # copy Go SDKs and Node.js installation from official images
