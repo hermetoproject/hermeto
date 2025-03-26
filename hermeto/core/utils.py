@@ -185,6 +185,7 @@ def copy_directory(origin: Path, destination: Path) -> Path:
         _copy_using(_fast_copy)
     except _FastCopyFailedFallback:
         log.debug("Fast copying failed, falling back to standard copy.")
+        shutil.rmtree(destination)
         _copy_using(shutil.copy2)
 
     return destination
