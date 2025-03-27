@@ -24,7 +24,7 @@ cat << banner-end
 $(
     # cd in a subshell, doesn't change the $PWD of the main process
     cd "$tmpdir/gomod-pandemonium"
-    export GOMODCACHE="$tmpdir/cachi2-mock-gomodcache"
+    export GOMODCACHE="$tmpdir/hermeto-mock-gomodcache"
 
     git switch go-1.22-workspaces
 
@@ -113,7 +113,7 @@ banner-end
 
 find "$mocked_data_dir/non-vendored" "$mocked_data_dir/vendored" "$mocked_data_dir/workspaces" -type f |
     while read -r f; do
-        sed "s|$tmpdir.cachi2-mock-gomodcache|{gomodcache_dir}|" --in-place "$f"
+        sed "s|$tmpdir.hermeto-mock-gomodcache|{gomodcache_dir}|" --in-place "$f"
         sed "s|$tmpdir.gomod-pandemonium|{repo_dir}|" --in-place "$f"
     done
 

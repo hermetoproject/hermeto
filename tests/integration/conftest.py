@@ -46,8 +46,8 @@ def top_level_test_dir() -> Path:
 @pytest.fixture(scope="session")
 def hermeto_image() -> utils.HermetoImage:
     if not (image_ref := os.environ.get("HERMETO_IMAGE")):
-        image_ref = "localhost/cachi2:latest"
-        log.info("Building local cachi2:latest image")
+        image_ref = "localhost/hermeto:latest"
+        log.info("Building local hermeto:latest image")
         # <arbitrary_path>/hermeto/tests/integration/conftest.py
         #                   [2] <- [1]  <-  [0]  <- parents
         repo_root = Path(__file__).parents[2]
