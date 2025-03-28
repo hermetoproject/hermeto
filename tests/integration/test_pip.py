@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
                 expected_output="All dependencies fetched successfully",
             ),
             # Mixes hashed (URL with `cachito_hash`) and unhashed deps
-            id="pip_with_deps_mixed",
+            id="pip_mixed_hashes",
         ),
         pytest.param(
             utils.TestParameters(
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
-            id="pip_with_deps_full_hashes",
+            id="pip_full_hashes",
         ),
         pytest.param(
             utils.TestParameters(
@@ -62,7 +62,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
-            id="pip_multiple",
+            id="pip_multiple_packages",
         ),
         # Test case checks that an attempt to fetch a local file will result in failure.
         pytest.param(
@@ -185,7 +185,7 @@ def test_pip_packages(
             ),
             ["python3", "/app/src/test_package_cachi2/main.py"],
             ["registry.fedoraproject.org/fedora-minimal:37"],
-            id="pip_e2e_test",
+            id="pip_e2e",
         ),
         pytest.param(
             utils.TestParameters(
@@ -204,7 +204,7 @@ def test_pip_packages(
             ),
             ["python3", "/app/package/main.py"],
             ["Hello, world!"],
-            id="pip_e2e_test_wheels",
+            id="pip_e2e_wheels",
         ),
     ],
 )

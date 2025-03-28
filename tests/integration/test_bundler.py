@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=2,
                 expected_output="Gemfile and Gemfile.lock must be present in the package directory",
             ),
-            id="bundler_no_gemfile",
+            id="bundler_missing_gemfile",
         ),
         pytest.param(
             utils.TestParameters(
@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=2,
                 expected_output="Gemfile and Gemfile.lock must be present in the package directory",
             ),
-            id="bundler_no_lockfile",
+            id="bundler_missing_lockfile",
         ),
         pytest.param(
             utils.TestParameters(
@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=1,
                 expected_output="Failed to parse",
             ),
-            id="bundler_malformed_lockfile",
+            id="bundler_missing_git_revision",
         ),
     ],
 )
@@ -80,7 +80,7 @@ def test_bundler_packages(
             ),
             [],  # No additional commands are run to verify the build
             [],
-            id="bundler_everything_present",
+            id="bundler_e2e",
         ),
         pytest.param(
             utils.TestParameters(
@@ -94,7 +94,7 @@ def test_bundler_packages(
             ),
             [],  # No additional commands are run to verify the build
             [],
-            id="bundler_everything_present_except_gemspec",
+            id="bundler_e2e_missing_gemspec",
         ),
     ],
 )
