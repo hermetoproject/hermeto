@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections import Counter
 from functools import cached_property
 from pathlib import Path
-from typing import Literal, Union
+from typing import Annotated, Literal, Union
 from urllib.parse import urljoin, urlparse
 
 from packageurl import PackageURL
@@ -16,7 +16,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_core.core_schema import ValidationInfo
-from typing_extensions import Annotated
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageManagerError

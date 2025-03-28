@@ -1,6 +1,6 @@
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any
 
 import pydantic
 import pytest
@@ -137,7 +137,7 @@ ENVVAR_TEMPLATE_MAPPINGS = {
 
 class TestEnvironmentVariable:
     @pytest.fixture(scope="class")
-    def env_variables(self) -> Dict[str, EnvironmentVariable]:
+    def env_variables(self) -> dict[str, EnvironmentVariable]:
         ret = {k: EnvironmentVariable(name=k, value=v) for k, v in ENVVAR_TEMPLATE_MAPPINGS.items()}
 
         # need to inject 'kind' for legacy variable templates
@@ -173,10 +173,10 @@ class TestEnvironmentVariable:
     )
     def test_resolution(
         self,
-        env_variables: Dict[str, EnvironmentVariable],
+        env_variables: dict[str, EnvironmentVariable],
         var: str,
         expected: str,
-        mappings: Dict[str, str],
+        mappings: dict[str, str],
     ) -> None:
 
         assert env_variables[var].resolve_value(mappings) == expected
@@ -199,7 +199,7 @@ class TestEnvironmentVariable:
             ),
         ],
     )
-    def test_nested_resolution_failure(self, envs: List[EnvironmentVariable]) -> None:
+    def test_nested_resolution_failure(self, envs: list[EnvironmentVariable]) -> None:
         mappings = {e.name: e.value for e in envs}
 
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"

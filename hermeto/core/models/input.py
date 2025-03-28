@@ -1,7 +1,7 @@
 import enum
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Callable, Dict, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, Optional, TypeVar, Union
 
 import pydantic
 from typing_extensions import Self
@@ -186,7 +186,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
     """
 
-    dnf: Optional[Dict[Union[Literal["main"], str], Dict[str, Any]]] = None
+    dnf: Optional[dict[Union[Literal["main"], str], dict[str, Any]]] = None
     ssl: Optional[SSLOptions] = None
 
     @pydantic.model_validator(mode="before")

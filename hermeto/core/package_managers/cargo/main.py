@@ -1,11 +1,12 @@
 import logging
 import subprocess
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Optional
 
 import tomlkit
 from packageurl import PackageURL

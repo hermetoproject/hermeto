@@ -5,24 +5,13 @@ import shutil
 import subprocess
 import tempfile
 from collections import UserDict
+from collections.abc import Iterable, Iterator
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
 from types import TracebackType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    Iterator,
-    Literal,
-    NamedTuple,
-    NoReturn,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional, Union
 
 import git
 import pydantic
@@ -760,7 +749,7 @@ def _get_repository_name(source_dir: RootedPath) -> str:
 
 
 # NOTE: get rid of this go.mod parser once we can assume Go > 1.21 (1.20 can't parse micro release)
-def _get_gomod_version(go_mod_file: RootedPath) -> Tuple[Optional[str], Optional[str]]:
+def _get_gomod_version(go_mod_file: RootedPath) -> tuple[Optional[str], Optional[str]]:
     """Return the required/recommended version of Go from go.mod.
 
     We need to extract the desired version of Go ourselves as older versions of Go might fail
@@ -841,7 +830,7 @@ def _find_missing_gomod_files(source_path: RootedPath, subpaths: list[str]) -> l
     invalid_gomod_files = []
     for subpath in subpaths:
         package_gomod_path = source_path.join_within_root(subpath, "go.mod").path
-        log.debug("Testing for go mod file in {}".format(package_gomod_path))
+        log.debug(f"Testing for go mod file in {package_gomod_path}")
         if not package_gomod_path.exists():
             invalid_gomod_files.append(package_gomod_path)
 
@@ -1230,7 +1219,7 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
 
     def __exit__(
         self,
-        exc: Optional[Type[BaseException]],
+        exc: Optional[type[BaseException]],
         value: Optional[BaseException],
         tb: Optional[TracebackType],
     ) -> None:

@@ -9,7 +9,8 @@ import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Optional
+from collections.abc import Iterator
 
 
 def print_banner(content: str) -> None:

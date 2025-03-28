@@ -120,7 +120,7 @@ def test_write_yarnrc(rooted_tmp_path: RootedPath) -> None:
     yarn_rc = YarnRc(file_path, data)
     yarn_rc.write()
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         actual_yaml = f.read()
 
     assert actual_yaml == expected_yaml

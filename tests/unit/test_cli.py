@@ -4,10 +4,11 @@ import logging
 import os
 import re
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Callable, Iterator, Optional, Union
+from typing import Any, Callable, Optional, Union
 from unittest import mock
 
 import pytest

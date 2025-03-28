@@ -4,9 +4,10 @@ import os
 import re
 import subprocess
 import textwrap
+from collections.abc import Iterator
 from pathlib import Path
 from string import Template
-from typing import Any, Iterator, Literal, Optional, Tuple, Union
+from typing import Any, Literal, Optional, Union
 from unittest import mock
 
 import git
@@ -2033,7 +2034,7 @@ def test_setup_go_toolchain_failure(
     mock_go_version: mock.Mock,
     mock_get_gomod_version: mock.Mock,
     rooted_tmp_path: RootedPath,
-    unsupported_version: Tuple[Optional[str], Optional[str]],
+    unsupported_version: tuple[Optional[str], Optional[str]],
 ) -> None:
     mock_go_version.return_value = version.Version("1.21.0")
     mock_get_gomod_version.return_value = unsupported_version

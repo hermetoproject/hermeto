@@ -1,7 +1,8 @@
 import logging
+from collections.abc import Generator, Iterable
 from itertools import chain
 from pathlib import Path
-from typing import Any, Generator, Iterable
+from typing import Any
 
 import pydantic
 

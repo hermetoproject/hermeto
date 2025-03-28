@@ -4,10 +4,11 @@ import json
 import logging
 import re
 from collections import defaultdict
+from collections.abc import Iterable
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from urllib.parse import urlparse
 
 import pydantic
@@ -386,7 +387,7 @@ class SPDXPackage(pydantic.BaseModel):
         )
 
     @staticmethod
-    def _calculate_package_hash_from_dict(package_dict: Dict[str, Any]) -> str:
+    def _calculate_package_hash_from_dict(package_dict: dict[str, Any]) -> str:
         return hashlib.sha256(json.dumps(package_dict, sort_keys=True).encode()).hexdigest()
 
     @pydantic.field_validator("externalRefs")

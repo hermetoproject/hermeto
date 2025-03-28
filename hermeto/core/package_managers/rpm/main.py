@@ -8,7 +8,7 @@ from configparser import ConfigParser
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, no_type_check
+from typing import Any, Optional, Union, no_type_check
 
 import yaml
 from packageurl import PackageURL
@@ -207,7 +207,7 @@ class _Repofile(ConfigParser):
 def fetch_rpm_source(request: Request) -> RequestOutput:
     """Process all the rpm source directories in a request."""
     components: list[Component] = []
-    options: Dict[str, Any] = {}
+    options: dict[str, Any] = {}
     noptions = 0
 
     for package in request.rpm_packages:
@@ -446,7 +446,7 @@ def _createrepo(reponame: str, repodir: Path) -> None:
 
 
 def _generate_repofiles(
-    from_output_dir: Path, for_output_dir: Path, options: Optional[Dict] = None
+    from_output_dir: Path, for_output_dir: Path, options: Optional[dict] = None
 ) -> None:
     """
     Generate templates of repofiles for all arches.

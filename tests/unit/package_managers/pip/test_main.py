@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import re
 import subprocess
+from collections.abc import Collection
 from copy import deepcopy
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Collection, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from unittest import mock
 from urllib.parse import urlparse
 
@@ -2859,29 +2860,26 @@ class TestDownload:
                 f"{package_name}: using intersection of requirements-file and PyPI-reported checksums"
                 in caplog.text
             )
-            assert artifacts[1].checksums_to_match == set(
-                [ChecksumInfo("sha128", "abcdef"), ChecksumInfo("sha256", "abcdef")]
-            )
+            assert artifacts[1].checksums_to_match == {
+                ChecksumInfo("sha128", "abcdef"),
+                ChecksumInfo("sha256", "abcdef"),
+            }
 
         elif use_user_hashes and not use_pypi_digests:
             assert f"{package_name}: using requirements-file checksums" in caplog.text
-            assert artifacts[1].checksums_to_match == set(
-                [
-                    ChecksumInfo("sha128", "abcdef"),
-                    ChecksumInfo("sha256", "abcdef"),
-                    ChecksumInfo("sha512", "xxxxxx"),
-                ]
-            )
+            assert artifacts[1].checksums_to_match == {
+                ChecksumInfo("sha128", "abcdef"),
+                ChecksumInfo("sha256", "abcdef"),
+                ChecksumInfo("sha512", "xxxxxx"),
+            }
 
         elif use_pypi_digests and not use_user_hashes:
             assert f"{package_name}: using PyPI-reported checksums" in caplog.text
-            assert artifacts[1].checksums_to_match == set(
-                [
-                    ChecksumInfo("sha128", "abcdef"),
-                    ChecksumInfo("sha256", "abcdef"),
-                    ChecksumInfo("sha512", "yyyyyy"),
-                ]
-            )
+            assert artifacts[1].checksums_to_match == {
+                ChecksumInfo("sha128", "abcdef"),
+                ChecksumInfo("sha256", "abcdef"),
+                ChecksumInfo("sha512", "yyyyyy"),
+            }
 
         elif not use_user_hashes and not use_pypi_digests:
             assert (

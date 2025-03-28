@@ -2,9 +2,10 @@ import json
 import re
 import tarfile
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 from packageurl import PackageURL

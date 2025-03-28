@@ -85,7 +85,7 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
     :param lockfile_path: the path to the lockfile
     :param output_dir: path to output directory
     """
-    with open(lockfile_path, "r") as f:
+    with open(lockfile_path) as f:
         try:
             lockfile_data = yaml.safe_load(f)
         except yaml.YAMLError as e:

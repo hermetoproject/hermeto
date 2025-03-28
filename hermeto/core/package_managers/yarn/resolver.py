@@ -10,11 +10,12 @@ import logging
 import re
 import zipfile
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Mapping, Union
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import quote
 
 import pydantic
@@ -458,10 +459,8 @@ class _ComponentResolver:
         """Return a PURL-style VCS URL qualifier with subpath for a Patch."""
         if patch_locator.locator is None:
             raise UnsupportedFeature(
-                (
-                    f"{patch_locator} is missing an associated workspace locator "
-                    "and {APP_NAME} expects all non-builtin yarn patches to have one"
-                )
+                f"{patch_locator} is missing an associated workspace locator "
+                "and {APP_NAME} expects all non-builtin yarn patches to have one"
             )
 
         project_path = self._project.source_dir
