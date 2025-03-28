@@ -1257,7 +1257,8 @@ class ModuleVersionResolver:
         except Exception as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
-                f"for {repo.working_tree_dir}"
+                f"for {repo.working_tree_dir}: "
+                f"{str(ex)}"
             )
 
         return cls(repo, commit)
