@@ -1255,6 +1255,7 @@ class ModuleVersionResolver:
         try:
             repo.remote().fetch(force=True, tags=True)
         except Exception as ex:
+            log.error(ex)
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
                 f"for {repo.working_tree_dir}"
