@@ -38,18 +38,18 @@ log = logging.getLogger(__name__)
         # source repo, deps folder in output folder should be empty.
         pytest.param(
             utils.TestParameters(
-                branch="gomod/vendor-check-pass",
+                branch="gomod/correct-vendor-passes-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
                 flags=["--gomod-vendor-check"],
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
-            id="gomod_vendor_check_correct_vendor",
+            id="gomod_correct_vendor_passes_vendor_check",
         ),
         # Test case checks if request will fail when source provided wrong vendor.
         pytest.param(
             utils.TestParameters(
-                branch="gomod/vendor-check-fail",
+                branch="gomod/wrong-vendor-fails-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
                 flags=["--gomod-vendor-check"],
                 check_output=False,
@@ -61,12 +61,12 @@ log = logging.getLogger(__name__)
                     "consistent with go.mod. Please check the logs for more details"
                 ),
             ),
-            id="gomod_vendor_check_wrong_vendor",
+            id="gomod_wrong_vendor_fails_vendor_check",
         ),
         # Test case checks if request will fail when source provided empty vendor.
         pytest.param(
             utils.TestParameters(
-                branch="gomod/vendor-check-empty",
+                branch="gomod/empty-vendor-fails-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
                 flags=["--gomod-vendor-check"],
                 check_output=False,
@@ -78,7 +78,7 @@ log = logging.getLogger(__name__)
                     "consistent with go.mod. Please check the logs for more details"
                 ),
             ),
-            id="gomod_vendor_check_empty_vendor",
+            id="gomod_empty_vendor_fails_vendor_check",
         ),
         # Test case checks if package can be replaced with local dependency
         pytest.param(
@@ -103,7 +103,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
-            id="gomod_go_generate_imported",
+            id="gomod_generate_imported",
         ),
         # Test the handling of missing checksums. Hermeto should report them via
         # hermeto:missing_hash:in_file properties in the SBOM.
@@ -120,7 +120,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
-            id="gomod_multiple_modules_missing_checksums",
+            id="gomod_missing_checksums",
         ),
         # Test case checks if hermeto can process go workspaces properly.
         pytest.param(
@@ -172,7 +172,7 @@ def test_gomod_packages(
             ),
             ["retrodep", "--help"],
             ["retrodep: help requested"],
-            id="gomod_1.18_e2e_test",
+            id="gomod_e2e_1.18",
         ),
         # Test case checks fetching retrodep dependencies, generating environment vars file,
         # building image with all prepared prerequisites and printing help message for retrodep
@@ -187,7 +187,7 @@ def test_gomod_packages(
             ),
             ["retrodep", "--help"],
             ["retrodep: help requested"],
-            id="gomod_1.21_e2e_test",
+            id="gomod_e2e_1.21",
         ),
         # Check handling of multiple Go modules in one repository. See the README in the testing
         # repository for more details.
@@ -222,7 +222,7 @@ def test_gomod_packages(
                 "The cachi2-gomod/twenty module requires minimum go version 1.20",
                 "The cachi2-gomod/twentyone module requires minimum go version 1.21",
             ],
-            id="gomod_1.20_e2e_dirty_go.mod",
+            id="gomod_e2e_1.21_dirty",
         ),
         pytest.param(
             utils.TestParameters(
@@ -234,7 +234,7 @@ def test_gomod_packages(
             ),
             [],  # check using CMD defined in Dockerfile
             [""],
-            id="gomod_1.22_e2e_workspace_vendoring",
+            id="gomod_e2e_1.22_workspace_vendoring",
         ),
     ],
 )

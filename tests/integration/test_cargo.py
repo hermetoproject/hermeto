@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="",
             ),
-            id="just_a_crate_dependency",
+            id="cargo_just_a_crate_dependency",
         ),
         pytest.param(
             utils.TestParameters(
@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="",
             ),
-            id="just_a_git_dependency",
+            id="cargo_just_a_git_dependency",
         ),
         pytest.param(
             utils.TestParameters(
@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="",
             ),
-            id="mixed_git_crate_dependency",
+            id="cargo_mixed_git_crate_dependency",
         ),
     ],
 )
@@ -80,7 +80,7 @@ def test_cargo_packages(
             ),
             [],  # No additional commands are run to verify the build
             [],
-            id="cargo_mixed_dep",
+            id="cargo_mixed_git_crate_dependency",
         ),
     ],
 )

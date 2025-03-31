@@ -71,7 +71,7 @@ def test_generic_fetcher(
             ),
             [],
             ["Apache Ant(TM) version 1.10.14"],
-            id="generic_maven_e2e",
+            id="generic_e2e_maven",
         ),
     ],
 )

@@ -24,7 +24,7 @@ from . import utils
                 check_vendor_checksums=False,
                 expected_exit_code=0,
             ),
-            id="rpm_missing_checksums",
+            id="rpm_missing_checksum",
         ),
         pytest.param(
             utils.TestParameters(
@@ -102,7 +102,7 @@ from . import utils
                 check_vendor_checksums=False,
                 expected_exit_code=0,
             ),
-            id="rpm_with_cert_auth",
+            id="rpm_dnf_tls_client_auth",
             marks=pytest.mark.skipif(
                 os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true",
                 reason="HERMETO_TEST_LOCAL_DNF_SERVER!=true",
@@ -110,7 +110,7 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/multiple-packages",
+                branch="rpm/multiple-packages-summary",
                 packages=(
                     {"path": "this-project", "type": "rpm", "include_summary_in_sbom": "true"},
                     {"path": "another-project", "type": "rpm"},
@@ -121,7 +121,7 @@ from . import utils
                 check_vendor_checksums=False,
                 expected_exit_code=0,
             ),
-            id="rpm_summary_is_reported",
+            id="rpm_multiple_packages_summary",
         ),
     ],
 )
@@ -166,7 +166,7 @@ def test_rpm_packages(
                 check_vendor_checksums=False,
                 expected_exit_code=0,
             ),
-            id="rpm_test_repo_file",
+            id="rpm_repo_file",
         ),
     ],
 )
@@ -247,7 +247,7 @@ def test_repo_files(
             ),
             ["vim", "--version"],
             ["VIM - Vi IMproved 9.0"],
-            id="rpm_e2e_test",
+            id="rpm_e2e",
         ),
         # Test case that checks fetching RPM and module metadata files, generating repos and repofiles,
         # building an image that requires the RPM files to be installed and running the image to check
@@ -266,7 +266,7 @@ def test_repo_files(
             ),
             ["ab", "-V"],
             ["This is ApacheBench, Version 2.3"],
-            id="rpm_e2e_test_module",
+            id="rpm_e2e_modularity",
         ),
     ],
 )

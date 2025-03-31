@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "npm"},),
                 check_vendor_checksums=False,
             ),
-            id="npm_lockfile3_yarn_registry",
+            id="npm_yarn_registry_lockfile3",
         ),
     ],
 )
@@ -82,7 +82,7 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_lockfile3_multiple_dep_versions",
+            id="npm_multiple_dep_versions",
         ),
         pytest.param(
             utils.TestParameters(
@@ -92,7 +92,7 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_lockfile3_aliased_deps",
+            id="npm_aliased_deps",
         ),
         pytest.param(
             utils.TestParameters(
@@ -102,7 +102,7 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_lockfile3_dev_optional_peer_deps",
+            id="npm_dev_optional_peer_deps",
         ),
         pytest.param(
             utils.TestParameters(
@@ -116,7 +116,7 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_multiple_packages_lockfile3",
+            id="npm_multiple_packages",
         ),
     ],
 )

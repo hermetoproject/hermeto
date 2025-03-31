@@ -37,13 +37,13 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn/corepack-install",
+                branch="yarn/correct-version-is-installed-by-corepack",
                 packages=({"path": ".", "type": "yarn"},),
                 check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="Processing the request using yarn@3.6.1",
             ),
-            id="yarn_correct_version_installed_by_corepack",
+            id="yarn_correct_version_is_installed_by_corepack",
         ),
         pytest.param(
             utils.TestParameters(
@@ -89,7 +89,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=2,
                 expected_output="Yarn lockfile 'yarn_non_existent.lock' missing, refusing to continue",
             ),
-            id="yarn_no_lockfile",
+            id="yarn_missing_lockfile",
         ),
     ],
 )
@@ -127,7 +127,7 @@ def test_yarn_packages(
             ),
             ["yarn", "berryscary"],
             "Hello, World!",
-            id="yarn_e2e_test",
+            id="yarn_e2e",
         ),
         pytest.param(
             utils.TestParameters(
@@ -142,7 +142,7 @@ def test_yarn_packages(
             ),
             ["yarn", "node", "index.js"],
             "Hello from first package!",
-            id="yarn_e2e_test_multiple_packages",
+            id="yarn_e2e_multiple_packages",
         ),
     ],
 )

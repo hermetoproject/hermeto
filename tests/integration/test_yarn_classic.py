@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="Processing the request using yarn@1.22.",
             ),
-            id="yarn_classic_corepack_packagemanager_ignored",
+            id="yarn_classic_corepack_ignored",
         ),
         pytest.param(
             utils.TestParameters(
@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=0,
                 expected_output="Processing the request using yarn@1.22.",
             ),
-            id="yarn_classic_yarnpath_ignored",
+            id="yarn_classic_yarn_path_ignored",
         ),
         pytest.param(
             utils.TestParameters(
@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/frozen-lockfile",
+                branch="yarn-classic/updating-frozen-lockfile-fails",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
@@ -57,7 +57,7 @@ log = logging.getLogger(__name__)
                 expected_exit_code=1,
                 expected_output="Your lockfile needs to be updated, but yarn was run with `--frozen-lockfile`.",
             ),
-            id="yarn_invalid_frozen_lockfile_add_dependency",
+            id="yarn_classic_updating_frozen_lockfile_fails",
         ),
         pytest.param(
             utils.TestParameters(
@@ -119,7 +119,7 @@ def test_yarn_classic_packages(
             ),
             ["yarn", "node", "index.js"],
             "Hello world!",
-            id="yarn_classic_e2e_test",
+            id="yarn_classic_e2e",
         ),
         pytest.param(
             utils.TestParameters(
@@ -134,7 +134,7 @@ def test_yarn_classic_packages(
             ),
             ["yarn", "node", "index.js"],
             "Hello from first package!",
-            id="yarn_classic_e2e_test_multiple_packages",
+            id="yarn_classic_e2e_multiple_packages",
         ),
     ],
 )
