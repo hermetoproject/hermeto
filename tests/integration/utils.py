@@ -347,6 +347,7 @@ def fetch_deps_and_check_output(
     hermeto_image: ContainerImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
     podman_flags: Optional[list[str]] = None,
+    fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> None:
     """
     Fetch dependencies for source repo and check expected output.
@@ -367,7 +368,7 @@ def fetch_deps_and_check_output(
     repo.git.clean("-ffdx")
     repo.git.checkout(test_params.branch)
 
-    output_dir = tmp_path.joinpath(DEFAULT_OUTPUT)
+    output_dir = tmp_path.joinpath(fetch_output_dirname)
     cmd = [
         "fetch-deps",
         "--source",
@@ -453,6 +454,8 @@ def build_image_and_check_cmd(
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
     podman_flags: Optional[list[str]] = None,
+    fetch_output_dirname: str = DEFAULT_OUTPUT,
+    env_vars_filename: str = f"{APP_NAME}.env",
 ) -> None:
     """
     Build image and check that Hermeto provided sources properly.
@@ -466,17 +469,17 @@ def build_image_and_check_cmd(
     :param hermeto_image: ContainerImage instance with Hermeto image
     :return: None
     """
-    output_dir = tmp_path.joinpath(DEFAULT_OUTPUT)
+    output_dir = tmp_path.joinpath(fetch_output_dirname)
 
-    log.info(f"Creating {APP_NAME}.env file")
-    env_vars_file = tmp_path.joinpath(f"{APP_NAME}.env")
+    log.info(f"Creating {env_vars_filename} file")
+    env_vars_file = tmp_path.joinpath(env_vars_filename)
     cmd = [
         "generate-env",
         str(output_dir),
         "--output",
         str(env_vars_file),
         "--for-output-dir",
-        f"/tmp/{DEFAULT_OUTPUT}",
+        f"/tmp/{fetch_output_dirname}",
     ]
     (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path, podman_flags=podman_flags)
     assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
@@ -486,7 +489,7 @@ def build_image_and_check_cmd(
         "inject-files",
         str(output_dir),
         "--for-output-dir",
-        f"/tmp/{DEFAULT_OUTPUT}",
+        f"/tmp/{fetch_output_dirname}",
     ]
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd, tmp_path, [(test_repo_dir, test_repo_dir)]
