@@ -103,8 +103,7 @@ class ContainerImage:
     ) -> Tuple[str, int]:
         flags = ["-v", f"{tmp_path}:{tmp_path}:z"]
         for src, dest in mounts:
-            flags.append("-v")
-            flags.append(f"{src}:{dest}:z")
+            flags.extend(["-v", f"{src}:{dest}:z"])
         if net:
             flags.append(f"--net={net}")
         image_cmd = ["podman", "run", "--rm", *flags, self.repository] + cmd
