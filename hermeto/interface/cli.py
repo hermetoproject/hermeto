@@ -28,8 +28,8 @@ log = logging.getLogger(__name__)
 DEFAULT_SOURCE = "."
 DEFAULT_OUTPUT = f"./{APP_NAME}-output"
 
-FETCH_DEPS_HELP = """\
-    fetch dependencies for supported package managers.
+FETCH_DEPS_HELP = f"""\
+    Fetch dependencies for supported package managers.
 
     \b
     # gomod package in the current directory
@@ -68,7 +68,7 @@ FETCH_DEPS_HELP = """\
     }}'
     """
 
-MERGE_SBOMS_HELP = """\
+MERGE_SBOMS_HELP = f"""\
         Merge two or more SBOMs into one.
 
         \b
