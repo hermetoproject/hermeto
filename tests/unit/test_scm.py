@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 import pytest
 from git.repo import Repo
 
-from hermeto.core.errors import FetchError, UnsupportedFeature
+from hermeto.core.errors import FetchError, PackageRejected, UnsupportedFeature
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
@@ -62,6 +62,10 @@ class TestRepoID:
             match="cannot process repositories that don't have an 'origin' remote",
         ):
             get_repo_id(golang_repo_path)
+
+    def test_get_repo_id_invalid_path(self, tmp_path: Path) -> None:
+        with pytest.raises(PackageRejected):
+            get_repo_id(tmp_path)
 
     def test_as_vcs_url_qualifier(self) -> None:
         origin_url = "ssh://git@github.com/foo/bar.git"
