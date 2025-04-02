@@ -1,11 +1,3 @@
-# 🚧 REBRANDING NOTICE 🚧
-**This project is currently undergoing rebranding
-(see https://github.com/orgs/hermetoproject/discussions/824).**
-
-**You will gradually notice changes to the code base and eventually - the repository name and
-release artifacts. We are taking steps to ensure backwards compatibility, so feel free to continue
-using the project as normal, stay tuned!**
-
 # Hermeto
 
 [![coverage][hermeto-coverage-badge]][hermeto-coverage-status]
