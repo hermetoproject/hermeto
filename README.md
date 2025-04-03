@@ -18,7 +18,6 @@ The primary intended use of Hermeto's outputs is for network-isolated container 
 * [Configuration](#configuration)
 * [Package managers](#package-managers)
 * [Project status](#project-status)
-* [Contributing](CONTRIBUTING.md)
 
 ## Goals
 
@@ -37,9 +36,9 @@ To play nicely with Hermeto, the build process for your project must be
 * **Reproducible** - Hermeto will refuse to fetch a dependency if it's not pinned to an exact version. This goes
   for transitive dependencies as well (and ties to the Defined point). Most package managers pin all dependencies
   automatically in lockfiles.
-* **Secure** - Even with a lockfile, your build is not truly safe from supply chain attacks (such as
-  [dependency confusion](docs/dependency_confusion.md)) unless you verify the checksums of all dependencies. If your
-  package manager supports specifying the expected checksums, we strongly encourage you to make use of them.
+* **Secure** - Even with a lockfile, your build is not truly safe from supply chain attacks
+  unless you verify the checksums of all dependencies. If your package manager supports specifying
+  the expected checksums, we strongly encourage you to make use of them.
 
   ⚠ Hermeto will verify checksums if present, but doesn't require them by default. This may change in the future.
 
@@ -58,7 +57,7 @@ technologies - such as containers - to achieve isolation (see [usage](docs/usage
 
 We do not distribute Hermeto as a standalone package as of now.
 
-To install Hermeto for local development, see the [CONTRIBUTING.md](CONTRIBUTING.md).
+To install Hermeto for local development, see the [CONTRIBUTING.md](https://github.com/hermetoproject/hermeto/blob/main/CONTRIBUTING.md).
 
 ### Container image
 
@@ -104,7 +103,7 @@ You can change Hermeto's configuration by specifying a configuration file while 
 ```
 
 Any parameter specified in this file will override the default values present in the
-[config.py](hermeto/core/config.py) module.
+[config.py](https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/config.py) module.
 
 The only supported format for the config file is YAML.
 
