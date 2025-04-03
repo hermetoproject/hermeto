@@ -27,6 +27,9 @@ theme:
     - content.action.view
     - content.code.copy
     - content.tooltips
+    - navigation.sections
+    - search.share
+    - search.suggest
 
 # Navigation bar
 nav:
