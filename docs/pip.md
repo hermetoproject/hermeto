@@ -8,6 +8,7 @@
 * [Project metadata](#project-metadata)
 * [Distribution formats](#distribution-formats)
 * [Using fetched dependencies](#using-fetched-dependencies)
+* [Working with Rust-based extension](#working-with-rust-based-extensions)
 * [Troubleshooting](#troubleshooting)
 
 ## Specifying packages to process
@@ -483,6 +484,49 @@ cachi2-output/deps/pip
 │   └── dockerfile-parse-external-sha256-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
 └── ...
 ```
+
+## Working with Rust-based dependencies
+
+Hermeto provides a way to prepare hermetic build of a Python package which depends on
+on Rust-based packages. This process cannot be fully automated on Hermeto's side, thus it would
+require minor intervention from users.
+
+Building such project requires that all build dependencies are present. To achieve this
+[pybuild-deps](https://pypi.org/project/pybuild-deps) could be used. The following command
+will take care of generating the list:
+
+```
+echo <package_name==package_version> | pybuild-deps compile /dev/stdin --generate-hashes -o requirements-build.txt
+```
+
+where _package_name_ and _package_version_ are the name and the version of a package to be
+processed. Note, that this step requires internet connection.
+
+Once requirements-build.txt is populated fetch could be done as usual. Hermeto will fetch all
+runtime and build time dependencies for both Python and Rust parts.
+
+To build such Python package one would need to supply a proper `.cargo/config.toml`. It has
+to be provided manually because the build systems in use appear to be very sensitive to its
+placement which could change between fetch and build phases. `.cargo` directory must be
+created on the same level as `hermeto-output` directory and must contain a `config.toml`
+file of the following contents:
+
+```
+[source.crates-io]
+replace-with = "local"
+[source.local]
+directory = "<path_to_project>/<hermeto_output>/deps/cargo"
+```
+
+where _path_to_project_ is the path to a directory containing the project to be built and
+_hermeto_output_ is the name of an output directory (defaults to `hermeto-output`).
+
+Note, that a system which is to be used for building these extensions must have
+both `rustc` and `cargo` installed.
+
+With these preparations running a pip installation as usual should be sufficient to
+build and install Rust-based extension.
+
 
 ## Troubleshooting
 
