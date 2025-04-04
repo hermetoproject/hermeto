@@ -8,6 +8,7 @@
 * [Project metadata](#project-metadata)
 * [Distribution formats](#distribution-formats)
 * [Using fetched dependencies](#using-fetched-dependencies)
+* [Working with Rust-based dependencies](#working-with-rust-based-dependencies)
 * [Troubleshooting](#troubleshooting)
 
 ## Specifying packages to process
@@ -483,6 +484,33 @@ hermeto-output/deps/pip
 │   └── dockerfile-parse-external-sha256-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
 └── ...
 ```
+
+## Working with Rust-based dependencies
+
+Hermeto provides a way to prepare hermetic build of a Python package which depends on
+Rust-based packages. This process cannot be fully automated on Hermeto's side, thus it would
+require minor intervention from users.
+
+Building such project requires that all build dependencies are  listed in
+requirements-build.txt. To achieve this
+[pybuild-deps](https://pypi.org/project/pybuild-deps) could be used. The
+following command will take care of generating the list:
+
+```
+pybuild-deps compile --generate-hashes -o requirements-build.txt requirements.txt
+```
+
+Note, that this step requires internet connection.
+
+Once requirements-build.txt is populated fetch could be done as usual. Hermeto will fetch all
+run time and build time dependencies for both Python and Rust parts.
+
+Note, that a system which is to be used for building these extensions must have
+`rustc`, `cargo`, and all necessary C libraries installed.
+
+With these preparations running a pip installation as usual should be sufficient to
+build and install a Rust-based extension.
+
 
 ## Troubleshooting
 
