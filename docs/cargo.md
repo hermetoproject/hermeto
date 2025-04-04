@@ -23,18 +23,19 @@ The default output directory is `hermeto-output`. You can change it by passing
 the `--output-dir` option for the `fetch-deps` command. See the help message
 for more information.
 
-After prefetching the dependencies, you can use the prefetched dependencies
-to build your project. Make sure to run the following command to update the
-`.cargo/config.toml` to use them. (If the file does not exist in your repository,
-it will be created).
+After prefetching the dependencies, you can use the `hermeto inject-files` command to update the
+`.cargo/config.toml` file in your project directory. If it does not exist, it will be created. The
+file will contain instructions for Cargo to use the prefetched dependencies when compiling a
+project.
+
+Use the `--for-output-dir` option to specify the location where you want to mount the
+`hermeto-output` in your container build environment. See the next section.
+
+**Do not forget to copy `.cargo/config.toml` when building your container image.**
 
 ```bash
 hermeto inject-files --for-output-dir /tmp/hermeto-output hermeto-output
 ```
-
-Use `--for-output-dir` to specify the output directory you want to mount or copy
-to the container. The command will update the `.cargo/config.toml` file to use the
-prefetched dependencies from the specified directory.
 
 _There are no environment variables that need to be set for the build phase._
 
@@ -49,9 +50,7 @@ FROM docker.io/library/rust:latest
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock .
-
-...
+COPY Cargo.toml Cargo.lock .cargo .
 
 RUN cargo build --release
 ```
