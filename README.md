@@ -18,14 +18,13 @@ The primary intended use of Hermeto's outputs is for network-isolated container 
 * [Configuration](#configuration)
 * [Package managers](#package-managers)
 * [Project status](#project-status)
-* [Contributing](CONTRIBUTING.md)
 
 ## Goals
 
 Please note that Hermeto is rather picky, aiming to:
 
 * encourage or enforce best practices
-* never execute arbitrary code - looking at you [setup.py (discouraged)][setuppy-discouraged]
+* never execute arbitrary code
 * keep the implementation simple
 
 To play nicely with Hermeto, the build process for your project must be
@@ -35,9 +34,9 @@ To play nicely with Hermeto, the build process for your project must be
 * **Reproducible** - Hermeto will refuse to fetch a dependency if it's not pinned to an exact version. This goes
   for transitive dependencies as well (and ties to the Defined point). Most package managers pin all dependencies
   automatically in lockfiles.
-* **Secure** - Even with a lockfile, your build is not truly safe from supply chain attacks (such as
-  [dependency confusion](docs/dependency_confusion.md)) unless you verify the checksums of all dependencies. If your
-  package manager supports specifying the expected checksums, we strongly encourage you to make use of them.
+* **Secure** - Even with a lockfile, your build is not truly safe from supply chain attacks
+  unless you verify the checksums of all dependencies. If your package manager supports specifying
+  the expected checksums, we strongly encourage you to make use of them.
 
   ⚠ Hermeto will verify checksums if present, but doesn't require them by default. This may change in the future.
 
@@ -56,7 +55,7 @@ technologies - such as containers - to achieve isolation (see [usage](docs/usage
 
 We do not distribute Hermeto as a standalone package as of now.
 
-To install Hermeto for local development, see the [CONTRIBUTING.md](CONTRIBUTING.md).
+To install Hermeto for local development, see the [CONTRIBUTING.md](https://github.com/hermetoproject/hermeto/blob/main/CONTRIBUTING.md).
 
 ### Container image
 
@@ -89,7 +88,7 @@ hermeto fetch-deps \
 
 The `fetch-deps` command fetches your project's dependencies and stores them on your disk. Hermeto also produces a detailed SBOM containing information about all the project's components and packages. You can find the SBOM in the output directory.
 
-See [docs/usage.md](docs/usage.md) for a more detailed, practical (*cough*) example of Hermeto usage.
+See [docs/usage.md](docs/usage.md) for a more detailed, practical example of Hermeto usage.
 
 You might also like to check out `hermeto --help` and the `--help` texts of the available subcommands.
 
@@ -102,7 +101,7 @@ You can change Hermeto's configuration by specifying a configuration file while 
 ```
 
 Any parameter specified in this file will override the default values present in the
-[config.py](hermeto/core/config.py) module.
+[config.py](https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/config.py) module.
 
 The only supported format for the config file is YAML.
 
@@ -267,7 +266,6 @@ Hermeto was derived (but is not a direct fork) from [Cachito](https://github.com
 
 [sdist-spec]: https://packaging.python.org/en/latest/specifications/source-distribution-format/
 [wheel-spec]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
-[setuppy-discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
 [go117-changelog]: https://tip.golang.org/doc/go1.17#go-command
 [go118-changelog]: https://tip.golang.org/doc/go1.18#go-command
 [go119-changelog]: https://tip.golang.org/doc/go1.19#go-command
