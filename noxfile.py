@@ -99,7 +99,7 @@ def unit_tests(session: Session) -> None:
     session.install(".")
     # disable color output in GitHub Actions
     env = {"TERM": "dumb"} if os.getenv("CI") == "true" else None
-    cmd = "pytest --log-level=DEBUG --cov=hermeto --cov-config=pyproject.toml --cov-report=term --cov-report=html --cov-report=xml --no-cov-on-fail tests/unit"
+    cmd = "pytest --log-level=DEBUG -W ignore::DeprecationWarning --cov=hermeto --cov-config=pyproject.toml --cov-report=term --cov-report=html --cov-report=xml --no-cov-on-fail tests/unit"
     session.run(*cmd.split(), *session.posargs, env=env)
 
 
@@ -108,7 +108,7 @@ def _run_integration_tests(session: Session, env: dict[str, str]) -> None:
     netrc = "machine 127.0.0.1 login cachi2-user password cachi2-pass"
     default_env = {"HERMETO_TEST_NETRC_CONTENT": os.getenv("HERMETO_TEST_NETRC_CONTENT", netrc)}
     default_env.update(env)
-    cmd = "pytest --log-cli-level=WARNING tests/integration"
+    cmd = "pytest --log-cli-level=WARNING -W ignore::DeprecationWarning tests/integration"
     session.run(*cmd.split(), *session.posargs, env=default_env)
 
 
