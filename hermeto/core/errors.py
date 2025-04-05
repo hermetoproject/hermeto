@@ -100,6 +100,10 @@ class PackageRejected(UsageError):
         super().__init__(reason, solution=solution, docs=docs)
 
 
+class NotAGitRepo(PackageRejected):
+    """A package turned out to be not a git repository."""
+
+
 class UnexpectedFormat(UsageError):
     """The Application failed to parse a file in the user's package (e.g. requirements.txt)."""
 
