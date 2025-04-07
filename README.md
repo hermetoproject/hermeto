@@ -25,8 +25,10 @@ The primary intended use of Hermeto's outputs is for network-isolated container 
 Please note that Hermeto is rather picky, aiming to:
 
 * encourage or enforce best practices
-* never execute arbitrary code - looking at you [setup.py (discouraged)][setuppy-discouraged]
+* never execute arbitrary code [^pip-download-example]
 * keep the implementation simple
+
+[^pip-download-example]: See for example <https://discuss.python.org/t/pip-download-just-the-source-packages-no-building-no-metadata-etc/4651>
 
 To play nicely with Hermeto, the build process for your project must be
 
@@ -89,7 +91,7 @@ hermeto fetch-deps \
 
 The `fetch-deps` command fetches your project's dependencies and stores them on your disk. Hermeto also produces a detailed SBOM containing information about all the project's components and packages. You can find the SBOM in the output directory.
 
-See [docs/usage.md](docs/usage.md) for a more detailed, practical (*cough*) example of Hermeto usage.
+See [docs/usage.md](docs/usage.md) for a more detailed, practical example of Hermeto usage.
 
 You might also like to check out `hermeto --help` and the `--help` texts of the available subcommands.
 
@@ -267,7 +269,6 @@ Hermeto was derived (but is not a direct fork) from [Cachito](https://github.com
 
 [sdist-spec]: https://packaging.python.org/en/latest/specifications/source-distribution-format/
 [wheel-spec]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
-[setuppy-discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
 [go117-changelog]: https://tip.golang.org/doc/go1.17#go-command
 [go118-changelog]: https://tip.golang.org/doc/go1.18#go-command
 [go119-changelog]: https://tip.golang.org/doc/go1.19#go-command
