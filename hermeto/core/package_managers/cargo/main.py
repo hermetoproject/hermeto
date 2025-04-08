@@ -10,7 +10,7 @@ import tomlkit
 from packageurl import PackageURL
 from tomlkit.toml_file import TOMLFile
 
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
@@ -127,7 +127,9 @@ def _resolve_cargo_package(
     """Resolve a single cargo package."""
     _verify_lockfile_is_present_or_fail(package_dir)
     vendor_dir = output_dir.join_within_root("deps/cargo")
-    cmd = ["cargo", "vendor", "--locked", str(vendor_dir)]
+    # --no-delete to keep everything already present. It does not matter for a fresh
+    # single package, but it does matter when there is pip interaction.
+    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
         # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
@@ -135,12 +137,15 @@ def _resolve_cargo_package(
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)
-    vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     is_a_dep = lambda p: p["name"] != main_package["name"]
+    try:
+        vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+    except NotAGitRepo:
+        # Could become invalid when directories are swapped for nested package managers
+        vcs_url = None
     deps_components = (
         CargoPackage(**p, vcs_url=vcs_url).to_component() for p in packages if is_a_dep(p)
     )
-
     main_component = CargoPackage(
         name=main_package["name"], version=main_package["version"], vcs_url=vcs_url
     ).to_component()

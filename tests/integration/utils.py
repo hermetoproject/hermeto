@@ -523,7 +523,11 @@ def _replace_tmp_path_with_placeholder(
             item["abspath"] = "${test_case_tmp_path}/hermeto-output/bundler/config_override/config"
             continue
 
-        relative_path = Path(item["abspath"]).relative_to(test_repo_dir)
+        # Walking up is necessary when one package manager triggers another one
+        # (e.g. when dealing with Rust-based Python extensions).
+        # Pathlib cannot be used since walk_up argument to relative_to
+        # is available only in Python 3.12 or later.
+        relative_path = os.path.relpath(item["abspath"], test_repo_dir)
         item["abspath"] = "${test_case_tmp_path}/" + str(relative_path)
 
 

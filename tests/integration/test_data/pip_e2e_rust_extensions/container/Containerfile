@@ -1,0 +1,26 @@
+# A corresponding rpms.lock.yaml was built for UBI9
+FROM registry.access.redhat.com/ubi9/ubi as ubi
+
+# Test disabled network access
+RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+
+# These packages must be prefetched during the previous phase.
+# Refer to the test for further details.
+RUN dnf -y install \
+    cargo \
+    python3 \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    python3-devel \
+    libffi-devel \
+    openssl-devel
+
+WORKDIR /src
+
+RUN . /tmp/hermeto.env \
+    && python3 -m pip install -r requirements.txt
+
+# See pip/e2e for the resasoning behind switching WORKDIR
+RUN cp -r /src /app
+WORKDIR /app

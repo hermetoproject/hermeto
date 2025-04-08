@@ -5,6 +5,7 @@ import configparser
 import functools
 import io
 import logging
+import os
 import os.path
 import re
 import tarfile
@@ -14,6 +15,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from os import PathLike
 from pathlib import Path
+from textwrap import dedent
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -31,6 +33,8 @@ import tomlkit
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.models.input import CargoPackageInput
+from hermeto.core.package_managers.utils import merge_outputs
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball, get_repo_id
 
@@ -49,6 +53,7 @@ from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.cargo import fetch_cargo_source
 from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
@@ -162,6 +167,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
     components: list[Component] = []
     project_files: list[ProjectFile] = []
     environment_variables: list[EnvironmentVariable] = []
+    packages_containing_rust_code = []
 
     if request.pip_packages:
         environment_variables = [
@@ -174,6 +180,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         info = _resolve_pip(
             path_within_root,
             request.output_dir,
+            request.source_dir,
             package.requirements_files,
             package.requirements_build_files,
             package.allow_binary,
@@ -214,12 +221,57 @@ def fetch_pip_source(request: Request) -> RequestOutput:
 
         replaced_requirements_files = map(_replace_external_requirements, info["requirements"])
         project_files.extend(filter(None, replaced_requirements_files))
+        # each package can have Rust dependencies
+        packages_containing_rust_code += info["packages_containing_rust_code"]
 
-    return RequestOutput.from_obj_list(
+    pip_packages = RequestOutput.from_obj_list(
         components=components,
         environment_variables=environment_variables,
         project_files=project_files,
     )
+    cargo_packages = _find_and_fetch_rust_dependencies(request, packages_containing_rust_code)
+    return merge_outputs([pip_packages, cargo_packages])
+
+
+def _config_data() -> str:
+    return dedent(
+        """
+        [source.crates-io]
+        replace-with = "local"
+
+        [source.local]
+        directory = "${output_dir}/deps/cargo"
+        """
+    )
+
+
+def _config_path(request: Request) -> Path:
+    return request.output_dir.join_within_root(".cargo/config.toml").path
+
+
+def _find_and_fetch_rust_dependencies(
+    request: Request, packages_containing_rust_code: list
+) -> RequestOutput:
+    if packages_containing_rust_code:
+        # Need to swap source for output since this should be happening within output_dir:
+        # pip downloads packages to output_dir first, but then these packages have to
+        # be processed by cargo, thus output_dir must become source_dir for cargo.
+        # Note that output_dir remains the same which results in cargo dependencies being
+        # neatly placed right next to pip dependencies.
+        cargo_request = request.model_copy(
+            update={"packages": [], "source_dir": request.output_dir}
+        )
+        cargo_request.packages = packages_containing_rust_code
+        result = fetch_cargo_source(cargo_request)
+
+        # A config pointing to deps/cargo directory and an environment variable
+        # poiting to the config are necessary for pip to be able to build the extension.
+        ev = [EnvironmentVariable(name="CARGO_HOME", value="${output_dir}/.cargo")]
+        pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
+
+        return merge_outputs([result, RequestOutput.from_obj_list([], ev, pf)])
+
+    return RequestOutput.from_obj_list([], [], [])
 
 
 def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPath) -> str:
@@ -2096,6 +2148,7 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
 def _resolve_pip(
     app_path: RootedPath,
     output_dir: RootedPath,
+    source_dir: RootedPath,
     requirement_files: Optional[list[Path]] = None,
     build_requirement_files: Optional[list[Path]] = None,
     allow_binary: bool = False,
@@ -2137,6 +2190,10 @@ def _resolve_pip(
         output_dir, resolved_build_req_files, allow_binary
     )
 
+    packages_containing_rust_code = _filter_packages_with_rust_code(
+        requires + build_requires, output_dir, source_dir
+    )
+
     # Mark all build dependencies as such
     for dependency in build_requires:
         dependency["build_dependency"] = True
@@ -2171,7 +2228,39 @@ def _resolve_pip(
         "package": {"name": pkg_name, "version": pkg_version, "type": "pip"},
         "dependencies": dependencies,
         "requirements": [*resolved_req_files, *resolved_build_req_files],
+        "packages_containing_rust_code": packages_containing_rust_code,
     }
+
+
+def _filter_packages_with_rust_code(
+    packages: list, output_dir: RootedPath, source_dir: RootedPath
+) -> list:
+    packages_containing_rust_code = []
+    tar_packages = [p for p in packages if tarfile.is_tarfile(p.get("path", ""))]
+    for p in tar_packages:
+        fname = p.get("path")
+        # File name and package name may differ e.g. when there is a hyphen in
+        # package name it might be replaced by an underscore in a file name.
+        pname = Path(Path(fname).name)
+        while pname.suffix in (".tar", ".gz", ".tgz"):
+            pname = pname.with_suffix("")
+        tf = tarfile.open(fname)
+        file_to_check = f"{pname}/Cargo.toml"
+        try:
+            tf.getmember(file_to_check)
+        # If there is no top-level Cargo.toml then this is unlikely
+        # a Rust package (see https://doc.rust-lang.org/cargo/guide/project-layout.html
+        # for details).
+        except KeyError:
+            continue
+        tf.extractall(path=Path(str(tf.name)).parent, filter="data")
+        rust_package_source_dir = output_dir.join_within_root("deps", "pip", pname)
+        packages_containing_rust_code.append(
+            CargoPackageInput(
+                type="cargo", path=rust_package_source_dir.path.relative_to(output_dir)
+            )
+        )
+    return packages_containing_rust_code
 
 
 def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:

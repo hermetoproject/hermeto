@@ -1,0 +1,30 @@
+environment_variables:
+- name: CARGO_HOME
+  value: ${output_dir}/.cargo
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/.cargo/config.toml
+  template: |2
+
+    [source.crates-io]
+    replace-with = "local"
+
+    [source.local]
+    directory = "${output_dir}/deps/cargo"
+- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/cryptography-44.0.2/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/maturin-1.8.3/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
