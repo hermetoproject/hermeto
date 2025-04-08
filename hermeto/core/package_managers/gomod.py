@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from collections import UserDict
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
@@ -402,10 +402,10 @@ class Go:
             )
             raise PackageManagerError(err_msg) from None
 
-    def _run(self, cmd: list[str], **kwargs: Any) -> str:
+    def _run(self, cmd: Sequence[str], **params: Any) -> str:
         try:
-            log.debug(f"Running '{cmd}'")
-            return run_cmd(cmd, kwargs)
+            log.debug("Running `%s`", " ".join(cmd))
+            return run_cmd(cmd, params)
         except subprocess.CalledProcessError as e:
             rc = e.returncode
             raise PackageManagerError(
