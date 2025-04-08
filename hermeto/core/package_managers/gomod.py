@@ -402,7 +402,8 @@ class Go:
             )
             raise PackageManagerError(err_msg) from None
 
-    def _run(self, cmd: Sequence[str], **params: Any) -> str:
+    @staticmethod
+    def _run(cmd: Sequence[str], **params: Any) -> str:
         try:
             log.debug("Running `%s`", " ".join(cmd))
             return run_cmd(cmd, params)

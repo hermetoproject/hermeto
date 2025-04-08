@@ -2151,19 +2151,16 @@ def test_parse_packages(
 
 class TestGo:
     @pytest.mark.parametrize(
-        "bin_, params",
+        "params",
         [
-            pytest.param(None, {}, id="bundled_go_no_params"),
-            pytest.param("/usr/bin/go1.21", {}, id="custom_go_no_params"),
-            pytest.param(None, {"cwd": "/foo/bar"}, id="bundled_go_params"),
+            pytest.param({}, id="no_params"),
             pytest.param(
-                "/usr/bin/go1.21",
                 {
                     "env": {"GOCACHE": "/foo", "GOTOOLCHAIN": "local"},
                     "cwd": "/foo/bar",
                     "text": True,
                 },
-                id="custom_go_params",
+                id="with_params",
             ),
         ],
     )
@@ -2171,16 +2168,11 @@ class TestGo:
     def test_run(
         self,
         mock_run: mock.Mock,
-        bin_: str,
         params: dict,
     ) -> None:
-        if not bin_:
-            go = Go(bin_)
-        else:
-            go = Go()
 
-        cmd = [go._bin, "mod", "download"]
-        go._run(cmd, **params)
+        cmd = [GO_CMD_PATH, "mod", "download"]
+        Go._run(cmd, **params)
         mock_run.assert_called_once_with(cmd, params)
 
     @pytest.mark.parametrize(
