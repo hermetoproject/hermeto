@@ -28,7 +28,15 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: dockerfile
-    value: Dockerfile
+    value: Dockerfile.konflux
+  - name: hermetic
+    value: true
+  - name: prefetch-input
+    value:
+      - type: generic
+      - type: rpm
+      - type: pip
+        allow_binary: true
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -181,6 +189,8 @@ spec:
         value: $(params.output-image).prefetch
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: dev-package-managers
+        value: true
       runAfter:
       - clone-repository
       taskRef:
