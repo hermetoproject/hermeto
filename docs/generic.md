@@ -1,6 +1,5 @@
 # Generic fetcher
 
-* Overview [in the README][readme-generic]
 * [Specifying artifacts to fetch](#specifying-artifacts-to-fetch)
 * [Using fetched dependencies](#using-fetched-dependencies)
 
@@ -119,6 +118,5 @@ Hermeto downloads the files into the `deps/generic/` subpath of the output direc
 `filename` field if specified, otherwise derived from the URL. During your build, you would typically mount hermeto's
 output directory into your container image and reference the individual files. For a detailed example, see [usage.md][usage-example].
 
-[readme-generic]: ../README.md#generic-fetcher
 [maven-artifacts]: https://maven.apache.org/repositories/artifacts.html
 [usage-example]: usage.md#example-generic-fetcher
