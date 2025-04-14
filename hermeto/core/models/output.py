@@ -1,5 +1,6 @@
 import logging
 import string
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Set
 
@@ -158,6 +159,39 @@ class RequestOutput(pydantic.BaseModel):
         while merging their `properties`.
         """
         return Sbom(components=merge_component_properties(self.components))
+
+    def __add__(self, other: "RequestOutput") -> "RequestOutput":
+        if not isinstance(other, self.__class__):
+            raise TypeError(f"Cannot add {type(other)} to {self.__class__.__name__}")
+        components = self.components + other.components
+        env_vars = (
+            self.build_config.environment_variables + other.build_config.environment_variables
+        )
+        project_files = self.build_config.project_files + other.build_config.project_files
+
+        # The original implementation could produce different results depending
+        # on the merge order:
+        #    options=output.build_config.options if output.build_config.options else None,
+        # where output is bound when looping through a list of outputs:
+        #    for output in outputs:
+        # Since options are a dict I am opting for simply merging it here,
+        # however this is prone to the same problem and might produce different
+        # results depending on the order of arguments. This has to be addressed
+        # in BuildConfig.
+        # deepcopying everything to protect against potential cross-talk through
+        # mutable values.
+        lhs, rhs = deepcopy(self.build_config.options), deepcopy(other.build_config.options)
+        options = lhs if lhs is not None else rhs
+        if lhs is not None and rhs is not None:
+            # The if-guard above is not enough to convince mypy that options
+            # cannot be None at this point.
+            options.update(rhs)  # type: ignore
+        return self.__class__.from_obj_list(
+            components=components,
+            environment_variables=env_vars,
+            project_files=project_files,
+            options=options,
+        )
 
     @classmethod
     def empty(cls) -> "RequestOutput":
