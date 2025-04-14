@@ -1,7 +1,6 @@
 from hermeto.core.config import get_config
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
-from hermeto.core.package_managers.utils import merge_outputs
 from hermeto.core.package_managers.yarn.main import fetch_yarn_source as fetch_yarnberry_source
 from hermeto.core.package_managers.yarn_classic.main import MissingLockfile, NotV1Lockfile
 from hermeto.core.package_managers.yarn_classic.main import (
@@ -25,4 +24,4 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
                 fetched_packages.append(fetch_yarnberry_source(new_request))
             else:
                 raise e
-    return merge_outputs(fetched_packages)
+    return sum(fetched_packages, RequestOutput.empty())
