@@ -702,6 +702,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     if not subpaths:
         return RequestOutput.empty()
 
+    if not (installed_toolchains := _list_installed_toolchains()):
+        raise FetchError(
+            "Could not find any installed Go toolchains in known locations",
+            solution="Please make sure at least one go toolchain is installed in the system",
+        )
+    go = installed_toolchains.pop()
+
     invalid_gomod_files = _find_missing_gomod_files(request.source_dir, subpaths)
 
     if invalid_gomod_files:
