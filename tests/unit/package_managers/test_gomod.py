@@ -21,6 +21,7 @@ from hermeto.core.models.output import BuildConfig, EnvironmentVariable, Request
 from hermeto.core.models.sbom import Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
     Go,
+    GoVersion,
     GoWork,
     Module,
     ModuleDict,
@@ -48,6 +49,7 @@ from hermeto.core.package_managers.gomod import (
     _parse_workspace_module,
     _process_modules_json_stream,
     _resolve_gomod,
+    _select_toolchain,
     _setup_go_toolchain,
     _validate_local_replacements,
     _vendor_changed,
@@ -1833,9 +1835,9 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod.GoCacheTemporaryDirectory")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver.from_repo_path")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork")
-@mock.patch("hermeto.core.package_managers.gomod._setup_go_toolchain")
+@mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
 def test_fetch_gomod_source(
-    mock_setup_go_toolchain: mock.Mock,
+    mock_select_toolchain: mock.Mock,
     mock_go_work: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_tmp_dir: mock.Mock,
@@ -1876,7 +1878,7 @@ def test_fetch_gomod_source(
     fake_go_work = mock.MagicMock(spec=GoWork)
     fake_go_work.__bool__.return_value = False
     mock_go_work.return_value = fake_go_work
-    mock_setup_go_toolchain.return_value = fake_go
+    mock_select_toolchain.return_value = fake_go
     mock_list_installed_toolchains.return_value = [fake_go]
 
     output = fetch_gomod_source(gomod_request)
@@ -2085,6 +2087,67 @@ def test_setup_go_toolchain_failure(
     error_msg = f"Required/recommended Go toolchain version '{unsupported}' is not supported yet."
     with pytest.raises(PackageManagerError, match=error_msg):
         _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
+
+
+@pytest.mark.parametrize(
+    "go_version,toolchain_version,installed_versions,expected_result",
+    [
+        pytest.param(None, None, ["1.20.0", "1.21.0"], "1.20.0", id="missing_go_version"),
+        pytest.param("1.21.5", None, ["1.21.5", "1.22.0"], "1.21.5", id="go_version_only"),
+        pytest.param("1.21", "1.21.4", ["1.21.6", "1.21.4"], "1.21.4", id="exact_match"),
+        pytest.param(
+            "1.21", "1.22.1", ["1.22.4", "1.22.6", "1.21.2"], "1.22.4", id="closest_match"
+        ),
+        pytest.param("1.21", "1.21.4", ["1.22.1"], "1.22.1", id="newer_minor"),
+        pytest.param("1.22", "1.22.1", ["1.21.0", "1.20"], "1.21.0", id="fallback_to_1_21"),
+        pytest.param("1.22", "1.22.1", ["1.20", "1.19.2"], None, id="no_suitable"),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.gomod.Go._get_release")
+@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
+def test_select_toolchain(
+    mock_get_gomod_version: mock.Mock,
+    mock_go_get_release: mock.Mock,
+    go_version: Optional[str],
+    toolchain_version: Optional[str],
+    installed_versions: list[str],
+    expected_result: Optional[str],
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_get_gomod_version.return_value = (go_version, toolchain_version)
+    mock_go_get_release.side_effect = [f"go{version_str}" for version_str in installed_versions]
+
+    go_mod_file = rooted_tmp_path.join_within_root("go.mod")
+    go_mod_file.path.touch()
+
+    # Create mock Go instances with static versions (no subprocess calls)
+    installed_toolchains = []
+    for version_str in installed_versions:
+        go = Go(f"/usr/bin/go{version_str}")
+        installed_toolchains.append(go)
+
+    result = _select_toolchain(go_mod_file, installed_toolchains)
+
+    mock_get_gomod_version.assert_called_once_with(go_mod_file)
+    if expected_result is None:
+        assert result is None
+    else:
+        assert result is not None
+        assert str(result.version) == expected_result
+
+
+@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
+def test_select_toolchain_fail(
+    mock_get_gomod_version: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_get_gomod_version.return_value = ("9999.999", None)
+    mock_go = mock_go_class("/usr/bin/go")
+    mock_go.version = GoVersion("1.21.0")
+
+    go_mod_file = rooted_tmp_path.join_within_root("go.mod")
+    with pytest.raises(PackageManagerError, match="is not supported yet"):
+        _select_toolchain(go_mod_file, {mock_go})
 
 
 @pytest.mark.parametrize(

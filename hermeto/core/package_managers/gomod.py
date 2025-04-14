@@ -715,7 +715,6 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             "Could not find any installed Go toolchains in known locations",
             solution="Please make sure at least one go toolchain is installed in the system",
         )
-    go = installed_toolchains.pop()
 
     invalid_gomod_files = _find_missing_gomod_files(request.source_dir, subpaths)
 
@@ -752,9 +751,12 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
             main_module_dir = request.source_dir.join_within_root(subpath)
-
-            go = _setup_go_toolchain(main_module_dir.join_within_root("go.mod"))
-            log.info(f"Using Go release: {go.version}")
+            go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
+            if go is None:
+                raise FetchError(
+                    "Could not match any suitable Go toolchain for the job",
+                    solution="Please make sure a suitable Go toolchain is installed on the system",
+                )
 
             tmp_dir._go_instance = go
             go_work = GoWork(main_module_dir)
@@ -1007,6 +1009,83 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
             go = Go.from_missing_toolchain(release)
         else:
             go = Go(path_to_binary)
+    return go
+
+
+def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Optional[Go]:
+    """
+    Pick the closest matching installed toolchain give a go.mod file.
+
+    :param go_mod_file: path to an application go.mod file as RootedPath
+    :param installed_toolchains: an iterable of Go instances pointing to actual Go binaries
+    :return: a Go instance which matches the go.mod version constraints or None if we could not find
+             a satisfying toolchain version installed
+    """
+    go_max_version = GoVersion.max()
+    go_version_str, toolchain_version_str = _get_gomod_version(go_mod_file)
+
+    if go_version_str:
+        log.debug("go.mod file reports: 'go %s'", go_version_str)
+    else:
+        log.debug("No 'go' directive found in the go.mod file")
+
+    if toolchain_version_str:
+        log.debug("go.mod file reports: 'toolchain %s'", toolchain_version_str)
+    else:
+        log.debug("No 'toolchain' directive found in the go.mod file")
+
+    if not go_version_str:
+        # Go added the 'go' directive to go.mod in 1.12 [1]. If missing, 1.16 is assumed [2].
+        # For our version comparison purposes we set the version explicitly to 1.20 if missing.
+        # [1] https://go.dev/doc/go1.12#modules
+        # [2] https://go.dev/ref/mod#go-mod-file-go
+        go_version_str = "1.20"
+        log.debug("Could not parse Go version from go.mod, using %s as fallback", go_version_str)
+
+    if not toolchain_version_str:
+        toolchain_version_str = go_version_str
+
+    go_mod_version = GoVersion(go_version_str)
+    go_mod_toolchain_version = GoVersion(toolchain_version_str)
+
+    if go_mod_version >= go_mod_toolchain_version:
+        target_version = go_mod_version
+    else:
+        target_version = go_mod_toolchain_version
+
+    if target_version.to_language_version() > go_max_version.to_language_version():
+        raise PackageManagerError(
+            f"Required/recommended Go toolchain version '{target_version}' is not supported yet.",
+            solution=(
+                "Please lower your required/recommended Go version and retry the request. "
+                "You may also want to open a feature request on adding support for this version."
+            ),
+        )
+
+    # If we cannot find a matching toolchain, we'll try to fallback to a 1.21 one
+    matching_toolchains = filter(lambda t: t.version >= target_version, installed_toolchains)
+    try:
+        go = min(matching_toolchains)
+        log.debug("Using Go toolchain version '%s'", go.version)
+    except ValueError:
+        try:
+            # No installed toolchain satisfied the exact version spec, relax the condition
+            go = max(filter(lambda t: t.version >= GoVersion("1.21"), installed_toolchains))
+            log.debug("Best matching Go toolchain version: '%s'", go.version)
+            log.debug("Will use Go toolchain version '%s' [via GOTOOLCHAIN=auto]", target_version)
+        except ValueError:
+            # This is a long shot - we couldn't find a matching toolchain, nor have a toolchain
+            # that can do GOTOOLCHAIN=auto, so we pick any installed toolchain (we know we have
+            # some) and use it to download a new full-blown SDK for the target version
+            log.debug("Installing Go toolchain version '%s'", target_version)
+            release_str = f"go{str(target_version)}"
+            try:
+                work_toolchain = next(iter(installed_toolchains))
+                go = Go.from_missing_toolchain(release_str, work_toolchain.binary)
+                log.debug("Using Go toolchain version '%s'", go.version)
+            except Exception as ex:
+                log.error("Failed to download a Go toolchain version '%s': '%s'", release_str, ex)
+                return None
     return go
 
 
@@ -1816,5 +1895,7 @@ def _list_installed_toolchains() -> set[Go]:
             # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
             log.debug("Toolchain %s failed probing: %s, skipping...", path, e)
 
-    log.debug("Found installed Go releases: %s", "\n".join(["\t- " + str(go.binary) for go in ret]))
+    log.debug(
+        "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
+    )
     return ret
