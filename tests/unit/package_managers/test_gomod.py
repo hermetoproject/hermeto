@@ -1670,11 +1670,16 @@ def test_vendor_changed(
         {"foo": {}, "bar": {"go.mod": ""}},
     ),
 )
+@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
 @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
 def test_missing_gomod_file(
-    mock_run_cmd: mock.Mock, file_tree: dict[str, Any], tmp_path: Path
+    mock_run_cmd: mock.Mock,
+    mock_list_installed_toolchains: mock.Mock,
+    file_tree: dict[str, Any],
+    tmp_path: Path,
 ) -> None:
     mock_run_cmd.return_value = "go version go0.0.1"
+    mock_list_installed_toolchains.return_value = [mock.Mock(spec=Go)]
     write_file_tree(file_tree, tmp_path, exist_ok=True)
 
     packages = [{"path": path, "type": "gomod"} for path, _ in file_tree.items()]
@@ -1821,6 +1826,7 @@ def test_missing_gomod_file(
         ),
     ),
 )
+@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
 @mock.patch("hermeto.core.package_managers.gomod._get_repository_name")
 @mock.patch("hermeto.core.package_managers.gomod._find_missing_gomod_files")
 @mock.patch("hermeto.core.package_managers.gomod._resolve_gomod")
@@ -1836,6 +1842,7 @@ def test_fetch_gomod_source(
     mock_resolve_gomod: mock.Mock,
     mock_find_missing_gomod_files: mock.Mock,
     mock_get_repository_name: mock.Mock,
+    mock_list_installed_toolchains: mock.Mock,
     gomod_request: Request,
     packages_output_by_path: dict[str, ResolvedGoModule],
     expect_components: list[Component],
@@ -1870,6 +1877,7 @@ def test_fetch_gomod_source(
     fake_go_work.__bool__.return_value = False
     mock_go_work.return_value = fake_go_work
     mock_setup_go_toolchain.return_value = fake_go
+    mock_list_installed_toolchains.return_value = [fake_go]
 
     output = fetch_gomod_source(gomod_request)
     calls = [
