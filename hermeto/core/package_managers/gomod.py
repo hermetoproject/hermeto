@@ -649,11 +649,10 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     repo_name = _get_repository_name(request.source_dir)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
 
+    gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
+    gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
-        gomod_download_dir = request.output_dir.join_within_root(
-            "deps/gomod/pkg/mod/cache/download"
-        )
-        gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
