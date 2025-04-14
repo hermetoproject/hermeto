@@ -477,7 +477,7 @@ class GoWork(UserDict):
         self._app_dir = app_dir
 
         # workspaces may not be enabled -> empty instance
-        if (rooted_path := self._get_go_work_path(app_dir)) is None:
+        if (rooted_path := _get_go_work_path(Go(), app_dir)) is None:
             return
 
         self._path = rooted_path
@@ -488,17 +488,6 @@ class GoWork(UserDict):
     @staticmethod
     def _get_go_work(go: Go, run_params: dict[str, Any]) -> str:
         return go(["work", "edit", "-json"], run_params)
-
-    @staticmethod
-    def _get_go_work_path(app_dir: RootedPath) -> Optional[RootedPath]:
-        go_work_file = Go()(["env", "GOWORK"], {"cwd": app_dir}).rstrip()
-
-        # workspaces can be disabled explicitly with GOWORK=off
-        if not go_work_file or go_work_file == "off":
-            return None
-
-        # make sure that the path to go.work is within the request's root
-        return app_dir.join_within_root(go_work_file)
 
     @property
     def path(self) -> Optional[RootedPath]:
@@ -1808,3 +1797,14 @@ def _list_installed_toolchains() -> set[Go]:
         "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
     )
     return ret
+
+
+def _get_go_work_path(go: Go, app_dir: RootedPath) -> Optional[RootedPath]:
+    go_work_file = go(["env", "GOWORK"], {"cwd": app_dir}).strip()
+
+    # workspaces can be disabled explicitly with GOWORK=off
+    if not go_work_file or go_work_file == "off":
+        return None
+
+    # make sure that the path to go.work is within the request's root
+    return app_dir.join_within_root(go_work_file)

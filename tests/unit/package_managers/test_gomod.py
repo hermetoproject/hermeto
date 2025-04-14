@@ -37,6 +37,7 @@ from hermeto.core.package_managers.gomod import (
     _deduplicate_resolved_modules,
     _disable_telemetry,
     _get_go_sum_files,
+    _get_go_work_path,
     _get_gomod_version,
     _get_repository_name,
     _go_list_deps,
@@ -170,7 +171,7 @@ def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPacka
 @mock.patch("hermeto.core.package_managers.gomod._go_list_deps")
 @mock.patch("hermeto.core.package_managers.gomod._parse_packages")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
@@ -766,7 +767,7 @@ def test_parse_workspace_modules(
     ],
 )
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 def test_get_go_sum_files(
     mock_get_go_work_path: mock.Mock,
     mock_get_go_work: mock.Mock,
@@ -785,7 +786,7 @@ def test_get_go_sum_files(
 
 @pytest.mark.parametrize("has_workspaces", (False, True))
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 def test_create_modules_from_parsed_data(
     mock_get_go_work_path: mock.Mock,
     mock_version_resolver: mock.Mock,
@@ -2128,7 +2129,7 @@ def test_disable_telemetry(
         pytest.param("workspaces", "resolve_gomod_workspaces.json", id="with_workspaces"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
 def test_parse_packages(
     mock_get_go_work: mock.Mock,
@@ -2265,6 +2266,34 @@ def test_list_installed_toolchains(
         result = _list_installed_toolchains()
     assert len(result) == binary_count
     assert mock_go.call_count == binary_count
+
+
+@pytest.mark.parametrize(
+    "gowork_output, expected",
+    [
+        pytest.param("", None, id="empty_gowork"),
+        pytest.param(" off ", None, id="disabled_gowork"),
+        pytest.param("./go.work", "./go.work", id="relative_path"),
+        pytest.param("go.work\n", "go.work", id="path_with_trailing_newline"),
+    ],
+)
+def test_get_go_work_path(
+    rooted_tmp_path: RootedPath, gowork_output: str, expected: Optional[str]
+) -> None:
+    mock_go = mock.Mock(spec=Go)
+    mock_go.return_value = gowork_output
+
+    result = _get_go_work_path(mock_go, rooted_tmp_path)
+
+    if expected is None:
+        assert result is None
+    else:
+        assert result is not None
+        assert result == rooted_tmp_path.join_within_root(expected)
+
+    mock_go.assert_called_once()
+    assert mock_go.call_args[0][0] == ["env", "GOWORK"]
+    assert mock_go.call_args[0][1] == {"cwd": rooted_tmp_path}
 
 
 class TestGo:
@@ -2569,7 +2598,7 @@ class TestGoWork:
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
-    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+    @mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
     def test_parse(
         self,
         mock_get_go_work_path: mock.Mock,
@@ -2622,7 +2651,7 @@ class TestGoWork:
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
+    @mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
     def test_workspace_paths(
         self,
         mock_get_go_work_path: mock.Mock,
