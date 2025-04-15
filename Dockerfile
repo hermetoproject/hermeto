@@ -1,6 +1,5 @@
 FROM registry.access.redhat.com/ubi9/ubi@sha256:dbc1e98d14a022542e45b5f22e0206d3f86b5bdf237b58ee7170c9ddd1b3a283 AS ubi
-FROM mirror.gcr.io/library/golang:1.20.0-bullseye AS golang_120
-FROM mirror.gcr.io/library/golang:1.21.0-bullseye AS golang_121
+FROM mirror.gcr.io/library/golang:1.21.0-bullseye AS golang
 FROM mirror.gcr.io/library/node:24.8-bullseye AS node
 
 ########################
@@ -49,9 +48,8 @@ RUN /venv/bin/pip install --no-cache-dir .
 FROM base
 LABEL maintainer="Red Hat"
 
-# copy Go SDKs and Node.js installation from official images
-COPY --from=golang_120 /usr/local/go /usr/local/go/go1.20
-COPY --from=golang_121 /usr/local/go /usr/local/go/go1.21
+# copy Go SDK and Node.js installation from official images
+COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=builder /usr/bin/cargo /usr/bin/cargo
@@ -60,7 +58,7 @@ COPY --from=builder /venv /venv
 # link corepack, yarn, and go to standard PATH location
 RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /usr/local/lib/corepack/dist/yarn.js /usr/local/bin/yarn && \
-    ln -s /usr/local/go/go1.21/bin/go /usr/local/bin/go && \
+    ln -s /usr/local/go/bin/go /usr/local/bin/go && \
     ln -s /venv/bin/createrepo_c /usr/local/bin/createrepo_c && \
     ln -s /venv/bin/cachi2 /usr/local/bin/cachi2 && \
     ln -s /venv/bin/hermeto /usr/local/bin/hermeto

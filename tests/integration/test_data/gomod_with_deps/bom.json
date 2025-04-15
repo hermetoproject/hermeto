@@ -161,6 +161,17 @@
       "type": "library"
     },
     {
+      "name": "internal/godebugs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/godebugs?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/goexperiment",
       "properties": [
         {
