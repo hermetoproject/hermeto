@@ -1193,6 +1193,17 @@
       "type": "library"
     },
     {
+      "name": "internal/bisect",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/bisect?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/bytealg",
       "properties": [
         {
@@ -1256,6 +1267,17 @@
         }
       ],
       "purl": "pkg:golang/internal/godebug?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/godebugs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/godebugs?type=package",
       "type": "library"
     },
     {
@@ -1454,6 +1476,17 @@
         }
       ],
       "purl": "pkg:golang/io?type=package",
+      "type": "library"
+    },
+    {
+      "name": "log/internal",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/log/internal?type=package",
       "type": "library"
     },
     {
