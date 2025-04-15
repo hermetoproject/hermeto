@@ -619,6 +619,12 @@ def _create_packages_from_parsed_data(
     return [_create_package(package) for package in parsed_packages]
 
 
+def _clean_go_modcache(go: Go, dir_: Optional[StrPath]) -> None:
+    # It's easier to mock a helper when testing a huge function than individual object instances
+    if dir_ is not None:
+        go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
+
+
 def fetch_gomod_source(request: Request) -> RequestOutput:
     """
     Resolve and fetch gomod dependencies for a given request.
@@ -1224,7 +1230,7 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     ) -> None:
         """Clean up the temporary directory by first cleaning up the Go cache."""
         try:
-            Go()(["clean", "-modcache"], {"env": {"GOPATH": self.name, "GOCACHE": self.name}})
+            _clean_go_modcache(Go(), self.name)
         finally:
             super().__exit__(exc, value, tb)
 
