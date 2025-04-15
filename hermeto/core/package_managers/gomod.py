@@ -349,21 +349,7 @@ class Go:
         """Release name of the Go Toolchain, e.g. go1.20 ."""
         # lazy evaluation: defer running 'go'
         if not self._release:
-            output = self(["version"])
-            log.debug(f"Go release: {output}")
-            release_pattern = f"go{version.VERSION_PATTERN}"
-
-            # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
-            # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
-            if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
-                self._release = match.group(0)
-            else:
-                # This should not happen, otherwise we must figure out a more reliable way of
-                # extracting Go version
-                raise PackageManagerError(
-                    f"Could not extract Go toolchain version from Go's output: '{output}'",
-                    solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
-                )
+            self._release = self._get_release()
         return self._release
 
     @staticmethod
@@ -384,6 +370,29 @@ class Go:
                 return str(p)
 
         return None
+
+    def _get_release(self) -> str:
+        output = self(["version"])
+        log.debug(f"Go release: {output}")
+        release_pattern = f"go{version.VERSION_PATTERN}"
+
+        # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
+        # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
+        if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
+            release = match.group(0)
+        else:
+            # This should not happen, otherwise we must figure out a more reliable way of
+            # extracting Go version.
+            # Ideally we'd want to rely only on doing 'go env GOVERSION' which doesn't require any
+            # further post-processing, but GOVERSION variable was introduced in Go 1.16 and so
+            # 'go version' has been around for longer, then again, it's CLI output bound to
+            # change.
+            raise PackageManagerError(
+                f"Could not extract Go toolchain version from Go's output: '{output}'",
+                solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
+            )
+
+        return release
 
     def _install(self, release: str) -> str:
         """Fetch and install an alternative version of main Go toolchain.
