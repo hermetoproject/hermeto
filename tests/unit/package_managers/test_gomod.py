@@ -180,6 +180,7 @@ def test_resolve_gomod(
     go_work: Union[mock.Mock, GoWork]
 
     module_dir = gomod_request.source_dir.join_within_root("path/to/module")
+    module_dir.path.mkdir(parents=True, exist_ok=True)
     mocked_data_folder = "non-vendored" if not has_workspaces else "workspaces"
     mock_disable_telemetry.return_value = None
     workspace_paths: list = []
@@ -402,6 +403,7 @@ def test_resolve_gomod_no_deps(
     gomod_request: Request,
 ) -> None:
     module_path = gomod_request.source_dir.join_within_root("path/to/module")
+    module_path.path.mkdir(parents=True, exist_ok=True)
     mock_disable_telemetry.return_value = None
 
     mocked_go_work = mock.MagicMock()
