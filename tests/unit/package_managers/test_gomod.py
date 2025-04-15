@@ -40,6 +40,7 @@ from hermeto.core.package_managers.gomod import (
     _get_gomod_version,
     _get_repository_name,
     _go_list_deps,
+    _list_installed_toolchains,
     _parse_go_sum,
     _parse_local_modules,
     _parse_packages,
@@ -108,6 +109,13 @@ def go_mod_file(tmp_path: Path, request: pytest.FixtureRequest) -> None:
 
     with open(output_file, "w") as f:
         f.write(request.param)
+
+
+def mock_go_class(binary: str) -> mock.Mock:
+    """Create a mock Go instance with a specific binary path."""
+    mock_go = mock.Mock(spec=Go)
+    mock_go.binary = binary
+    return mock_go
 
 
 def proc_mock(
@@ -2166,6 +2174,82 @@ def test_parse_packages(
     # _parse_packages calls _go_list_deps always with the './...' pattern
     assert all("./..." in call.args[0] for call in calls)
     assert list(pkgs) == expected
+
+
+@pytest.mark.parametrize(
+    "PATH,file_tree,binary_count",
+    [
+        pytest.param(None, {}, 0, id="no_go_binaries"),
+        pytest.param(
+            None,
+            {"usr": {"local": {"go": {"bin": {"go": ""}}}}},
+            1,
+            id="none_path_with_usr_local",
+        ),
+        pytest.param(
+            "",
+            {"usr": {"local": {"go": {"bin": {"go": ""}}}}},
+            1,
+            id="empty_path_with_usr_local",
+        ),
+        pytest.param(
+            "/bin:/usr/bin",
+            {
+                "bin": {},
+                "usr": {"bin": {}},
+                ".cache": {"go": {"go1.21": {"bin": {"go": ""}}, "go1.22": {"bin": {"go": ""}}}},
+            },
+            2,
+            id="only_in_cache",
+        ),
+        pytest.param(
+            "/bin:/usr/bin",
+            {
+                "bin": {"go": ""},
+                "usr": {"bin": {"go": ""}, "local": {"bin": {"go": ""}}},
+                ".cache": {"go": {"go1.21": {"bin": {"go": ""}}, "go1.22": {"bin": {"go": ""}}}},
+            },
+            5,
+            id="path_and_cache",
+        ),
+        pytest.param(
+            "/usr/go/bin:/usr/go/bin",
+            {"usr": {"bin": {"go": ""}, "local": {"bin": {"go": ""}}}},
+            2,
+            id="deduplicate_paths",
+        ),
+    ],
+)
+@mock.patch.dict(os.environ, {}, clear=False)
+@mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
+@mock.patch("hermeto.core.package_managers.gomod.Go", spec=Go)
+def test_list_installed_toolchains(
+    mock_go: mock.Mock,
+    mock_get_cache_dir: mock.Mock,
+    tmp_path: Path,
+    PATH: Optional[str],
+    file_tree: dict,
+    binary_count: int,
+) -> None:
+    """Test various combinations of PATH, cache, and /usr/local Go installations."""
+    mock_get_cache_dir.return_value = tmp_path
+    mock_go.side_effect = mock_go_class
+    write_file_tree(file_tree, tmp_path, exist_ok=True)
+
+    if not PATH:
+        os.environ.update({"PATH": ""})
+    else:
+        paths = PATH.split(":")
+        prefixed_paths = [f"{tmp_path}/{path}" for path in paths]
+        os.environ["PATH"] = ":".join(prefixed_paths)
+
+    with mock.patch(
+        "hermeto.core.package_managers.gomod.HERMETO_GO_INSTALL_DIR",
+        new=Path(tmp_path, "usr/local"),
+    ):
+        result = _list_installed_toolchains()
+    assert len(result) == binary_count
+    assert mock_go.call_count == binary_count
 
 
 class TestGo:

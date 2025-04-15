@@ -46,6 +46,7 @@ log = EnforcingModeLoggerAdapter(logging.getLogger(__name__), {"enforcing_mode":
 GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
 GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
 VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
+HERMETO_GO_INSTALL_DIR = Path("/usr/local/go")
 
 ModuleDict = dict[str, Any]
 
@@ -1760,3 +1761,40 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
         repo.git.reset("--", context_relative_path)
 
     return False
+
+
+def _list_installed_toolchains() -> set[Go]:
+    """List all Go SDK installations we recognize.
+
+    We look at:
+        - /usr/local/go/                    container environments (Go pre-installed by us)
+        - $XDG_CACHE_HOME/<APP_NAME>/go     local environments (Go downloaded & cached by us)
+        - $PATH/go                          default system-wide Go installation
+
+    :returns: A set of Go instances corresponding to the installations found
+    """
+    ret: set[Go] = set()
+    paths: set[Path] = set()
+
+    if pathvar := os.environ.get("PATH"):
+        paths = {Path(p).resolve() for p in pathvar.split(":")}
+
+    # we historically installed toolchains under (/usr/local|<our_cache_dir>)/go/go<version>/
+    for path in (HERMETO_GO_INSTALL_DIR, get_cache_dir()):
+        paths |= {p.resolve().parent for p in Path(path).rglob("bin/go")}
+
+    for path in paths:
+        bin_path = Path(path, "go")
+        if not bin_path.exists():
+            continue
+
+        try:
+            log.debug("Probing %s toolchain...", path)
+            ret.add(Go(binary=bin_path.as_posix()))
+        except Exception as e:
+            # Logging toolchain probing failures due to [1].
+            # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
+            log.debug("Toolchain %s failed probing: %s, skipping...", path, e)
+
+    log.debug("Found installed Go releases: %s", "\n".join(["\t- " + str(go.binary) for go in ret]))
+    return ret
