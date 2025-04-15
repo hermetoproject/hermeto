@@ -447,54 +447,6 @@ class Go:
 
         return release
 
-    def _install(self, release: str) -> str:
-        """Fetch and install an alternative version of main Go toolchain.
-
-        This method should only ever be needed with local installs, but not in container
-        environment installs where we pre-install multiple Go versions.
-        Because Go can't really be told where the toolchain should be installed to, the process is
-        as follows:
-            1) we use the base Go toolchain to fetch a versioned toolchain shim to a temporary
-               directory as we're going to dispose of the shim later
-            2) we use the downloaded shim to actually fetch the whole SDK for the desired version
-               of Go toolchain
-            3) we move the installed SDK to our cache directory
-               (i.e. $HOME/.cache/hermeto/go/<version>) to reuse the toolchains in subsequent runs
-            4) we delete the downloaded shim as we're not going to execute the toolchain through
-               that any longer
-            5) we delete any build artifacts go created as part of downloading the SDK as those
-               can occupy >~70MB of storage
-
-        :param release: Go release version string, e.g. go1.20, go1.21.10
-        :param env: params to use with the underlying subprocess and 'go' execution
-        :returns: path-like string to the newly installed toolchain binary
-        """
-        base_url = "golang.org/dl/"
-        url = f"{base_url}{release}@latest"
-
-        # Download the go<release> shim to a temporary directory and wipe it after we're done
-        # Go would download the shim to $HOME too, but unlike 'go download' we can at least adjust
-        # 'go install' to point elsewhere using $GOPATH
-        with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
-            log.debug(f"Installing Go {release} toolchain shim from '{url}'")
-            env = {
-                "PATH": os.environ.get("PATH", ""),
-                "GOPATH": td,
-                "GOCACHE": str(Path(td, "cache")),
-            }
-            self._retry([self.binary, "install", url], env=env)
-
-            log.debug(f"Downloading Go {release} SDK")
-            self._retry([f"{td}/bin/{release}", "download"], env=env)
-
-            # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/hermeto/go
-            sdk_download_dir = Path.home() / f"sdk/{release}"
-            go_dest_dir = get_cache_dir() / "go" / release
-            shutil.move(sdk_download_dir, go_dest_dir)
-
-        log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
-        return str(go_dest_dir / "bin/go")
-
     @staticmethod
     def _retry(cmd: list[str], **kwargs: Any) -> str:
         """Run gomod command in a networking context.

@@ -389,7 +389,6 @@ def test_resolve_gomod_vendor_dependencies(
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
 @mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
-@mock.patch("hermeto.core.package_managers.gomod.Go._install")
 @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
@@ -399,7 +398,6 @@ def test_resolve_gomod_no_deps(
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
     mock_go_locate_toolchain: mock.Mock,
-    mock_go_install: mock.Mock,
     mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
@@ -457,7 +455,6 @@ def test_resolve_gomod_no_deps(
 
     mock_version_resolver.get_golang_version.return_value = "v1.21.4"
     mock_go_release.return_value = "go1.21.0"
-    mock_go_install.return_value = GO_CMD_PATH
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
@@ -2356,41 +2353,6 @@ class TestGo:
 
         assert mock_run.call_count == 5
         assert mock_sleep.call_count == 4
-
-    @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
-    @mock.patch("pathlib.Path.home")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._retry")
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    def test_install(
-        self,
-        mock_cache_dir: mock.Mock,
-        mock_go_retry: mock.Mock,
-        mock_path_home: mock.Mock,
-        tmp_path: Path,
-        release: str,
-    ) -> None:
-        dest_cache_dir = tmp_path / "cache"
-        env_vars = ["PATH", "GOPATH", "GOCACHE"]
-
-        mock_cache_dir.return_value = dest_cache_dir
-        mock_go_retry.return_value = 0
-        mock_path_home.return_value = tmp_path
-
-        sdk_download_dir = tmp_path / f"sdk/{release}"
-        sdk_bin_dir = sdk_download_dir / "bin"
-        sdk_bin_dir.mkdir(parents=True)
-        sdk_bin_dir.joinpath("go").touch()
-
-        go = Go()
-        binary = Path(go._install(release))
-        assert mock_go_retry.call_args_list[0][0][0][1] == "install"
-        assert mock_go_retry.call_args_list[0][0][0][2] == f"golang.org/dl/{release}@latest"
-        assert mock_go_retry.call_args_list[0][1].get("env") is not None
-        assert set(mock_go_retry.call_args_list[0][1]["env"].keys()) & set(env_vars)
-        assert not sdk_download_dir.exists()
-        assert dest_cache_dir.exists()
-        assert binary.exists()
-        assert str(binary) == f"{dest_cache_dir}/go/{release}/bin/go"
 
     @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
     @mock.patch.object(Go, "__post_init__", lambda self: None)
