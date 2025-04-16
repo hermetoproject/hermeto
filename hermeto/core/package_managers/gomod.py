@@ -736,13 +736,17 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
-            tmp_dir._go_instance = Go()
             main_module_dir = request.source_dir.join_within_root(subpath)
+
+            go = _setup_go_toolchain(main_module_dir.join_within_root("go.mod"))
+            log.info(f"Using Go release: {go.release}")
+
+            tmp_dir._go_instance = go
             go_work = GoWork(main_module_dir)
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, tmp_dir_path, version_resolver, go_work, go_env
+                    main_module_dir, request, tmp_dir_path, version_resolver, go, go_work, go_env
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -1047,12 +1051,14 @@ def _resolve_gomod(
     request: Request,
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
+    go: Go,
     go_work: GoWork,
     go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
 
+    :param go: Go instance/release to use for processing the request
     :param app_dir: the full path to the application source code
     :param request: app request this is for
     :param tmp_dir: one temporary directory for all go modules
@@ -1077,9 +1083,6 @@ def _resolve_gomod(
 
     if "cgo-disable" in request.flags:
         go_env["CGO_ENABLED"] = "0"
-
-    go = _setup_go_toolchain(app_dir.join_within_root("go.mod"))
-    log.info(f"Using Go release: {go.release}")
 
     run_params = {"env": go_env, "cwd": app_dir}
 
