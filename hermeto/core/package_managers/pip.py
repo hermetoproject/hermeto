@@ -34,7 +34,6 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.models.input import CargoPackageInput
-from hermeto.core.package_managers.utils import merge_outputs
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball, get_repo_id
 
@@ -230,7 +229,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         project_files=project_files,
     )
     cargo_packages = _find_and_fetch_rust_dependencies(request, packages_containing_rust_code)
-    return merge_outputs([pip_packages, cargo_packages])
+    return pip_packages + cargo_packages
 
 
 def _config_data() -> str:
@@ -269,7 +268,7 @@ def _find_and_fetch_rust_dependencies(
         ev = [EnvironmentVariable(name="CARGO_HOME", value="${output_dir}/.cargo")]
         pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
 
-        return merge_outputs([result, RequestOutput.from_obj_list([], ev, pf)])
+        return result + RequestOutput.from_obj_list([], ev, pf)
 
     return RequestOutput.from_obj_list([], [], [])
 

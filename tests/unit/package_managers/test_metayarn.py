@@ -13,13 +13,13 @@ from hermeto.core.package_managers.yarn_classic.main import NotV1Lockfile
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.RequestOutput.__add__")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_detects_yarn_classic(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
-    mock_merge_outputs: mock.Mock,
+    mock_requestoutput_add_: mock.Mock,
     input_request: Request,
 ) -> None:
 
@@ -34,13 +34,13 @@ def test_fetch_yarn_source_detects_yarn_classic(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
+@mock.patch("hermeto.core.package_managers.metayarn.RequestOutput.__add__")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_detects_yarnberry(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
-    mock_merge_outputs: mock.Mock,
+    mock_requestoutput_add_: mock.Mock,
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/some/path")
@@ -56,13 +56,11 @@ def test_fetch_yarn_source_detects_yarnberry(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_propagates_yarn_classic_error(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
-    mock_merge_outputs: mock.Mock,
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = PackageRejected(
@@ -81,13 +79,11 @@ def test_fetch_yarn_source_propagates_yarn_classic_error(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 def test_fetch_yarn_source_propagates_yarnberry_error(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
-    mock_merge_outputs: mock.Mock,
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/some/path")
@@ -107,7 +103,6 @@ def test_fetch_yarn_source_propagates_yarnberry_error(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.metayarn.merge_outputs")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.metayarn.fetch_yarn_classic_source")
 @mock.patch("hermeto.core.package_managers.metayarn.get_config")
@@ -115,7 +110,6 @@ def test_fetch_yarn_source_propagates_yarn_classic_rejection_when_yarnberry_is_f
     mock_get_config: mock.Mock,
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
-    mock_merge_outputs: mock.Mock,
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/path/to/package")

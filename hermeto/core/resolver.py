@@ -7,7 +7,6 @@ from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
-from hermeto.core.package_managers.utils import merge_outputs
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import copy_directory
 
@@ -76,7 +75,7 @@ def _resolve_packages(request: Request) -> RequestOutput:
             solution="But the good news is that we're already working on it!",
         )
     pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]
-    return merge_outputs(pkg_manager(request) for pkg_manager in pkg_managers)
+    return sum([pkg_manager(request) for pkg_manager in pkg_managers], RequestOutput.empty())
 
 
 def inject_files_post(from_output_dir: Path, for_output_dir: Path, **kwargs: Any) -> None:
