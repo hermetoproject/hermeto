@@ -335,6 +335,66 @@ class Go:
     def __lt__(self, other: "Go") -> bool:
         return self.version < other.version
 
+    @classmethod
+    def from_missing_toolchain(cls, release: str, binary: str = "go") -> "Go":
+        """Fetch and install an alternative version of main Go toolchain.
+
+        This method should only ever be needed with local installs, but not in container
+        environment installs where we pre-install the latest Go toolchain available.
+        Because Go can't really be told where the toolchain should be installed to, the process is
+        as follows:
+            1) we use the base Go toolchain to fetch a versioned toolchain shim to a temporary
+               directory as we're going to dispose of the shim later
+            2) we use the downloaded shim to actually fetch the whole SDK for the desired version
+               of Go toolchain
+            3) we move the installed SDK to our cache directory
+               (i.e. $HOME/.cache/hermeto/go/<version>) to reuse the toolchains in subsequent runs
+            4) we delete the downloaded shim as we're not going to execute the toolchain through
+               that any longer
+            5) we delete any build artifacts go created as part of downloading the SDK as those
+               can occupy >~70MB of storage
+
+        :param release: target Go release, e.g. go1.20, go1.21.10
+        :param binary: path to Go binary to use to download/install 'release' versioned toolchain
+        :param tmp_dir: global tmp dir where the SDK should be downloaded to
+        :returns: path-like string to the newly installed toolchain binary
+        """
+        base_url = "golang.org/dl/"
+        url = f"{base_url}{release}@latest"
+
+        # Download the go<release> shim to a temporary directory and wipe it after we're done
+        # Go would download the shim to $HOME too, but unlike 'go download' we can at least adjust
+        # 'go install' to point elsewhere using $GOPATH. This is a known pitfall of Go, see the
+        # references below:
+        # [1] https://github.com/golang/go/issues/26520
+        # [2] https://golang.org/cl/34385
+        with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
+            log.debug("Installing Go %s toolchain shim from '%s'", release, url)
+            env = {
+                "PATH": os.environ.get("PATH", ""),
+                "GOPATH": td,
+                "GOCACHE": str(Path(td, "cache")),
+                "HOME": Path.home().as_posix(),
+            }
+            cls._retry([binary, "install", url], env=env)
+
+            log.debug("Downloading Go %s SDK", release)
+            env["HOME"] = td
+            cls._retry([f"{td}/bin/{release}", "download"], env=env)
+
+            # move the newly downloaded SDK to $HOME/.cache/hermeto/go
+            sdk_download_dir = Path(td, f"sdk/{release}")
+            go_dest_dir = get_cache_dir() / "go" / release
+            if go_dest_dir.exists():
+                if go_dest_dir.is_dir():
+                    shutil.rmtree(go_dest_dir, ignore_errors=True)
+                else:
+                    go_dest_dir.unlink()
+            shutil.move(sdk_download_dir, go_dest_dir)
+
+        log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
+        return cls((go_dest_dir / "bin/go").as_posix())
+
     @cached_property
     def version(self) -> GoVersion:
         """Version of the Go toolchain as a GoVersion object."""
@@ -981,8 +1041,9 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
         # - local environments will always install 1.21.0 SDK and then pull any newer toolchain
         release = "go1.21.0"
         if not (path_to_binary := Go._locate_toolchain("go1.21")):
-            path_to_binary = go._install(release)
-        go = Go(path_to_binary)
+            go = Go.from_missing_toolchain(release)
+        else:
+            go = Go(path_to_binary)
     elif go_base_version >= GO_121:
         # Starting with Go 1.21, Go doesn't try to be semantically backwards compatible in that the
         # 'go X.Y' line now denotes the minimum required version of Go, no a "suggested" version.
@@ -996,8 +1057,9 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
         # adopt 1.21, we need a fallback to an older toolchain version.
         release = "go1.20"
         if not (path_to_binary := Go._locate_toolchain(release)):
-            path_to_binary = go._install(release)
-        go = Go(path_to_binary)
+            go = Go.from_missing_toolchain(release)
+        else:
+            go = Go(path_to_binary)
     return go
 
 

@@ -2392,6 +2392,61 @@ class TestGo:
         assert binary.exists()
         assert str(binary) == f"{dest_cache_dir}/go/{release}/bin/go"
 
+    @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
+    @mock.patch.object(Go, "__post_init__", lambda self: None)
+    @mock.patch("hermeto.core.package_managers.gomod.tempfile.TemporaryDirectory")
+    @mock.patch("pathlib.Path.home")
+    @mock.patch("hermeto.core.package_managers.gomod.Go._retry")
+    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
+    def test_from_missing_toolchain(
+        self,
+        mock_cache_dir: mock.Mock,
+        mock_go_retry: mock.Mock,
+        mock_path_home: mock.Mock,
+        mock_temp_dir: mock.Mock,
+        tmp_path: Path,
+        release: str,
+    ) -> None:
+        """
+        Test that given a release string we can download a Go SDK from the official sources and
+        instantiate a new Go instance from the downloaded toolchain.
+
+        NOTE: There is a module-level 'shutil.which' mock that applies to all tests and that would
+        collide with what we're trying to test, so we need to override it and mock one level above:
+        __post_init__.
+        """
+        dest_cache_dir = tmp_path / "cache"
+        temp_dir = tmp_path / "tmpdir"
+        env_vars = ["PATH", "GOPATH", "GOCACHE", "HOME"]
+
+        # This is to simulate the filesystem operations the tested method performs
+        temp_dir.mkdir()
+        sdk_source_dir = temp_dir / f"sdk/{release}"
+        sdk_bin_dir = sdk_source_dir / "bin"
+        sdk_bin_dir.mkdir(parents=True)
+        sdk_bin_dir.joinpath("go").touch()
+
+        mock_cache_dir.return_value = dest_cache_dir
+        mock_go_retry.return_value = 0
+        mock_path_home.return_value = tmp_path
+        mock_temp_dir.return_value.__enter__.return_value = str(temp_dir)
+        mock_temp_dir.return_value.__exit__.return_value = None
+
+        result_go = Go.from_missing_toolchain(release, GO_CMD_PATH)
+
+        assert mock_go_retry.call_count == 2  # 'go install' && '<go-shim> download'
+        assert mock_go_retry.call_args_list[0][0][0][0] == GO_CMD_PATH
+        assert mock_go_retry.call_args_list[0][0][0][1] == "install"
+        assert mock_go_retry.call_args_list[0][0][0][2] == f"golang.org/dl/{release}@latest"
+        assert mock_go_retry.call_args_list[0][1].get("env") is not None
+        assert set(mock_go_retry.call_args_list[0][1]["env"].keys()) == set(env_vars)
+        assert mock_go_retry.call_args_list[1][0][0][1] == "download"
+
+        target_binary = dest_cache_dir / f"go/{release}/bin/go"
+        assert not sdk_source_dir.exists()
+        assert target_binary.exists()
+        assert result_go.binary == str(target_binary)
+
     @pytest.mark.parametrize(
         "release, retry",
         [
