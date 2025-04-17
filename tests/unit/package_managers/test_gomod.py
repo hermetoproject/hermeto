@@ -2393,6 +2393,37 @@ class TestGo:
         assert binary.exists()
         assert str(binary) == f"{dest_cache_dir}/go/{release}/bin/go"
 
+    @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
+    @mock.patch("hermeto.core.package_managers.gomod.shutil.move")
+    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
+    def test_from_missing_toolchain(
+        self,
+        mock_cache_dir: mock.Mock,
+        mock_run_cmd: mock.Mock,
+        mock_shutil_move: mock.Mock,
+        tmp_path: Path,
+        release: str,
+    ) -> None:
+        dest_cache_dir = tmp_path / "cache"
+        go_install_dir = dest_cache_dir / "go" / release
+        binary_path = "/usr/bin/go"
+        env_vars = ["PATH", "GOPATH", "GOCACHE", "HOME"]
+
+        mock_cache_dir.return_value = dest_cache_dir
+        mock_run_cmd.return_value = 0
+        mock_shutil_move.return_value = None
+
+        result_go = Go.from_missing_toolchain(binary_path, release)
+
+        assert mock_run_cmd.call_args_list[0][0][0][0] == binary_path
+        assert mock_run_cmd.call_args_list[0][0][0][1] == "install"
+        assert mock_run_cmd.call_args_list[0][0][0][2] == f"golang.org/dl/{release}@latest"
+        assert mock_run_cmd.call_args_list[0][0][1].get("env") is not None
+        assert set(mock_run_cmd.call_args_list[0][0][1]["env"].keys()) == set(env_vars)
+        assert mock_shutil_move.call_args[0][1] == go_install_dir
+        assert result_go.binary == f"{go_install_dir}/bin/go"
+
     @pytest.mark.parametrize(
         "release, retry",
         [
