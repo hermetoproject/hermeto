@@ -306,14 +306,10 @@ class Go:
         self._release = release
 
         self._version: Optional[GoVersion] = None
-        self._install_toolchain: bool = False
 
         if self._release:
             if bin_ := self._locate_toolchain(self._release):
                 self._bin = bin_
-            else:
-                log.debug(f"Desired toolchain '{self._release}' not found, will download it lazily")
-                self._install_toolchain = True
 
     def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
@@ -325,11 +321,6 @@ class Go:
         """
         if params is None:
             params = {}
-
-        # we check both values to silence the type checker complaining self._release might be None
-        if self._install_toolchain and self._release:
-            self._bin = self._install(self._release)
-            self._install_toolchain = False
 
         cmd = [self._bin] + cmd
         if retry:

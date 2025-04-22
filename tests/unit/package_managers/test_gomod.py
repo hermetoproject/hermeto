@@ -2291,35 +2291,27 @@ class TestGo:
         assert str(binary) == f"{dest_cache_dir}/go/{release}/bin/go"
 
     @pytest.mark.parametrize(
-        "release, needs_install, retry",
+        "release, retry",
         [
-            pytest.param(None, False, False, id="bundled_go"),
-            pytest.param("go1.20", False, True, id="custom_release_installed"),
-            pytest.param("go1.21.0", True, True, id="custom_release_needs_installation"),
+            pytest.param(None, False, id="bundled_go"),
+            pytest.param("go1.20", True, id="custom_release_installed"),
+            pytest.param("go1.21.0", True, id="custom_release_needs_installation"),
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.get_config")
     @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._install")
     @mock.patch("hermeto.core.package_managers.gomod.Go._run")
     def test_call(
         self,
         mock_run: mock.Mock,
-        mock_install: mock.Mock,
         mock_locate_toolchain: mock.Mock,
         mock_get_config: mock.Mock,
         tmp_path: Path,
         release: Optional[str],
-        needs_install: bool,
         retry: bool,
     ) -> None:
         go_bin = tmp_path / f"go/{release}/bin/go"
-
-        if not needs_install:
-            mock_locate_toolchain.return_value = go_bin.as_posix()
-        else:
-            mock_locate_toolchain.return_value = None
-            mock_install.return_value = go_bin.as_posix()
+        mock_locate_toolchain.return_value = go_bin.as_posix()
 
         env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}
         opts = ["mod", "download"]
@@ -2333,9 +2325,6 @@ class TestGo:
             mock_get_config.return_value.gomod_download_max_tries = 1
             mock_run.call_count = 1
             mock_run.assert_called_with(cmd, **env)
-
-        if needs_install:
-            assert go._install_toolchain is False
 
     @pytest.mark.parametrize("retry", [False, True])
     @mock.patch("hermeto.core.package_managers.gomod.get_config")
@@ -2396,7 +2385,6 @@ class TestGo:
         go = Go(release=release)
 
         assert Path(go._bin) == go_bin_dir / "go"
-        assert go._install_toolchain is False
 
     @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
     def test_locate_toolchain_failure(
@@ -2409,7 +2397,6 @@ class TestGo:
         go = Go(release=release)
 
         assert go._bin == "go"
-        assert go._install_toolchain is True
 
     @pytest.mark.parametrize(
         "release, expect, go_output",
