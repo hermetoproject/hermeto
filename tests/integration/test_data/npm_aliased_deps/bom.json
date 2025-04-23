@@ -45,7 +45,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4048c5f156b43b8727b10bf464c00847b09e2f25f6",
+      "purl": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4048c5f156b43b8727b10bf464c00847b09e2f25f6",
       "type": "library",
       "version": "1.0.0"
     }

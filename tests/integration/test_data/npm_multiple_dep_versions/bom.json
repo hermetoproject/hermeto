@@ -9,7 +9,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/cachito-npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3",
+      "purl": "pkg:npm/cachito-npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3",
       "type": "library",
       "version": "1.0.0"
     },
@@ -37,7 +37,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3#foo",
+      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3#foo",
       "type": "library",
       "version": "1.0.0"
     },

@@ -373,7 +373,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg/fecha-4.2.3.tgz",
+      "purl": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg/fecha-4.2.3.tgz",
       "type": "library",
       "version": "4.2.3"
     },
@@ -677,7 +677,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-first-package@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#first_pkg",
+      "purl": "pkg:npm/npm-cachi2-first-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#first_pkg",
       "type": "library",
       "version": "1.0.0"
     },
@@ -689,7 +689,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-second-pkg@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#second_pkg",
+      "purl": "pkg:npm/npm-cachi2-second-pkg@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#second_pkg",
       "type": "library",
       "version": "1.0.0"
     },
@@ -701,7 +701,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-third-package@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg",
+      "purl": "pkg:npm/npm-cachi2-third-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a721cb61d43d07b0d8276a5b8c4555b1ed75bd39#third_pkg",
       "type": "library",
       "version": "1.0.0"
     },

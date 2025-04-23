@@ -51,7 +51,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/cachito-pip-with-deps@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4056efa5f7eb4ff1b7ea1409dbad76f5bb378291e6",
+      "purl": "pkg:pypi/cachito-pip-with-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4056efa5f7eb4ff1b7ea1409dbad76f5bb378291e6",
       "type": "library",
       "version": "1.0.0"
     }

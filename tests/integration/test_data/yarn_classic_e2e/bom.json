@@ -85,7 +85,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/boxen@5.1.2?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/boxen-5.1.2.tgz",
+      "purl": "pkg:npm/boxen@5.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/boxen-5.1.2.tgz",
       "type": "library",
       "version": "5.1.2"
     },
@@ -313,7 +313,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#packages/foo",
+      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#packages/foo",
       "type": "library",
       "version": "1.0.0"
     },
@@ -401,7 +401,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/is-number@0.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/is-number",
+      "purl": "pkg:npm/is-number@0.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/is-number",
       "type": "library",
       "version": "0.0.0"
     },
@@ -649,7 +649,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/uuid@10.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/uuid-10.0.0.tgz",
+      "purl": "pkg:npm/uuid@10.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/uuid-10.0.0.tgz",
       "type": "library",
       "version": "10.0.0"
     },
@@ -745,7 +745,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/yarn-test-project@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d",
+      "purl": "pkg:npm/yarn-test-project@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d",
       "type": "library",
       "version": "1.0.0"
     }

@@ -20,7 +20,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
       "type": "library",
       "version": "v0.0.0-20230829115309-5a8c00ce4921"
     },
@@ -32,7 +32,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
       "type": "library",
       "version": "v0.0.0-20230829115309-5a8c00ce4921"
     },
@@ -44,7 +44,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
       "type": "library",
       "version": "v0.0.0-20230829115309-5a8c00ce4921"
     },
@@ -56,7 +56,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
       "type": "library",
       "version": "v0.0.0-20230829115309-5a8c00ce4921"
     },
@@ -68,7 +68,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20230829115309-5a8c00ce4921?type=module",
       "type": "library",
       "version": "v0.0.0-20230829115309-5a8c00ce4921"
     },

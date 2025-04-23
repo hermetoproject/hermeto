@@ -57,7 +57,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/integration-tests-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc#subpath1/subpath2",
+      "purl": "pkg:pypi/integration-tests-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc#subpath1/subpath2",
       "type": "library"
     },
     {
@@ -68,7 +68,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc",
+      "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc",
       "type": "library"
     },
     {

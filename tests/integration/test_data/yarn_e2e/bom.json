@@ -189,7 +189,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/ansi-regex",
+      "purl": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/ansi-regex",
       "type": "library",
       "version": "6.0.1"
     },
@@ -261,7 +261,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46",
+      "purl": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46",
       "type": "library"
     },
     {
@@ -318,7 +318,7 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/cachito-testing/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch"
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch"
             },
             "type": "unofficial"
           }
@@ -664,7 +664,7 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/cachito-testing/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/fsevents.patch"
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/fsevents.patch"
             },
             "type": "unofficial"
           },
@@ -778,7 +778,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#book-of-armaments",
+      "purl": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#book-of-armaments",
       "type": "library"
     },
     {
@@ -979,13 +979,13 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/cachito-testing/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/left-pad.patch"
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/left-pad.patch"
             },
             "type": "unofficial"
           },
           {
             "diff": {
-              "url": "git+https://github.com/cachito-testing/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/left-pad-2.patch"
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@70515793108df42547d3320c7ea4cd6b6e505c46#my-patches/left-pad-2.patch"
             },
             "type": "unofficial"
           }
@@ -1297,7 +1297,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/old-man-from-scene-24",
+      "purl": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/old-man-from-scene-24",
       "type": "library"
     },
     {
@@ -1320,7 +1320,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/once",
+      "purl": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/once",
       "type": "library",
       "version": "1.4.0"
     },
@@ -1632,7 +1632,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/strip-ansi-4.0.0.tgz",
+      "purl": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/strip-ansi-4.0.0.tgz",
       "type": "library",
       "version": "4.0.0"
     },
@@ -1680,7 +1680,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/supports-hyperlinks",
+      "purl": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/supports-hyperlinks",
       "type": "library",
       "version": "3.0.0"
     },
@@ -1704,7 +1704,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/the-answer",
+      "purl": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/the-answer",
       "type": "library"
     },
     {

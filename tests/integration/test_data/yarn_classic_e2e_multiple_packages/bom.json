@@ -321,7 +321,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40db27afd28d5b5fdc349f3ffb12b0f58140f6be32#first-pkg",
+      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40db27afd28d5b5fdc349f3ffb12b0f58140f6be32#first-pkg",
       "type": "library"
     },
     {
@@ -764,7 +764,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40db27afd28d5b5fdc349f3ffb12b0f58140f6be32#second-pkg",
+      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40db27afd28d5b5fdc349f3ffb12b0f58140f6be32#second-pkg",
       "type": "library"
     },
     {

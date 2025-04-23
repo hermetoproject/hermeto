@@ -33,7 +33,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%403697d63affaec82985f1d9b4035d5305e58c91d6",
+      "purl": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403697d63affaec82985f1d9b4035d5305e58c91d6",
       "type": "library",
       "version": "0.1.0"
     }

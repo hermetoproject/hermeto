@@ -461,7 +461,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40de68ac6aa88a81272660b6d0f6d44ce157207799",
+      "purl": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40de68ac6aa88a81272660b6d0f6d44ce157207799",
       "type": "library",
       "version": "1.0.0"
     },

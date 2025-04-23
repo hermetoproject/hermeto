@@ -237,7 +237,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/integration-tests?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%404930d38034ef437d6c6e54c344210aa14e5c40dd",
+      "purl": "pkg:gem/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404930d38034ef437d6c6e54c344210aa14e5c40dd",
       "type": "library"
     },
     {

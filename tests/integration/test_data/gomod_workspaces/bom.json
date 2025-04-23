@@ -530,90 +530,6 @@
       "type": "library"
     },
     {
-      "name": "github.com/labstack/echo/v4/middleware",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello/echo/middleware@v4.0.0-20240626205759-b97aca303b29?type=package",
-      "type": "library",
-      "version": "v4.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "github.com/labstack/echo/v4",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=module",
-      "type": "library",
-      "version": "v4.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "github.com/labstack/echo/v4",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=package",
-      "type": "library",
-      "version": "v4.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "example.com/hiii",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=module",
-      "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "example.com/hiii",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=package",
-      "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "example.com/hello",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=module",
-      "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
-    },
-    {
-      "name": "example.com/hello",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=package",
-      "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
-    },
-    {
       "name": "github.com/davecgh/go-spew",
       "properties": [
         {
@@ -652,6 +568,90 @@
       "purl": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=package",
       "type": "library",
       "version": "v3.2.2+incompatible"
+    },
+    {
+      "name": "github.com/labstack/echo/v4/middleware",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo/middleware@v4.0.0-20240626205759-b97aca303b29?type=package",
+      "type": "library",
+      "version": "v4.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "github.com/labstack/echo/v4",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=module",
+      "type": "library",
+      "version": "v4.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "github.com/labstack/echo/v4",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=package",
+      "type": "library",
+      "version": "v4.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "example.com/hiii",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=module",
+      "type": "library",
+      "version": "v0.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "example.com/hiii",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=package",
+      "type": "library",
+      "version": "v0.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "example.com/hello",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=module",
+      "type": "library",
+      "version": "v0.0.0-20240626205759-b97aca303b29"
+    },
+    {
+      "name": "example.com/hello",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=package",
+      "type": "library",
+      "version": "v0.0.0-20240626205759-b97aca303b29"
     },
     {
       "name": "github.com/labstack/gommon/bytes",

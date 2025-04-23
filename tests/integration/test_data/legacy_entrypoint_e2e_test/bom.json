@@ -21,7 +21,7 @@
           "value": "cachi2"
         }
       ],
-      "purl": "pkg:cargo/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%4009c8cf923df4bb74ceac204e8d8be5732d90e740",
+      "purl": "pkg:cargo/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4009c8cf923df4bb74ceac204e8d8be5732d90e740",
       "type": "library",
       "version": "0.1.0"
     },

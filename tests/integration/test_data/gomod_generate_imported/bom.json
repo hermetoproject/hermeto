@@ -86,7 +86,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/foobar@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20211026214220-a5af4262860e?type=package",
       "type": "library",
       "version": "v0.0.0-20211026214220-a5af4262860e"
     },
@@ -98,7 +98,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/internal/generate@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20211026214220-a5af4262860e?type=package",
       "type": "library",
       "version": "v0.0.0-20211026214220-a5af4262860e"
     },
@@ -110,7 +110,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
       "type": "library",
       "version": "v0.0.0-20211026214220-a5af4262860e"
     },
@@ -122,7 +122,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
       "type": "library",
       "version": "v0.0.0-20211026214220-a5af4262860e"
     },

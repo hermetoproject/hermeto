@@ -42,7 +42,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20201001160613-4c65d49cae6b?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20201001160613-4c65d49cae6b?type=module",
       "type": "library",
       "version": "v0.0.0-20201001160613-4c65d49cae6b"
     },
@@ -54,7 +54,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20201001160613-4c65d49cae6b?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20201001160613-4c65d49cae6b?type=package",
       "type": "library",
       "version": "v0.0.0-20201001160613-4c65d49cae6b"
     },

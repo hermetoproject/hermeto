@@ -9,7 +9,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/cachi2-yarn-packagemanager?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40712e2e1baff80f8ad6e493babf08318b9051b3c7",
+      "purl": "pkg:npm/cachi2-yarn-packagemanager?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40712e2e1baff80f8ad6e493babf08318b9051b3c7",
       "type": "library"
     }
   ],

@@ -572,7 +572,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/retrodep/glide@v2.0.0-20240308152237-d0c316edef82?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20240308152237-d0c316edef82?type=package",
       "type": "library",
       "version": "v2.0.0-20240308152237-d0c316edef82"
     },
@@ -584,7 +584,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/retrodep@v2.0.0-20240308152237-d0c316edef82?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20240308152237-d0c316edef82?type=package",
       "type": "library",
       "version": "v2.0.0-20240308152237-d0c316edef82"
     },
@@ -596,7 +596,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=module",
       "type": "library",
       "version": "v2.0.0-20240308152237-d0c316edef82"
     },
@@ -608,7 +608,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=package",
       "type": "library",
       "version": "v2.0.0-20240308152237-d0c316edef82"
     },

@@ -421,7 +421,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7#quux",
+      "purl": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7#quux",
       "type": "library",
       "version": "0.0.1"
     },
@@ -577,7 +577,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7",
+      "purl": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7",
       "type": "library",
       "version": "0.1.2"
     },

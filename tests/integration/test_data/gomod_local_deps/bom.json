@@ -31,7 +31,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/staging/src/some-module/some-package@v0.0.0-20210216123728-b2e465b91a6a?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/staging/src/some-module/some-package@v0.0.0-20210216123728-b2e465b91a6a?type=package",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
     },
@@ -43,7 +43,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=module",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
     },
@@ -55,7 +55,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=package",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
     },
@@ -67,7 +67,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=module",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
     },
@@ -79,7 +79,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/cachito-testing/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=package",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
     },

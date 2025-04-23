@@ -21,7 +21,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/cachito-testing/integration-tests.git%405f4d168cd573712e56914c326d5f7eff488d7f32",
+      "purl": "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405f4d168cd573712e56914c326d5f7eff488d7f32",
       "type": "library",
       "version": "0.1.0"
     },
