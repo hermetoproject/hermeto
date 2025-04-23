@@ -303,13 +303,8 @@ class Go:
         """
         # run_cmd will take care of checking any bogus passed in 'binary'
         self._bin = str(binary)
-        self._release = release
-
         self._version: Optional[GoVersion] = None
-
-        if self._release:
-            if bin_ := self._locate_toolchain(self._release):
-                self._bin = bin_
+        self._release: Optional[str] = release
 
     def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
@@ -965,7 +960,10 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
         # - always use the 'X.Y.0' toolchain to make sure GOTOOLCHAIN=auto fetches anything newer
         # - container environments need to have it pre-installed
         # - local environments will always install 1.21.0 SDK and then pull any newer toolchain
-        go = Go(release="go1.21.0")
+        release = "go1.21.0"
+        if not (path_to_binary := Go._locate_toolchain("go1.21")):
+            path_to_binary = go._install(release)
+        go = Go(path_to_binary)
     elif go_base_version >= GO_121:
         # Starting with Go 1.21, Go doesn't try to be semantically backwards compatible in that the
         # 'go X.Y' line now denotes the minimum required version of Go, no a "suggested" version.
@@ -977,7 +975,10 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
         # to fatal build failures forcing everyone to update their build recipes. Note that at some
         # point they'll have to do that anyway, but until majority of projects in the ecosystem
         # adopt 1.21, we need a fallback to an older toolchain version.
-        go = Go(release="go1.20")
+        release = "go1.20"
+        if not (path_to_binary := Go._locate_toolchain(release)):
+            path_to_binary = go._install(release)
+        go = Go(path_to_binary)
     return go
 
 
