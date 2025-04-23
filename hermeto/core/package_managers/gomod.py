@@ -400,25 +400,6 @@ class Go:
         """Version of the Go toolchain as a GoVersion object."""
         return GoVersion(self._get_release())
 
-    @staticmethod
-    def _locate_toolchain(release: str) -> Optional[str]:
-        """Given a release locate an alternative Go toolchain.
-
-        Locate an alternative Go toolchain under the one of the following locations:
-            - /usr/local/go/                    for container environments (pre-installed)
-            - $XDG_CACHE_HOME/hermeto/go         for local environments (download & cache)
-        """
-        local_cache = get_cache_dir()
-        go_path_stub = f"go/{release}/bin/go"
-        for p in [Path("/usr/local/", go_path_stub), Path(local_cache, go_path_stub)]:
-            status = "SUCCESS" if p.exists() else "FAIL"
-
-            log.debug(f"Trying to locate Go toolchain at '{p}': {status}")
-            if p.exists():
-                return str(p)
-
-        return None
-
     def _get_release(self) -> str:
         output = self(["version"], params={"env": {"GOTOOLCHAIN": "local"}})
         log.debug(f"Go release: {output}")

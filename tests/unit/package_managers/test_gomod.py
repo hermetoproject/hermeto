@@ -394,7 +394,6 @@ def test_resolve_gomod_vendor_dependencies(
 
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
 @mock.patch("subprocess.run")
@@ -402,7 +401,6 @@ def test_resolve_gomod_no_deps(
     mock_run: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
-    mock_go_locate_toolchain: mock.Mock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
     gomod_request: Request,
@@ -410,7 +408,6 @@ def test_resolve_gomod_no_deps(
     module_path = gomod_request.source_dir.join_within_root("path/to/module")
     module_path.path.mkdir(parents=True, exist_ok=True)
     mock_disable_telemetry.return_value = None
-    mock_go_locate_toolchain.return_value = GO_CMD_PATH
 
     mocked_go_work = mock.MagicMock(spec=GoWork)
     mocked_go_work.__bool__.return_value = False
@@ -2429,20 +2426,15 @@ class TestGo:
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
     @mock.patch("hermeto.core.package_managers.gomod.Go._run")
     def test_call(
         self,
         mock_run: mock.Mock,
-        mock_locate_toolchain: mock.Mock,
         mock_get_config: mock.Mock,
         tmp_path: Path,
         release: Optional[str],
         retry: bool,
     ) -> None:
-        go_bin = tmp_path / f"go/{release}/bin/go"
-        mock_locate_toolchain.return_value = go_bin.as_posix()
-
         env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}
         opts = ["mod", "download"]
         go = Go()
@@ -2483,50 +2475,6 @@ class TestGo:
             go(opts, retry=retry)
 
         assert mock_run.call_count == 1
-
-    @pytest.mark.skip()
-    @pytest.mark.parametrize(
-        "base_path",
-        [
-            pytest.param("usr/local", id="locate_in_system_path"),
-            pytest.param(f"{APP_NAME}", id="locate_in_XDG_CACHE_HOME"),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    @mock.patch("hermeto.core.package_managers.gomod.Path")
-    def test_locate_toolchain(
-        self, mock_path: mock.Mock, mock_cache_dir: mock.Mock, tmp_path: Path, base_path: str
-    ) -> None:
-        def prefix_path(*args: Any) -> Path:
-            # we have to mock Path creation to prevent tests touching real system paths
-
-            my_args = list(args)
-            if str(tmp_path) not in my_args[0] and my_args[0].startswith("/"):
-                my_args[0] = my_args[0][1:]
-            return Path(tmp_path, *my_args)
-
-        mock_path.side_effect = prefix_path
-        mock_cache_dir.return_value = f"{APP_NAME}"
-
-        release = "go1.20"
-        go_bin_dir = tmp_path / f"{base_path}/go/{release}/bin"
-        go_bin_dir.mkdir(parents=True)
-        go_bin_dir.joinpath("go").touch()
-
-        go = Go()
-
-        assert Path(go.binary) == go_bin_dir / "go"
-
-    @pytest.mark.skip()
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    def test_locate_toolchain_failure(
-        self,
-        mock_cache_dir: mock.Mock,
-    ) -> None:
-        mock_cache_dir.return_value = f"{APP_NAME}"
-        go = Go()
-
-        assert go.binary == "go"
 
 
 class TestGoWork:
