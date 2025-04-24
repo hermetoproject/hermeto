@@ -28,11 +28,7 @@ def test_packages_with_workspaces_outside_source_dir_are_rejected(
 
 
 @mock.patch("hermeto.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
-@mock.patch(
-    "hermeto.core.package_managers.yarn_classic.workspaces._ensure_workspaces_are_well_formed"
-)
 def test_workspaces_could_be_parsed(
-    mock_workspaces_ok: mock.Mock,
     mock_get_ws_paths: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
@@ -55,6 +51,30 @@ def test_workspaces_could_be_parsed(
     result = extract_workspace_metadata(rooted_tmp_path)
 
     assert result == expected_result
+
+
+@mock.patch("hermeto.core.package_managers.yarn_classic.workspaces._get_workspace_paths")
+def test_workspaces_with_missing_package_json(
+    mock_get_ws_paths: mock.Mock,
+    caplog: pytest.LogCaptureFixture,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    package_json_path = rooted_tmp_path.join_within_root("package.json")
+    package_json_path.path.write_text('{"name": "outer_package", "workspaces": ["foo"]}')
+
+    workspace_path = rooted_tmp_path.join_within_root("foo")
+    workspace_path.path.mkdir()
+    expected_message = (
+        f"The Yarn workspace located at {workspace_path.path} "
+        "does not contain a package.json and will be ignored."
+    )
+
+    mock_get_ws_paths.return_value = [workspace_path.path]
+
+    result = extract_workspace_metadata(rooted_tmp_path)
+
+    assert result == []
+    assert expected_message in caplog.messages
 
 
 @pytest.mark.parametrize(

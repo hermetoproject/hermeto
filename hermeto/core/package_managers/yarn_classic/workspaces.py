@@ -1,12 +1,14 @@
+import logging
 from itertools import chain
 from pathlib import Path
 from typing import Any, Generator, Iterable
 
 import pydantic
 
-from hermeto.core.errors import PackageRejected
 from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.rooted_path import RootedPath
+
+log = logging.getLogger(__name__)
 
 
 class Workspace(pydantic.BaseModel):
@@ -39,21 +41,6 @@ def ensure_no_path_leads_out(
     """
     for path in paths:
         source_dir.join_within_root(path)
-
-
-def _ensure_workspaces_are_well_formed(
-    paths: Iterable[Path],
-) -> None:
-    """Ensure that every workspace contains package.json.
-
-    Reject the package otherwise.
-    """
-    for p in paths:
-        if not Path(p, "package.json").is_file():
-            raise PackageRejected(
-                reason=f"Workspace {p} does not contain 'package.json'",
-                solution=None,
-            )
 
 
 def _get_workspace_paths(workspaces_globs: list[str], source_dir: RootedPath) -> list[Path]:
@@ -90,16 +77,27 @@ def extract_workspace_metadata(package_path: RootedPath) -> list[Workspace]:
     workspaces_globs = _extract_workspaces_globs(package_json.data)
     workspaces_paths = _get_workspace_paths(workspaces_globs, package_path)
     ensure_no_path_leads_out(workspaces_paths, package_path)
-    _ensure_workspaces_are_well_formed(workspaces_paths)
 
     parsed_workspaces = []
     for wp in workspaces_paths:
+        package_json_path = package_path.join_within_root(wp, "package.json")
+
+        # Ignore "workspaces" with missing package.json
+        # https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/config.js#L833
+        if not package_json_path.path.exists():
+            log.warning(
+                (
+                    "The Yarn workspace located at %s does not contain a "
+                    "package.json and will be ignored."
+                ),
+                wp,
+            )
+            continue
+
         parsed_workspaces.append(
             Workspace(
                 path=wp,
-                package_json=PackageJson.from_file(
-                    package_path.join_within_root(wp, "package.json")
-                ),
+                package_json=PackageJson.from_file(package_json_path),
             )
         )
 
