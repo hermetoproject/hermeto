@@ -1,0 +1,50 @@
+environment_variables:
+- name: GOCACHE
+  value: ${output_dir}/deps/gomod
+- name: GOMODCACHE
+  value: ${output_dir}/deps/gomod/pkg/mod
+- name: GOPATH
+  value: ${output_dir}/deps/gomod
+- name: GOPROXY
+  value: file://${GOMODCACHE}/cache/download
+project_files:
+- abspath: ${test_case_tmp_path}/npm-package/package-lock.json
+  template: |
+    {
+      "name": "npm-package",
+      "version": "1.0.0",
+      "lockfileVersion": 3,
+      "requires": true,
+      "packages": {
+        "": {
+          "name": "npm-package",
+          "version": "1.0.0",
+          "license": "ISC",
+          "dependencies": {
+            "react": "^19.1.0"
+          }
+        },
+        "node_modules/react": {
+          "version": "19.1.0",
+          "resolved": "file://${output_dir}/deps/npm/react-19.1.0.tgz",
+          "integrity": "sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==",
+          "license": "MIT",
+          "engines": {
+            "node": ">=0.10.0"
+          }
+        }
+      }
+    }
+- abspath: ${test_case_tmp_path}/npm-package/package.json
+  template: |
+    {
+      "name": "npm-package",
+      "version": "1.0.0",
+      "main": "index.js",
+      "author": "",
+      "license": "ISC",
+      "description": "",
+      "dependencies": {
+        "react": "^19.1.0"
+      }
+    }

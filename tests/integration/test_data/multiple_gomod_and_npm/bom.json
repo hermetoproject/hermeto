@@ -1,0 +1,1162 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "name": "bufio",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/bufio?type=package",
+      "type": "library"
+    },
+    {
+      "name": "bytes",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/bytes?type=package",
+      "type": "library"
+    },
+    {
+      "name": "cmp",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/cmp?type=package",
+      "type": "library"
+    },
+    {
+      "name": "context",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/context?type=package",
+      "type": "library"
+    },
+    {
+      "name": "encoding/base64",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/base64?type=package",
+      "type": "library"
+    },
+    {
+      "name": "encoding/binary",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/binary?type=package",
+      "type": "library"
+    },
+    {
+      "name": "encoding/json",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json?type=package",
+      "type": "library"
+    },
+    {
+      "name": "encoding",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding?type=package",
+      "type": "library"
+    },
+    {
+      "name": "errors",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/errors?type=package",
+      "type": "library"
+    },
+    {
+      "name": "fmt",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/fmt?type=package",
+      "type": "library"
+    },
+    {
+      "name": "example.com/greetings",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/gomod-package@v0.0.0-20250515150126-8c76c8dc8c61?type=module",
+      "type": "library",
+      "version": "v0.0.0-20250515150126-8c76c8dc8c61"
+    },
+    {
+      "name": "example.com/greetings",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/gomod-package@v0.0.0-20250515150126-8c76c8dc8c61?type=package",
+      "type": "library",
+      "version": "v0.0.0-20250515150126-8c76c8dc8c61"
+    },
+    {
+      "name": "github.com/sirupsen/logrus",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=module",
+      "type": "library",
+      "version": "v1.9.3"
+    },
+    {
+      "name": "github.com/sirupsen/logrus",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=package",
+      "type": "library",
+      "version": "v1.9.3"
+    },
+    {
+      "name": "github.com/stretchr/testify",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/stretchr/testify@v1.10.0?type=module",
+      "type": "library",
+      "version": "v1.10.0"
+    },
+    {
+      "name": "golang.org/x/sys/unix",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/sys/unix@v0.32.0?type=package",
+      "type": "library",
+      "version": "v0.32.0"
+    },
+    {
+      "name": "golang.org/x/sys",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/sys@v0.32.0?type=module",
+      "type": "library",
+      "version": "v0.32.0"
+    },
+    {
+      "name": "internal/abi",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/abi?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/asan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/asan?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/bisect",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/bisect?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/bytealg",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/bytealg?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/byteorder",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/byteorder?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/chacha8rand",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/chacha8rand?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/coverage/rtcov",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/coverage/rtcov?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/cpu",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/cpu?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/filepathlite",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/filepathlite?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/fmtsort",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/fmtsort?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/goarch",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/goarch?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/godebug",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/godebug?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/godebugs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/godebugs?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/goexperiment",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/goexperiment?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/goos",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/goos?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/itoa",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/itoa?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/msan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/msan?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/oserror",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/oserror?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/poll",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/poll?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/profilerecord",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/profilerecord?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/race",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/race?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/reflectlite",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/reflectlite?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/atomic",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/atomic?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/exithook",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/exithook?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/syscall",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/syscall?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/stringslite",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/stringslite?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/syscall/execenv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/syscall/execenv?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/syscall/unix",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/syscall/unix?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/testlog",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/testlog?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/unsafeheader",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/unsafeheader?type=package",
+      "type": "library"
+    },
+    {
+      "name": "io/fs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/io/fs?type=package",
+      "type": "library"
+    },
+    {
+      "name": "io",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/io?type=package",
+      "type": "library"
+    },
+    {
+      "name": "iter",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/iter?type=package",
+      "type": "library"
+    },
+    {
+      "name": "log/internal",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/log/internal?type=package",
+      "type": "library"
+    },
+    {
+      "name": "log",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/log?type=package",
+      "type": "library"
+    },
+    {
+      "name": "math/bits",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/math/bits?type=package",
+      "type": "library"
+    },
+    {
+      "name": "math",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/math?type=package",
+      "type": "library"
+    },
+    {
+      "name": "os",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/os?type=package",
+      "type": "library"
+    },
+    {
+      "name": "path",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/path?type=package",
+      "type": "library"
+    },
+    {
+      "name": "reflect",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/reflect?type=package",
+      "type": "library"
+    },
+    {
+      "name": "runtime/internal/math",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/runtime/internal/math?type=package",
+      "type": "library"
+    },
+    {
+      "name": "runtime/internal/sys",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/runtime/internal/sys?type=package",
+      "type": "library"
+    },
+    {
+      "name": "runtime",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/runtime?type=package",
+      "type": "library"
+    },
+    {
+      "name": "slices",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/slices?type=package",
+      "type": "library"
+    },
+    {
+      "name": "sort",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/sort?type=package",
+      "type": "library"
+    },
+    {
+      "name": "strconv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/strconv?type=package",
+      "type": "library"
+    },
+    {
+      "name": "strings",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/strings?type=package",
+      "type": "library"
+    },
+    {
+      "name": "sync/atomic",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/sync/atomic?type=package",
+      "type": "library"
+    },
+    {
+      "name": "sync",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/sync?type=package",
+      "type": "library"
+    },
+    {
+      "name": "syscall",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/syscall?type=package",
+      "type": "library"
+    },
+    {
+      "name": "time",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/time?type=package",
+      "type": "library"
+    },
+    {
+      "name": "unicode/utf16",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/unicode/utf16?type=package",
+      "type": "library"
+    },
+    {
+      "name": "unicode/utf8",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/unicode/utf8?type=package",
+      "type": "library"
+    },
+    {
+      "name": "unicode",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/unicode?type=package",
+      "type": "library"
+    },
+    {
+      "name": "unsafe",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/unsafe?type=package",
+      "type": "library"
+    },
+    {
+      "name": "npm-package",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%408c76c8dc8c615c25cb48211d95b24d9d171291ff#npm-package",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "name": "react",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/react@19.1.0",
+      "type": "library",
+      "version": "19.1.0"
+    },
+    {
+      "name": "binutils-gold",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/binutils-gold@2.35.2-63.el9?arch=x86_64&checksum=sha256:339d9bb2dc0e41c4756f1a4f82e82f6654818b72de74f1f0377c76277617352b&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "2.35.2"
+    },
+    {
+      "name": "binutils",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/binutils@2.35.2-63.el9?arch=x86_64&checksum=sha256:4eb918b63dee7daf32117df2e3fcb02ad4ba3d96cb25677cf55315deceb7e22a&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "2.35.2"
+    },
+    {
+      "name": "cpp",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/cpp@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:b5567c690d46d4f5a2cb13be6a4f962dbe8cc7e821b9d3baa09a4f10c59014d9&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "11.5.0"
+    },
+    {
+      "name": "diffutils",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/diffutils@3.7-12.el9?arch=x86_64&checksum=sha256:2d4c4fdfc10215af3c957c24995b79a26e27e6d76de4ed1f5198d25bf7ef9671&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "3.7"
+    },
+    {
+      "name": "elfutils-debuginfod-client",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/elfutils-debuginfod-client@0.192-5.el9?arch=x86_64&checksum=sha256:e5b1a7a9e1467bfe00913e9b22ba5665852f8c61900205a32d3043ace9e1c7c2&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "0.192"
+    },
+    {
+      "name": "gcc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/gcc@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:03c99bc1021dbe54dd93120ed6b5249bbb02dbd5da9e0dc5d8c4a21d674fb1fd&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "11.5.0"
+    },
+    {
+      "name": "glibc-devel",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/glibc-devel@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:1565ca914cb58037fc9f50af64be3a43d5ae854b5d30f01882eb06d57c44d52c&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "2.34"
+    },
+    {
+      "name": "glibc-headers",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/glibc-headers@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:10579e7e1a0140841209c023fdb9034aae1b3723ab5807f6e6c61e8dd2dbffa7&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "2.34"
+    },
+    {
+      "name": "golang-bin",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/golang-bin@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:0c28b320d792c2984006eae41792a47bc827a875607fd16ed0604397d549812e&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "1.23.6"
+    },
+    {
+      "name": "golang-race",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/golang-race@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:8112bfa5292cfbe4f670b689aba65e8d7a0a9985d0f8845bde1313849f4d6aad&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "1.23.6"
+    },
+    {
+      "name": "golang-src",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/golang-src@1.23.6-2.el9_6?arch=noarch&checksum=sha256:8c5a8b16db661b76afda382c55749692277a3fd7482a4ab4838822e467c7560c&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "1.23.6"
+    },
+    {
+      "name": "golang",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/golang@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:3f868f055d64ba4450eddd5bf8aed497990454fb4f314e2d0fb4a0b22ff5bab2&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "1.23.6"
+    },
+    {
+      "name": "kernel-headers",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/kernel-headers@5.14.0-570.16.1.el9_6?arch=x86_64&checksum=sha256:c1d00377558618566384ca3a4decd24b32ca1138292e07110c80539cb4056b61&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "5.14.0"
+    },
+    {
+      "name": "libbrotli",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libbrotli@1.0.9-7.el9_5?arch=x86_64&checksum=sha256:bb3175e435723e98cc1a5063eafa82231092eca3bf6276d24505eaeaaa817113&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "1.0.9"
+    },
+    {
+      "name": "libmpc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libmpc@1.2.1-4.el9?arch=x86_64&checksum=sha256:b97b4e98c3c6f41dcfc2ceb4ffa1aba7a338b7cfd9e6c4f63e3160dd3cc033d3&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "1.2.1"
+    },
+    {
+      "name": "libpkgconf",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libpkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:4feae5941b73640bd86b8d506a657cac5b770043db1464fbcd207721b2159dda&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "1.7.3"
+    },
+    {
+      "name": "libxcrypt-devel",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libxcrypt-devel@4.4.18-3.el9?arch=x86_64&checksum=sha256:c1d171391a7d2e043a6953efd3df3e01edc9b4c6cdb54517e1608d204a5fce18&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "4.4.18"
+    },
+    {
+      "name": "make",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/make@4.3-8.el9?arch=x86_64&checksum=sha256:561f0c2251e9217c81a6c88de4d2d9231a039aaab37e8a0d2559d36ce9fa85fd&epoch=1&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "4.3"
+    },
+    {
+      "name": "nodejs-docs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/nodejs-docs@16.20.2-8.el9_4?arch=noarch&checksum=sha256:6dc10d979e48243cfee61e4ce95ec7a1e90bbf5ff5e7ac00af065d1f68e43270&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "16.20.2"
+    },
+    {
+      "name": "nodejs-full-i18n",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/nodejs-full-i18n@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:ced787ff387945af3c1e6c96905120e4a9fb939feca6d6b9a017ad14a6908ccb&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "16.20.2"
+    },
+    {
+      "name": "nodejs-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/nodejs-libs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:68d15f8a48676fbf9f4c891da8b651eaeb133e1eb7a776eaec8f5db2a5e83cec&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "16.20.2"
+    },
+    {
+      "name": "nodejs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/nodejs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:d5b23abda3f4ed68d4986fdbca82a15a63a179dc2ca4cb772e08e3d9ac3ae43f&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "16.20.2"
+    },
+    {
+      "name": "npm",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/npm@8.19.4-1.16.20.2.8.el9_4?arch=x86_64&checksum=sha256:f09f99be52843be351dda149a819bbcb10218b4460e0f89554b7a44532498e64&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "8.19.4"
+    },
+    {
+      "name": "openssl-devel",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/openssl-devel@3.2.2-6.el9_5.1?arch=x86_64&checksum=sha256:30cd1b3dec089a7da71e9167532693bef7c202a5dbe3c010af2a9387106a0b36&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "type": "library",
+      "version": "3.2.2"
+    },
+    {
+      "name": "pkgconf-m4",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/pkgconf-m4@1.7.3-10.el9?arch=noarch&checksum=sha256:91bafd6e06099451f60288327b275cfcc651822f6145176a157c6b0fa5131e02&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "1.7.3"
+    },
+    {
+      "name": "pkgconf-pkg-config",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/pkgconf-pkg-config@1.7.3-10.el9?arch=x86_64&checksum=sha256:9a502d81d73d3303ceb53a06ad7ce525c97117ea64352174a33708bf3429283d&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "1.7.3"
+    },
+    {
+      "name": "pkgconf",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/pkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:bb47b4ecc499c308f41031a99e723827d152d5d750f59849d0c265d820944a26&repository_id=ubi-9-baseos-rpms",
+      "type": "library",
+      "version": "1.7.3"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.4",
+  "version": 1
+}
