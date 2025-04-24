@@ -27,6 +27,7 @@ dependencies = [
   "pydantic",
   "pypi-simple",
   "pyarn",
+  "pybuild-deps",
   "pyyaml",
   "requests",
   "semver",

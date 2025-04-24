@@ -31,6 +31,7 @@ from typing import (
 
 import tomlkit
 from packageurl import PackageURL
+from pybuild_deps import parsers
 
 from hermeto import APP_NAME
 from hermeto.core.models.input import CargoPackageInput
@@ -2231,6 +2232,43 @@ def _resolve_pip(
     }
 
 
+def _has_rust_build_deps(raw_build_dependencies: list[str]) -> bool:
+    rust_build_deps = ("maturin", "setuptools-rust", "setuptools_rust")
+    for dep in raw_build_dependencies:
+        if dep.strip().lower().startswith(rust_build_deps):
+            return True
+    return False
+
+
+def _depends_on_rust(source_tarball: tarfile.TarFile) -> bool:
+    file_parser_map = {
+        "pyproject.toml": parsers.parse_pyproject_toml,
+        "setup.cfg": parsers.parse_setup_cfg,
+        "setup.py": parsers.parse_setup_py,
+    }
+    for file_name, parser in file_parser_map.items():
+        pkg_name = source_tarball.getnames()[0].split("/")[0]
+        try:
+            file = source_tarball.extractfile(f"{pkg_name}/{file_name}")
+        except KeyError:
+            continue
+        # the file is decoded as utf-8-sig because plain utf-8 has proven to
+        # be problematic with certain sources from pypi
+        # see https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
+        # mypy: it thinks file type is "IO[bytes] | None", but that's not right as .extractfile won't return None.
+        file_contents = file.read().decode("utf-8-sig")  # type: ignore
+        try:
+            build_dependencies = parser(file_contents)
+        except parsers.SetupPyParsingError:
+            # unfortunately pybuild-deps parser has some known edge-cases for older packages
+            # relying on setup.py
+            log.error("Unable to parse build dependencies for %s.", pkg_name)
+            continue
+        if _has_rust_build_deps(build_dependencies):
+            return True
+    return False
+
+
 def _filter_packages_with_rust_code(
     packages: list, output_dir: RootedPath, source_dir: RootedPath
 ) -> list:
@@ -2244,16 +2282,28 @@ def _filter_packages_with_rust_code(
         while pname.suffix in (".tar", ".gz", ".tgz"):
             pname = pname.with_suffix("")
         tf = tarfile.open(fname)
-        file_to_check = f"{pname}/Cargo.toml"
+        toplevel_cargo = f"{pname}/Cargo.toml"
         try:
-            tf.getmember(file_to_check)
-        # If there is no top-level Cargo.toml then this is unlikely
-        # a Rust package (see https://doc.rust-lang.org/cargo/guide/project-layout.html
-        # for details).
+            tf.getmember(toplevel_cargo)
+            rust_root = pname
         except KeyError:
-            continue
+            # only skip if no Cargo.toml is present in the package
+            if not any([fname.endswith("Cargo.toml") for fname in tf.getnames()]):
+                continue
+            # considering it has a Cargo.toml, let's check if it depends on the typical toolchain
+            # for python+rust to rule out false positives
+            if not _depends_on_rust(tf):
+                continue
+            # find the top-most Cargo.toml in the package - that's not necessarily the most accurate
+            # solution, but this heuristic has proven to work on the most popular python packages
+            # that have rust dependencies; if this stops working, then we would probably need to check
+            # pyproject toml config section for maturin or setuptools-rust...
+            # More info on this issue in the design doc
+            # https://github.com/hermetoproject/hermeto/blob/e5fa5c0fcd0dff62cf02be5b0d219e04c1ea440c/docs/design/cargo-support.md#L806
+            cargo_manifests = [name for name in tf.getnames() if name.endswith("Cargo.toml")]
+            rust_root = Path(sorted(cargo_manifests, key=len)[0]).parent
         tf.extractall(path=Path(str(tf.name)).parent, filter="data")
-        rust_package_source_dir = output_dir.join_within_root("deps", "pip", pname)
+        rust_package_source_dir = output_dir.join_within_root("deps", "pip", rust_root)
         packages_containing_rust_code.append(
             CargoPackageInput(
                 type="cargo", path=rust_package_source_dir.path.relative_to(output_dir)

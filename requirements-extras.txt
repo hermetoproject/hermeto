@@ -164,6 +164,10 @@ black==25.1.0 \
     --hash=sha256:ea0213189960bda9cf99be5b8c8ce66bb054af5e9e861249cd23471bd7b0b3ba \
     --hash=sha256:f3df5f1bf91d36002b0a75389ca8663510cf0531cca8aa5c1ef695b46d98655f
     # via hermeto (pyproject.toml)
+build==1.2.2.post1 \
+    --hash=sha256:1d61c0887fa860c01971625baae8bdd338e517b836a2f70dd1f7aa3a6b2fc5b5 \
+    --hash=sha256:b36993e92ca9375a219c99e606a122ff365a760a2d4bba0caa09bd5278b608b7
+    # via pip-tools
 certifi==2025.1.31 \
     --hash=sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651 \
     --hash=sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe
@@ -269,6 +273,8 @@ click==8.1.8 \
     #   hermeto (pyproject.toml)
     #   black
     #   mkdocs
+    #   pip-tools
+    #   pybuild-deps
     #   typer
 colorama==0.4.6 \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
@@ -506,6 +512,7 @@ importlib-metadata==8.6.1 \
     --hash=sha256:02a89390c1e15fdfdc0d7c6b25cb3e62650d0494005c97d6f148bf5b9787525e \
     --hash=sha256:310b41d755445d74569f993ccfc22838295d9fe005425094fad953d7f15c8580
     # via
+    #   build
     #   markdown
     #   mkdocs
     #   mkdocs-get-deps
@@ -791,6 +798,7 @@ packaging==24.2 \
     # via
     #   hermeto (pyproject.toml)
     #   black
+    #   build
     #   dependency-groups
     #   mkdocs
     #   nox
@@ -810,6 +818,14 @@ pbr==6.1.1 \
     --hash=sha256:38d4daea5d9fa63b3f626131b9d34947fd0c8be9b05a29276870580050a25a76 \
     --hash=sha256:93ea72ce6989eb2eed99d0f75721474f69ad88128afdef5ac377eb797c4bf76b
     # via stevedore
+pip==25.0.1 \
+    --hash=sha256:88f96547ea48b940a3a385494e181e29fb8637898f88d88737c5049780f196ea \
+    --hash=sha256:c46efd13b6aa8279f33f2864459c8ce587ea6a1a59ee20de055868d8f7688f7f
+    # via pip-tools
+pip-tools==7.4.1 \
+    --hash=sha256:4c690e5fbae2f21e87843e89c26191f0d9454f362d8acdbd695716493ec8b3a9 \
+    --hash=sha256:864826f5073864450e24dbeeb85ce3920cdfb09848a3d69ebf537b521f14bcc9
+    # via pybuild-deps
 platformdirs==4.3.7 \
     --hash=sha256:a03875334331946f13c549dbd8f4bac7a13a50a895a0eb1e8c6a8ace80d40a94 \
     --hash=sha256:eb437d586b6a0986388f0d6f74aa0cde27b48d0e3d66843640bfb6bdcdb6e351
@@ -930,6 +946,10 @@ propcache==0.3.1 \
 pyarn==0.3.0 \
     --hash=sha256:8f799d94a9b2fd4bd54185149d8745187c7ededcde98576ff70bf0823fd8a710 \
     --hash=sha256:e8eaed3ae80c1891a8ea7f6b7538c049a79dd7e7d3b4279f275699b3477b38c2
+    # via hermeto (pyproject.toml)
+pybuild-deps==0.5.0 \
+    --hash=sha256:4cc5b8634b5aac371755a7ff33da1f47cf528938e419c1fb943cc95a8c3337e7 \
+    --hash=sha256:fa488db42cc53f93926ccb55ef56fb300fbd7769d31a56ebc7f83f11e28aeac8
     # via hermeto (pyproject.toml)
 pycodestyle==2.13.0 \
     --hash=sha256:35863c5974a271c7a726ed228a14a4f6daf49df369d8c50cd9a6f58a5e143ba9 \
@@ -1064,6 +1084,12 @@ pypi-simple==1.6.1 \
     --hash=sha256:4d2ec96a3b0f78d55024cf1e2cf30f3bc0d8b7dd2a7ccbbd469722fca1b4fbd2 \
     --hash=sha256:b5124852a4da60316af056db9a4020fa4fcd851a0e607f80f1ebd7756d2ed8d0
     # via hermeto (pyproject.toml)
+pyproject-hooks==1.2.0 \
+    --hash=sha256:1e859bd5c40fae9448642dd871adf459e5e2084186e8d2c2a79a824c970da1f8 \
+    --hash=sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913
+    # via
+    #   build
+    #   pip-tools
 pytest==8.3.5 \
     --hash=sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820 \
     --hash=sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845
@@ -1165,6 +1191,7 @@ requests==2.32.3 \
     # via
     #   hermeto (pyproject.toml)
     #   mkdocs-material
+    #   pybuild-deps
     #   pypi-simple
 rich==13.9.4 \
     --hash=sha256:439594978a49a09530cff7ebc4b5c7103ef57baf48d5ea3184f21d9a2befa098 \
@@ -1297,7 +1324,9 @@ semver==3.0.4 \
 setuptools==78.1.0 \
     --hash=sha256:18fd474d4a82a5f83dac888df697af65afa82dec7323d09c3e37d1f14288da54 \
     --hash=sha256:3e386e96793c8702ae83d17b853fb93d3e09ef82ec62722e61da5cd22376dcd8
-    # via pbr
+    # via
+    #   pbr
+    #   pip-tools
 shellingham==1.5.4 \
     --hash=sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686 \
     --hash=sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de
@@ -1361,11 +1390,14 @@ tomli==2.2.1 \
     --hash=sha256:f4039b9cbc3048b2416cc57ab3bda989a6fcf9b36cf8937f01a6e731b64f80d7
     # via
     #   black
+    #   build
     #   coverage
     #   dependency-groups
     #   flake8-pyproject
     #   mypy
     #   nox
+    #   pip-tools
+    #   pybuild-deps
     #   pytest
     #   pytest-env
 tomlkit==0.13.2 \
@@ -1436,6 +1468,14 @@ watchdog==6.0.0 \
     --hash=sha256:e7631a77ffb1f7d2eefa4445ebbee491c720a5661ddf6df3498ebecae5ed375c \
     --hash=sha256:ef810fbf7b781a5a593894e4f439773830bdecb885e6880d957d5b9382a960d2
     # via mkdocs
+wheel==0.45.1 \
+    --hash=sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729 \
+    --hash=sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248
+    # via pip-tools
+xdg==6.0.0 \
+    --hash=sha256:24278094f2d45e846d1eb28a2ebb92d7b67fc0cab5249ee3ce88c95f649a1c92 \
+    --hash=sha256:df3510755b4395157fc04fc3b02467c777f3b3ca383257397f09ab0d4c16f936
+    # via pybuild-deps
 yarl==1.18.3 \
     --hash=sha256:00e5a1fea0fd4f5bfa7440a47eff01d9822a65b4488f7cff83155a0f31a2ecba \
     --hash=sha256:02ddb6756f8f4517a2d5e99d8b2f272488e18dd0bfbc802f31c16c6c20f22193 \
