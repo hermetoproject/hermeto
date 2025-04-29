@@ -70,7 +70,15 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 def _extract_package_info(path_to_toml: Path) -> dict:
     # 'value' unwraps the underlying dict and that makes mypy happy (it complains about
     # mismatching type otherwise despite parsed document having the necessary interface).
-    return tomlkit.parse(path_to_toml.read_text()).value["package"]
+    parsed_toml = tomlkit.parse(path_to_toml.read_text())
+    package_info = parsed_toml.value["package"]
+    if isinstance(package_info, dict) and package_info.get("version") == {"workspace": True}:
+        # support for workspace package table https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
+        # real world example: https://github.com/pyca/cryptography/blob/43.0.0/src/rust/Cargo.toml
+        # we condition this to when package_info is a dict because this same function has usages where package_info is a list
+        # (Cargo.lock) and this info is only available when it is a dict (Cargo.toml)
+        package_info["version"] = parsed_toml.value["workspace"]["package"]["version"]
+    return package_info
 
 
 def _resolve_main_package(package_dir: RootedPath) -> dict:
