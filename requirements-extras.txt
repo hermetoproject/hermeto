@@ -534,9 +534,9 @@ jsonschema==4.23.0 \
     --hash=sha256:d71497fef26351a33265337fa77ffeb82423f3ea21283cd9467bb03999266bc4 \
     --hash=sha256:fbadb6f8b144a8f8cf9f0b89ba94501d143e50411a1278633f56a7acf7fd5566
     # via hermeto (pyproject.toml)
-jsonschema-specifications==2024.10.1 \
-    --hash=sha256:0f38b83639958ce1152d02a7f062902c41c8fd20d558b0c34344292d417ae272 \
-    --hash=sha256:a09a0680616357d9a0ecf05c12ad234479f549239d0f5b55f3deea67475da9bf
+jsonschema-specifications==2025.4.1 \
+    --hash=sha256:4653bffbd6584f7de83a67e0d620ef16900b390ddc7939d56684d6c81e33f1af \
+    --hash=sha256:630159c9f4dbea161a6a2205c3011cc4f18ff381b189fff48bb39b9bf26ae608
     # via jsonschema
 mailbits==0.2.2 \
     --hash=sha256:72cd08926b3d0276607a4441ed5a059c4526409d8db2d57e0a6b23996a000bf8 \
