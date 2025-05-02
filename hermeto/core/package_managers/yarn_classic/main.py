@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 
 
 MIRROR_DIR = "deps/yarn-classic"
+YARN_NETWORK_TIMEOUT_MILLISECONDS = 600000
 _yarn_classic_pattern = "yarn lockfile v1"  # See [yarn_classic_trait].
 
 
@@ -131,6 +132,7 @@ def _get_prefetch_environment_variables(output_dir: RootedPath) -> dict[str, str
         "COREPACK_ENABLE_PROJECT_SPEC": "0",
         "YARN_IGNORE_PATH": "true",
         "YARN_IGNORE_SCRIPTS": "true",
+        "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
         "YARN_YARN_OFFLINE_MIRROR": str(output_dir.join_within_root(MIRROR_DIR)),
         "YARN_YARN_OFFLINE_MIRROR_PRUNING": "false",
     }

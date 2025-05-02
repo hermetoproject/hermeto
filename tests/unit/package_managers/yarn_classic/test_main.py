@@ -13,6 +13,7 @@ from hermeto.core.models.output import BuildConfig, EnvironmentVariable, Request
 from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.yarn_classic.main import (
     MIRROR_DIR,
+    YARN_NETWORK_TIMEOUT_MILLISECONDS,
     _fetch_dependencies,
     _generate_build_environment_variables,
     _get_prefetch_environment_variables,
@@ -190,6 +191,7 @@ def test_get_prefetch_environment_variables(tmp_path: Path) -> None:
         "COREPACK_ENABLE_PROJECT_SPEC": "0",
         "YARN_IGNORE_PATH": "true",
         "YARN_IGNORE_SCRIPTS": "true",
+        "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
         "YARN_YARN_OFFLINE_MIRROR": str(yarn_deps_dir),
         "YARN_YARN_OFFLINE_MIRROR_PRUNING": "false",
     }
