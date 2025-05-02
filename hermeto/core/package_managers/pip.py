@@ -229,6 +229,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         environment_variables=environment_variables,
         project_files=project_files,
     )
+
     cargo_packages = _find_and_fetch_rust_dependencies(request, packages_containing_rust_code)
     return pip_packages + cargo_packages
 
@@ -2190,9 +2191,13 @@ def _resolve_pip(
         output_dir, resolved_build_req_files, allow_binary
     )
 
-    packages_containing_rust_code = _filter_packages_with_rust_code(
-        requires + build_requires, output_dir, source_dir
-    )
+    # No need to search for Rust code when a user requested just binaries.
+    if allow_binary:
+        packages_containing_rust_code = []
+    else:
+        packages_containing_rust_code = _filter_packages_with_rust_code(
+            requires + build_requires, output_dir, source_dir
+        )
 
     # Mark all build dependencies as such
     for dependency in build_requires:
