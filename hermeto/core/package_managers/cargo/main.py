@@ -1,4 +1,5 @@
 import logging
+import subprocess
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
@@ -18,6 +19,23 @@ from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
+
+
+class PackageWithCorruptLockfileRejected(PackageRejected):
+    """Package lock file does not match package config."""
+
+    def __init__(self, package_path: str) -> None:
+        """Initialize the error."""
+        reason = (
+            f"{package_path} contains a Cargo.lock that does not match"
+            " the corresponding Cargo.toml"
+        )
+        super().__init__(reason, solution=self.default_solution, docs="")
+
+    default_solution = (
+        "Consider reaching out to maintainer of the dependency in question to address"
+        " inconsistencies between Cargo.lock and Cargo.toml"
+    )
 
 
 @dataclass(frozen=True)
@@ -141,7 +159,20 @@ def _resolve_cargo_package(
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
         # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
-        config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
+        try:
+            config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
+        except subprocess.CalledProcessError as e:
+            # Search for a very specific failure state to better report it.
+            # This is not a robust solution in any way, however it seems to be the only one
+            # readily available: cargo returns a generic 101 code on this failure and on multiple
+            # others, thus the only way to check for this specific type of failure is to process
+            # stderr. Two parts of a string are used to decrease the likelihood of false positives.
+            lock_corruption_marker1 = "failed to sync"
+            lock_corruption_marker2 = "needs to be updated but --locked was passed"
+            if lock_corruption_marker1 in e.stderr and lock_corruption_marker2 in e.stderr:
+                raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
+            else:
+                raise
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)

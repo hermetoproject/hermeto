@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import re
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 from textwrap import dedent
@@ -21,10 +22,11 @@ from hermeto.core.errors import (
     UnexpectedFormat,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import PackageInput, Request
+from hermeto.core.models.input import CargoPackageInput, PackageInput, Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers import pip
+from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
@@ -4493,3 +4495,113 @@ def test_fetch_pip_source_does_not_pick_crates_when_binaries_are_requested(
 
     # Assert
     mock_find_and_fetch_rust.assert_called_once_with(mock.ANY, [])
+
+
+@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.package_managers.pip._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.pip._resolve_pip")
+@mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
+@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present_or_fail")
+def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(
+    mock_verify_lockfile_present: mock.Mock,
+    mock_run_cmd: mock.Mock,
+    mock_resolve_pip: mock.Mock,
+    mock_replace_requirements: mock.Mock,
+    mock_git_repo: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    # Making this a pip test since it is pip who is affected by the problem the most.
+    source_dir = rooted_tmp_path.re_root("source")
+    output_dir = rooted_tmp_path.re_root("output")
+    source_dir.path.mkdir()
+    source_dir.join_within_root("foo").path.mkdir()
+
+    request = Request(
+        source_dir=source_dir,
+        output_dir=output_dir,
+        packages=[{"type": "pip", "requirements_files": ["requirements.txt"]}],
+    )
+
+    mock_run_cmd.side_effect = subprocess.CalledProcessError(
+        cmd="test",
+        returncode=101,
+        stderr="... failed to sync ... needs to be updated but --locked was passed ...",
+    )
+    mock_verify_lockfile_present.return_value = None
+
+    resolved_a = {
+        "package": {"name": "foo", "version": "1.0", "type": "pip"},
+        "dependencies": [
+            {
+                "name": "bar",
+                "version": "https://x.org/bar.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "type": "pip",
+                "build_dependency": False,
+                "kind": "url",
+                "requirement_file": "requirements.txt",
+                "missing_req_file_checksum": False,
+                "package_type": "",
+            },
+            {
+                "name": "baz",
+                "version": "0.0.5",
+                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
+                "type": "pip",
+                "build_dependency": True,
+                "kind": "pypi",
+                "requirement_file": "requirements.txt",
+                "missing_req_file_checksum": False,
+                "package_type": "wheel",
+            },
+        ],
+        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
+        "requirements": ["/package_a/requirements.txt", "/package_a/requirements-build.txt"],
+    }
+    resolved_b = {
+        "package": {"name": "spam", "version": "2.1", "type": "pip"},
+        "dependencies": [
+            {
+                "name": "ham",
+                "version": "3.2",
+                "index_url": CUSTOM_PYPI_ENDPOINT,
+                "type": "pip",
+                "build_dependency": False,
+                "kind": "pypi",
+                "requirement_file": "requirements.txt",
+                "missing_req_file_checksum": True,
+                "package_type": "sdist",
+            },
+            {
+                "name": "eggs",
+                "version": "https://x.org/eggs.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "type": "pip",
+                "build_dependency": False,
+                "kind": "url",
+                "requirement_file": "requirements.txt",
+                "missing_req_file_checksum": True,
+                "package_type": "",
+            },
+        ],
+        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
+        "requirements": ["/package_b/requirements.txt"],
+    }
+
+    replaced_file_a = ProjectFile(
+        abspath=Path("/package_a/requirements.txt"),
+        template="bar @ file://${output_dir}/deps/pip/...",
+    )
+    replaced_file_b = ProjectFile(
+        abspath=Path("/package_b/requirements.txt"),
+        template="eggs @ file://${output_dir}/deps/pip/...",
+    )
+
+    mock_resolve_pip.side_effect = [resolved_a, resolved_b]
+    mock_replace_requirements.side_effect = [replaced_file_a, None, replaced_file_b]
+
+    mocked_repo = mock.Mock()
+    mocked_repo.remote.return_value.url = "https://github.com/my-org/my-repo"
+    mocked_repo.head.commit.hexsha = GIT_REF
+    mock_git_repo.return_value = mocked_repo
+
+    with pytest.raises(PackageWithCorruptLockfileRejected):
+        pip.fetch_pip_source(request)

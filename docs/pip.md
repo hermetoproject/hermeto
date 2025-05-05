@@ -511,6 +511,15 @@ Note, that a system which is to be used for building these extensions must have
 With these preparations running a pip installation as usual should be sufficient to
 build and install a Rust-based extension.
 
+Note, that sometimes Rust-based extensions can break a build. This could happen when
+such dependency is distributed with a Cargo.lock not matching Cargo.toml (while rare this seems
+to happen due to peculiarities of the release process for some packages). In this case
+a package will be rejected with a note about lock file mismatch and an additional report from
+Cargo about inability to load package lock file due to a mismatch. There is no
+good solution for this problem on Hermeto's side and the best course of action is to reach out
+to maintainers of this extension and notify them about the mismatch. Switching to a binary
+distribution of the package would also resolve this problem at the price of not building
+it from sources (see [Building with wheels](#building-with-wheels) for additional context).
 
 ## Troubleshooting
 
