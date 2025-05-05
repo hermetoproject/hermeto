@@ -1,0 +1,25 @@
+contentOrigin:
+  # This file is copied from the Dockerfile referenced in the context section.
+  # The repoids have been changed to include the architecture, for compliance reasons:
+  #
+  # ubi-9-baseos-debug-rpms > ubi-9-for-x86_64-baseos-debug-rpms
+  repofiles:
+    - ./ubi.repo
+packages:
+  - cargo
+  - git-core
+  - gcc
+  - jq
+  - python3
+  - python3-pip
+  - python3-setuptools
+  - python3-devel
+  - rubygem-bundler
+  - rubygem-json
+  - subscription-manager
+context:
+  # When resolving the packages, use the image defined in this specific stage of the
+  # referenced Dockerfile
+  containerfile:
+    file: Dockerfile.konflux
+    stageName: ubi
