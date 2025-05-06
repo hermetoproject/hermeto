@@ -78,9 +78,8 @@ def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Comp
     """Process a request for a single yarn source directory."""
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
-    prefetch_env = _get_prefetch_environment_variables(output_dir)
-    _verify_corepack_yarn_version(project.source_dir, prefetch_env)
-    _fetch_dependencies(project.source_dir, prefetch_env)
+    _verify_corepack_yarn_version(project.source_dir, _get_prefetch_environment_variables())
+    _fetch_dependencies(project.source_dir, output_dir)
     packages = resolve_packages(project, output_dir.join_within_root(MIRROR_DIR))
     _verify_no_offline_mirror_collisions(packages)
 
@@ -104,28 +103,64 @@ def _create_sbom_components(packages: Iterable[YarnClassicPackage]) -> list[Comp
     return result
 
 
-def _fetch_dependencies(source_dir: RootedPath, env: dict[str, str]) -> None:
-    """Fetch dependencies using 'yarn install'.
+def _run_yarn_install(
+    source_dir: RootedPath,
+    env: dict[str, str],
+    frozen_lockfile: bool = False,
+    skip_integrity: bool = False,
+    offline: bool = False,
+) -> None:
+    """Run `yarn install` in the given directory.
 
     :param source_dir: the directory in which the yarn command will be called.
-    :param env: environment variable mapping used for the prefetch.
-    :raises PackageManagerError: if the 'yarn install' command fails.
+    :param env: a mapping of environment variables to set for the `yarn` subprocess
+    :param frozen_lockfile: don't generate a lockfile and fail if an update is needed
+    :param skip_integrity: run install without checking if node_modules is installed
+    :param offline: trigger an error if any required dependencies are not available in local cache
+    :raises PackageManagerError: if the underlying 'yarn install' command fails.
     """
-    run_yarn_cmd(
-        [
-            "install",
-            "--disable-pnp",
-            "--frozen-lockfile",
-            "--ignore-engines",
-            "--no-default-rc",
-            "--non-interactive",
-        ],
-        source_dir,
-        env,
-    )
+    cmd = [
+        "install",
+        "--disable-pnp",
+        "--ignore-engines",
+        "--no-default-rc",
+        "--non-interactive",
+    ]
+    if frozen_lockfile:
+        cmd.append("--frozen-lockfile")
+    if skip_integrity:
+        cmd.append("--skip-integrity-check")
+    if offline:
+        cmd.append("--offline")
+
+    run_yarn_cmd(cmd, source_dir, env)
 
 
-def _get_prefetch_environment_variables(output_dir: RootedPath) -> dict[str, str]:
+def _fetch_dependencies(source_dir: RootedPath, output_dir: RootedPath) -> None:
+    """Fetch dependencies for the project.
+
+    Install the project dependencies via a two-step process to overcome concurrency
+    issues with the offline mirror.
+
+    :param source_dir: the directory in which the yarn command will be called.
+    :param output_dir: the output directory for the request.
+    :raises PackageManagerError: if either install step fails
+    """
+    # Populate the local cache with the project dependencies
+    env = _get_prefetch_environment_variables()
+    _run_yarn_install(source_dir, env, frozen_lockfile=True)
+
+    # Populate the offline mirror from the local cache
+    # Since the node_modules directory is already populated, we need to force a
+    # reinstall with the --skip-integrity option, otherwise it will be a no-op and
+    # the offline mirror will not get filled. Use the --offline flag to exclusively
+    # rely on the local cache which was already populated by the first install.
+    env["YARN_YARN_OFFLINE_MIRROR"] = str(output_dir.join_within_root(MIRROR_DIR))
+    env["YARN_YARN_OFFLINE_MIRROR_PRUNING"] = "false"
+    _run_yarn_install(source_dir, env, skip_integrity=True, offline=True)
+
+
+def _get_prefetch_environment_variables() -> dict[str, str]:
     """Get environment variables that will be used for the prefetch."""
     return {
         "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
@@ -133,8 +168,6 @@ def _get_prefetch_environment_variables(output_dir: RootedPath) -> dict[str, str
         "YARN_IGNORE_PATH": "true",
         "YARN_IGNORE_SCRIPTS": "true",
         "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
-        "YARN_YARN_OFFLINE_MIRROR": str(output_dir.join_within_root(MIRROR_DIR)),
-        "YARN_YARN_OFFLINE_MIRROR_PRUNING": "false",
     }
 
 

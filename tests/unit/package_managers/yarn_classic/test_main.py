@@ -18,6 +18,7 @@ from hermeto.core.package_managers.yarn_classic.main import (
     _generate_build_environment_variables,
     _get_prefetch_environment_variables,
     _resolve_yarn_project,
+    _run_yarn_install,
     _verify_corepack_yarn_version,
     _verify_no_offline_mirror_collisions,
     fetch_yarn_source,
@@ -152,51 +153,95 @@ def test_resolve_yarn_project(
 
     _resolve_yarn_project(project, output_dir)
 
-    mock_prefetch_env_vars.assert_called_once_with(output_dir)
     mock_verify_yarn_version.assert_called_once_with(
         project.source_dir, mock_prefetch_env_vars.return_value
     )
-    mock_fetch_dependencies.assert_called_once_with(
-        project.source_dir, mock_prefetch_env_vars.return_value
-    )
+    mock_fetch_dependencies.assert_called_once_with(project.source_dir, output_dir)
     mock_resolve_packages.assert_called_once_with(project, output_dir.join_within_root(MIRROR_DIR))
 
 
+@pytest.mark.parametrize(
+    "kwargs,expected_extra_flags",
+    [
+        ({}, []),
+        (
+            {"frozen_lockfile": True},
+            ["--frozen-lockfile"],
+        ),
+        (
+            {"skip_integrity": True},
+            ["--skip-integrity-check"],
+        ),
+        (
+            {"offline": True},
+            ["--offline"],
+        ),
+        (
+            {"frozen_lockfile": True, "skip_integrity": True, "offline": True},
+            ["--frozen-lockfile", "--skip-integrity-check", "--offline"],
+        ),
+    ],
+)
 @mock.patch("hermeto.core.package_managers.yarn_classic.main.run_yarn_cmd")
-def test_fetch_dependencies(mock_run_yarn_cmd: mock.Mock, tmp_path: Path) -> None:
+def test_run_yarn_install(
+    mock_run_yarn_cmd: mock.Mock,
+    kwargs: dict[str, bool],
+    expected_extra_flags: list[str],
+    rooted_tmp_path: RootedPath,
+) -> None:
     env = {"foo": "bar"}
-    rooted_tmp_path = RootedPath(tmp_path)
+    base_cmd = [
+        "install",
+        "--disable-pnp",
+        "--ignore-engines",
+        "--no-default-rc",
+        "--non-interactive",
+    ]
+    expected_cmd = base_cmd + expected_extra_flags
 
-    _fetch_dependencies(rooted_tmp_path, env)
+    _run_yarn_install(rooted_tmp_path, env, **kwargs)
 
-    mock_run_yarn_cmd.assert_called_with(
-        [
-            "install",
-            "--disable-pnp",
-            "--frozen-lockfile",
-            "--ignore-engines",
-            "--no-default-rc",
-            "--non-interactive",
-        ],
-        rooted_tmp_path,
-        env,
-    )
+    mock_run_yarn_cmd.assert_called_with(expected_cmd, rooted_tmp_path, env)
+    assert mock_run_yarn_cmd.call_count == 1
 
 
-def test_get_prefetch_environment_variables(tmp_path: Path) -> None:
-    request_output_dir = RootedPath(tmp_path).join_within_root("output")
-    yarn_deps_dir = request_output_dir.join_within_root("deps/yarn-classic")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._run_yarn_install")
+@mock.patch("hermeto.core.package_managers.yarn_classic.main._get_prefetch_environment_variables")
+def test_fetch_dependencies(
+    mock_prefetch_env: mock.Mock, mock_yarn_install: mock.Mock, tmp_path: Path
+) -> None:
+    source_dir = RootedPath(tmp_path / "source")
+    output_dir = RootedPath(tmp_path / "output")
+
+    first_install_env = {"foo": "bar"}
+    mock_prefetch_env.return_value = first_install_env
+
+    second_install_env = dict(first_install_env)
+    second_install_env["YARN_YARN_OFFLINE_MIRROR"] = str(output_dir.join_within_root(MIRROR_DIR))
+    second_install_env["YARN_YARN_OFFLINE_MIRROR_PRUNING"] = "false"
+
+    expected_yarn_install_calls = [
+        mock.call(source_dir, mock_prefetch_env.return_value, frozen_lockfile=True),
+        mock.call(source_dir, second_install_env, skip_integrity=True, offline=True),
+    ]
+
+    _fetch_dependencies(source_dir, output_dir)
+
+    mock_prefetch_env.assert_called_once()
+    mock_yarn_install.assert_has_calls(expected_yarn_install_calls)
+    assert mock_yarn_install.call_count == 2
+
+
+def test_get_prefetch_environment_variables() -> None:
     expected_output = {
         "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
         "COREPACK_ENABLE_PROJECT_SPEC": "0",
         "YARN_IGNORE_PATH": "true",
         "YARN_IGNORE_SCRIPTS": "true",
         "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
-        "YARN_YARN_OFFLINE_MIRROR": str(yarn_deps_dir),
-        "YARN_YARN_OFFLINE_MIRROR_PRUNING": "false",
     }
 
-    output = _get_prefetch_environment_variables(request_output_dir)
+    output = _get_prefetch_environment_variables()
 
     assert output == expected_output
 
