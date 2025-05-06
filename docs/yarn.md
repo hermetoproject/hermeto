@@ -2,7 +2,6 @@
 
 <https://yarnpkg.com/>
 
-* Overview [in the README][readme-yarn]
 * [Hermeto's Yarn support scope](#hermetos-yarn-support-scope)
     * [Supported Yarn versions](#supported-yarn-versions)
     * [Supported Yarn protocols/locators](#supported-yarn-protocolslocators)
@@ -176,6 +175,5 @@ YARN_ENABLE_MIRROR=true
 YARN_ENABLE_IMMUTABLE_CACHE=false
 ```
 
-[readme-yarn]: ../README.md#yarn
 [usage-prefetch]: usage.md#pre-fetch-dependencies
 [usage-genenv]: usage.md#generate-environment-variables

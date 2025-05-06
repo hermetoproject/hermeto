@@ -8,7 +8,7 @@ Hermeto is a CLI tool that pre-fetches your project's dependencies to aid in mak
 
 To see if we support your package manager(s), please check the [package managers](#package-managers) section.
 
-The primary intended use of Hermeto's outputs is for network-isolated container builds (see [usage](docs/usage.md)).
+The primary intended use of Hermeto's outputs is for network-isolated container builds.
 
 ## Table of contents
 
@@ -49,7 +49,7 @@ In return, Hermeto will help make your build
 The ability to achieve the goals depends on the hermeticity of the build process. Ideally, you should try to isolate the
 build from both the internet and the underlying host system to avoid implicit dependencies, irreproducible behavior and
 whole hosts of other issues. Hermeto itself is not a hermetic build system. We suggest you take advantage of existing
-technologies - such as containers - to achieve isolation (see [usage](docs/usage.md)).
+technologies - such as containers - to achieve network isolation.
 
 ## Installation
 
@@ -90,7 +90,7 @@ hermeto fetch-deps \
 
 The `fetch-deps` command fetches your project's dependencies and stores them on your disk. Hermeto also produces a detailed SBOM containing information about all the project's components and packages. You can find the SBOM in the output directory.
 
-See [docs/usage.md](docs/usage.md) for a more detailed, practical example of Hermeto usage.
+See `docs/usage.md` for a more detailed, practical example of Hermeto usage.
 
 You might also like to check out `hermeto --help` and the `--help` texts of the available subcommands.
 
@@ -116,9 +116,7 @@ values are the environment variable values.
 * `gomod_download_max_tries` - a maximum number of attempts for retrying go commands.
 * `gomod_strict_vendor` - (deprecated) the bool to disable/enable the strict vendor mode. For a repo that has gomod
 dependencies, if the `vendor` directory exists and this config option is set to `True`, one of the vendoring flags
-must be used.
-  *This option no longer has any effect when set. Check the  [vendoring docs](docs/gomod.md#vendoring) for
-  more information.*
+must be used. *This option no longer has any effect when set.*
 * `goproxy_url` - sets the value of the GOPROXY variable that Hermeto uses internally
 when downloading Go modules. See [Go environment variables](https://go.dev/ref/mod#environment-variables).
 * `requests_timeout` - a number (in seconds) for `requests.get()`'s 'timeout' parameter,
@@ -154,7 +152,7 @@ for example the `bundle lock` command, which generates the `Gemfile.lock` file b
 on the dependencies specified in the [Gemfile](https://bundler.io/v2.5/man/gemfile.5.html).
 Both files must be present in the source repository so you should check them into your git repository.
 
-See [docs/bundler.md](docs/bundler.md) for more details.
+See `docs/bundler.md` for more details.
 
 ### cargo
 
@@ -165,7 +163,7 @@ declared in your project, ensuring reproducible builds with explicitly defined
 versions. Make sure to have up-to-date [Cargo.lock](https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html)
 present in your project.
 
-See [docs/cargo.md](docs/cargo.md) for more details.
+See `docs/cargo.md` for more details.
 
 ### generic fetcher
 
@@ -180,7 +178,7 @@ Currently supported types of artifacts:
 - Arbitrary files
 - Maven artifacts
 
-See [docs/generic.md](docs/generic.md) for more details.
+See `docs/generic.md` for more details.
 
 ### gomod
 
@@ -198,7 +196,7 @@ included only direct dependencies. Hermeto does support downloading and listing 
 versions thanks to Go's backwards compatibility[^go-compat]. Note that using go >= 1.17 in your project has the added
 benefit of downloading fewer dependencies (as noted in the changelog), in some cases drastically so.
 
-See [docs/gomod.md](docs/gomod.md) for more details.
+See `docs/gomod.md` for more details.
 
 [^go-version]: Hermeto expects to use a specific version of the `go` command when downloading dependencies. This is the
   version installed in the [hermeto container](#container-image). We do not guarantee correctness if you run Hermeto
@@ -211,7 +209,7 @@ See [docs/gomod.md](docs/gomod.md) for more details.
   the two versions. For example, dependency resolution did change in [go 1.18][go118-changelog] but not in
   [go 1.19][go119-changelog]. Things are a bit more complicated with [Go 1.21][go121-changelog], if
   you are or have been experiencing issues with hermeto related to Go 1.21+, please refer to
-  [docs/gomod.md](docs/gomod.md#go-121-since-v050).
+  our gomod documentation for more details.
 
 ### npm
 
@@ -225,7 +223,7 @@ you can use [npm install](https://docs.npmjs.com/cli/v9/commands/npm-install?v=t
 
 Make sure lockfile version is higher than v1 (Node.js 15 or higher).
 
-See [docs/npm.md](docs/npm.md) for more details.
+See `docs/npm.md` for more details.
 
 ### pip
 
@@ -239,7 +237,7 @@ such a lockfile is best done using tools like [pip-compile](https://pip-tools.re
 
 We support source distribution file format ([sdist][sdist-spec]) as well as binary distribution file format ([wheel][wheel-spec]).
 
-See [docs/pip.md](docs/pip.md) for more details.
+See `docs/pip.md` for more details.
 
 ### yarn
 
@@ -254,7 +252,7 @@ hermeto to process a project successfully. If missing, you can easily generate o
 install](https://v3.yarnpkg.com/getting-started/usage#installing-all-the-dependencies)
 prior to pointing hermeto to your project.
 
-See [docs/yarn.md](docs/yarn.md) for more details.
+See `docs/yarn.md` for more details.
 
 ## Project status
 

@@ -12,8 +12,8 @@
  * [Handling of yarn-specific config files]
  * [Variables set during fetch phase]
 
-This document outlines the differences between Yarn Classic and Yarn v3 support.
-Please refer to [README] and [Yarn v3 documentation] for
+This document outlines the differences between Yarn Classic and Yarn support.
+Please refer to [Yarn documentation] for
 common aspects of PMs behavior. `Yarn` and `Yarn Classic` will be used interchangeably
 in this document, any other versions of Yarn will be explicitly mentioned.
 
@@ -159,8 +159,7 @@ YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
 Sourcing this file will prime Yarn for an offline build.
 
-[README]: ../README.md#yarn
-[Yarn v3 documentation]: yarn.md
+[Yarn documentation]: yarn.md
 [Pre-fetch dependencies]: usage.md#pre-fetch-dependencies
 [Plug'n'Play]: https://classic.yarnpkg.com/en/docs/pnp
 [.yarnrc]: https://classic.yarnpkg.com/lang/en/docs/yarnrc/
@@ -170,7 +169,7 @@ Sourcing this file will prime Yarn for an offline build.
 [environment file]: usage.md#generate-environment-variables
 [Overview]: #overview
 [Supported dependencies types]: #supported-dependencies-types
-[Yarn Zero-Installs are not supported]: #dealing-with-Yarn-Zero-Installs
+[Yarn Zero-Installs are not supported]: #yarn-zero-installs-are-not-supported
 [Fetching dependencies for Yarn Classic projects]: #fetching-dependencies-for-yarn-classic-projects
 [Handling of yarn-specific config files]: #handling-of-yarn-specific-config-files
 [Prerequisites for an offline build]: #prerequisites-for-an-offline-build

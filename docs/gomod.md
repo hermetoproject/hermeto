@@ -2,7 +2,6 @@
 
 <https://go.dev/ref/mod>
 
-* Overview [in the README][readme-gomod]
 * [Specifying modules to process](#specifying-modules-to-process)
 * [Using fetched dependencies](#using-fetched-dependencies)
 * [gomod flags](#gomod-flags)
@@ -89,7 +88,14 @@ by Hermeto anyway.
 
 The `hermeto fetch-deps` command accepts the following gomod-related flags:
 
-* [--cgo-disable](#--cgo-disable)
+### --cgo-disable
+
+Makes Hermeto internally disable [cgo](https://pkg.go.dev/cmd/cgo) while processing your Go modules. Typically, you would
+want to use this flag if your modules *do* use C code and Hermeto is failing to process them. Hermeto will not attempt to
+disable cgo in your build (nor should you disable it yourself if you rely on C).
+
+Disabling cgo should not prevent Hermeto from fetching your Go dependencies as usual. Note that Hermeto will not make any
+attempts to fetch missing C libraries. If required, you would need to get them through other means.
 
 ### Deprecated flags
 
@@ -100,20 +106,11 @@ The `hermeto fetch-deps` command accepts the following gomod-related flags:
 All of them are deprecated and will have no effect when set. They are only kept for backwards
 compatibility reasons and will be removed in future releases.
 
-### --cgo-disable
-
-Makes Hermeto internally disable [cgo](https://pkg.go.dev/cmd/cgo) while processing your Go modules. Typically, you would
-want to use this flag if your modules *do* use C code and Hermeto is failing to process them. Hermeto will not attempt to
-disable cgo in your build (nor should you disable it yourself if you rely on C).
-
-Disabling cgo should not prevent Hermeto from fetching your Go dependencies as usual. Note that Hermeto will not make any
-attempts to fetch missing C libraries. If required, you would need to get them through other means.
-
 ## Vendoring
 
 Go supports [vendoring](https://go.dev/ref/mod#vendoring) to store the source code of all dependencies in the vendor/
 directory alongside your module. Before go 1.17, `go mod vendor` used to download fewer dependencies than
-`go mod download`. Starting with 1.17, that is no longer true - see the [overview][readme-gomod] in the README.
+`go mod download`. Starting with 1.17, that is no longer true.
 
 We generally discourage vendoring, but Hermeto does support processing repositories that contain vendored content. In
 this case, instead of a regular prefetching of dependencies, Hermeto will only validate if the contents of the vendor
@@ -223,7 +220,6 @@ workflow.
   version would still need to be officially marked as supported by hermeto, i.e. we'd not allow Go
   to fetch e.g. a 1.22 toolchain if the maximum supported Go version by hermeto were 1.21!**
 
-[readme-gomod]: ../README.md#gomod
 [usage-prefetch]: usage.md#pre-fetch-dependencies
 [usage-genenv]: usage.md#generate-environment-variables
 [go-modules-overview]: https://go.dev/ref/mod#modules-overview

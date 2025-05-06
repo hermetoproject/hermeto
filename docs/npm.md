@@ -2,7 +2,6 @@
 
 <https://docs.npmjs.com/>
 
-* Overview [in the README][readme-npm]
 * [Specifying packages to process](#specifying-packages-to-process)
 * [Project files](#project-files)
   * [Dependencies](#dependencies)
@@ -556,5 +555,3 @@ Hermeto command updates the following in the `package-lock.json` file:
 }
 ```
 </details>
-
-[readme-npm]: ../README.md#npm

@@ -2,7 +2,6 @@
 
 <https://pip.pypa.io/en/stable/>
 
-* Overview [in the README][readme-pip]
 * [Specifying packages to process](#specifying-packages-to-process)
 * [requirements.txt](#requirementstxt)
 * [Project metadata](#project-metadata)
@@ -595,7 +594,6 @@ specify the dependency [via an https url](#https-urls).
 +     --hash=sha256:99c732b92b1b37fc243a559e02f9aef5671771e272758aa4aec7f34dc92dac48
 ```
 
-[readme-pip]: ../README.md#pip
 [usage-prefetch]: usage.md#pre-fetch-dependencies
 [usage-genenv]: usage.md#generate-environment-variables
 [usage-inject]: usage.md#inject-project-files

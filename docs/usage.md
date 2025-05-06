@@ -9,7 +9,7 @@ The second section goes through each of these steps for the supported package ma
   * [generate environment variables](#generate-environment-variables)
   * [inject project files](#inject-project-files)
   * [merge SBOMs](#merge-sboms)
-  * [building the artifact](#Building-the-artifact-with-the-pre-fetched-dependencies)
+  * [building the artifact](#building-the-artifact-with-the-pre-fetched-dependencies)
     * set the environment variables ([Containerfile example](#write-the-dockerfile-or-containerfile))
     * run the build ([container build example](#build-the-container))
 * [Usage Examples](#usage-examples)
@@ -32,7 +32,7 @@ or using Hermeto to [inject project files](#inject-project-files)).
 
 ### Pre-fetch dependencies
 
-The first step in creating hermetic builds is to fetch the dependencies for one of the [supported package managers](../README.md#package-managers).
+The first step in creating hermetic builds is to fetch the dependencies for one of the supported package managers.
 
 ```shell
 hermeto fetch-deps \
@@ -222,8 +222,6 @@ along, clone the repository to your local disk.
 ```shell
 git clone https://github.com/junegunn/fzf --branch=0.34.0
 ```
-
-The best way to run `hermeto` is via the [container image](../README.md#container-image).
 
 #### Pre-fetch dependencies
 
