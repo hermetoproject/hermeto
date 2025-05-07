@@ -181,6 +181,31 @@ class TestTopLevelOpts:
             assert error_expectation in result.output
 
     @pytest.mark.parametrize(
+        "mode",
+        [
+            "strict",
+            "permissive",
+        ],
+    )
+    def test_mode_option_is_valid(self, mode: str) -> None:
+        args = ["--mode", mode, "fetch-deps", "gomod"]
+        with mock_fetch_deps():
+            invoke_expecting_sucess(app, args)
+
+    @pytest.mark.parametrize(
+        "mode",
+        [
+            "bad",
+            "ugly",
+        ],
+    )
+    def test_mode_option_is_not_valid(self, mode: str) -> None:
+        args = ["--mode", mode, "fetch-deps", "gomod"]
+        with mock_fetch_deps():
+            result = invoke_expecting_invalid_usage(app, args)
+            assert f"Invalid value for '--mode': '{mode}' is not one of" in result.output
+
+    @pytest.mark.parametrize(
         "loglevel_args, expected_level",
         [
             ([], "INFO"),

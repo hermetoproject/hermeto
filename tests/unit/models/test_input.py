@@ -9,6 +9,7 @@ import pytest as pytest
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.input import (
     GomodPackageInput,
+    Mode,
     NpmPackageInput,
     PackageInput,
     PipPackageInput,
@@ -315,6 +316,7 @@ class TestRequest:
                 },
             ],
             "flags": frozenset(),
+            "mode": Mode.STRICT,
         }
         assert isinstance(request.source_dir, RootedPath)
         assert isinstance(request.output_dir, RootedPath)

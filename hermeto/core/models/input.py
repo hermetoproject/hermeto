@@ -1,3 +1,4 @@
+import enum
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Callable, Dict, Literal, Optional, TypeVar, Union
@@ -60,6 +61,13 @@ Flag = Literal[
 ]
 
 
+class Mode(str, enum.Enum):
+    """Represents a global CLI option to relax input expectations and requirements checks."""
+
+    STRICT = "strict"
+    PERMISSIVE = "permissive"
+
+
 class _PackageInputBase(pydantic.BaseModel, extra="forbid"):
     """Common input attributes accepted for all package types."""
 
@@ -100,7 +108,6 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
 
     @pydantic.model_validator(mode="after")
     def _validate_ssl_options(self) -> Self:
-
         cert_and_key = (self.client_cert, self.client_key)
         if any(cert_and_key) and not all(cert_and_key):
             raise ValueError(
@@ -254,6 +261,7 @@ class Request(pydantic.BaseModel):
     output_dir: RootedPath
     packages: list[PackageInput]
     flags: frozenset[Flag] = frozenset()
+    mode: Mode = Mode.STRICT
 
     @pydantic.field_validator("packages")
     def _unique_packages(cls, packages: list[PackageInput]) -> list[PackageInput]:
