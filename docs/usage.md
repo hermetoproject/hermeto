@@ -30,6 +30,27 @@ In order to support this class of hermetic builds, not only does Hermeto need to
 build flows will need additional changes (i.e. leveraging defined [environment variables](#generate-environment-variables)
 or using Hermeto to [inject project files](#inject-project-files)).
 
+Hermeto relies on git metadata when processing sources, it expects sources to
+be a valid git repository with "origin" remote defined. This is paramount
+for successful execution. If for some reason you don't have a git repository,
+e.g. you're trying to use Hermeto on an unpacked tarball, you may also get
+acceptable results by forcefully creating a git repository from it first.
+Make sure to set the remote as well.
+
+<details>
+  <summary><i>Workaround to create a local-only git repository</i></summary>
+
+  ```shell
+  git init && git add -A && git commit -m "initial commit" && \
+  git remote add origin https://github.com/someorg/somerepo
+  ```
+  **WARNING!** This is not a substitute for having a proper repository and should be used
+  only for testing!
+</details>
+
+Note however, that this is only good for smoke testing a scenario and there are
+no guarantees for any results without proper and correct git metadata, e.g. git tags.
+
 ### Pre-fetch dependencies
 
 The first step in creating hermetic builds is to fetch the dependencies for one of the supported package managers.
