@@ -87,7 +87,9 @@ class VersionsRange:
 
 def extract_yarn_version_from_env(source_dir: RootedPath, env: Optional[dict] = None) -> Version:
     """Extract yarn version from environment."""
-    env = {"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"} if env is None else env
+    env = (
+        {"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0", "YARN_IGNORE_PATH": "true"} if env is None else env
+    )
     yarn_version_output = run_yarn_cmd(["--version"], source_dir, env=env).strip()
 
     try:

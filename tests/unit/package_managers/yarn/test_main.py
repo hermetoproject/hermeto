@@ -140,7 +140,9 @@ def test_corepack_installed_correct_yarn_version(
 
     _verify_corepack_yarn_version(expected_yarn_version, rooted_tmp_path)
     mock_run_yarn_cmd.assert_called_once_with(
-        ["--version"], rooted_tmp_path, env={"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"}
+        ["--version"],
+        rooted_tmp_path,
+        env={"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0", "YARN_IGNORE_PATH": "true"},
     )
 
 
@@ -164,7 +166,9 @@ def test_corepack_installed_correct_yarn_version_fail(
         _verify_corepack_yarn_version(expected_yarn_version, rooted_tmp_path)
 
     mock_run_yarn_cmd.assert_called_once_with(
-        ["--version"], rooted_tmp_path, env={"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"}
+        ["--version"],
+        rooted_tmp_path,
+        env={"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0", "YARN_IGNORE_PATH": "true"},
     )
 
 
