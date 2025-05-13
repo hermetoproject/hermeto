@@ -68,6 +68,8 @@ packages = ["hermeto"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0+dev.fallback"
+version_scheme = "only-version"
+local_scheme = "no-local-version"
 
 [tool.black]
 line-length = 100
