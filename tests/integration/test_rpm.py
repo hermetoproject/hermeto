@@ -230,6 +230,26 @@ def test_repo_files(
 @pytest.mark.parametrize(
     "test_params, check_cmd, expected_cmd_output",
     [
+        pytest.param(
+            utils.TestParameters(
+                branch="rpm/repo-metadata-compression-type",
+                packages=(
+                    {
+                        "type": "rpm",
+                        "options": {
+                            "dnf": {"ubi-7": {"gpgcheck": 0}},
+                        },
+                    },
+                ),
+                flags=["--dev-package-managers"],
+                check_vendor_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            ["vim", "--version"],
+            ["Vi IMproved 7.4"],
+            id="rpm_repo_metadata_compression_type",
+        ),
         # Test case that checks fetching RPM files, generating repos and repofiles, building an
         # image that requires the RPM files to be installed and running the image to check if the
         # RPMs were properly installed

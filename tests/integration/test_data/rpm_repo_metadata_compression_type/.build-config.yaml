@@ -1,0 +1,8 @@
+environment_variables: []
+options:
+  rpm:
+    dnf:
+      ubi-7:
+        gpgcheck: 0
+    ssl: null
+project_files: []
