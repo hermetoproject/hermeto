@@ -370,7 +370,9 @@ def test_createrepo(mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> Non
     repodir = rooted_tmp_path
     repoid = "repo1"
     _createrepo(repoid, repodir.path)
-    mock_run_cmd.assert_called_once_with(["createrepo_c", str(repodir)], params={})
+    mock_run_cmd.assert_called_once_with(
+        ["createrepo_c", "--general-compress-type", "gz", str(repodir)], params={}
+    )
 
 
 @mock.patch("hermeto.core.package_managers.rpm.main._createrepo")

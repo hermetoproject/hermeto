@@ -439,7 +439,7 @@ def _generate_repos(from_output_dir: Path) -> None:
 def _createrepo(reponame: str, repodir: Path) -> None:
     """Execute the createrepo utility."""
     log.info(f"Creating repository metadata for repoid '{reponame}': {repodir}")
-    cmd = ["createrepo_c", str(repodir)]
+    cmd = ["createrepo_c", "--general-compress-type", "gz", str(repodir)]
     log.debug("$ " + shlex.join(cmd))
     stdout = run_cmd(cmd, params={})
     log.debug(stdout)
