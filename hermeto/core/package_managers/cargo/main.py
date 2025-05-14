@@ -161,6 +161,25 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
                 config.path.write_text(data)
 
 
+def _run_cmd_watching_out_for_lock_mismatch(
+    cmd: list, params: dict, package_dir: RootedPath
+) -> str:
+    try:
+        return run_cmd(cmd=cmd, params=params)
+    except subprocess.CalledProcessError as e:
+        # Search for a very specific failure state to better report it.
+        # This is not a robust solution in any way, however it seems to be the only one
+        # readily available: cargo returns a generic 101 code on this failure and on multiple
+        # others, thus the only way to check for this specific type of failure is to process
+        # stderr. Two parts of a string are used to decrease the likelihood of false positives.
+        lock_corruption_marker1 = "failed to sync"
+        lock_corruption_marker2 = "needs to be updated but --locked was passed"
+        if lock_corruption_marker1 in e.stderr and lock_corruption_marker2 in e.stderr:
+            raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
+        else:
+            raise
+
+
 def _resolve_cargo_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
@@ -174,20 +193,9 @@ def _resolve_cargo_package(
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
         # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
-        try:
-            config_template = run_cmd(cmd=cmd, params={"cwd": package_dir})
-        except subprocess.CalledProcessError as e:
-            # Search for a very specific failure state to better report it.
-            # This is not a robust solution in any way, however it seems to be the only one
-            # readily available: cargo returns a generic 101 code on this failure and on multiple
-            # others, thus the only way to check for this specific type of failure is to process
-            # stderr. Two parts of a string are used to decrease the likelihood of false positives.
-            lock_corruption_marker1 = "failed to sync"
-            lock_corruption_marker2 = "needs to be updated but --locked was passed"
-            if lock_corruption_marker1 in e.stderr and lock_corruption_marker2 in e.stderr:
-                raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
-            else:
-                raise
+        config_template = _run_cmd_watching_out_for_lock_mismatch(
+            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir
+        )
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")
     main_package = _resolve_main_package(package_dir)
