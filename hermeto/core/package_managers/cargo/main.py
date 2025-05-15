@@ -146,12 +146,36 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
         config.path.write_text(data) if data is not None else do_nothing
 
 
+def _modernize_package_config(package_dir: RootedPath) -> None:
+    """Ensure old-style config is converted to the new style.
+
+    Prior to cargo v1.39.0 .cargo/config.toml was known as .cargo/config.
+    After v1.39.0 this name was considered obsolete, however .cargo/config would
+    take precedence on .cargo/config.toml if present and the latter one would be ignored.
+    The recommended practice for dealing with a situation when an older build system
+    has to build a more modern project is to symlink .cargo/config.toml to .cargo/config.
+    And vice versa: renaming .cargo/cobfig to .cargo/config.toml would make no effect on
+    any post-2019 toolchain. (Please refer to https://doc.rust-lang.org/cargo/reference/config.html
+    for further details).
+
+    Since Hermeto modifies .cargo/config.toml this function simply moves outdated
+    file to a more fitting location. This approach will be preferred until actual users
+    who build Rust packages hermetically on pre-v1.39.0 are found.
+    """
+    p = package_dir.path / ".cargo/config"
+    try:
+        p.rename(p.parent / "config.toml")
+    except FileNotFoundError:
+        pass
+
+
 def _resolve_cargo_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
 ) -> tuple[chain[Component], dict]:
     """Resolve a single cargo package."""
     _verify_lockfile_is_present_or_fail(package_dir)
+    _modernize_package_config(package_dir)
     vendor_dir = output_dir.join_within_root("deps/cargo")
     # --no-delete to keep everything already present. It does not matter for a fresh
     # single package, but it does matter when there is pip interaction.
