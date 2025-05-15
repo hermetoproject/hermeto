@@ -1,5 +1,5 @@
 # A corresponding rpms.lock.yaml was built for UBI9
-FROM registry.access.redhat.com/ubi9/ubi as ubi
+FROM registry.access.redhat.com/ubi9/ubi@sha256:c2bc4ee4ec4f200af9d78fd1307b7ff39f5db2c27166e52fb37650dee68a5ffd
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
