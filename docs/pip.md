@@ -519,6 +519,19 @@ good solution for this problem on Hermeto's side and the best course of action i
 to maintainers of this extension and notify them about the mismatch. Switching to a binary
 distribution of the package would also resolve this problem at the price of not building
 it from sources (see [Building with wheels](#building-with-wheels) for additional context).
+Another option would be to use `--mode permissive` parameter:
+
+```shell
+hermeto --mode permissive fetch-deps pip
+```
+
+(note that the parameter is global, not a `fetch-deps`-specific one). This would instruct Cargo PM
+which handles Rust dependencies to attempt to regenerate Cargo.lock. This is problematic as well
+since it makes builds unpredictable in the sense that two different builds of the same package
+can result in different versions of dependencies used because the lock file was regenerated at
+build time instead of being locked by maintainers. Please be aware that this is still a workaround
+and that the proper solution is to engage with a package maintainers and ensure that they supply
+correct Cargo.lock.
 
 ## Troubleshooting
 

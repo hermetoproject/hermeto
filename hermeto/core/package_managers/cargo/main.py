@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -13,7 +14,7 @@ from packageurl import PackageURL
 from tomlkit.toml_file import TOMLFile
 
 from hermeto.core.errors import NotAGitRepo, PackageRejected
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -79,7 +80,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
         package_dir = request.source_dir.join_within_root(package.path)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        fetched_components, cfg_template = _resolve_cargo_package(package_dir, request.output_dir)
+        fetched_components, cfg_template = _resolve_cargo_package(package_dir, request)
         components.extend(fetched_components)
         project_files.append(_use_vendored_sources(package_dir, cfg_template))
 
@@ -161,11 +162,27 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
                 config.path.write_text(data)
 
 
+@contextmanager
+def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
+    oldcwd = os.getcwd()
+    os.chdir(path_to_new_cwd)
+    yield
+    os.chdir(oldcwd)
+
+
 def _run_cmd_watching_out_for_lock_mismatch(
-    cmd: list, params: dict, package_dir: RootedPath
+    cmd: list, params: dict, package_dir: RootedPath, mode: Mode
 ) -> str:
+    warn_about_imminent_update_to_cargo_lock = (
+        f"A mismatch between Cargo.lock and Cargo.toml was detected in {package_dir}. "
+        "Because of permissive mode Hermeto will now regenerate Cargo.lock "
+        "to match expectation and will try to process the package again. This "
+        f"is a violation of reproducibility and must be addressed by {package_dir.path.name} "
+        "maintainers."
+    )
+    update_cargo_lock_cmd = ["cargo", "generate-lockfile"]
     try:
-        return run_cmd(cmd=cmd, params=params)
+        return run_cmd(cmd=cmd, params=params, suppress_errors=(mode == Mode.PERMISSIVE))
     except subprocess.CalledProcessError as e:
         # Search for a very specific failure state to better report it.
         # This is not a robust solution in any way, however it seems to be the only one
@@ -175,18 +192,26 @@ def _run_cmd_watching_out_for_lock_mismatch(
         lock_corruption_marker1 = "failed to sync"
         lock_corruption_marker2 = "needs to be updated but --locked was passed"
         if lock_corruption_marker1 in e.stderr and lock_corruption_marker2 in e.stderr:
-            raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
+            if mode == Mode.PERMISSIVE:
+                log.warning(warn_about_imminent_update_to_cargo_lock)
+                with _temporary_cwd(package_dir.path):
+                    run_cmd(cmd=update_cargo_lock_cmd, params={})
+                # If it fails here then something else is horribly broken.
+                # No more attempts to salvage the situation will be made.
+                return run_cmd(cmd=cmd, params=params)
+            else:
+                raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
         else:
             raise
 
 
 def _resolve_cargo_package(
     package_dir: RootedPath,
-    output_dir: RootedPath,
+    request: Request,
 ) -> tuple[chain[Component], dict]:
     """Resolve a single cargo package."""
     _verify_lockfile_is_present_or_fail(package_dir)
-    vendor_dir = output_dir.join_within_root("deps/cargo")
+    vendor_dir = request.output_dir.join_within_root("deps/cargo")
     # --no-delete to keep everything already present. It does not matter for a fresh
     # single package, but it does matter when there is pip interaction.
     cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
@@ -194,7 +219,7 @@ def _resolve_cargo_package(
     with _hidden_cargo_config_file(package_dir):
         # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
         config_template = _run_cmd_watching_out_for_lock_mismatch(
-            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir
+            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
         )
 
     packages = _extract_package_info(package_dir.path / "Cargo.lock")

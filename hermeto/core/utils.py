@@ -23,7 +23,7 @@ class _FastCopyFailedFallback(Exception):
     """Signals a fall back from fast-in kernel copying to regular copy."""
 
 
-def run_cmd(cmd: Sequence[str], params: dict) -> str:
+def run_cmd(cmd: Sequence[str], params: dict, suppress_errors: bool = False) -> str:
     """
     Run the given command with provided parameters.
 
@@ -56,10 +56,11 @@ def run_cmd(cmd: Sequence[str], params: dict) -> str:
     try:
         response.check_returncode()
     except subprocess.CalledProcessError:
-        log.error('The command "%s" failed', " ".join(cmd))
-        _log_error_output("STDERR", response.stderr)
-        if not response.stderr:
-            _log_error_output("STDOUT", response.stdout)
+        if not suppress_errors:
+            log.error('The command "%s" failed', " ".join(cmd))
+            _log_error_output("STDERR", response.stderr)
+            if not response.stderr:
+                _log_error_output("STDOUT", response.stdout)
         raise
 
     return response.stdout
