@@ -135,15 +135,29 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
     The file may contain various settings that could result in potential attack vectors.
     Therefore, it is better to "hide" it before running the `cargo vendor` command.
     """
-    do_nothing = None
+    # There is a slim chance to find an old project with .cargo/config
+    # instead of .cargo/config.toml. If found it has to be hidden too since it still
+    # takes precedence over the now standard .cargo/config.toml
+    # (https://doc.rust-lang.org/cargo/reference/config.html).
+    # Note, that ordering matters here, since .cargo/config could be a symlink
+    # to .cargo/config.toml for projects that are built with both old and new versions
+    # of Cargo. Unlinking a symlink first is safe.
+    all_possible_config_names = (".cargo/config", ".cargo/config.toml")
+    configs_contents = []
 
-    config = package_dir.join_within_root(".cargo/config.toml")
-    data = config.path.read_text() if config.path.exists() else None
-    config.path.unlink() if data is not None else do_nothing
+    for cfgname in all_possible_config_names:
+        config = package_dir.join_within_root(cfgname)
+        data = config.path.read_text() if config.path.exists() else None
+        configs_contents.append((config, data))
+        if data is not None:
+            config.path.unlink()
+
     try:
         yield
     finally:
-        config.path.write_text(data) if data is not None else do_nothing
+        for config, data in configs_contents:
+            if data is not None:
+                config.path.write_text(data)
 
 
 def _resolve_cargo_package(
@@ -202,9 +216,26 @@ def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
     return toml_template
 
 
+def _old_style_config_is_present_in(package_dir: RootedPath) -> bool:
+    return (package_dir.path / ".cargo/config").exists()
+
+
 def _use_vendored_sources(package_dir: RootedPath, config_template: dict) -> ProjectFile:
     """Make sure cargo will use the vendored sources when building the project."""
-    cargo_config = package_dir.join_within_root(".cargo/config.toml")
+    # Cargo could be told to use vendored sources instead of a registry via .cargo/config.toml.
+    # Prior to cargo v1.39.0 .cargo/config.toml was known as .cargo/config.
+    # After v1.39.0 this name was considered obsolete, however .cargo/config would
+    # take precedence on .cargo/config.toml if present and the latter one would be ignored.
+    # The recommended practice for dealing with a situation when an older build system
+    # has to build a more modern project is to symlink .cargo/config.toml to .cargo/config.
+    # And vice versa: renaming .cargo/config to .cargo/config.toml would have no effect on
+    # any post-2019 toolchain.
+    # Refer to https://doc.rust-lang.org/cargo/reference/config.html for further details.
+    # Since we could potentially end up building a somewhat stale Rust-based
+    # Python extension it is better to check if there is an old-style config present and
+    # process it if found.
+    cfn = ".cargo/config" if _old_style_config_is_present_in(package_dir) else ".cargo/config.toml"
+    cargo_config = package_dir.join_within_root(cfn)
 
     toml_file = TOMLFile(cargo_config)
     original_content = toml_file.read() if cargo_config.path.exists() else {}
