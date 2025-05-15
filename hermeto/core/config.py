@@ -26,7 +26,10 @@ class Config(BaseModel, extra="forbid"):
     requests_timeout: int = 300
     concurrency_limit: int = 5
 
+    # The flags below are for legacy use-cases compatibility only, must not be
+    # relied upon and will be eventually removed.
     allow_yarnberry_processing: bool = True
+    ignore_pip_dependencies_crates: bool = False
 
     @model_validator(mode="before")
     @classmethod
