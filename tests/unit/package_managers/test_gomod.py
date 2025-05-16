@@ -1541,12 +1541,9 @@ def test_parse_vendor_unexpected_format(
 @pytest.mark.parametrize(
     "vendor_before, vendor_changes, expected_change",
     [
-        # no vendor/ dirs
-        ({}, {}, None),
-        # no changes
-        ({"vendor": {"modules.txt": "foo v1.0.0\n"}}, {}, None),
-        # vendor/modules.txt was added
-        (
+        pytest.param({}, {}, None, id="no_vendoring"),
+        pytest.param({"vendor": {"modules.txt": "foo v1.0.0\n"}}, {}, None, id="no_changes"),
+        pytest.param(
             {},
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
             textwrap.dedent(
@@ -1557,9 +1554,9 @@ def test_parse_vendor_unexpected_format(
                 +foo v1.0.0
                 """
             ),
+            id="modules_txt_added",
         ),
-        # vendor/modules.txt changed
-        (
+        pytest.param(
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
             {"vendor": {"modules.txt": "foo v2.0.0\n"}},
             textwrap.dedent(
@@ -1571,9 +1568,9 @@ def test_parse_vendor_unexpected_format(
                 +foo v2.0.0
                 """
             ),
+            id="modules_txt_changes",
         ),
-        # vendor/some_file was added
-        (
+        pytest.param(
             {},
             {"vendor": {"some_file": "foo"}},
             textwrap.dedent(
@@ -1581,9 +1578,9 @@ def test_parse_vendor_unexpected_format(
                 A\t{subpath}vendor/some_file
                 """
             ),
+            id="a_file_was_added",
         ),
-        # multiple additions and modifications
-        (
+        pytest.param(
             {"vendor": {"some_file": "foo"}},
             {"vendor": {"some_file": "bar", "other_file": "baz"}},
             textwrap.dedent(
@@ -1592,11 +1589,12 @@ def test_parse_vendor_unexpected_format(
                 M\t{subpath}vendor/some_file
                 """
             ),
+            id="multiple_changes",
         ),
         # vendor/ was added but only contains empty dirs => will be ignored
-        ({}, {"vendor": {"empty_dir": {}}}, None),
+        pytest.param({}, {"vendor": {"empty_dir": {}}}, None, id="vendor_empty_dirs"),
         # change will be tracked even if vendor/ is .gitignore'd
-        (
+        pytest.param(
             {".gitignore": "vendor/"},
             {"vendor": {"some_file": "foo"}},
             textwrap.dedent(
@@ -1604,6 +1602,7 @@ def test_parse_vendor_unexpected_format(
                 A\t{subpath}vendor/some_file
                 """
             ),
+            id="file_added_in_gitignored_vendor_dir",
         ),
     ],
 )
