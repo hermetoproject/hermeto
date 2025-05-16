@@ -3252,6 +3252,19 @@ class TestDownload:
             f"{req.download_line} (expected one of .zip, .tar.gz, .tar.bz2, .tar.xz, .tar.Z, .tar)"
         )
 
+    def test_validate_whl_url_when_binaries_allowed(self) -> None:
+        url = "https://example.org/file.whl"
+        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+
+        pip._validate_requirements([req], allow_binary=True)
+
+    def test_validate_whl_url_when_binaries_not_allowed(self) -> None:
+        url = "https://example.org/file.whl"
+        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+
+        with pytest.raises(PackageRejected):
+            pip._validate_requirements([req], allow_binary=False)
+
     @pytest.mark.parametrize(
         "global_require_hash, local_hash", [(True, False), (False, True), (True, True)]
     )

@@ -72,9 +72,7 @@ GIT_REF_IN_PATH = re.compile(r"@[a-fA-F0-9]{40}$")
 ZIP_FILE_EXT = ".zip"
 COMPRESSED_TAR_EXT = ".tar.Z"
 SDIST_FILE_EXTENSIONS = [ZIP_FILE_EXT, ".tar.gz", ".tar.bz2", ".tar.xz", COMPRESSED_TAR_EXT, ".tar"]
-SDIST_EXT_PATTERN = r"|".join(map(re.escape, SDIST_FILE_EXTENSIONS))
-
-PYPI_URL = "https://pypi.org"
+WHEEL_FILE_EXTENSIONS = [".whl"]
 
 PIP_METADATA_DOC = (
     "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#project-metadata"
@@ -1517,7 +1515,6 @@ def _process_req(
     download_info["kind"] = req.kind
     download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
     download_info["missing_req_file_checksum"] = True
-    # "package_type" is *only* needed for PyPI deps
     download_info["package_type"] = ""
 
     def _checksum_must_match_or_path_unlink(
@@ -1606,12 +1603,16 @@ def _process_vcs_req(
 def _process_url_req(
     req: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str], **kwargs: Any
 ) -> dict[str, Any]:
-    return _process_req(
+    result = _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
         download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
         **kwargs,
     )
+    if any(req.url.endswith(ext) for ext in WHEEL_FILE_EXTENSIONS):
+        result["package_type"] = "wheel"
+
+    return result
 
 
 def _download_dependencies(
@@ -1649,7 +1650,7 @@ def _download_dependencies(
         )
         require_hashes = False
 
-    _validate_requirements(requirements_file.requirements)
+    _validate_requirements(requirements_file.requirements, allow_binary)
     _validate_provided_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
@@ -1774,7 +1775,7 @@ def _process_options(options: list[str]) -> dict[str, Any]:
     return opts
 
 
-def _validate_requirements(requirements: list[PipRequirement]) -> None:
+def _validate_requirements(requirements: list[PipRequirement], allow_binary: bool) -> None:
     """
     Validate that all requirements meet our expectations.
 
@@ -1834,11 +1835,15 @@ def _validate_requirements(requirements: list[PipRequirement]) -> None:
                     docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
+            allowed_extensions = list(SDIST_FILE_EXTENSIONS)
+            if allow_binary:
+                allowed_extensions.extend(WHEEL_FILE_EXTENSIONS)
+
             url = urllib.parse.urlparse(req.url)
-            if not any(url.path.endswith(ext) for ext in SDIST_FILE_EXTENSIONS):
+            if not any(url.path.endswith(ext) for ext in allowed_extensions):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
-                    f"{req.download_line} (expected one of {', '.join(SDIST_FILE_EXTENSIONS)})"
+                    f"{req.download_line} (expected one of {', '.join(allowed_extensions)})"
                 )
                 raise PackageRejected(msg, solution=None)
 
