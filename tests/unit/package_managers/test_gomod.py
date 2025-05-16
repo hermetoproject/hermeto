@@ -1442,7 +1442,6 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         _validate_local_replacements(modules, app_path)
 
 
-@pytest.mark.parametrize("vendor_changed", [True, False])
 @pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
 @mock.patch("hermeto.core.package_managers.gomod.Go._run")
 @mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
@@ -1450,22 +1449,32 @@ def test_vendor_deps(
     mock_vendor_changed: mock.Mock,
     mock_run_cmd: mock.Mock,
     go_vendor_cmd: str,
-    vendor_changed: bool,
     rooted_tmp_path: RootedPath,
 ) -> None:
     app_dir = rooted_tmp_path.join_within_root("some/module")
     run_params = {"cwd": app_dir}
-    mock_vendor_changed.return_value = vendor_changed
+    mock_vendor_changed.return_value = False
 
-    if vendor_changed:
-        msg = "The content of the vendor directory is not consistent with go.mod."
-        with pytest.raises(PackageRejected, match=msg):
-            _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
-    else:
-        _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
+    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
 
     mock_run_cmd.assert_called_once_with(["go", go_vendor_cmd, "vendor"], **run_params)
     mock_vendor_changed.assert_called_once_with(app_dir)
+
+
+@mock.patch("hermeto.core.package_managers.gomod.Go._run")
+@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
+def test_vendor_deps_fail(
+    mock_vendor_changed: mock.Mock,
+    mock_run_cmd: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    app_dir = rooted_tmp_path.join_within_root("some/module")
+    run_params = {"cwd": app_dir}
+    mock_vendor_changed.return_value = True
+
+    msg = "The content of the vendor directory is not consistent with go.mod."
+    with pytest.raises(PackageRejected, match=msg):
+        _vendor_deps(Go(), app_dir, False, run_params)
 
 
 def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
