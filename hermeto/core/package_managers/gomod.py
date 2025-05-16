@@ -39,15 +39,17 @@ if TYPE_CHECKING:
 
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import get_cache_dir, load_json_stream, run_cmd
+from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
-log = logging.getLogger(__name__)
+# NOTE: the 'extra' dict is unused right now, but it's a positional argument for the adapter class
+log = EnforcingModeLoggerAdapter(logging.getLogger(__name__), {"enforcing_mode": Mode.STRICT})
 
 
 GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
@@ -1027,7 +1029,7 @@ def _resolve_gomod(
 
     # Vendor dependencies if the gomod-vendor flag is set
     if should_vendor:
-        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), run_params)
+        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), request.mode, run_params)
     else:
         log.info("Downloading the gomod dependencies")
         downloaded_modules = (
@@ -1602,6 +1604,7 @@ def _vendor_deps(
     go: Go,
     context_dir: RootedPath,
     has_workspace: bool,
+    enforcing_mode: Mode,
     run_params: dict[str, Any],
 ) -> Iterable[ParsedModule]:
     """
@@ -1621,22 +1624,23 @@ def _vendor_deps(
 
     cmdscope = "work" if has_workspace else "mod"
     go([cmdscope, "vendor"], run_params)
-    if _vendor_changed(context_dir):
-        raise PackageRejected(
-            reason=(
-                "The content of the vendor directory is not consistent with go.mod. "
-                "Please check the logs for more details."
-            ),
-            solution=(
-                "Please try running `go mod vendor` and committing the changes.\n"
-                "Note that you may need to `git add --force` ignored files in the vendor/ dir."
-            ),
-            docs=VENDORING_DOC,
-        )
+    if _vendor_changed(context_dir, enforcing_mode):
+        if enforcing_mode == Mode.STRICT:
+            raise PackageRejected(
+                reason=(
+                    "The content of the vendor directory is not consistent with go.mod. "
+                    "Please check the logs for more details."
+                ),
+                solution=(
+                    "Please try running `go mod vendor` and committing the changes.\n"
+                    "Note that you may need to `git add --force` ignored files in the vendor/ dir."
+                ),
+                docs=VENDORING_DOC,
+            )
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath) -> bool:
+def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
@@ -1653,13 +1657,23 @@ def _vendor_changed(context_dir: RootedPath) -> bool:
         # Diffing modules.txt should catch most issues and produce relatively useful output
         modules_txt_diff = repo.git.diff("--", str(modules_txt))
         if modules_txt_diff:
-            log.error("%s changed after vendoring:\n%s", modules_txt, modules_txt_diff)
+            log.error_or_warn(
+                "%s changed after vendoring:\n%s",
+                modules_txt,
+                modules_txt_diff,
+                enforcing_mode=enforcing_mode,
+            )
             return True
 
         # Show only if files were added/deleted/modified, not the full diff
         vendor_diff = repo.git.diff("--name-status", "--", str(vendor))
         if vendor_diff:
-            log.error("%s directory changed after vendoring:\n%s", vendor, vendor_diff)
+            log.error_or_warn(
+                "%s directory changed after vendoring:\n%s",
+                vendor,
+                vendor_diff,
+                enforcing_mode=enforcing_mode,
+            )
             return True
     finally:
         repo.git.reset("--", context_dir)

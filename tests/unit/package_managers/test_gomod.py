@@ -15,7 +15,7 @@ from packaging import version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
-from hermeto.core.models.input import Flag, Request
+from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.gomod import (
@@ -1442,6 +1442,7 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         _validate_local_replacements(modules, app_path)
 
 
+@pytest.mark.parametrize("enforcing_mode", [Mode.STRICT, Mode.PERMISSIVE])
 @pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
 @mock.patch("hermeto.core.package_managers.gomod.Go._run")
 @mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
@@ -1449,16 +1450,21 @@ def test_vendor_deps(
     mock_vendor_changed: mock.Mock,
     mock_run_cmd: mock.Mock,
     go_vendor_cmd: str,
+    enforcing_mode: Mode,
     rooted_tmp_path: RootedPath,
 ) -> None:
     app_dir = rooted_tmp_path.join_within_root("some/module")
     run_params = {"cwd": app_dir}
     mock_vendor_changed.return_value = False
 
-    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
+    # Test that vendor-changes == True in permissive mode also leads to a success path
+    # [black] - skip formatting because it would remove the parentheses making it less readable
+    mock_vendor_changed.return_value = (enforcing_mode != Mode.STRICT)  # fmt: skip
+
+    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", enforcing_mode, run_params)
 
     mock_run_cmd.assert_called_once_with(["go", go_vendor_cmd, "vendor"], **run_params)
-    mock_vendor_changed.assert_called_once_with(app_dir)
+    mock_vendor_changed.assert_called_once_with(app_dir, enforcing_mode)
 
 
 @mock.patch("hermeto.core.package_managers.gomod.Go._run")
@@ -1474,7 +1480,7 @@ def test_vendor_deps_fail(
 
     msg = "The content of the vendor directory is not consistent with go.mod."
     with pytest.raises(PackageRejected, match=msg):
-        _vendor_deps(Go(), app_dir, False, run_params)
+        _vendor_deps(Go(), app_dir, False, Mode.STRICT, run_params)
 
 
 def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
@@ -1634,7 +1640,7 @@ def test_vendor_changed(
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir) == bool(expected_change)
+    assert _vendor_changed(app_dir, Mode.STRICT) == bool(expected_change)
     if expected_change:
         assert expected_change.format(subpath=subpath) in caplog.text
 
