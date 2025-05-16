@@ -3234,6 +3234,8 @@ class TestDownload:
         [
             # .rar is not a valid sdist extension
             "http://example.org/file.rar",
+            # .wheel is not a valid extension
+            "https://example.org/file.wheel",
             # extension is in the wrong place
             "http://example.tar.gz/file",
             "http://example.org/file?filename=file.tar.gz",
@@ -3244,13 +3246,22 @@ class TestDownload:
         req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
         req_file = self.mock_requirements_file(requirements=[req])
 
-        with pytest.raises(PackageRejected) as exc_info:
+        match = "URL for requirement does not contain any recognized file extension:"
+        with pytest.raises(PackageRejected, match=match):
             pip._download_dependencies(RootedPath("/output"), req_file)
 
-        assert str(exc_info.value) == (
-            f"URL for requirement does not contain any recognized file extension: "
-            f"{req.download_line} (expected one of .zip, .tar.gz, .tar.bz2, .tar.xz, .tar.Z, .tar)"
-        )
+    def test_validate_whl_url_when_binaries_allowed(self) -> None:
+        url = "https://example.org/file.whl"
+        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+
+        pip._validate_requirements([req], allow_binary=True)
+
+    def test_validate_whl_url_when_binaries_not_allowed(self) -> None:
+        url = "https://example.org/file.whl"
+        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+
+        with pytest.raises(PackageRejected):
+            pip._validate_requirements([req], allow_binary=False)
 
     @pytest.mark.parametrize(
         "global_require_hash, local_hash", [(True, False), (False, True), (True, True)]

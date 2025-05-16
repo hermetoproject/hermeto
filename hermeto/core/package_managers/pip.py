@@ -69,12 +69,9 @@ DEFAULT_REQUIREMENTS_FILE = "requirements.txt"
 GIT_REF_IN_PATH = re.compile(r"@[a-fA-F0-9]{40}$")
 
 # All supported sdist formats, see https://docs.python.org/3/distutils/sourcedist.html
-ZIP_FILE_EXT = ".zip"
-COMPRESSED_TAR_EXT = ".tar.Z"
-SDIST_FILE_EXTENSIONS = [ZIP_FILE_EXT, ".tar.gz", ".tar.bz2", ".tar.xz", COMPRESSED_TAR_EXT, ".tar"]
-SDIST_EXT_PATTERN = r"|".join(map(re.escape, SDIST_FILE_EXTENSIONS))
-
-PYPI_URL = "https://pypi.org"
+SDIST_FILE_EXTENSIONS = [".zip", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.Z", ".tar"]
+WHEEL_FILE_EXTENSION = ".whl"
+ALL_FILE_EXTENSIONS = SDIST_FILE_EXTENSIONS + [WHEEL_FILE_EXTENSION]
 
 PIP_METADATA_DOC = (
     "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#project-metadata"
@@ -1517,7 +1514,6 @@ def _process_req(
     download_info["kind"] = req.kind
     download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
     download_info["missing_req_file_checksum"] = True
-    # "package_type" is *only* needed for PyPI deps
     download_info["package_type"] = ""
 
     def _checksum_must_match_or_path_unlink(
@@ -1606,12 +1602,16 @@ def _process_vcs_req(
 def _process_url_req(
     req: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str], **kwargs: Any
 ) -> dict[str, Any]:
-    return _process_req(
+    result = _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
         download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
         **kwargs,
     )
+    if req.url.endswith(WHEEL_FILE_EXTENSION):
+        result["package_type"] = "wheel"
+
+    return result
 
 
 def _download_dependencies(
@@ -1649,7 +1649,7 @@ def _download_dependencies(
         )
         require_hashes = False
 
-    _validate_requirements(requirements_file.requirements)
+    _validate_requirements(requirements_file.requirements, allow_binary)
     _validate_provided_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
@@ -1774,7 +1774,7 @@ def _process_options(options: list[str]) -> dict[str, Any]:
     return opts
 
 
-def _validate_requirements(requirements: list[PipRequirement]) -> None:
+def _validate_requirements(requirements: list[PipRequirement], allow_binary: bool) -> None:
     """
     Validate that all requirements meet our expectations.
 
@@ -1834,11 +1834,16 @@ def _validate_requirements(requirements: list[PipRequirement]) -> None:
                     docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
+            if allow_binary:
+                allowed_extensions = ALL_FILE_EXTENSIONS
+            else:
+                allowed_extensions = SDIST_FILE_EXTENSIONS
+
             url = urllib.parse.urlparse(req.url)
-            if not any(url.path.endswith(ext) for ext in SDIST_FILE_EXTENSIONS):
+            if not any(url.path.endswith(ext) for ext in allowed_extensions):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
-                    f"{req.download_line} (expected one of {', '.join(SDIST_FILE_EXTENSIONS)})"
+                    f"{req.download_line} (expected one of {', '.join(allowed_extensions)})"
                 )
                 raise PackageRejected(msg, solution=None)
 
@@ -2325,9 +2330,22 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
         hash_spec = hashes[0] if hashes else requirement.qualifiers["cachito_hash"]
         algorithm, _, digest = hash_spec.partition(":")
         orig_url = urllib.parse.urlparse(requirement.url)
-        file_ext = next(ext for ext in SDIST_FILE_EXTENSIONS if orig_url.path.endswith(ext))
-        # e.g. external-pyarn/pyarn-external-sha256-deadbeef.tar.gz
-        filepath = Path(f"external-{package}", f"{package}-external-{algorithm}-{digest}{file_ext}")
+        file_ext = ""
+        for ext in ALL_FILE_EXTENSIONS:
+            if orig_url.path.endswith(ext):
+                file_ext = ext
+                break
+
+        # wheel filename must remain unchanged and unquoted
+        if file_ext == WHEEL_FILE_EXTENSION:
+            filename = Path(orig_url.path).name
+            filepath = Path(urllib.parse.unquote(filename))
+        else:
+            # e.g. external-pyarn/pyarn-external-sha256-deadbeef.tar.gz
+            filepath = Path(
+                f"external-{package}", f"{package}-external-{algorithm}-{digest}{file_ext}"
+            )
+
     elif requirement.kind == "vcs":
         git_info = extract_git_info(requirement.url)
         repo = git_info["repo"]
@@ -2376,9 +2394,9 @@ def _check_metadata_in_sdist(sdist_path: Path) -> None:
     :type sdist_path: pathlib.Path
     :raise PackageRejected: if the sdist is invalid.
     """
-    if sdist_path.name.endswith(ZIP_FILE_EXT):
+    if sdist_path.name.endswith(".zip"):
         files_iter = _iter_zip_file(sdist_path)
-    elif sdist_path.name.endswith(COMPRESSED_TAR_EXT):
+    elif sdist_path.name.endswith(".tar.Z"):
         log.warning("Skip checking metadata from compressed sdist %s", sdist_path.name)
         return
     elif any(map(sdist_path.name.endswith, SDIST_FILE_EXTENSIONS)):
