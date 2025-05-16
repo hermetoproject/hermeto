@@ -67,6 +67,9 @@ class Mode(str, enum.Enum):
     STRICT = "strict"
     PERMISSIVE = "permissive"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class _PackageInputBase(pydantic.BaseModel, extra="forbid"):
     """Common input attributes accepted for all package types."""
