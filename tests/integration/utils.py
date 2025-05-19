@@ -73,6 +73,7 @@ class TestParameters:
     check_vendor_checksums: bool = True
     expected_exit_code: int = 0
     expected_output: str = ""
+    global_flags: List[str] = field(default_factory=list)
     flags: List[str] = field(default_factory=list)
 
 
@@ -376,8 +377,8 @@ def fetch_deps_and_check_output(
         "--output",
         str(output_dir),
     ]
-    if test_params.flags:
-        cmd += test_params.flags
+    cmd = test_params.global_flags + cmd
+    cmd += test_params.flags
 
     cmd.append(json.dumps(test_params.packages))
 
