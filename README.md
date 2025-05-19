@@ -106,6 +106,8 @@ Hermeto can be run in two modes using the global CLI option `--mode`.
 The default mode is `strict`. In this mode, _some_ input requirements that are not met are treated
 as errors. On the other hand, the `permissive` mode treats them as warnings. This means that Hermeto
 will proceed and generate an SBOM, but it may not be complete or accurate.
+The permissive mode can currently suppress the following:
+* go `vendor` directory inconsistencies (See `docs/gomod.md` on vendoring information)
 
 ### Available configuration parameters
 
