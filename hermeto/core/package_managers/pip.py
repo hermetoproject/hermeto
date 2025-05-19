@@ -9,7 +9,6 @@ import os
 import os.path
 import re
 import tarfile
-import urllib
 import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -28,6 +27,7 @@ from typing import (
     Union,
     cast,
 )
+from urllib import parse as urlparse
 
 import tomlkit
 from packageurl import PackageURL
@@ -311,10 +311,10 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
     elif dependency_kind == "vcs":
         qualifiers = {"vcs_url": package["version"]}
     elif dependency_kind == "url":
-        parsed_url = urllib.parse.urldefrag(package["version"])
-        fragments: dict[str, list[str]] = urllib.parse.parse_qs(parsed_url.fragment)
+        defragmented_url, fragment = urlparse.urldefrag(package["version"])
+        fragments: dict[str, list[str]] = urlparse.parse_qs(fragment)
         checksum: str = fragments["cachito_hash"][0]
-        qualifiers = {"download_url": parsed_url.url, "checksum": checksum}
+        qualifiers = {"download_url": defragmented_url, "checksum": checksum}
     else:
         # Should not happen
         raise RuntimeError(f"Unexpected requirement kind: {dependency_kind}")
@@ -1449,12 +1449,12 @@ class PipRequirement:
         if "; " in url:
             url, environment_marker = url.split("; ", 1)
 
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlparse.urlparse(url)
         if parsed_url.fragment:
             for section in parsed_url.fragment.split("&"):
                 if "=" in section:
                     attr, value = section.split("=", 1)
-                    value = urllib.parse.unquote(value)
+                    value = urlparse.unquote(value)
                     qualifiers[attr] = value
                     if attr == "egg":
                         # Use the egg name as the package name to avoid ambiguity when both are
@@ -1799,7 +1799,7 @@ def _validate_requirements(requirements: list[PipRequirement], allow_binary: boo
 
         # Fail if VCS requirement uses any VCS other than git or does not have a valid ref
         elif req.kind == "vcs":
-            url = urllib.parse.urlparse(req.url)
+            url = urlparse.urlparse(req.url)
 
             if not url.scheme.startswith("git"):
                 raise UnsupportedFeature(
@@ -1839,7 +1839,7 @@ def _validate_requirements(requirements: list[PipRequirement], allow_binary: boo
             else:
                 allowed_extensions = SDIST_FILE_EXTENSIONS
 
-            url = urllib.parse.urlparse(req.url)
+            url = urlparse.urlparse(req.url)
             if not any(url.path.endswith(ext) for ext in allowed_extensions):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
@@ -2062,7 +2062,7 @@ def _download_url_package(
 
     :return: Dict with package name, download path, original URL and URL with hash
     """
-    url = urllib.parse.urlparse(requirement.url)
+    url = urlparse.urlparse(requirement.url)
 
     download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(requirement))
     download_to.path.parent.mkdir(exist_ok=True, parents=True)
@@ -2091,11 +2091,11 @@ def _download_url_package(
     }
 
 
-def _add_cachito_hash_to_url(parsed_url: urllib.parse.ParseResult, hash_spec: str) -> str:
+def _add_cachito_hash_to_url(parsed_url: urlparse.ParseResult, hash_spec: str) -> str:
     """
     Add the #cachito_hash fragment to URL.
 
-    :param urllib.parse.ParseResult parsed_url: A parsed URL with no cachito_hash in fragment
+    :param urllib.urlparse.ParseResult parsed_url: A parsed URL with no cachito_hash in fragment
     :param str hash_spec: A hash specifier - "algorithm:digest", e.g. "sha256:123456"
     :return: Original URL + cachito_hash in fragment
     :rtype: str
@@ -2329,7 +2329,7 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
         hashes = requirement.hashes
         hash_spec = hashes[0] if hashes else requirement.qualifiers["cachito_hash"]
         algorithm, _, digest = hash_spec.partition(":")
-        orig_url = urllib.parse.urlparse(requirement.url)
+        orig_url = urlparse.urlparse(requirement.url)
         file_ext = ""
         for ext in ALL_FILE_EXTENSIONS:
             if orig_url.path.endswith(ext):
@@ -2339,7 +2339,7 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
         # wheel filename must remain unchanged and unquoted
         if file_ext == WHEEL_FILE_EXTENSION:
             filename = Path(orig_url.path).name
-            filepath = Path(urllib.parse.unquote(filename))
+            filepath = Path(urlparse.unquote(filename))
         else:
             # e.g. external-pyarn/pyarn-external-sha256-deadbeef.tar.gz
             filepath = Path(
