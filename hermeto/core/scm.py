@@ -83,7 +83,7 @@ def _canonicalize_origin_url(url: str) -> str:
         parts = url.split("@", 1)
         # replace the ':' in the host:path part with a '/'
         # and strip leading '/' from the path, if any
-        parts[-1] = re.sub(r":/*", "/", parts[-1], 1)
+        parts[-1] = re.sub(r":/*", "/", parts[-1], count=1)
         return "ssh://" + "@".join(parts)
     else:
         raise UnsupportedFeature(
