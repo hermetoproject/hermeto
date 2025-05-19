@@ -61,6 +61,19 @@ log = logging.getLogger(__name__)
             ),
             id="gomod_wrong_vendor_fails_vendor_check",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/wrong-vendor-fails-vendor-check",
+                global_flags=["--mode=permissive"],
+                packages=({"path": ".", "type": "gomod"},),
+                check_output=False,
+                check_deps_checksums=False,
+                check_vendor_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="gomod_wrong_vendor_passes_vendor_check_in_permissive_mode",
+        ),
         # Test case checks if request will fail when source provided empty vendor.
         pytest.param(
             utils.TestParameters(
@@ -76,6 +89,19 @@ log = logging.getLogger(__name__)
                 ),
             ),
             id="gomod_empty_vendor_fails_vendor_check",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/empty-vendor-fails-vendor-check",
+                global_flags=["--mode=permissive"],
+                packages=({"path": ".", "type": "gomod"},),
+                check_output=False,
+                check_deps_checksums=False,
+                check_vendor_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="gomod_empty_vendor_passes_vendor_check_in_permissive_mode",
         ),
         # Test case checks if package can be replaced with local dependency
         pytest.param(
