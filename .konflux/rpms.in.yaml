@@ -1,0 +1,22 @@
+# This file was copied directly from the UBI image referenced in ./Dockerfile.konflux
+contentOrigin:
+  repofiles:
+    - ./ubi.repo
+packages:
+  - cargo
+  - git-core
+  - gcc
+  - jq
+  - python3
+  - python3-pip
+  - python3-setuptools
+  - python3-devel
+  - rubygem-bundler
+  - rubygem-json
+  - subscription-manager
+context:
+  # When resolving the packages, use the image defined in this specific stage of the
+  # referenced Dockerfile
+  containerfile:
+    file: Dockerfile.konflux
+    stageName: ubi
