@@ -49,6 +49,7 @@ nav:
 markdown_extensions:
   - toc:
       permalink: true
+  - footnotes
 
 # Markdown validation
 validation:
