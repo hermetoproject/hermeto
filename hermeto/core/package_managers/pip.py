@@ -8,6 +8,7 @@ import logging
 import os
 import os.path
 import re
+import shutil
 import tarfile
 import zipfile
 from abc import ABC, abstractmethod
@@ -248,8 +249,18 @@ def _config_path(request: Request) -> Path:
 
 
 def _find_and_fetch_rust_dependencies(
-    request: Request, packages_containing_rust_code: list
+    request: Request, packages_containing_rust_code: list[CargoPackageInput]
 ) -> RequestOutput:
+    """Fetch Rust dependencies for Python packages that contain Rust code."""
+    pip_deps_dir = request.output_dir.join_within_root("deps/pip")
+
+    def remove_extracted(packages: list[CargoPackageInput]) -> None:
+        """Remove extracted tarballs in the output directory that contain Rust code."""
+        for pkg in packages:
+            # in case the Rust code was in a subdirectory of the package tarball
+            pip_package_root = pkg.path.parts[0]
+            shutil.rmtree(pip_deps_dir.join_within_root(pip_package_root), ignore_errors=True)
+
     if packages_containing_rust_code:
         # Need to swap source for output since this should be happening within output_dir:
         # pip downloads packages to output_dir first, but then these packages have to
@@ -257,9 +268,8 @@ def _find_and_fetch_rust_dependencies(
         # Note that output_dir remains the same which results in cargo dependencies being
         # neatly placed right next to pip dependencies.
         cargo_request = request.model_copy(
-            update={"packages": [], "source_dir": request.output_dir}
+            update={"packages": packages_containing_rust_code, "source_dir": pip_deps_dir}
         )
-        cargo_request.packages = packages_containing_rust_code
         result = fetch_cargo_source(cargo_request)
 
         # A config pointing to deps/cargo directory and an environment variable
@@ -267,6 +277,7 @@ def _find_and_fetch_rust_dependencies(
         ev = [EnvironmentVariable(name="CARGO_HOME", value="${output_dir}/.cargo")]
         pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
 
+        remove_extracted(packages_containing_rust_code)
         return result + RequestOutput.from_obj_list([], ev, pf)
 
     return RequestOutput.from_obj_list([], [], [])
@@ -2200,9 +2211,7 @@ def _resolve_pip(
     if allow_binary or get_config().ignore_pip_dependencies_crates:
         packages_containing_rust_code = []
     else:
-        packages_containing_rust_code = _filter_packages_with_rust_code(
-            requires + build_requires, output_dir
-        )
+        packages_containing_rust_code = _filter_packages_with_rust_code(requires + build_requires)
 
     # Mark all build dependencies as such
     for dependency in build_requires:
@@ -2279,9 +2288,7 @@ def _depends_on_rust(source_tarball: tarfile.TarFile) -> bool:
     return False
 
 
-def _filter_packages_with_rust_code(
-    packages: list[dict[str, Any]], output_dir: RootedPath
-) -> list[CargoPackageInput]:
+def _filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[CargoPackageInput]:
     packages_containing_rust_code = []
     tar_packages = [p for p in packages if tarfile.is_tarfile(p.get("path", ""))]
     for p in tar_packages:
@@ -2312,13 +2319,10 @@ def _filter_packages_with_rust_code(
             # https://github.com/hermetoproject/hermeto/blob/e5fa5c0fcd0dff62cf02be5b0d219e04c1ea440c/docs/design/cargo-support.md#L806
             cargo_manifests = [name for name in tf.getnames() if name.endswith("Cargo.toml")]
             rust_root = Path(sorted(cargo_manifests, key=len)[0]).parent
+
         tf.extractall(path=Path(str(tf.name)).parent, filter="data")
-        rust_package_source_dir = output_dir.join_within_root("deps", "pip", rust_root)
-        packages_containing_rust_code.append(
-            CargoPackageInput(
-                type="cargo", path=rust_package_source_dir.path.relative_to(output_dir)
-            )
-        )
+        packages_containing_rust_code.append(CargoPackageInput(type="cargo", path=rust_root))
+
     return packages_containing_rust_code
 
 
