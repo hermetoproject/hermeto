@@ -3,11 +3,16 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Type
 
 import yaml
 from pydantic import model_validator
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 from hermeto import APP_NAME
 from hermeto.core.models.input import parse_user_input
@@ -62,7 +67,27 @@ class Config(BaseSettings):
 
         https://docs.pydantic.dev/2.11/concepts/pydantic_settings/#customise-settings-sources
         """
-        return (init_settings,)
+        return (
+            init_settings,
+            YamlConfigSettingsSource(
+                settings_cls
+            ),  # The CLI config path from yaml_file in model_config
+        )
+
+
+def create_cli_config_class(config_path: Path) -> Type[Config]:
+    """Return a subclass of Config that uses the CLI YAML file input.
+
+    This is necessary because the path of the YAML config file from the CLI is not known
+    ahead of time: https://github.com/pydantic/pydantic-settings/issues/259
+    """
+
+    class CLIConfig(Config):
+        """A subclass of Config that uses the CLI YAML file input."""
+
+        model_config = SettingsConfigDict(extra="forbid", yaml_file=config_path)
+
+    return CLIConfig
 
 
 def get_config() -> Config:
@@ -78,5 +103,8 @@ def get_config() -> Config:
 def set_config(path: Path) -> None:
     """Set global config variable using input from file."""
     global config
-
-    config = parse_user_input(Config.model_validate, yaml.safe_load(path.read_text()))
+    # Validate beforehand for a friendlier error message: https://github.com/pydantic/pydantic-settings/pull/432
+    parse_user_input(Config.model_validate, yaml.safe_load(path.read_text()))
+    # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
+    cli_config_class = create_cli_config_class(path)
+    config = cli_config_class()
