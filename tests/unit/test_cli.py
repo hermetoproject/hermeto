@@ -147,13 +147,13 @@ class TestTopLevelOpts:
                 True,
                 "config.yaml",
                 "goproxy_url",
-                "Error: InvalidInput: 1 validation error for user input\n\n  Input should be a valid dictionary or instance of Config",
+                "Error: InvalidInput: 1 validation error in Hermeto configuration:\n: Input should be a valid dictionary or instance of Config",
             ),
             (
                 True,
                 "config.yaml",
                 "non_existing_option: True",
-                "Error: InvalidInput: 1 validation error for user input\nnon_existing_option\n  Extra inputs are not permitted\n",
+                "Error: InvalidInput: 1 validation error in Hermeto configuration:\nnon_existing_option: Extra inputs are not permitted\n",
             ),
             (
                 False,

@@ -3,11 +3,17 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import model_validator
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from pydantic import ValidationError, model_validator
+from pydantic_core import ErrorDetails
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 from hermeto import APP_NAME
-from hermeto.core.models.input import parse_user_input
+from hermeto.core.errors import InvalidInput
 
 log = logging.getLogger(__name__)
 config = None
@@ -49,7 +55,7 @@ class Config(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: type[BaseSettings],  # noqa: ARG003
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,  # noqa: ARG003
         dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
@@ -57,11 +63,52 @@ class Config(BaseSettings):
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Control allowed settings sources and priority.
 
-        Priority (highest to lowest): init_settings (for programmatic/test overrides)
+        Priority (highest to lowest): init_settings (for programmatic/test overrides),
+        CLI config file.
 
         https://docs.pydantic.dev/2.11/concepts/pydantic_settings/#customise-settings-sources
         """
-        return (init_settings,)
+        return (
+            init_settings,
+            YamlConfigSettingsSource(
+                settings_cls
+            ),  # The CLI config path from yaml_file in model_config
+        )
+
+
+def create_cli_config_class(config_path: Path) -> type[Config]:
+    """Return a subclass of Config that uses the CLI YAML file input.
+
+    This is necessary because the path of the YAML config file from the CLI is not known
+    ahead of time: https://github.com/pydantic/pydantic-settings/issues/259
+    """
+
+    class CLIConfig(Config):
+        """A subclass of Config that uses the CLI YAML file input."""
+
+        model_config = SettingsConfigDict(extra="forbid", yaml_file=config_path)
+
+    return CLIConfig
+
+
+def _present_config_error(validation_error: ValidationError) -> str:
+    """Format validation errors for configuration sources"""
+    errors = validation_error.errors()
+    n_errors = len(errors)
+
+    def show_error(error: ErrorDetails) -> str:
+        location = " -> ".join(map(str, error["loc"]))
+        message = error["msg"]
+        return f"{location}: {message}"
+
+    formatted_errors = "\n".join(show_error(e) for e in errors)
+
+    return (
+        f"{n_errors} validation error{'s' if n_errors > 1 else ''} in {APP_NAME.capitalize()} "
+        f"configuration:\n{formatted_errors}\n\n"
+        f"Configuration can be provided via:\n"
+        f"  - CLI --config-file option"
+    )
 
 
 def get_config() -> Config:
@@ -69,7 +116,10 @@ def get_config() -> Config:
     global config
 
     if not config:
-        config = Config()
+        try:
+            config = Config()
+        except ValidationError as e:
+            raise InvalidInput(_present_config_error(e)) from e
 
     return config
 
@@ -77,5 +127,12 @@ def get_config() -> Config:
 def set_config(path: Path) -> None:
     """Set global config variable using input from file."""
     global config
+    # Validate beforehand for a friendlier error message: https://github.com/pydantic/pydantic-settings/pull/432
+    try:
+        Config.model_validate(yaml.safe_load(path.read_text()))
+    except ValidationError as e:
+        raise InvalidInput(_present_config_error(e)) from e
 
-    config = parse_user_input(Config.model_validate, yaml.safe_load(path.read_text()))
+    # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
+    cli_config_class = create_cli_config_class(path)
+    config = cli_config_class()
