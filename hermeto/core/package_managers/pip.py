@@ -2201,7 +2201,7 @@ def _resolve_pip(
         packages_containing_rust_code = []
     else:
         packages_containing_rust_code = _filter_packages_with_rust_code(
-            requires + build_requires, output_dir, source_dir
+            requires + build_requires, output_dir
         )
 
     # Mark all build dependencies as such
@@ -2280,12 +2280,12 @@ def _depends_on_rust(source_tarball: tarfile.TarFile) -> bool:
 
 
 def _filter_packages_with_rust_code(
-    packages: list, output_dir: RootedPath, source_dir: RootedPath
-) -> list:
+    packages: list[dict[str, Any]], output_dir: RootedPath
+) -> list[CargoPackageInput]:
     packages_containing_rust_code = []
     tar_packages = [p for p in packages if tarfile.is_tarfile(p.get("path", ""))]
     for p in tar_packages:
-        fname = p.get("path")
+        fname = p.get("path", "")
         # File name and package name may differ e.g. when there is a hyphen in
         # package name it might be replaced by an underscore in a file name.
         pname = Path(Path(fname).name)
