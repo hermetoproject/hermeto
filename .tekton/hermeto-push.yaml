@@ -26,6 +26,18 @@ spec:
     value: quay.io/redhat-user-workloads/rh-hermeto-tenant/hermeto:{{revision}}
   - name: dockerfile
     value: .konflux/Dockerfile.konflux
+  - name: hermetic
+    value: true
+  - name: prefetch-input
+    value:
+      - type: pip
+        allow_binary: true
+        requirements_build_files:
+          - .konflux/requirements-build.txt
+      - type: generic
+        path: .konflux
+      - type: rpm
+        path: .konflux
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -178,6 +190,8 @@ spec:
         value: $(params.output-image).prefetch
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: dev-package-managers
+        value: true
       runAfter:
       - clone-repository
       taskRef:
