@@ -6,3 +6,4 @@
 !pyproject.toml
 !requirements.txt
 !MANIFEST.in
+!.konflux/requirements-build.txt
