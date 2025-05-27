@@ -994,6 +994,7 @@ pydantic==2.11.5 \
     --hash=sha256:f9c26ba06f9747749ca1e5c94d6a85cb84254577553c8785576fd38fa64dc0f7
     # via
     #   hermeto (pyproject.toml)
+    #   pydantic-settings
     #   pypi-simple
 pydantic-core==2.33.2 \
     --hash=sha256:0069c9acc3f3981b9ff4cdfaf088e98d83440a4c7ea1bc07460af3d4dc22e72d \
@@ -1096,6 +1097,10 @@ pydantic-core==2.33.2 \
     --hash=sha256:fa854f5cf7e33842a892e5c73f45327760bc7bc516339fda888c75ae60edaeb6 \
     --hash=sha256:fe5b32187cbc0c862ee201ad66c30cf218e5ed468ec8dc1cf49dec66e160cc4d
     # via pydantic
+pydantic-settings==2.9.1 \
+    --hash=sha256:59b4f431b1defb26fe620c71a7d3968a710d719f5f4cdbbdb7926edeb770f6ef \
+    --hash=sha256:c509bf79d27563add44e8446233359004ed85066cd096d8b510f715e6ef5d268
+    # via hermeto (pyproject.toml)
 pydocstyle==6.3.0 \
     --hash=sha256:118762d452a49d6b05e194ef344a55822987a462831ade91ec5c06fd2169d019 \
     --hash=sha256:7ce43f0c0ac87b07494eb9c0b462c0b73e6ff276807f204d6b53edc72b7e44e1
@@ -1149,6 +1154,10 @@ python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
     --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
     # via ghp-import
+python-dotenv==1.1.0 \
+    --hash=sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5 \
+    --hash=sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d
+    # via pydantic-settings
 pyyaml==6.0.2 \
     --hash=sha256:01179a4a8559ab5de078078f37e5c1a30d76bb88519906844fd7bdea1b7729ff \
     --hash=sha256:0833f8694549e586547b576dcfaba4a6b55b9e96098b36cdc7ebefe667dfed48 \
@@ -1466,7 +1475,9 @@ typing-extensions==4.13.2 \
 typing-inspection==0.4.1 \
     --hash=sha256:389055682238f53b04f7badcb49b989835495a96700ced5dab2d8feae4b26f51 \
     --hash=sha256:6ae134cc0203c33377d43188d4064e9b357dba58cff3185f22924610e70a9d28
-    # via pydantic
+    # via
+    #   pydantic
+    #   pydantic-settings
 urllib3==2.4.0 \
     --hash=sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466 \
     --hash=sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813

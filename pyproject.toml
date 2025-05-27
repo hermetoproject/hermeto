@@ -25,6 +25,7 @@ dependencies = [
   "packaging",
   "pyarn",
   "pydantic",
+  "pydantic-settings",
   "pypi-simple",
   "pyarn",
   "pybuild-deps",
