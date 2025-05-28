@@ -139,6 +139,32 @@ log = logging.getLogger(__name__)
                 reason="HERMETO_TEST_LOCAL_PYPISERVER!=true",
             ),
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/rust_extension_lock_and_config_mismatch",
+                packages=({"path": ".", "type": "pip"},),
+                global_flags=["--mode", "permissive"],
+                check_output=False,
+                check_vendor_checksums=False,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="pip_rust_extension_lock_and_config_mismatch_permissive",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/rust_extension_lock_and_config_mismatch",
+                packages=({"path": ".", "type": "pip"},),
+                global_flags=["--mode", "strict"],
+                check_output=False,
+                check_deps_checksums=False,
+                check_vendor_checksums=False,
+                expected_exit_code=2,
+                expected_output="PackageWithCorruptLockfileRejected",
+            ),
+            id="pip_rust_extension_lock_and_config_mismatch_strict",
+        ),
     ],
 )
 def test_pip_packages(
