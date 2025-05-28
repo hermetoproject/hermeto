@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 import tomlkit
+import tomlkit.exceptions
 from packaging.utils import canonicalize_version
 from typing_extensions import TypeGuard
 
@@ -144,9 +145,7 @@ class PyProjectTOML(SetupFile):
         try:
             log.debug("Parsing pyproject.toml at %r", str(self._setup_file))
             return tomlkit.parse(self._setup_file.path.read_text())
-        # no exceptions are exposed in the public API reference for tomlkit
-        # check https://github.com/python-poetry/tomlkit/issues/399
-        except Exception as e:
+        except tomlkit.exceptions.ParseError as e:
             log.error("Failed to parse pyproject.toml: %s", e)
             return {}
 
