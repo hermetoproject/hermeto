@@ -15,6 +15,12 @@ from pydantic_settings import (
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
 
+# Ascending priority
+CONFIG_FILE_PATHS = [
+    f"~/.config/{APP_NAME.lower()}/config.yaml",
+    f"{APP_NAME.lower()}.yaml",
+    f".{APP_NAME.lower()}.yaml",
+]
 log = logging.getLogger(__name__)
 config = None
 
@@ -70,6 +76,7 @@ class Config(BaseSettings):
             YamlConfigSettingsSource(
                 settings_cls
             ),  # The CLI config path from yaml_file in model_config
+            YamlConfigSettingsSource(settings_cls, CONFIG_FILE_PATHS),
         )
 
 
@@ -104,7 +111,8 @@ def _present_config_error(validation_error: ValidationError) -> str:
         f"{n_errors} validation error{'s' if n_errors > 1 else ''} in {APP_NAME.capitalize()} "
         f"configuration:\n{formatted_errors}\n\n"
         f"Configuration can be provided via:\n"
-        f"  - CLI --config-file option"
+        f"  - CLI --config-file option\n"
+        f"  - Config files ({', '.join(CONFIG_FILE_PATHS)})"
     )
 
 
