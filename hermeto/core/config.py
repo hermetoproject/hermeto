@@ -28,7 +28,11 @@ config = None
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
-    model_config = SettingsConfigDict(extra="forbid")
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_prefix=f"{APP_NAME.upper()}_",
+        extra="forbid",
+    )
 
     goproxy_url: str = "https://proxy.golang.org,direct"
     default_environment_variables: dict = {}
@@ -63,19 +67,20 @@ class Config(BaseSettings):
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
         file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Control allowed settings sources and priority.
 
         Priority (highest to lowest): init_settings (for programmatic/test overrides),
-        CLI config file, default config files.
+        env vars, CLI config file, default config files.
 
         https://docs.pydantic.dev/2.11/concepts/pydantic_settings/#customise-settings-sources
         """
         return (
             init_settings,
+            env_settings,
             YamlConfigSettingsSource(
                 settings_cls
             ),  # The CLI config path from yaml_file in model_config
@@ -93,13 +98,18 @@ def create_cli_config_class(config_path: Path) -> type[Config]:
     class CLIConfig(Config):
         """A subclass of Config that uses the CLI YAML file input."""
 
-        model_config = SettingsConfigDict(extra="forbid", yaml_file=config_path)
+        model_config = SettingsConfigDict(
+            case_sensitive=False,
+            env_prefix=f"{APP_NAME.upper()}_",
+            extra="forbid",
+            yaml_file=config_path,
+        )
 
     return CLIConfig
 
 
 def _present_config_error(validation_error: ValidationError) -> str:
-    """Format validation errors for configuration sources"""
+    """Format validation errors for configuration sources (env vars, config files)."""
     errors = validation_error.errors()
     n_errors = len(errors)
 
@@ -114,6 +124,7 @@ def _present_config_error(validation_error: ValidationError) -> str:
         f"{n_errors} validation error{'s' if n_errors > 1 else ''} in {APP_NAME.capitalize()} "
         f"configuration:\n{formatted_errors}\n\n"
         f"Configuration can be provided via:\n"
+        f"  - Environment variables (e.g., {APP_NAME.upper()}_RUNTIME__CONCURRENCY_LIMIT=5)\n"
         f"  - CLI --config-file option\n"
         f"  - Config files ({', '.join(CONFIG_FILE_PATHS)})"
     )
