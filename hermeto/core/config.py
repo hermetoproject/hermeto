@@ -25,7 +25,7 @@ config = None
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
-    model_config = SettingsConfigDict(extra="forbid")
+    model_config = SettingsConfigDict(env_prefix=f"{APP_NAME.upper()}_", extra="forbid")
 
     goproxy_url: str = "https://proxy.golang.org,direct"
     default_environment_variables: dict = {}
@@ -70,6 +70,7 @@ class Config(BaseSettings):
         """
         return (
             init_settings,
+            env_settings,
             YamlConfigSettingsSource(
                 settings_cls
             ),  # The CLI config path from yaml_file in model_config
@@ -87,7 +88,9 @@ def create_cli_config_class(config_path: Path) -> Type[Config]:
     class CLIConfig(Config):
         """A subclass of Config that uses the CLI YAML file input."""
 
-        model_config = SettingsConfigDict(extra="forbid", yaml_file=config_path)
+        model_config = SettingsConfigDict(
+            env_prefix=f"{APP_NAME.upper()}_", extra="forbid", yaml_file=config_path
+        )
 
     return CLIConfig
 

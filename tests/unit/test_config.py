@@ -30,6 +30,14 @@ def _write_yaml_config(path: Path, data: dict[str, Any]) -> None:
     path.write_text(yaml.safe_dump(data))
 
 
+def test_env_overrides_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    override_concurrency = DEFAULT_CONCURRENCY + 1
+    monkeypatch.setenv("HERMETO_CONCURRENCY_LIMIT", str(override_concurrency))
+
+    config = config_module.get_config()
+    assert config.concurrency_limit == override_concurrency
+
+
 def test_home_yaml_overrides_default(tmp_home_cwd: Path) -> None:
     override_concurrency = DEFAULT_CONCURRENCY + 1
     home_config_path = tmp_home_cwd / ".config/hermeto/config.yaml"
