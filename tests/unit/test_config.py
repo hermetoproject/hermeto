@@ -30,6 +30,14 @@ def _write_yaml_config(path: Path, data: dict[str, Any]) -> None:
     path.write_text(yaml.safe_dump(data))
 
 
+def test_env_overrides_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    override_concurrency = DEFAULT_CONCURRENCY + 1
+    monkeypatch.setenv("HERMETO_CONCURRENCY_LIMIT", str(override_concurrency))
+
+    config = config_module.get_config()
+    assert config.concurrency_limit == override_concurrency
+
+
 @pytest.mark.parametrize("config_file_path", config_module.CONFIG_FILE_PATHS)
 def test_config_files_override_defaults(tmp_home_cwd: Path, config_file_path: str) -> None:
     """Test that each configured file path can override default values."""
