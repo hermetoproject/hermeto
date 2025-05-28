@@ -17,6 +17,7 @@ from pydantic_settings import (
 from hermeto import APP_NAME
 from hermeto.core.models.input import parse_user_input
 
+CONFIG_FILE_PATHS = [f"~/.config/{APP_NAME.lower()}/config.yaml", "config.yaml"]
 log = logging.getLogger(__name__)
 config = None
 
@@ -72,6 +73,7 @@ class Config(BaseSettings):
             YamlConfigSettingsSource(
                 settings_cls
             ),  # The CLI config path from yaml_file in model_config
+            YamlConfigSettingsSource(settings_cls, CONFIG_FILE_PATHS),
         )
 
 
