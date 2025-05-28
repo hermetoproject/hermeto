@@ -25,8 +25,8 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import CargoPackageInput, PackageInput, Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Component, Property
-from hermeto.core.package_managers import pip
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
+from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
@@ -57,7 +57,7 @@ def make_dpi(
     )
 
 
-@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
 def test_get_pip_metadata_from_pyproject_toml(
     mock_pyproject_toml: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -78,7 +78,7 @@ def test_get_pip_metadata_from_pyproject_toml(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("hermeto.core.package_managers.pip.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
 def test_get_pip_metadata_from_setup_py(
     mock_setup_py: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -99,7 +99,7 @@ def test_get_pip_metadata_from_setup_py(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
 def test_get_pip_metadata_from_setup_cfg(
     mock_setup_cfg: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -120,9 +120,9 @@ def test_get_pip_metadata_from_setup_cfg(
     assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
-@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
-@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
-@mock.patch("hermeto.core.package_managers.pip.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
 def test_extract_metadata_from_config_files_with_fallbacks(
     mock_setup_py: mock.Mock,
     mock_setup_cfg: mock.Mock,
@@ -183,9 +183,9 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     "origin_exists",
     [True, False],
 )
-@mock.patch("hermeto.core.package_managers.pip.PyProjectTOML")
-@mock.patch("hermeto.core.package_managers.pip.SetupPY")
-@mock.patch("hermeto.core.package_managers.pip.SetupCFG")
+@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
+@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
 def test_get_pip_metadata_from_remote_origin(
     mock_setup_cfg: mock.Mock,
     mock_setup_py: mock.Mock,
@@ -3006,7 +3006,7 @@ class TestDownload:
         sdists.sort(key=pip._sdist_preference)
         assert sdists == expect_order
 
-    @mock.patch("hermeto.core.package_managers.pip.clone_as_tarball")
+    @mock.patch("hermeto.core.package_managers.pip.main.clone_as_tarball")
     def test_download_vcs_package(
         self,
         mock_clone_as_tarball: Any,
@@ -3052,7 +3052,7 @@ class TestDownload:
             ("example.org:443", ["example.org"], True),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.pip.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
     def test_download_url_package(
         self,
         mock_download_file: Any,
@@ -3329,11 +3329,11 @@ class TestDownload:
         "index_url", [None, pypi_simple.PYPI_SIMPLE_ENDPOINT, CUSTOM_PYPI_ENDPOINT]
     )
     @pytest.mark.parametrize("missing_req_file_checksum", [True, False])
-    @mock.patch("hermeto.core.package_managers.pip._process_package_distributions")
-    @mock.patch("hermeto.core.package_managers.pip.must_match_any_checksum")
+    @mock.patch("hermeto.core.package_managers.pip.main._process_package_distributions")
+    @mock.patch("hermeto.core.package_managers.pip.main.must_match_any_checksum")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
-    @mock.patch("hermeto.core.package_managers.pip._check_metadata_in_sdist")
+    @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip.main._check_metadata_in_sdist")
     def test_download_dependencies_pypi(
         self,
         mock_check_metadata_in_sdist: mock.Mock,
@@ -3523,11 +3523,11 @@ class TestDownload:
 
     @pytest.mark.parametrize("checksum_match", [True, False])
     @pytest.mark.parametrize("trusted_hosts", [[], ["example.org"]])
-    @mock.patch("hermeto.core.package_managers.pip._download_url_package")
-    @mock.patch("hermeto.core.package_managers.pip.must_match_any_checksum")
+    @mock.patch("hermeto.core.package_managers.pip.main._download_url_package")
+    @mock.patch("hermeto.core.package_managers.pip.main.must_match_any_checksum")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
-    @mock.patch("hermeto.core.package_managers.pip.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
     def test_download_dependencies_url(
         self,
         mock_download_binary_file: mock.Mock,
@@ -3639,9 +3639,9 @@ class TestDownload:
         ) in caplog.text
         # </check basic logging output>
 
-    @mock.patch("hermeto.core.package_managers.pip._download_vcs_package")
+    @mock.patch("hermeto.core.package_managers.pip.main._download_vcs_package")
     @mock.patch.object(Path, "unlink")
-    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
     @mock.patch("hermeto.core.scm.clone_as_tarball")
     def test_download_dependencies_vcs(
         self,
@@ -3723,9 +3723,9 @@ class TestDownload:
         ) in caplog.text
         # </check basic logging output>
 
-    @mock.patch("hermeto.core.package_managers.pip._process_package_distributions")
-    @mock.patch("hermeto.core.package_managers.pip.async_download_files")
-    @mock.patch("hermeto.core.package_managers.pip._check_metadata_in_sdist")
+    @mock.patch("hermeto.core.package_managers.pip.main._process_package_distributions")
+    @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
+    @mock.patch("hermeto.core.package_managers.pip.main._check_metadata_in_sdist")
     def test_download_from_requirement_files(
         self,
         _check_metadata_in_sdist: mock.Mock,
@@ -3791,7 +3791,7 @@ def test_default_requirement_file_list(
     assert req_files == expected
 
 
-@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
 def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     pkg_info = pip._resolve_pip(
@@ -3808,7 +3808,7 @@ def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPa
     assert pkg_info == expected
 
 
-@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
 def test_resolve_pip_invalid_req_file_path(
     mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -3828,7 +3828,7 @@ def test_resolve_pip_invalid_req_file_path(
         )
 
 
-@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
 def test_resolve_pip_invalid_bld_req_file_path(
     mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -3849,9 +3849,9 @@ def test_resolve_pip_invalid_bld_req_file_path(
 
 
 @pytest.mark.parametrize("custom_requirements", [True, False])
-@mock.patch("hermeto.core.package_managers.pip._get_pip_metadata")
-@mock.patch("hermeto.core.package_managers.pip._download_dependencies")
-@mock.patch("hermeto.core.package_managers.pip._filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.pip.main._download_dependencies")
+@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
 def test_resolve_pip(
     mock_filter_cargo_packages: mock.Mock,
     mock_download: mock.Mock,
@@ -4114,9 +4114,9 @@ def test_replace_external_requirements(
     ],
 )
 @mock.patch("hermeto.core.scm.Repo")
-@mock.patch("hermeto.core.package_managers.pip._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip._resolve_pip")
-@mock.patch("hermeto.core.package_managers.pip._filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
+@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
 def test_fetch_pip_source(
     mock_filter_cargo_packages: mock.Mock,
     mock_resolve_pip: mock.Mock,
@@ -4404,10 +4404,10 @@ def test_generate_purl_main_package(
     ],
 )
 @mock.patch("hermeto.core.scm.Repo")
-@mock.patch("hermeto.core.package_managers.pip._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip._resolve_pip")
-@mock.patch("hermeto.core.package_managers.pip._filter_packages_with_rust_code")
-@mock.patch("hermeto.core.package_managers.pip._find_and_fetch_rust_dependencies")
+@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
+@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main._find_and_fetch_rust_dependencies")
 def test_fetch_pip_source_does_not_pick_crates_when_binaries_are_requested(
     mock_find_and_fetch_rust: mock.Mock,
     mock_filter_cargo_packages: mock.Mock,
@@ -4509,8 +4509,8 @@ def test_fetch_pip_source_does_not_pick_crates_when_binaries_are_requested(
 
 
 @mock.patch("hermeto.core.scm.Repo")
-@mock.patch("hermeto.core.package_managers.pip._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip._resolve_pip")
+@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
 @mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present_or_fail")
 def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(
