@@ -6,10 +6,11 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Iterable, Iterator, Sequence
 from functools import cache
 from itertools import filterfalse, tee
 from pathlib import Path
-from typing import Any, Callable, Iterable, Iterator, Optional, Sequence
+from typing import Any, Callable, Optional
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config

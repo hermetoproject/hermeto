@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -77,7 +76,7 @@ def test_generic_fetcher(
 )
 def test_e2e_generic(
     test_params: utils.TestParameters,
-    check_cmd: List[str],
+    check_cmd: list[str],
     expected_cmd_output: str,
     hermeto_image: utils.ContainerImage,
     tmp_path: Path,

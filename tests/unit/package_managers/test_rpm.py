@@ -1,7 +1,7 @@
 import ssl
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 from unittest import mock
 
 import pytest
@@ -95,11 +95,11 @@ arches:
 def test_fetch_rpm_source(
     mock_resolve_rpm_project: mock.Mock,
     mock_from_obj_list: mock.Mock,
-    model_input: Union[mock.Mock, RpmPackageInput, List[RpmPackageInput]],
-    result_options: Optional[Dict[str, Dict[str, Any]]],
+    model_input: Union[mock.Mock, RpmPackageInput, list[RpmPackageInput]],
+    result_options: Optional[dict[str, dict[str, Any]]],
     caplog: LogCaptureFixture,
 ) -> None:
-    def _has_multiple_options(rpm_models: List[RpmPackageInput]) -> bool:
+    def _has_multiple_options(rpm_models: list[RpmPackageInput]) -> bool:
         options = 0
         for model in rpm_models:
             if model.options:
@@ -428,7 +428,7 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
     ],
 )
 def test_generate_repofiles(
-    rooted_tmp_path: RootedPath, expected_repofile: str, options: Optional[Dict[str, Any]]
+    rooted_tmp_path: RootedPath, expected_repofile: str, options: Optional[dict[str, Any]]
 ) -> None:
     package_dir = rooted_tmp_path.join_within_root(DEFAULT_PACKAGE_DIR)
     arch_dir = Path(package_dir.path, "x86_64")
@@ -653,7 +653,7 @@ class TestRepofile:
         ],
     )
     def test_empty(
-        self, data: Dict[str, Any], defaults: Optional[Dict[str, Any]], expected: bool
+        self, data: dict[str, Any], defaults: Optional[dict[str, Any]], expected: bool
     ) -> None:
         actual = _Repofile(defaults)
         actual.read_dict(data)
@@ -680,7 +680,7 @@ class TestRepofile:
         ],
     )
     def test_apply_defaults(
-        self, data: Dict[str, Any], defaults: Optional[Dict[str, Any]], expected: Dict[str, Any]
+        self, data: dict[str, Any], defaults: Optional[dict[str, Any]], expected: dict[str, Any]
     ) -> None:
         expected_r = _Repofile()
         expected_r.read_dict(expected)

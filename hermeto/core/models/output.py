@@ -2,7 +2,7 @@ import logging
 import string
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Set
+from typing import Any, Literal, Optional
 
 import pydantic
 
@@ -35,7 +35,7 @@ class EnvironmentVariable(pydantic.BaseModel):
     value: str
     kind: Optional[Literal["literal", "path"]] = pydantic.Field(default=None, exclude=True)
 
-    def resolve_value(self, mappings: Dict[str, str]) -> str:
+    def resolve_value(self, mappings: dict[str, str]) -> str:
         """Return the resolved value of this templated environment variable.
 
         :param mappings: dictionary of template mappings to substitute
@@ -45,7 +45,7 @@ class EnvironmentVariable(pydantic.BaseModel):
         string, substitution is a NOOP (e.g. legacy "literal" variables)
         """
 
-        def get_placeholders(t: string.Template) -> Set[str]:
+        def get_placeholders(t: string.Template) -> set[str]:
             """Return a set of placeholders in a template.
 
             Implementation is based on [1] which appeared in 3.11 [2] without additional error
@@ -71,7 +71,7 @@ class EnvironmentVariable(pydantic.BaseModel):
         # "Recursively" resolve potentially nested variables up to len(mappings) tries
         log.debug(f"Resolving environment variable '{self.name}={self.value}'")
         ret = self.value
-        substituted: Set[str] = set()
+        substituted: set[str] = set()
         for i, m in enumerate(mappings):
             log.debug(f"EnvironmentVariable resolution iteration {i + 1}.: {ret}")
 
@@ -133,7 +133,7 @@ class BuildConfig(pydantic.BaseModel):
 
     environment_variables: list[EnvironmentVariable] = []
     project_files: list[ProjectFile] = []
-    options: Optional[Dict[str, Any]] = None
+    options: Optional[dict[str, Any]] = None
 
     @pydantic.field_validator("environment_variables")
     def _unique_env_vars(cls, env_vars: list[EnvironmentVariable]) -> list[EnvironmentVariable]:
@@ -204,7 +204,7 @@ class RequestOutput(pydantic.BaseModel):
         components: list[Component],
         environment_variables: Optional[list[EnvironmentVariable]] = None,
         project_files: Optional[list[ProjectFile]] = None,
-        options: Optional[Dict[str, Any]] = None,
+        options: Optional[dict[str, Any]] = None,
     ) -> "RequestOutput":
         """Create a RequestOutput from components, environment variables and project files."""
         if environment_variables is None:

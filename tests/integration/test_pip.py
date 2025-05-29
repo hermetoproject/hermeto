@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -230,7 +229,7 @@ def test_pip_packages(
 )
 def test_e2e_pip(
     test_params: utils.TestParameters,
-    check_cmd: List[str],
+    check_cmd: list[str],
     expected_cmd_output: str,
     hermeto_image: utils.ContainerImage,
     tmp_path: Path,

@@ -8,10 +8,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import jsonschema
 import requests
@@ -67,14 +68,14 @@ CYCLONEDX_SCHEMA_URL = (
 @dataclass
 class TestParameters:
     branch: str
-    packages: Tuple[Dict[str, Any], ...]
+    packages: tuple[dict[str, Any], ...]
     check_output: bool = True
     check_deps_checksums: bool = True
     check_vendor_checksums: bool = True
     expected_exit_code: int = 0
     expected_output: str = ""
-    global_flags: List[str] = field(default_factory=list)
-    flags: List[str] = field(default_factory=list)
+    global_flags: list[str] = field(default_factory=list)
+    flags: list[str] = field(default_factory=list)
 
 
 StrPath = Union[str, os.PathLike[str]]
@@ -102,7 +103,7 @@ class ContainerImage:
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
-    ) -> Tuple[str, int]:
+    ) -> tuple[str, int]:
         if podman_flags is None:
             podman_flags = []
 
@@ -129,7 +130,7 @@ class HermetoImage(ContainerImage):
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = "host",
         podman_flags: Optional[list[str]] = None,
-    ) -> Tuple[str, int]:
+    ) -> tuple[str, int]:
         netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
             with tempfile.TemporaryDirectory() as netrc_tmpdir:
@@ -191,7 +192,7 @@ def _build_image(podman_cmd: list[str], *, tag: str) -> ContainerImage:
     return ContainerImage(tag)
 
 
-def run_cmd(cmd: Union[List[str], str], **subprocess_kwargs: Any) -> Tuple[str, int]:
+def run_cmd(cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
     """
     Run command via subprocess.
 
@@ -216,7 +217,7 @@ def run_cmd(cmd: Union[List[str], str], **subprocess_kwargs: Any) -> Tuple[str, 
     return process.stdout, process.returncode
 
 
-def _calculate_files_checksums_in_dir(root_dir: Path) -> Dict:
+def _calculate_files_checksums_in_dir(root_dir: Path) -> dict:
     """
     Calculate files sha256sum in provided directory.
 
@@ -451,7 +452,7 @@ def build_image_and_check_cmd(
     test_repo_dir: Path,
     test_data_dir: Path,
     test_case: str,
-    check_cmd: List,
+    check_cmd: list,
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
     podman_flags: Optional[list[str]] = None,

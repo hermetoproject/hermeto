@@ -6,7 +6,7 @@ import logging
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import pydantic
 import typer
@@ -451,7 +451,7 @@ def merge_sboms(  # noqa: D103; docstring becomes part of --help message
     ),
 ) -> None:
     """Merge two or more SBOMs into one."""
-    sboms_to_merge: List[Union[SPDXSbom, Sbom]] = []
+    sboms_to_merge: list[Union[SPDXSbom, Sbom]] = []
     for sbom_file in sbom_files_to_merge:
         sbom_dict = json.loads(sbom_file.read_text())
         # Remove extra fields which are not in Sbom or SPDXSbom models

@@ -1,7 +1,8 @@
 import logging
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected

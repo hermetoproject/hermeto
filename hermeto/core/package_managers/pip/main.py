@@ -12,22 +12,13 @@ import shutil
 import tarfile
 import zipfile
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from os import PathLike
 from pathlib import Path
+from re import Pattern
 from textwrap import dedent
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    Iterator,
-    Literal,
-    Optional,
-    Pattern,
-    Union,
-    cast,
-)
+from typing import IO, TYPE_CHECKING, Any, Literal, Optional, Union, cast
 from urllib import parse as urlparse
 
 import tomlkit

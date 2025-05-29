@@ -2,9 +2,10 @@ import base64
 import hashlib
 import logging
 from collections import defaultdict
+from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
-from typing import Iterable, NamedTuple, Optional, Union
+from typing import NamedTuple, Optional, Union
 
 from hermeto.core.errors import PackageRejected
 

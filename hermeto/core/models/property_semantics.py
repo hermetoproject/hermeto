@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Optional
 
 import pydantic
 

@@ -1,8 +1,9 @@
 import json
 import os
 import urllib.parse
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Optional, Union
 from unittest import mock
 
 import pytest
@@ -864,7 +865,7 @@ def test_fetch_npm_source(
     mock_resolve_npm: mock.Mock,
     npm_request: Request,
     npm_input_packages: dict[str, str],
-    resolved_packages: List[ResolvedNpmPackage],
+    resolved_packages: list[ResolvedNpmPackage],
     request_output: dict[str, list[Any]],
 ) -> None:
     """Test fetch_npm_source with different Request inputs."""
@@ -1471,7 +1472,7 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
         ),
     ],
 )
-def test_extract_git_info_npm(vcs: NormalizedUrl, expected: Dict[str, str]) -> None:
+def test_extract_git_info_npm(vcs: NormalizedUrl, expected: dict[str, str]) -> None:
     assert _extract_git_info_npm(vcs) == expected
 
 
@@ -1615,8 +1616,8 @@ def test_get_npm_dependencies(
     mock_must_match_any_checksum: mock.Mock,
     mock_async_download_files: mock.Mock,
     rooted_tmp_path: RootedPath,
-    deps_to_download: Dict[str, Dict[str, Optional[str]]],
-    expected_download_subpaths: Dict[str, str],
+    deps_to_download: dict[str, dict[str, Optional[str]]],
+    expected_download_subpaths: dict[str, str],
 ) -> None:
     def args_based_return_checksum(integrity: str) -> ChecksumInfo:
         if integrity == "sha512-YOLO1111==":
@@ -1737,7 +1738,7 @@ def test_get_npm_dependencies(
 def test_update_package_lock_with_local_paths(
     rooted_tmp_path: RootedPath,
     lockfile_data: dict[str, Any],
-    download_paths: Dict[NormalizedUrl, RootedPath],
+    download_paths: dict[NormalizedUrl, RootedPath],
     expected_lockfile_data: dict[str, Any],
 ) -> None:
     for url, download_path in download_paths.items():

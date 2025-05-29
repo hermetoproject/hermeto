@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from itertools import zip_longest
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 from unittest import mock
 
 import pytest
@@ -53,11 +53,11 @@ class YarnVersions(Enum):
     YARN_V5 = semver.VersionInfo(5, 0, 0)
 
     @classmethod
-    def supported(cls) -> List["YarnVersions"]:
+    def supported(cls) -> list["YarnVersions"]:
         return [cls.YARN_V3, cls.YARN_V36_RC1, cls.YARN_V4, cls.YARN_V4_RC1]
 
     @classmethod
-    def unsupported(cls) -> List["YarnVersions"]:
+    def unsupported(cls) -> list["YarnVersions"]:
         return list(set(cls.__members__.values()).difference(set(cls.supported())))
 
 

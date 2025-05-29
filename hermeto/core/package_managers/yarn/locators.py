@@ -1,8 +1,9 @@
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import NamedTuple, Optional, Sequence, Union
+from typing import NamedTuple, Optional, Union
 from urllib.parse import parse_qs, unquote
 
 from hermeto import APP_NAME

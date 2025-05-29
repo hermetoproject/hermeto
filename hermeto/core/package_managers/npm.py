@@ -6,7 +6,7 @@ import json
 import logging
 import os.path
 from pathlib import Path
-from typing import Any, Dict, Literal, NewType, Optional, TypedDict
+from typing import Any, Literal, NewType, Optional, TypedDict
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
@@ -291,7 +291,7 @@ class PackageLock:
 
         return list(map(to_component, packages))
 
-    def get_dependencies_to_download(self) -> Dict[str, Dict[str, Optional[str]]]:
+    def get_dependencies_to_download(self) -> dict[str, dict[str, Optional[str]]]:
         """Return a Dict of URL dependencies to download."""
         packages = self._packages
         return {
@@ -410,7 +410,7 @@ def _update_vcs_url_with_full_hostname(vcs: str) -> str:
     return vcs
 
 
-def _extract_git_info_npm(vcs_url: NormalizedUrl) -> Dict[str, str]:
+def _extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
     """
     Extract important info from a VCS requirement URL.
 
@@ -483,8 +483,8 @@ def _clone_repo_pack_archive(
 
 
 def _get_npm_dependencies(
-    download_dir: RootedPath, deps_to_download: Dict[str, Dict[str, Optional[str]]]
-) -> Dict[NormalizedUrl, RootedPath]:
+    download_dir: RootedPath, deps_to_download: dict[str, dict[str, Optional[str]]]
+) -> dict[NormalizedUrl, RootedPath]:
     """
     Download npm dependencies.
 
@@ -568,7 +568,7 @@ def _should_replace_dependency(dependency_version: str) -> bool:
 
 
 def _update_package_lock_with_local_paths(
-    download_paths: Dict[NormalizedUrl, RootedPath],
+    download_paths: dict[NormalizedUrl, RootedPath],
     package_lock: PackageLock,
 ) -> None:
     """Replace packages resolved URLs with local paths.
@@ -620,7 +620,7 @@ def _update_package_json_files(
 
     package_json_projectfiles = []
     for package_json_path in package_json_paths:
-        with open(package_json_path, "r") as f:
+        with open(package_json_path) as f:
             package_json_content = json.load(f)
 
         for dep_type in DEPENDENCY_TYPES:

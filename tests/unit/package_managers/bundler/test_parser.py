@@ -1,9 +1,10 @@
 import json
 import re
 import subprocess
+from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 from unittest import mock
 
 import pydantic

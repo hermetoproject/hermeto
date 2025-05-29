@@ -3,7 +3,7 @@ import asyncio
 import random
 from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -229,7 +229,7 @@ async def test_async_download_files(
 
         return MagicMock(side_effect=mock_download_binary_file)
 
-    files_to_download: Dict[str, Union[str, PathLike[str]]] = {
+    files_to_download: dict[str, Union[str, PathLike[str]]] = {
         "file1": str(tmp_path / "path1"),
         "file2": str(tmp_path / "path2"),
         "file3": str(tmp_path / "path3"),

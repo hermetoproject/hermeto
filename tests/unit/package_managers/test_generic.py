@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Type
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -221,7 +221,7 @@ def test_resolve_generic_lockfile_invalid(
     mock_download: mock.Mock,
     mock_asyncio_run: mock.Mock,
     lockfile: str,
-    expected_exception: Type[BaseError],
+    expected_exception: type[BaseError],
     expected_err: str,
     rooted_tmp_path: RootedPath,
 ) -> None:

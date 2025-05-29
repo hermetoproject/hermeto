@@ -4,7 +4,7 @@ import logging
 import ssl
 import types
 from os import PathLike
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 import aiohttp
@@ -94,14 +94,14 @@ async def _async_download_binary_file(
         log.error(f"Unsuccessful download: {url}")
         # "from None" since we have the exception context in the logs
         raise FetchError(
-            (f"exception_name: {exception.__class__.__name__}, " f"details: {exception}")
+            f"exception_name: {exception.__class__.__name__}, " f"details: {exception}"
         ) from None
 
     log.debug(f"Download completed - {url}")
 
 
 async def async_download_files(
-    files_to_download: Dict[str, Union[str, PathLike[str]]],
+    files_to_download: dict[str, Union[str, PathLike[str]]],
     concurrency_limit: int,
     ssl_context: Optional[ssl.SSLContext] = None,
 ) -> None:
@@ -133,7 +133,7 @@ async def async_download_files(
     )
 
     async with retry_client as session:
-        tasks: Set[asyncio.Task] = set()
+        tasks: set[asyncio.Task] = set()
 
         for url, download_path in files_to_download.items():
             if len(tasks) >= concurrency_limit:
