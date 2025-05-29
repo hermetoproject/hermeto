@@ -75,6 +75,7 @@ class TestParameters:
     expected_output: str = ""
     global_flags: List[str] = field(default_factory=list)
     flags: List[str] = field(default_factory=list)
+    global_options: List[str] = field(default_factory=list)
 
 
 StrPath = Union[str, os.PathLike[str]]
@@ -370,7 +371,7 @@ def fetch_deps_and_check_output(
     repo.git.checkout(test_params.branch)
 
     output_dir = tmp_path.joinpath(fetch_output_dirname)
-    cmd = [
+    cmd = test_params.global_options + [
         "fetch-deps",
         "--source",
         str(test_repo_dir),
