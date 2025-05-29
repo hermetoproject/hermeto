@@ -1,0 +1,91 @@
+name: Test Konflux Image
+
+on:
+  pull_request:
+    types: ["labeled"]
+
+jobs:
+  integration-tests:
+    name: Fetch the image built on Konflux and run integration tests on it
+    if: github.event.label.name == 'konflux-image-ready' && github.event.action == 'labeled'
+
+    # TODO: Replace this with ubuntu-latest once GH completes the migration of the VM runners to
+    # ubuntu 24.04 and respect the YAML tag (revert the commit that added this)
+    runs-on: ubuntu-24.04
+    env:
+      HERMETO_IMAGE: quay.io/redhat-user-workloads/rh-hermeto-tenant/hermeto:on-pr-${{ github.workflow_sha }}
+    steps:
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install createrepo-c
+          python3 -m venv /var/tmp/venv
+          /var/tmp/venv/bin/pip3 install --upgrade pip nox tomlkit
+
+      - name: add checkout action...
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PyPI test server start
+        run: |
+          tests/pypiserver/start.sh &
+
+          # Testing basic HTTP request
+          status=$(curl -sSI \
+                        --output /dev/null \
+                        --write-out %{http_code} \
+                        --retry-delay 1 \
+                        --retry 60 \
+                        --retry-all-errors \
+                        http://127.0.0.1:8080)
+          [[ ${status} == "200" ]] || exit 1
+
+      - name: DNF test server start
+        run: |
+          tests/dnfserver/start.sh &
+
+          # Testing basic HTTP request
+          status=$(curl -sSI \
+                        --output /dev/null \
+                        --write-out %{http_code} \
+                        --retry-delay 1 \
+                        --retry 60 \
+                        --retry-all-errors \
+                        http://127.0.0.1:8081)
+          [[ ${status} == "200" ]] || exit 1
+
+          # Testing expected error on unauthenticated TLS access
+          status=$(curl -ssI \
+                        --output /dev/null \
+                        --write-out %{http_code} \
+                        --insecure \
+                        https://127.0.0.1:8443)
+          [[ ${status} == "400" ]] || exit 1
+
+          # Testing TLS client authentication
+          status=$(curl -sSI \
+                        --output /dev/null \
+                        --write-out %{http_code} \
+                        --cacert tests/dnfserver/certificates/CA.crt \
+                        --key tests/dnfserver/certificates/client.key \
+                        --cert tests/dnfserver/certificates/client.crt \
+                        https://127.0.0.1:8443/pkg/redhat-release-9.4-0.5.el9.x86_64.rpm)
+          [[ ${status} == "200" ]] || exit 1
+
+      - name: Pull container image
+        run: |
+          podman pull "$HERMETO_IMAGE"
+
+      - name: Check pulled image and application version
+        run: |
+          podman images | grep 'hermeto'
+          podman run "$HERMETO_IMAGE" --version
+
+      - name: Run integration tests on the pulled image
+        env:
+          HERMETO_TEST_LOCAL_PYPISERVER: 'true'
+          HERMETO_TEST_LOCAL_DNF_SERVER: 'true'
+        run: |
+          git config --global --add safe.directory "*"
+          /var/tmp/venv/bin/nox -s integration-tests
