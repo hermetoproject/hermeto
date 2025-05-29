@@ -2463,7 +2463,7 @@ def test_resolve_pip_invalid_bld_req_file_path(
 @pytest.mark.parametrize("custom_requirements", [True, False])
 @mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
 @mock.patch("hermeto.core.package_managers.pip.main._download_dependencies")
-@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
 def test_resolve_pip(
     mock_filter_cargo_packages: mock.Mock,
     mock_download: mock.Mock,
@@ -2728,7 +2728,7 @@ def test_replace_external_requirements(
 @mock.patch("hermeto.core.scm.Repo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
-@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
 def test_fetch_pip_source(
     mock_filter_cargo_packages: mock.Mock,
     mock_resolve_pip: mock.Mock,
@@ -3018,8 +3018,8 @@ def test_generate_purl_main_package(
 @mock.patch("hermeto.core.scm.Repo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
-@mock.patch("hermeto.core.package_managers.pip.main._filter_packages_with_rust_code")
-@mock.patch("hermeto.core.package_managers.pip.main._find_and_fetch_rust_dependencies")
+@mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
+@mock.patch("hermeto.core.package_managers.pip.main.find_and_fetch_rust_dependencies")
 def test_fetch_pip_source_does_not_pick_crates_when_binaries_are_requested(
     mock_find_and_fetch_rust: mock.Mock,
     mock_filter_cargo_packages: mock.Mock,
