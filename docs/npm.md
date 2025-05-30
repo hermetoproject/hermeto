@@ -1,6 +1,6 @@
-# npm
+# [npm][]
 
-<https://docs.npmjs.com/>
+See also the [npm docs][]
 
 * [Specifying packages to process](#specifying-packages-to-process)
 * [Project files](#project-files)
@@ -14,14 +14,17 @@
 
 A package is a file or directory that is described by a package.json file.
 
-* The project files for npm are package.json and one of package-lock.json or npm-shrinkwrap.json. See [Project files](#project-files) and npm documentation:
-  * See [package.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-json)
-  * See [package-lock.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json)
+* The project files for npm are package.json and one of package-lock.json or
+  npm-shrinkwrap.json. See [Project files](#project-files) and npm
+  documentation
 
-Notice that the package-lock.json version must be **higher than v1** (Node.js 15 or higher)!
-Package-lock.json v1 is not supported in Hermeto.
+  * See [package.json][]
+  * See [package-lock.json][]
 
-Hermeto fetch-deps shell command:
+Notice that the package-lock.json version must be **higher than v1** (Node.js 15
+or higher)! Package-lock.json v1 is not supported in Hermeto.
+
+Hermeto can be run as follows
 
 ```shell
 hermeto fetch-deps \
@@ -30,7 +33,8 @@ hermeto fetch-deps \
   '<JSON input>'
 ```
 
-JSON input:
+where 'JSON input' is
+
 ```jsonc
 {
   // "npm" tells Hermeto to process npm packages
@@ -41,31 +45,37 @@ JSON input:
 }
 ```
 
+or more simply by just invoking `hermeto fetch-deps npm`.
+
 ## Project files
 
-Hermeto downloads dependencies explicitly declared in project files - package.json and package-lock.json.
-The npm CLI manages the package-lock.json file automatically. To make sure the file is up to date, you can use [npm install](https://docs.npmjs.com/cli/v9/commands/npm-install?v=true).
+Hermeto downloads dependencies explicitly declared in project files -
+package.json and package-lock.json. The npm CLI manages the package-lock.json
+file automatically. To make sure the file is up to date, you can use
+[npm install][].
 
-Possible dependency types in the above-mentioned files are described in the following section.
+Possible dependency types in the above-mentioned files are described in the
+following section.
 
 ### Dependencies
 
-The "npm package" formats that Hermeto can process are the following:
-```
-1. A folder containing a program described by a package.json file.
-2. A gzipped tarball containing (1.).
-3. A URL that resolves to (2.).
-4. A <name>@<version> that is published on the registry with (3.).
-5. A <name>@<tag> that points to (4.).
-6. A <name> that has a latest tag satisfying (5.).
-7. A git url that, when cloned, results in (1.).
-```
+The "npm package" formats that Hermeto can process are the following
 
-Examples of (package.json) dependency formats:
-(For the full list of dependency formats with explanation, See [npm documentation](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#dependencies)).
+1. A folder containing a program described by a 'package.json' file.
+1. A gzipped tarball containing the previous.
+1. A URL that resolves to the previous.
+1. A `<name>@<version>` that is published on the registry with the previous.
+1. A `<name>@<tag>` that points to the previous.
+1. A `<name>` that has a latest tag satisfying the previous.
+1. A git url that, when cloned, results in... the first item in this list.
+
+Examples of (package.json) dependency formats
+
+(For the full list of dependency formats with explanation,
+see the [npm documentation][])
 
 <details>
-<summary>Dependencies from npm registries</summary>
+  <summary>Dependencies from npm registries</summary>
 
 ```jsonc
 {
@@ -78,10 +88,11 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>URLs as dependencies</summary>
+  <summary>URLs as dependencies</summary>
 
 ```jsonc
 {
@@ -91,10 +102,11 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>GitHub URLs</summary>
+  <summary>GitHub URLs</summary>
 
 ```jsonc
 {
@@ -105,11 +117,11 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
+
 </details>
 
-
 <details>
-<summary>Local paths</summary>
+  <summary>Local paths</summary>
 
 ```jsonc
 {
@@ -119,11 +131,13 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
+
 </details>
 
-### Project example:
+### Project example
+
 <details>
-<summary>package.json</summary>
+  <summary>package.json</summary>
 
 ```jsonc
 {
@@ -137,7 +151,7 @@ Examples of (package.json) dependency formats:
   "author": "",
   "license": "ISC",
   "dependencies": {
-	"react-dom": "^18.0.1",
+    "react-dom": "^18.0.1",
         "@types/react-dom": "^18.0.1",
         "bitbucket-cachi2-npm-without-deps-second": "git+https://bitbucket.org/cachi-testing/cachi2-without-deps-second.git",
         "cachito-npm-without-deps": "https://github.com/cachito-testing/cachito-npm-without-deps/raw/tarball/cachito-npm-without-deps-1.0.0.tgz",
@@ -148,10 +162,11 @@ Examples of (package.json) dependency formats:
   ]
 }
 ```
+
 </details>
 
 <details>
-<summary>package-lock.json</summary>
+    <summary>package-lock.json</summary>
 
 ```jsonc
 {
@@ -294,10 +309,11 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>foo/package.json (workspace)</summary>
+  <summary>foo/package.json (workspace)</summary>
 
 ```jsonc
 {
@@ -316,18 +332,22 @@ Examples of (package.json) dependency formats:
   }
 }
 ```
-</details>
 
+</details>
 
 ## Using fetched dependencies
 
-See also [usage.md](usage.md) for a complete example of Hermeto usage.
+See also [usage.md][] for a complete example of Hermeto usage.
 
-Hermeto downloads the npm dependencies as tar archives into the `deps/npm/` subpath of the output directory.
+Hermeto downloads the npm dependencies as tar archives into the `deps/npm/`
+subpath of the output directory.
 
-1. Dependencies fetched from npm registries are placed directly to this directory (array-flatten in the following example).
-1. Dependencies downloaded from other HTTPS URL are placed to subdirectory `external-<tarball_name>` (bar-project in the following example).
-1. Dependencies retrieved from Git repository are placed to `host, namespace, repo` subdirectories (foo-project in the following example).
+1. Dependencies fetched from npm registries are placed directly to this
+   directory (array-flatten in the following example).
+1. Dependencies downloaded from other HTTPS URL are placed to subdirectory
+   `external-<tarball_name>` (bar-project in the following example).
+1. Dependencies retrieved from Git repository are placed to `host, namespace,
+   repo` subdirectories (foo-project in the following example).
 
 ```text
 hermeto-output/deps/npm
@@ -344,24 +364,35 @@ hermeto-output/deps/npm
 │   ...
 ```
 
-In order for the `npm install` command to use the fetched dependencies instead of reaching for the npm registry,
-Hermeto needs to update [project files](#project-files). These updates happen **automatically** when we call the Hermeto's [inject-files command](usage.md#inject-project-files-npm).
+In order for the `npm install` command to use the fetched dependencies instead
+of reaching for the npm registry, Hermeto needs to update
+[project files](#project-files). These updates happen **automatically** when we
+call Hermeto's [inject-files command][].
 
 ### Changes made by the inject-files command
 
-The root `package.json` file is updated together with package.json files for each [workspace](https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true) with changes:
-* For git repositories and HTTPS URLs in dependencies update their value to an empty string
+The root 'package.json' file is updated together with 'package.json' files for
+each [workspace][] with changes
 
-Hermeto command updates the following in the `package-lock.json` file:
-* Replace URLs found in resolved items with local paths to [fetched dependencies](#using-fetched-dependencies).
-* Similarly to the above package.json changes, for git repositories and HTTPS URLs in package dependencies update their value to an empty string.
-* There is a corner case [bug](https://github.com/npm/cli/issues/2846) which happens in older npm versions (spotted in 8.12.1 version and lower) where npm mistakenly adds integrity checksum to git sources. To avoid errors while recreating git repository content as a tar archive and changing the integrity checksum,
-  Hermeto deletes integrity items, which should not be there in the first place.
+* For git repositories and HTTPS URLs in dependencies update their value to an
+  empty string
+
+Hermeto command updates the following in the `package-lock.json` file
+
+* Replace URLs found in resolved items with local paths to
+  [fetched dependencies](#using-fetched-dependencies)
+* Similarly to the above package.json changes, for git repositories and HTTPS
+  URLs in package dependencies update their value to an empty string
+* There is a corner case [bug][] which happens in older npm versions (spotted in
+  8.12.1 version and lower) where npm mistakenly adds integrity checksum to git
+  sources. To avoid errors while recreating git repository content as a tar
+  archive and changing the integrity checksum, Hermeto deletes integrity items,
+  which should not be there in the first place
 
 ### Updated project example
 
 <details>
-<summary>package.json</summary>
+  <summary>package.json</summary>
 
 ```jsonc
 {
@@ -386,10 +417,11 @@ Hermeto command updates the following in the `package-lock.json` file:
   ]
 }
 ```
+
 </details>
 
 <details>
-<summary>package-lock.json</summary>
+  <summary>package-lock.json</summary>
 
 ```jsonc
 {
@@ -532,10 +564,11 @@ Hermeto command updates the following in the `package-lock.json` file:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>foo/package.json (workspace)</summary>
+  <summary>foo/package.json (workspace)</summary>
 
 ```jsonc
 {
@@ -554,4 +587,17 @@ Hermeto command updates the following in the `package-lock.json` file:
   }
 }
 ```
+
 </details>
+
+[usage.md]: usage.md
+[inject-files command]: usage.md#inject-project-files-npm
+
+[bug]: https://github.com/npm/cli/issues/2846
+[npm]: https://www.npmjs.com
+[npm docs]: https://docs.npmjs.com
+[npm documentation]: https://docs.npmjs.com/cli/v9/configuring-npm/package-json#dependencies
+[npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
+[package-lock.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json
+[package.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-json
+[workspace]: https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true
