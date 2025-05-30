@@ -1,6 +1,4 @@
-# pip
-
-<https://pip.pypa.io/en/stable/>
+# [pip][]
 
 * [Specifying packages to process](#specifying-packages-to-process)
 * [requirements.txt](#requirementstxt)
@@ -12,12 +10,18 @@
 
 ## Specifying packages to process
 
-The "pip packages" that Hermeto can process are root directories of Python projects. They should have:
+The "pip packages" that Hermeto can process are root directories of Python
+projects. They should have
 
 * One or more requirements files (unless the project has no dependencies)
+
   * See [what Hermeto requires](#requirementstxt)
+
 * A file defining the project metadata
+
   * See [what Hermeto supports](#project-metadata)
+
+Then Hermeto can be run as follows
 
 ```shell
 hermeto fetch-deps \
@@ -26,7 +30,7 @@ hermeto fetch-deps \
   '<JSON input>'
 ```
 
-JSON input:
+where 'JSON input' is
 
 ```jsonc
 {
@@ -46,22 +50,26 @@ JSON input:
 }
 ```
 
+or more simply by just invoking `hermeto fetch-deps pip`.
+
 *For more information on using build requirements and binary distributions, see
 [Distribution Formats](#distribution-formats) section.*
 
-The main argument accepts alternative forms of input, see [usage: Pre-fetch dependencies][usage-prefetch].
+The main argument accepts alternative forms of input, see
+[usage: Pre-fetch dependencies][].
 
 ## requirements.txt
 
-Hermeto downloads dependencies explicitly declared in lockfiles. For pip, the closest thing to a lockfile would be
-a "fully resolved" requirements.txt - must contain all the transitive dependencies, must pin them to exact versions.
+Hermeto downloads dependencies explicitly declared in lockfiles. For pip, the
+closest thing to a lockfile would be a "fully resolved" requirements.txt - must
+contain all the transitive dependencies, must pin them to exact versions.
 
-A good way to generate requirements.txt is via [pip-compile](https://pip-tools.readthedocs.io/en/stable/). Note that
-pip-compile supports reading dependencies directly from project files (e.g. pyproject.toml, setup.cfg, setup.py) or from
-"requirements.in" input files.
+A good way to generate requirements.txt is via [pip-compile][]. Note that
+pip-compile supports reading dependencies directly from project files (e.g.
+pyproject.toml, setup.cfg, setup.py) or from "requirements.in" input files.
 
 <details>
-<summary>Example: pyproject.toml</summary>
+  <summary>Example: pyproject.toml</summary>
 
 ```toml
 [project]
@@ -80,7 +88,7 @@ pip-compile pyproject.toml --generate-hashes
 </details>
 
 <details>
-<summary>Example: requirements.in</summary>
+  <summary>Example: requirements.in</summary>
 
 ```requirements.txt
 # requirements.in
@@ -95,7 +103,7 @@ pip-compile requirements.in --generate-hashes
 </details>
 
 <details>
-<summary>Result: requirements.txt</summary>
+  <summary>Result: requirements.txt</summary>
 
 ```requirements.txt
 #
@@ -217,9 +225,7 @@ urllib3==1.26.14 \
 
 </details>
 
-### Hashes
-
-<https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode>
+### [Hashes][]
 
 Using hashes is **strongly** recommended.
 
@@ -227,8 +233,8 @@ If using pip-compile, use the `--generate-hashes` option.
 
 ### External dependencies
 
-For dependencies coming from somewhere other than PyPI, Hermeto supports a subset of the
-[PEP 440](https://peps.python.org/pep-0440/#direct-references) direct references.
+For dependencies coming from somewhere other than PyPI, Hermeto supports a
+subset of the [PEP 440][] direct references.
 
 #### https urls
 
@@ -237,12 +243,15 @@ dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/arch
     --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
 ```
 
-For https dependencies, Hermeto requires *exactly one* --hash option as protection from remote tampering.
+For https dependencies, Hermeto requires *exactly one* `--hash` option as
+protection from remote tampering.
 
-Note that if at least one dependency in your requirements file uses --hash, pip requires hashes for all dependencies.
-Use `pip-compile --generate-hashes` to generate compliant requirements files.
+Note that if at least one dependency in your requirements file uses `--hash`,
+pip requires hashes for all dependencies. Use `pip-compile --generate-hashes` to
+generate compliant requirements files.
 
-*Hermeto does not support PEP 440 hashes in the url fragment, only --hash options.*
+*Hermeto does not support PEP 440 hashes in the url fragment, only --hash
+options.*
 
 #### git urls
 
@@ -250,7 +259,8 @@ Use `pip-compile --generate-hashes` to generate compliant requirements files.
 dockerfile-parse @ git+https://github.com/containerbuildsystem/dockerfile-parse@b6230230987950cfb16d8858c6f9a9642f4d0952
 ```
 
-Git dependencies are incompatible with pip's hash checking. Please use an https url instead, if possible:
+Git dependencies are incompatible with pip's hash checking. Please use an HTTPS
+URL instead, if possible
 
 ```diff
 - dockerfile-parse @ git+https://github.com/containerbuildsystem/dockerfile-parse@b6230230987950cfb16d8858c6f9a9642f4d0952
@@ -258,43 +268,52 @@ Git dependencies are incompatible with pip's hash checking. Please use an https 
 +     --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
 ```
 
-If you do need to use a git url, Hermeto requires that it specifies a full commit hash.
+If you do need to use a git url, Hermeto requires that it specifies a full
+commit hash.
 
-*Hermeto does not support PEP 440 commit hashes in the url fragment (the `#` part), only directly after `@`.*
+*Hermeto does not support PEP 440 commit hashes in the url fragment (the `#`
+part), only directly after `@`.*
 
-*Note: it's impossible to craft a requirements.txt file that would download dependencies from both https urls and
-git urls. Hermeto requires hashes for https. Using one --hash makes pip require hashes for everything. Pip does not
-support hashes for git dependencies. Please use https urls instead.*
+> **NOTE**
+>
+> It's impossible to craft a requirements.txt file that would download
+> dependencies from both https urls and git urls. Hermeto requires hashes for
+> https. Using one --hash makes pip require hashes for everything. Pip does not
+> support hashes for git dependencies. Please use https urls instead.
 
 ### Supported options
 
-Requirements files support some `pip install` options - see
-<https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options>.
+Requirements files support some `pip install` options - refer to the
+[Pip docs][].
 
-Hermeto supports a small subset of them, ignores those that are not relevant for prefetching, and raises an error for
-those that *are* relevant but aren't supported.
+Hermeto supports a small subset of them, ignores those that are not relevant for
+prefetching, and raises an error for those that *are* relevant but aren't
+supported.
 
 #### Global
 
-##### [`--index-url`](https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url)
+##### [`--index-url`][]
 
 *Supported since v0.8.0.*
 
 Make Hermeto download packages from the specified Python Package Index server.
 
-Note: applies to all the packages (and only the packages) from the file which contains the `--index-url` option.
-If file A contains `--index-url` and file B does not, Hermeto will download the packages declared in B from the default
-index server (<https://pypi.org/simple/>).
+> **NOTE**
+>
+> Applies to all the packages (and only the packages) from the file which
+> contains the `--index-url` option. If file A contains `--index-url` and file B
+> does not, Hermeto will download the packages declared in B from the default
+> index server (`https://pypi.org/simple`).
 
-:warning: **Do not include credentials in the index url.** If needed, provide authentication via a `.netrc` file:
-<https://pip.pypa.io/en/stable/topics/authentication/#netrc-support>
+:warning: **Do not include credentials in the index url.** If needed, provide
+authentication via [a `.netrc` file][].
 
-##### [`--require-hashes`](https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes)
+##### [`--require-hashes`][]
 
-Enables hash-checking mode. Typically redundant, since the presence of any `--hash` option enables hash-checking mode
-as well.
+Enables hash-checking mode. Typically redundant, since the presence of any
+`--hash` option enables hash-checking mode as well.
 
-##### [`--trusted-host`](https://pip.pypa.io/en/stable/cli/pip/#trusted-host)
+##### [`--trusted-host`][]
 
 Disables HTTPS validation for a host. Don't use this for production builds.
 
@@ -302,23 +321,26 @@ Disables HTTPS validation for a host. Don't use this for production builds.
 
 ##### `--hash`
 
-Specifies the expected hashes for package archives. See also the [hashes](#hashes) section.
+Specifies the expected hashes for package archives. See also the
+[hashes](#hashes) section.
 
 ## Project metadata
 
-Hermeto looks for the name and version of your project in the following project files:
+Hermeto looks for the name and version of your project in the following project
+files
 
 * [pyproject.toml](#pyprojecttoml-pep-621-metadata)
-* [setup.cfg](#setupcfg)
+* [setup.cfg](#setupcfg-declarative-config)
 * [setup.py](#setuppy)
 
-If Hermeto fails to resolve the project name, it will generate a name based
-on the git repository origin url (and package subpath if the package is not in the repository root).
-If Hermeto fails to resolve the version, it will omit the version.
+If Hermeto fails to resolve the project name, it will generate a name based on
+the git repository origin url (and package subpath if the package is not in the
+repository root). If Hermeto fails to resolve the version, it will omit the
+version.
 
-### pyproject.toml: [PEP 621 metadata](https://packaging.python.org/en/latest/specifications/declaring-project-metadata/)
+### pyproject.toml [PEP 621 metadata][]
 
-Supported cases:
+Supported cases
 
 ```toml
 [project]
@@ -326,7 +348,7 @@ name = "my_package"
 version = "0.1.0"
 ```
 
-Unsupported cases:
+Unsupported cases
 
 ```toml
 [project]
@@ -334,9 +356,9 @@ name = "my_package"
 dynamic = ["version"]
 ```
 
-### [setup.cfg](https://setuptools.pypa.io/en/stable/userguide/declarative_config.html)
+### setup.cfg [declarative config][]
 
-Supported cases:
+Supported cases
 
 ```ini
 [metadata]
@@ -362,16 +384,16 @@ version = attr: my_package.VERSION
 #   VERSION = "0.1.0"
 ```
 
-Unsupported cases:
+Unsupported cases
 
 * missing `version`
-* some forms of `version = attr:` (those that would require executing the module)
+* some forms of `version = attr:` (those requiring executing the module)
 
 ### setup.py
 
-*Using setup.py is [discouraged](https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged).*
+*Using setup.py is [discouraged][].*
 
-Supported cases:
+Supported cases
 
 ```python
 setup(name="my_package", version="0.1.0", ...)
@@ -389,62 +411,74 @@ if __name__ == "__main__":
 
 ## Distribution formats
 
-Python packages typically distribute both the
-[binary format](https://packaging.python.org/en/latest/specifications/binary-distribution-format/) (called wheel)
-and the [source format](https://packaging.python.org/en/latest/specifications/source-distribution-format/) (called sdist).
+Python packages typically distribute both the [binary format][] (called wheel)
+and the [source format][] (called sdist).
 
-Wheels are much more convenient; they are the pre-built format, installing from a wheel amounts to unzipping the wheel
-and copying the files to the right place.
+Wheels are much more convenient; they are the pre-built format, installing from
+a wheel amounts to unzipping the wheel and copying the files to the right place.
 
-Sdists are more difficult to install. Pip must first build a wheel from the sdist using
-a [PEP 517](https://peps.python.org/pep-0517/) build system. To do that, pip has to install the build system and
-its dependencies (defined via [PEP 518](https://peps.python.org/pep-0518/)).
+Sdists are more difficult to install. Pip must first build a wheel from the
+sdist using a [PEP 517][] build system. To do that, pip has to install the build
+system and its dependencies (defined via [PEP 518][]).
 
-Hermeto (unlike the older Cachito) can download both wheels and sdists. The `allow_binary` option controls this behavior.
+Hermeto (unlike the older Cachito) can download both wheels and sdists. The
+`allow_binary` option controls this behavior.
 
-* `"allow_binary": "true"` - download both wheels and sdists
-* `"allow_binary": "false"` - download only sdists (default)
+* `"allow_binary": "true"` download both wheels and sdists
+* `"allow_binary": "false"` download only sdists (default)
 
-*Note: Hermeto currently downloads one sdist and all the available wheels per
-dependency (no filtering is being made by platform or Python version).*
+> **NOTE**
+>
+> Hermeto currently downloads one sdist and all the available wheels per
+> dependency (no filtering is being made by platform or Python version).
 
 ### Building with wheels
 
-Pre-fetching and building with wheels is much easier and faster than pre-fetching and building from source (even without filtering of wheels).
-However, downloading all the wheels naturally results in a much larger overall download size.
-Based on sample testing, wheels + sdists will be approximately 5x to 15x larger than just the sdists.
-When building with wheels, dealing with build dependencies via requirements-build.txt is unnecessary.
+Pre-fetching and building with wheels is much easier and faster than
+pre-fetching and building from source (even without filtering of wheels).
+However, downloading all the wheels naturally results in a much larger overall
+download size. Based on sample testing, wheels + sdists will be approximately 5x
+to 15x larger than just the sdists. When building with wheels, dealing with
+build dependencies via requirements-build.txt is unnecessary.
 
 ### Building from source
 
-Building wheels from sdists takes a long time, but building from source gives you an important guarantee
-which using pre-built wheels does not: what you installed matches the source code.
-This can be especially important for Python packages implemented in C or other compiled languages.
+Building wheels from sdists takes a long time, but building from source gives
+you an important guarantee which using pre-built wheels does not: what you
+installed matches the source code. This can be especially important for Python
+packages implemented in C or other compiled languages.
 
 #### requirements-build.txt
 
-To allow building from source in a network-isolated environment, Hermeto must download all the PEP 517 build dependencies
-before the build starts.
+To allow building from source in a network-isolated environment, Hermeto must
+download all the PEP 517 build dependencies before the build starts.
 
-Hermeto requires a fully resolved requirements-build.txt to do this. The file follows the same rules as requirements.txt,
-but contains build dependencies rather than runtime dependencies.
+Hermeto requires a fully resolved requirements-build.txt to do this. The file
+follows the same rules as requirements.txt, but contains build dependencies
+rather than runtime dependencies.
 
-*Note: this file must contain all the transitive build dependencies of each of your transitive runtime dependencies
-(you are installing dependencies from source).*
+> **NOTE**
+>
+> This file must contain all the transitive build dependencies of each of your
+> transitive runtime dependencies (you are installing dependencies from source).
 
-We recommend the [pybuild-deps](https://pypi.org/project/pybuild-deps) package to generate the requirements-build.txt file.
-It will automatically generate build requirements from your requirements.txt file.
+We recommend the [pybuild-deps][] package to generate the requirements-build.txt
+file. It will automatically generate build requirements from your
+requirements.txt file.
 
-*Adding a requirements-build.txt should not require changes in your build process. Pip should install the build
-dependencies automatically as needed, you don't have to install them explicitly. The purpose of requirements-build.txt
-is to make Hermeto fetch the build dependencies and provide them to pip for offline installation.*
+*Adding a requirements-build.txt should not require changes in your build
+process. Pip should install the build dependencies automatically as needed, you
+don't have to install them explicitly. The purpose of requirements-build.txt is
+to make Hermeto fetch the build dependencies and provide them to pip for offline
+installation.*
 
 ## Using fetched dependencies
 
-See also [usage.md](usage.md) for a complete example of Hermeto usage.
+See also [usage.md][] for a complete example of Hermeto usage.
 
-Hermeto downloads the Python dependencies into the deps/pip/ subpath of the output directory. The directory is a flat
-list of the downloaded distributions of your runtime and build dependencies.
+Hermeto downloads the Python dependencies into the deps/pip/ subpath of the
+output directory. The directory is a flat list of the downloaded distributions
+of your runtime and build dependencies.
 
 ```text
 hermeto-output/deps/pip
@@ -456,25 +490,28 @@ hermeto-output/deps/pip
 └── wheel-0.38.4.tar.gz
 ```
 
-To make pip use the downloaded archives, use the [--find-links](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f)
-and [--no-index](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index) options. The --find-links option
-tells pip to look for dependency archives in a directory, --no-index prevents pip from preferring PyPI over the local
-directory. Pip also accepts environment variables; Hermeto generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you. See
-[usage: generate environment variables][usage-genenv] for more details.
+To make pip use the downloaded archives, use the [`--find-links`][] and
+[`--no-index`][] options. The --find-links option tells pip to look for
+dependency archives in a directory, --no-index prevents pip from preferring PyPI
+over the local directory. Pip also accepts environment variables; Hermeto
+generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you.
+See [usage: generate environment variables][] for more details.
 
 ### Using external dependencies
 
-It gets a bit trickier with [external dependencies](#external-dependencies). Pip does not respect the --find-links
-option for dependencies specified via urls. Instead, Hermeto rewrites your requirements.txt file(s) in place to replace
-the urls with file paths (after you call the [hermeto inject-files][usage-inject] subcommand).
+It gets a bit trickier with [external dependencies](#external-dependencies). Pip
+does not respect the --find-links option for dependencies specified via urls.
+Instead, Hermeto rewrites your requirements.txt file(s) in place to replace the
+urls with file paths (after you call the [hermeto inject-files][] subcommand).
 
 ```diff
 - dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \
 + dockerfile-parse @ file:///absolute-path/hermeto-output/deps/pip/.../dockerfile-parse-...tar.gz
 ```
 
-External dependencies are stored a bit further down the deps/pip tree to avoid mixing them with PyPI dependencies. The
-path and filename is an implementation detail.
+External dependencies are stored a bit further down the deps/pip tree to avoid
+mixing them with PyPI dependencies. The path and filename is an implementation
+detail.
 
 ```text
 hermeto-output/deps/pip
@@ -486,53 +523,57 @@ hermeto-output/deps/pip
 
 ## Working with Rust-based dependencies
 
-Hermeto provides a way to prepare hermetic build of a Python package which depends on
-Rust-based packages. This process cannot be fully automated on Hermeto's side, thus it would
-require minor intervention from users.
+Hermeto provides a way to prepare hermetic build of a Python package which
+depends on Rust-based packages. This process cannot be fully automated on
+Hermeto's side, thus it would require minor intervention from users.
 
 Building such project requires that all build dependencies are  listed in
-requirements-build.txt. To achieve this
-[pybuild-deps](https://pypi.org/project/pybuild-deps) could be used. The
-following command will take care of generating the list:
+requirements-build.txt. To achieve this [pybuild-deps][] could be used. The
+following command will take care of generating the list
 
-```
+```shell
 pybuild-deps compile --generate-hashes -o requirements-build.txt requirements.txt
 ```
 
-Note, that this step requires internet connection.
+Note that this step requires internet connection.
 
-Once requirements-build.txt is populated fetch could be done as usual. Hermeto will fetch all
-run time and build time dependencies for both Python and Rust parts.
+Once requirements-build.txt is populated fetch could be done as usual. Hermeto
+will fetch all run time and build time dependencies for both Python and Rust
+parts.
 
-Note, that a system which is to be used for building these extensions must have
+Note that a system which is to be used for building these extensions must have
 `rustc`, `cargo`, and all necessary C libraries installed.
 
-With these preparations running a pip installation as usual should be sufficient to
-build and install a Rust-based extension.
+With these preparations running a pip installation as usual should be sufficient
+to build and install a Rust-based extension.
 
-Note, that sometimes Rust-based extensions can break a build. This could happen when
-such dependency is distributed with a Cargo.lock not matching Cargo.toml (while rare this seems
-to happen due to peculiarities of the release process for some packages). In this case
-a package will be rejected with a note about lock file mismatch and an additional report from
-Cargo about inability to load package lock file due to a mismatch. There is no
-good solution for this problem on Hermeto's side and the best course of action is to reach out
-to maintainers of this extension and notify them about the mismatch. Switching to a binary
-distribution of the package would also resolve this problem at the price of not building
-it from sources (see [Building with wheels](#building-with-wheels) for additional context).
+Note that sometimes Rust-based extensions can break a build. This could happen
+when such dependency is distributed with a Cargo.lock not matching Cargo.toml
+(while rare this seems to happen due to peculiarities of the release process for
+some packages). In this case a package will be rejected with a note about lock
+file mismatch and an additional report from Cargo about inability to load
+package lock file due to a mismatch. There is no good solution for this problem
+on Hermeto's side and the best course of action is to reach out to maintainers
+of this extension and notify them about the mismatch. Switching to a binary
+distribution of the package would also resolve this problem at the price of not
+building it from sources (see [Building with wheels](#building-with-wheels) for
+additional context).
 
 ## Troubleshooting
 
-Common issues you may face when fetching dependencies or when installing the fetched dependencies.
+Common issues you may face when fetching dependencies or when installing the
+fetched dependencies.
 
-First, please make sure that your project meets Hermeto's requirements (this document) and that you are using Hermeto
-as intended ([usage.md](usage.md)).
+First, please make sure that your project meets Hermeto's requirements (this
+document) and that you are using Hermeto as intended ([usage.md][]).
 
 ### Miscellaneous errors while building from source
 
 *Have you read [Building from source](#building-from-source)?*
 
-Even if you have all the build dependencies available, installing from source can come with unforeseen complications.
-Pip's [--no-binary](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary) flag can help debug faster.
+Even if you have all the build dependencies available, installing from source
+can come with unforeseen complications. Pip's [`--no-binary`][] flag can help
+debug faster.
 
 ```shell
 # on your machine
@@ -543,59 +584,65 @@ podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" ubi8/python-39 bash
 pip install --no-binary :all: -r requirements.txt
 ```
 
-Notably, older versions of pip and setuptools have a fair share of bugs related to PEP 517 handling. A good first course
-of action can be to upgrade pip and setuptools and try again.
+Notably, older versions of pip and setuptools have a fair share of bugs related
+to PEP 517 handling. A good first course of action can be to upgrade pip and
+setuptools and try again.
 
-Other pip install options such as [--use-pep517](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-use-pep517)
-may also be of interest.
+Other pip install options such as [`--use-pep517`][] may also be of interest.
 
 ### Need to install newer pip
 
-Problem: you've found out that some build errors are caused by bugs in an older pip version. But the base image for
-your container build comes with `pip==<old>` and you cannot upgrade during the build because you're building with
-network isolation.
+Problem: you've found out that some build errors are caused by bugs in an older
+pip version. But the base image for your container build comes with `pip==<old>`
+and you cannot upgrade during the build because you're building with network
+isolation.
 
-Solution: make Hermeto fetch a newer pip for you. Then you can upgrade pip from the prefetched archive.
+Solution: make Hermeto fetch a newer pip for you. Then you can upgrade pip from
+the prefetched archive.
 
 ```requirements.txt
 # add to requirements-build.txt or use a separate file
 pip==22.3.1 --hash=...
 ```
 
-```Dockerfile
+```dockerfile
 RUN source /tmp/hermeto.env && \
     pip install -U pip && \
     pip install .
 ```
 
-*You can use a similar approach to upgrade setuptools or other build dependencies before installing your app. Build
-dependencies other than pip should be part or [requirements-build.txt](#requirements-buildtxt) already.*
+*You can use a similar approach to upgrade setuptools or other build
+dependencies before installing your app. Build dependencies other than pip
+should be part or [requirements-build.txt](#requirements-buildtxt) already.*
 
 ### Failing to compile a dependency
 
-Building dependencies written in C typically requires gcc, CPython headers and other development libraries. Hermeto
-does not fetch these, getting them into the build is up to you. The best case scenario, if you're building a container,
-is that the base image already contains everything you need. For example, the
-[ubi8/python-39](https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f) image contains
-most of the typical development libraries.
+Building dependencies written in C typically requires gcc, CPython headers and
+other development libraries. Hermeto does not fetch these, getting them into the
+build is up to you. The best case scenario, if you're building a container, is
+that the base image already contains everything you need. For example, the
+[ubi8/python-39][] image contains most of the typical development libraries.
 
-To find out what non-Python dependencies you need, try to `pip install --no-binary :all:` in a clean environment
-(e.g. a container) as shown [above](#miscellaneous-errors-while-building-from-source). The error messages you get should
-hopefully point you to the required dependencies.
+To find out what non-Python dependencies you need, try to `pip install
+--no-binary :all:` in a clean environment (e.g. a container) as shown
+[above](#miscellaneous-errors-while-building-from-source). The error messages
+you get should hopefully point you to the required dependencies.
 
-For dependencies compiled from other languages, such as Rust, we don't know of any good solutions for offline
-installation. If you do manage to make it work, please let us know.
+For dependencies compiled from other languages, such as Rust, we don't know of
+any good solutions for offline installation. If you do manage to make it work,
+please let us know.
 
 ### Dependency does not distribute sources
 
-Some projects do not distribute sdists to PyPI. For example, [tensorflow](https://pypi.org/project/tensorflow/2.11.0/#files) (as of
-version 2.11.0) distributes only wheels.
+Some projects do not distribute sdists to PyPI. For example, [tensorflow][] (as
+of version 2.11.0) distributes only wheels.
 
-Possible workarounds:
+Possible workarounds
 
 * Enable pre-fetching wheels using `"allow_binary": "true"` in JSON input.
-* Find the git repository for the project, get the source tarball for a release. In requirements.txt,
-specify the dependency [via an https url](#https-urls).
+* Find the git repository for the project, get the source tarball for a release.
+
+In requirements.txt, specify the dependency [via an https url](#https-urls).
 
 ```diff
 - tensorflow==2.11.0
@@ -603,6 +650,31 @@ specify the dependency [via an https url](#https-urls).
 +     --hash=sha256:99c732b92b1b37fc243a559e02f9aef5671771e272758aa4aec7f34dc92dac48
 ```
 
-[usage-prefetch]: usage.md#pre-fetch-dependencies
-[usage-genenv]: usage.md#generate-environment-variables
-[usage-inject]: usage.md#inject-project-files
+[hermeto inject-files]: usage.md#inject-project-files-pip
+[usage: generate environment variables]: usage.md#generate-environment-variables-pip
+[usage: Pre-fetch dependencies]: usage.md#pre-fetch-dependencies-pip
+[usage.md]: usage.md
+
+[`--find-links`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f
+[`--no-binary`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary
+[`--no-index`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index
+[`--use-pep517`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-use-pep517
+[`--index-url`]: https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url
+[`--require-hashes`]: https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes
+[`--trusted-host`]: https://pip.pypa.io/en/stable/cli/pip/#trusted-host
+[a `.netrc` file]: https://pip.pypa.io/en/stable/topics/authentication/#netrc-support
+[binary format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format
+[declarative config]: https://setuptools.pypa.io/en/stable/userguide/declarative_config.html
+[discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
+[Hashes]: https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode
+[PEP 440]: https://peps.python.org/pep-0440/#direct-references
+[PEP 517]: https://peps.python.org/pep-0517
+[PEP 518]: https://peps.python.org/pep-0518
+[PEP 621 metadata]: https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+[Pip docs]: https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options
+[pip-compile]: https://pip-tools.readthedocs.io/en/stable/
+[pip]: https://pip.pypa.io/en/stable
+[pybuild-deps]: https://pypi.org/project/pybuild-deps
+[source format]: https://packaging.python.org/en/latest/specifications/source-distribution-format
+[tensorflow]: https://pypi.org/project/tensorflow/2.11.0/#files
+[ubi8/python-39]: https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f
