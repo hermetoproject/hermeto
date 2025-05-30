@@ -1,0 +1,55 @@
+config:
+  # Config reference https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md
+  default: true
+  MD003: {style: atx}  # Heading style "# Header"
+  MD004: {style: dash}  # List character "- List item"
+  MD009:
+    br_spaces: 0  # Non-breaking spaces are forbidden
+    strict: true  # Strict no-trailing spaces
+  MD013: {code_blocks: false}  # Ignore line-length for code blocks
+  MD026: {punctuation: ".,;:。，；："}  # Allow "!"
+  MD027: {list_items: false}  # Only a single space after blockquote symbol (">")
+  # Please do not use "em" and "strong" *outside of* <details> or <summary> blocks
+  MD033:  # Forbid raw HTML elements
+    allowed_elements:
+      - details
+      - summary
+      - em
+      - strong
+  MD035: {style: ---}  # Horizontal rule character
+  MD040: {language_only: true}  # Specify language for code blocks (initiated by "```")
+  MD046: {style: fenced}  # Code block style, i.e. NOT indented
+  MD048: {style: backtick}  # Code block fence character
+  MD049: {style: asterisk}  # Emphasis ("italic") character
+  MD050: {style: asterisk}  # Strong ("bold") character
+  MD054:
+    autolink: false
+    inline: true  # PLEASE use inlines ONLY for intra-doc links ("[example location](#example-heading)")
+    full: false
+    collapsed: true
+    shortcut: false
+    url_inline: false
+  MD055: {style: leading_and_trailing}  # Table style, e.g. "| Cell   | Cell   |"
+  MD059:
+    prohibited_texts:
+      - click
+      - click here
+      - here
+      - link
+      - more
+      - this
+      - see
+  no-hard-tabs: true
+
+gitignore: true
+
+# Define file glob expressions to ignore
+ignores:
+  - docs/adr
+  - docs/design
+  - tests/
+  - docs/dependency_confusion.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+
+showFound: true  # Show files found for processing
