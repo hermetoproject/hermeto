@@ -1,7 +1,7 @@
 # Project information
 site_name: Hermeto
-repo_name: hermetoproject/hermeto
-repo_url: https://github.com/hermetoproject/hermeto
+repo_name: ben-alkov/hermeto
+repo_url: https://github.com/ben-alkov/hermeto
 edit_uri: edit/main/docs
 
 # Theme configuration
