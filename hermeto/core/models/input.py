@@ -276,7 +276,10 @@ class Request(pydantic.BaseModel):
         cls, packages: list[PackageInput], info: pydantic.ValidationInfo
     ) -> list[PackageInput]:
         """Check that package paths are existing subdirectories."""
-        source_dir: RootedPath = info.data.get("source_dir", None)
+        # Note that any of the other fields may have failed the validation (hence None), because
+        # pydantic always validates all fields without failing early [1]
+        # [1] https://github.com/pydantic/pydantic/discussions/9533#discussioncomment-9620872
+        source_dir: Optional[RootedPath] = info.data.get("source_dir", None)
         if source_dir is not None:
             for p in packages:
                 try:
