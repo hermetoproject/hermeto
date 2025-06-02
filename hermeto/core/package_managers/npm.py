@@ -540,7 +540,7 @@ def _get_npm_dependencies(
     asyncio.run(
         async_download_files(
             {url: item["download_path"] for (url, item) in files_to_download.items()},
-            get_config().concurrency_limit,
+            get_config().runtime.concurrency_limit,
         )
     )
     # Check integrity of downloaded packages

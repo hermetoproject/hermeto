@@ -437,7 +437,7 @@ class Go:
         same artifact (e.g. dependency) twice. The backoff is exponential, we will wait 1s ->
         2s -> 4s -> ... before retrying.
         """
-        n_tries = get_config().gomod_download_max_tries
+        n_tries = get_config().gomod.download_max_tries
 
         @retry(
             stop=stop_after_attempt(n_tries),
@@ -758,7 +758,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         "GOMODCACHE": "${output_dir}/deps/gomod/pkg/mod",
         "GOPROXY": "file://${GOMODCACHE}/cache/download",
     }
-    env_vars_template.update(config.default_environment_variables.get("gomod", {}))
+    env_vars_template.update(config.gomod.environment_variables)
 
     return RequestOutput.from_obj_list(
         components=components,
@@ -1067,8 +1067,8 @@ def _resolve_gomod(
         "GOTOOLCHAIN": "auto",
     }
 
-    if config.goproxy_url:
-        env["GOPROXY"] = config.goproxy_url
+    if config.gomod.proxy_url:
+        env["GOPROXY"] = config.gomod.proxy_url
 
     if "cgo-disable" in request.flags:
         env["CGO_ENABLED"] = "0"

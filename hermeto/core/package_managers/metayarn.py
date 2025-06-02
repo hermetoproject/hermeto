@@ -20,7 +20,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
             fetched_packages.append(fetch_yarn_classic_source(new_request))
         except (MissingLockfile, NotV1Lockfile) as e:
             # It is assumed that if a package is not v1 then it is probably v2.
-            if get_config().allow_yarnberry_processing:
+            if get_config().yarn.enabled:
                 fetched_packages.append(fetch_yarnberry_source(new_request))
             else:
                 raise e

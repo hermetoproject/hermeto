@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import ValidationError, model_validator
+from pydantic import BaseModel, ValidationError, model_validator
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
@@ -24,40 +24,135 @@ CONFIG_FILE_PATHS = [
 log = logging.getLogger(__name__)
 config = None
 
+_FLAT_FIELD_MIGRATIONS = [
+    ("allow_yarnberry_processing", ("yarn", "enabled")),
+    ("ignore_pip_dependencies_crates", ("pip", "ignore_dependencies_crates")),
+    ("goproxy_url", ("gomod", "proxy_url")),
+    ("gomod_download_max_tries", ("gomod", "download_max_tries")),
+    ("requests_timeout", ("http", "timeout")),
+    ("subprocess_timeout", ("runtime", "subprocess_timeout")),
+    ("concurrency_limit", ("runtime", "concurrency_limit")),
+]
+
+
+def _remove_gomod_strict_vendor(data: dict[str, Any]) -> None:
+    """Remove the deprecated gomod_strict_vendor field with a warning."""
+    if "gomod_strict_vendor" in data:
+        data.pop("gomod_strict_vendor")
+        log.warning(
+            "The 'gomod_strict_vendor' config option is deprecated and no longer has any effect. "
+            f"{APP_NAME.capitalize()} will always check the vendored contents and fail if they "
+            "are not up-to-date. Please remove this option from your configuration."
+        )
+
+
+def _migrate_flat_to_namespace(
+    data: dict[str, Any],
+    old_key: str,
+    value: Any,
+    namespace: str,
+    new_key: str,
+) -> None:
+    """Migrate a legacy flat config field to the new namespaced structure.
+
+    If the namespaced field isn't already set, copies the value and warns about deprecation.
+    If already set, keeps the existing value and warns about the conflict.
+    """
+    data.setdefault(namespace, {})
+    new_path = f"{namespace}.{new_key}"
+
+    if new_key not in data[namespace]:
+        data[namespace][new_key] = value
+        log.warning(f"Config option '{old_key}' is deprecated. Please use '{new_path}' instead.")
+    else:
+        log.warning(
+            f"Both '{old_key}' and '{new_path}' are set. "
+            f"Using '{new_path}'. Please remove '{old_key}'."
+        )
+
+
+class PipSettings(BaseModel, extra="forbid"):
+    """Settings for Pip."""
+
+    # This setting exists for legacy use-cases only and must not be relied upon
+    ignore_dependencies_crates: bool = False
+
+
+class YarnSettings(BaseModel, extra="forbid"):
+    """Settings for Yarn v2+."""
+
+    # This setting exists for legacy use-cases only and must not be relied upon
+    enabled: bool = True
+
+
+class GomodSettings(BaseModel, extra="forbid"):
+    """Settings for Go modules."""
+
+    proxy_url: str = "https://proxy.golang.org,direct"
+    download_max_tries: int = 5
+    environment_variables: dict[str, str] = {}
+
+
+class HttpSettings(BaseModel, extra="forbid"):
+    """HTTP-related settings."""
+
+    timeout: int = 300
+
+
+class RuntimeSettings(BaseModel, extra="forbid"):
+    """General runtime execution settings."""
+
+    subprocess_timeout: int = 3600
+    concurrency_limit: int = 5
+
 
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
+        # Double underscore is pydantic-settings' convention for nested config structures.
+        # Single underscores can't be used since they appear in field names (e.g., concurrency_limit).
+        env_nested_delimiter="__",
         env_prefix=f"{APP_NAME.upper()}_",
         extra="forbid",
     )
 
-    goproxy_url: str = "https://proxy.golang.org,direct"
-    default_environment_variables: dict = {}
-    gomod_download_max_tries: int = 5
-    gomod_strict_vendor: bool = True
-    subprocess_timeout: int = 3600
-
-    # matches aiohttp default timeout:
-    # https://docs.aiohttp.org/en/v3.9.5/client_reference.html#aiohttp.ClientSession
-    requests_timeout: int = 300
-    concurrency_limit: int = 5
-
-    # The flags below are for legacy use-cases compatibility only, must not be
-    # relied upon and will be eventually removed.
-    allow_yarnberry_processing: bool = True
-    ignore_pip_dependencies_crates: bool = False
+    pip: PipSettings = PipSettings()
+    yarn: YarnSettings = YarnSettings()
+    gomod: GomodSettings = GomodSettings()
+    http: HttpSettings = HttpSettings()
+    runtime: RuntimeSettings = RuntimeSettings()
 
     @model_validator(mode="before")
     @classmethod
-    def _print_deprecation_warning(cls, data: Any) -> Any:
-        if "gomod_strict_vendor" in data:
-            log.warning(
-                "The `gomod_strict_vendor` config option is deprecated and will be removed in "
-                f"future versions. Note that it no longer has any effect when set, {APP_NAME} will "
-                "always check the vendored contents and fail if they are not up-to-date."
+    def _normalize_config_structure(cls, data: Any) -> Any:
+        """Normalize config data to the new namespaced structure.
+
+        - Remove deprecated fields with warnings
+        - Migrate legacy flat fields to new namespaced structure
+
+        FIXME: Drop these normalizations and conversions on the next major release
+        """
+        if not isinstance(data, dict):
+            return data
+
+        _remove_gomod_strict_vendor(data)
+
+        for old_key, (namespace, new_key) in _FLAT_FIELD_MIGRATIONS:
+            if old_key in data:
+                _migrate_flat_to_namespace(data, old_key, data.pop(old_key), namespace, new_key)
+
+        # default_environment_variables.gomod -> gomod.environment_variables
+        # (default_environment_variables only ever supported the gomod backend)
+        default_gomod_env_vars = data.pop("default_environment_variables", {}).get("gomod")
+        if default_gomod_env_vars is not None:
+            _migrate_flat_to_namespace(
+                data,
+                "default_environment_variables",
+                default_gomod_env_vars,
+                "gomod",
+                "environment_variables",
             )
 
         return data
@@ -100,6 +195,7 @@ def create_cli_config_class(config_path: Path) -> type[Config]:
 
         model_config = SettingsConfigDict(
             case_sensitive=False,
+            env_nested_delimiter="__",
             env_prefix=f"{APP_NAME.upper()}_",
             extra="forbid",
             yaml_file=config_path,

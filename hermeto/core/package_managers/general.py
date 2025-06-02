@@ -41,7 +41,7 @@ def download_binary_file(
     :param int chunk_size: Chunk size param for Response.iter_content()
     :raise FetchError: If download failed
     """
-    timeout = get_config().requests_timeout
+    timeout = get_config().http.timeout
     try:
         resp = pkg_requests_session.get(
             url, stream=True, verify=not insecure, auth=auth, timeout=timeout
@@ -74,7 +74,7 @@ async def _async_download_binary_file(
     :raise FetchError: If download failed
     """
     try:
-        timeout = aiohttp.ClientTimeout(total=get_config().requests_timeout)
+        timeout = aiohttp.ClientTimeout(total=get_config().http.timeout)
 
         log.debug(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"

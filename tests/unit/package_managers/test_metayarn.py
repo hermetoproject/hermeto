@@ -112,8 +112,8 @@ def test_fetch_yarn_source_propagates_yarn_classic_rejection_when_yarnberry_is_f
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/path/to/package")
-    mock_config = mock.Mock
-    mock_config.allow_yarnberry_processing = False
+    mock_config = mock.Mock()
+    mock_config.yarn = mock.Mock(enabled=False)
     mock_get_config.return_value = mock_config
 
     with pytest.raises(NotV1Lockfile):

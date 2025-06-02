@@ -141,7 +141,7 @@ def _get_project_packages_from(
     version: str,
 ) -> Iterable[pypi_simple.DistributionPackage]:
     """Get all the project packages from the given index URL."""
-    timeout = get_config().requests_timeout
+    timeout = get_config().http.timeout
     with pypi_simple.PyPISimple(index_url) as client:
         try:
             project_page = client.get_project_page(name, timeout)

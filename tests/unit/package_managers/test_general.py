@@ -32,7 +32,7 @@ from tests.common_utils import GIT_REF
 def test_download_binary_file(
     mock_get: Any, auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
 ) -> None:
-    timeout = get_config().requests_timeout
+    timeout = get_config().http.timeout
     url = "http://example.org/example.tar.gz"
     content = b"file content"
 
