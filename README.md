@@ -25,7 +25,7 @@ The primary intended use of Hermeto's outputs is for network-isolated container 
 Please note that Hermeto is rather picky, aiming to
 
 * encourage or enforce best practices
-* never execute arbitrary code[^1]
+* never execute arbitrary code [^pip-download-example]
 * keep the implementation simple
 
 To play nicely with Hermeto, the build process for your project must be
@@ -269,7 +269,7 @@ See [docs/yarn.md][] for more details.
 
 Hermeto was derived from (but is not a direct fork of) [Cachito][].
 
-[^1]: See for example this [python.org discussion][]
+[^pip-download-example]: See for example this [python.org discussion][]
 
 [^2]: Hermeto expects to use a specific version of the `go` command
   when downloading dependencies. This is the version installed in the
