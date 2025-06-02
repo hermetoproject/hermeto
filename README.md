@@ -122,38 +122,26 @@ The permissive mode can currently suppress the following:
   information)
 - cargo manifest file `Cargo.toml` is out of sync with `Cargo.lock`
 
-### Available configuration parameters
+### Settings
 
-You can change Hermeto's configuration by specifying a configuration file while
-invoking any of the CLI commands
+Settings can be provided via the following sources (highest priority first):
 
-```shell
-hermeto --config-file config.yaml fetch-deps --source ./my-repo gomod
-```
+1. **Environment variables**: prefixed with `HERMETO_`, using `__` for nested
+   settings (e.g., `HERMETO_GOMOD__DOWNLOAD_MAX_TRIES=10`)
+2. **CLI option**: `--config-file path/to/config.yaml`
+3. **Config files** (automatically loaded if present): `~/.config/hermeto/config.yaml`,
+   `hermeto.yaml`, `.hermeto.yaml`
 
-Any parameter specified in this file will override the default values present in
-the [config.py][] module.
+Any settings specified will override the default values present in the
+[config.py][] module. The only supported format for config files is YAML.
 
-The only supported format for the config file is YAML.
-
-- `default_environment_variables` a dictionary where the keys are names of
-  package managers. The values are dictionaries where the keys are default
-  environment variables to set for that package manager and the values are the
-  environment variable values.
-- `gomod_download_max_tries` a maximum number of attempts for retrying go
-  commands.
-- `gomod_strict_vendor` (deprecated: *This option no longer has any effect
-  when set*) the bool to disable/enable the strict vendor mode. For a repo that
-  has gomod dependencies, if the `vendor` directory exists and this config
-  option is set to `True`, one of the vendoring flags must be used.
-- `goproxy_url` sets the value of the GOPROXY variable that Hermeto uses
-  internally when downloading Go modules. See [Go environment variables][].
-- `requests_timeout` a number (in seconds) for `requests.get()`'s 'timeout'
-  parameter, which sets an upper limit on how long `requests` can take to make a
-  connection and/or send a response. Larger numbers set longer timeouts.
-- `subprocess_timeout` a number (in seconds) to set a timeout for commands
-  executed by the `subprocess` module. Set a larger number to give the
-  subprocess execution more time.
+- `gomod.download_max_tries` max retry attempts for go commands.
+- `gomod.environment_variables` default environment variables for gomod.
+- `gomod.proxy_url` sets the GOPROXY variable that Hermeto uses internally when
+  downloading Go modules. See [Go environment variables][].
+- `http.timeout` timeout (seconds) for HTTP requests.
+- `runtime.concurrency_limit` max concurrent operations.
+- `runtime.subprocess_timeout` timeout (seconds) for subprocess commands.
 
 ## Package managers
 

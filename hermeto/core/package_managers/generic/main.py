@@ -92,7 +92,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
         Path.mkdir(Path(artifact.filename).parent, parents=True, exist_ok=True)
         to_download[str(artifact.download_url)] = artifact.filename
 
-    asyncio.run(async_download_files(to_download, get_config().concurrency_limit))
+    asyncio.run(async_download_files(to_download, get_config().runtime.concurrency_limit))
 
     # verify checksums
     for artifact in lockfile.artifacts:

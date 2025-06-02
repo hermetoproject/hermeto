@@ -92,25 +92,21 @@ class TestTopLevelOpts:
         assert lines[1].startswith("Supported package managers: bundler")
 
     @pytest.mark.parametrize(
-        "file, file_text",
+        "config_values",
         [
-            ("config.yaml", "gomod_download_max_tries: 1000000"),
-            (
-                "config.yaml",
-                "gomod_download_max_tries: 1000000\ngomod_strict_vendor: True",
-            ),
+            {"gomod": {"download_max_tries": 1000000}},
+            {"gomod": {"download_max_tries": 1000000, "proxy_url": "https://example.com"}},
         ],
     )
     def test_config_file_option(
         self,
-        file: str,
-        file_text: str,
+        config_values: dict[str, dict[str, Any]],
         tmp_cwd: Path,
     ) -> None:
-        tmp_cwd.joinpath(file).touch()
-        tmp_cwd.joinpath(file).write_text(file_text)
+        config_file_path = tmp_cwd / "config.yaml"
+        config_file_path.write_text(yaml.dump(config_values))
 
-        args = ["--config-file", file, "fetch-deps", "gomod"]
+        args = ["--config-file", str(config_file_path), "fetch-deps", "gomod"]
 
         output = RequestOutput.from_obj_list(
             components=[
@@ -130,9 +126,10 @@ class TestTopLevelOpts:
         def side_effect(whatever: Any) -> RequestOutput:
             config = config_file.get_config()
 
-            load_text = yaml.safe_load(file_text)
-            for config_parameter in load_text.keys():
-                assert getattr(config, config_parameter) == load_text[config_parameter]
+            for namespace, fields in config_values.items():
+                namespace_obj = getattr(config, namespace)
+                for field, expected_value in fields.items():
+                    assert getattr(namespace_obj, field) == expected_value
 
             return output
 
