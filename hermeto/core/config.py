@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Optional, Type
 
 import yaml
-from pydantic import model_validator
+from pydantic import BaseModel, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -22,10 +22,30 @@ log = logging.getLogger(__name__)
 config = None
 
 
+class PipSettings(BaseModel):
+    """Settings for Pip."""
+
+    ignore_pip_dependencies_crates: bool = False
+
+
+class YarnSettings(BaseModel):
+    """Settings for Yarn v2+."""
+
+    enabled: bool = True
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
-    model_config = SettingsConfigDict(env_prefix=f"{APP_NAME.upper()}_", extra="forbid")
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix=f"{APP_NAME.upper()}_",
+        extra="forbid",
+    )
+
+    pip: PipSettings = PipSettings()
+    yarn: YarnSettings = YarnSettings()
 
     goproxy_url: str = "https://proxy.golang.org,direct"
     default_environment_variables: dict = {}
@@ -40,7 +60,7 @@ class Config(BaseSettings):
 
     # The flags below are for legacy use-cases compatibility only, must not be
     # relied upon and will be eventually removed.
-    allow_yarnberry_processing: bool = True
+    allow_yarnberry_processing: Optional[bool] = None
     ignore_pip_dependencies_crates: bool = False
 
     @model_validator(mode="before")
@@ -52,6 +72,24 @@ class Config(BaseSettings):
                 f"future versions. Note that it no longer has any effect when set, {APP_NAME} will "
                 "always check the vendored contents and fail if they are not up-to-date."
             )
+
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_legacy_flat_fields(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        legacy_field_map: dict[str, tuple[str, str]] = {
+            "allow_yarnberry_processing": ("yarn", "enabled"),
+            "ignore_pip_dependencies_crates": ("pip", "ignore_pip_dependencies_crates"),
+        }
+
+        for legacy_key, (new_namespace, new_key) in legacy_field_map.items():
+            if legacy_key in data:
+                value = data.pop(legacy_key)
+                data.setdefault(new_namespace, {})[new_key] = value
 
         return data
 
