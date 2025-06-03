@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
 import logging
-import os
-import os.path
 import tarfile
 import zipfile
 from collections.abc import Iterable, Iterator
@@ -932,13 +930,8 @@ def _is_pkg_info_dir(path: str) -> bool:
     """Simply check whether a path represents the PKG_INFO directory.
 
     Generally, it is in the format for example: pkg-1.0/PKG_INFO
-
-    :param str path: a path.
-    :return: True if it is, otherwise False is returned.
-    :rtype: bool
     """
-    parts = os.path.split(path)
-    return len(parts) == 2 and parts[1] == "PKG-INFO"
+    return Path(path).name == "PKG-INFO"
 
 
 def _check_metadata_in_sdist(sdist_path: Path) -> None:
