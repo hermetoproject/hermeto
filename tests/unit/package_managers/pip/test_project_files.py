@@ -5,7 +5,7 @@ from typing import Any, Literal, Optional
 import pytest
 
 from hermeto.core.errors import BaseError, PackageRejected
-from hermeto.core.package_managers.pip import main as pip
+from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from tests.common_utils import Symlink, write_file_tree
 
@@ -18,7 +18,7 @@ class TestPyprojectTOML:
         if exists:
             rooted_tmp_path.join_within_root("pyproject.toml").path.write_text("")
 
-        pyproject_toml = pip.PyProjectTOML(rooted_tmp_path)
+        pyproject_toml = PyProjectTOML(rooted_tmp_path)
         assert pyproject_toml.exists() == exists
 
     def _assert_has_logs(
@@ -98,7 +98,7 @@ class TestPyprojectTOML:
         pyproject_toml = rooted_tmp_path.join_within_root("pyproject.toml")
         pyproject_toml.path.write_text(toml_content)
 
-        assert pip.PyProjectTOML(rooted_tmp_path).get_name() == expect_name
+        assert PyProjectTOML(rooted_tmp_path).get_name() == expect_name
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
 
     @pytest.mark.parametrize(
@@ -172,7 +172,7 @@ class TestPyprojectTOML:
         pyproject_toml = rooted_tmp_path.join_within_root("pyproject.toml")
         pyproject_toml.path.write_text(toml_content)
 
-        assert pip.PyProjectTOML(rooted_tmp_path).get_version() == expect_version
+        assert PyProjectTOML(rooted_tmp_path).get_version() == expect_version
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
 
 
@@ -185,7 +185,7 @@ class TestSetupCFG:
         if exists:
             rooted_tmp_path.join_within_root("setup.cfg").path.write_text("")
 
-        setup_cfg = pip.SetupCFG(rooted_tmp_path)
+        setup_cfg = SetupCFG(rooted_tmp_path)
         assert setup_cfg.exists() == exists
 
     @pytest.mark.parametrize(
@@ -233,7 +233,7 @@ class TestSetupCFG:
         setup_cfg = rooted_tmp_path.join_within_root("setup.cfg")
         setup_cfg.path.write_text(cfg_content)
 
-        assert pip.SetupCFG(rooted_tmp_path).get_name() == expect_name
+        assert SetupCFG(rooted_tmp_path).get_name() == expect_name
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
 
     @pytest.mark.parametrize(
@@ -282,7 +282,7 @@ class TestSetupCFG:
         setup_cfg = rooted_tmp_path.join_within_root("setup.cfg")
         setup_cfg.path.write_text(cfg_content)
 
-        assert pip.SetupCFG(rooted_tmp_path).get_version() == expect_version
+        assert SetupCFG(rooted_tmp_path).get_version() == expect_version
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
 
     def _assert_has_logs(
@@ -302,7 +302,7 @@ class TestSetupCFG:
     ) -> None:
         """Test resolving version from file: or attr: directive."""
         write_file_tree(project_tree, rooted_tmpdir.path)
-        setup_cfg = pip.SetupCFG(rooted_tmpdir)
+        setup_cfg = SetupCFG(rooted_tmpdir)
 
         if expect_error is None:
             assert setup_cfg.get_version() == expect_version
@@ -884,7 +884,7 @@ class TestSetupPY:
         if exists:
             rooted_tmp_path.join_within_root("setup.py").path.write_text("")
 
-        setup_py = pip.SetupPY(rooted_tmp_path)
+        setup_py = SetupPY(rooted_tmp_path)
         assert setup_py.exists() == exists
 
     def _test_get_value(
@@ -898,7 +898,7 @@ class TestSetupPY:
     ) -> None:
         """Test getting name or version from setup.py."""
         rooted_tmpdir.join_within_root("setup.py").path.write_text(script_content.format(what=what))
-        setup_py = pip.SetupPY(rooted_tmpdir)
+        setup_py = SetupPY(rooted_tmpdir)
 
         if what == "name":
             value = setup_py.get_name()
