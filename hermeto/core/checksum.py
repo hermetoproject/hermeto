@@ -41,6 +41,12 @@ class ChecksumInfo(NamedTuple):
         algorithm, checksum = sri.split("-", 1)
         return ChecksumInfo(algorithm, base64.b64decode(checksum).hex())
 
+    @classmethod
+    def from_hash(cls, h: str) -> "ChecksumInfo":
+        """Convert the input hash to ChecksumInfo."""
+        algorithm, _, digest = h.partition(":")
+        return ChecksumInfo(algorithm, digest)
+
 
 class _MismatchInfo(NamedTuple):
     algorithm: str

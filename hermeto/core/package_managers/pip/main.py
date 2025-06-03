@@ -377,7 +377,7 @@ def _process_req(
             if hashes:
                 download_info["missing_req_file_checksum"] = False
                 _checksum_must_match_or_path_unlink(
-                    download_info["path"], list(map(_to_checksum_info, hashes))
+                    download_info["path"], list(map(ChecksumInfo.from_hash, hashes))
                 )
 
     log.debug(
@@ -561,7 +561,7 @@ def _process_package_distributions(
     version = requirement.version_specs[0][1]
     normalized_version = canonicalize_version(version)
     sdists: list[DistributionPackageInfo] = []
-    req_file_checksums = set(map(_to_checksum_info, requirement.hashes))
+    req_file_checksums = set(map(ChecksumInfo.from_hash, requirement.hashes))
     wheels: list[DistributionPackageInfo] = []
 
     try:
@@ -745,11 +745,6 @@ def _add_cachito_hash_to_url(parsed_url: urlparse.ParseResult, hash_spec: str) -
     if parsed_url.fragment:
         new_fragment = f"{parsed_url.fragment}&{new_fragment}"
     return parsed_url._replace(fragment=new_fragment).geturl()
-
-
-def _to_checksum_info(hash_: str) -> ChecksumInfo:
-    algorithm, _, digest = hash_.partition(":")
-    return ChecksumInfo(algorithm, digest)
 
 
 def _download_from_requirement_files(
