@@ -28,7 +28,7 @@ from tests.common_utils import GIT_REF
 CUSTOM_PYPI_ENDPOINT = "https://my-pypi.org/simple/"
 
 
-def make_dpi(
+def mock_distribution_package_info(
     name: str,
     version: str = "1.0",
     package_type: Literal["sdist", "wheel"] = "sdist",
@@ -50,6 +50,62 @@ def make_dpi(
         pypi_checksums=set(pypi_checksum),
         req_file_checksums=set(req_file_checksums),
     )
+
+
+def mock_pypi_simple_distribution_package(
+    filename: str,
+    version: str,
+    package_type: str = "sdist",
+    digests: Optional[dict[str, str]] = None,
+    is_yanked: bool = False,
+) -> pypi_simple.DistributionPackage:
+    return pypi_simple.DistributionPackage(
+        filename=filename,
+        url="",
+        project=None,
+        version=version,
+        package_type=package_type,
+        digests=digests or dict(),
+        requires_python=None,
+        has_sig=None,
+        is_yanked=is_yanked,
+    )
+
+
+def mock_requirement(
+    package: Any,
+    kind: Any,
+    version_specs: Any = None,
+    download_line: Any = None,
+    hashes: Any = None,
+    qualifiers: Any = None,
+    url: Any = None,
+) -> Any:
+    """Mock a requirements.txt item. By default should pass validation."""
+    if url is None and kind == "vcs":
+        url = f"git+https://github.com/example@{GIT_REF}"
+    elif url is None and kind == "url":
+        url = "https://example.org/file.tar.gz"
+
+    if hashes is None and qualifiers is None and kind == "url":
+        qualifiers = {"cachito_hash": "sha256:abcdef"}
+
+    return mock.Mock(
+        package=package,
+        kind=kind,
+        version_specs=version_specs if version_specs is not None else [("==", "1")],
+        download_line=download_line or package,
+        hashes=hashes or [],
+        qualifiers=qualifiers or {},
+        url=url,
+    )
+
+
+def mock_requirements_file(
+    requirements: Optional[list] = None, options: Optional[list] = None
+) -> Any:
+    """Mock a requirements.txt file."""
+    return mock.Mock(requirements=requirements or [], options=options or [])
 
 
 @mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
@@ -1266,61 +1322,6 @@ class TestPipRequirementsFile:
 class TestDownload:
     """Tests for dependency downloading."""
 
-    def mock_requirements_file(
-        self, requirements: Optional[list] = None, options: Optional[list] = None
-    ) -> Any:
-        """Mock a requirements.txt file."""
-        return mock.Mock(requirements=requirements or [], options=options or [])
-
-    def mock_requirement(
-        self,
-        package: Any,
-        kind: Any,
-        version_specs: Any = None,
-        download_line: Any = None,
-        hashes: Any = None,
-        qualifiers: Any = None,
-        url: Any = None,
-    ) -> Any:
-        """Mock a requirements.txt item. By default should pass validation."""
-        if url is None and kind == "vcs":
-            url = f"git+https://github.com/example@{GIT_REF}"
-        elif url is None and kind == "url":
-            url = "https://example.org/file.tar.gz"
-
-        if hashes is None and qualifiers is None and kind == "url":
-            qualifiers = {"cachito_hash": "sha256:abcdef"}
-
-        return mock.Mock(
-            package=package,
-            kind=kind,
-            version_specs=version_specs if version_specs is not None else [("==", "1")],
-            download_line=download_line or package,
-            hashes=hashes or [],
-            qualifiers=qualifiers or {},
-            url=url,
-        )
-
-    def mock_pypi_simple_package(
-        self,
-        filename: str,
-        version: str,
-        package_type: str = "sdist",
-        digests: Optional[dict[str, str]] = None,
-        is_yanked: bool = False,
-    ) -> pypi_simple.DistributionPackage:
-        return pypi_simple.DistributionPackage(
-            filename=filename,
-            url="",
-            project=None,
-            version=version,
-            package_type=package_type,
-            digests=digests or dict(),
-            requires_python=None,
-            has_sig=None,
-            is_yanked=is_yanked,
-        )
-
     @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
     def test_process_non_existing_package_distributions(
         self,
@@ -1328,13 +1329,11 @@ class TestDownload:
         rooted_tmp_path: RootedPath,
     ) -> None:
         package_name = "does-not-exists"
-        mock_requirement = self.mock_requirement(
-            package_name, "pypi", version_specs=[("==", "1.0.0")]
-        )
+        req = mock_requirement(package_name, "pypi", version_specs=[("==", "1.0.0")])
 
         mock_get_project_page.side_effect = pypi_simple.NoSuchProjectError(package_name, "URL")
         with pytest.raises(FetchError) as exc_info:
-            pip._process_package_distributions(mock_requirement, rooted_tmp_path)
+            pip._process_package_distributions(req, rooted_tmp_path)
 
         assert (
             str(exc_info.value)
@@ -1350,9 +1349,7 @@ class TestDownload:
     ) -> None:
         package_name = "aiowsgi"
         version = "0.1.0"
-        mock_requirement = self.mock_requirement(
-            package_name, "pypi", version_specs=[("==", version)]
-        )
+        req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
 
         file_1 = package_name + "-" + version + "-py3-none-any.whl"
         file_2 = package_name + "-" + version + "-manylinux1_x86_64.whl"
@@ -1360,15 +1357,13 @@ class TestDownload:
         mock_get_project_page.return_value = pypi_simple.ProjectPage(
             package_name,
             [
-                self.mock_pypi_simple_package(file_1, version, "wheel"),
-                self.mock_pypi_simple_package(file_2, version, "wheel"),
+                mock_pypi_simple_distribution_package(file_1, version, "wheel"),
+                mock_pypi_simple_distribution_package(file_2, version, "wheel"),
             ],
             None,
             None,
         )
-        artifacts = pip._process_package_distributions(
-            mock_requirement, rooted_tmp_path, allow_binary=True
-        )
+        artifacts = pip._process_package_distributions(req, rooted_tmp_path, allow_binary=True)
         assert artifacts[0].package_type != "sdist"
         assert len(artifacts) == 2
         assert f"No sdist found for package {package_name}=={version}" in caplog.text
@@ -1384,14 +1379,10 @@ class TestDownload:
     ) -> None:
         package_name = "aiowsgi"
         version = "0.1.0"
-        mock_requirement = self.mock_requirement(
-            package_name, "pypi", version_specs=[("==", version)]
-        )
+        req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
 
         with pytest.raises(PackageRejected) as exc_info:
-            pip._process_package_distributions(
-                mock_requirement, rooted_tmp_path, allow_binary=allow_binary
-            )
+            pip._process_package_distributions(req, rooted_tmp_path, allow_binary=allow_binary)
 
         assert f"No sdist found for package {package_name}=={version}" in caplog.text
         assert (
@@ -1421,18 +1412,20 @@ class TestDownload:
     ) -> None:
         package_name = "aiowsgi"
         version = "0.1.0"
-        mock_requirement = self.mock_requirement(
-            package_name, "pypi", version_specs=[("==", version)]
-        )
+        req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
 
         mock_get_project_page.return_value = pypi_simple.ProjectPage(
             package_name,
-            [self.mock_pypi_simple_package(filename=package_name, version=version, is_yanked=True)],
+            [
+                mock_pypi_simple_distribution_package(
+                    filename=package_name, version=version, is_yanked=True
+                )
+            ],
             None,
             None,
         )
 
-        pip._process_package_distributions(mock_requirement, rooted_tmp_path)
+        pip._process_package_distributions(req, rooted_tmp_path)
         assert (
             f"The version {version} of package {package_name} is yanked, use a different version"
             in caplog.text
@@ -1451,7 +1444,7 @@ class TestDownload:
     ) -> None:
         package_name = "aiowsgi"
         version = "0.1.0"
-        mock_requirement = self.mock_requirement(
+        req = mock_requirement(
             package_name,
             "pypi",
             version_specs=[("==", version)],
@@ -1461,8 +1454,8 @@ class TestDownload:
         mock_get_project_page.return_value = pypi_simple.ProjectPage(
             package_name,
             [
-                self.mock_pypi_simple_package(package_name, version, "sdist"),
-                self.mock_pypi_simple_package(
+                mock_pypi_simple_distribution_package(package_name, version, "sdist"),
+                mock_pypi_simple_distribution_package(
                     package_name,
                     version,
                     "wheel",
@@ -1476,9 +1469,7 @@ class TestDownload:
             None,
             None,
         )
-        artifacts = pip._process_package_distributions(
-            mock_requirement, rooted_tmp_path, allow_binary=True
-        )
+        artifacts = pip._process_package_distributions(req, rooted_tmp_path, allow_binary=True)
 
         if use_user_hashes and use_pypi_digests:
             assert (
@@ -1522,15 +1513,15 @@ class TestDownload:
     ) -> None:
         package_name = "aiowsgi"
         version = "0.1.0"
-        mock_requirement = self.mock_requirement(
+        req = mock_requirement(
             package_name, "pypi", version_specs=[("==", version)], hashes=["sha128:abcdef"]
         )
 
         mock_get_project_page.return_value = pypi_simple.ProjectPage(
             package_name,
             [
-                self.mock_pypi_simple_package(package_name, version),
-                self.mock_pypi_simple_package(
+                mock_pypi_simple_distribution_package(package_name, version),
+                mock_pypi_simple_distribution_package(
                     package_name, version, "wheel", digests={"sha256": "abcdef"}
                 ),
             ],
@@ -1538,9 +1529,7 @@ class TestDownload:
             None,
         )
 
-        artifacts = pip._process_package_distributions(
-            mock_requirement, rooted_tmp_path, allow_binary=True
-        )
+        artifacts = pip._process_package_distributions(req, rooted_tmp_path, allow_binary=True)
 
         assert len(artifacts) == 1
         assert f"Filtering out {package_name} due to checksum mismatch" in caplog.text
@@ -1580,32 +1569,34 @@ class TestDownload:
         else:
             actual_version = noncanonical_version
 
-        mock_requirement = self.mock_requirement(
-            "foo", "pypi", version_specs=[("==", requested_version)]
-        )
+        req = mock_requirement("foo", "pypi", version_specs=[("==", requested_version)])
         mock_get_project_page.return_value = pypi_simple.ProjectPage(
             "foo",
             [
-                self.mock_pypi_simple_package(filename="foo.tar.gz", version=actual_version),
-                self.mock_pypi_simple_package(filename="foo-manylinux.whl", version=actual_version),
+                mock_pypi_simple_distribution_package(
+                    filename="foo.tar.gz", version=actual_version
+                ),
+                mock_pypi_simple_distribution_package(
+                    filename="foo-manylinux.whl", version=actual_version
+                ),
             ],
             None,
             None,
         )
 
-        artifacts = pip._process_package_distributions(mock_requirement, rooted_tmp_path)
+        artifacts = pip._process_package_distributions(req, rooted_tmp_path)
         assert artifacts[0].package_type == "sdist"
         assert artifacts[0].version == requested_version
         assert all(w.version == requested_version for w in artifacts[1:])
 
     def test_sdist_sorting(self) -> None:
         """Test that sdist preference key can be used for sorting in the expected order."""
-        unyanked_tar_gz = make_dpi(name="unyanked.tar.gz", is_yanked=False)
-        unyanked_zip = make_dpi(name="unyanked.zip", is_yanked=False)
-        unyanked_tar_bz2 = make_dpi(name="unyanked.tar.bz2", is_yanked=False)
-        yanked_tar_gz = make_dpi(name="yanked.tar.gz", is_yanked=True)
-        yanked_zip = make_dpi(name="yanked.zip", is_yanked=True)
-        yanked_tar_bz2 = make_dpi(name="yanked.tar.bz2", is_yanked=True)
+        unyanked_tar_gz = mock_distribution_package_info(name="unyanked.tar.gz", is_yanked=False)
+        unyanked_zip = mock_distribution_package_info(name="unyanked.zip", is_yanked=False)
+        unyanked_tar_bz2 = mock_distribution_package_info(name="unyanked.tar.bz2", is_yanked=False)
+        yanked_tar_gz = mock_distribution_package_info(name="yanked.tar.gz", is_yanked=True)
+        yanked_zip = mock_distribution_package_info(name="yanked.zip", is_yanked=True)
+        yanked_tar_bz2 = mock_distribution_package_info(name="yanked.tar.bz2", is_yanked=True)
 
         # Original order is descending by preference
         sdists = [
@@ -1638,11 +1629,9 @@ class TestDownload:
         """Test downloading of a single VCS package."""
         vcs_url = f"git+https://github.com/spam/eggs@{GIT_REF}"
 
-        mock_requirement = self.mock_requirement(
-            "eggs", "vcs", url=vcs_url, download_line=f"eggs @ {vcs_url}"
-        )
+        req = mock_requirement("eggs", "vcs", url=vcs_url, download_line=f"eggs @ {vcs_url}")
 
-        download_info = pip._download_vcs_package(mock_requirement, rooted_tmp_path)
+        download_info = pip._download_vcs_package(req, rooted_tmp_path)
 
         assert download_info == {
             "package": "eggs",
@@ -1693,7 +1682,7 @@ class TestDownload:
         if hash_as_qualifier:
             original_url = url_with_hash
 
-        mock_requirement = self.mock_requirement(
+        req = mock_requirement(
             "foo",
             "url",
             url=original_url,
@@ -1703,7 +1692,7 @@ class TestDownload:
         )
 
         download_info = pip._download_url_package(
-            mock_requirement,
+            req,
             rooted_tmp_path,
             set(trusted_hosts),
         )
@@ -1754,7 +1743,7 @@ class TestDownload:
             "--only-binary",
         ]
         options = all_rejected + ["-c", "constraints.txt", "--use-feature", "some_feature", "--foo"]
-        req_file = self.mock_requirements_file(options=options)
+        req_file = mock_requirements_file(options=options)
         with pytest.raises(UnsupportedFeature) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
 
@@ -1778,8 +1767,8 @@ class TestDownload:
     )
     def test_pypi_dep_not_pinned(self, version_specs: list[str]) -> None:
         """Test that unpinned PyPI deps cause a PackageRejected error."""
-        req = self.mock_requirement("foo", "pypi", version_specs=version_specs)
-        req_file = self.mock_requirements_file(requirements=[req])
+        req = mock_requirement("foo", "pypi", version_specs=version_specs)
+        req_file = mock_requirements_file(requirements=[req])
         with pytest.raises(PackageRejected) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
         msg = f"Requirement must be pinned to an exact version: {req.download_line}"
@@ -1800,8 +1789,8 @@ class TestDownload:
     )
     def test_vcs_dep_no_git_ref(self, url: str) -> None:
         """Test that VCS deps with no git ref cause a PackageRejected error."""
-        req = self.mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
-        req_file = self.mock_requirements_file(requirements=[req])
+        req = mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
+        req_file = mock_requirements_file(requirements=[req])
 
         with pytest.raises(PackageRejected) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
@@ -1813,8 +1802,8 @@ class TestDownload:
     def test_vcs_dep_not_git(self, scheme: str) -> None:
         """Test that VCS deps not from git cause an UnsupportedFeature error."""
         url = f"{scheme}://example.org/spam/eggs"
-        req = self.mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
-        req_file = self.mock_requirements_file(requirements=[req])
+        req = mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
+        req_file = mock_requirements_file(requirements=[req])
 
         with pytest.raises(UnsupportedFeature) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
@@ -1840,10 +1829,10 @@ class TestDownload:
             qualifiers = {}
 
         url = "http://example.org/foo.tar.gz"
-        req = self.mock_requirement(
+        req = mock_requirement(
             "foo", "url", hashes=hashes, qualifiers=qualifiers, download_line=f"foo @ {url}"
         )
-        req_file = self.mock_requirements_file(requirements=[req])
+        req_file = mock_requirements_file(requirements=[req])
 
         with pytest.raises(PackageRejected) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
@@ -1866,8 +1855,8 @@ class TestDownload:
     )
     def test_url_dep_unknown_file_ext(self, url: str) -> None:
         """Test that missing / unknown file extension in URL causes a validation error."""
-        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
-        req_file = self.mock_requirements_file(requirements=[req])
+        req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+        req_file = mock_requirements_file(requirements=[req])
 
         match = "URL for requirement does not contain any recognized file extension:"
         with pytest.raises(PackageRejected, match=match):
@@ -1875,13 +1864,13 @@ class TestDownload:
 
     def test_validate_whl_url_when_binaries_allowed(self) -> None:
         url = "https://example.org/file.whl"
-        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+        req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
 
         pip._validate_requirements([req], allow_binary=True)
 
     def test_validate_whl_url_when_binaries_not_allowed(self) -> None:
         url = "https://example.org/file.whl"
-        req = self.mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
+        req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
 
         with pytest.raises(PackageRejected):
             pip._validate_requirements([req], allow_binary=False)
@@ -1904,12 +1893,12 @@ class TestDownload:
             options = []
 
         if local_hash:
-            req_1 = self.mock_requirement("foo", requirement_kind, hashes=["sha256:abcdef"])
+            req_1 = mock_requirement("foo", requirement_kind, hashes=["sha256:abcdef"])
         else:
-            req_1 = self.mock_requirement("foo", requirement_kind)
+            req_1 = mock_requirement("foo", requirement_kind)
 
-        req_2 = self.mock_requirement("bar", requirement_kind)
-        req_file = self.mock_requirements_file(requirements=[req_1, req_2], options=options)
+        req_2 = mock_requirement("bar", requirement_kind)
+        req_file = mock_requirements_file(requirements=[req_1, req_2], options=options)
 
         with pytest.raises(PackageRejected) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
@@ -1938,8 +1927,8 @@ class TestDownload:
             hashes = ["malformed"]
             qualifiers = {}
 
-        req = self.mock_requirement("foo", requirement_kind, hashes=hashes, qualifiers=qualifiers)
-        req_file = self.mock_requirements_file(requirements=[req])
+        req = mock_requirement("foo", requirement_kind, hashes=hashes, qualifiers=qualifiers)
+        req_file = mock_requirements_file(requirements=[req])
 
         with pytest.raises(PackageRejected) as exc_info:
             pip._download_dependencies(RootedPath("/output"), req_file)
@@ -1976,7 +1965,7 @@ class TestDownload:
         Mock the helper functions used for downloading here, test them properly elsewhere.
         """
         # <setup>
-        req = self.mock_requirement(
+        req = mock_requirement(
             "foo", "pypi", download_line="foo==1.0", version_specs=[("==", "1.0")]
         )
         # match sdist hash, match wheel0 hash, mismatch wheel1 hash, no hash
@@ -2002,7 +1991,7 @@ class TestDownload:
             options.append("--index-url")
             options.append(index_url)
 
-        req_file = self.mock_requirements_file(
+        req_file = mock_requirements_file(
             requirements=[req],
             options=options,
         )
@@ -2013,7 +2002,7 @@ class TestDownload:
 
         sdist_download = pip_deps.join_within_root("foo-1.0.tar.gz").path
 
-        sdist_DPI = make_dpi(
+        sdist_DPI = mock_distribution_package_info(
             "foo",
             path=sdist_download,
             index_url=expect_index_url,
@@ -2041,7 +2030,7 @@ class TestDownload:
                 [wheel_0_download, wheel_1_download, wheel_2_download],
                 pypi_checksum_wheels,
             ):
-                dpi = make_dpi(
+                dpi = mock_distribution_package_info(
                     "foo",
                     package_type="wheel",
                     path=wheel_path,
@@ -2180,7 +2169,7 @@ class TestDownload:
         """
         # <setup>
         plain_url = "https://example.org/bar.tar.gz#cachito_hash=sha256:654321"
-        url_req = self.mock_requirement(
+        url_req = mock_requirement(
             "bar",
             "url",
             download_line=f"bar @ {plain_url}",
@@ -2193,7 +2182,7 @@ class TestDownload:
             options.append("--trusted-host")
             options.append(host)
 
-        req_file = self.mock_requirements_file(
+        req_file = mock_requirements_file(
             requirements=[
                 url_req,
             ],
@@ -2287,11 +2276,11 @@ class TestDownload:
         # confusion
         git_url = f"https://github.com/spam/bacon@{GIT_REF}"
 
-        vcs_req = self.mock_requirement(
+        vcs_req = mock_requirement(
             "bacon", "vcs", download_line=f"bacon @ git+{git_url}", url=f"git+{git_url}"
         )
 
-        req_file = self.mock_requirements_file(
+        req_file = mock_requirements_file(
             requirements=[vcs_req],
         )
 
@@ -2367,8 +2356,8 @@ class TestDownload:
         pypi_download1 = pip_deps.join_within_root("foo", "foo-1.0.0.tar.gz").path
         pypi_download2 = pip_deps.join_within_root("bar", "bar-0.0.1.tar.gz").path
 
-        pypi_package1 = make_dpi("foo", "1.0.0", path=pypi_download1)
-        pypi_package2 = make_dpi("bar", "0.0.1", path=pypi_download2)
+        pypi_package1 = mock_distribution_package_info("foo", "1.0.0", path=pypi_download1)
+        pypi_package2 = mock_distribution_package_info("bar", "0.0.1", path=pypi_download2)
 
         _process_package_distributions.side_effect = [[pypi_package1], [pypi_package2]]
 
