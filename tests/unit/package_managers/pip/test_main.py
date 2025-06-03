@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 
 import pypi_simple
 import pytest
-from _pytest.logging import LogCaptureFixture
 from git import Repo
 
 from hermeto import APP_NAME
@@ -111,7 +110,7 @@ def mock_requirements_file(
 def test_get_pip_metadata_from_pyproject_toml(
     mock_pyproject_toml: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     pyproject_toml = mock_pyproject_toml.return_value
     pyproject_toml.exists.return_value = True
@@ -132,7 +131,7 @@ def test_get_pip_metadata_from_pyproject_toml(
 def test_get_pip_metadata_from_setup_py(
     mock_setup_py: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     setup_py = mock_setup_py.return_value
     setup_py.exists.return_value = True
@@ -153,7 +152,7 @@ def test_get_pip_metadata_from_setup_py(
 def test_get_pip_metadata_from_setup_cfg(
     mock_setup_cfg: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     setup_cfg = mock_setup_cfg.return_value
     setup_cfg.exists.return_value = True
@@ -178,7 +177,7 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     mock_setup_cfg: mock.Mock,
     mock_pyproject_toml: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     # Case 1: Only pyproject.toml exists with name but no version
     pyproject_toml = mock_pyproject_toml.return_value
@@ -242,7 +241,7 @@ def test_get_pip_metadata_from_remote_origin(
     mock_pyproject_toml: mock.Mock,
     origin_exists: bool,
     rooted_tmp_path_repo: RootedPath,
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     pyproject_toml = mock_pyproject_toml.return_value
     pyproject_toml.exists.return_value = False
@@ -680,7 +679,7 @@ class TestDownload:
         hsh = "sha256:abcdef"
         assert pip._add_cachito_hash_to_url(urlparse(original_url), hsh) == url_with_hash
 
-    def test_ignored_and_rejected_options(self, caplog: LogCaptureFixture) -> None:
+    def test_ignored_and_rejected_options(self, caplog: pytest.LogCaptureFixture) -> None:
         """
         Test ignored and rejected options.
 
@@ -822,7 +821,7 @@ class TestDownload:
         global_require_hash: bool,
         local_hash: bool,
         requirement_kind: str,
-        caplog: LogCaptureFixture,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Test that missing hashes cause a validation error."""
         if global_require_hash:
@@ -895,7 +894,7 @@ class TestDownload:
         index_url: Optional[str],
         allow_binary: bool,
         rooted_tmp_path: RootedPath,
-        caplog: LogCaptureFixture,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test dependency downloading.
@@ -1088,7 +1087,7 @@ class TestDownload:
         trusted_hosts: list[str],
         checksum_match: bool,
         rooted_tmp_path: RootedPath,
-        caplog: LogCaptureFixture,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test dependency downloading.
@@ -1200,7 +1199,7 @@ class TestDownload:
         mock_unlink: mock.Mock,
         mock_download_vcs_package: mock.Mock,
         rooted_tmp_path: RootedPath,
-        caplog: LogCaptureFixture,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test dependency downloading.

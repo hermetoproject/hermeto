@@ -6,7 +6,6 @@ from unittest import mock
 
 import pytest
 import yaml
-from _pytest.logging import LogCaptureFixture
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected
@@ -97,7 +96,7 @@ def test_fetch_rpm_source(
     mock_from_obj_list: mock.Mock,
     model_input: Union[mock.Mock, RpmPackageInput, list[RpmPackageInput]],
     result_options: Optional[dict[str, dict[str, Any]]],
-    caplog: LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     def _has_multiple_options(rpm_models: list[RpmPackageInput]) -> bool:
         options = 0
