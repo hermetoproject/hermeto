@@ -20,7 +20,7 @@ metadata:
 spec:
   params:
   - name: git-url
-    value: '{{source_url}}'
+    value: '{{repo_url}}'
   - name: revision
     value: '{{revision}}'
   - name: output-image
@@ -193,6 +193,8 @@ spec:
         value: $(params.output-image).git
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: mergeTargetBranch
+        value: true
       runAfter:
       - init
       taskRef:
