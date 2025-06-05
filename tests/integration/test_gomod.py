@@ -17,7 +17,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/with-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -27,7 +26,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/without-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -51,7 +49,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                check_vendor_checksums=False,
                 expected_exit_code=2,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
@@ -67,7 +64,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -80,7 +76,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                check_vendor_checksums=False,
                 expected_exit_code=2,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
@@ -96,7 +91,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -107,7 +101,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/local-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -121,7 +114,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/generate-imported",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -138,7 +130,6 @@ log = logging.getLogger(__name__)
                     {"path": "spam-module", "type": "gomod"},
                     {"path": "eggs-module", "type": "gomod"},
                 ),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -149,7 +140,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/workspaces",
                 packages=({"path": "./workspace_modules/hello", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -188,7 +178,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.18",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -203,7 +192,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.21",
                 packages=({"path": ".", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -221,7 +209,6 @@ def test_gomod_packages(
                     {"path": "spam-module", "type": "gomod"},
                     {"path": "eggs-module", "type": "gomod"},
                 ),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -235,7 +222,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.21-dirty",
                 packages=({"path": "twenty", "type": "gomod"},),
-                check_vendor_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),

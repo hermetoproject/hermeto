@@ -71,7 +71,6 @@ class TestParameters:
     packages: tuple[dict[str, Any], ...]
     check_output: bool = True
     check_deps_checksums: bool = True
-    check_vendor_checksums: bool = True
     expected_exit_code: int = 0
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
@@ -435,15 +434,6 @@ def fetch_deps_and_check_output(
         expected_files_checksums = _load_json_or_yaml(expected_files_checksums_path)
 
         log.info("Compare checksums of fetched deps files")
-        assert files_checksums == expected_files_checksums
-
-    if test_params.check_vendor_checksums:
-        files_checksums = _calculate_files_checksums_in_dir(test_repo_dir.joinpath("vendor"))
-        expected_files_checksums_path = test_data_dir.joinpath(test_case, "vendor_sha256sums.json")
-        update_test_data_if_needed(expected_files_checksums_path, files_checksums)
-        expected_files_checksums = _load_json_or_yaml(expected_files_checksums_path)
-
-        log.info("Compare checksums of files in source vendor folder")
         assert files_checksums == expected_files_checksums
 
 

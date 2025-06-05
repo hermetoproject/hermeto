@@ -17,7 +17,6 @@ from . import utils
                     # using RPM to provide gomod and npm in the image
                     {"type": "rpm"},
                 ),
-                check_vendor_checksums=False,
                 flags=["--dev-package-managers"],
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",

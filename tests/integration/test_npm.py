@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="npm/bundled-lockfile3",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             id="npm_bundled_lockfile3",
         ),
@@ -23,7 +22,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="npm/yarn-registry-lockfile3",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             id="npm_yarn_registry_lockfile3",
         ),
@@ -57,7 +55,6 @@ def test_npm_packages(
             utils.TestParameters(
                 branch="npm/smoketest-lockfile2",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             [],
             [],
@@ -67,7 +64,6 @@ def test_npm_packages(
             utils.TestParameters(
                 branch="npm/smoketest-lockfile3",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             [],
             [],
@@ -77,7 +73,6 @@ def test_npm_packages(
             utils.TestParameters(
                 branch="npm/multiple-dep-versions",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             [],
             [],
@@ -87,7 +82,6 @@ def test_npm_packages(
             utils.TestParameters(
                 branch="npm/aliased-deps",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             [],
             [],
@@ -97,7 +91,6 @@ def test_npm_packages(
             utils.TestParameters(
                 branch="npm/dev-optional-peer-deps",
                 packages=({"path": ".", "type": "npm"},),
-                check_vendor_checksums=False,
             ),
             [],
             [],
@@ -111,7 +104,6 @@ def test_npm_packages(
                     {"path": "second_pkg", "type": "npm"},
                     {"path": "third_pkg", "type": "npm"},
                 ),
-                check_vendor_checksums=False,
             ),
             [],
             [],
