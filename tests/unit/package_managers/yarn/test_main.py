@@ -310,7 +310,7 @@ def test_set_yarnrc_configuration(
     project = mock.Mock()
     project.yarn_rc = yarn_rc
     project.package_json = mock.MagicMock()
-    output_dir = RootedPath("/tmp/output")
+    output_dir = rooted_tmp_path.join_within_root("output")
 
     _set_yarnrc_configuration(project, output_dir, yarn_version)
 
@@ -322,7 +322,7 @@ def test_set_yarnrc_configuration(
         "enableScripts": False,
         "enableStrictSsl": True,
         "enableTelemetry": False,
-        "globalFolder": "/tmp/output/deps/yarn",
+        "globalFolder": f"{output_dir}/deps/yarn",
         "ignorePath": True,
         "unsafeHttpWhitelist": [],
         "pnpMode": "strict",
@@ -337,9 +337,12 @@ def test_set_yarnrc_configuration(
 
 
 @mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
-def test_verify_yarnrc_paths(mock_get_semver: mock.Mock) -> None:
-    output_dir = RootedPath("/tmp/output")
-    yarn_rc = YarnRc(RootedPath("/tmp/.yarnrc.yml"), {})
+def test_verify_yarnrc_paths(
+    mock_get_semver: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    output_dir = rooted_tmp_path.join_within_root("output")
+    yarn_rc = YarnRc(rooted_tmp_path.join_within_root(".yarnrc.yml"), {})
     project = mock.Mock()
     project.yarn_rc = yarn_rc
     project.package_json = mock.MagicMock()
