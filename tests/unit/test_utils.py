@@ -1,6 +1,7 @@
 import errno
 import io
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 from unittest import mock
@@ -91,6 +92,7 @@ def test_run_cmd_executable_not_found(
         run_cmd(["foo"], params={})
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @mock.patch("hermeto.core.utils._get_blocksize")
 def test_fast_copy(mock_blocksize: mock.Mock, tmp_path: Path) -> None:
     mock_blocksize.return_value = 4
@@ -107,6 +109,7 @@ def test_fast_copy(mock_blocksize: mock.Mock, tmp_path: Path) -> None:
     assert nbytes == len(test_str)
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @pytest.mark.parametrize(
     "errno_",
     [
@@ -133,6 +136,7 @@ def test_fast_copy_fail_errno(mock_copy_range: mock.Mock, tmp_path: Path, errno_
             assert isinstance(ex, _FastCopyFailedFallback)
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @mock.patch("hermeto.core.utils.open")
 def test_fast_copy_fail_io_fileno(mock_open: mock.MagicMock, tmp_path: Path) -> None:
     """Test that we correctly signal a fallback to regular copy with a irregular files."""
@@ -145,6 +149,7 @@ def test_fast_copy_fail_io_fileno(mock_open: mock.MagicMock, tmp_path: Path) -> 
         _fast_copy(tmp_path / "src/foo", tmp_path / "dest/foo")
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @mock.patch("os.copy_file_range")
 @mock.patch("hermeto.core.utils.open")
 def test_fast_copy_fail_no_data_copied(
@@ -160,6 +165,7 @@ def test_fast_copy_fail_no_data_copied(
         _fast_copy(tmp_path / "src/foo", tmp_path / "dest/foo")
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @mock.patch("shutil.copy2")
 @mock.patch("os.copy_file_range")
 def test_copy_directory(
