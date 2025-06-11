@@ -614,7 +614,7 @@ def _resolve_pip(
     )
 
     # No need to search for Rust code when a user requested just binaries.
-    if allow_binary or get_config().ignore_pip_dependencies_crates:
+    if allow_binary or get_config().pip.ignore_pip_dependencies_crates:
         packages_containing_rust_code = []
     else:
         packages_containing_rust_code = filter_packages_with_rust_code(requires + build_requires)
