@@ -43,9 +43,9 @@ RUN python3 -m venv /venv && \
 COPY . .
 RUN /venv/bin/pip install --no-cache-dir .
 
-##########################
-# ASSEMBLE THE FINAL IMAGE
-##########################
+########################
+# ASSEMBLE TOOLBOX IMAGE
+########################
 FROM base
 LABEL maintainer="Red Hat"
 
@@ -65,4 +65,4 @@ RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /venv/bin/cachi2 /usr/local/bin/cachi2 && \
     ln -s /venv/bin/hermeto /usr/local/bin/hermeto
 
-ENTRYPOINT ["/usr/local/bin/hermeto"]
+CMD ["/usr/local/bin/hermeto"]
