@@ -136,7 +136,8 @@ def _fast_copy(src: Path, dest: Path, *, follow_symlinks: bool = True) -> int:
             raise _FastCopyFailedFallback()
 
         try:
-            while nbytes := os.copy_file_range(srcfd, destfd, count=_get_blocksize(srcfd)):
+            # mypy: `os` module has no attribute "copy_file_range" on some platforms
+            while nbytes := os.copy_file_range(srcfd, destfd, count=_get_blocksize(srcfd)):  # type: ignore
                 total += nbytes
 
         except OSError as ex:

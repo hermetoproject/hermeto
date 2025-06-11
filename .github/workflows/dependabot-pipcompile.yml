@@ -47,6 +47,7 @@ jobs:
             --output-file=requirements.txt \
             --python=3.9 \
             --refresh \
+            --no-strip-markers \
             pyproject.toml
           uv pip compile \
             --all-extras \
@@ -54,6 +55,7 @@ jobs:
             --output-file=requirements-extras.txt \
             --python=3.9 \
             --refresh \
+            --no-strip-markers \
             pyproject.toml
           {
             echo 'GIT_DIFF<<EOF'
