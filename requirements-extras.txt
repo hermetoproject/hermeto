@@ -847,6 +847,7 @@ pathspec==0.12.1 \
     # via
     #   black
     #   mkdocs
+    #   mypy
 pbr==6.1.1 \
     --hash=sha256:38d4daea5d9fa63b3f626131b9d34947fd0c8be9b05a29276870580050a25a76 \
     --hash=sha256:93ea72ce6989eb2eed99d0f75721474f69ad88128afdef5ac377eb797c4bf76b
@@ -1108,6 +1109,7 @@ pygments==2.19.1 \
     --hash=sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c
     # via
     #   mkdocs-material
+    #   pytest
     #   rich
 pymdown-extensions==10.15 \
     --hash=sha256:0e5994e32155f4b03504f939e501b981d306daf7ec2aa1cd2eb6bd300784f8f7 \
@@ -1451,6 +1453,7 @@ typing-extensions==4.13.2 \
     #   hermeto (pyproject.toml)
     #   beautifulsoup4
     #   black
+    #   exceptiongroup
     #   multidict
     #   mypy
     #   pydantic
