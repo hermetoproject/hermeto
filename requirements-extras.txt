@@ -142,9 +142,7 @@ bandit==1.8.3 \
 beautifulsoup4==4.13.4 \
     --hash=sha256:9bbbb14bfde9d79f38b8cd5f8c7c85f4b8f2523190ebed90e950a8dea4cb1c4b \
     --hash=sha256:dbb3c4e1ceae6aefebdaf2423247260cd062430a410e38c66f2baa50a8437195
-    # via
-    #   hermeto (pyproject.toml)
-    #   pypi-simple
+    # via pypi-simple
 black==25.1.0 \
     --hash=sha256:030b9759066a4ee5e5aca28c3c77f9c64789cdd4de8ac1df642c40b708be6171 \
     --hash=sha256:055e59b198df7ac0b7efca5ad7ff2516bca343276c466be72eb04a3bcc1f82d7 \
@@ -275,7 +273,6 @@ click==8.1.8 \
     --hash=sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2 \
     --hash=sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a
     # via
-    #   hermeto (pyproject.toml)
     #   black
     #   mkdocs
     #   pip-tools

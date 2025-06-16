@@ -19,29 +19,25 @@ dynamic = ["version"]
 dependencies = [
   "aiohttp",
   "aiohttp-retry",
-  "beautifulsoup4",
+  "createrepo-c ; sys_platform == 'linux'",
   "gitpython",
   "packageurl-python",
   "packaging",
   "pyarn",
+  "pybuild-deps",
   "pydantic",
   "pypi-simple",
-  "pyarn",
-  "pybuild-deps",
   "pyyaml",
   "requests",
   "semver",
   "tenacity",
   "tomlkit",
   "typer",
-  "createrepo-c ; sys_platform == 'linux'",
-  "packageurl-python"
 ]
 [project.optional-dependencies]
 dev = [
   "bandit",
   "black",
-  "click",
   "flake8",
   "flake8-docstrings",
   "flake8-pyproject",
@@ -57,7 +53,6 @@ test = [
   "pytest-asyncio",
   "pytest-cov",
   "pytest-env",
-  "pyyaml",
 ]
 [project.scripts]
 cachi2 = "hermeto.interface.cli:app"
