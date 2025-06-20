@@ -1,19 +1,51 @@
+# Needed due to https://github.com/python/mypy/issues/17535
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Type
 
 import yaml
 from pydantic import BaseModel, model_validator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 from hermeto import APP_NAME
 from hermeto.core.models.input import parse_user_input
 
+CONFIG_FILE_PATHS = [f"~/.config/{APP_NAME.lower()}/config.yaml", "config.yaml"]
 log = logging.getLogger(__name__)
 config = None
 
 
-class Config(BaseModel, extra="forbid"):
+class PipSettings(BaseModel):
+    """Settings for Pip."""
+
+    ignore_pip_dependencies_crates: bool = False
+
+
+class YarnSettings(BaseModel):
+    """Settings for Yarn v2+."""
+
+    enabled: bool = True
+
+
+class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
+
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix=f"{APP_NAME.upper()}_",
+        extra="forbid",
+    )
+
+    pip: PipSettings = PipSettings()
+    yarn: YarnSettings = YarnSettings()
 
     goproxy_url: str = "https://proxy.golang.org,direct"
     default_environment_variables: dict = {}
@@ -28,7 +60,7 @@ class Config(BaseModel, extra="forbid"):
 
     # The flags below are for legacy use-cases compatibility only, must not be
     # relied upon and will be eventually removed.
-    allow_yarnberry_processing: bool = True
+    allow_yarnberry_processing: Optional[bool] = None
     ignore_pip_dependencies_crates: bool = False
 
     @model_validator(mode="before")
@@ -42,6 +74,63 @@ class Config(BaseModel, extra="forbid"):
             )
 
         return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_legacy_flat_fields(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        legacy_field_map: dict[str, tuple[str, str]] = {
+            "allow_yarnberry_processing": ("yarn", "enabled"),
+            "ignore_pip_dependencies_crates": ("pip", "ignore_pip_dependencies_crates"),
+        }
+
+        for legacy_key, (new_namespace, new_key) in legacy_field_map.items():
+            if legacy_key in data:
+                value = data.pop(legacy_key)
+                data.setdefault(new_namespace, {})[new_key] = value
+
+        return data
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Control allowed settings sources and priority.
+
+        https://docs.pydantic.dev/2.11/concepts/pydantic_settings/#customise-settings-sources
+        """
+        return (
+            init_settings,
+            env_settings,
+            YamlConfigSettingsSource(
+                settings_cls
+            ),  # The CLI config path from yaml_file in model_config
+            YamlConfigSettingsSource(settings_cls, CONFIG_FILE_PATHS),
+        )
+
+
+def create_cli_config_class(config_path: Path) -> Type[Config]:
+    """Return a subclass of Config that uses the CLI YAML file input.
+
+    This is necessary because the path of the YAML config file from the CLI is not known
+    ahead of time: https://github.com/pydantic/pydantic-settings/issues/259
+    """
+
+    class CLIConfig(Config):
+        """A subclass of Config that uses the CLI YAML file input."""
+
+        model_config = SettingsConfigDict(
+            env_prefix=f"{APP_NAME.upper()}_", extra="forbid", yaml_file=config_path
+        )
+
+    return CLIConfig
 
 
 def get_config() -> Config:
@@ -57,5 +146,8 @@ def get_config() -> Config:
 def set_config(path: Path) -> None:
     """Set global config variable using input from file."""
     global config
-
-    config = parse_user_input(Config.model_validate, yaml.safe_load(path.read_text()))
+    # Validate beforehand for a friendlier error message: https://github.com/pydantic/pydantic-settings/pull/432
+    parse_user_input(Config.model_validate, yaml.safe_load(path.read_text()))
+    # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
+    cli_config_class = create_cli_config_class(path)
+    config = cli_config_class()
