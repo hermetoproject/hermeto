@@ -1,6 +1,4 @@
-# Bundler
-
-<https://bundler.io/>
+# [Bundler][]
 
 ## Prerequisites
 
@@ -38,9 +36,10 @@ ignoring the current machine's platform and installing only ruby platform gems.
 As a result, gems with native extensions will be compiled from the source.
 
 However, occasionally some gems do not have a version for the ruby platform and
-are only available as pre-compiled binaries. In this case, you may need to enable
-the pre-fetching of gems for specific platforms to avoid potential failures with
-the `allow_binary` option set to `true` when running the `fetch-deps` command.
+are only available as pre-compiled binaries. In this case, you may need to
+enable the pre-fetching of gems for specific platforms to avoid potential
+failures with the `allow_binary` option set to `true` when running the
+`fetch-deps` command.
 
 ```bash
 cd path-to-your-ruby-project
@@ -51,21 +50,21 @@ By default, the `allow_binary` option is disabled.
 
 ## Configuration
 
-[Bundler](https://bundler.io/v2.5/man/bundle-config.1.html#DESCRIPTION) uses
-an unorthodox system when dealing with configuration options. The highest
-precedence is given to the config file, and then to the environment variables.
-This is a current limitation of Bundler, that we had to work around. We may
-drop the workaround if this ends up being addressed in future Bundler releases.
+[Bundler][] uses an unorthodox system when dealing with
+[configuration options][]. The highest precedence is given to the config file,
+and then to the environment variables. This is a current limitation of Bundler,
+that we had to work around. We may drop the workaround if this ends up being
+addressed in future Bundler releases.
 
-The order of precedence for Bundler configuration options is as follows:
+The order of precedence for Bundler configuration options is as follows
 
 1. Local config (`<project_root>/.bundle/config or $BUNDLE_APP_CONFIG/config`)
-2. Environment variables (ENV)
-3. Global config (`~/.bundle/config`)
-4. Bundler default config
+1. Environment variables (ENV)
+1. Global config (`~/.bundle/config`)
+1. Bundler default config
 
 We set the following configuration options to ensure that the build process
-works correctly:
+works correctly
 
 - BUNDLE_CACHE_PATH: "${output_dir}/deps/bundler"
 - BUNDLE_DEPLOYMENT: "true"
@@ -74,28 +73,18 @@ works correctly:
 - BUNDLE_ALLOW_OFFLINE_INSTALL: "true"
 - BUNDLE_DISABLE_VERSION_CHECK: "true"
 
-
 ### BUNDLE_CACHE_PATH
 
 The directory that Bundler will look into when installing gems.
 
 ### BUNDLE_DEPLOYMENT
 
-Disallow changes to the **Gemfile**. When the **Gemfile** is changed
-and the lockfile has not been updated, running Bundler commands will be blocked. More importantly
-though, this makes Bundler comply with network isolated builds. However, this setting has a
-user-side implication regarding their build recipes, e.g. Dockerfiles[^why-implication] and you may
-want to consider enforcing the installation path for your app explicitly with
-[`BUNDLE_PATH`](https://bundler.io/v2.5/man/bundle-config.1.html#LIST-OF-AVAILABLE-KEYS)
-
-[^why-implication]: `BUNDLE_DEPLOYMENT` enforces
-[deployment mode](https://www.bundler.cn/man/bundle-install.1.html#DEPLOYMENT-MODE) which is
-essentially vendoring your application and its dependencies. In other words, deployment will
-install your application to a local `vendor/bundle` directory instead of using the standard
-system-wide location. This is currently the only way of forcing bundler to respect and use the
-offline package cache during hermetic builds. Note that the deployment mode doesn't play nicely
-with other installation flags and so trying to use `--local` with your `bundle install` command in
-your Dockerfile won't take effect, consider `BUNDLE_PATH` instead.
+Disallow changes to the **Gemfile**. When the **Gemfile** is changed and the
+lockfile has not been updated, running Bundler commands will be blocked. More
+importantly though, this makes Bundler comply with network isolated builds.
+However, this setting has a user-side implication regarding their build recipes,
+e.g. Dockerfiles[^1] and you may want to consider enforcing the installation
+path for your app explicitly with [`BUNDLE_PATH`][]
 
 ### BUNDLE_NO_PRUNE
 
@@ -113,10 +102,12 @@ Allow Bundler to use cached data when installing without network access.
 
 Stop Bundler from checking if a newer Bundler version is available on rubygems.org.
 
-**Note**: _A prefetch could fail when Bundler versions differ between the build
-system and lockfile and when the former is outdated. Therefore we do not recommend
-using mismatching or outdated versions of Bundler in build systems as this might
-result in unexpected failures._
+> **NOTE**
+>
+> A prefetch could fail when Bundler versions differ between the build system
+> and lockfile and when the former is outdated. Therefore we do not recommend
+> using mismatching or outdated versions of Bundler in build systems as this
+> might result in unexpected failures.*
 
 To create the configuration file, run the following command.
 
@@ -157,7 +148,7 @@ to set up the directory, building the Dockerfile will produce a container with
 the application fully compiled without any network access. The build will be
 hermetic and reproducible.
 
-```Dockerfile
+```dockerfile
 FROM docker.io/library/ruby:latest
 
 WORKDIR /app
@@ -173,7 +164,7 @@ RUN . /tmp/hermeto.env && bundle install
 ```
 
 Assuming `hermeto-output` and `hermeto.env` are in the same directory as the
-Dockerfile, build the image with the following command:
+Dockerfile, build the image with the following command
 
 ```bash
 podman build . \
@@ -189,3 +180,17 @@ podman build . \
 - downloading the Bundler version specified in the **Gemfile.lock**
 - reporting development dependencies
 - plugins
+
+[^1] `BUNDLE_DEPLOYMENT` enforces [deployment mode][] which is essentially
+vendoring your application and its dependencies. In other words, deployment will
+install your application to a local `vendor/bundle` directory instead of using
+the standard system-wide location. This is currently the only way of forcing
+bundler to respect and use the offline package cache during hermetic builds.
+Note that the deployment mode doesn't play nicely with other installation flags
+and so trying to use `--local` with your `bundle install` command in your
+Dockerfile won't take effect, consider `BUNDLE_PATH` instead.
+
+[`BUNDLE_PATH`]: https://bundler.io/v2.5/man/bundle-config.1.html#LIST-OF-AVAILABLE-KEYS
+[Bundler]: https://bundler.io
+[configuration options]: https://bundler.io/v2.5/man/bundle-config.1.html#DESCRIPTION
+[deployment mode]: https://www.bundler.cn/man/bundle-install.1.html#DEPLOYMENT-MODE
