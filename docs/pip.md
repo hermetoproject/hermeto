@@ -7,6 +7,7 @@
 - [Using fetched dependencies](#using-fetched-dependencies)
 - [Working with Rust-based dependencies](#working-with-rust-based-dependencies)
 - [Troubleshooting](#troubleshooting)
+- [Full example walkthrough](#example)
 
 ## Specifying packages to process
 
@@ -56,7 +57,7 @@ or more simply by just invoking `hermeto fetch-deps pip`.
 [Distribution Formats](#distribution-formats) section.*
 
 The main argument accepts alternative forms of input, see
-[usage: Pre-fetch dependencies][].
+[Example: Pre-fetch dependencies](#pre-fetch-dependencies).
 
 ## requirements.txt
 
@@ -474,7 +475,7 @@ installation.*
 
 ## Using fetched dependencies
 
-See also [usage.md][] for a complete example of Hermeto usage.
+See the [Example](#example) for a complete walkthrough of Hermeto usage.
 
 Hermeto downloads the Python dependencies into the deps/pip/ subpath of the
 output directory. The directory is a flat list of the downloaded distributions
@@ -495,14 +496,16 @@ To make pip use the downloaded archives, use the [`--find-links`][] and
 dependency archives in a directory, --no-index prevents pip from preferring PyPI
 over the local directory. Pip also accepts environment variables; Hermeto
 generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you.
-See [usage: generate environment variables][] for more details.
+See [Example: Generate environment variables](#generate-environment-variables)
+for more details.
 
 ### Using external dependencies
 
 It gets a bit trickier with [external dependencies](#external-dependencies). Pip
 does not respect the --find-links option for dependencies specified via urls.
 Instead, Hermeto rewrites your requirements.txt file(s) in place to replace the
-urls with file paths (after you call the [hermeto inject-files][] subcommand).
+urls with file paths (after you call hermeto's
+[`inject-files`](#inject-project-files) subcommand).
 
 ```diff
 - dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \
@@ -578,7 +581,8 @@ Common issues you may face when fetching dependencies or when installing the
 fetched dependencies.
 
 First, please make sure that your project meets Hermeto's requirements (this
-document) and that you are using Hermeto as intended ([usage.md][]).
+document) and that you are using Hermeto as intended (for reference, see the
+[Example](#example) for a complete walkthrough).
 
 ### Miscellaneous errors while building from source
 
@@ -663,10 +667,157 @@ In requirements.txt, specify the dependency [via an https url](#https-urls).
 +     --hash=sha256:99c732b92b1b37fc243a559e02f9aef5671771e272758aa4aec7f34dc92dac48
 ```
 
-[hermeto inject-files]: usage.md#inject-project-files-pip
-[usage: generate environment variables]: usage.md#generate-environment-variables-pip
-[usage: Pre-fetch dependencies]: usage.md#pre-fetch-dependencies-pip
-[usage.md]: usage.md
+### Example
+
+Let's build
+[atomic-reactor][].
+Atomic-reactor already builds with Cachito (Hermeto's spiritual ancestor), which
+makes it a rare example of a Python project that meets Hermeto's requirements
+out of the box (see [the pip documentation][]).
+
+Get the repo if you want to try for yourself
+
+```shell
+git clone https://github.com/containerbuildsystem/atomic-reactor --branch=4.4.0
+```
+
+#### Pre-fetch dependencies
+
+The steps for pre-fetching the dependencies is similar to before, but this time
+we will use the `pip` package manager type. The default behavior path of `.` is
+assumed. Additional parameters are also configured to point Hermeto at the
+various requirements files that are needed to fully resolve dependencies.
+
+See [the pip documentation][] for more details about running Hermeto for
+pre-fetching pip dependencies.
+
+```shell
+hermeto fetch-deps --source ./atomic-reactor '{
+  "type": "pip",
+  "requirements_files": ["requirements.txt"],
+  "requirements_build_files": ["requirements-build.txt", "requirements-pip.txt"]
+}'
+```
+
+#### Generate environment variables
+
+Next, we need to generate the environment file so that the `pip install` command
+can find the cached dependencies
+
+```shell
+hermeto generate-env ./hermeto-output -o ./hermeto.env --for-output-dir /tmp/hermeto-output
+```
+
+We can see the variables needed by the package manager
+
+```shell
+$ cat hermeto.env
+export PIP_FIND_LINKS=/tmp/hermeto-output/deps/pip
+export PIP_NO_INDEX=true
+```
+
+#### Inject project files
+
+In order to be able to install pip dependencies in a hermetic environment, we
+need to perform the injection to change the remote dependencies to instead point
+to the local file system.
+
+```shell
+$ hermeto inject-files ./hermeto-output --for-output-dir /tmp/hermeto-output
+2023-01-26 16:41:09,990 INFO Overwriting /tmp/test/atomic-reactor/requirements.txt
+```
+
+We can look at the `git diff` to see what the package remapping looks like. As
+an example,
+
+```diff
+diff --git a/requirements.txt b/requirements.txt
+-osbs-client @ git+https://github.com/containerbuildsystem/osbs-client@8d7d7fadff38c8367796e6ac0b3516b65483db24
+-    # via -r requirements.in
++osbs-client @ file:///tmp/hermeto-output/deps/pip/github.com/containerbuildsystem/osbs-client/osbs-client-external-gitcommit-8d7d7fadff38c8367796e6ac0b3516b65483db24.tar.gz
+```
+
+*⚠ This is only needed for [external dependencies][].
+If all dependencies come from PyPi, Hermeto will not replace anything.*
+
+#### Build the base image
+
+For this example, we will split the build into two parts - a base image and the
+final application image. Since there is no way to install RPMs in a hermetic
+environment, we will create the base image with its required "devel" libraries
+from RPMs in one image and then use that image for our hermetic python build.
+
+If your project doesn't need to compile as many C packages as atomic-reactor,
+you may be able to find a base image that already contains everything you need.
+
+Dockerfile.baseimage
+
+```dockerfile
+FROM quay.io/centos/centos:stream8
+
+# python3.8 runtime, C build dependencies
+RUN dnf -y install \
+        python38 \
+        python38-pip \
+        python38-devel \
+        gcc \
+        make \
+        libffi-devel \
+        krb5-devel \
+        cairo-devel \
+        cairo-gobject-devel \
+        gobject-introspection-devel \
+        openssl-devel && \
+    dnf clean all
+```
+
+This container build might be what we are familiar with already as we are not
+using Hermeto or enforcing network isolation.
+
+```shell
+podman build . -f Dockerfile.baseimage --tag atomic-reactor-base-image:latest
+```
+
+#### Build the application image
+
+We will base the final application image on our custom base image. The base
+image build installed all the RPMs we will need, so the final phase can use
+network isolation again 🎉. In order to support the network isolated build, we
+need to remember to `source` the environment file in the step that executes `pip
+install`. Because `osbs-client` comes from GitHub, the source code in
+`/src/atomic-reactor` has also been changed so that the dependencies are
+pointing to the cached versions.
+
+Dockerfile
+
+```dockerfile
+FROM atomic-reactor-base-image:latest
+
+COPY atomic-reactor/ /src/atomic-reactor
+WORKDIR /src/atomic-reactor
+
+# Need to source the hermeto.env file to set the environment variables
+# (in the same RUN instruction as the pip commands)
+RUN source /tmp/hermeto.env && \
+    # We're using network isolation => cannot build the cryptography package with Rust
+    # (it downloads Rust crates)
+    export CRYPTOGRAPHY_DONT_BUILD_RUST=1 && \
+    python3.8 -m pip install -U pip && \
+    python3.8 -m pip install --use-pep517 -r requirements.txt && \
+    python3.8 -m pip install --use-pep517 .
+
+CMD ["python3.8", "-m", "atomic_reactor.cli.main", "--help"]
+```
+
+We can then build the image as before while mounting the required Hermeto data!
+
+```shell
+podman build . \
+  --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
+  --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
+  --network none \
+  --tag atomic-reactor
+```
 
 [`--find-links`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f
 [`--no-binary`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary
@@ -676,9 +827,11 @@ In requirements.txt, specify the dependency [via an https url](#https-urls).
 [`--require-hashes`]: https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes
 [`--trusted-host`]: https://pip.pypa.io/en/stable/cli/pip/#trusted-host
 [a `.netrc` file]: https://pip.pypa.io/en/stable/topics/authentication/#netrc-support
+[atomic-reactor]: https://github.com/containerbuildsystem/atomic-reactor
 [binary format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format
 [declarative config]: https://setuptools.pypa.io/en/stable/userguide/declarative_config.html
 [discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
+[external dependencies]: pip.md#external-dependencies
 [Hashes]: https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode
 [PEP 440]: https://peps.python.org/pep-0440/#direct-references
 [PEP 517]: https://peps.python.org/pep-0517
@@ -690,4 +843,5 @@ In requirements.txt, specify the dependency [via an https url](#https-urls).
 [pybuild-deps]: https://pypi.org/project/pybuild-deps
 [source format]: https://packaging.python.org/en/latest/specifications/source-distribution-format
 [tensorflow]: https://pypi.org/project/tensorflow/2.11.0/#files
+[the pip documentation]: pip.md
 [ubi8/python-39]: https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f

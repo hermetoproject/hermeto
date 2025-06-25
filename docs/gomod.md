@@ -7,6 +7,7 @@
 - [Vendoring](#vendoring)
 - [Understanding reported dependencies](#understanding-reported-dependencies)
 - [Go 1.21+](#go-121-since-v050)
+- [Full example walkthrough](#example)
 
 ## Specifying modules [^modules] to process
 
@@ -32,11 +33,11 @@ where 'JSON input' is
 ```
 
 The main argument accepts alternative forms of input,
-see [usage: Pre-fetch-dependencies][].
+see [Example: Pre-fetch dependencies](#pre-fetch-dependencies) for details.
 
 ## Using fetched dependencies
 
-See also [usage.md][] for a complete example of Hermeto usage.
+See the [Example](#example) for a complete walkthrough of Hermeto usage.
 
 Hermeto downloads the required modules into the deps/gomod/ subpath of the
 output directory (`hermeto-output/deps/gomod`). Further down the file tree, at
@@ -55,8 +56,9 @@ hermeto-output/deps/gomod/pkg/mod
 
 To use this module cache during your build, set the GOMODCACHE environment
 variable. Hermeto generates GOMODCACHE along with other expected environment
-variables for you. See [usage: generate environment variables][] for more
-details.
+variables for you. See
+[Example: Generate environment variables](#generate-environment-variables)
+for more details.
 
 For more information on Go's environment variables
 
@@ -237,6 +239,98 @@ automatically, hence allowing us to keep up with frequent micro version bumps.
 supported by hermeto, i.e. we'd not allow Go to fetch e.g. a 1.22 toolchain if
 the maximum supported Go version by hermeto were 1.21!**
 
+### Example
+
+Let's show Hermeto usage by building the glorious [fzf][] CLI tool hermetically.
+To follow along, clone the repository to your local disk.
+
+```shell
+git clone https://github.com/junegunn/fzf --branch=0.34.0
+```
+
+#### Pre-fetch dependencies
+
+In order to pre-fetch the dependencies, we will pass the source and output
+directories as well as the path for the `gomod` package manager to be able to
+find the `go.mod` file.
+
+See [the gomod documentation][] for more details about running Hermeto for
+pre-fetching gomod dependencies.
+
+```shell
+hermeto fetch-deps \
+  --source ./fzf \
+  --output ./hermeto-output \
+  '{"path": ".", "type": "gomod"}'
+```
+
+#### Generate environment variables
+
+Next, we need to generate the environment file so that the `go build` command
+can find the cached dependencies
+
+```shell
+hermeto generate-env ./hermeto-output -o ./hermeto.env --for-output-dir /tmp/hermeto-output
+```
+
+We can see the variables needed by the compiler
+
+```shell
+$ cat hermeto.env
+export GOCACHE=/tmp/hermeto-output/deps/gomod
+export GOMODCACHE=/tmp/hermeto-output/deps/gomod/pkg/mod
+export GOPATH=/tmp/hermeto-output/deps/gomod
+```
+
+#### Inject project files
+
+While the `gomod` package manager does not *currently* need to modify any
+content in the source directory to inject the dependencies, the `inject-files`
+command should be run to ensure that the operation is performed if this step
+becomes a requirement in the future.
+
+```shell
+hermeto inject-files ./hermeto-output --for-output-dir /tmp/hermeto-output
+```
+
+#### Write the Dockerfile
+
+As mentioned in the steps above, the only change that needs to be made in the
+Dockerfile or Dockerfile is to source the environment file before building
+the binary.
+
+```dockerfile
+FROM golang:1.19.2-alpine3.16 AS build
+
+COPY ./fzf /src/fzf
+WORKDIR /src/fzf
+
+RUN source /tmp/hermeto.env && \
+    go build -o /fzf
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.0.0
+
+COPY --from=build /fzf /usr/bin/fzf
+
+CMD ls | fzf
+```
+
+#### Build the container
+
+Finally, we can build and test the container to ensure that we have successfully
+built the binary.
+
+```shell
+podman build . \
+  --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
+  --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
+  --network none \
+  --tag fzf
+
+# test that it worked
+podman run --rm -ti fzf
+```
+
 [^modules]: You may have noticed a slight naming issue. You use the main argument,
   also called PKG, to specify a *module* to process. Even worse, Go has packages
   as well (see [gomod vs go-package](#gomod-vs-go-package)). What gives? As far
@@ -252,12 +346,9 @@ the maximum supported Go version by hermeto were 1.21!**
   packages. This can cause Hermeto to miss the transitive package dependencies
   of packages from checksum-less modules.
 
-[usage: generate environment variables]: usage.md#generate-environment-variables-go
-[usage: pre-fetch-dependencies]: usage.md#pre-fetch-dependencies-go
-[usage.md]: usage.md
-
 [`toolchain`]: https://go.dev/ref/mod#go-mod-file-toolchain
 [cgo]: https://pkg.go.dev/cmd/cgo
+[fzf]: https://github.com/junegunn/fzf
 [Go 1.21]: https://tip.golang.org/doc/go1.21
 [Go checksum database]: https://go.dev/ref/mod#checksum-database
 [gomod]: https://go.dev/ref/mod
@@ -267,4 +358,5 @@ the maximum supported Go version by hermeto were 1.21!**
 [module cache]: https://go.dev/ref/mod#module-cache
 [npm]: https://docs.npmjs.com/about-packages-and-modules
 [Python]: https://docs.python.org/3/tutorial/modules.html
+[the gomod documentation]: gomod.md
 [vendoring]: https://go.dev/ref/mod#vendoring
