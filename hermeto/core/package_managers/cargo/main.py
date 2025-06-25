@@ -82,7 +82,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
         config_template = _fetch_dependencies(package_dir, request)
         project_files.append(_use_vendored_sources(package_dir, config_template))
-        components.extend(_resolve_cargo_package(package_dir))
+        components.extend(_generate_sbom_components(package_dir))
 
     return RequestOutput.from_obj_list(components, environment_variables, project_files)
 
@@ -220,8 +220,8 @@ def _run_cmd_watching_out_for_lock_mismatch(
             raise
 
 
-def _resolve_cargo_package(package_dir: RootedPath) -> chain[Component]:
-    """Resolve a single cargo package."""
+def _generate_sbom_components(package_dir: RootedPath) -> chain[Component]:
+    """Generate SBOM components from Cargo.lock and for the main package."""
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
     packages = parsed_lockfile.get("package", [])
 
