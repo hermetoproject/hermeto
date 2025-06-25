@@ -825,8 +825,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:cargo/cryptography-44.0",
-      "type": "library"
+      "purl": "pkg:cargo/cryptography-44.0@0.1.0",
+      "type": "library",
+      "version": "0.1.0"
     },
     {
       "name": "cryptography-cffi",
