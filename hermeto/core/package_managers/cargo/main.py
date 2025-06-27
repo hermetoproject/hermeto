@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+from urllib.parse import urlparse, urlunparse
 
 import tomlkit
 from packageurl import PackageURL
-from tomlkit.toml_file import TOMLFile
 
 from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.models.input import Mode, Request
@@ -42,27 +42,34 @@ class PackageWithCorruptLockfileRejected(PackageRejected):
 
 @dataclass(frozen=True)
 class CargoPackage:
-    """CargoPackage."""
+    """
+    Represents a package from Cargo.lock file.
+
+    The [[package]] table in the Cargo.lock file may contain many combinations of the following
+    fields (the name and version are mandatory). Even though some fields are not used, it is
+    convenient to simply unpack the parsed dictionary into this dataclass.
+    """
 
     name: str
     version: str
     source: Optional[str] = None  # [git|registry]+https://github.com/<org>/<package>#[|<sha>]
     checksum: Optional[str] = None
     dependencies: Optional[list] = None
-    vcs_url: Optional[str] = None
 
     @cached_property
     def purl(self) -> PackageURL:
-        """Return corrsponding purl."""
+        """Return corresponding package URL."""
         qualifiers = {}
-        if self.source is not None:
-            qualifiers["source"] = self.source
-        # The condition below holds for either the main package or any packages
-        # that originate from the filesystem (for example, workspace and patched source ones).
-        if self.vcs_url is not None and self.source is None:
-            qualifiers["vcs_url"] = self.vcs_url
+        # depends on https://github.com/hermetoproject/hermeto/issues/852
         if self.checksum is not None:
             qualifiers["checksum"] = self.checksum
+
+        if self.source is not None and self.source.startswith("git+"):
+            parsed_url = urlparse(self.source)
+            commit_id = parsed_url.fragment
+            base_url = urlunparse(parsed_url._replace(query="", fragment=""))
+            qualifiers["vcs_url"] = f"{base_url}@{commit_id}"
+
         return PackageURL(type="cargo", name=self.name, version=self.version, qualifiers=qualifiers)
 
     def to_component(self) -> Component:
@@ -78,44 +85,61 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
+        _verify_lockfile_is_present_or_fail(package_dir)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        fetched_components, cfg_template = _resolve_cargo_package(package_dir, request)
-        components.extend(fetched_components)
-        project_files.append(_use_vendored_sources(package_dir, cfg_template))
+        config_template = _fetch_dependencies(package_dir, request)
+        project_files.append(_use_vendored_sources(package_dir, config_template))
+        components.extend(_generate_sbom_components(package_dir))
 
     return RequestOutput.from_obj_list(components, environment_variables, project_files)
 
 
-def _extract_package_info(path_to_toml: Path) -> dict:
-    # 'value' unwraps the underlying dict and that makes mypy happy (it complains about
-    # mismatching type otherwise despite parsed document having the necessary interface).
-    parsed_toml = tomlkit.parse(path_to_toml.read_text())
-    package_info = parsed_toml.value["package"]
-    if isinstance(package_info, dict) and package_info.get("version") == {"workspace": True}:
-        # support for workspace package table https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
-        # real world example: https://github.com/pyca/cryptography/blob/43.0.0/src/rust/Cargo.toml
-        # we condition this to when package_info is a dict because this same function has usages where package_info is a list
-        # (Cargo.lock) and this info is only available when it is a dict (Cargo.toml)
-        package_info["version"] = parsed_toml.value["workspace"]["package"]["version"]
-    return package_info
+def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, Any]:
+    """Fetch cargo dependencies and return a config template for hermetic build."""
+    vendor_dir = request.output_dir.join_within_root("deps/cargo")
+    # --locked           Assert that `Cargo.lock` will remain unchanged.
+    # --versioned-dirs   Always include version in subdir name.
+    # --no-delete        Don't delete older crates in the vendor directory.
+    #                    It is necessary to make Cargo keep dependencies that are already
+    #                    present in the vendored directory. This flag have no effect on standalone
+    #                    cargo operations however is crucial when it is invoked from pip.
+    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
+    log.info("Fetching cargo dependencies at %s", package_dir)
+    with _hidden_cargo_config_file(package_dir):
+        # The necessary configuration to use the vendored sources will be printed to stdout after
+        # `cargo vendor` completes the vendoring process.
+        # https://doc.rust-lang.org/cargo/commands/cargo-vendor.html#description
+        config_template = _run_cmd_watching_out_for_lock_mismatch(
+            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
+        )
+
+    return _swap_sources_directory_for_subsitution_slot(config_template)
 
 
-def _resolve_main_package(package_dir: RootedPath) -> dict:
-    try:
-        return _extract_package_info(package_dir.path / "Cargo.toml")
-    # We'll get here in the case of virtual workspaces. A real-world example is
-    # https://github.com/rwf2/Rocket/tree/master
-    # In this case there is no package name per se, but there still is a metapackage.
-    # We'll use directory name as a fallback in this case.
-    # Version won't make much sense here: this is a meta-package, the state of a
-    # repository will be captured in VCS_URL, and individual components will be
-    # versioned.
-    except KeyError:
-        return {
-            "name": package_dir.path.stem,
-            "version": None,
-        }
+def _parse_toml_project_file(path: Path) -> dict[str, Any]:
+    """Parse any Cargo related TOML file into a dictionary."""
+    parsed_toml = tomlkit.parse(path.read_text())
+    return parsed_toml.value
+
+
+def _resolve_main_package(package_dir: RootedPath) -> tuple[str, Optional[str]]:
+    """Resolve package name and version from Cargo.toml."""
+    parsed_toml = _parse_toml_project_file(package_dir.path / "Cargo.toml")
+
+    package_info = parsed_toml.get("package", {})
+    workspace_info = parsed_toml.get("workspace", {})
+
+    # use default values if the project is a workspace without a name and version defined in Cargo.toml
+    name = package_info.get("name", package_dir.path.stem)
+    version = package_info.get("version", None)
+
+    # check for a workspace package version
+    # https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
+    if version is None:
+        version = workspace_info.get("package", {}).get("version")
+
+    return name, version
 
 
 def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
@@ -205,44 +229,37 @@ def _run_cmd_watching_out_for_lock_mismatch(
             raise
 
 
-def _resolve_cargo_package(
-    package_dir: RootedPath,
-    request: Request,
-) -> tuple[chain[Component], dict]:
-    """Resolve a single cargo package."""
-    _verify_lockfile_is_present_or_fail(package_dir)
-    vendor_dir = request.output_dir.join_within_root("deps/cargo")
-    # --no-delete to keep everything already present. It does not matter for a fresh
-    # single package, but it does matter when there is pip interaction.
-    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
-    log.info("Fetching cargo dependencies at %s", package_dir)
-    with _hidden_cargo_config_file(package_dir):
-        # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
-        config_template = _run_cmd_watching_out_for_lock_mismatch(
-            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
-        )
+def _generate_sbom_components(package_dir: RootedPath) -> chain[Component]:
+    """Generate SBOM components from Cargo.lock and for the main package."""
+    parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
+    packages = parsed_lockfile.get("package", [])
 
-    packages = _extract_package_info(package_dir.path / "Cargo.lock")
-    main_package = _resolve_main_package(package_dir)
-    is_a_dep = lambda p: p["name"] != main_package["name"]
+    main_package_name, main_package_version = _resolve_main_package(package_dir)
+    is_a_dep = lambda p: p["name"] != main_package_name
     try:
         vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     except NotAGitRepo:
         # Could become invalid when directories are swapped for nested package managers
         vcs_url = None
-    deps_components = (
-        CargoPackage(**p, vcs_url=vcs_url).to_component() for p in packages if is_a_dep(p)
+
+    deps_components = (CargoPackage(**p).to_component() for p in packages if is_a_dep(p))
+
+    main_purl = PackageURL(
+        type="cargo",
+        name=main_package_name,
+        version=main_package_version,
+        qualifiers={"vcs_url": vcs_url} if vcs_url is not None else None,
     )
-    main_component = CargoPackage(
-        name=main_package["name"], version=main_package["version"], vcs_url=vcs_url
-    ).to_component()
+    main_component = Component(
+        name=main_package_name,
+        version=main_package_version,
+        purl=main_purl.to_string(),
+    )
 
-    components = chain((main_component,), deps_components)
-
-    return components, _swap_sources_directory_for_subsitution_slot(config_template)
+    return chain((main_component,), deps_components)
 
 
-def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
+def _swap_sources_directory_for_subsitution_slot(template: str) -> dict[str, Any]:
     toml_template = tomlkit.parse(template).value
     # Absolute path has to be replaced with relative path for sources relocation to work:
     toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
@@ -269,10 +286,8 @@ def _use_vendored_sources(package_dir: RootedPath, config_template: dict) -> Pro
     # Python extension it is better to check if there is an old-style config present and
     # process it if found.
     cfn = ".cargo/config" if _old_style_config_is_present_in(package_dir) else ".cargo/config.toml"
-    cargo_config = package_dir.join_within_root(cfn)
+    config_path = package_dir.join_within_root(cfn).path
 
-    toml_file = TOMLFile(cargo_config)
-    original_content = toml_file.read() if cargo_config.path.exists() else {}
+    original_content = _parse_toml_project_file(config_path) if config_path.exists() else {}
     original_content.update(config_template)
-
-    return ProjectFile(abspath=cargo_config.path, template=tomlkit.dumps(config_template))
+    return ProjectFile(abspath=config_path, template=tomlkit.dumps(config_template))
