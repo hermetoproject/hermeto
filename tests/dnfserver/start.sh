@@ -1,7 +1,7 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail
 
-DEFAULT_IMAGE=docker.io/library/nginx:alpine-slim
+DEFAULT_IMAGE=mirror.gcr.io/library/nginx:alpine-slim
 DEFAULT_SSL_PORT=8443
 DEFAULT_HTTP_PORT=8081
 TEST_RPM="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/r/redhat-release-9.4-0.5.el9.x86_64.rpm"

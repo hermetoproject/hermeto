@@ -1,4 +1,4 @@
-FROM docker.io/rust:1-alpine
+FROM mirror.gcr.io/rust:1-alpine
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi

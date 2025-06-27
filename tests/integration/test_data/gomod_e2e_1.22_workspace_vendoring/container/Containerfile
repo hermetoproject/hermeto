@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.22.0
+FROM mirror.gcr.io/golang:1.22.0
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi

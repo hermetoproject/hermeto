@@ -3,7 +3,7 @@ set -o errexit -o nounset -o pipefail
 
 DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
-DEFAULT_IMAGE=docker.io/pypiserver/pypiserver:v2.1.1@sha256:17198f668ef4f460ee81456f09fc65d352766fa9e49a81474304c5aa69b8be38
+DEFAULT_IMAGE=mirror.gcr.io/pypiserver/pypiserver:v2.1.1@sha256:17198f668ef4f460ee81456f09fc65d352766fa9e49a81474304c5aa69b8be38
 DEFAULT_PORT=8080
 
 cleanup() {

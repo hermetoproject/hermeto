@@ -162,7 +162,7 @@ def pip_compile(session: Session) -> None:
         f"{PWD}:/hermeto:rw,Z",
         "--workdir",
         "/hermeto",
-        "docker.io/library/python:3.9-alpine",
+        "mirror.gcr.io/library/python:3.9-alpine",
         "sh",
         "-c",
         uv_pip_compile_cmd,

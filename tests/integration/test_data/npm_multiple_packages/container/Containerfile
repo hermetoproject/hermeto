@@ -1,4 +1,4 @@
-FROM docker.io/node:17
+FROM mirror.gcr.io/node:17
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
