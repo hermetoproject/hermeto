@@ -7,13 +7,13 @@ The second section goes through each of these steps for the supported package
 managers.
 
 - [General process](#general-process)
-  - [Pre-fetch dependencies](#pre-fetch-dependencies-general)
-  - [Generate environment variables](#generate-environment-variables-general)
-  - [Inject project files](#inject-project-files-general)
-  - [Merge SBOMs](#merge-sboms-general)
-  - [Building the artifact](#building-the-artifact-with-the-pre-fetched-dependencies-general)
-    - [Set the environment variables](#write-the-dockerfile-general)
-    - [Container build example](#build-the-container-general)
+  - [Pre-fetch dependencies](#pre-fetch-dependencies)
+  - [Generate environment variables](#generate-environment-variables)
+  - [Inject project files](#inject-project-files)
+  - [Merge SBOMs](#merge-sboms)
+  - [Building the artifact](#building-the-artifact-with-the-pre-fetched-dependencies)
+    - [Set the environment variables](#write-the-dockerfile)
+    - [Container build example](#build-the-container)
 - [Usage Examples](#usage-examples)
   - [Example with Go modules](#example-go-modules)
   - [Example with pip](#example-pip)
@@ -32,8 +32,8 @@ are declared and pre-fetched before the build occurs.
 
 In order to support this class of hermetic builds, not only does Hermeto need to
 pre-fetch the dependencies, but some build flows will need additional changes
-(i.e. leveraging defined [environment variables](#generate-environment-variables-general)
-or using Hermeto to [inject project files](#inject-project-files-general)).
+(i.e. leveraging defined [environment variables](#generate-environment-variables)
+or using Hermeto to [inject project files](#inject-project-files)).
 
 Hermeto relies on git metadata when processing sources, it expects sources to
 be a valid git repository with "origin" remote defined. This is paramount
@@ -59,7 +59,7 @@ only for testing!
 Note however, that this is only good for smoke testing a scenario and there are
 no guarantees for any results without proper and correct git metadata, e.g. git tags.
 
-### Pre-fetch dependencies (general)
+### Pre-fetch dependencies
 
 The first step in creating hermetic builds is to fetch the dependencies for one
 of the supported package managers.
@@ -106,7 +106,7 @@ output and source paths are the same, some package managers may add missing data
 like checksums as dependency data is resolved. If this occurs from a clean git
 tree then the tree has the possibility to become dirty.*
 
-### Generate environment variables (general)
+### Generate environment variables
 
 Once the dependencies have been cached, the build process needs to be made aware
 of the dependencies. Some package managers need to be informed of cache
@@ -126,11 +126,11 @@ hermeto generate-env ./hermeto-output -o ./hermeto.env --for-output-dir /tmp/her
 
 Don't worry about the `--for-output-dir` option yet - and about the fact that
 the directory does not exist - it has to do with the target path where we will
-mount the output directory [during the build](#build-the-container-general).
+mount the output directory [during the build](#build-the-container).
 
 See also `hermeto generate-env --help`.
 
-### Inject project files (general)
+### Inject project files
 
 While some package managers only need an environment file to be informed of the
 cache locations, others may need to create a configuration file or edit aBuild
@@ -160,7 +160,7 @@ changes, the scripting should either be changed to handle the dirty status or
 the changes should be temporarily stashed by wrapping in `git stash && <command>
 && git stash pop` according to the suitability of the context.*
 
-### Merge SBOMs (general)
+### Merge SBOMs
 
 Sometimes it might be necessary to merge two or more SBOMs. This could be done
 with `hermeto merge-sboms`
@@ -179,14 +179,14 @@ to stdout. To save it to a file use `-o` option
 hermeto merge-sboms <hermeto_sbom_1.json> ... <hermeto_sbom_n.json> -o <merged_sbom.json>
 ```
 
-### Building the Artifact with the Pre-fetched dependencies (general)
+### Building the Artifact with the Pre-fetched dependencies
 
 After the pre-fetch and the above steps to inform the package manager(s) of the
 cache have been completed, it all needs to be wired up into a build. The primary
 use case for building these is within a Dockerfile or Dockerfile but the same
 principles can be applied to other build strategies.
 
-#### Write the Dockerfile (general)
+#### Write the Dockerfile
 
 Now that we have pre-fetched our dependencies and enabled package manager
 configuration to point to them, we now need to ensure that the build process
@@ -230,7 +230,7 @@ RUN source /tmp/hermeto.env && go build -o /foo cmd/foo
 RUN source /tmp/hermeto.env && go build -o /bar cmd/bar
 ```
 
-#### Build the container (general)
+#### Build the container
 
 Now that the Dockerfile or Container file is configured, the next step is to
 build the container itself. Since more than just the source code context is
@@ -259,11 +259,11 @@ The path where the output directory gets mounted is important. Some environment
 variables or project files may use absolute paths to content in the output
 directory; if the directory is not at the expected path, the paths will be
 wrong. Remember the `--for-output-dir` option used when
-[generating the env file](#generate-environment-variables-general) and
-[injecting the project files](#inject-project-files-general)? The absolute path
-to ./hermeto-output on your machine is (probably) not /tmp/hermeto-output. That
-is why we had to tell the generate-env command what the path inside the
-container is eventually going to be.
+[generating the env file](#generate-environment-variables)
+and [injecting the project files](#inject-project-files)?
+The absolute path to ./hermeto-output on your machine is (probably) not
+/tmp/hermeto-output. That is why we had to tell the generate-env command what
+the path inside the container is eventually going to be.
 
 In order to run the build with network isolation, use the `--network=none`
 option. Note that this option only works if your podman/buildah version contains
