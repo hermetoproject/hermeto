@@ -161,14 +161,13 @@ YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
 Sourcing this file will prime Yarn for an offline build.
 
-[environment file]: usage.md#generate-environment-variables-general
-[generates these variables]: usage.md#generate-environment-variables-general
-[Pre-fetch dependencies]: usage.md#pre-fetch-dependencies-general
-
 [.npmrc]: https://classic.yarnpkg.com/en/docs/cli/cache#toc-change-the-cache-path-for-yarn
 [.yarnrc]: https://classic.yarnpkg.com/lang/en/docs/yarnrc
+[environment file]: usage.md#generate-environment-variables
+[generates these variables]: usage.md#generate-environment-variables
 [offline mirror feature]: https://classic.yarnpkg.com/blog/2016/11/24/offline-mirror
 [Plug'n'Play]: https://classic.yarnpkg.com/en/docs/pnp
+[Pre-fetch dependencies]: usage.md#pre-fetch-dependencies
 [Yarn Classic (Yarn v1)]: https://classic.yarnpkg.com
 [Yarn documentation]: https://hermetoproject.github.io/hermeto/yarn
 [Yarn v3 documentation]: https://github.com/hermetoproject/hermeto/blob/main/docs/yarn.md#dealing-with-yarn-zero-installs

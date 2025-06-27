@@ -9,6 +9,7 @@ See also the [npm docs][]
 - [Using fetched dependencies](#using-fetched-dependencies)
   - [Changes made by the inject-files command](#changes-made-by-the-inject-files-command)
   - [Updated project example](#updated-project-example)
+- [Full example walkthrough](#example)
 
 ## Specifying packages to process
 
@@ -337,7 +338,7 @@ see the [npm documentation][])
 
 ## Using fetched dependencies
 
-See also [usage.md][] for a complete example of Hermeto usage.
+See the [Example](#example) for a complete walkthrough of Hermeto usage.
 
 Hermeto downloads the npm dependencies as tar archives into the `deps/npm/`
 subpath of the output directory.
@@ -367,7 +368,7 @@ hermeto-output/deps/npm
 In order for the `npm install` command to use the fetched dependencies instead
 of reaching for the npm registry, Hermeto needs to update
 [project files](#project-files). These updates happen **automatically** when we
-call Hermeto's [inject-files command][].
+call Hermeto's [`inject-files`](#inject-project-files) command.
 
 ### Changes made by the inject-files command
 
@@ -590,8 +591,87 @@ Hermeto command updates the following in the `package-lock.json` file
 
 </details>
 
-[usage.md]: usage.md
-[inject-files command]: usage.md#inject-project-files-npm
+### Example
+
+Let's build simple npm project [sample-nodejs-app][]. Get
+the repo if you want to try for yourself
+
+```shell
+git clone https://github.com/cachito-testing/sample-nodejs-app.git
+```
+
+#### Pre-fetch dependencies
+
+The steps for pre-fetching the dependencies is similar to before, but this time
+we will use the `npm` package manager type. The default behavior path of `.` is
+assumed.
+
+See [the npm documentation][] for more details about running Hermeto for
+pre-fetching npm dependencies.
+
+```shell
+hermeto fetch-deps --source ./sample-nodejs-app --output ./hermeto-output '{"type": "npm"}'
+```
+
+#### Generate environment variables
+
+Next, we need to generate the environment file, so we can provide environment
+variables to the `npm install` command.
+
+```shell
+hermeto generate-env ./hermeto-output -o ./hermeto.env --for-output-dir /tmp/hermeto-output
+```
+
+Currently, Hermeto does not require any environment variables for the npm
+package manager, but this might change in the future.
+
+#### Inject project files
+
+In order to be able to install npm dependencies in a hermetic environment, we
+need to perform the injection to change the remote dependencies to instead point
+to the local file system.
+
+```shell
+hermeto inject-files ./hermeto-output --for-output-dir /tmp/hermeto-output
+```
+
+We can look at the `git diff` to see what the package remapping looks like. As
+an example,
+
+```diff
+diff --git a/package-lock.json b/package-lock.json
+-      "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",
++      "resolved": "file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz",
+```
+
+#### Build the application image
+
+We will base the final application image on `node:18` base image. The base image
+build has `npm` pre-installed, so the final phase can use network isolation 🎉.
+
+```dockerfile
+FROM node:18
+
+COPY sample-nodejs-app/ /src/sample-nodejs-app
+WORKDIR /src/sample-nodejs-app
+
+# Run npm install command and list installed packages
+RUN . /tmp/hermeto.env && npm i && npm ls
+
+EXPOSE 9000
+
+CMD ["node", "index.js"]
+```
+
+We can then build the image as before while mounting the required Hermeto data!
+
+```shell
+podman build . \
+  --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
+  --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
+  --network none \
+  --tag sample-nodejs-app
+```
 
 [bug]: https://github.com/npm/cli/issues/2846
 [npm]: https://www.npmjs.com
@@ -600,4 +680,6 @@ Hermeto command updates the following in the `package-lock.json` file
 [npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
 [package-lock.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json
 [package.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-json
+[sample-nodejs-app]: https://github.com/cachito-testing/sample-nodejs-app
+[the npm documentation]: npm.md
 [workspace]: https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true
