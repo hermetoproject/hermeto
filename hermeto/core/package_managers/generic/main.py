@@ -60,7 +60,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
 
     # output_dir is now the root and cannot be escaped
     output_dir = output_dir.re_root(DEFAULT_DEPS_DIR)
-
+    log.info("gibberish")
     log.info(f"Reading generic lockfile: {lockfile_path}")
     lockfile = _load_lockfile(lockfile_path, output_dir)
     to_download: dict[str, Union[str, os.PathLike[str]]] = {}
