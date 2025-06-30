@@ -231,7 +231,7 @@ def _calculate_files_checksums_in_dir(root_dir: Path) -> dict:
         rel_dir = Path(dir_).relative_to(root_dir)
         for file_name in files:
             rel_file = rel_dir.joinpath(file_name).as_posix()
-            if "-external-gitcommit-" in file_name:
+            if "-gitcommit-" in file_name:
                 files_checksums[rel_file] = _get_git_commit_from_tarball(
                     root_dir.joinpath(rel_file)
                 )
