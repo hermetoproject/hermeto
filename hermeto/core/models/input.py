@@ -71,7 +71,9 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
 
 
 # Supported package managers
-PackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"]
+PackageManagerType = Literal[
+    "bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "x-rpm", "yarn"
+]
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
@@ -247,7 +249,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
 class RpmPackageInput(_PackageInputBase):
     """Accepted input for a rpm package."""
 
-    type: Literal["rpm"]
+    type: Literal["rpm", "x-rpm"]
     include_summary_in_sbom: bool = False
     options: Optional[ExtraOptions] = None
 
