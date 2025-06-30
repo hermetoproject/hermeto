@@ -145,7 +145,8 @@ def version_callback(value: bool) -> None:
         return
 
     print(f"{APP_NAME}", importlib.metadata.version("hermeto"))
-    print("Supported package managers:", ", ".join(supported_package_managers))
+    # Mypy overly strict about union types in join operation
+    print("Supported package managers:", ", ".join(supported_package_managers))  # type: ignore[arg-type]
     raise typer.Exit()
 
 
