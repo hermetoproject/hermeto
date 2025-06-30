@@ -1,13 +1,23 @@
 import enum
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, Optional, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Callable,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    get_args,
+)
 
 import pydantic
 from typing_extensions import Self
 
 from hermeto import APP_NAME
-from hermeto.core.errors import InvalidInput
+from hermeto.core.errors import InvalidInput, UnsupportedPackageManager
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
@@ -21,11 +31,33 @@ T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
 
 
+def _is_experimental_package_error(error: "ErrorDict") -> Optional[tuple[str, str]]:
+    """Check if error is for experimental package and return (base_name, x_name) if so."""
+    if error.get("type") != "union_tag_invalid":
+        return None
+
+    tag = error.get("ctx", {}).get("tag", "")
+    x_prefixed = f"x-{tag}"
+
+    if x_prefixed in get_args(PackageManagerType):
+        return tag, x_prefixed
+
+    return None
+
+
 def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
     """Parse user input into a model, re-raise validation errors as InvalidInput."""
     try:
         return to_model(input_obj)
     except pydantic.ValidationError as e:
+        experimental_suggestions = [
+            pair for err in e.errors() if (pair := _is_experimental_package_error(err)) is not None
+        ]
+
+        if experimental_suggestions:
+            unsupported, suggested = map(list, zip(*experimental_suggestions))
+            raise UnsupportedPackageManager(unsupported, suggested) from e
+
         raise InvalidInput(_present_user_input_error(e)) from e
 
 
@@ -41,6 +73,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
 
     def show_error(error: "ErrorDict") -> str:
         location = " -> ".join(map(str, error["loc"]))
+
         message = error["msg"]
 
         if location != "__root__":
@@ -53,8 +86,28 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     return f"{header}\n{details}"
 
 
-# Supported package managers
-PackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"]
+PackageManagerType = Literal[
+    "bundler",
+    "cargo",
+    "generic",
+    "gomod",
+    "npm",
+    "pip",
+    "rpm",
+    "yarn",
+    # Add experimental package managers here with x- prefix, e.g. "x-foo"
+]
+
+
+def refers_to_experimental_pm(tag: str) -> bool:
+    """Check if a tag refers to an experimental package manager (x- prefix)."""
+    return tag.startswith("x-")
+
+
+def normalize_type(type_tag: str) -> str:
+    """Normalize a type tag to remove the x- prefix if present."""
+    return type_tag[2:] if type_tag.startswith("x-") else type_tag
+
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"

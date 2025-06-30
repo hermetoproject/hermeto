@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 from unittest import mock
 
@@ -172,43 +171,70 @@ def test_project_files_fix_for_work_copy(
 
 
 @pytest.mark.parametrize(
-    "flags",
-    [
-        pytest.param(["dev-package-managers"], id="dev-package-managers-true"),
-        pytest.param([], id="dev-package-managers-false"),
-    ],
+    "package_type",
+    ["unknown", "nonexistent"],
 )
-def test_dev_mode(flags: list[str], tmp_path: Path) -> None:
-    mock_resolver = mock.Mock()
-    mock_resolver.return_value = RequestOutput.empty()
+def test_completely_unknown_package_manager_raises_error(
+    package_type: str,
+    tmp_path: Path,
+) -> None:
+    """Test that completely unknown package managers raise proper error."""
     with (
         mock.patch.dict(
             resolver._package_managers,
-            values={"gomod": mock_resolver},
+            values={"gomod": mock.Mock(return_value=RequestOutput.empty())},
             clear=True,
         ),
         mock.patch.dict(
             resolver._dev_package_managers,
-            values={"shrubbery": mock_resolver},
+            values={},
             clear=True,
         ),
+        mock.patch(
+            "hermeto.core.models.input.get_args",
+            return_value=("bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"),
+        ),
     ):
-        dev_package_input = mock.Mock()
-        dev_package_input.type = "shrubbery"
+        package_input = mock.Mock()
+        package_input.type = package_type
 
         request = mock.Mock()
         request.source_dir = RootedPath(tmp_path)
-        request.flags = flags
-        request.packages = [dev_package_input]
+        request.flags = []
+        request.packages = [package_input]
 
-        if flags:
-            assert resolver.resolve_packages(request) == RequestOutput(
-                components=[], build_config=BuildConfig(environment_variables=[], project_files=[])
-            )
-        else:
-            expected_error = re.escape("Package manager(s) not yet supported: shrubbery")
-            with pytest.raises(UnsupportedFeature, match=expected_error):
-                resolver.resolve_packages(request)
+        with pytest.raises(UnsupportedFeature):
+            resolver.resolve_packages(request)
+
+
+def test_x_prefix_without_implementation_raises_error(tmp_path: Path) -> None:
+    """Test error when x-prefix is used but there's no actual implementation."""
+    with (
+        mock.patch.dict(
+            resolver._package_managers,
+            values={"gomod": mock.Mock(return_value=RequestOutput.empty())},
+            clear=True,
+        ),
+        mock.patch.dict(
+            resolver._dev_package_managers,
+            values={},
+            clear=True,
+        ),
+        mock.patch(
+            "hermeto.core.models.input.get_args",
+            return_value=("x-missing",),
+        ),
+    ):
+        package_input = mock.Mock()
+        package_input.type = "x-missing"  # User uses x-missing but no implementation
+
+        request = mock.Mock()
+        request.source_dir = RootedPath(tmp_path)
+        request.flags = []
+        request.packages = [package_input]
+
+        with pytest.raises(UnsupportedFeature):
+            resolver.resolve_packages(request)
 
 
 def test_resolve_with_multiple_stable_package_managers(tmp_path: Path) -> None:
@@ -242,3 +268,56 @@ def test_resolve_with_multiple_stable_package_managers(tmp_path: Path) -> None:
 
         mock_resolve_gomod.assert_has_calls([mock.call(request)])
         mock_resolve_pip.assert_has_calls([mock.call(request)])
+
+
+@pytest.mark.parametrize(
+    "experimental_type,expected_base_type",
+    [
+        ("x-shrubbery", "shrubbery"),
+        ("x-coconut", "coconut"),
+    ],
+)
+def test_x_prefix_package_managers_are_processed_correctly_when_enabled(
+    experimental_type: str, expected_base_type: str, tmp_path: Path
+) -> None:
+    """Test that x-pkg experimental types are converted to pkg and handled correctly alongside stable packages."""
+    mock_gomod_resolver = mock.Mock(return_value=RequestOutput.empty())
+    mock_experimental_resolver = mock.Mock(return_value=RequestOutput.empty())
+
+    with (
+        mock.patch.dict(
+            resolver._package_managers,
+            values={"gomod": mock_gomod_resolver},
+            clear=True,
+        ),
+        mock.patch.dict(
+            resolver._dev_package_managers,
+            values={expected_base_type: mock_experimental_resolver},
+            clear=True,
+        ),
+        mock.patch(
+            "hermeto.core.models.input.get_args",
+            return_value=(experimental_type,),
+        ),
+    ):
+        # Create both stable and experimental package inputs
+        gomod_package_input = mock.Mock()
+        gomod_package_input.type = "gomod"
+
+        experimental_package_input = mock.Mock()
+        experimental_package_input.type = experimental_type
+
+        request = mock.Mock()
+        request.source_dir = RootedPath(tmp_path)
+        request.flags = []
+        request.packages = [gomod_package_input, experimental_package_input]
+
+        # Should succeed because x-prefix automatically enables experimental package
+        result = resolver.resolve_packages(request)
+
+        assert result == RequestOutput(
+            components=[], build_config=BuildConfig(environment_variables=[], project_files=[])
+        )
+
+        mock_gomod_resolver.assert_called_once_with(request)
+        mock_experimental_resolver.assert_called_once_with(request)

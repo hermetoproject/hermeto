@@ -81,6 +81,40 @@ class InvalidInput(UsageError):
     """User input was invalid."""
 
 
+class UnsupportedPackageManager(InvalidInput):
+    """User requested a package manager that is not yet fully supported."""
+
+    def __init__(
+        self,
+        unsupported_managers: list[str],
+        suggested_managers: Optional[list[str]] = None,
+        *,
+        solution: Optional[str] = _argument_not_specified,
+        docs: Optional[str] = None,
+    ) -> None:
+        """Initialize UnsupportedPackageManager.
+
+        :param unsupported_managers: List of unsupported package manager names
+        :param suggested_managers: List of suggested alternative package manager names (with x- prefix)
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        self.unsupported_managers = unsupported_managers
+        self.suggested_managers = suggested_managers or []
+
+        managers_str = ", ".join(sorted(unsupported_managers))
+        reason = f"Package manager(s) not yet fully supported: {managers_str}"
+
+        if suggested_managers:
+            suggestions_str = ", ".join(f'"{mgr}"' for mgr in sorted(suggested_managers))
+            reason += (
+                "\nThe experimental package manager(s) are available but should be used with caution."
+                f"\n    To enable a specific one, use: {suggestions_str}"
+            )
+
+        super().__init__(reason, solution=solution, docs=docs)
+
+
 class PackageRejected(UsageError):
     """The Application refused to process the package the user requested.
 
