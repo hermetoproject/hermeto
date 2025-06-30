@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "groupName": "Tekton CI",
+      "matchFileNames": [
+        ".tekton/**"
+      ],
+      "schedule": "weekly"
+    },
+    {
+      "groupName": "Github Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "schedule": "weekly"
+    },
+    {
+      "groupName": "Dockerfile",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "schedule": "monthly"
+    },
+    {
+      "groupName": "Pip Minor/Patch",
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "matchUpdateTypes": [
+        "minor", "patch"
+      ],
+      "schedule": "monthly"
+    },
+    {
+      "groupName": "Pip Major",
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "schedule": "monthly"
+    }
+  ]
+}
