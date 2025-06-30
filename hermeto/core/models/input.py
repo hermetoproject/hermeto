@@ -35,13 +35,37 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     Compared to pydantic's default message:
     - don't show the model name, just say "user input"
     - don't show the underlying error type (e.g. "type=value_error.const")
+    - don't show experimental package types without x- prefix in the error message
     """
     errors = validation_error.errors()
     n_errors = len(errors)
 
     def show_error(error: "ErrorDict") -> str:
         location = " -> ".join(map(str, error["loc"]))
-        message = error["msg"]
+
+        # Extract Pydantic error code and context
+        err_type = error.get("type", "")
+        ctx = error.get("ctx", {})
+
+        if err_type == "union_tag_invalid":
+            raw = ctx.get("expected_tags", "")
+            if isinstance(raw, str):
+                expected = [t.strip(" '\"") for t in raw.split(",") if t.strip()]
+            else:
+                expected = list(raw or [])
+
+            experimental_stable_names = set(EXPERIMENTAL_MAPPING.values())
+            filtered = [
+                t
+                for t in expected
+                if t in EXPERIMENTAL_MAPPING or t not in experimental_stable_names
+            ]
+
+            quoted = ", ".join(f"'{t}'" for t in sorted(filtered))
+            message = f"Found type '{ctx.get('tag', '<unknown>')}', expected one of: {quoted}"
+
+        else:
+            message = error["msg"]
 
         if location != "__root__":
             message = f"{location}\n  {message}"
@@ -53,8 +77,23 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     return f"{header}\n{details}"
 
 
-# Supported package managers
-PackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"]
+StablePackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "yarn"]
+
+# Experimental package managers, e.g. "foo"
+ExperimentalPMBaseType = Literal["rpm"]
+
+# Experimental package managers with x- prefix, e.g. "x-foo"
+ExperimentalPMInputType = Literal["x-rpm"]
+
+# All existing package managers
+PackageManagerType = Union[StablePackageManagerType, ExperimentalPMBaseType]
+
+# Map experimental input types to their stable names
+EXPERIMENTAL_MAPPING: dict[ExperimentalPMInputType, ExperimentalPMBaseType] = {
+    # Add future package mappings here, e.g. "x-foo": "foo"
+    "x-rpm": "rpm",
+}
+
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
@@ -74,7 +113,6 @@ class Mode(str, enum.Enum):
 class _PackageInputBase(pydantic.BaseModel, extra="forbid"):
     """Common input attributes accepted for all package types."""
 
-    type: PackageManagerType
     path: Path = Path(".")
 
     @pydantic.field_validator("path")
@@ -230,7 +268,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
 class RpmPackageInput(_PackageInputBase):
     """Accepted input for a rpm package."""
 
-    type: Literal["rpm"]
+    type: Literal["rpm", "x-rpm"]
     include_summary_in_sbom: bool = False
     options: Optional[ExtraOptions] = None
 
