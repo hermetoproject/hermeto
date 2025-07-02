@@ -4748,9 +4748,8 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/cryptography@44.0.2",
-      "type": "library",
-      "version": "44.0.2"
+      "purl": "pkg:pypi/cryptography?checksum=sha256:94ce632f0cb9162cdc282c35b2c9f203e805106673a05a3d193332e4c2f9d905&download_url=https://github.com/pyca/cryptography/archive/refs/tags/44.0.2.zip",
+      "type": "library"
     },
     {
       "name": "flit-core",
@@ -4884,7 +4883,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/test-package-cachi2@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4037ade8b171a316a9b909fcf0ce8c90817b487d7a",
+      "purl": "pkg:pypi/test-package-cachi2@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053c6adbe5ca3d4ed36d9142aa1a151c3a817e970",
       "type": "library",
       "version": "1.0.0"
     },
