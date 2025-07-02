@@ -2,7 +2,6 @@
 
 import logging
 import shutil
-import tarfile
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
@@ -24,70 +23,78 @@ def _has_rust_build_deps(raw_build_dependencies: list[str]) -> bool:
     return False
 
 
-def _depends_on_rust(source_tarball: tarfile.TarFile) -> bool:
+def _depends_on_rust(extracted_dir: Path) -> bool:
     file_parser_map = {
         "pyproject.toml": parsers.parse_pyproject_toml,
         "setup.cfg": parsers.parse_setup_cfg,
         "setup.py": parsers.parse_setup_py,
     }
     for file_name, parser in file_parser_map.items():
-        pkg_name = source_tarball.getnames()[0].split("/")[0]
-        try:
-            file = source_tarball.extractfile(f"{pkg_name}/{file_name}")
-        except KeyError:
+        file_path = extracted_dir / file_name
+        if not file_path.exists():
             continue
-        # the file is decoded as utf-8-sig because plain utf-8 has proven to
-        # be problematic with certain sources from pypi
-        # see https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
-        # mypy: it thinks file type is "IO[bytes] | None", but that's not right as .extractfile won't return None.
-        file_contents = file.read().decode("utf-8-sig")  # type: ignore
+
+        # The file is decoded as utf-8-sig because plain utf-8 has proven to be problematic with certain sources from pypi:
+        # https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
+        file_contents = file_path.read_text(encoding="utf-8-sig")
         try:
             build_dependencies = parser(file_contents)
         except parsers.SetupPyParsingError:
-            # unfortunately pybuild-deps parser has some known edge-cases for older packages
-            # relying on setup.py
-            log.error("Unable to parse build dependencies for %s.", pkg_name)
+            # pybuild-deps parser has some known edge-cases for older packages relying on setup.py
+            log.error("Unable to parse build dependencies for %s.", extracted_dir.name)
             continue
+
         if _has_rust_build_deps(build_dependencies):
             return True
+
     return False
 
 
 def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[CargoPackageInput]:
     """Filter packages that contain Rust code from a list of pip packages."""
     packages_containing_rust_code = []
-    tar_packages = [p for p in packages if tarfile.is_tarfile(p.get("path", ""))]
-    for p in tar_packages:
-        fname = p.get("path", "")
+
+    for p in packages:
         # File name and package name may differ e.g. when there is a hyphen in
         # package name it might be replaced by an underscore in a file name.
-        pname = Path(Path(fname).name)
-        while pname.suffix in (".tar", ".gz", ".tgz"):
-            pname = pname.with_suffix("")
-        tf = tarfile.open(fname)
-        toplevel_cargo = f"{pname}/Cargo.toml"
-        try:
-            tf.getmember(toplevel_cargo)
-            rust_root = pname
-        except KeyError:
-            # only skip if no Cargo.toml is present in the package
-            if not any([fname.endswith("Cargo.toml") for fname in tf.getnames()]):
-                continue
-            # considering it has a Cargo.toml, let's check if it depends on the typical toolchain
-            # for python+rust to rule out false positives
-            if not _depends_on_rust(tf):
-                continue
-            # find the top-most Cargo.toml in the package - that's not necessarily the most accurate
-            # solution, but this heuristic has proven to work on the most popular python packages
-            # that have rust dependencies; if this stops working, then we would probably need to check
-            # pyproject toml config section for maturin or setuptools-rust...
-            # More info on this issue in the design doc
-            # https://github.com/hermetoproject/hermeto/blob/e5fa5c0fcd0dff62cf02be5b0d219e04c1ea440c/docs/design/cargo-support.md#L806
-            cargo_manifests = [name for name in tf.getnames() if name.endswith("Cargo.toml")]
-            rust_root = Path(sorted(cargo_manifests, key=len)[0]).parent
+        package_path = p.get("path", "")
+        if not package_path:
+            continue
 
-        tf.extractall(path=Path(str(tf.name)).parent, filter="data")
-        packages_containing_rust_code.append(CargoPackageInput(type="cargo", path=rust_root))
+        filename = Path(Path(package_path).name)
+        extract_filter = "data" if filename.suffix != ".zip" else None
+        while filename.suffix in (".zip", ".tar", ".gz", ".tgz"):
+            filename = filename.with_suffix("")
+
+        pip_deps_dir = Path(package_path).parent
+        extract_dir = pip_deps_dir / filename
+        shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
+
+        cargo_files = list(extract_dir.rglob("Cargo.toml"))
+        if not cargo_files:
+            shutil.rmtree(extract_dir, ignore_errors=True)
+            continue
+
+        # The unpacked URL/VCS package may have an arbitrary directory name that we cannot control.
+        # Therefore, it is inside a predictable directory derived from the package name.
+        nitems = sum(1 for _ in extract_dir.iterdir())
+        if nitems != 1:
+            # non-standard packaging scheme that doesn't come with a top-level directory
+            source_dir = extract_dir
+        else:
+            source_dir = next(extract_dir.iterdir())
+
+        if not _depends_on_rust(source_dir):
+            shutil.rmtree(extract_dir, ignore_errors=True)
+            continue
+
+        rust_root_dir = cargo_files[0].parent
+        packages_containing_rust_code.append(
+            CargoPackageInput(
+                type="cargo",
+                path=rust_root_dir.relative_to(pip_deps_dir),
+            )
+        )
 
     return packages_containing_rust_code
 
