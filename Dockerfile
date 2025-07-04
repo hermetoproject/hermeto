@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi@sha256:304b50df1ea4db9706d8a30f4bbf26f582936ebc80c7e075c72ff2af99292a54 as ubi
+FROM registry.access.redhat.com/ubi9/ubi@sha256:2e4eebec441e8bbc3459fcc83ddee0f7d3cfd219097b4110a37d7ff4fe0ff2e9 as ubi
 FROM mirror.gcr.io/library/golang:1.20.0-bullseye as golang_120
 FROM mirror.gcr.io/library/golang:1.21.0-bullseye as golang_121
 FROM mirror.gcr.io/library/node:24.2.0-bullseye as node
