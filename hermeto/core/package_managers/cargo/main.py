@@ -5,9 +5,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
-from itertools import chain
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urlparse, urlunparse
 
 import tomlkit
 from packageurl import PackageURL
@@ -41,31 +41,64 @@ class PackageWithCorruptLockfileRejected(PackageRejected):
 
 @dataclass(frozen=True)
 class CargoPackage:
-    """CargoPackage."""
+    """Represents a package from Cargo.lock file."""
 
     name: str
-    version: Optional[str] = None
+    version: str
     source: Optional[str] = None  # [git|registry]+https://github.com/<org>/<package>#[|<sha>]
     checksum: Optional[str] = None
-    dependencies: Optional[list] = None
-    vcs_url: Optional[str] = None
 
     @cached_property
     def purl(self) -> PackageURL:
-        """Return corrsponding purl."""
+        """Return corresponding package URL."""
         qualifiers = {}
-        if self.source is not None:
-            qualifiers["source"] = self.source
-        # The condition below holds for either the main package or any packages
-        # that originate from the filesystem (for example, workspace and patched source ones).
-        if self.vcs_url is not None and self.source is None:
-            qualifiers["vcs_url"] = self.vcs_url
+        # depends on https://github.com/hermetoproject/hermeto/issues/852
         if self.checksum is not None:
             qualifiers["checksum"] = self.checksum
+
+        if self.source is not None and self.source.startswith("git+"):
+            parsed_url = urlparse(self.source)
+            commit_id = parsed_url.fragment
+            base_url = urlunparse(parsed_url._replace(query="", fragment=""))
+            qualifiers["vcs_url"] = f"{base_url}@{commit_id}"
+
         return PackageURL(type="cargo", name=self.name, version=self.version, qualifiers=qualifiers)
 
     def to_component(self) -> Component:
         """Convert CargoPackage into SBOM component."""
+        return Component(name=self.name, version=self.version, purl=self.purl.to_string())
+
+
+@dataclass
+class LocalCargoPackage:
+    """Represents a local dependency in the project or a workspace."""
+
+    name: str
+    version: Optional[str] = None
+    vcs_url: Optional[str] = None
+    subpath: Optional[str] = None
+
+    @cached_property
+    def purl(self) -> PackageURL:
+        """Return corresponding package URL."""
+        qualifiers = {}
+        if self.vcs_url is not None:
+            qualifiers["vcs_url"] = self.vcs_url
+        else:
+            # The subpath does not make sense if there is no VCS URL. This usually happens because
+            # of missing .git directory in an unpacked tarball that comes from a pip request.
+            self.subpath = None
+
+        return PackageURL(
+            type="cargo",
+            name=self.name,
+            version=self.version,
+            qualifiers=qualifiers,
+            subpath=self.subpath,
+        )
+
+    def to_component(self) -> Component:
+        """Convert LocalCargoPackage into SBOM component."""
         return Component(name=self.name, version=self.version, purl=self.purl.to_string())
 
 
@@ -220,26 +253,74 @@ def _run_cmd_watching_out_for_lock_mismatch(
             raise
 
 
-def _generate_sbom_components(package_dir: RootedPath) -> chain[Component]:
+def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
+    """Find local packages in the Cargo.toml file and return their subpaths."""
+    parsed_toml = _parse_toml_project_file(package_dir.path / "Cargo.toml")
+
+    result = {}
+
+    runtime_deps = parsed_toml.get("dependencies", {})
+    # Patched dependencies are used to override crates.io dependencies with local versions.
+    # This is useful for development purposes or quick bug fixes.
+    # https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+    patched_deps = parsed_toml.get("patch", {}).get("crates-io", {})
+    all_deps = {**runtime_deps, **patched_deps}
+
+    for name, dep_info in all_deps.items():
+        if isinstance(dep_info, dict) and "path" in dep_info:
+            result[name] = dep_info["path"]
+
+    return result
+
+
+def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
     """Generate SBOM components from Cargo.lock and for the main package."""
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
-    packages = parsed_lockfile.get("package", [])
 
+    all_packages = parsed_lockfile.get("package", [])
+    local_packages = _find_local_packages(package_dir)
     main_package_name, main_package_version = _resolve_main_package(package_dir)
-    is_a_dep = lambda p: p["name"] != main_package_name
+
     try:
         vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     except NotAGitRepo:
         # Could become invalid when directories are swapped for nested package managers
         vcs_url = None
-    deps_components = (
-        CargoPackage(**p, vcs_url=vcs_url).to_component() for p in packages if is_a_dep(p)
-    )
-    main_component = CargoPackage(
-        name=main_package_name, version=main_package_version, vcs_url=vcs_url
-    ).to_component()
 
-    components = chain((main_component,), deps_components)
+    components = []
+
+    for pkg in all_packages:
+        pkg_name = pkg.get("name")
+        pkg_version = pkg.get("version")
+
+        if pkg_name == main_package_name:
+            components.append(
+                LocalCargoPackage(
+                    name=main_package_name,
+                    version=main_package_version,
+                    vcs_url=vcs_url,
+                    subpath=str(package_dir.path.relative_to(package_dir.root)),
+                ).to_component()
+            )
+        elif pkg_name in local_packages:
+            # Local packages have no other fields in the Cargo.lock file besides the name and version.
+            components.append(
+                LocalCargoPackage(
+                    name=pkg_name,
+                    version=pkg_version,
+                    vcs_url=vcs_url,
+                    subpath=local_packages.get(pkg_name),
+                ).to_component()
+            )
+        else:
+            components.append(
+                CargoPackage(
+                    name=pkg_name,
+                    version=pkg_version,
+                    source=pkg.get("source"),
+                    checksum=pkg.get("checksum"),
+                ).to_component()
+            )
 
     return components
 
