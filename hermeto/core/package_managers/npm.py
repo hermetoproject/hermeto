@@ -12,7 +12,6 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
-from hermeto.core.config import get_config
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
@@ -540,7 +539,6 @@ def _get_npm_dependencies(
     asyncio.run(
         async_download_files(
             {url: item["download_path"] for (url, item) in files_to_download.items()},
-            get_config().concurrency_limit,
         )
     )
     # Check integrity of downloaded packages

@@ -331,7 +331,7 @@ def _process_pypi_req(
     files: dict[str, Union[str, PathLike[str]]] = {
         dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()
     }
-    asyncio.run(async_download_files(files, get_config().concurrency_limit))
+    asyncio.run(async_download_files(files))
 
     for artifact in artifacts:
         download_infos.append(

@@ -235,11 +235,9 @@ async def test_async_download_files(
         "file3": str(tmp_path / "path3"),
     }
 
-    concurrency_limit = 2
-
     mock_download_file.return_value = mock_async_download_binary_file
 
-    await async_download_files(files_to_download, concurrency_limit)
+    await async_download_files(files_to_download)
 
     assert mock_download_file.call_count == 3
 

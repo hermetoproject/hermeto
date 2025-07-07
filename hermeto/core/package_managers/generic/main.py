@@ -9,7 +9,6 @@ from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import must_match_any_checksum
-from hermeto.core.config import get_config
 from hermeto.core.errors import PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
@@ -70,7 +69,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
         Path.mkdir(Path(artifact.filename).parent, parents=True, exist_ok=True)
         to_download[str(artifact.download_url)] = artifact.filename
 
-    asyncio.run(async_download_files(to_download, get_config().concurrency_limit))
+    asyncio.run(async_download_files(to_download))
 
     # verify checksums
     for artifact in lockfile.artifacts:

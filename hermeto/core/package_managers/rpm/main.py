@@ -15,7 +15,6 @@ from packageurl import PackageURL
 from pydantic import ValidationError
 
 from hermeto import APP_NAME
-from hermeto.core.config import get_config
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import ExtraOptions, Request, SSLOptions
 from hermeto.core.models.output import RequestOutput
@@ -349,7 +348,6 @@ def _download(
         asyncio.run(
             async_download_files(
                 files,
-                get_config().concurrency_limit,
                 ssl_context=_get_ssl_context(ssl_options=ssl_options) if ssl_options else None,
             )
         )

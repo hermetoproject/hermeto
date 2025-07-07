@@ -117,7 +117,6 @@ async def _async_download_binary_file(
 
 async def async_download_files(
     files_to_download: dict[str, Union[str, PathLike[str]]],
-    concurrency_limit: int,
     ssl_context: Optional[ssl.SSLContext] = None,
 ) -> None:
     """Asynchronous function to download files.
@@ -151,20 +150,6 @@ async def async_download_files(
         tasks: set[asyncio.Task] = set()
 
         for url, download_path in files_to_download.items():
-            if len(tasks) >= concurrency_limit:
-                # Wait for some download to finish before adding a new one
-                done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-                # Check for exceptions
-                try:
-                    await asyncio.gather(*done)
-                except FetchError:
-                    # Close retry_client if any request fails (other tasks can be running,
-                    # if a task is closed with the client open, an Warning is raised).
-                    await retry_client.close()
-                    for t in tasks:
-                        t.cancel()
-                    raise
-
             tasks.add(
                 asyncio.create_task(
                     _async_download_binary_file(

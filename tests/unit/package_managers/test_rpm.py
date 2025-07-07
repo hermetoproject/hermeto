@@ -587,7 +587,6 @@ def test_download(
                 )
             ),
         },
-        5,
         ssl_context=None,
     )
     mock_asyncio.assert_called_once()
