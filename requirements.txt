@@ -91,12 +91,6 @@ aiohttp==3.12.6 \
     --hash=sha256:efbbde2297e4ab10d187103aba9b565277c85ac7d24d98cae201c033ce885504 \
     --hash=sha256:faf7c0224423106c5e0a4897c668c6cef2ca9b588295993d83d8c3e69772c7f0 \
     --hash=sha256:fd1d6116c1364ab00ffed1654a01091dc7f897d315c5103bcc6e5ab7f70172c7
-    # via
-    #   hermeto (pyproject.toml)
-    #   aiohttp-retry
-aiohttp-retry==2.9.1 \
-    --hash=sha256:66d2759d1921838256a05a3f80ad7e724936f083e35be5abb5e16eed6be6dc54 \
-    --hash=sha256:8eb75e904ed4ee5c2ec242fefe85bf04240f685391c4879d8f541d6028ff01f1
     # via hermeto (pyproject.toml)
 aiosignal==1.3.2 \
     --hash=sha256:45cde58e409a301715980c2b01d0c28bdde3770d8290b5eb2173759d9acb31a5 \

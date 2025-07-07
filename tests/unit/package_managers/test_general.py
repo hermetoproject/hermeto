@@ -8,7 +8,6 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 import aiohttp
-import aiohttp_retry
 import pytest
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
@@ -213,7 +212,6 @@ async def test_async_download_files(
 ) -> None:
     def mock_async_download_binary_file() -> MagicMock:
         async def mock_download_binary_file(
-            session: aiohttp_retry.RetryClient,
             url: str,
             download_path: str,
         ) -> dict[str, str]:

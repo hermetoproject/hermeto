@@ -2,13 +2,11 @@
 import asyncio
 import logging
 import ssl
-import types
 from os import PathLike
 from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 import aiohttp
-import aiohttp_retry
 from requests import RequestException, Session
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import AuthBase
@@ -72,7 +70,7 @@ def download_binary_file(
 
 
 async def _async_download_binary_file(
-    session: aiohttp_retry.RetryClient,
+    session: aiohttp.ClientSession,
     url: str,
     download_path: Union[str, PathLike[str]],
     auth: Optional[aiohttp.BasicAuth] = None,
@@ -82,7 +80,7 @@ async def _async_download_binary_file(
     """
     Download a binary file (such as a TAR archive) from a URL using asyncio.
 
-    :param aiohttp_retry.RetryClient session: Aiohttp interface for making HTTP requests.
+    :param aiohttp.ClientSession session: Aiohttp interface for making HTTP requests.
     :param str url: URL for file download
     :param str download_path: File path location
     :param aiohttp.BasicAuth auth: Authentication for the URL
@@ -119,36 +117,11 @@ async def async_download_files(
     files_to_download: dict[str, Union[str, PathLike[str]]],
     ssl_context: Optional[ssl.SSLContext] = None,
 ) -> None:
-    """Asynchronous function to download files.
+    """Download multiple files asynchronously."""
+    tasks: set[asyncio.Task] = set()
 
-    :param files_to_download: Dict of files to download with file paths
-    :param concurrency_limit: Max number of concurrent tasks (downloads).
-    """
-
-    async def on_request_start(
-        session: aiohttp.ClientSession,
-        trace_config_ctx: types.SimpleNamespace,
-        params: aiohttp.TraceRequestStartParams,
-    ) -> None:
-        current_attempt = trace_config_ctx.trace_request_ctx["current_attempt"]
-        if current_attempt > 1:
-            file_name = params.url.path.split("/")[-1]
-            log.debug(f"Attempt {current_attempt}/{retry_options.attempts} - {file_name}")
-
-    trace_config = aiohttp.TraceConfig()
-    trace_config.on_request_start.append(on_request_start)
-    num_attempts: int = 5
-    retry_options = aiohttp_retry.JitterRetry(attempts=num_attempts, retry_all_server_errors=True)
-    retry_client = aiohttp_retry.RetryClient(
-        retry_options=retry_options,
-        trace_configs=[trace_config],
-        # respect proxy settings and .netrc
-        trust_env=True,
-    )
-
-    async with retry_client as session:
-        tasks: set[asyncio.Task] = set()
-
+    # respect proxy settings and .netrc
+    async with aiohttp.ClientSession(trust_env=True) as session:
         for url, download_path in files_to_download.items():
             tasks.add(
                 asyncio.create_task(
