@@ -1,6 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
@@ -62,17 +62,50 @@ def resolve_packages(request: Request) -> RequestOutput:
 
 
 def _resolve_packages(request: Request) -> RequestOutput:
-    """Run all requested package managers, return their combined output."""
+    """
+    Run all requested package managers, return their combined output.
+
+    Supports individual experimental flags `x-<name>` alongside `dev-package-managers`.
+    """
     _supported_package_managers = _package_managers
-    requested_types = set(pkg.type for pkg in request.packages)
-    if "dev-package-managers" in request.flags:
-        _supported_package_managers = _package_managers | _dev_package_managers
+    requested_types: set[PackageManagerType] = {pkg.type for pkg in request.packages}
+
+    # handle individual experimental package managers toggles
+    experimental_package_managers: set[PackageManagerType] = {
+        type for type in requested_types if type.startswith("x-")
+    }
+    if experimental_package_managers and "dev-package-managers" in request.flags:
+        raise UnsupportedFeature(
+            "Experimental package manager not supported with --dev-package-managers tag.",
+            solution="Switch to using only x-<pkg> please.",
+        )
+    elif experimental_package_managers:
+        requested_types = {
+            cast(PackageManagerType, t.removeprefix("x-")) if t.startswith("x-") else t
+            for t in requested_types
+        }
+        # Normalize each experimental pkg and enable only those dev managers
+        normalized: set[PackageManagerType] = {
+            cast(PackageManagerType, t.removeprefix("x-")) for t in experimental_package_managers
+        }
+        for pkg in normalized:
+            _supported_package_managers[pkg] = _dev_package_managers[pkg]
+
+        # Replace x-<pkg> in requested_types with the normalized names
+        requested_types = (requested_types - experimental_package_managers) | normalized
+    # handle global dev-package-managers flag
+    elif "dev-package-managers" in request.flags:
+        _supported_package_managers |= _dev_package_managers
+
+    # check for any unsupported
     unsupported_types = requested_types - _supported_package_managers.keys()
     if unsupported_types:
+        types = [f'{{"type": "x-{type_}"}}' for type_ in sorted(unsupported_types)]
         raise UnsupportedFeature(
             f"Package manager(s) not yet supported: {', '.join(sorted(unsupported_types))}",
-            # unknown package managers shouldn't get past input validation
-            solution="But the good news is that we're already working on it!",
+            solution="These features are experimental and should be used with caution.\n"
+            "To enable specific experimental features use:\n"
+            f"    '[{', '.join(types)}]'",
         )
     pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]
     return sum([pkg_manager(request) for pkg_manager in pkg_managers], RequestOutput.empty())

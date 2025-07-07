@@ -35,6 +35,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     Compared to pydantic's default message:
     - don't show the model name, just say "user input"
     - don't show the underlying error type (e.g. "type=value_error.const")
+    - don't show experimental package types without x- prefix in the error message
     """
     errors = validation_error.errors()
     n_errors = len(errors)
@@ -42,6 +43,22 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     def show_error(error: "ErrorDict") -> str:
         location = " -> ".join(map(str, error["loc"]))
         message = error["msg"]
+
+        if "expected tags:" in message:
+            tags = message.split("expected tags:")[1].strip()
+            tags = [tag.strip("'") for tag in tags.split(", ")]
+            # For each tag, if there's an experimental version, use that instead
+            filtered_tags = []
+            for tag in tags:
+                if tag.startswith("x-"):
+                    filtered_tags.append(tag)
+                elif f"x-{tag}" not in tags:
+                    filtered_tags.append(tag)
+            message = (
+                message.split("expected tags:")[0]
+                + "expected tags: "
+                + ", ".join(f"'{tag}'" for tag in sorted(filtered_tags))
+            )
 
         if location != "__root__":
             message = f"{location}\n  {message}"
@@ -54,7 +71,9 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
 
 
 # Supported package managers
-PackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"]
+PackageManagerType = Literal[
+    "bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "x-rpm", "yarn"
+]
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
@@ -230,7 +249,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
 class RpmPackageInput(_PackageInputBase):
     """Accepted input for a rpm package."""
 
-    type: Literal["rpm"]
+    type: Literal["rpm", "x-rpm"]
     include_summary_in_sbom: bool = False
     options: Optional[ExtraOptions] = None
 
