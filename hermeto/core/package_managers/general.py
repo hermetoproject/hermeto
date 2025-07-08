@@ -90,9 +90,6 @@ async def _async_download_binary_file(
     try:
         timeout = aiohttp.ClientTimeout(total=get_config().requests_timeout)
 
-        log.debug(
-            f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
-        )
         async with session.get(
             url, timeout=timeout, auth=auth, raise_for_status=True, ssl=ssl_context
         ) as resp:
@@ -103,12 +100,9 @@ async def _async_download_binary_file(
                         break
                     f.write(chunk)
 
-    except Exception as exception:
+    except Exception as e:
         log.error(f"Unsuccessful download: {url}")
-        # "from None" since we have the exception context in the logs
-        raise FetchError(
-            f"exception_name: {exception.__class__.__name__}, " f"details: {exception}"
-        ) from None
+        raise FetchError(str(e)) from None
 
     log.debug(f"Download completed - {url}")
 

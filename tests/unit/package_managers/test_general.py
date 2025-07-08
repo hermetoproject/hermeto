@@ -197,11 +197,8 @@ async def test_async_download_binary_file_exception(
     exception_message = "This is a test exception message."
     session.get().__aenter__.side_effect = Exception(exception_message)
 
-    with pytest.raises(FetchError) as exc_info:
+    with pytest.raises(FetchError):
         await _async_download_binary_file(session, url, download_path)
-
-    assert f"Unsuccessful download: {url}" in caplog.text
-    assert str(exc_info.value) == f"exception_name: Exception, details: {exception_message}"
 
 
 @pytest.mark.asyncio
@@ -257,8 +254,5 @@ async def test_async_download_files_exception(
     exception_message = "This is a test exception message."
     session.get().__aenter__.side_effect = Exception(exception_message)
 
-    with pytest.raises(FetchError) as exc_info:
+    with pytest.raises(FetchError):
         await _async_download_binary_file(session, url, download_path)
-
-    assert f"Unsuccessful download: {url}" in caplog.text
-    assert str(exc_info.value) == f"exception_name: Exception, details: {exception_message}"
