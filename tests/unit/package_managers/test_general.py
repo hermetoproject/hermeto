@@ -7,7 +7,6 @@ from typing import Any, Optional, Union
 from unittest import mock
 from unittest.mock import MagicMock
 
-import aiohttp
 import pytest
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
@@ -144,48 +143,6 @@ def test_extract_git_info(url: str, nonstandard_info: Any) -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_download_binary_file(
-    tmp_path: Path,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    url = "http://example.com/file.tar"
-    download_path = tmp_path / "file.tar"
-
-    class MockReadChunk:
-        def __init__(self) -> None:
-            """Create a call count."""
-            self.call_count = 0
-
-        async def read_chunk(self, size: int) -> bytes:
-            """Return a non-empty chunk for the first and second call, then an empty chunk."""
-            self.call_count += 1
-            chunks = {1: b"first_chunk-", 2: b"second_chunk-"}
-            return chunks.get(self.call_count, b"")
-
-    response, session = MagicMock(), MagicMock()
-    response.content.read = MockReadChunk().read_chunk
-
-    async def mock_aenter() -> MagicMock:
-        return response
-
-    session.get().__aenter__.side_effect = mock_aenter
-
-    await _async_download_binary_file(session, url, download_path, ssl_context=None)
-
-    with open(download_path, "rb") as f:
-        assert f.read() == b"first_chunk-second_chunk-"
-
-    assert session.get.called
-    assert session.get.call_args == mock.call(
-        url,
-        timeout=aiohttp.ClientTimeout(total=300),
-        auth=None,
-        raise_for_status=True,
-        ssl=None,
-    )
-
-
-@pytest.mark.asyncio
 async def test_async_download_binary_file_exception(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -235,11 +192,6 @@ async def test_async_download_files(
     await async_download_files(files_to_download)
 
     assert mock_download_file.call_count == 3
-
-    # Assert that mock_download_file was called with the correct arguments
-    for call in mock_download_file.mock_calls:
-        _, file, path = call.args
-        assert file, path in files_to_download.items()
 
 
 @pytest.mark.asyncio

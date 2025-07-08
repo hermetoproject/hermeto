@@ -135,6 +135,8 @@ class HermetoImage(ContainerImage):
             with tempfile.TemporaryDirectory() as netrc_tmpdir:
                 netrc_path = Path(netrc_tmpdir, ".netrc")
                 netrc_path.write_text(netrc_content)
+                # set permissions to read/write only for the owner
+                netrc_path.chmod(0o600)
                 return super().run_cmd_on_image(
                     cmd, tmp_path, [*mounts, (netrc_path, "/root/.netrc")], net, podman_flags
                 )

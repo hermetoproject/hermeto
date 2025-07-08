@@ -17,9 +17,9 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-  "aiohttp",
   "createrepo-c ; sys_platform == 'linux'",
   "gitpython",
+  "httpx",
   "packageurl-python",
   "packaging",
   "pyarn",

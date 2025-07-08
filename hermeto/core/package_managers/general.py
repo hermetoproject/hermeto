@@ -3,10 +3,11 @@ import asyncio
 import logging
 import ssl
 from os import PathLike
+from pathlib import Path
 from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
-import aiohttp
+import httpx
 from requests import RequestException, Session
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import AuthBase
@@ -70,35 +71,17 @@ def download_binary_file(
 
 
 async def _async_download_binary_file(
-    session: aiohttp.ClientSession,
+    client: httpx.AsyncClient,
     url: str,
     download_path: Union[str, PathLike[str]],
-    auth: Optional[aiohttp.BasicAuth] = None,
-    ssl_context: Optional[ssl.SSLContext] = None,
-    chunk_size: int = 8192,
 ) -> None:
-    """
-    Download a binary file (such as a TAR archive) from a URL using asyncio.
+    """Download a file from the given URL and save it."""
+    timeout = get_config().requests_timeout
 
-    :param aiohttp.ClientSession session: Aiohttp interface for making HTTP requests.
-    :param str url: URL for file download
-    :param str download_path: File path location
-    :param aiohttp.BasicAuth auth: Authentication for the URL
-    :param int chunk_size: Chunk size param for Response.content.read()
-    :raise FetchError: If download failed
-    """
     try:
-        timeout = aiohttp.ClientTimeout(total=get_config().requests_timeout)
-
-        async with session.get(
-            url, timeout=timeout, auth=auth, raise_for_status=True, ssl=ssl_context
-        ) as resp:
-            with open(download_path, "wb") as f:
-                while True:
-                    chunk = await resp.content.read(chunk_size)
-                    if not chunk:
-                        break
-                    f.write(chunk)
+        response = await client.get(url, timeout=timeout, follow_redirects=True)
+        response.raise_for_status()
+        Path(download_path).write_bytes(response.content)
 
     except Exception as e:
         log.error(f"Unsuccessful download: {url}")
@@ -114,16 +97,17 @@ async def async_download_files(
     """Download multiple files asynchronously."""
     tasks: set[asyncio.Task] = set()
 
-    # respect proxy settings and .netrc
-    async with aiohttp.ClientSession(trust_env=True) as session:
+    verify = ssl_context if ssl_context is not None else True
+    # check if .netrc file exists for authentication
+    try:
+        auth = httpx.NetRCAuth()
+    except Exception:
+        log.debug("No .netrc file found in the home directory.")
+        auth = None
+
+    async with httpx.AsyncClient(auth=auth, trust_env=True, verify=verify) as client:
         for url, download_path in files_to_download.items():
-            tasks.add(
-                asyncio.create_task(
-                    _async_download_binary_file(
-                        session, url, download_path, ssl_context=ssl_context
-                    )
-                )
-            )
+            tasks.add(asyncio.create_task(_async_download_binary_file(client, url, download_path)))
 
         await asyncio.gather(*tasks)
 
