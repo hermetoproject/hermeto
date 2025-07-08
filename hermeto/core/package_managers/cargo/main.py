@@ -77,13 +77,29 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
+        _verify_lockfile_is_present_or_fail(package_dir)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        fetched_components, cfg_template = _resolve_cargo_package(package_dir, request)
-        components.extend(fetched_components)
-        project_files.append(_use_vendored_sources(package_dir, cfg_template))
+        config_template = _fetch_dependencies(package_dir, request)
+        project_files.append(_use_vendored_sources(package_dir, config_template))
+        components.extend(_resolve_cargo_package(package_dir))
 
     return RequestOutput.from_obj_list(components, environment_variables, project_files)
+
+
+def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, Any]:
+    vendor_dir = request.output_dir.join_within_root("deps/cargo")
+    # --no-delete to keep everything already present. It does not matter for a fresh
+    # single package, but it does matter when there is pip interaction.
+    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
+    log.info("Fetching cargo dependencies at %s", package_dir)
+    with _hidden_cargo_config_file(package_dir):
+        # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
+        config_template = _run_cmd_watching_out_for_lock_mismatch(
+            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
+        )
+
+    return _swap_sources_directory_for_subsitution_slot(config_template)
 
 
 def _parse_toml_project_file(path: Path) -> dict[str, Any]:
@@ -198,23 +214,8 @@ def _run_cmd_watching_out_for_lock_mismatch(
             raise
 
 
-def _resolve_cargo_package(
-    package_dir: RootedPath,
-    request: Request,
-) -> tuple[chain[Component], dict]:
+def _resolve_cargo_package(package_dir: RootedPath) -> chain[Component]:
     """Resolve a single cargo package."""
-    _verify_lockfile_is_present_or_fail(package_dir)
-    vendor_dir = request.output_dir.join_within_root("deps/cargo")
-    # --no-delete to keep everything already present. It does not matter for a fresh
-    # single package, but it does matter when there is pip interaction.
-    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
-    log.info("Fetching cargo dependencies at %s", package_dir)
-    with _hidden_cargo_config_file(package_dir):
-        # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
-        config_template = _run_cmd_watching_out_for_lock_mismatch(
-            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
-        )
-
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
     packages = parsed_lockfile.get("package", [])
 
@@ -234,7 +235,7 @@ def _resolve_cargo_package(
 
     components = chain((main_component,), deps_components)
 
-    return components, _swap_sources_directory_for_subsitution_slot(config_template)
+    return components
 
 
 def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
