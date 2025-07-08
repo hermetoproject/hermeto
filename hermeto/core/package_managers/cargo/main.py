@@ -88,13 +88,19 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
 
 def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, Any]:
+    """Fetch cargo dependencies and return a config template for hermetic build."""
     vendor_dir = request.output_dir.join_within_root("deps/cargo")
-    # --no-delete to keep everything already present. It does not matter for a fresh
-    # single package, but it does matter when there is pip interaction.
+    # --locked           Assert that `Cargo.lock` will remain unchanged.
+    # --versioned-dirs   Always include version in subdir name.
+    # --no-delete        Don't delete older crates in the vendor directory.
+    #                    It is necessary to make Cargo keep dependencies that are already
+    #                    present in the vendored directory. This flag has no effect on standalone
+    #                    cargo operations however is crucial when it is invoked from pip.
     cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
-        # stdout contains exact values to add to .cargo/config.toml for a build to become hermetic.
+        # The necessary configuration to use the vendored sources will be printed to STDOUT.
+        # https://doc.rust-lang.org/cargo/commands/cargo-vendor.html#description
         config_template = _run_cmd_watching_out_for_lock_mismatch(
             cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
         )
