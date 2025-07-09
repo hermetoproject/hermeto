@@ -12,10 +12,9 @@ from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto.core.errors import PackageManagerError, PackageRejected
-from hermeto.core.package_managers.general import download_binary_file
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import get_repo_id
-from hermeto.core.utils import run_cmd
+from hermeto.core.utils import download_binary_file, run_cmd
 
 log = logging.getLogger(__name__)
 

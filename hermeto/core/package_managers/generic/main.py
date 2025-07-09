@@ -13,9 +13,9 @@ from hermeto.core.errors import PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component
-from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.generic.models import GenericLockfileV1
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import async_download_files
 
 log = logging.getLogger(__name__)
 DEFAULT_LOCKFILE_NAME = "artifacts.lock.yaml"

@@ -19,10 +19,9 @@ from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import ExtraOptions, Request, SSLOptions
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, Property
-from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.utils import run_cmd
+from hermeto.core.utils import async_download_files, run_cmd
 
 log = logging.getLogger(__name__)
 

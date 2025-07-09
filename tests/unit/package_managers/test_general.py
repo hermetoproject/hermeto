@@ -13,7 +13,7 @@ from requests.auth import AuthBase, HTTPBasicAuth
 
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
-from hermeto.core.package_managers.general import (
+from hermeto.core.utils import (
     _async_download_binary_file,
     async_download_files,
     download_binary_file,
@@ -71,7 +71,7 @@ async def test_async_download_binary_file_exception(
 
 
 @pytest.mark.asyncio
-@mock.patch("hermeto.core.package_managers.general._async_download_binary_file")
+@mock.patch("hermeto.core.utils._async_download_binary_file")
 async def test_async_download_files(
     mock_download_file: MagicMock,
     tmp_path: Path,
