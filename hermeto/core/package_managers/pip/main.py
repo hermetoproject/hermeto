@@ -20,11 +20,7 @@ from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
-from hermeto.core.package_managers.general import (
-    async_download_files,
-    download_binary_file,
-    extract_git_info,
-)
+from hermeto.core.package_managers.general import async_download_files, download_binary_file
 from hermeto.core.package_managers.pip.package_distributions import (
     PIP_NO_SDIST_DOC,
     DistributionPackageInfo,
@@ -46,7 +42,7 @@ from hermeto.core.package_managers.pip.rust import (
     find_and_fetch_rust_dependencies,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import clone_as_tarball, get_repo_id
+from hermeto.core.scm import clone_as_tarball, extract_git_info, get_repo_id
 
 log = logging.getLogger(__name__)
 
