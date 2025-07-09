@@ -25,6 +25,32 @@ log = logging.getLogger(__name__)
 MAVEN_SCOPES = ("compile", "provided", "runtime", "test", "system", "import")
 DEFAULT_LOCKFILE_NAME = "lockfile.json"
 
+# Mapping from Java MessageDigest algorithm names to Python hashlib algorithm names
+JAVA_TO_PYTHON_CHECKSUM_ALGORITHMS = {
+    "SHA-256": "sha256",
+    "SHA-1": "sha1", 
+    "SHA-512": "sha512",
+    "SHA-224": "sha224",
+    "SHA-384": "sha384",
+    "MD5": "md5",
+}
+
+
+def _convert_java_checksum_algorithm_to_python(java_algorithm: str) -> str:
+    """Convert Java MessageDigest algorithm name to Python hashlib algorithm name.
+    
+    :param java_algorithm: Algorithm name from Java MessageDigest (e.g., "SHA-256")
+    :return: Algorithm name compatible with Python hashlib (e.g., "sha256")
+    :raises PackageRejected: If the algorithm is not supported
+    """
+    python_algorithm = JAVA_TO_PYTHON_CHECKSUM_ALGORITHMS.get(java_algorithm)
+    if not python_algorithm:
+        raise PackageRejected(
+            f"Unsupported checksum algorithm: {java_algorithm}",
+            solution=f"Supported algorithms: {', '.join(JAVA_TO_PYTHON_CHECKSUM_ALGORITHMS.keys())}"
+        )
+    return python_algorithm
+
 
 class MavenComponentInfo(TypedDict):
     """Contains the data needed to generate a maven SBOM component."""
@@ -275,8 +301,9 @@ def _get_maven_dependencies(
     # Verify checksums
     for url, dep_info in deps_to_download.items():
         if dep_info["checksum"] and dep_info["checksum_algorithm"]:
+            python_algorithm = _convert_java_checksum_algorithm_to_python(dep_info["checksum_algorithm"])
             checksum_info = ChecksumInfo(
-                algorithm=dep_info["checksum_algorithm"].lower(),
+                algorithm=python_algorithm,
                 hexdigest=dep_info["checksum"],
             )
             must_match_any_checksum(download_paths[url].path, [checksum_info])

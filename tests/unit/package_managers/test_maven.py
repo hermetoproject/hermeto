@@ -11,6 +11,7 @@ from hermeto.core.package_managers.maven.main import (
     MavenDependency,
     MavenLockfile,
     fetch_maven_source,
+    _convert_java_checksum_algorithm_to_python,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -84,6 +85,22 @@ def test_maven_dependency_missing_checksum():
     component_info = dep.to_component_info()
     
     assert component_info["missing_hash_in_file"] == Path("lockfile.json")
+
+
+def test_convert_java_checksum_algorithm_to_python():
+    """Test that Java MessageDigest algorithm names are converted to Python hashlib names."""
+    # Test supported algorithms
+    assert _convert_java_checksum_algorithm_to_python("SHA-256") == "sha256"
+    assert _convert_java_checksum_algorithm_to_python("SHA-1") == "sha1"
+    assert _convert_java_checksum_algorithm_to_python("SHA-512") == "sha512"
+    assert _convert_java_checksum_algorithm_to_python("SHA-224") == "sha224"
+    assert _convert_java_checksum_algorithm_to_python("SHA-384") == "sha384"
+    assert _convert_java_checksum_algorithm_to_python("MD5") == "md5"
+    
+    # Test unsupported algorithm
+    with pytest.raises(PackageRejected) as exc_info:
+        _convert_java_checksum_algorithm_to_python("UNSUPPORTED-ALGORITHM")
+    assert "Unsupported checksum algorithm: UNSUPPORTED-ALGORITHM" in str(exc_info.value)
 
 
 def test_maven_lockfile_from_file_missing(tmp_path):
