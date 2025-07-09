@@ -22,6 +22,7 @@ class PropertyEnum(str, Enum):
     PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
     PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
+    PROP_MAVEN_SCOPE = f"{APP_NAME}:maven:scope"
 
     def __str__(self) -> str:
         return self.value
@@ -46,6 +47,7 @@ class PropertySet:
     pip_build_dependency: bool = False
     bundler_package_binary: bool = False
     rpm_summary: str = ""
+    maven_scope: str = ""
 
     @classmethod
     def from_properties(cls, props: Iterable[Property]) -> "Self":
@@ -58,6 +60,7 @@ class PropertySet:
         pip_build_dependency = False
         bundler_package_binary = False
         rpm_summary = ""
+        maven_scope = ""
 
         for prop in props:
             if prop.name == PropertyEnum.PROP_FOUND_BY:
@@ -76,6 +79,8 @@ class PropertySet:
                 bundler_package_binary = True
             elif prop.name == PropertyEnum.PROP_RPM_SUMMARY:
                 rpm_summary = prop.value
+            elif prop.name == PropertyEnum.PROP_MAVEN_SCOPE:
+                maven_scope = prop.value
             else:
                 assert_never(prop.name)
 
@@ -88,6 +93,7 @@ class PropertySet:
             pip_build_dependency,
             bundler_package_binary,
             rpm_summary,
+            maven_scope,
         )
 
     def to_properties(self) -> list[Property]:
@@ -113,6 +119,8 @@ class PropertySet:
             props.append(Property(name=PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY, value="true"))
         if self.rpm_summary:
             props.append(Property(name=PropertyEnum.PROP_RPM_SUMMARY, value=self.rpm_summary))
+        if self.maven_scope:
+            props.append(Property(name=PropertyEnum.PROP_MAVEN_SCOPE, value=self.maven_scope))
 
         return sorted(props, key=lambda p: (p.name, p.value))
 
