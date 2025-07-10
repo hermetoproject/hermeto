@@ -6,7 +6,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
-from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
+from hermeto.core.package_managers import bundler, cargo, generic, gomod, maven, metayarn, npm, pip, rpm
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import copy_directory
 
@@ -16,6 +16,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "bundler": bundler.fetch_bundler_source,
     "cargo": cargo.fetch_cargo_source,
     "gomod": gomod.fetch_gomod_source,
+    "maven": maven.fetch_maven_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "yarn": metayarn.fetch_yarn_source,
