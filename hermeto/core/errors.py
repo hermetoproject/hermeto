@@ -35,7 +35,7 @@ class BaseError(Exception):
     def friendly_msg(self) -> str:
         """Return the user-friendly representation of this error."""
         msg = str(self)
-        if self.solution:
+        if msg is not None and  self.solution:
             msg += f"\n{textwrap.indent(self.solution, prefix='  ')}"
         if self.docs:
             msg += f"\n  Docs: {self.docs}"
