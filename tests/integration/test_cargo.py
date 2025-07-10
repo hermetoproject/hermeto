@@ -78,6 +78,19 @@ def test_cargo_packages(
             [],
             id="cargo_mixed_git_crate_dependency",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="cargo/e2e",
+                packages=({"path": ".", "type": "cargo"},),
+                check_output=True,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            ["foo"],
+            ["The word foo has 3 letters"],
+            id="cargo_e2e",
+        ),
     ],
 )
 def test_e2e_cargo(
