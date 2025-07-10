@@ -109,7 +109,12 @@ class MavenDependency:
     @property
     def checksum(self) -> Optional[str]:
         """Get the checksum."""
-        return self._dependency_dict.get("checksum")
+
+        # Some checksums have additional information after the hash, so we need to split and take the first part
+        raw_checksum = self._dependency_dict.get("checksum")
+        if raw_checksum:
+            return raw_checksum.split()[0]
+        return None
 
     @property
     def checksum_algorithm(self) -> Optional[str]:
