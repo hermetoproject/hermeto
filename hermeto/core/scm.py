@@ -5,7 +5,7 @@ import tarfile
 import tempfile
 from os import PathLike
 from pathlib import Path
-from typing import NamedTuple, Union
+from typing import Any, NamedTuple, Union
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 from git.exc import InvalidGitRepositoryError, NoSuchPathError
@@ -153,3 +153,52 @@ def _reset_git_head(repo: Repo, ref: str) -> None:
             "Failed on checking out the Git repository. Please verify the supplied reference "
             f'of "{ref}" is valid.'
         )
+
+
+def extract_git_info(vcs_url: str) -> dict[str, Any]:
+    """
+    Extract important info from a VCS requirement URL.
+
+    Given a URL such as git+https://user:pass@host:port/namespace/repo.git@123456?foo=bar#egg=spam
+    this function will extract:
+    - the "clean" URL: https://user:pass@host:port/namespace/repo.git
+    - the git ref: 123456
+    - the host, namespace and repo: host:port, namespace, repo
+
+    The clean URL and ref can be passed straight to scm.Git to fetch the repo.
+    The host, namespace and repo will be used to construct the file path under deps/pip.
+
+    :param str vcs_url: The URL of a VCS requirement, must be valid (have git ref in path)
+    :return: Dict with url, ref, host, namespace and repo keys
+    """
+    # If scheme is git+protocol://, keep only protocol://
+    # Do this before parsing URL, otherwise urllib may not extract URL params
+    if vcs_url.startswith("git+"):
+        vcs_url = vcs_url[len("git+") :]
+
+    url = urlparse(vcs_url)
+
+    ref = url.path[-40:]  # Take the last 40 characters (the git ref)
+    clean_path = url.path[:-41]  # Drop the last 41 characters ('@' + git ref)
+
+    # Note: despite starting with an underscore, the namedtuple._replace() method is public
+    clean_url = url._replace(path=clean_path, params="", query="", fragment="")
+
+    # Assume everything up to the last '@' is user:pass. This should be kept in the
+    # clean URL used for fetching, but should not be considered part of the host.
+    _, _, clean_netloc = url.netloc.rpartition("@")
+
+    namespace_repo = clean_path.strip("/")
+    if namespace_repo.endswith(".git"):
+        namespace_repo = namespace_repo[: -len(".git")]
+
+    # Everything up to the last '/' is namespace, the rest is repo
+    namespace, _, repo = namespace_repo.rpartition("/")
+
+    return {
+        "url": clean_url.geturl(),
+        "ref": ref.lower(),
+        "host": clean_netloc,
+        "namespace": namespace,
+        "repo": repo,
+    }

@@ -20,9 +20,6 @@ class Config(BaseModel, extra="forbid"):
     gomod_download_max_tries: int = 5
     gomod_strict_vendor: bool = True
     subprocess_timeout: int = 3600
-
-    # matches aiohttp default timeout:
-    # https://docs.aiohttp.org/en/v3.9.5/client_reference.html#aiohttp.ClientSession
     requests_timeout: int = 300
     concurrency_limit: int = 5
 

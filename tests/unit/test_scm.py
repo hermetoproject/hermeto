@@ -2,14 +2,15 @@ import filecmp
 import sys
 import tarfile
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 from urllib.parse import urlsplit
 
 import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.scm import RepoID, clone_as_tarball, extract_git_info, get_repo_id
+from tests.common_utils import GIT_REF
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -117,3 +118,89 @@ def test_clone_as_tarball_wrong_ref(golang_repo_path: Path, tmp_path: Path) -> N
         match=f'Please verify the supplied reference of "{bad_commit}" is valid',
     ):
         clone_as_tarball(f"file://{golang_repo_path}", bad_commit, tmp_path / "my-repo.tar.gz")
+
+
+@pytest.mark.parametrize(
+    "url, nonstandard_info",  # See body of function for what is standard info
+    [
+        (
+            # Standard case
+            f"git+https://github.com/monty/python@{GIT_REF}",
+            None,
+        ),
+        (
+            # Ref should be converted to lowercase
+            f"git+https://github.com/monty/python@{GIT_REF.upper()}",
+            {"ref": GIT_REF},  # Standard but be explicit about it
+        ),
+        (
+            # Repo ends with .git (that is okay)
+            f"git+https://github.com/monty/python.git@{GIT_REF}",
+            {"url": "https://github.com/monty/python.git"},
+        ),
+        (
+            # git://
+            f"git://github.com/monty/python@{GIT_REF}",
+            {"url": "git://github.com/monty/python"},
+        ),
+        (
+            # git+git://
+            f"git+git://github.com/monty/python@{GIT_REF}",
+            {"url": "git://github.com/monty/python"},
+        ),
+        (
+            # No namespace
+            f"git+https://github.com/python@{GIT_REF}",
+            {"url": "https://github.com/python", "namespace": ""},
+        ),
+        (
+            # Namespace with more parts
+            f"git+https://github.com/monty/python/and/the/holy/grail@{GIT_REF}",
+            {
+                "url": "https://github.com/monty/python/and/the/holy/grail",
+                "namespace": "monty/python/and/the/holy",
+                "repo": "grail",
+            },
+        ),
+        (
+            # Port should be part of host
+            f"git+https://github.com:443/monty/python@{GIT_REF}",
+            {"url": "https://github.com:443/monty/python", "host": "github.com:443"},
+        ),
+        (
+            # Authentication should not be part of host
+            f"git+https://user:password@github.com/monty/python@{GIT_REF}",
+            {
+                "url": "https://user:password@github.com/monty/python",
+                "host": "github.com",  # Standard but be explicit about it
+            },
+        ),
+        (
+            # Params, query and fragment should be stripped
+            f"git+https://github.com/monty/python@{GIT_REF};foo=bar?bar=baz#egg=spam",
+            {
+                # Standard but be explicit about it
+                "url": "https://github.com/monty/python",
+            },
+        ),
+        (
+            # RubyGems case
+            f"https://github.com/monty/python@{GIT_REF}",
+            {
+                # Standard but be explicit about it
+                "url": "https://github.com/monty/python",
+            },
+        ),
+    ],
+)
+def test_extract_git_info(url: str, nonstandard_info: Any) -> None:
+    """Test extraction of git info from VCS URL."""
+    info = {
+        "url": "https://github.com/monty/python",
+        "ref": GIT_REF,
+        "namespace": "monty",
+        "repo": "python",
+        "host": "github.com",
+    }
+    info.update(nonstandard_info or {})
+    assert extract_git_info(url) == info

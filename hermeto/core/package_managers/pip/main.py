@@ -20,11 +20,6 @@ from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
-from hermeto.core.package_managers.general import (
-    async_download_files,
-    download_binary_file,
-    extract_git_info,
-)
 from hermeto.core.package_managers.pip.package_distributions import (
     PIP_NO_SDIST_DOC,
     DistributionPackageInfo,
@@ -46,7 +41,8 @@ from hermeto.core.package_managers.pip.rust import (
     find_and_fetch_rust_dependencies,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import clone_as_tarball, get_repo_id
+from hermeto.core.scm import clone_as_tarball, extract_git_info, get_repo_id
+from hermeto.core.utils import async_download_files, download_binary_file
 
 log = logging.getLogger(__name__)
 
@@ -331,7 +327,7 @@ def _process_pypi_req(
     files: dict[str, Union[str, PathLike[str]]] = {
         dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()
     }
-    asyncio.run(async_download_files(files, get_config().concurrency_limit))
+    asyncio.run(async_download_files(files))
 
     for artifact in artifacts:
         download_infos.append(
