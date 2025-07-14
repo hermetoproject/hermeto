@@ -2,7 +2,6 @@
 import asyncio
 import logging
 import ssl
-import types
 from os import PathLike
 from typing import Any, Optional, Union
 from urllib.parse import urlparse
@@ -110,19 +109,7 @@ async def async_download_files(
     :param files_to_download: Dict of files to download with file paths
     :param concurrency_limit: Max number of concurrent tasks (downloads).
     """
-
-    async def on_request_start(
-        session: aiohttp.ClientSession,
-        trace_config_ctx: types.SimpleNamespace,
-        params: aiohttp.TraceRequestStartParams,
-    ) -> None:
-        current_attempt = trace_config_ctx.trace_request_ctx["current_attempt"]
-        if current_attempt > 1:
-            file_name = params.url.path.split("/")[-1]
-            log.debug(f"Attempt {current_attempt}/{retry_options.attempts} - {file_name}")
-
     trace_config = aiohttp.TraceConfig()
-    trace_config.on_request_start.append(on_request_start)
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
     retry_options = aiohttp_retry.JitterRetry(attempts=num_attempts, retry_all_server_errors=True)
     retry_client = aiohttp_retry.RetryClient(
