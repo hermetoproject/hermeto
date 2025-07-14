@@ -166,11 +166,8 @@ The only supported format for the config file is YAML.
 | [gomod](#gomod)             | Go         |
 | [npm](#npm)                 | JavaScript |
 | [pip](#pip)                 | Python     |
-| rpm **†**                   | RPM        |
+| [rpm](#rpm)                 | RPM        |
 | [yarn](#yarn)               | JavaScript |
-
-**†** Currently, **rpm** is not fully supported. Therefore, we do not have
-documentation for it.
 
 ### [bundler][]
 
@@ -258,6 +255,14 @@ distribution file format ([wheel][]).
 
 See docs/pip.md for more details.
 
+### [rpm][]
+
+Hermeto supports rpm by parsing the `rpms.lock.yaml` file present in the source
+repository and downloading the declared dependencies. To generate this YAML
+"lockfile", one can currently only use [rpm-lockfile-prototype][] for this job.
+
+See docs/rpm.md for more details.
+
 ### [yarn][]
 
 Current version: v4
@@ -319,6 +324,8 @@ Hermeto was derived from (but is not a direct fork of) [Cachito][].
 [pip]: https://pip.pypa.io/en/stable
 [python.org discussion]: https://discuss.python.org/t/pip-download-just-the-source-packages-no-building-no-metadata-etc/4651
 [requirements.txt]: https://pip.pypa.io/en/stable/reference/requirements-file-format
+[rpm]: https://rpm.org/about.html
+[rpm-lockfile-prototype]: https://github.com/konflux-ci/rpm-lockfile-prototype
 [sdist]: https://packaging.python.org/en/latest/specifications/source-distribution-format
 [wheel]: https://packaging.python.org/en/latest/specifications/binary-distribution-format
 [yarn install]: https://v3.yarnpkg.com/getting-started/usage#installing-all-the-dependencies

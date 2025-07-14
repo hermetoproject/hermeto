@@ -42,6 +42,7 @@ nav:
       - gomod: gomod.md
       - npm: npm.md
       - pip: pip.md
+      - rpm: rpm.md
       - yarn classic: yarn_classic.md
       - yarn berry: yarn.md
 
