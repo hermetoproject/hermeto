@@ -20,13 +20,12 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "pip": pip.fetch_pip_source,
     "yarn": metayarn.fetch_yarn_source,
     "generic": generic.fetch_generic_source,
+    "rpm": rpm.fetch_rpm_source,
 }
 
 # This is where we put package managers currently under development in order to
 # invoke them via CLI
-_dev_package_managers: dict[PackageManagerType, Handler] = {
-    "rpm": rpm.fetch_rpm_source,
-}
+_dev_package_managers: dict[PackageManagerType, Handler] = {}
 
 # This is *only* used to provide a list for `hermeto --version`
 supported_package_managers = list(_package_managers)
