@@ -331,12 +331,47 @@ def _get_maven_dependencies(
             "repository_id": repository_id,
             "url": url
         })
+        
+        # WORKAROUND: Also track .pom files for _remote.repositories
+        pom_filename = Path(filename).stem + ".pom"
+        artifacts_by_directory[artifact_dir].append({
+            "filename": pom_filename,
+            "repository_id": repository_id,
+            "url": url.replace(filename, pom_filename)
+        })
 
-    # Download all files
-    if files_to_download:
+    # WORKAROUND: Download .pom files and their checksums since they should be in lockfile
+    # TODO: Remove this workaround once lockfile includes .pom files and checksums
+    pom_files_to_download = {}
+    pom_checksums_to_download = {}
+    
+    for url, dep_info in deps_to_download.items():
+        # Derive .pom URL by replacing the file extension
+        parsed_url = urlparse(url)
+        path_parts = Path(parsed_url.path)
+        pom_filename = path_parts.stem + ".pom"
+        pom_url = url.replace(path_parts.name, pom_filename)
+        
+        # Create local path for .pom file
+        artifact_dir = download_paths[url].path.parent
+        pom_local_path = artifact_dir / pom_filename
+        pom_files_to_download[pom_url] = pom_local_path
+        
+        # If we have checksum info, try to download .pom checksum file
+        if dep_info["checksum_algorithm"]:
+            python_algorithm = _convert_java_checksum_algorithm_to_python(dep_info["checksum_algorithm"])
+            checksum_extension = python_algorithm
+            pom_checksum_url = f"{pom_url}.{checksum_extension}"
+            pom_checksum_local_path = artifact_dir / f"{pom_filename}.{checksum_extension}"
+            pom_checksums_to_download[pom_checksum_url] = pom_checksum_local_path
+
+    # Download all files (artifacts, pom files, and pom checksums)
+    all_files_to_download = {**files_to_download, **pom_files_to_download, **pom_checksums_to_download}
+    
+    if all_files_to_download:
         asyncio.run(
             async_download_files(
-                files_to_download,
+                all_files_to_download,
                 get_config().concurrency_limit,
             )
         )
@@ -360,6 +395,41 @@ def _get_maven_dependencies(
                 checksum_file.write(f"{dep_info['checksum']}\n")
         else:
             log.warning(f"Missing checksum for {url}, integrity check skipped.")
+
+    # WORKAROUND: Verify .pom file checksums if available
+    # TODO: Remove this workaround once lockfile includes .pom checksums
+    for url, dep_info in deps_to_download.items():
+        if dep_info["checksum_algorithm"]:
+            python_algorithm = _convert_java_checksum_algorithm_to_python(dep_info["checksum_algorithm"])
+            checksum_extension = python_algorithm
+            
+            # Derive .pom paths
+            parsed_url = urlparse(url)
+            path_parts = Path(parsed_url.path)
+            pom_filename = path_parts.stem + ".pom"
+            artifact_dir = download_paths[url].path.parent
+            pom_local_path = artifact_dir / pom_filename
+            pom_checksum_local_path = artifact_dir / f"{pom_filename}.{checksum_extension}"
+            
+            # Verify .pom checksum if checksum file was downloaded
+            if pom_checksum_local_path.exists():
+                try:
+                    with pom_checksum_local_path.open("r") as f:
+                        pom_checksum = f.read().strip().split()[0]  # Take first part in case of additional info
+                    
+                    if pom_local_path.exists():
+                        checksum_info = ChecksumInfo(
+                            algorithm=python_algorithm,
+                            hexdigest=pom_checksum,
+                        )
+                        must_match_any_checksum(pom_local_path, [checksum_info])
+                        log.debug(f"Verified checksum for {pom_local_path}")
+                    else:
+                        log.warning(f"POM file {pom_local_path} not found for checksum verification")
+                except Exception as e:
+                    log.warning(f"Failed to verify checksum for {pom_local_path}: {e}")
+            else:
+                log.debug(f"No checksum file available for {pom_filename}, skipping verification")
 
     # Create _remote.repositories files
     for artifact_dir, artifacts in artifacts_by_directory.items():
