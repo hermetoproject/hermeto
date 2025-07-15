@@ -303,7 +303,7 @@ def _get_maven_dependencies(
             )
         )
 
-    # Verify checksums
+    # Verify checksums and save checksum files
     for url, dep_info in deps_to_download.items():
         if dep_info["checksum"] and dep_info["checksum_algorithm"]:
             python_algorithm = _convert_java_checksum_algorithm_to_python(dep_info["checksum_algorithm"])
@@ -312,6 +312,14 @@ def _get_maven_dependencies(
                 hexdigest=dep_info["checksum"],
             )
             must_match_any_checksum(download_paths[url].path, [checksum_info])
+            
+            # Save checksum file with appropriate extension
+            artifact_path = download_paths[url].path
+            checksum_extension = python_algorithm
+            checksum_file_path = artifact_path.with_suffix(f"{artifact_path.suffix}.{checksum_extension}")
+            
+            with checksum_file_path.open("w") as checksum_file:
+                checksum_file.write(f"{dep_info['checksum']}\n")
         else:
             log.warning(f"Missing checksum for {url}, integrity check skipped.")
 
