@@ -8,7 +8,8 @@ making your build process [hermetic][].
 To see if we support your package manager(s), please check the
 [package managers](#package-managers) section.
 
-The primary intended use of Hermeto's outputs is for network-isolated container builds.
+The primary intended use of Hermeto's outputs is for network-isolated container
+builds.
 
 ## Table of contents
 
@@ -119,7 +120,8 @@ it may not be complete or accurate.
 
 The permissive mode can currently suppress the following:
 
-- go `vendor` directory inconsistencies (See `docs/gomod.md` on vendoring information)
+- go `vendor` directory inconsistencies (See `docs/gomod.md` on vendoring
+  information)
 
 ### Available configuration parameters
 
