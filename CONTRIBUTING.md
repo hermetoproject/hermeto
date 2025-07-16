@@ -7,7 +7,7 @@
   * [Hermeto's ethos](#hermetos-ethos)
 * [Development](#development)
   * [Virtual environment](#virtual-environment)
-  * [Developer flags](#developer-flags)
+  * [Experimental features](#experimental-features)
   * [Coding standards](#coding-standards)
   * [Pull request guidelines](#pull-request-guidelines)
   * [Error message guidelines](#error-message-guidelines)
@@ -42,7 +42,8 @@ This has several implications
 * Experimental features are not fully endorsed by the maintainers, and maintainers will not provide support.
 * Experimental features are not production-ready and should never be used in production.
 * Always expect that an experimental feature can be fully dropped from this project without any prior notice.
-* A feature toggle is needed to allow users to opt-in. This is currently being handled by the `dev-package-managers` flag.
+* A feature toggle is needed to allow users to opt-in. This is currently handled by prefixing the package manager name with `x-`
+  (e.g.`"type": "x-foo"` instead of `"type": "foo"`).
 * All SBOMs produced when an experimental feature is used will be marked as such.
 
 If, for some reason, you feel this proposed workflow does not fit the feature you're contributing, please reach out to the maintainers so we can provide an alternative.
@@ -102,18 +103,19 @@ The CLI also depends on the following non-Python dependencies:
 dnf install golang-bin git
 ```
 
-### Developer flags
+### Experimental features
+Use `x-<pkg>` in the request JSON to enable an experimental package manager (positional argument, not a CLI flag).
+Example: `hermeto fetch-deps --source . '[{"type": "x-foo"}]'`
+Please refer to other existing package managers to see how they're enabled and wired to the CLI.
 
-* `--dev-package-managers` (hidden): enables in-development package manager(s)
-  for test. Please refer to other existing package managers to see how they're
-  enabled and wired to the CLI.
+From a user interface perspective, for CLI invocation, the only difference between regular and
+experimental package managers is the `x-` prefix in the type name.
+However experimental package managers are not fully supported which means that the functionality is
+provided as a technical preview, with no stability, correctness, or backwards compatibility guarantees.
+Experimental package managers must always be considered a work in progress and never be relied upon in
+production.
 
-  Invoke it as `hermeto fetch-deps --dev-package-managers FOO`
-
-  More explicitly
-
-  * `--dev-package-managers` is a *flag for* `fetch-deps`
-  * `FOO` is an *argument to* `fetch-deps` (i.e. the language to fetch for)
+Note: `--dev-package-managers` is deprecated (no-op) and will be removed; use `x-<pkg>`.
 
 ### Coding standards
 
