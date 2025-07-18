@@ -79,6 +79,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:rpm_modularity_label",
+          "value": "httpd:2.4:8100020240807144746:489197e6"
         }
       ],
       "purl": "pkg:rpm/redhat/httpd-tools@2.4.37-65.module%2Bel8.10.0%2B22196%2Bd82931da.2?arch=x86_64&checksum=sha256:2b650ff7cfb275f157f849f7dc7883c4f7b9bf9f8d89e10a1406c4d7802b3387&repository_id=ubi-8-appstream-rpms",
@@ -91,6 +95,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:rpm_modularity_label",
+          "value": "httpd:2.4:8100020240807144746:489197e6"
         }
       ],
       "purl": "pkg:rpm/redhat/httpd@2.4.37-65.module%2Bel8.10.0%2B22196%2Bd82931da.2?arch=src&checksum=sha256:bc1c91f3fce3452aa7dba9810592cf2a40957ef5d3b2d23a96c1853365425c50&repository_id=ubi-8-appstream-source",

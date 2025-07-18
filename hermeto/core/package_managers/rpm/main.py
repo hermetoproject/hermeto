@@ -49,6 +49,7 @@ class Package:
     checksum: Optional[str] = None
     repository_id: Optional[str] = None
     summary: Optional[str] = None
+    modularity_label: Optional[str] = None
 
     @classmethod
     def from_filepath(cls, rpm_filepath: Path, rpm_download_metadata: dict[str, Any]) -> "Package":
@@ -90,9 +91,10 @@ class Package:
             "release=%{RELEASE}\n"
             "arch=%{ARCH}\n"
             "summary=%{SUMMARY}\n"
-            # vendor and epoch are optional RPM tags; return "" if not set instead of "(None)"
+            # optional tags; return "" if not set instead of "(None)"
             "vendor=%|VENDOR?{%{VENDOR}}:{}|\n"
             "epoch=%|EPOCH?{%{EPOCH}}:{}|\n"
+            "modularity_label=%|MODULARITYLABEL?{%{MODULARITYLABEL}}:{}|\n"
         )
         rpm_args = [
             "-q",
@@ -158,6 +160,11 @@ class Package:
             properties = [
                 Property(name=f"{APP_NAME}:missing_hash:in_file", value=str(lockfile_path))
             ]
+
+        if self.modularity_label:
+            properties.append(
+                Property(name=f"{APP_NAME}:rpm_modularity_label", value=str(self.modularity_label))
+            )
 
         return Component(
             name=self.name, version=self.version, purl=self.purl, properties=properties
