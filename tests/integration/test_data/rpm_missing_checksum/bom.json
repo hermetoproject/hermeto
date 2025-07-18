@@ -2,7 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "name": "gpm-libs",
+      "name": "centos-stream-repos",
       "properties": [
         {
           "name": "hermeto:found_by",
@@ -13,49 +13,9 @@
           "value": "rpms.lock.yaml"
         }
       ],
-      "purl": "pkg:rpm/fedora/gpm-libs@1.20.7-46.fc40?arch=x86_64&repository_id=releases",
+      "purl": "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos",
       "type": "library",
-      "version": "1.20.7"
-    },
-    {
-      "name": "gpm",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        },
-        {
-          "name": "hermeto:missing_hash:in_file",
-          "value": "rpms.lock.yaml"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/gpm@1.20.7-46.fc40?arch=src&repository_id=releases",
-      "type": "library",
-      "version": "1.20.7"
-    },
-    {
-      "name": "libsodium",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/libsodium@1.0.19-4.fc40?arch=src&checksum=sha256:9158cc55b14fe31e53d127521c29e25abe6a7e13d56e9d8630f89a1082cfc3c2&repository_id=releases",
-      "type": "library",
-      "version": "1.0.19"
-    },
-    {
-      "name": "libsodium",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/libsodium@1.0.19-4.fc40?arch=x86_64&checksum=sha256:91d67f2a3be65b2904c432f4585189540978dcfb6ef994c2eaac5b7cfb4010a5&repository_id=releases",
-      "type": "library",
-      "version": "1.0.19"
+      "version": "9.0"
     }
   ],
   "metadata": {
