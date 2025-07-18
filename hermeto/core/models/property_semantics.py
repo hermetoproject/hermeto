@@ -21,6 +21,7 @@ class PropertyEnum(str, Enum):
     PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
     PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
     PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
+    PROP_RPM_MODULARITY_LABEL = f"{APP_NAME}:rpm_modularity_label"
     PROP_RPM_SUMMARY = f"{APP_NAME}:rpm_summary"
 
     def __str__(self) -> str:
@@ -45,6 +46,7 @@ class PropertySet:
     npm_development: bool = False
     pip_build_dependency: bool = False
     pip_package_binary: bool = False
+    rpm_modularity_label: str = ""
     rpm_summary: str = ""
 
     @classmethod
@@ -57,6 +59,7 @@ class PropertySet:
         npm_development = False
         pip_build_dependency = False
         pip_package_binary = False
+        rpm_modularity_label = ""
         rpm_summary = ""
 
         for prop in props:
@@ -74,6 +77,8 @@ class PropertySet:
                 pip_package_binary = True
             elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY:
                 pip_build_dependency = True
+            elif prop.name == PropertyEnum.PROP_RPM_MODULARITY_LABEL:
+                rpm_modularity_label = prop.value
             elif prop.name == PropertyEnum.PROP_RPM_SUMMARY:
                 rpm_summary = prop.value
             else:
@@ -87,6 +92,7 @@ class PropertySet:
             npm_development,
             pip_build_dependency,
             pip_package_binary,
+            rpm_modularity_label,
             rpm_summary,
         )
 
@@ -111,6 +117,12 @@ class PropertySet:
             )
         if self.pip_package_binary:
             props.append(Property(name=PropertyEnum.PROP_PIP_PACKAGE_BINARY, value="true"))
+        if self.rpm_modularity_label:
+            props.append(
+                Property(
+                    name=PropertyEnum.PROP_RPM_MODULARITY_LABEL, value=self.rpm_modularity_label
+                )
+            )
         if self.rpm_summary:
             props.append(Property(name=PropertyEnum.PROP_RPM_SUMMARY, value=self.rpm_summary))
 
@@ -127,5 +139,6 @@ class PropertySet:
             npm_development=self.npm_development and other.npm_development,
             pip_build_dependency=self.pip_build_dependency and other.pip_build_dependency,
             pip_package_binary=self.pip_package_binary or other.pip_package_binary,
+            rpm_modularity_label=self.rpm_modularity_label or other.rpm_modularity_label,
             rpm_summary=self.rpm_summary or other.rpm_summary,
         )
