@@ -9,45 +9,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/gpm-libs@1.20.7-44.fc39?arch=x86_64&checksum=sha256:f5c8f20f0f9468da8cdf140d7df30ed117a43b73eee816888e2624b0fcd048ca&repository_id=releases",
+      "purl": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=x86_64&checksum=sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd&repository_id=appstream",
       "type": "library",
       "version": "1.20.7"
-    },
-    {
-      "name": "gpm",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/gpm@1.20.7-44.fc39?arch=src&checksum=sha256:2eb2412dde91b1130433c90ad53b889cb1e0fb0df324e015f29e76d7235ac438&repository_id=releases",
-      "type": "library",
-      "version": "1.20.7"
-    },
-    {
-      "name": "libsodium",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/libsodium@1.0.18-14.fc39?arch=src&checksum=sha256:d20e5f6e358aa0c07260872ffb00d502f77778ae7496a836da0a65a6ce1cd709&repository_id=releases",
-      "type": "library",
-      "version": "1.0.18"
-    },
-    {
-      "name": "libsodium",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/libsodium@1.0.18-14.fc39?arch=x86_64&checksum=sha256:e38200a7b1012935dc83e8039c71c0fd2f84a4463ca086cb42f60f488cdad8e7&repository_id=releases",
-      "type": "library",
-      "version": "1.0.18"
     },
     {
       "name": "vim-common",
@@ -57,21 +21,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/vim-common@9.0.1927-1.fc39?arch=x86_64&checksum=sha256:4cb8015a858439f519d5d2aa82fd853f3d1dd7f927a33d25d9598e54ee6201bc&epoch=2&repository_id=releases",
+      "purl": "pkg:rpm/centos/vim-common@8.2.2637-22.el9?arch=x86_64&checksum=sha256:fe58dadda94c42e502c1064387102134464948d2e1cd4bb4f93731cfa91d2b8e&epoch=2&repository_id=appstream",
       "type": "library",
-      "version": "9.0.1927"
-    },
-    {
-      "name": "vim-data",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim-data@9.0.1927-1.fc39?arch=noarch&checksum=sha256:35d7b9542e46eca30d951960effe9a8e738543a839f0dbb3cf723da0958c355b&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.0.1927"
+      "version": "8.2.2637"
     },
     {
       "name": "vim-enhanced",
@@ -81,9 +33,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/vim-enhanced@9.0.1927-1.fc39?arch=x86_64&checksum=sha256:615d46a08fbbd0eca6a6e8d2d23a6b5847db11c886e0dc979ffebab66236532d&epoch=2&repository_id=releases",
+      "purl": "pkg:rpm/centos/vim-enhanced@8.2.2637-22.el9?arch=x86_64&checksum=sha256:ada993fa54366659f4118677cdb76eb30093ac71d86fe94c56ef87305be9bddc&epoch=2&repository_id=appstream",
       "type": "library",
-      "version": "9.0.1927"
+      "version": "8.2.2637"
     },
     {
       "name": "vim-filesystem",
@@ -93,33 +45,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/vim-filesystem@9.0.1927-1.fc39?arch=noarch&checksum=sha256:f645ed8cda2fa07ba991320a684d9b71de75ff25220468b08fb36f6a5a231178&epoch=2&repository_id=releases",
+      "purl": "pkg:rpm/centos/vim-filesystem@8.2.2637-22.el9?arch=noarch&checksum=sha256:b767597168aad6a36fe82578422eba27bfca5ffb01c501a9df9e532e68c853ff&epoch=2&repository_id=baseos",
       "type": "library",
-      "version": "9.0.1927"
-    },
-    {
-      "name": "vim-minimal",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim-minimal@9.0.1927-1.fc39?arch=x86_64&checksum=sha256:37a216f1af9f2eb961a9fa6674861146d11ca56fc9c576fa17a8cb7d806aa0af&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.0.1927"
-    },
-    {
-      "name": "vim",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim@9.0.1927-1.fc39?arch=src&checksum=sha256:dae76267f265093d0e1b178c05af197bc21b994a264c9c4e7701cce095b62f03&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.0.1927"
+      "version": "8.2.2637"
     },
     {
       "name": "which",
@@ -129,45 +57,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/which@2.21-40.fc39?arch=src&checksum=sha256:791428d30c136a2ff8e781b9c32cbd3d506699f1369ae2a589c02fceb72d4533&repository_id=releases",
+      "purl": "pkg:rpm/centos/which@2.21-30.el9?arch=x86_64&checksum=sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b&repository_id=baseos",
       "type": "library",
       "version": "2.21"
-    },
-    {
-      "name": "which",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/which@2.21-40.fc39?arch=x86_64&checksum=sha256:ec1d8a1c0d88883a03e96ba88a6278899bd559fb37833cb2383ffdd6a38c22ae&repository_id=releases",
-      "type": "library",
-      "version": "2.21"
-    },
-    {
-      "name": "xxd",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/xxd@9.0.1927-1.fc39?arch=x86_64&checksum=sha256:e770b0a0e5e51225a76069d2210551a90f3140913f90f33759d002055179ecc7&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.0.1927"
-    },
-    {
-      "name": "libftl",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/rpm_fusion/libftl@0.9.14-12.fc39?arch=x86_64&checksum=sha256:6b0d8d3329150151fb8ea1eba7a4b464f112326777bee7a2e202753adc767281&repository_id=rpmfusion-free",
-      "type": "library",
-      "version": "0.9.14"
     }
   ],
   "metadata": {

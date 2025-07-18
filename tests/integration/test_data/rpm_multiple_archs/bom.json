@@ -2,80 +2,28 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "name": "vim-common",
+      "name": "gpm-libs",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/vim-common@9.1.158-1.fc40?arch=x86_64&checksum=sha256:d7792ddb38887fae32d8d19e550023459b1dfa1c6b63056c9bc6299e7276fe50&epoch=2&repository_id=releases",
+      "purl": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=aarch64&checksum=sha256:5a0d1794946ea191519eed8ebf3c56ebdd6fe31d9d7ef8a466366332b0265063&repository_id=appstream",
       "type": "library",
-      "version": "9.1.158"
+      "version": "1.20.7"
     },
     {
-      "name": "vim-data",
+      "name": "gpm-libs",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/fedora/vim-data@9.1.158-1.fc40?arch=noarch&checksum=sha256:2d86baedd44f642f6a8f11ca8388829c69a0196ed66261df60dc8cb5b4c7f262&epoch=2&repository_id=releases",
+      "purl": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=x86_64&checksum=sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd&repository_id=appstream",
       "type": "library",
-      "version": "9.1.158"
-    },
-    {
-      "name": "vim-data",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        },
-        {
-          "name": "hermeto:missing_hash:in_file",
-          "value": "rpms.lock.yaml"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim-data@9.1.158-1.fc40?arch=noarch&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.1.158"
-    },
-    {
-      "name": "vim-minimal",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim-minimal@9.1.158-1.fc40?arch=aarch64&checksum=sha256:8b61b4526e120fe2ba857c254df2bbb5162a0cd5832c5ed9b3079484465df19d&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.1.158"
-    },
-    {
-      "name": "vim-minimal",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim-minimal@9.1.158-1.fc40?arch=x86_64&checksum=sha256:6a640ca5a4594859ce5ce7396f6c818c82d5de52dbcf1527078fc5bb4ee6503b&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.1.158"
-    },
-    {
-      "name": "vim",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/fedora/vim@9.1.158-1.fc40?arch=src&checksum=sha256:f99a3a8db367058084be10c0c281ab4cb2514440899d811d8be19f3b3a6139ef&epoch=2&repository_id=releases",
-      "type": "library",
-      "version": "9.1.158"
+      "version": "1.20.7"
     }
   ],
   "metadata": {

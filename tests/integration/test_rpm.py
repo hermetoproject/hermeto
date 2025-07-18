@@ -266,7 +266,7 @@ def test_repo_files(
                 expected_output="All dependencies fetched successfully",
             ),
             ["vim", "--version"],
-            ["VIM - Vi IMproved 9.0"],
+            ["VIM - Vi IMproved 8.2"],
             id="rpm_e2e",
         ),
         # Test case that checks fetching RPM and module metadata files, generating repos and repofiles,
