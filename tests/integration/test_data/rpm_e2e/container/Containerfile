@@ -1,6 +1,6 @@
-FROM registry.fedoraproject.org/fedora:39
+FROM quay.io/centos/centos:stream9
 
-RUN dnf -y install \
-	vim
+RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial && \
+    dnf -y install vim
 
 CMD ["vim", "--help"]
