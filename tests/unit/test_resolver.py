@@ -206,7 +206,7 @@ def test_dev_mode(flags: list[str], tmp_path: Path) -> None:
                 components=[], build_config=BuildConfig(environment_variables=[], project_files=[])
             )
         else:
-            expected_error = re.escape("Package manager(s) not yet supported: shrubbery")
+            expected_error = re.escape("Package manager(s) not yet fully supported: shrubbery")
             with pytest.raises(UnsupportedFeature, match=expected_error):
                 resolver.resolve_packages(request)
 
