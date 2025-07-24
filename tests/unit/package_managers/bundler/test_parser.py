@@ -11,14 +11,16 @@ import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
-from hermeto.core.package_managers.bundler.parser import (
-    GEMFILE,
-    GEMFILE_LOCK,
-    BundlerDependency,
+from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
     GitDependency,
     PathDependency,
+)
+from hermeto.core.package_managers.bundler.parser import (
+    GEMFILE,
+    GEMFILE_LOCK,
+    BundlerDependency,
     parse_lockfile,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -215,7 +217,7 @@ def test_parse_gemlock_empty(
         "https://dedicatedprivategemrepo.com",
     ],
 )
-@mock.patch("hermeto.core.package_managers.bundler.parser.download_binary_file")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.download_binary_file")
 def test_source_gem_dependencies_could_be_downloaded(
     mock_downloader: mock.MagicMock,
     rooted_tmp_path: RootedPath,
@@ -232,7 +234,7 @@ def test_source_gem_dependencies_could_be_downloaded(
     mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
 
 
-@mock.patch("hermeto.core.package_managers.bundler.parser.download_binary_file")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.download_binary_file")
 def test_binary_gem_dependencies_could_be_downloaded(
     mock_downloader: mock.MagicMock,
     rooted_tmp_path: RootedPath,
@@ -255,7 +257,7 @@ def test_binary_gem_dependencies_could_be_downloaded(
     mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
 
 
-@mock.patch("hermeto.core.package_managers.bundler.parser.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.Repo.clone_from")
 def test_download_git_dependency_works(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -280,7 +282,7 @@ def test_download_git_dependency_works(
     assert dep_path.exists()
 
 
-@mock.patch("hermeto.core.package_managers.bundler.parser.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.Repo.clone_from")
 def test_download_duplicate_git_dependency_is_skipped(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,

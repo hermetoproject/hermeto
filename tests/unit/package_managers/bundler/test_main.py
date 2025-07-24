@@ -22,9 +22,9 @@ from tests.common_utils import GIT_REF
 
 @mock.patch("hermeto.core.package_managers.bundler.main._get_main_package_name_and_version")
 @mock.patch("hermeto.core.package_managers.bundler.main.parse_lockfile")
-@mock.patch("hermeto.core.package_managers.bundler.parser.GemDependency.download_to")
-@mock.patch("hermeto.core.package_managers.bundler.parser.GitDependency.download_to")
-@mock.patch("hermeto.core.package_managers.bundler.parser.PathDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.GemDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.GitDependency.download_to")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.PathDependency.download_to")
 def test_resolve_bundler_package(
     mock_path_dep_download_to: mock.Mock,
     mock_git_dep_download_to: mock.Mock,
