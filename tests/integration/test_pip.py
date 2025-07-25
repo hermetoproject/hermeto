@@ -48,6 +48,15 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
+                branch="pip/missing-hashes",
+                packages=({"path": ".", "type": "pip"},),
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="pip_missing_hashes",
+        ),
+        pytest.param(
+            utils.TestParameters(
                 branch="pip/multiple-packages",
                 packages=(
                     {"path": "first_pkg", "type": "pip"},

@@ -1,0 +1,7 @@
+{
+  "pip/certifi-2025.7.14.tar.gz": "sha256:8ea99dbdfaaf2ba2f9bac77b9249ef62ec5218e7c2b2e903378ed5fccf765995",
+  "pip/charset_normalizer-3.4.2.tar.gz": "sha256:5baececa9ecba31eff645232d59845c07aa030f0c81ee70184a90d35099a0e63",
+  "pip/idna-3.10.tar.gz": "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9",
+  "pip/requests-2.32.4.tar.gz": "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422",
+  "pip/urllib3-2.5.0.tar.gz": "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"
+}
