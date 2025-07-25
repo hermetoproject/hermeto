@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 from typing import Any, Callable
 
 from hermeto import APP_NAME
-from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
@@ -23,9 +22,6 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "rpm": rpm.fetch_rpm_source,
 }
 
-# This is where we put package managers currently under development in order to
-# invoke them via CLI
-_dev_package_managers: dict[PackageManagerType, Handler] = {}
 
 # This is *only* used to provide a list for `hermeto --version`
 supported_package_managers = list(_package_managers)
@@ -64,15 +60,6 @@ def _resolve_packages(request: Request) -> RequestOutput:
     """Run all requested package managers, return their combined output."""
     _supported_package_managers = _package_managers
     requested_types = set(pkg.type for pkg in request.packages)
-    if "dev-package-managers" in request.flags:
-        _supported_package_managers = _package_managers | _dev_package_managers
-    unsupported_types = requested_types - _supported_package_managers.keys()
-    if unsupported_types:
-        raise UnsupportedFeature(
-            f"Package manager(s) not yet supported: {', '.join(sorted(unsupported_types))}",
-            # unknown package managers shouldn't get past input validation
-            solution="But the good news is that we're already working on it!",
-        )
     pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]
     return sum([pkg_manager(request) for pkg_manager in pkg_managers], RequestOutput.empty())
 

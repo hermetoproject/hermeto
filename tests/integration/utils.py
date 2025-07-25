@@ -41,9 +41,7 @@ PATHS_TO_CODE = frozenset(
 
 # package managers that are not exposed to the user but are used internally
 EXTRA_PMS = ["yarn_classic"]
-SUPPORTED_PMS: frozenset[str] = frozenset(
-    list(resolver._package_managers) + list(resolver._dev_package_managers) + EXTRA_PMS
-)
+SUPPORTED_PMS: frozenset = frozenset(list(resolver._package_managers) + EXTRA_PMS)
 
 
 log = logging.getLogger(__name__)

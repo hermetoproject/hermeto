@@ -1,11 +1,9 @@
-import re
 from pathlib import Path
 from unittest import mock
 
 import pytest
 
 from hermeto.core import resolver
-from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Component
@@ -171,72 +169,27 @@ def test_project_files_fix_for_work_copy(
     assert output.build_config.project_files[0].abspath == tmp_path / "package.json"
 
 
-@pytest.mark.parametrize(
-    "flags",
-    [
-        pytest.param(["dev-package-managers"], id="dev-package-managers-true"),
-        pytest.param([], id="dev-package-managers-false"),
-    ],
-)
-def test_dev_mode(flags: list[str], tmp_path: Path) -> None:
-    mock_resolver = mock.Mock()
-    mock_resolver.return_value = RequestOutput.empty()
-    with (
-        mock.patch.dict(
-            resolver._package_managers,
-            values={"gomod": mock_resolver},
-            clear=True,
-        ),
-        mock.patch.dict(
-            resolver._dev_package_managers,
-            values={"shrubbery": mock_resolver},
-            clear=True,
-        ),
-    ):
-        dev_package_input = mock.Mock()
-        dev_package_input.type = "shrubbery"
-
-        request = mock.Mock()
-        request.source_dir = RootedPath(tmp_path)
-        request.flags = flags
-        request.packages = [dev_package_input]
-
-        if flags:
-            assert resolver.resolve_packages(request) == RequestOutput(
-                components=[], build_config=BuildConfig(environment_variables=[], project_files=[])
-            )
-        else:
-            expected_error = re.escape("Package manager(s) not yet supported: shrubbery")
-            with pytest.raises(UnsupportedFeature, match=expected_error):
-                resolver.resolve_packages(request)
-
-
-def test_resolve_with_released_and_dev_package_managers(tmp_path: Path) -> None:
+def test_resolve_with_multiple_stable_package_managers(tmp_path: Path) -> None:
     mock_resolve_gomod = mock.Mock(return_value=RequestOutput.empty())
     mock_resolve_pip = mock.Mock(return_value=RequestOutput.empty())
 
     with (
         mock.patch.dict(
             resolver._package_managers,
-            values={"gomod": mock_resolve_gomod},
-            clear=True,
-        ),
-        mock.patch.dict(
-            resolver._dev_package_managers,
-            values={"pip": mock_resolve_pip},
+            values={"gomod": mock_resolve_gomod, "pip": mock_resolve_pip},
             clear=True,
         ),
     ):
-        dev_package_input = mock.Mock()
-        dev_package_input.type = "pip"
+        pip_package_input = mock.Mock()
+        pip_package_input.type = "pip"
 
-        released_package_input = mock.Mock()
-        released_package_input.type = "gomod"
+        gomod_package_input = mock.Mock()
+        gomod_package_input.type = "gomod"
 
         request = mock.Mock()
         request.source_dir = RootedPath(tmp_path)
-        request.flags = ["dev-package-managers"]
-        request.packages = [released_package_input, dev_package_input]
+        request.flags = []
+        request.packages = [gomod_package_input, pip_package_input]
 
         resolver.resolve_packages(request)
 
