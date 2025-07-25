@@ -226,7 +226,11 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
         resolve_path=True,
         help="Write output files to this directory.",
     ),
-    dev_package_managers: bool = typer.Option(False, "--dev-package-managers", hidden=True),
+    dev_package_managers: bool = typer.Option(
+        False,
+        "--dev-package-managers",
+        help="DEPRECATED (no longer has any effect when set). Use x-<pkg> syntax for experimental package managers instead.",
+    ),
     cgo_disable: bool = typer.Option(
         False, "--cgo-disable", help="Set CGO_ENABLED=0 while processing gomod packages."
     ),
