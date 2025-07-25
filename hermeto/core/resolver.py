@@ -82,8 +82,7 @@ def _resolve_packages(request: Request) -> RequestOutput:
         for pkg in experimental_types:
             if pkg in _dev_package_managers:
                 _supported_package_managers[pkg] = _dev_package_managers[pkg]
-    elif "dev-package-managers" in request.flags:
-        _supported_package_managers |= _dev_package_managers
+
     # Validate all requested types are supported
     unprefixed_experimental_requests = requested_types - _supported_package_managers.keys()
     if unprefixed_experimental_requests:

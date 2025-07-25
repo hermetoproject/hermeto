@@ -237,32 +237,32 @@ def test_unsupported_package_manager_error(
             assert f"x-{package_type}" in exc_info.value.friendly_msg()
 
 
-def test_resolve_with_released_and_dev_package_managers(tmp_path: Path) -> None:
+def test_resolve_with_multiple_stable_package_managers(tmp_path: Path) -> None:
     mock_resolve_gomod = mock.Mock(return_value=RequestOutput.empty())
     mock_resolve_pip = mock.Mock(return_value=RequestOutput.empty())
 
     with (
         mock.patch.dict(
             resolver._package_managers,
-            values={"gomod": mock_resolve_gomod},
+            values={"gomod": mock_resolve_gomod, "pip": mock_resolve_pip},
             clear=True,
         ),
         mock.patch.dict(
             resolver._dev_package_managers,
-            values={"pip": mock_resolve_pip},
+            values={},
             clear=True,
         ),
     ):
-        dev_package_input = mock.Mock()
-        dev_package_input.type = "pip"
+        pip_package_input = mock.Mock()
+        pip_package_input.type = "pip"
 
-        released_package_input = mock.Mock()
-        released_package_input.type = "gomod"
+        gomod_package_input = mock.Mock()
+        gomod_package_input.type = "gomod"
 
         request = mock.Mock()
         request.source_dir = RootedPath(tmp_path)
-        request.flags = ["dev-package-managers"]
-        request.packages = [released_package_input, dev_package_input]
+        request.flags = []
+        request.packages = [gomod_package_input, pip_package_input]
 
         resolver.resolve_packages(request)
 
