@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        "https://github.com/hermetoproject/integration-tests.git",
+        "https://github.com/slimreaper35/integration-tests.git",
     )
     # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
     repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore

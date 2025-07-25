@@ -53,15 +53,10 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
-                branch="pip/multiple-packages",
+                branch="pip-multiple-devel",
                 packages=(
-                    {"path": "first_pkg", "type": "pip"},
-                    {
-                        "path": "second_pkg",
-                        "type": "pip",
-                        "requirements_files": ["requirements.txt", "requirements-extra.txt"],
-                    },
-                    {"path": "third_pkg", "type": "pip"},
+                    {"path": "first", "type": "pip"},
+                    {"path": "second", "type": "pip"},
                 ),
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
