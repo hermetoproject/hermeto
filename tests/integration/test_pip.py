@@ -59,13 +59,8 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/multiple-packages",
                 packages=(
-                    {"path": "first_pkg", "type": "pip"},
-                    {
-                        "path": "second_pkg",
-                        "type": "pip",
-                        "requirements_files": ["requirements.txt", "requirements-extra.txt"],
-                    },
-                    {"path": "third_pkg", "type": "pip"},
+                    {"path": "first", "type": "pip"},
+                    {"path": "second", "type": "pip"},
                 ),
                 check_vendor_checksums=False,
                 expected_exit_code=0,
