@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 from abc import ABC, abstractmethod
 from typing import Any, Union
@@ -49,5 +50,10 @@ class PodmanEngine(ContainerEngine):
 
 
 def get_container_engine() -> ContainerEngine:
-    """Get the container engine."""
-    return PodmanEngine()
+    """Get the configured container engine."""
+    engine_name = os.getenv("HERMETO_TEST_CONTAINER_ENGINE", "podman").lower()
+
+    if engine_name == "podman":
+        return PodmanEngine()
+
+    raise RuntimeError(f"Invalid container engine: {engine_name}")
