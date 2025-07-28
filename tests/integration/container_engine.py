@@ -2,9 +2,11 @@ import logging
 import os
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 log = logging.getLogger(__name__)
+
+StrPath = Union[str, os.PathLike[str]]
 
 
 class ContainerEngine(ABC):
@@ -15,7 +17,7 @@ class ContainerEngine(ABC):
     def name(self) -> str:
         """Get the name of the container engine."""
 
-    def run_cmd(self, cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
+    def _run_cmd(self, cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
         """
         Run command via subprocess.
 
@@ -39,6 +41,27 @@ class ContainerEngine(ABC):
 
         return process.stdout, process.returncode
 
+    def build(self, build_cmd: list[str], tag: str) -> tuple[str, int]:
+        """Build container image."""
+        return self._run_cmd([self.name, *build_cmd, "--tag", tag])
+
+    def pull(self, image: str) -> tuple[str, int]:
+        """Pull container image."""
+        return self._run_cmd([self.name, "pull", image])
+
+    def rmi(self, image: str) -> tuple[str, int]:
+        """Remove container image."""
+        return self._run_cmd([self.name, "rmi", "--force", image])
+
+    @abstractmethod
+    def run(
+        self,
+        image: str,
+        cmd: list[str],
+        podman_flags: Optional[list[str]] = None,
+    ) -> tuple[str, int]:
+        """Run command on the image."""
+
 
 class PodmanEngine(ContainerEngine):
     """Podman engine."""
@@ -47,6 +70,19 @@ class PodmanEngine(ContainerEngine):
     def name(self) -> str:
         """Get the name of the container engine."""
         return "podman"
+
+    def run(
+        self,
+        image: str,
+        cmd: list[str],
+        podman_flags: Optional[list[str]] = None,
+    ) -> tuple[str, int]:
+        """Run command on the image."""
+        if podman_flags is None:
+            podman_flags = []
+
+        image_cmd = [self.name, "run", "--rm", *podman_flags, image] + cmd
+        return self._run_cmd(image_cmd)
 
 
 def get_container_engine() -> ContainerEngine:
