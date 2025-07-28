@@ -87,8 +87,13 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         if not _depends_on_rust(source_dir):
             shutil.rmtree(extract_dir, ignore_errors=True)
             continue
-
-        rust_root_dir = cargo_files[0].parent
+        # find the top-most Cargo.toml in the package - that's not necessarily the most accurate
+        # solution, but this heuristic has proven to work on the most popular python packages
+        # that have rust dependencies; if this stops working, then we would probably need to check
+        # pyproject toml config section for maturin or setuptools-rust...
+        # More info on this issue in the design doc
+        # https://github.com/hermetoproject/hermeto/blob/e5fa5c0fcd0dff62cf02be5b0d219e04c1ea440c/docs/design/cargo-support.md#L806
+        rust_root_dir = min(cargo_files, key=lambda x: len(x.parts)).parent
         packages_containing_rust_code.append(
             CargoPackageInput(
                 type="cargo",

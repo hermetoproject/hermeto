@@ -153,6 +153,17 @@ log = logging.getLogger(__name__)
             ),
             id="pip_rust_extension_lock_and_config_mismatch_strict",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/rust_dependency_unusual_cargo_toml_location",
+                packages=({"path": ".", "type": "pip"},),
+                expected_exit_code=0,
+                check_output=False,
+                check_deps_checksums=False,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="pip_rust_dependency_unusual_cargo_toml_location",
+        ),
     ],
 )
 def test_pip_packages(
