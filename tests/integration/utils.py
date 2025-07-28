@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import jsonschema
 import requests
@@ -21,7 +21,7 @@ from git import Repo
 from hermeto import APP_NAME
 from hermeto.core import resolver
 from hermeto.interface.cli import DEFAULT_OUTPUT
-from tests.integration.container_engine import get_container_engine
+from tests.integration.container_engine import StrPath, get_container_engine
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
@@ -78,9 +78,6 @@ class TestParameters:
     flags: list[str] = field(default_factory=list)
 
 
-StrPath = Union[str, os.PathLike[str]]
-
-
 class ContainerImage:
     def __init__(self, repository: str):
         """Initialize ContainerImage object with associated repository."""
@@ -90,8 +87,7 @@ class ContainerImage:
         return self
 
     def pull_image(self) -> None:
-        cmd = ["pull", self.repository]
-        output, exit_code = container_engine.run_cmd(cmd)
+        output, exit_code = container_engine.pull(self.repository)
         if exit_code != 0:
             raise RuntimeError(f"Pulling {self.repository} failed. Output:{output}")
         log.info("Pulled image: %s.", self.repository)
@@ -108,16 +104,16 @@ class ContainerImage:
             podman_flags = []
 
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
+
         for src, dest in mounts:
             podman_flags.extend(["-v", f"{src}:{dest}:z"])
         if net:
             podman_flags.append(f"--net={net}")
-        image_cmd = ["run", "--rm", *podman_flags, self.repository] + cmd
-        return container_engine.run_cmd(image_cmd)
+
+        return container_engine.run(self.repository, cmd, podman_flags)
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
-        image_cmd = ["rmi", "--force", self.repository]
-        (output, exit_code) = container_engine.run_cmd(image_cmd)
+        output, exit_code = container_engine.rmi(self.repository)
         if exit_code != 0:
             raise RuntimeError(f"Image deletion failed. Output:{output}")
 
@@ -184,8 +180,7 @@ def build_image_for_test_case(
 
 
 def _build_image(podman_cmd: list[str], *, tag: str) -> ContainerImage:
-    podman_cmd = [*podman_cmd, "--tag", tag]
-    (output, exit_code) = container_engine.run_cmd(podman_cmd)
+    (output, exit_code) = container_engine.build(podman_cmd, tag)
     if exit_code != 0:
         raise RuntimeError(f"Building image failed. Output:\n{output}")
     return ContainerImage(tag)

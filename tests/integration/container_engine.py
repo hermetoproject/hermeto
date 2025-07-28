@@ -2,9 +2,11 @@ import logging
 import os
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 log = logging.getLogger(__name__)
+
+StrPath = Union[str, os.PathLike[str]]
 
 
 class ContainerEngine(ABC):
@@ -15,7 +17,7 @@ class ContainerEngine(ABC):
     def name(self) -> str:
         """Get the name of the container engine."""
 
-    def run_cmd(self, cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
+    def _run_cmd(self, cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
         """
         Run command via subprocess.
 
@@ -39,6 +41,33 @@ class ContainerEngine(ABC):
 
         return process.stdout, process.returncode
 
+    def build(self, build_cmd: list[str], tag: str) -> tuple[str, int]:
+        """Build container image."""
+        return self._run_cmd([self.name, *build_cmd, "--tag", tag])
+
+    def pull(self, image: str, flags: Optional[list[str]] = None) -> tuple[str, int]:
+        """Pull container image."""
+        if flags is None:
+            flags = []
+
+        return self._run_cmd([self.name, "pull", *flags, image])
+
+    def rmi(self, image: str, flags: Optional[list[str]] = None) -> tuple[str, int]:
+        """Remove container image."""
+        if flags is None:
+            flags = []
+
+        return self._run_cmd([self.name, "rmi", "--force", *flags, image])
+
+    @abstractmethod
+    def run(
+        self,
+        image: str,
+        cmd: list[str],
+        flags: Optional[list[str]] = None,
+    ) -> tuple[str, int]:
+        """Run command on the image."""
+
 
 class PodmanEngine(ContainerEngine):
     """Podman engine."""
@@ -47,6 +76,19 @@ class PodmanEngine(ContainerEngine):
     def name(self) -> str:
         """Get the name of the container engine."""
         return "podman"
+
+    def run(
+        self,
+        image: str,
+        cmd: list[str],
+        flags: Optional[list[str]] = None,
+    ) -> tuple[str, int]:
+        """Run command on the image."""
+        if flags is None:
+            flags = []
+
+        image_cmd = [self.name, "run", "--rm", *flags, image] + cmd
+        return self._run_cmd(image_cmd)
 
 
 def get_container_engine() -> ContainerEngine:
