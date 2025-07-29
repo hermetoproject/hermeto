@@ -41,9 +41,14 @@ class ContainerEngine(ABC):
 
         return process.stdout, process.returncode
 
-    def build(self, build_cmd: list[str], tag: str) -> tuple[str, int]:
+    def build(
+        self, context_dir: StrPath = ".", flags: Optional[list[str]] = None
+    ) -> tuple[str, int]:
         """Build container image."""
-        return self._run_cmd([self.name, *build_cmd, "--tag", tag])
+        if flags is None:
+            flags = []
+
+        return self._run_cmd([self.name, "build", *flags, str(context_dir)])
 
     def pull(self, image: str, flags: Optional[list[str]] = None) -> tuple[str, int]:
         """Pull container image."""
