@@ -139,7 +139,7 @@ class HermetoImage(ContainerImage):
 
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
-    return _build_image(["build", str(context_dir)], tag=tag)
+    return _build_image(flags=[], tag=tag, context_dir=context_dir)
 
 
 def build_image_for_test_case(
@@ -153,8 +153,7 @@ def build_image_for_test_case(
     # mounts the output of the fetch-deps command and hermeto.env
     output_dir_mount_point = "/tmp"
 
-    cmd = [
-        "build",
+    flags = [
         "-f",
         str(containerfile_path),
         "-v",
@@ -169,18 +168,18 @@ def build_image_for_test_case(
     # this should be extended to support more archs when we have the means of testing it in our CI
     rpm_repos_path = f"{output_dir}/hermeto-output/deps/rpm/x86_64/repos.d"
     if Path(rpm_repos_path).exists():
-        cmd.extend(
+        flags.extend(
             [
                 "-v",
                 f"{rpm_repos_path}:/etc/yum.repos.d:Z",
             ]
         )
 
-    return _build_image(cmd, tag=f"localhost/{test_case}")
+    return _build_image(flags, tag=f"localhost/{test_case}")
 
 
-def _build_image(podman_cmd: list[str], *, tag: str) -> ContainerImage:
-    (output, exit_code) = container_engine.build(podman_cmd, tag)
+def _build_image(flags: list[str], tag: str, context_dir: StrPath = ".") -> ContainerImage:
+    (output, exit_code) = container_engine.build(context_dir, [*flags, "--tag", tag])
     if exit_code != 0:
         raise RuntimeError(f"Building image failed. Output:\n{output}")
     return ContainerImage(tag)
