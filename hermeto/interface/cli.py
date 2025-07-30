@@ -155,7 +155,7 @@ def version_callback(value: bool) -> None:
 
 @app.callback()
 @handle_errors
-def main(  # noqa: D103; docstring becomes part of --help message
+def main(  # noqa: D103 docstring becomes part of --help message
     version: bool = typer.Option(
         False,
         "--version",
