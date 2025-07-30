@@ -43,7 +43,12 @@ RUN dnf -y install \
 COPY requirements.txt .
 RUN python3 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
-    /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes
+    /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes && \
+
+###
+### TOOLBOX ONLY - install debuggers
+###
+    /venv/bin/pip install ipdb pudb
 
 COPY . .
 RUN /venv/bin/pip install --no-cache-dir .
@@ -69,5 +74,16 @@ RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /venv/bin/createrepo_c /usr/local/bin/createrepo_c && \
     ln -s /venv/bin/cachi2 /usr/local/bin/cachi2 && \
     ln -s /venv/bin/hermeto /usr/local/bin/hermeto
+
+###
+### TOOLBOX ONLY - debugger configuration
+###
+
+# this overrides the default builtin PDB debugger
+# make ipdb the default session debugger since it's simpler
+ENV PYTHONBREAKPOINT="ipdb.set_trace"
+
+# inject PuDB's configuration file
+COPY toolbox/pudb.cfg /root/.config/pudb/pudb.cfg
 
 CMD ["/usr/local/bin/hermeto"]
