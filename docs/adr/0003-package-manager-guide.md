@@ -5,9 +5,9 @@ Date: 2025-07-18
 ## Context
 
 Hermeto is intended to support a wide range of programming languages and dependency management
-systems. Now that we have a "critical mass" of package managers, the project should codify the
-requirements Hermeto needs to support a given package manager, and the "lifecycle" for evolving
-a package manager.
+systems ("package manager ecosystems"). Now that we have a "critical mass" of package managers, the
+project should codify the requirements Hermeto needs to support a given package manager, and the
+"lifecycle" for evolving a package manager.
 
 The phases of the lifecycle are inspired by our experiences with [DNF](https://docs.fedoraproject.org/en-US/quick-docs/dnf/)
 and [Maven](https://maven.apache.org/), which currently do not have mature mechanisms for declaring
@@ -17,16 +17,17 @@ and pinning dependencies.
 
 ### Candidates for Package Manager Support
 
-Hermeto can support _any_ package manager that is able to generate a comprehensive list of uniqely
-identified dependencies, and has a process for persisting these dependencies locally to disk. The
-dependency list does not have to include a set of expected checksums for each item, however this
-practice is **strongly encouraged**. The dependecy list must include:
+Hermeto can support _any_ package manager ecosystem that is able to generate a comprehensive list
+of uniquely identified dependencies, and has a process for persisting these dependencies locally to
+disk. The dependency list does not have to include a set of expected checksums for each item,
+however this practice is **strongly encouraged**. For Hermeto to support a package manager
+ecosystem, the dependency list must include:
 
 * Direct dependencies of the artifact to be built.
 * Indirect (transitive) dependencies of the artifact.
-* Dependencies required for compilation that are external to the package manager. For example,
-  Maven plugins. Indirect/transitive dependencies of these compilation tools/packages must also be
-  identified.
+
+The dependency list _may_ also include external tools needed for compilation, which may be part of
+the package manager's toolchain ecosystem (ex: [Maven plugins](https://maven.apache.org/plugins/)).
 
 Hermeto is **not** responsible for generating or validating this dependency list.
 
@@ -120,7 +121,9 @@ following criteria are satisfied:
    community - either directly or through a well-maintained external party tool.
 2. A developer with reasonable package manager experience can use Hermeto to pre-fetch dependencies
    by reading the project documentation.
-2. A sufficient number of demonstration/pilot projects have been able to use Hermeto to execute a
+3. Hermeto can verify the integrity of pre-fetched content if the required information (checksums)
+   are present.
+4. A sufficient number of demonstration/pilot projects have been able to use Hermeto to execute a
    hermetic build with the package manager.
 
 #### Graduated Phase
@@ -139,8 +142,8 @@ deprecation must include a release note announcing the change.
 * Contribution guidelines will need to be updated to codify the process/lifecycle in this ADR,
   including:
   * Iterative design documentation alongside code changes.
-  * Documentation requirements for promoting/graduating package managers.
+  * Document the requirements for graduating package managers at each phase of the lifecycle.
 * Our current support for RPM/DNF should be documented (technical designs and end-user procedures).
-* The Hermeto project should create a design document template used when contributors add (and
-  iterate on) package manager support.
+* The Hermeto project should create a design document template contributors should use when they
+  add and improve a new package manager.
 * Hermeto's release notes process must be able to announce deprecations and removals.
