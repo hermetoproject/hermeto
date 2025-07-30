@@ -45,6 +45,7 @@ dev = [
   "mkdocs-material",
   "mypy",
   "nox",
+  "ruff",
   "typing-extensions",
 ]
 test = [
@@ -63,6 +64,54 @@ packages = ["hermeto"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0+dev.fallback"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# Enable the same rules that flake8, bandit and other tools were checking
+select = [
+    "W",   # pycodestyle warnings
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "D1",  # Missing docstrings only
+    "I",   # isort
+    "S",   # bandit security rules
+]
+
+# Ignore the same rules as the previous flake8 and bandit configuration
+ignore = [
+    "D100",  # missing docstring in public module
+    "D104",  # missing docstring in public package
+    "D105",  # missing docstring in magic method
+    "E501",  # line too long
+    "E731",  # do not assign a lambda expression
+
+    # bandit ignores
+    "S404",  # import subprocess
+    "S603",  # subprocess_without_shell_equals_true
+    # Note: W503 (line break before binary operator) and E203 (whitespace before ':')
+    # are automatically handled by Ruff's formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Same per-file ignores as flake8 for tests, plus security rule exceptions for test code
+"tests/*" = [
+    "D101", "D102", "D103",  # missing docstring in public class, method, function
+    "S101",  # use of assert detected (expected in tests)
+    "S108",  # hardcoded temp paths (acceptable in tests)
+    "S113",  # requests call without timeout (acceptable in tests)
+    "S202",  # tarfile-unsafe-members (acceptable in tests)
+    "S311",  # suspicious-non-cryptographic-random-usage (acceptable in tests)
+]
+
+[tool.ruff.format]
+# Use Black-compatible formatting
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.black]
 line-length = 100

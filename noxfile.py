@@ -62,7 +62,43 @@ def lint(session: Session) -> None:
             session.run(*cmd.split(), *session.posargs, silent=True)
         except Exception as e:
             exc = e
+    if exc:
+        raise exc
 
+
+@nox.session()
+def ruff(session: Session) -> None:
+    """Run ruff for linting, formatting, and security checks."""
+    install_requirements(session)
+    # Replaces flake8 and isort checks
+    cmds = [
+        "ruff check hermeto tests noxfile.py",
+        "ruff format --check --diff hermeto tests noxfile.py",
+    ]
+
+    for cmd in cmds:
+        try:
+            session.run(*cmd.split(), *session.posargs, silent=True)
+        except Exception as e:
+            exc = e
+    if exc:
+        raise exc
+
+
+@nox.session(name="ruff-fix")
+def ruff_fix(session: Session) -> None:
+    """Run ruff with auto-fix for linting and formatting."""
+    install_requirements(session)
+    cmds = [
+        "ruff check --fix hermeto tests noxfile.py",
+        "ruff format hermeto tests noxfile.py",
+    ]
+
+    for cmd in cmds:
+        try:
+            session.run(*cmd.split(), *session.posargs, silent=True)
+        except Exception as e:
+            exc = e
     if exc:
         raise exc
 
