@@ -93,7 +93,7 @@ async def _async_download_binary_file(
         log.error(f"Unsuccessful download: {url}")
         # "from None" since we have the exception context in the logs
         raise FetchError(
-            f"exception_name: {exception.__class__.__name__}, " f"details: {exception}"
+            f"exception_name: {exception.__class__.__name__}, details: {exception}"
         ) from None
 
     log.debug(f"Download completed - {url}")
