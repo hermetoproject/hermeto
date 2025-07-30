@@ -35,14 +35,25 @@ which will make contributing fast and pleasant process.
 
 ### How we deal with larger features
 
-Implementing a larger feature (such as adding a new package manager) is usually a very long and detailed effort. This type of work does not fit well into a single pull request; after several comment threads it becomes almost unmanageable (for you) and very hard to review (for us). For that reason, we request that larger features be split into a series of pull requests. Once approved, these pull requests will be merged into "main", but the new feature will be marked as experimental, and will retain this mark until it meets code quality standards and all necessary changes are merged.
+Implementing a larger feature (such as adding a new package manager) is usually a very long and
+detailed effort. This type of work does not fit well into a single pull request; after several
+comment threads it becomes almost unmanageable (for you) and very hard to review (for us). For that
+reason, we request the following:
 
-This has several implications
+- Submit a design document document that supplements the code. For new package managers, we have a
+  [design template](docs/design/package-manager-template.md) that can help guide the implementation.
+- Keep your feature hidden behind a command line flag. For new package managers, we use the
+  `--dev-package-managers` flag to disable experimental package managers by default.
+- Submit small pull requests, with each one implementing a single piece of the overall feature.
+  Experimental features do not need to work end to end, though these should provide warnings/errors
+  for missing functionality when possible.
+
+Note the following:
 
 * Experimental features are not fully endorsed by the maintainers, and maintainers will not provide support.
 * Experimental features are not production-ready and should never be used in production.
 * Always expect that an experimental feature can be fully dropped from this project without any prior notice.
-* A feature toggle is needed to allow users to opt-in. This is currently being handled by the `dev-package-managers` flag.
+* A feature toggle is needed to allow users to opt-in. For package managers, this is currently being handled by the `dev-package-managers` flag.
 * All SBOMs produced when an experimental feature is used will be marked as such.
 
 If, for some reason, you feel this proposed workflow does not fit the feature you're contributing, please reach out to the maintainers so we can provide an alternative.
