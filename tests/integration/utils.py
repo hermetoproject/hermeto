@@ -78,9 +78,10 @@ class TestParameters:
 
 
 class ContainerImage:
-    def __init__(self, repository: str):
+    def __init__(self, repository: str, debug: bool = False):
         """Initialize ContainerImage object with associated repository."""
         self.repository = repository
+        self.debug = debug
 
     def __enter__(self) -> "ContainerImage":
         return self
@@ -135,6 +136,27 @@ class HermetoImage(ContainerImage):
         podman_flags: Optional[list[str]] = None,
         subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
+        if podman_flags is None:
+            podman_flags = []
+
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
+
+        if self.debug:
+            # toolbox image must use CMD instead of ENTRYPOINT, so we need to force the command name
+            cmd = ["hermeto"] + cmd
+
+            # these subprocess options are needed for the interactive flag below to work properly
+            subprocess_kwargs = {
+                "stdin": sys.stdin,
+                "stdout": sys.stdout,
+                "stderr": sys.stderr,
+            }
+
+            # need to pass '-it' to podman + set std in/outs explicitly for subprocess for
+            # podman to propagate the interactive debugger session
+            podman_flags.extend(["--interactive", "--tty"])
+
         return super().run_cmd_on_image(
             cmd, tmp_path, mounts, net, entrypoint, podman_flags, subprocess_kwargs
         )
