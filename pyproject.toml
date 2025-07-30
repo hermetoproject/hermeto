@@ -45,6 +45,7 @@ dev = [
   "mkdocs-material",
   "mypy",
   "nox",
+  "ruff",
   "typing-extensions",
 ]
 test = [
@@ -63,6 +64,49 @@ packages = ["hermeto"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0+dev.fallback"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "W",   # pycodestyle warnings
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "D1",  # Missing docstrings only
+    "I",   # isort
+    "S",   # bandit security rules
+]
+
+ignore = [
+    "D100",  # missing docstring in public module
+    "D104",  # missing docstring in public package
+    "D105",  # missing docstring in magic method
+    "E501",  # line too long
+    "E731",  # do not assign a lambda expression
+    "S404",  # import subprocess
+    "S603",  # subprocess_without_shell_equals_true
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D101",  # missing docstring in public class
+    "D102",  # missing docstring in public method
+    "D103",  # missing docstring in public function
+    "S101",  # use of assert detected (expected in tests)
+    "S108",  # hardcoded temp paths (acceptable in tests)
+    "S113",  # requests call without timeout (acceptable in tests)
+    "S202",  # tarfile-unsafe-members (acceptable in tests)
+    "S311",  # suspicious-non-cryptographic-random-usage (acceptable in tests)
+]
+
+[tool.ruff.format]
+# Use Black-compatible formatting
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.black]
 line-length = 100
