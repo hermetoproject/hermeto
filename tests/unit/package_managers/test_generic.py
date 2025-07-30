@@ -132,7 +132,6 @@ def test_fetch_generic_source(
     model_input: GenericPackageInput,
     components: list[Component],
 ) -> None:
-
     mock_resolve_generic_lockfile.return_value = components
 
     mock_request = mock.Mock()
@@ -144,7 +143,6 @@ def test_fetch_generic_source(
 
 
 def test_fetch_generic_source_relative_lockfile_path() -> None:
-
     model_input = GenericPackageInput.model_construct(
         type="generic", lockfile=Path("relative.yaml")
     )

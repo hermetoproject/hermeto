@@ -22,7 +22,6 @@ def test_fetch_yarn_source_detects_yarn_classic(
     mock_requestoutput_add_: mock.Mock,
     input_request: Request,
 ) -> None:
-
     _ = fetch_yarn_source(input_request)
 
     mock_yarnclassic_fetch_source.assert_called_once()

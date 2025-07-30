@@ -96,7 +96,6 @@ def test_extracting_workspace_globs_works_for_all_types_of_workspaces(
     package: dict,
     expected: list,
 ) -> None:
-
     result = _extract_workspaces_globs(package)
 
     assert expected == result

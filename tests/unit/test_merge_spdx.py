@@ -34,7 +34,7 @@ def _assert_merging_sboms_produces_correct_number_of_packages(
     difference = expected_num_of_packages - actual_num_of_packages
     msg = (
         f"""Number of packages in input SBOMs and resulting SBOM do not add up:
-        The new SBOM contains {abs(difference)} package{'s' if abs(difference) != 1 else ''} """
+        The new SBOM contains {abs(difference)} package{"s" if abs(difference) != 1 else ""} """
         f"""{"more" if difference < 0 else "less"} than the both input SBOMs."""
     )
     assert expected_num_of_packages == actual_num_of_packages, msg
@@ -58,7 +58,7 @@ def _assert_merging_two_distinct_sboms_produces_correct_number_of_packages(
     msg = (
         f"""
         Number of packages in input SBOMs and resulting SBOM do not add up:
-        The new SBOM contains {abs(difference)} package{'s' if abs(difference) != 1 else ''} """
+        The new SBOM contains {abs(difference)} package{"s" if abs(difference) != 1 else ""} """
         f"""{"more" if difference < 0 else "less"} than the both input SBOMs."""
     )
     assert expected_num_of_packages == actual_num_of_packages, msg

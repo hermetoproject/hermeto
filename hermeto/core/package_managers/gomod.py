@@ -1478,7 +1478,7 @@ class ModuleVersionResolver:
         if tag is None:
             # If the major version isn't in the import path and there is not a versioned commit with the
             # version of 1, the major version defaults to 0.
-            return f'v{module_major_version or "0"}.0.0-{commit_timestamp}-{commit_hash}'
+            return f"v{module_major_version or '0'}.0.0-{commit_timestamp}-{commit_hash}"
 
         tag_semantic_version = self._get_semantic_version_from_tag(tag.name, subpath)
 

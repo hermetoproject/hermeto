@@ -28,8 +28,7 @@ class PackageWithCorruptLockfileRejected(PackageRejected):
     def __init__(self, package_path: str) -> None:
         """Initialize the error."""
         reason = (
-            f"{package_path} contains a Cargo.lock that does not match"
-            " the corresponding Cargo.toml"
+            f"{package_path} contains a Cargo.lock that does not match the corresponding Cargo.toml"
         )
         super().__init__(reason, solution=self.default_solution, docs="")
 
