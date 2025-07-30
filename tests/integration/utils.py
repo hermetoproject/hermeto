@@ -99,9 +99,13 @@ class ContainerImage:
         net: Optional[str] = None,
         entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         if podman_flags is None:
             podman_flags = []
+
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
 
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
 
@@ -110,7 +114,9 @@ class ContainerImage:
         if net:
             podman_flags.append(f"--net={net}")
 
-        return container_engine.run(self.repository, cmd, entrypoint, podman_flags)
+        return container_engine.run(
+            self.repository, cmd, entrypoint, podman_flags, subprocess_kwargs
+        )
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
         output, exit_code = container_engine.rmi(self.repository)
@@ -127,8 +133,11 @@ class HermetoImage(ContainerImage):
         net: Optional[str] = "host",
         entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
-        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, entrypoint, podman_flags)
+        return super().run_cmd_on_image(
+            cmd, tmp_path, mounts, net, entrypoint, podman_flags, subprocess_kwargs
+        )
 
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:

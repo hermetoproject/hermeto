@@ -74,6 +74,7 @@ class ContainerEngine(ABC):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
 
@@ -92,16 +93,20 @@ class PodmanEngine(ContainerEngine):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
         if flags is None:
             flags = []
 
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
+
         if entrypoint:
             flags.append(f"--entrypoint={entrypoint}")
 
         image_cmd = [self.name, "run", "--rm", *flags, image] + cmd
-        return self._run_cmd(image_cmd)
+        return self._run_cmd(image_cmd, **subprocess_kwargs)
 
 
 class BuildahEngine(ContainerEngine):
@@ -194,6 +199,7 @@ class BuildahEngine(ContainerEngine):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command using buildah."""
         with self._configure_buildah_container(image) as container_name:
