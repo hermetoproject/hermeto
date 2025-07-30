@@ -40,7 +40,7 @@ detailed effort. This type of work does not fit well into a single pull request;
 comment threads it becomes almost unmanageable (for you) and very hard to review (for us). For that
 reason, we request the following:
 
-- Submit a design document document that supplements the code. For new package managers, we have a
+- Submit a design document that supplements the code. For new package managers, we have a
   [design template](docs/design/package-manager-template.md) that can help guide the implementation.
 - Keep your feature hidden behind a command line flag. For new package managers, we use the
   `--dev-package-managers` flag to disable experimental package managers by default.
