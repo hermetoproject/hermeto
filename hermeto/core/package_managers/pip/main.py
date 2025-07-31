@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import dataclasses
 import logging
 import tarfile
 import zipfile
@@ -23,6 +24,12 @@ from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
     extract_git_info,
+)
+from hermeto.core.package_managers.pip.models import (
+    ArtifactDownload,
+    PyPIArtifact,
+    URLArtifact,
+    VCSArtifact,
 )
 from hermeto.core.package_managers.pip.package_distributions import (
     DistributionPackageInfo,
@@ -262,11 +269,13 @@ def _process_req(
     pip_deps_dir: RootedPath,
     download_info: dict[str, Any],
     dpi: DistributionPackageInfo | None = None,
-) -> dict[str, Any]:
-    download_info["kind"] = req.kind
-    download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
-    download_info["missing_req_file_checksum"] = True
-    download_info["package_type"] = ""
+) -> ArtifactDownload:
+    # Extract common fields from download_info dict
+    package_name = download_info["package"]
+    path = download_info["path"]
+    requirement_file = str(requirements_file.file_path.subpath_from_root)
+    missing_req_file_checksum = True
+    build_dependency = download_info.get("build_dependency", False)
 
     def _checksum_must_match_or_path_unlink(
         path: Path, checksum_info: Iterable[ChecksumInfo]
@@ -278,34 +287,67 @@ def _process_req(
             path.unlink()
             log.warning("Download '%s' was removed from the output directory", path.name)
 
+    artifact: ArtifactDownload
     if dpi:
+        # PyPI artifact
         if dpi.req_file_checksums:
-            download_info["missing_req_file_checksum"] = False
+            missing_req_file_checksum = False
         if dpi.has_checksums_to_match:
             _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match)
         if dpi.package_type == "sdist":
             _check_metadata_in_sdist(dpi.path)
-        download_info["package_type"] = dpi.package_type
-        download_info["index_url"] = dpi.index_url
+
+        artifact = PyPIArtifact(
+            package=package_name,
+            path=path,
+            requirement_file=requirement_file,
+            missing_req_file_checksum=missing_req_file_checksum,
+            build_dependency=build_dependency,
+            index_url=dpi.index_url,
+            package_type=dpi.package_type,
+            version=dpi.version,
+        )
     elif req.kind == "vcs":
-        # `missing_req_file_checksum` is *always* True for VCS deps
-        pass
+        # VCS artifact - extract git info from download_info
+        artifact = VCSArtifact(
+            package=package_name,
+            path=path,
+            requirement_file=requirement_file,
+            missing_req_file_checksum=True,  # Always True for VCS deps
+            build_dependency=build_dependency,
+            url=download_info["url"],
+            host=download_info["host"],
+            namespace=download_info["namespace"],
+            repo=download_info["repo"],
+            ref=download_info["ref"],
+        )
+    elif req.kind == "url":
+        # URL artifact
+        hashes = req.hashes or [req.qualifiers.get("cachito_hash", "")]
+        if hashes:
+            missing_req_file_checksum = False
+            _checksum_must_match_or_path_unlink(path, list(map(ChecksumInfo.from_hash, hashes)))
+
+        artifact = URLArtifact(
+            package=package_name,
+            path=path,
+            requirement_file=requirement_file,
+            missing_req_file_checksum=missing_req_file_checksum,
+            build_dependency=build_dependency,
+            original_url=download_info["original_url"],
+            url_with_hash=download_info["url_with_hash"],
+            package_type=download_info.get("package_type", ""),
+        )
     else:
-        if req.kind == "url":
-            hashes = req.hashes or [req.qualifiers.get("cachito_hash", "")]
-            if hashes:
-                download_info["missing_req_file_checksum"] = False
-                _checksum_must_match_or_path_unlink(
-                    download_info["path"], list(map(ChecksumInfo.from_hash, hashes))
-                )
+        raise ValueError(f"Unknown requirement kind: {req.kind}")
 
     log.debug(
         "Successfully processed '%s' in path '%s'",
         req.download_line,
-        download_info["path"].relative_to(pip_deps_dir.root),
+        path.relative_to(pip_deps_dir.root),
     )
 
-    return download_info
+    return artifact
 
 
 def _process_pypi_req(
@@ -314,8 +356,8 @@ def _process_pypi_req(
     index_url: str,
     pip_deps_dir: RootedPath,
     binary_filters: PipBinaryFilters | None = None,
-) -> list[dict[str, Any]]:
-    download_infos: list[dict[str, Any]] = []
+) -> list[ArtifactDownload]:
+    download_artifacts: list[ArtifactDownload] = []
 
     artifacts: list[DistributionPackageInfo] = process_package_distributions(
         req, pip_deps_dir, binary_filters, index_url
@@ -325,7 +367,7 @@ def _process_pypi_req(
     asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
     for artifact in artifacts:
-        download_infos.append(
+        download_artifacts.append(
             _process_req(
                 req,
                 requirements_file,
@@ -335,12 +377,12 @@ def _process_pypi_req(
             )
         )
 
-    return download_infos
+    return download_artifacts
 
 
 def _process_vcs_req(
     req: PipRequirement, pip_deps_dir: RootedPath, **kwargs: Any
-) -> dict[str, Any]:
+) -> ArtifactDownload:
     return _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
@@ -351,37 +393,36 @@ def _process_vcs_req(
 
 def _process_url_req(
     req: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str], **kwargs: Any
-) -> dict[str, Any]:
-    result = _process_req(
+) -> ArtifactDownload:
+    download_info = _download_url_package(req, pip_deps_dir, trusted_hosts)
+    if req.url.endswith(WHEEL_FILE_EXTENSION):
+        download_info["package_type"] = "wheel"
+
+    return _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
-        download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
+        download_info=download_info,
         **kwargs,
     )
-    if req.url.endswith(WHEEL_FILE_EXTENSION):
-        result["package_type"] = "wheel"
-
-    return result
 
 
 def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
     binary_filters: PipBinaryFilters | None = None,
-) -> list[dict[str, Any]]:
+) -> list[ArtifactDownload]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
 
     :param output_dir: the root output directory for this request
     :param requirements_file: A requirements.txt file
     :param binary_filters: process wheels?
-    :return: Info about downloaded packages; all items will contain "kind" and "path" keys
-        (and more based on kind, see _download_*_package functions for more details)
-    :rtype: list[dict]
+    :return: List of artifact download objects
+    :rtype: list[ArtifactDownload]
     """
     options: dict[str, Any] = process_requirements_options(requirements_file.options)
     trusted_hosts = set(options["trusted_hosts"])
-    processed: list[dict[str, Any]] = []
+    processed: list[ArtifactDownload] = []
 
     if options["require_hashes"]:
         log.info("Global --require-hashes option used, will require hashes")
@@ -408,29 +449,29 @@ def _download_dependencies(
     for req in requirements_file.requirements:
         log.info("-- Processing requirement line '%s'", req.download_line)
         if req.kind == "pypi":
-            download_infos: list[dict[str, Any]] = _process_pypi_req(
+            download_artifacts: list[ArtifactDownload] = _process_pypi_req(
                 req,
                 requirements_file=requirements_file,
                 index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
                 pip_deps_dir=pip_deps_dir,
                 binary_filters=binary_filters,
             )
-            processed.extend(download_infos)
+            processed.extend(download_artifacts)
         elif req.kind == "vcs":
-            download_info = _process_vcs_req(
+            artifact = _process_vcs_req(
                 req,
                 requirements_file=requirements_file,
                 pip_deps_dir=pip_deps_dir,
             )
-            processed.append(download_info)
+            processed.append(artifact)
         elif req.kind == "url":
-            download_info = _process_url_req(
+            artifact = _process_url_req(
                 req,
                 requirements_file=requirements_file,
                 pip_deps_dir=pip_deps_dir,
                 trusted_hosts=trusted_hosts,
             )
-            processed.append(download_info)
+            processed.append(artifact)
         else:
             # Should not happen
             raise RuntimeError(f"Unexpected requirement kind: '{req.kind!r}'")
@@ -523,18 +564,17 @@ def _download_from_requirement_files(
     output_dir: RootedPath,
     files: list[RootedPath],
     binary_filters: PipBinaryFilters | None = None,
-) -> list[dict[str, Any]]:
+) -> list[ArtifactDownload]:
     """
     Download dependencies listed in the requirement files.
 
     :param output_dir: the root output directory for this request
     :param files: list of absolute paths to pip requirements files
     :param binary_filters: process wheels?
-    :return: Info about downloaded packages; see download_dependencies return docs for further
-        reference
+    :return: List of artifact download objects
     :raises PackageRejected: If requirement file does not exist
     """
-    requirements: list[dict[str, Any]] = []
+    requirements: list[ArtifactDownload] = []
     for req_file in files:
         if not req_file.path.exists():
             raise LockfileNotFound(
@@ -605,39 +645,34 @@ def _resolve_pip(
         output_dir, resolved_build_req_files, binary_filters
     )
 
-    if get_config().pip.ignore_dependencies_crates:
+    # Mark build dependencies by creating new frozen instances
+    build_requires_marked = [
+        dataclasses.replace(dependency, build_dependency=True) for dependency in build_requires
+    ]
+
+    all_artifacts = requires + build_requires_marked
+
+    # No need to search for Rust code when a user requested only binaries.
+    if binary_filters is not None or get_config().pip.ignore_dependencies_crates:
         packages_containing_rust_code = []
     else:
-        packages_containing_rust_code = filter_packages_with_rust_code(requires + build_requires)
-
-    # Mark all build dependencies as such
-    for dependency in build_requires:
-        dependency["build_dependency"] = True
-
-    def _version(dep: dict[str, Any]) -> str:
-        if dep["kind"] == "pypi":
-            version = dep["version"]
-        elif dep["kind"] == "vcs":
-            # Version is "git+" followed by the URL used to to fetch from git
-            version = f"git+{dep['url']}@{dep['ref']}"
-        else:
-            # Version is the original URL with #cachito_hash added if it was not present
-            version = dep["url_with_hash"]
-        return version
+        packages_containing_rust_code = filter_packages_with_rust_code(
+            [artifact.to_filter_dict() for artifact in all_artifacts]
+        )
 
     dependencies = [
         {
-            "name": dep["package"],
-            "version": _version(dep),
-            "index_url": dep.get("index_url"),
+            "name": artifact.package,
+            "version": artifact.version,
+            "index_url": getattr(artifact, "index_url", None),
             "type": "pip",
-            "build_dependency": dep.get("build_dependency", False),
-            "kind": dep["kind"],
-            "requirement_file": dep["requirement_file"],
-            "missing_req_file_checksum": dep["missing_req_file_checksum"],
-            "package_type": dep["package_type"],
+            "build_dependency": artifact.build_dependency,
+            "kind": artifact.kind,
+            "requirement_file": artifact.requirement_file,
+            "missing_req_file_checksum": artifact.missing_req_file_checksum,
+            "package_type": getattr(artifact, "package_type", ""),
         }
-        for dep in (requires + build_requires)
+        for artifact in all_artifacts
     ]
 
     return {
