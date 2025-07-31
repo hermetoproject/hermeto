@@ -46,3 +46,8 @@ class PodmanEngine(ContainerEngine):
     def name(self) -> str:
         """Get the name of the container engine."""
         return "podman"
+
+
+def get_container_engine() -> ContainerEngine:
+    """Get the container engine."""
+    return PodmanEngine()

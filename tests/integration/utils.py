@@ -22,6 +22,7 @@ from git import Repo
 from hermeto import APP_NAME
 from hermeto.core import resolver
 from hermeto.interface.cli import DEFAULT_OUTPUT
+from tests.integration.container_engine import get_container_engine
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
@@ -47,6 +48,7 @@ SUPPORTED_PMS: frozenset[str] = frozenset(
 
 
 log = logging.getLogger(__name__)
+container_engine = get_container_engine()
 
 # use the '|' style for multiline strings
 # https://github.com/yaml/pyyaml/issues/240
@@ -89,8 +91,8 @@ class ContainerImage:
         return self
 
     def pull_image(self) -> None:
-        cmd = ["podman", "pull", self.repository]
-        output, exit_code = run_cmd(cmd)
+        cmd = ["pull", self.repository]
+        output, exit_code = container_engine.run_cmd(cmd)
         if exit_code != 0:
             raise RuntimeError(f"Pulling {self.repository} failed. Output:{output}")
         log.info("Pulled image: %s.", self.repository)
@@ -111,12 +113,12 @@ class ContainerImage:
             podman_flags.extend(["-v", f"{src}:{dest}:z"])
         if net:
             podman_flags.append(f"--net={net}")
-        image_cmd = ["podman", "run", "--rm", *podman_flags, self.repository] + cmd
-        return run_cmd(image_cmd)
+        image_cmd = ["run", "--rm", *podman_flags, self.repository] + cmd
+        return container_engine.run_cmd(image_cmd)
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
-        image_cmd = ["podman", "rmi", "--force", self.repository]
-        (output, exit_code) = run_cmd(image_cmd)
+        image_cmd = ["rmi", "--force", self.repository]
+        (output, exit_code) = container_engine.run_cmd(image_cmd)
         if exit_code != 0:
             raise RuntimeError(f"Image deletion failed. Output:{output}")
 
@@ -142,7 +144,7 @@ class HermetoImage(ContainerImage):
 
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
-    return _build_image(["podman", "build", str(context_dir)], tag=tag)
+    return _build_image(["build", str(context_dir)], tag=tag)
 
 
 def build_image_for_test_case(
@@ -157,7 +159,6 @@ def build_image_for_test_case(
     output_dir_mount_point = "/tmp"
 
     cmd = [
-        "podman",
         "build",
         "-f",
         str(containerfile_path),
@@ -185,7 +186,7 @@ def build_image_for_test_case(
 
 def _build_image(podman_cmd: list[str], *, tag: str) -> ContainerImage:
     podman_cmd = [*podman_cmd, "--tag", tag]
-    (output, exit_code) = run_cmd(podman_cmd)
+    (output, exit_code) = container_engine.run_cmd(podman_cmd)
     if exit_code != 0:
         raise RuntimeError(f"Building image failed. Output:\n{output}")
     return ContainerImage(tag)
