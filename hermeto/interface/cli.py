@@ -145,7 +145,8 @@ def version_callback(value: bool) -> None:
         return
 
     print(f"{APP_NAME}", importlib.metadata.version("hermeto"))
-    print("Supported package managers:", ", ".join(supported_package_managers))
+    # Mypy overly strict about union types in join operation
+    print("Supported package managers:", ", ".join(supported_package_managers))  # type: ignore[arg-type]
     raise typer.Exit()
 
 
@@ -226,7 +227,9 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
         resolve_path=True,
         help="Write output files to this directory.",
     ),
-    dev_package_managers: bool = typer.Option(False, "--dev-package-managers", hidden=True),
+    dev_package_managers: bool = typer.Option(
+        False, "--dev-package-managers", hidden=True, help="DEPRECATED: No longer has any effect."
+    ),
     cgo_disable: bool = typer.Option(
         False, "--cgo-disable", help="Set CGO_ENABLED=0 while processing gomod packages."
     ),

@@ -42,7 +42,7 @@ This has several implications
 * Experimental features are not fully endorsed by the maintainers, and maintainers will not provide support.
 * Experimental features are not production-ready and should never be used in production.
 * Always expect that an experimental feature can be fully dropped from this project without any prior notice.
-* A feature toggle is needed to allow users to opt-in. This is currently being handled by the `dev-package-managers` flag.
+* A feature toggle is needed to allow users to opt-in. This is currently handled by prefixing the package manager name with `x-` (e.g. `"type": "x-foo"` instead of `"type": "foo"`).
 * All SBOMs produced when an experimental feature is used will be marked as such.
 
 If, for some reason, you feel this proposed workflow does not fit the feature you're contributing, please reach out to the maintainers so we can provide an alternative.
@@ -104,16 +104,14 @@ dnf install golang-bin git
 
 ### Developer flags
 
-* `--dev-package-managers` (hidden): enables in-development package manager(s)
-  for test. Please refer to other existing package managers to see how they're
-  enabled and wired to the CLI.
+* `x-<pkg>` (experimental): enables the in-development package manager `<pkg>` for testing. Please refer to other existing package managers to see how they’re enabled and wired to the CLI.
 
-  Invoke it as `hermeto fetch-deps --dev-package-managers FOO`
+  Invoke it as `hermeto fetch-deps --source . '[{"type": "x-foo"}]'`
 
   More explicitly
 
-  * `--dev-package-managers` is a *flag for* `fetch-deps`
-  * `FOO` is an *argument to* `fetch-deps` (i.e. the language to fetch for)
+  * The x-<pkg> prefix is added to the "type" field in your JSON request.
+  * <pkg> is the experimental package manager you want to enable.
 
 ### Coding standards
 

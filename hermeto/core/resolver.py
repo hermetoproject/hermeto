@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
-from hermeto.core.models.input import PackageManagerType, Request
+from hermeto.core.models.input import EXPERIMENTAL_PM_MAP, PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
 from hermeto.core.rooted_path import RootedPath
@@ -64,16 +64,36 @@ def _resolve_packages(request: Request) -> RequestOutput:
     """Run all requested package managers, return their combined output."""
     _supported_package_managers = _package_managers
     requested_types = set(pkg.type for pkg in request.packages)
-    if "dev-package-managers" in request.flags:
-        _supported_package_managers = _package_managers | _dev_package_managers
-    unsupported_types = requested_types - _supported_package_managers.keys()
-    if unsupported_types:
+
+    # Convert x-<pkg> -> <pkg> and track which ones are experimental
+    # Mypy overly strict about complex union types, using type ignores for legitimate dynamic typing
+    normalized_types: set[PackageManagerType] = set()
+    experimental_types: set[PackageManagerType] = set()
+    for t in requested_types:
+        if t in EXPERIMENTAL_PM_MAP:
+            normalized_type = EXPERIMENTAL_PM_MAP[t]  # type: ignore[index]
+            normalized_types.add(normalized_type)
+            experimental_types.add(normalized_type)
+        else:
+            normalized_types.add(t)
+
+    if experimental_types:
+        requested_types = normalized_types  # type: ignore[assignment]
+        for pkg in experimental_types:
+            if pkg in _dev_package_managers:
+                _supported_package_managers[pkg] = _dev_package_managers[pkg]
+
+    # Validate all requested types are supported
+    unprefixed_experimental_requests = requested_types - _supported_package_managers.keys()
+    if unprefixed_experimental_requests:
+        types = [f'{{"type": "x-{type_}"}}' for type_ in sorted(unprefixed_experimental_requests)]
         raise UnsupportedFeature(
-            f"Package manager(s) not yet supported: {', '.join(sorted(unsupported_types))}",
-            # unknown package managers shouldn't get past input validation
-            solution="But the good news is that we're already working on it!",
+            f"Package manager(s) not yet fully supported: {', '.join(sorted(unprefixed_experimental_requests))}",
+            solution="The experimental package manager(s) are available but should be used with caution.\n"
+            "To enable a specific one, use:\n"
+            f"    '[{', '.join(types)}]'",
         )
-    pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]
+    pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]  # type: ignore[index]  # We know it's valid
     return sum([pkg_manager(request) for pkg_manager in pkg_managers], RequestOutput.empty())
 
 
