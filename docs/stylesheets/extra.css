@@ -1,0 +1,58 @@
+/* Custom h5 styling for Hermeto docs */
+.md-typeset h5 {
+  color: var(--md-primary-fg-color, #2e7d32);
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 1.5em 0 0.75em;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid rgba(46, 125, 50, 0.2);
+  letter-spacing: 0;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 60em) {
+  .md-typeset h5 {
+    font-size: 1.05em;
+    margin: 1.25em 0 0.5em;
+  }
+}
+
+/* Dark theme adjustments */
+[data-md-color-scheme="slate"] .md-typeset h5 {
+  color: #81c784;
+  border-bottom-color: rgba(129, 199, 132, 0.3);
+}
+
+/* Ensure links in h5 render as links */
+.md-typeset h5 a {
+  color: var(--md-accent-fg-color, #4caf50) !important;
+  text-decoration: underline !important;
+}
+
+.md-typeset h5 a:hover {
+  color: var(--md-accent-fg-color--light, #66bb6a) !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h5 a {
+  color: #81c784 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h5 a:hover {
+  color: #a5d6a7 !important;
+}
+
+/* Ensure code/backticks in h5 render as monospace */
+.md-typeset h5 code {
+  font-family: var(--md-code-font, "Roboto Mono", monospace) !important;
+  font-size: 0.9em;
+  background-color: var(--md-code-bg-color, rgba(0, 0, 0, 0.05)) !important;
+  padding: 0.1em 0.25em;
+  border-radius: 0.2em;
+  color: var(--md-code-fg-color, #e91e63) !important;
+  font-weight: 400 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h5 code {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8bbd0 !important;
+}
