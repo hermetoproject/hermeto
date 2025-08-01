@@ -65,6 +65,7 @@ class ContainerEngine(ABC):
         self,
         image: str,
         cmd: list[str],
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
@@ -82,11 +83,15 @@ class PodmanEngine(ContainerEngine):
         self,
         image: str,
         cmd: list[str],
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
         if podman_flags is None:
             podman_flags = []
+
+        if entrypoint:
+            podman_flags.append(f"--entrypoint={entrypoint}")
 
         image_cmd = [self.name, "run", "--rm", *podman_flags, image] + cmd
         return self._run_cmd(image_cmd)
@@ -119,7 +124,12 @@ class BuildahEngine(ContainerEngine):
         return container_name
 
     def _generate_cmd(
-        self, container_name: str, image: str, cmd: list[str], flags: Optional[list[str]]
+        self,
+        container_name: str,
+        image: str,
+        cmd: list[str],
+        entrypoint: Optional[str] = None,
+        flags: Optional[list[str]] = None,
     ) -> list[str]:
         """Generate container run command.
 
@@ -133,7 +143,9 @@ class BuildahEngine(ContainerEngine):
         :param flags: The flags present in the run command.
         :return: The generated command.
         """
-        filtered_flags, entrypoint = self._filter_entrypoint_flags(flags)
+        if flags is None:
+            flags = []
+
         image_cmd, image_entrypoint = self._get_image_config(image)
 
         # fallback to the image's default cmd if a custom one is not provided
@@ -141,51 +153,13 @@ class BuildahEngine(ContainerEngine):
 
         # if an entrypoint flag is provided, use it
         if entrypoint:
-            return ["run", *filtered_flags, container_name, "--", entrypoint, *cmd]
+            return ["run", *flags, container_name, "--", entrypoint, *cmd]
 
         # if the image has an entrypoint, prepend it to the command
         if image_entrypoint:
-            return ["run", *filtered_flags, container_name, "--", *image_entrypoint, *cmd]
+            return ["run", *flags, container_name, "--", *image_entrypoint, *cmd]
 
-        return ["run", *filtered_flags, container_name, "--", *cmd]
-
-    def _filter_entrypoint_flags(
-        self, flags: Optional[list[str]]
-    ) -> tuple[list[str], Optional[str]]:
-        """Remove and return any entrypoint flags.
-
-        Since buildah does not support the --entrypoint flag, we need to extract it so that
-        the run command can be properly formatted later on.
-
-        :param flags: The flags to treat.
-        :return: The filtered flags and the entrypoint value.
-        """
-        if flags is None:
-            return [], None
-
-        entrypoint_index = next(
-            (i for i, flag in enumerate(flags) if flag.startswith("--entrypoint")), None
-        )
-
-        if entrypoint_index is None:
-            return flags, None
-
-        entrypoint_flag = flags[entrypoint_index]
-
-        # entrypoint flag is in the format --entrypoint=<entrypoint>
-        if "=" in entrypoint_flag:
-            entrypoint_value = entrypoint_flag.split("=")[1]
-            return flags[:entrypoint_index] + flags[entrypoint_index + 1 :], entrypoint_value
-        # entrypoint flag is in the format --entrypoint <entrypoint>
-        elif entrypoint_index + 1 < len(flags):
-            entrypoint_value = flags[entrypoint_index + 1]
-            return flags[:entrypoint_index] + flags[entrypoint_index + 2 :], entrypoint_value
-        # entrypoint flag exists but no value is provided
-        else:
-            raise RuntimeError(
-                f"Unable to parse the run command flags: {flags}."
-                "Check if the --entrypoint flag defines a value."
-            )
+        return ["run", *flags, container_name, "--", *cmd]
 
     def _get_image_config(self, image: str) -> tuple[list[str], list[str]]:
         """Get the configured entrypoint and cmd of an image."""
@@ -205,13 +179,14 @@ class BuildahEngine(ContainerEngine):
         self,
         image: str,
         cmd: list[str],
+        entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         """Run command using buildah."""
         container_name = self._configure_buildah_container(image)
 
         try:
-            generated_cmd = self._generate_cmd(container_name, image, cmd, flags)
+            generated_cmd = self._generate_cmd(container_name, image, cmd, entrypoint, flags)
 
             return self._run_cmd([self.name, *generated_cmd])
         finally:

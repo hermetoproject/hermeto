@@ -98,6 +98,7 @@ class ContainerImage:
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = None,
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         if podman_flags is None:
@@ -110,7 +111,7 @@ class ContainerImage:
         if net:
             podman_flags.append(f"--net={net}")
 
-        return container_engine.run(self.repository, cmd, podman_flags)
+        return container_engine.run(self.repository, cmd, entrypoint, podman_flags)
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
         output, exit_code = container_engine.rmi(self.repository)
@@ -125,6 +126,7 @@ class HermetoImage(ContainerImage):
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = "host",
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
@@ -133,9 +135,14 @@ class HermetoImage(ContainerImage):
                 netrc_path = Path(netrc_tmpdir, ".netrc")
                 netrc_path.write_text(netrc_content)
                 return super().run_cmd_on_image(
-                    cmd, tmp_path, [*mounts, (netrc_path, "/root/.netrc")], net, podman_flags
+                    cmd,
+                    tmp_path,
+                    [*mounts, (netrc_path, "/root/.netrc")],
+                    net,
+                    entrypoint,
+                    podman_flags,
                 )
-        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, podman_flags)
+        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, entrypoint, podman_flags)
 
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
@@ -316,6 +323,7 @@ def fetch_deps_and_check_output(
     test_data_dir: Path,
     hermeto_image: ContainerImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
+    entrypoint: Optional[str] = None,
     podman_flags: Optional[list[str]] = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> None:
@@ -355,6 +363,7 @@ def fetch_deps_and_check_output(
         cmd,
         tmp_path,
         [*mounts, (test_repo_dir, test_repo_dir)],
+        entrypoint=entrypoint,
         podman_flags=podman_flags,
     )
     assert exit_code == test_params.expected_exit_code, (
@@ -414,7 +423,7 @@ def build_image_and_check_cmd(
     check_cmd: list,
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
-    podman_flags: Optional[list[str]] = None,
+    entrypoint: Optional[str] = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
 ) -> None:
@@ -442,7 +451,7 @@ def build_image_and_check_cmd(
         "--for-output-dir",
         f"/tmp/{fetch_output_dirname}",
     ]
-    (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path, podman_flags=podman_flags)
+    (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path, entrypoint=entrypoint)
     assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
 
     log.info("Injecting project files")
