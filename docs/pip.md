@@ -293,7 +293,7 @@ supported.
 
 #### Global
 
-##### [`--index-url`][]
+##### [`--index-url`](https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url)
 
 *Supported since v0.8.0.*
 
@@ -307,14 +307,15 @@ Make Hermeto download packages from the specified Python Package Index server.
 > index server (`https://pypi.org/simple`).
 
 :warning: **Do not include credentials in the index url.** If needed, provide
-authentication via [a `.netrc` file][].
+authentication via
+[a **.netrc** file](https://pip.pypa.io/en/stable/topics/authentication/#netrc-support).
 
-##### [`--require-hashes`][]
+##### [`--require-hashes`](https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes)
 
 Enables hash-checking mode. Typically redundant, since the presence of any
 `--hash` option enables hash-checking mode as well.
 
-##### [`--trusted-host`][]
+##### [`--trusted-host`](https://pip.pypa.io/en/stable/cli/pip/#trusted-host)
 
 Disables HTTPS validation for a host. Don't use this for production builds.
 
@@ -491,8 +492,11 @@ hermeto-output/deps/pip
 └── wheel-0.38.4.tar.gz
 ```
 
-To make pip use the downloaded archives, use the [`--find-links`][] and
-[`--no-index`][] options. The `--find-links` option tells pip to look for
+To make pip use the downloaded archives, use the
+[`--find-links`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f)
+and
+[`--no-index`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index)
+options. The `--find-links` option tells pip to look for
 dependency archives in a directory, `--no-index` prevents pip from preferring PyPI
 over the local directory. Pip also accepts environment variables; Hermeto
 generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you.
@@ -598,8 +602,9 @@ document) and that you are using Hermeto as intended (for reference, see the
 *Have you read [Building from source](#building-from-source)?*
 
 Even if you have all the build dependencies available, installing from source
-can come with unforeseen complications. Pip's [`--no-binary`][] flag can help
-debug faster.
+can come with unforeseen complications. Pip's
+[`--no-binary`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary)
+flag can help debug faster.
 
 ```shell
 # on your machine
@@ -614,7 +619,9 @@ Notably, older versions of pip and setuptools have a fair share of bugs related
 to PEP 517 handling. A good first course of action can be to upgrade pip and
 setuptools and try again.
 
-Other pip install options such as [`--use-pep517`][] may also be of interest.
+Other pip install options such as
+[`--use-pep517`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-use-pep517)
+may also be of interest.
 
 ### Need to install newer pip
 
@@ -777,14 +784,6 @@ which should output
 Note that the repo also contains a `build.sh` script which will execute all of
 these steps for you.
 
-[`--find-links`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f
-[`--no-binary`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary
-[`--no-index`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index
-[`--use-pep517`]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-use-pep517
-[`--index-url`]: https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url
-[`--require-hashes`]: https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes
-[`--trusted-host`]: https://pip.pypa.io/en/stable/cli/pip/#trusted-host
-[a `.netrc` file]: https://pip.pypa.io/en/stable/topics/authentication/#netrc-support
 [basic pip project]: https://github.com/hermetoproject/doc-examples/tree/pip-basic
 [binary format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format
 [declarative config]: https://setuptools.pypa.io/en/stable/userguide/declarative_config.html

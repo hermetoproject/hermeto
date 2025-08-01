@@ -223,7 +223,8 @@ suggested version as it originally did. The format of the version string in the
 `go` directive now also includes the micro release and if you don't include the
 micro release in your `go.qmod` file yourself (i.e. you only specify the
 language release) Go will try to correct it automatically inside the file. Last
-but not least, Go 1.21 also introduced a new keyword [`toolchain`][] to the
+but not least, Go 1.21 also introduced a new keyword
+[`toolchain`](https://go.dev/ref/mod#go-mod-file-toolchain) to the
 `go.mod` file. What this all means in practice for end users is that you may not
 be able to process your `go.mod` file with an older version of Go (and hence
 older hermeto) as you could in the past for various reasons. Many projects bump
@@ -346,7 +347,6 @@ podman run --rm -ti fzf
   packages. This can cause Hermeto to miss the transitive package dependencies
   of packages from checksum-less modules.
 
-[`toolchain`]: https://go.dev/ref/mod#go-mod-file-toolchain
 [cgo]: https://pkg.go.dev/cmd/cgo
 [fzf]: https://github.com/junegunn/fzf
 [Go 1.21]: https://tip.golang.org/doc/go1.21

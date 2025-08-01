@@ -84,7 +84,8 @@ lockfile has not been updated, running Bundler commands will be blocked. More
 importantly though, this makes Bundler comply with network isolated builds.
 However, this setting has a user-side implication regarding their build recipes,
 e.g. Dockerfiles[^1] and you may want to consider enforcing the installation
-path for your app explicitly with [`BUNDLE_PATH`][]
+path for your app explicitly with
+[`BUNDLE_PATH`](https://bundler.io/v2.5/man/bundle-config.1.html#LIST-OF-AVAILABLE-KEYS)
 
 ### BUNDLE_NO_PRUNE
 
@@ -190,7 +191,6 @@ Note that the deployment mode doesn't play nicely with other installation flags
 and so trying to use `--local` with your `bundle install` command in your
 Dockerfile won't take effect, consider `BUNDLE_PATH` instead.
 
-[`BUNDLE_PATH`]: https://bundler.io/v2.5/man/bundle-config.1.html#LIST-OF-AVAILABLE-KEYS
 [Bundler]: https://bundler.io
 [configuration options]: https://bundler.io/v2.5/man/bundle-config.1.html#DESCRIPTION
 [deployment mode]: https://www.bundler.cn/man/bundle-install.1.html#DEPLOYMENT-MODE
