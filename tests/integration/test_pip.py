@@ -239,7 +239,7 @@ def test_pip_packages(
             utils.TestParameters(
                 branch="pip/e2e_rust_extensions",
                 packages=(({"type": "pip"}, {"type": "rpm"})),
-                flags=["--dev-package-managers"],
+                flags=[],
                 check_output=True,
                 check_deps_checksums=False,
                 expected_exit_code=0,
