@@ -251,7 +251,7 @@ Note that if at least one dependency in your requirements file uses `--hash`,
 pip requires hashes for all dependencies. Use `pip-compile --generate-hashes` to
 generate compliant requirements files.
 
-*Hermeto does not support PEP 440 hashes in the url fragment, only --hash
+*Hermeto does not support PEP 440 hashes in the url fragment, only `--hash`
 options.*
 
 #### git urls
@@ -492,8 +492,8 @@ hermeto-output/deps/pip
 ```
 
 To make pip use the downloaded archives, use the [`--find-links`][] and
-[`--no-index`][] options. The --find-links option tells pip to look for
-dependency archives in a directory, --no-index prevents pip from preferring PyPI
+[`--no-index`][] options. The `--find-links` option tells pip to look for
+dependency archives in a directory, `--no-index` prevents pip from preferring PyPI
 over the local directory. Pip also accepts environment variables; Hermeto
 generates `PIP_FIND_LINKS` and `PIP_NO_INDEX` for you.
 See [Example: Generate environment variables](#generate-environment-variables)
