@@ -5,14 +5,13 @@ import json
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import jsonschema
 import requests
@@ -22,6 +21,7 @@ from git import Repo
 from hermeto import APP_NAME
 from hermeto.core import resolver
 from hermeto.interface.cli import DEFAULT_OUTPUT
+from tests.integration.container_engine import StrPath, get_container_engine
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
@@ -47,6 +47,7 @@ SUPPORTED_PMS: frozenset[str] = frozenset(
 
 
 log = logging.getLogger(__name__)
+container_engine = get_container_engine()
 
 # use the '|' style for multiline strings
 # https://github.com/yaml/pyyaml/issues/240
@@ -77,9 +78,6 @@ class TestParameters:
     flags: list[str] = field(default_factory=list)
 
 
-StrPath = Union[str, os.PathLike[str]]
-
-
 class ContainerImage:
     def __init__(self, repository: str):
         """Initialize ContainerImage object with associated repository."""
@@ -89,8 +87,7 @@ class ContainerImage:
         return self
 
     def pull_image(self) -> None:
-        cmd = ["podman", "pull", self.repository]
-        output, exit_code = run_cmd(cmd)
+        output, exit_code = container_engine.pull(self.repository)
         if exit_code != 0:
             raise RuntimeError(f"Pulling {self.repository} failed. Output:{output}")
         log.info("Pulled image: %s.", self.repository)
@@ -101,22 +98,23 @@ class ContainerImage:
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = None,
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         if podman_flags is None:
             podman_flags = []
 
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
+
         for src, dest in mounts:
             podman_flags.extend(["-v", f"{src}:{dest}:z"])
         if net:
             podman_flags.append(f"--net={net}")
-        image_cmd = ["podman", "run", "--rm", *podman_flags, self.repository] + cmd
-        return run_cmd(image_cmd)
+
+        return container_engine.run(self.repository, cmd, entrypoint, podman_flags)
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
-        image_cmd = ["podman", "rmi", "--force", self.repository]
-        (output, exit_code) = run_cmd(image_cmd)
+        output, exit_code = container_engine.rmi(self.repository)
         if exit_code != 0:
             raise RuntimeError(f"Image deletion failed. Output:{output}")
 
@@ -128,6 +126,7 @@ class HermetoImage(ContainerImage):
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: Optional[str] = "host",
+        entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
@@ -136,13 +135,18 @@ class HermetoImage(ContainerImage):
                 netrc_path = Path(netrc_tmpdir, ".netrc")
                 netrc_path.write_text(netrc_content)
                 return super().run_cmd_on_image(
-                    cmd, tmp_path, [*mounts, (netrc_path, "/root/.netrc")], net, podman_flags
+                    cmd,
+                    tmp_path,
+                    [*mounts, (netrc_path, "/root/.netrc")],
+                    net,
+                    entrypoint,
+                    podman_flags,
                 )
-        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, podman_flags)
+        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, entrypoint, podman_flags)
 
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
-    return _build_image(["podman", "build", str(context_dir)], tag=tag)
+    return _build_image(flags=[], tag=tag, context_dir=context_dir)
 
 
 def build_image_for_test_case(
@@ -156,9 +160,7 @@ def build_image_for_test_case(
     # mounts the output of the fetch-deps command and hermeto.env
     output_dir_mount_point = "/tmp"
 
-    cmd = [
-        "podman",
-        "build",
+    flags = [
         "-f",
         str(containerfile_path),
         "-v",
@@ -173,47 +175,21 @@ def build_image_for_test_case(
     # this should be extended to support more archs when we have the means of testing it in our CI
     rpm_repos_path = f"{output_dir}/hermeto-output/deps/rpm/x86_64/repos.d"
     if Path(rpm_repos_path).exists():
-        cmd.extend(
+        flags.extend(
             [
                 "-v",
                 f"{rpm_repos_path}:/etc/yum.repos.d:Z",
             ]
         )
 
-    return _build_image(cmd, tag=f"localhost/{test_case}")
+    return _build_image(flags, tag=f"localhost/{test_case}")
 
 
-def _build_image(podman_cmd: list[str], *, tag: str) -> ContainerImage:
-    podman_cmd = [*podman_cmd, "--tag", tag]
-    (output, exit_code) = run_cmd(podman_cmd)
+def _build_image(flags: list[str], tag: str, context_dir: StrPath = ".") -> ContainerImage:
+    (output, exit_code) = container_engine.build(context_dir, [*flags, "--tag", tag])
     if exit_code != 0:
         raise RuntimeError(f"Building image failed. Output:\n{output}")
     return ContainerImage(tag)
-
-
-def run_cmd(cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
-    """
-    Run command via subprocess.
-
-    :param cmd: command to be executed
-    :param subprocess_kwargs: passthrough kwargs to subprocess.run
-    :return: Command output and exitcode
-    :rtype: Tuple
-    """
-    log.info("Run command: %s.", cmd)
-
-    # redirect stderr to stdout for easier evaluation/handling of a single stream
-    forced_options = {
-        "stdout": subprocess.PIPE,
-        "stderr": subprocess.STDOUT,
-        "encoding": "utf-8",
-        "text": True,
-    }
-
-    subprocess_kwargs.update(forced_options)
-    process = subprocess.run(cmd, **subprocess_kwargs)
-
-    return process.stdout, process.returncode
 
 
 def _calculate_files_checksums_in_dir(root_dir: Path) -> dict:
@@ -347,6 +323,7 @@ def fetch_deps_and_check_output(
     test_data_dir: Path,
     hermeto_image: ContainerImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
+    entrypoint: Optional[str] = None,
     podman_flags: Optional[list[str]] = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> None:
@@ -386,6 +363,7 @@ def fetch_deps_and_check_output(
         cmd,
         tmp_path,
         [*mounts, (test_repo_dir, test_repo_dir)],
+        entrypoint=entrypoint,
         podman_flags=podman_flags,
     )
     assert exit_code == test_params.expected_exit_code, (
@@ -445,7 +423,7 @@ def build_image_and_check_cmd(
     check_cmd: list,
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
-    podman_flags: Optional[list[str]] = None,
+    entrypoint: Optional[str] = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
 ) -> None:
@@ -473,7 +451,7 @@ def build_image_and_check_cmd(
         "--for-output-dir",
         f"/tmp/{fetch_output_dirname}",
     ]
-    (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path, podman_flags=podman_flags)
+    (output, exit_code) = hermeto_image.run_cmd_on_image(cmd, tmp_path, entrypoint=entrypoint)
     assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
 
     log.info("Injecting project files")
