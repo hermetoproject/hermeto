@@ -174,8 +174,12 @@ class HermetoImage(ContainerImage):
         )
 
 
-def build_image(context_dir: Path, tag: str) -> ContainerImage:
-    return _build_image(flags=[], tag=tag, context_dir=context_dir)
+def build_image(context_dir: Path, tag: str, debug: bool) -> ContainerImage:
+    flags = []
+    if debug:
+        flags = ["-f", "toolbox/Containerfile.toolbox"]
+
+    return _build_image(flags=flags, tag=tag, context_dir=context_dir)
 
 
 def build_image_for_test_case(

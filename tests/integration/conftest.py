@@ -70,12 +70,14 @@ def netrc_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 def hermeto_image(request: pytest.FixtureRequest) -> utils.HermetoImage:
     debug = request.config.getoption("--debug-hermeto")
     if not (image_ref := os.environ.get("HERMETO_IMAGE")):
-        image_ref = "localhost/hermeto:latest"
-        log.info("Building local hermeto:latest image")
+        image = "hermeto" if not debug else "hermeto-toolbox"
+        image_ref = f"localhost/{image}:latest"
+
+        log.info("Building '%s' image", image_ref)
         # <arbitrary_path>/hermeto/tests/integration/conftest.py
         #                   [2] <- [1]  <-  [0]  <- parents
         repo_root = Path(__file__).parents[2]
-        utils.build_image(repo_root, tag=image_ref)
+        utils.build_image(repo_root, tag=image_ref, debug=debug)
 
     hermeto = utils.HermetoImage(image_ref, debug=debug)
     if not image_ref.startswith("localhost/"):
