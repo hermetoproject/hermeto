@@ -66,6 +66,10 @@ COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=builder /usr/bin/cargo /usr/bin/cargo
 COPY --from=builder /venv /venv
+###
+### TOOLBOX ONLY - copy host-runner.sh helper
+###
+COPY toolbox/host-runner.sh /usr/local/libexec/host-runner.sh
 
 # link corepack, yarn, and go to standard PATH location
 RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
@@ -73,7 +77,12 @@ RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /usr/local/go/go1.21/bin/go /usr/local/bin/go && \
     ln -s /venv/bin/createrepo_c /usr/local/bin/createrepo_c && \
     ln -s /venv/bin/cachi2 /usr/local/bin/cachi2 && \
-    ln -s /venv/bin/hermeto /usr/local/bin/hermeto
+    ln -s /venv/bin/hermeto /usr/local/bin/hermeto && \
+###
+### TOOLBOX ONLY
+###
+    ln -s /usr/local/libexec/host-runner.sh /usr/local/bin/podman && \
+    ln -s /usr/local/libexec/host-runner.sh /usr/local/bin/buildah
 
 ###
 ### TOOLBOX ONLY - debugger configuration
