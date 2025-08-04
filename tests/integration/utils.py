@@ -157,6 +157,18 @@ class HermetoImage(ContainerImage):
             # podman to propagate the interactive debugger session
             podman_flags.extend(["--interactive", "--tty"])
 
+            debuggers = ("ipdb", "pudb")
+            debugger = os.environ.get("HERMETO_TEST_DEBUGGER")
+            if debugger is not None:
+                if debugger not in debuggers:
+                    raise ValueError(
+                        f"Invalid value 'HERMETO_TEST_DEBUGGER={debugger}', please choose one of: "
+                        f"{debuggers}"
+                    )
+
+                # make sure to override the debugger of choice with user's value
+                podman_flags.append(f"--env=PYTHONBREAKPOINT={debugger}.set_trace")
+
         return super().run_cmd_on_image(
             cmd, tmp_path, mounts, net, entrypoint, podman_flags, subprocess_kwargs
         )
