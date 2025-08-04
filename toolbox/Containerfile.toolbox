@@ -57,7 +57,10 @@ RUN /venv/bin/pip install --no-cache-dir .
 # ASSEMBLE TOOLBOX IMAGE
 ########################
 FROM base
-LABEL maintainer="Red Hat"
+LABEL maintainer="Hermeto project"
+LABEL org.opencontainers.image.title="hermeto-toolbox"
+LABEL org.opencontainers.image.description="Hermeto toolbox image"
+LABEL org.opencontainers.image.url="https://github.com/hermetoproject/hermeto"
 
 # copy Go SDKs and Node.js installation from official images
 COPY --from=golang_120 /usr/local/go /usr/local/go/go1.20
