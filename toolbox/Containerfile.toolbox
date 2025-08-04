@@ -15,7 +15,12 @@ RUN dnf -y install \
     python3 \
     rubygem-bundler \
     rubygem-json \
-    subscription-manager && \
+    subscription-manager \
+
+###
+### TOOLBOX ONLY - extra packages
+###
+    vim && \
     dnf clean all
 
 ###############
