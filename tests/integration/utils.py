@@ -338,6 +338,8 @@ def fetch_deps_and_check_output(
     :param hermeto_image: ContainerImage instance with Hermeto image
     :param mounts: Additional volumes to be mounted to the image
     :param entrypoint: Entrypoint to be used for the image
+    :param podman_flags: Additional flags to be passed to podman
+    :param fetch_output_dirname: Name of the directory where the fetch output is stored
     :return: None
     """
     repo = Repo(test_repo_dir)
@@ -439,6 +441,8 @@ def build_image_and_check_cmd(
     :param expected_cmd_output: Expected output of check_cmd
     :param hermeto_image: ContainerImage instance with Hermeto image
     :param hermeto_image_entrypoint: Entrypoint to be used for the hermeto image
+    :param fetch_output_dirname: Name of the directory where the fetch output is stored
+    :param env_vars_filename: Name of the file where the environment variables are stored
     :return: None
     """
     output_dir = tmp_path.joinpath(fetch_output_dirname)
