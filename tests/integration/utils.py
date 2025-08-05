@@ -425,7 +425,6 @@ def build_image_and_check_cmd(
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
     hermeto_image_entrypoint: Optional[str] = None,
-    podman_flags: Optional[list[str]] = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
 ) -> None:
@@ -455,7 +454,9 @@ def build_image_and_check_cmd(
         f"/tmp/{fetch_output_dirname}",
     ]
     (output, exit_code) = hermeto_image.run_cmd_on_image(
-        cmd, tmp_path, entrypoint=hermeto_image_entrypoint, podman_flags=podman_flags
+        cmd,
+        tmp_path,
+        entrypoint=hermeto_image_entrypoint,
     )
     assert exit_code == 0, f"Env var file creation failed. output-cmd: {output}"
 
