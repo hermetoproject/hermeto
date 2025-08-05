@@ -90,9 +90,9 @@ class Component(pydantic.BaseModel):
         A package has extra fields which are unnecessary and can cause validation errors.
         """
         return cls(
-            name=package.get("name", None),
-            version=package.get("version", None),
-            purl=package.get("purl", None),
+            name=package.get("name", ""),
+            version=package.get("version"),
+            purl=package.get("purl", ""),
         )
 
 
