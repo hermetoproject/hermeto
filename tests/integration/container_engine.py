@@ -69,6 +69,7 @@ class ContainerEngine(ABC):
         self,
         image: str,
         cmd: list[str],
+        entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
@@ -86,11 +87,15 @@ class PodmanEngine(ContainerEngine):
         self,
         image: str,
         cmd: list[str],
+        entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
         if flags is None:
             flags = []
+
+        if entrypoint:
+            flags.append(f"--entrypoint={entrypoint}")
 
         image_cmd = [self.name, "run", "--rm", *flags, image] + cmd
         return self._run_cmd(image_cmd)

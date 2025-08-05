@@ -16,7 +16,7 @@ def test_help(hermeto_image: utils.ContainerImage, tmp_path: Path) -> None:
     """
     for cmd in ("fetch-deps", "generate-env", "inject-files", "merge-sboms"):
         output, exit_code = hermeto_image.run_cmd_on_image(
-            [cmd, "--help"], tmp_path, podman_flags=["--entrypoint=cachi2"]
+            [cmd, "--help"], tmp_path, entrypoint="cachi2"
         )
 
         assert exit_code == 0, f"Querying help failed, output-cmd: {output}"
@@ -63,7 +63,6 @@ def test_e2e_cargo(
     """
     test_case = request.node.callspec.id
 
-    podman_entrypoint = "--entrypoint=cachi2"
     utils.fetch_deps_and_check_output(
         tmp_path,
         test_case,
@@ -72,7 +71,7 @@ def test_e2e_cargo(
         test_data_dir,
         hermeto_image,
         fetch_output_dirname="cachi2-output",
-        podman_flags=[podman_entrypoint],
+        entrypoint="cachi2",
     )
 
     utils.build_image_and_check_cmd(
@@ -85,5 +84,5 @@ def test_e2e_cargo(
         hermeto_image,
         fetch_output_dirname="cachi2-output",
         env_vars_filename="cachi2.env",
-        podman_flags=[podman_entrypoint],
+        hermeto_image_entrypoint="cachi2",
     )
