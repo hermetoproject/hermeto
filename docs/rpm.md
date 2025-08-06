@@ -160,7 +160,7 @@ hermeto fetch-deps \
 
 where 'JSON input' is:
 
-```jsonc
+```js
 {
   // "rpm" tells Hermeto to process RPM packages
   "type": "rpm",
@@ -179,7 +179,7 @@ the JSON input:
 
 #### Basic options
 
-```jsonc
+```js
 {
   "type": "rpm",
   "path": ".",
@@ -192,7 +192,7 @@ the JSON input:
 For downloading packages from repositories requiring TLS authentication (e.g.
 Red Hat's CDN for entitled contents):
 
-```jsonc
+```js
 {
   "type": "rpm",
   "path": ".",
@@ -214,7 +214,7 @@ You can specify additional DNF repository configuration options (see `dnf.conf`
 man page) that will be set for a particular repository in the generated
 `hermeto.repo` files:
 
-```jsonc
+```js
 {
   "type": "rpm",
   "path": ".",
@@ -233,7 +233,7 @@ man page) that will be set for a particular repository in the generated
 
 #### A complete input example
 
-```jsonc
+```js
 {
   "type": "rpm",
   "path": ".",

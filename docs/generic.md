@@ -44,7 +44,7 @@ hermeto fetch-deps \
 
 where 'JSON input' is
 
-```jsonc
+```js
 {
   "type": "generic",
   // path to the package (relative to the --source directory)

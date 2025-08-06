@@ -22,7 +22,7 @@ hermeto fetch-deps \
 
 where 'JSON input' is
 
-```jsonc
+```js
 {
   // "gomod" tells Hermeto to process a go module
   "type": "gomod",

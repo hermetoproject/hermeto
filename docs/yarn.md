@@ -100,7 +100,7 @@ hermeto fetch-deps \
 
 where 'JSON input' is
 
-```jsonc
+```js
 {
   // "yarn" tells Hermeto to process Yarn packages
   "type": "yarn",

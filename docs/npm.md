@@ -36,7 +36,7 @@ hermeto fetch-deps \
 
 where 'JSON input' is
 
-```jsonc
+```js
 {
   // "npm" tells Hermeto to process npm packages
   "type": "npm",
@@ -78,7 +78,7 @@ see the [npm documentation][])
 <details>
   <summary>Dependencies from npm registries</summary>
 
-```jsonc
+```js
 {
   "dependencies": {
     "foo": "1.0.0 - 2.9999.9999",
@@ -95,7 +95,7 @@ see the [npm documentation][])
 <details>
   <summary>URLs as dependencies</summary>
 
-```jsonc
+```js
 {
   "dependencies": {
     "cli_bar": git+ssh://git@github.com:npm/cli.git#v1.0.27,
@@ -109,7 +109,7 @@ see the [npm documentation][])
 <details>
   <summary>GitHub URLs</summary>
 
-```jsonc
+```js
 {
   "dependencies": {
     "express": "expressjs/express",
@@ -124,7 +124,7 @@ see the [npm documentation][])
 <details>
   <summary>Local paths</summary>
 
-```jsonc
+```js
 {
   "name": "baz",
   "dependencies": {
@@ -140,7 +140,7 @@ see the [npm documentation][])
 <details>
   <summary>package.json</summary>
 
-```jsonc
+```js
 {
   "name": "npm-demo",
   "version": "1.0.0",
@@ -169,7 +169,7 @@ see the [npm documentation][])
 <details>
     <summary>package-lock.json</summary>
 
-```jsonc
+```js
 {
   "name": "cachi2-npm-demo",
   "version": "1.0.0",
@@ -316,7 +316,7 @@ see the [npm documentation][])
 <details>
   <summary>foo/package.json (workspace)</summary>
 
-```jsonc
+```js
 {
   "name": "foo",
   "version": "1.0.0",
@@ -395,7 +395,7 @@ Hermeto command updates the following in the `package-lock.json` file
 <details>
   <summary>package.json</summary>
 
-```jsonc
+```js
 {
   "name": "cachi2-npm-demo",
   "version": "1.0.0",
@@ -424,7 +424,7 @@ Hermeto command updates the following in the `package-lock.json` file
 <details>
   <summary>package-lock.json</summary>
 
-```jsonc
+```js
 {
   "name": "cachi2-npm-demo",
   "version": "1.0.0",
@@ -571,7 +571,7 @@ Hermeto command updates the following in the `package-lock.json` file
 <details>
   <summary>foo/package.json (workspace)</summary>
 
-```jsonc
+```js
 {
   "name": "foo",
   "version": "1.0.0",
