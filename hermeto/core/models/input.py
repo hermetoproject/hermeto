@@ -11,6 +11,8 @@ from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
+BINARY_FILTER_ALL = ":all:"
+
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict
 
@@ -118,6 +120,60 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
             )
 
         return self
+
+
+class BinaryFilter(pydantic.BaseModel, extra="forbid"):
+    """Represents a filter for binary packages.
+
+    An empty filters set means "accept all" (no filtering).
+    A populated filters set means "accept only these specific items".
+    """
+
+    filters: set[str] = set()
+
+    @property
+    def is_all(self) -> bool:
+        """Return True if this filter accepts all (no filtering)."""
+        return not self.filters
+
+    def __str__(self) -> str:
+        return ":all:" if self.is_all else ",".join(sorted(self.filters))
+
+    def __repr__(self) -> str:
+        return (
+            f"<{type(self).__name__} "
+            f"filters={':all:' if self.is_all else ','.join(sorted(self.filters))}>"
+        )
+
+
+def _parse_binary_filter(value: Any) -> BinaryFilter:
+    """Parse either None, BinaryFilter, or comma-separated string into a BinaryFilter object."""
+    if value is None:
+        return BinaryFilter()
+    if isinstance(value, BinaryFilter):
+        return value
+    if not isinstance(value, str):
+        raise ValueError(
+            (
+                f"Binary filter must be a string (e.g., 'x86_64,aarch64' or ':all:'). "
+                f"Got type: {type(value).__name__}"
+            )
+        )
+
+    value = value.strip()
+    if value == BINARY_FILTER_ALL:
+        return BinaryFilter()
+
+    filters = {f.strip() for f in value.split(",") if f.strip()}
+    if not filters:
+        raise ValueError(f"No valid filters found for binary filter: {value}")
+    if BINARY_FILTER_ALL in filters:
+        return BinaryFilter()
+
+    return BinaryFilter(filters=filters)
+
+
+BinaryFilterField = Annotated[BinaryFilter, pydantic.BeforeValidator(_parse_binary_filter)]
 
 
 class BundlerPackageInput(_PackageInputBase):
