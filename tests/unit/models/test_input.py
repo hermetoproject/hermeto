@@ -8,6 +8,7 @@ import pytest as pytest
 
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.input import (
+    BINARY_FILTER_ALL,
     GomodPackageInput,
     Mode,
     NpmPackageInput,
@@ -16,6 +17,7 @@ from hermeto.core.models.input import (
     Request,
     RpmPackageInput,
     SSLOptions,
+    _validate_binary_filter_format,
     parse_user_input,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -393,3 +395,39 @@ class TestRequest:
                 output_dir="/output",
                 packages=[],
             )
+
+
+class TestBinaryFilterValidation:
+    """Test core binary filter validation functionality."""
+
+    @pytest.mark.parametrize(
+        "input_value,expected",
+        [
+            pytest.param(BINARY_FILTER_ALL, BINARY_FILTER_ALL, id="all_keyword"),
+            pytest.param(
+                f"  {BINARY_FILTER_ALL}  ", BINARY_FILTER_ALL, id="all_keyword_with_whitespace"
+            ),
+            pytest.param("x86_64", "x86_64", id="single_value"),
+            pytest.param("x86_64,aarch64", "x86_64,aarch64", id="comma_separated"),
+            pytest.param("x86_64 ,aarch64", "x86_64,aarch64", id="comma_separated_with_whitespace"),
+            pytest.param("x86_64,,aarch64", "x86_64,aarch64", id="empty_components_ignored"),
+        ],
+    )
+    def test_accepts_valid_formats(self, input_value: str, expected: str) -> None:
+        """Test that valid formats are accepted."""
+        assert _validate_binary_filter_format(input_value) == expected
+
+    @pytest.mark.parametrize(
+        "input_value,error_match",
+        [
+            pytest.param("", "Binary filter cannot contain only empty values", id="empty_string"),
+            pytest.param(
+                " ,,", "Binary filter cannot contain only empty values", id="empty_separated_string"
+            ),
+            pytest.param(123, "must be a string", id="non_string_type"),
+        ],
+    )
+    def test_rejects_invalid_formats(self, input_value: Any, error_match: str) -> None:
+        """Test that invalid formats are rejected."""
+        with pytest.raises(ValueError, match=error_match):
+            _validate_binary_filter_format(input_value)

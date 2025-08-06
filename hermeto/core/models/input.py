@@ -11,6 +11,8 @@ from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
+BINARY_FILTER_ALL = ":all:"
+
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict
 
@@ -138,6 +140,27 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
             )
 
         return self
+
+
+def _validate_binary_filter_format(value: Any) -> str:
+    """Validate binary filter format as either a single value or comma-separated string.
+
+    May return a slightly modified string with non-empty, unique, trimmed values.
+    """
+    if not isinstance(value, str):
+        raise ValueError(f"Binary filter must be a string, got {type(value).__name__}")
+
+    # Maintain input order
+    unique_stripped_filters = dict.fromkeys(
+        stripped_filter for item in value.split(",") if (stripped_filter := item.strip())
+    )
+    if not unique_stripped_filters:
+        raise ValueError("Binary filter cannot contain only empty values")
+
+    return ",".join(unique_stripped_filters.keys())
+
+
+BinaryFilterStr = Annotated[str, pydantic.BeforeValidator(_validate_binary_filter_format)]
 
 
 class BundlerPackageInput(_PackageInputBase):
