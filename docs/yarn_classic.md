@@ -48,32 +48,11 @@ Yarn Classic PM is capable of processing the following types of dependencies
 
 ## Fetching dependencies for Yarn Classic projects
 
-The process of fetching dependencies for Yarn Classic is similar to that for any
-other package manager. The name of package manager is `yarn_classic`, and it
-does not expect any additional arguments.
+The process of fetching dependencies for Yarn Classic is identical to the Yarn
+backend. Hermeto automatically detects Yarn Classic (i.e. v1) projects and so
+the logic is all conveniently hidden behind a single `yarn` CLI backend option.
 
-Hermeto can be run as follows
-
-```shell
-hermeto fetch-deps \
-  --source ./my-repo \
-  --output ./hermeto-output \
-  '<JSON input>'
-```
-
-where 'JSON input' is
-
-```jsonc
-{
-  // "yarn_classic" tells Hermeto to process Yarn packages
-  "type": "yarn_classic",
-  // path to the package (relative to the --source directory)
-  // defaults to "."
-  "path": ".",
-}
-```
-
-For complete example of how to pre-fetch dependencies, see [Pre-fetch dependencies][].
+For complete example of how to pre-fetch dependencies for see [Yarn documentation][].
 
 ## Prerequisites for an offline build
 
@@ -167,7 +146,6 @@ Sourcing this file will prime Yarn for an offline build.
 [generates these variables]: usage.md#generate-environment-variables
 [offline mirror feature]: https://classic.yarnpkg.com/blog/2016/11/24/offline-mirror
 [Plug'n'Play]: https://classic.yarnpkg.com/en/docs/pnp
-[Pre-fetch dependencies]: usage.md#pre-fetch-dependencies
 [Yarn Classic (Yarn v1)]: https://classic.yarnpkg.com
 [Yarn documentation]: https://hermetoproject.github.io/hermeto/yarn
 [Yarn v3 documentation]: https://github.com/hermetoproject/hermeto/blob/main/docs/yarn.md#dealing-with-yarn-zero-installs
