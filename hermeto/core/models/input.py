@@ -23,6 +23,40 @@ T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
 
 
+def _handle_legacy_allow_binary(
+    instance: Union["PipPackageInput", "BundlerPackageInput"],
+    binary_filter_class: Union[type["PipBinaryFilters"], type["BundlerBinaryFilters"]],
+) -> None:
+    """Handle backward compatibility for allow_binary field.
+
+    May modify instance attributes.
+    """
+    # If allow_binary is already False, nothing to process
+    if not instance.allow_binary:
+        return
+
+    # Check if user provided both fields originally
+    user_provided_both = instance.allow_binary and instance.binary is not None
+    # Determine if allow_binary should be migrated to binary field
+    should_migrate_allow_binary = instance.allow_binary and instance.binary is None
+
+    if user_provided_both:
+        log.warning(
+            "Both 'allow_binary' and 'binary' fields specified. "
+            "The 'binary' field will take precedence. "
+            "Please remove 'allow_binary' as it is deprecated."
+        )
+    elif should_migrate_allow_binary:
+        log.warning(
+            "The 'allow_binary' field is deprecated and will be removed in the next major version. "
+            "Please use 'binary': {} instead of 'allow_binary': true."
+        )
+        instance.binary = binary_filter_class.with_allow_binary_behavior()
+
+    # Set allow_binary to False to prevent duplicate processing
+    instance.allow_binary = False
+
+
 def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
     """Parse user input into a model, re-raise validation errors as InvalidInput."""
     try:
@@ -177,11 +211,25 @@ class PipBinaryFilters(BinaryModeOptions):
     py_version: BinaryFilterStr = BINARY_FILTER_ALL
     py_impl: BinaryFilterStr = "cp"
 
+    @classmethod
+    def with_allow_binary_behavior(cls) -> Self:
+        """Create filters that mimic the old allow_binary=True behavior."""
+        return cls(
+            arch=BINARY_FILTER_ALL,
+            os=BINARY_FILTER_ALL,
+            py_impl=BINARY_FILTER_ALL,
+        )
+
 
 class BundlerBinaryFilters(BinaryModeOptions):
     """Binary filters specific to bundler packages."""
 
     platform: BinaryFilterStr = BINARY_FILTER_ALL
+
+    @classmethod
+    def with_allow_binary_behavior(cls) -> Self:
+        """Create filters that mimic the old allow_binary=True behavior."""
+        return cls()
 
 
 class RpmBinaryFilters(pydantic.BaseModel, extra="forbid"):
@@ -195,6 +243,13 @@ class BundlerPackageInput(_PackageInputBase):
 
     type: Literal["bundler"]
     allow_binary: bool = False
+    binary: Optional[BundlerBinaryFilters] = None
+
+    @pydantic.model_validator(mode="after")
+    def _handle_legacy_allow_binary_field(self) -> Self:
+        """Handle backward compatibility for allow_binary field."""
+        _handle_legacy_allow_binary(self, BundlerBinaryFilters)
+        return self
 
 
 class CargoPackageInput(_PackageInputBase):
@@ -229,6 +284,7 @@ class PipPackageInput(_PackageInputBase):
     requirements_files: Optional[list[Path]] = None
     requirements_build_files: Optional[list[Path]] = None
     allow_binary: bool = False
+    binary: Optional[PipBinaryFilters] = None
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
     def _no_explicit_none(cls, paths: Optional[list[Path]]) -> list[Path]:
@@ -243,6 +299,12 @@ class PipPackageInput(_PackageInputBase):
         for p in paths:
             check_sane_relpath(p)
         return paths
+
+    @pydantic.model_validator(mode="after")
+    def _handle_legacy_allow_binary_field(self) -> Self:
+        """Handle backward compatibility for allow_binary field."""
+        _handle_legacy_allow_binary(self, PipBinaryFilters)
+        return self
 
 
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):
@@ -303,6 +365,7 @@ class RpmPackageInput(_PackageInputBase):
     type: Literal["rpm"]
     include_summary_in_sbom: bool = False
     options: Optional[ExtraOptions] = None
+    binary: Optional[RpmBinaryFilters] = None
 
 
 class YarnPackageInput(_PackageInputBase):

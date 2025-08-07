@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, Type, Union, cast
 from unittest import mock
 
 import pydantic
@@ -9,10 +9,13 @@ import pytest as pytest
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.input import (
     BINARY_FILTER_ALL,
+    BundlerBinaryFilters,
+    BundlerPackageInput,
     GomodPackageInput,
     Mode,
     NpmPackageInput,
     PackageInput,
+    PipBinaryFilters,
     PipPackageInput,
     Request,
     RpmPackageInput,
@@ -49,6 +52,7 @@ class TestPackageInput:
                     "requirements_files": None,
                     "requirements_build_files": None,
                     "allow_binary": False,
+                    "binary": None,
                 },
             ),
             (
@@ -63,7 +67,14 @@ class TestPackageInput:
                     "path": Path("."),
                     "requirements_files": [Path("reqs.txt")],
                     "requirements_build_files": [],
-                    "allow_binary": True,
+                    "allow_binary": False,
+                    "binary": {
+                        "arch": BINARY_FILTER_ALL,
+                        "os": BINARY_FILTER_ALL,
+                        "py_impl": BINARY_FILTER_ALL,
+                        "py_version": BINARY_FILTER_ALL,
+                        "packages": BINARY_FILTER_ALL,
+                    },
                 },
             ),
             (
@@ -73,6 +84,7 @@ class TestPackageInput:
                     "path": Path("."),
                     "options": None,
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -97,6 +109,7 @@ class TestPackageInput:
                         "ssl": None,
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -117,6 +130,7 @@ class TestPackageInput:
                         },
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -146,7 +160,70 @@ class TestPackageInput:
                         },
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
+            ),
+            pytest.param(
+                {
+                    "type": "pip",
+                    "binary": {
+                        "arch": "aarch64,armv7l",
+                        "os": "darwin,windows",
+                        "py_version": "3.9,3.10",
+                        "py_impl": "pp,jy",
+                        "packages": "numpy,pandas",
+                    },
+                },
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": {
+                        "arch": "aarch64,armv7l",
+                        "os": "darwin,windows",
+                        "py_impl": "pp,jy",
+                        "py_version": "3.9,3.10",
+                        "packages": "numpy,pandas",
+                    },
+                },
+                id="pip_with_binary_filters",
+            ),
+            pytest.param(
+                {
+                    "type": "bundler",
+                    "binary": {
+                        "platform": "x86_64-linux,universal-darwin",
+                        "packages": "nokogiri,ffi",
+                    },
+                },
+                {
+                    "type": "bundler",
+                    "path": Path("."),
+                    "allow_binary": False,
+                    "binary": {
+                        "platform": "x86_64-linux,universal-darwin",
+                        "packages": "nokogiri,ffi",
+                    },
+                },
+                id="bundler_with_binary_filters",
+            ),
+            pytest.param(
+                {
+                    "type": "rpm",
+                    "binary": {"arch": "aarch64,ppc64le"},
+                },
+                {
+                    "type": "rpm",
+                    "path": Path("."),
+                    "options": None,
+                    "include_summary_in_sbom": False,
+                    "binary": {
+                        "arch": "aarch64,ppc64le",
+                    },
+                },
+                id="rpm_with_binary_filters",
             ),
         ],
     )
@@ -215,6 +292,16 @@ class TestPackageInput:
                 {"type": "rpm", "options": {"dnf": {"repo": "bad_type"}}},
                 r"Unexpected data type for 'options.dnf.repo.bad_type' in input JSON",
                 id="rpm_bad_type_for_dnf_options",
+            ),
+            pytest.param(
+                {"type": "pip", "binary": "invalid_string"},
+                r"Input should be a valid dictionary",
+                id="pip_binary_invalid_string",
+            ),
+            pytest.param(
+                {"type": "pip", "binary": {"unknown_field": "value"}},
+                r"Extra inputs are not permitted",
+                id="pip_binary_unknown_field",
             ),
         ],
     )
@@ -315,6 +402,7 @@ class TestRequest:
                     "requirements_files": None,
                     "requirements_build_files": [],
                     "allow_binary": False,
+                    "binary": None,
                 },
             ],
             "flags": frozenset(),
@@ -431,3 +519,68 @@ class TestBinaryFilterValidation:
         """Test that invalid formats are rejected."""
         with pytest.raises(ValueError, match=error_match):
             _validate_binary_filter_format(input_value)
+
+
+class TestLegacyAllowBinary:
+    """Test legacy allow_binary field migration functionality."""
+
+    @pytest.mark.parametrize(
+        "package_class,package_type",
+        [
+            pytest.param(PipPackageInput, "pip", id="pip"),
+            pytest.param(BundlerPackageInput, "bundler", id="bundler"),
+        ],
+    )
+    def test_no_migration_when_allow_binary_false(
+        self,
+        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_type: Literal["pip", "bundler"],
+    ) -> None:
+        """Test early return when allow_binary=False."""
+        package = package_class(type=package_type, allow_binary=False)
+        assert package.allow_binary is False
+        assert package.binary is None
+
+    @pytest.mark.parametrize(
+        "package_class,package_type,binary_filter_class",
+        [
+            pytest.param(PipPackageInput, "pip", PipBinaryFilters, id="pip"),
+            pytest.param(BundlerPackageInput, "bundler", BundlerBinaryFilters, id="bundler"),
+        ],
+    )
+    def test_migration_when_allow_binary_true(
+        self,
+        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_type: Literal["pip", "bundler"],
+        binary_filter_class: Type[Union[PipBinaryFilters, BundlerBinaryFilters]],
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Test allow_binary=True migrates to binary filters."""
+        package = package_class(type=package_type, allow_binary=True)
+
+        assert package.binary == binary_filter_class.with_allow_binary_behavior()
+        assert package.allow_binary is False
+        assert "deprecated" in caplog.text
+
+    @pytest.mark.parametrize(
+        "package_class,package_type",
+        [
+            pytest.param(PipPackageInput, "pip", id="pip"),
+            pytest.param(BundlerPackageInput, "bundler", id="bundler"),
+        ],
+    )
+    def test_both_fields_binary_unchanged(
+        self,
+        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_type: Literal["pip", "bundler"],
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Test binary field unchanged when both fields specified."""
+        package = package_class(
+            type=package_type, allow_binary=True, binary={"packages": "numpy,pandas"}
+        )
+
+        assert package.binary is not None
+        assert package.binary.packages == "numpy,pandas"  # Our value, not :all:
+        assert package.allow_binary is False
+        assert "Both" in caplog.text and "precedence" in caplog.text

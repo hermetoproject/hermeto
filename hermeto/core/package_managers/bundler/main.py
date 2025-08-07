@@ -41,7 +41,7 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
         _comps, _git_paths = _resolve_bundler_package(
             package_dir=path_within_root,
             output_dir=request.output_dir,
-            allow_binary=package.allow_binary,
+            allow_binary=package.binary is not None,
         )
         components.extend(_comps)
         git_paths.extend(_git_paths)
