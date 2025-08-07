@@ -176,6 +176,33 @@ def _parse_binary_filter(value: Any) -> BinaryFilter:
 BinaryFilterField = Annotated[BinaryFilter, pydantic.BeforeValidator(_parse_binary_filter)]
 
 
+class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
+    """Base configuration for binary package handling."""
+
+    packages: BinaryFilterField = BinaryFilterField()
+
+
+class PipBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to pip packages."""
+
+    arch: BinaryFilterField = BinaryFilterField(filters={"x86_64"})
+    os: BinaryFilterField = BinaryFilterField(filters={"linux"})
+    py_version: BinaryFilterField = BinaryFilterField()
+    py_impl: BinaryFilterField = BinaryFilterField(filters={"cp"})
+
+
+class BundlerBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to bundler packages."""
+
+    platform: BinaryFilterField = BinaryFilterField()
+
+
+class RpmBinaryFilters(pydantic.BaseModel, extra="forbid"):
+    """Binary filters specific to RPM packages."""
+
+    arch: BinaryFilterField = BinaryFilterField()
+
+
 class BundlerPackageInput(_PackageInputBase):
     """Accepted input for a bundler package."""
 
