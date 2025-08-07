@@ -163,6 +163,33 @@ def _validate_binary_filter_format(value: Any) -> str:
 BinaryFilterStr = Annotated[str, pydantic.BeforeValidator(_validate_binary_filter_format)]
 
 
+class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
+    """Base configuration for binary package handling."""
+
+    packages: BinaryFilterStr = BINARY_FILTER_ALL
+
+
+class PipBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to pip packages."""
+
+    arch: BinaryFilterStr = "x86_64"
+    os: BinaryFilterStr = "linux"
+    py_version: BinaryFilterStr = BINARY_FILTER_ALL
+    py_impl: BinaryFilterStr = "cp"
+
+
+class BundlerBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to bundler packages."""
+
+    platform: BinaryFilterStr = BINARY_FILTER_ALL
+
+
+class RpmBinaryFilters(pydantic.BaseModel, extra="forbid"):
+    """Binary filters specific to RPM packages."""
+
+    arch: BinaryFilterStr = BINARY_FILTER_ALL
+
+
 class BundlerPackageInput(_PackageInputBase):
     """Accepted input for a bundler package."""
 
