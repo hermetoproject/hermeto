@@ -41,8 +41,9 @@ PATHS_TO_CODE = frozenset(
 
 # package managers that are not exposed to the user but are used internally
 EXTRA_PMS = ["yarn_classic"]
+# Mypy overly strict about union types in frozenset construction
 SUPPORTED_PMS: frozenset[str] = frozenset(
-    list(resolver._package_managers) + list(resolver._dev_package_managers) + EXTRA_PMS
+    list(resolver._package_managers) + list(resolver._dev_package_managers) + EXTRA_PMS  # type: ignore[arg-type]
 )
 
 
