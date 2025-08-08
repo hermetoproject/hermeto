@@ -10,11 +10,13 @@ FROM ubi as base
 RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
+    cargo \
     git-core \
     jq \
     python3 \
     rubygem-bundler \
     rubygem-json \
+    rust \
     subscription-manager && \
     dnf clean all
 
@@ -27,8 +29,6 @@ RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
     gcc \
-    # not a build dependency, but we copy the binary to the final image
-    cargo \
     python3-devel \
     python3-pip \
     python3-setuptools \
@@ -54,7 +54,6 @@ COPY --from=golang_120 /usr/local/go /usr/local/go/go1.20
 COPY --from=golang_121 /usr/local/go /usr/local/go/go1.21
 COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=builder /usr/bin/cargo /usr/bin/cargo
 COPY --from=builder /venv /venv
 
 # link corepack, yarn, and go to standard PATH location
