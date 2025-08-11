@@ -27,7 +27,7 @@ jobs:
         apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
         pip install --upgrade pip nox tomlkit
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
         apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
         pip install --upgrade pip nox tomlkit
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -78,7 +78,7 @@ jobs:
     name: Hadolint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: hadolint/hadolint-action@v3.1.0
       with:
         dockerfile: Containerfile
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: tj-actions/changed-files@v46
@@ -121,7 +121,7 @@ jobs:
           /var/tmp/venv/bin/pip3 install --upgrade pip nox tomlkit
 
       - name: add checkout action...
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
