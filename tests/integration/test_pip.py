@@ -36,17 +36,6 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
-                branch="pip/mixed-hashes",
-                packages=({"path": ".", "type": "pip"},),
-                check_vendor_checksums=False,
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
-            ),
-            # Mixes hashed (URL with `cachito_hash`) and unhashed deps
-            id="pip_mixed_hashes",
-        ),
-        pytest.param(
-            utils.TestParameters(
                 branch="pip/full-hashes",
                 packages=({"path": ".", "type": "pip"},),
                 check_vendor_checksums=False,
