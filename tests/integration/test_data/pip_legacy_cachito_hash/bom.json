@@ -1,0 +1,38 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "name": "foo",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4087043422355b825916f4d5ae9122cc9f33520b27",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "name": "httpx",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/httpx?checksum=sha256:14903e7fd80ad0df4a30f387a10270249685e600ad9c20dda3c139db061516e4&download_url=https://github.com/encode/httpx/archive/refs/tags/0.28.0.zip",
+      "type": "library"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.4",
+  "version": 1
+}
