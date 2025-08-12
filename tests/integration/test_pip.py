@@ -27,6 +27,15 @@ log = logging.getLogger(__name__)
         ),
         pytest.param(
             utils.TestParameters(
+                branch="pip/legacy-cachito-hash",
+                packages=({"path": ".", "type": "pip"},),
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="pip_legacy_cachito_hash",
+        ),
+        pytest.param(
+            utils.TestParameters(
                 branch="pip/mixed-hashes",
                 packages=({"path": ".", "type": "pip"},),
                 check_vendor_checksums=False,
