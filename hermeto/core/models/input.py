@@ -41,7 +41,17 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
 
     def show_error(error: "ErrorDict") -> str:
         location = " -> ".join(map(str, error["loc"]))
-        message = error["msg"]
+        if error.get("type") != "union_tag_invalid":
+            message = error["msg"]
+        else:
+            # Handle regular union tag errors (i.e. errors which stem from
+            # a missing package manager implementation). Errors in experimental
+            # package managers are handled elsewhere.
+            ctx = error.get("ctx", {})
+            raw = ctx.get("expected_tags", "")
+            expected = [t.strip(" '") for t in raw.split(",")]
+            quoted = ", ".join(f"'{t}'" for t in sorted(expected))
+            message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
 
         if location != "__root__":
             message = f"{location}\n  {message}"
