@@ -44,6 +44,17 @@ log = logging.getLogger(__name__)
             ),
             id="cargo_mixed_git_crate_dependency",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="cargo/uses-resolver-v3",
+                packages=({"path": ".", "type": "cargo"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+                expected_output="",
+            ),
+            id="cargo_uses_resolver_v3",
+        ),
     ],
 )
 def test_cargo_packages(
