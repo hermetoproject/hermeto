@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-To use Hermeto with Cargo locally, ensure you have Cargo binary installed on
+To use Hermeto with Cargo locally, ensure you have the Cargo binary installed on
 your system. Then, ensure that the **Cargo.toml** and **Cargo.lock** are in your
 project directory.
 
@@ -64,5 +64,22 @@ podman build . \
   --network none \
   --tag my-rust-app
 ```
+
+## Limitations
+
+### Resolver v3 and MSRV-aware resolution
+
+Hermeto configures Cargo to work without requiring `rustc` in the container. To
+achieve this, Hermeto sets `CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow`
+when running `cargo vendor`.
+
+**Impact**: None. Hermeto uses `cargo vendor --locked` which vendors the exact
+versions from your Cargo.lock file. Any MSRV-aware resolution choices you made
+when generating the lock file are fully preserved.
+
+**Note**: The only exception is PERMISSIVE mode when Cargo.lock is out-of-sync
+with Cargo.toml. In this case, Hermeto regenerates the lock file without
+MSRV-aware resolution, potentially selecting newer dependency versions than
+your `rust-version` supports.
 
 [Cargo]: https://doc.rust-lang.org/cargo

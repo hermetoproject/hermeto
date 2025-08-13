@@ -132,10 +132,15 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
     cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
     with _hidden_cargo_config_file(package_dir):
+        # Prevent Cargo from invoking rustc
+        env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
         # https://doc.rust-lang.org/cargo/commands/cargo-vendor.html#description
         config_template = _run_cmd_watching_out_for_lock_mismatch(
-            cmd=cmd, params={"cwd": package_dir}, package_dir=package_dir, mode=request.mode
+            cmd=cmd,
+            params={"cwd": package_dir, "env": env},
+            package_dir=package_dir,
+            mode=request.mode,
         )
 
     return _swap_sources_directory_for_subsitution_slot(config_template)
@@ -243,7 +248,10 @@ def _run_cmd_watching_out_for_lock_mismatch(
             if mode == Mode.PERMISSIVE:
                 log.warning(warn_about_imminent_update_to_cargo_lock)
                 with _temporary_cwd(package_dir.path):
-                    run_cmd(cmd=update_cargo_lock_cmd, params={})
+                    # Extract env from params if present to pass to cargo generate-lockfile
+                    env = params.get("env", {})
+                    update_cmd_params = {"env": env} if env else {}
+                    run_cmd(cmd=update_cargo_lock_cmd, params=update_cmd_params)
                 # If it fails here then something else is horribly broken.
                 # No more attempts to salvage the situation will be made.
                 return run_cmd(cmd=cmd, params=params)
