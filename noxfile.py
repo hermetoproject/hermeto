@@ -15,11 +15,10 @@ $ nox -l
 """
 
 import os
+import re
 from pathlib import Path
-from typing import Any
 
 import nox
-import tomlkit
 from nox.sessions import Session
 
 # default sessions to run (sorted alphabetically)
@@ -39,16 +38,10 @@ def install_requirements(session: Session) -> None:
 
 def parse_supported_python_versions() -> list[str]:
     """Parse supported Python versions from pyproject.toml."""
-    pyproject_path = Path("pyproject.toml")
-    pyproject: dict[str, Any] = tomlkit.parse(pyproject_path.read_text())
-    classifiers: list[str] = pyproject["project"]["classifiers"]
+    pyproject = Path("pyproject.toml").read_text()
+    versions = re.findall(r'"Programming Language :: Python :: (3\.\d+)"', pyproject)
 
-    result = []
-    for c in classifiers:
-        if c.startswith("Programming Language :: Python :: 3") and "." in c:
-            result.append(c.split("::")[-1].strip())
-
-    return result
+    return versions
 
 
 @nox.session()
