@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Optional, cast
 from unittest import mock
 
 import pydantic
@@ -8,14 +8,22 @@ import pytest as pytest
 
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.input import (
+    BINARY_FILTER_ALL,
+    BinaryFilter,
+    BinaryFilterField,
+    BundlerBinaryFilters,
+    BundlerPackageInput,
     GomodPackageInput,
     Mode,
     NpmPackageInput,
     PackageInput,
+    PipBinaryFilters,
     PipPackageInput,
     Request,
+    RpmBinaryFilters,
     RpmPackageInput,
     SSLOptions,
+    _parse_binary_filter,
     parse_user_input,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -47,6 +55,7 @@ class TestPackageInput:
                     "requirements_files": None,
                     "requirements_build_files": None,
                     "allow_binary": False,
+                    "binary": None,
                 },
             ),
             (
@@ -61,7 +70,14 @@ class TestPackageInput:
                     "path": Path("."),
                     "requirements_files": [Path("reqs.txt")],
                     "requirements_build_files": [],
-                    "allow_binary": True,
+                    "allow_binary": False,
+                    "binary": {
+                        "arch": {"filters": set()},
+                        "os": {"filters": set()},
+                        "py_impl": {"filters": set()},
+                        "py_version": {"filters": set()},
+                        "packages": {"filters": set()},
+                    },
                 },
             ),
             (
@@ -71,6 +87,7 @@ class TestPackageInput:
                     "path": Path("."),
                     "options": None,
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -95,6 +112,7 @@ class TestPackageInput:
                         "ssl": None,
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -115,6 +133,7 @@ class TestPackageInput:
                         },
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
                 },
             ),
             (
@@ -144,6 +163,66 @@ class TestPackageInput:
                         },
                     },
                     "include_summary_in_sbom": False,
+                    "binary": None,
+                },
+            ),
+            (
+                {
+                    "type": "pip",
+                    "binary": {
+                        "arch": "aarch64,armv7l",
+                        "os": "darwin,windows",
+                        "py_version": "3.9,3.10",
+                        "py_impl": "pp,jy",
+                        "packages": "numpy,pandas",
+                    },
+                },
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": {
+                        "arch": {"filters": {"aarch64", "armv7l"}},
+                        "os": {"filters": {"darwin", "windows"}},
+                        "py_impl": {"filters": {"pp", "jy"}},
+                        "py_version": {"filters": {"3.9", "3.10"}},
+                        "packages": {"filters": {"numpy", "pandas"}},
+                    },
+                },
+            ),
+            (
+                {
+                    "type": "bundler",
+                    "binary": {
+                        "platform": "x86_64-linux,universal-darwin",
+                        "packages": "nokogiri,ffi",
+                    },
+                },
+                {
+                    "type": "bundler",
+                    "path": Path("."),
+                    "allow_binary": False,
+                    "binary": {
+                        "platform": {"filters": {"x86_64-linux", "universal-darwin"}},
+                        "packages": {"filters": {"nokogiri", "ffi"}},
+                    },
+                },
+            ),
+            (
+                {
+                    "type": "rpm",
+                    "binary": {"arch": "aarch64,ppc64le"},
+                },
+                {
+                    "type": "rpm",
+                    "path": Path("."),
+                    "options": None,
+                    "include_summary_in_sbom": False,
+                    "binary": {
+                        "arch": {"filters": {"aarch64", "ppc64le"}},
+                    },
                 },
             ),
         ],
@@ -213,6 +292,31 @@ class TestPackageInput:
                 {"type": "rpm", "options": {"dnf": {"repo": "bad_type"}}},
                 r"Unexpected data type for 'options.dnf.repo.bad_type' in input JSON",
                 id="rpm_bad_type_for_dnf_options",
+            ),
+            pytest.param(
+                {"type": "pip", "binary": "invalid_string"},
+                r"Input should be a valid dictionary",
+                id="pip_binary_invalid_string",
+            ),
+            pytest.param(
+                {"type": "pip", "binary": {"unknown_field": "value"}},
+                r"Extra inputs are not permitted",
+                id="pip_binary_unknown_field",
+            ),
+            pytest.param(
+                {"type": "pip", "binary": {"arch": 123}},
+                r"Value error, Binary filter must be a string",
+                id="pip_binary_arch_not_string",
+            ),
+            pytest.param(
+                {"type": "bundler", "binary": {"platform": []}},
+                r"Value error, Binary filter must be a string",
+                id="bundler_binary_platform_not_string",
+            ),
+            pytest.param(
+                {"type": "rpm", "binary": {"arch": ""}},
+                r"Value error, No valid filters found",
+                id="rpm_binary_empty_arch",
             ),
         ],
     )
@@ -313,6 +417,7 @@ class TestRequest:
                     "requirements_files": None,
                     "requirements_build_files": [],
                     "allow_binary": False,
+                    "binary": None,
                 },
             ],
             "flags": frozenset(),
@@ -393,3 +498,268 @@ class TestRequest:
                 output_dir="/output",
                 packages=[],
             )
+
+
+class TestBinaryFilter:
+    @pytest.mark.parametrize(
+        "input_filters,expected_filters,expected_is_all",
+        [
+            pytest.param(None, set(), True, id="empty_filter_creation"),
+            pytest.param({"x86_64"}, {"x86_64"}, False, id="filter_with_single_value"),
+            pytest.param(
+                {"x86_64", "aarch64"},
+                {"x86_64", "aarch64"},
+                False,
+                id="filter_with_multiple_values",
+            ),
+            pytest.param(
+                {"x86_64", "x86_64", "aarch64"},
+                {"x86_64", "aarch64"},
+                False,
+                id="filter_deduplicates_values",
+            ),
+            pytest.param(set(), set(), True, id="is_all_property_empty_set"),
+        ],
+    )
+    def test_filter_creation_and_properties(
+        self, input_filters: Optional[set[str]], expected_filters: set[str], expected_is_all: bool
+    ) -> None:
+        if input_filters is None:
+            filter = BinaryFilter()
+        else:
+            filter = BinaryFilter(filters=input_filters)
+        assert filter.filters == expected_filters
+        assert filter.is_all is expected_is_all
+
+
+class TestParseBinaryFilter:
+    def test_parse_none_returns_empty_filter(self) -> None:
+        result = _parse_binary_filter(None)
+        assert isinstance(result, BinaryFilter)
+        assert result.filters == set()
+        assert result.is_all is True
+
+    def test_parse_existing_filter_returns_unchanged(self) -> None:
+        original = BinaryFilter(filters={"x86_64"})
+        result = _parse_binary_filter(original)
+        assert result.filters == {"x86_64"}
+        assert result is original
+
+    @pytest.mark.parametrize(
+        "input_value,expected_filters,expected_is_all",
+        [
+            pytest.param(BINARY_FILTER_ALL, set(), True, id="all_keyword_lowercase"),
+            pytest.param(f"  {BINARY_FILTER_ALL}  ", set(), True, id="all_keyword_with_whitespace"),
+            pytest.param("x86_64", {"x86_64"}, False, id="single_value"),
+            pytest.param(
+                "x86_64,aarch64", {"x86_64", "aarch64"}, False, id="multiple_comma_separated"
+            ),
+            pytest.param(
+                " x86_64 , aarch64 ", {"x86_64", "aarch64"}, False, id="whitespace_handling"
+            ),
+            pytest.param(
+                "x86_64,,aarch64", {"x86_64", "aarch64"}, False, id="empty_components_ignored"
+            ),
+            pytest.param("x86_64,aarch64,", {"x86_64", "aarch64"}, False, id="trailing_comma"),
+            pytest.param(",x86_64,aarch64", {"x86_64", "aarch64"}, False, id="leading_comma"),
+            pytest.param(
+                f"x86_64,{BINARY_FILTER_ALL},aarch64", set(), True, id="all_with_other_values"
+            ),
+            pytest.param(
+                f"darwin,{BINARY_FILTER_ALL},linux,windows",
+                set(),
+                True,
+                id="all_overrides_everything",
+            ),
+            pytest.param(":ALL:", {":ALL:"}, False, id="all_keyword_case_sensitive"),
+        ],
+    )
+    def test_parse_string_valid_cases(
+        self, input_value: str, expected_filters: set[str], expected_is_all: bool
+    ) -> None:
+        result = _parse_binary_filter(input_value)
+        assert result.filters == expected_filters
+        assert result.is_all is expected_is_all
+
+    @pytest.mark.parametrize(
+        "input_value,error_match",
+        [
+            pytest.param("", "No valid filters found", id="empty_string"),
+            pytest.param("   ", "No valid filters found", id="only_whitespace"),
+            pytest.param(",,,", "No valid filters found", id="only_commas"),
+            pytest.param(" , , ", "No valid filters found", id="comma_whitespace_only"),
+        ],
+    )
+    def test_parse_string_invalid_cases(self, input_value: str, error_match: str) -> None:
+        with pytest.raises(ValueError, match=error_match):
+            _parse_binary_filter(input_value)
+
+    @pytest.mark.parametrize(
+        "invalid_type",
+        [
+            pytest.param(123, id="integer"),
+            pytest.param(["x86_64"], id="list"),
+            pytest.param({"arch": "x86_64"}, id="dict"),
+            pytest.param(True, id="boolean"),
+        ],
+    )
+    def test_parse_invalid_types(self, invalid_type: Any) -> None:
+        with pytest.raises(ValueError) as exc_info:
+            _parse_binary_filter(invalid_type)
+        error_msg = str(exc_info.value)
+        assert f"Got type: {type(invalid_type).__name__}" in error_msg
+        assert "must be a string" in error_msg
+        assert "e.g., 'x86_64,aarch64' or ':all:'" in error_msg
+
+    @pytest.mark.parametrize(
+        "input_value,expected_filters",
+        [
+            pytest.param("x86_64,café,日本", {"x86_64", "café", "日本"}, id="unicode_values"),
+            pytest.param("x86-64,arm-linux", {"x86-64", "arm-linux"}, id="hyphenated_values"),
+            pytest.param(
+                "linux_gnu,darwin_x64", {"linux_gnu", "darwin_x64"}, id="underscore_values"
+            ),
+            pytest.param("3.9,3.10,3.11", {"3.9", "3.10", "3.11"}, id="dotted_values"),
+            pytest.param("x86_64-linux-gnu", {"x86_64-linux-gnu"}, id="mixed_special_chars"),
+            pytest.param("123,456,789", {"123", "456", "789"}, id="numeric_string_values"),
+            pytest.param("x86_64,123,abc", {"x86_64", "123", "abc"}, id="mixed_numeric_alpha"),
+        ],
+    )
+    def test_special_character_handling(self, input_value: str, expected_filters: set[str]) -> None:
+        result = _parse_binary_filter(input_value)
+        assert result.filters == expected_filters
+        assert result.is_all is False
+
+
+class TestBinaryFilterField:
+
+    class TestModel(pydantic.BaseModel):
+        """Used to test BinaryFilterField."""
+
+        arch_filter: BinaryFilterField
+
+    def test_field_accepts_filter_string_all(self) -> None:
+        model = self.TestModel(arch_filter=":all:")
+        assert model.arch_filter.filters == set()
+
+    def test_field_accepts_filter_string(self) -> None:
+        model = self.TestModel(arch_filter="x86_64,aarch64")
+        assert model.arch_filter.filters == {"x86_64", "aarch64"}
+
+    def test_field_accepts_binary_filter(self) -> None:
+        binary_filter = BinaryFilter(filters={"x86_64"})
+        model = self.TestModel(arch_filter=binary_filter)
+        assert model.arch_filter is binary_filter
+
+    def test_field_accepts_none(self) -> None:
+        model = self.TestModel(arch_filter=None)
+        assert model.arch_filter.filters == set()
+        assert model.arch_filter.is_all is True
+
+
+class TestPipBinaryFilters:
+    def test_default_values(self) -> None:
+        filters = PipBinaryFilters()
+        assert filters.arch.filters == {"x86_64"}
+        assert filters.os.filters == {"linux"}
+        assert filters.py_impl.filters == {"cp"}
+        assert filters.py_version.filters == set()
+        assert filters.packages.filters == set()
+
+    def test_with_allow_binary_behavior(self) -> None:
+        filters = PipBinaryFilters.with_allow_binary_behavior()
+        assert filters.arch.is_all is True
+        assert filters.os.is_all is True
+        assert filters.py_impl.is_all is True
+        assert filters.py_version.is_all is True
+        assert filters.packages.is_all is True
+
+    def test_binary_filters_with_values(self) -> None:
+        filters = PipBinaryFilters(
+            arch="x86_64,aarch64",
+            os="linux,darwin",
+            py_version="3.9,3.10",
+            py_impl="cp,pp",
+            packages="numpy,pandas",
+        )
+        assert filters.arch.filters == {"x86_64", "aarch64"}
+        assert filters.os.filters == {"linux", "darwin"}
+        assert filters.py_version.filters == {"3.9", "3.10"}
+        assert filters.py_impl.filters == {"cp", "pp"}
+        assert filters.packages.filters == {"numpy", "pandas"}
+
+
+class TestBundlerBinaryFilters:
+    def test_default_values(self) -> None:
+        filters = BundlerBinaryFilters()
+        assert filters.platform.filters == set()
+        assert filters.packages.filters == set()
+
+    def test_with_allow_binary_behavior(self) -> None:
+        filters = BundlerBinaryFilters.with_allow_binary_behavior()
+        assert filters.platform.is_all is True
+        assert filters.packages.is_all is True
+
+    def test_binary_filters_with_values(self) -> None:
+        filters = BundlerBinaryFilters(
+            platform="x86_64-linux,universal-darwin",
+            packages="nokogiri,ffi",
+        )
+        assert filters.platform.filters == {"x86_64-linux", "universal-darwin"}
+        assert filters.packages.filters == {"nokogiri", "ffi"}
+
+
+class TestRpmBinaryFilters:
+    def test_default_values(self) -> None:
+        filters = RpmBinaryFilters()
+        assert filters.arch.filters == set()
+
+    def test_platform_filters_with_values(self) -> None:
+        filters = RpmBinaryFilters(arch="x86_64,aarch64")
+        assert filters.arch.filters == {"x86_64", "aarch64"}
+
+
+class TestLegacyAllowBinary:
+    def test_migrate_pip_allow_binary_true(self) -> None:
+        package = PipPackageInput(type="pip", allow_binary=True)
+        assert package.allow_binary is False
+        assert package.binary is not None
+        assert isinstance(package.binary, PipBinaryFilters)
+        assert package.binary.arch.is_all is True
+        assert package.binary.os.is_all is True
+        assert package.binary.py_impl.is_all is True
+        assert package.binary.py_version.is_all is True
+        assert package.binary.packages.is_all is True
+
+    def test_pip_allow_binary_false_no_binary_filters(self) -> None:
+        package = PipPackageInput(type="pip", allow_binary=False)
+        assert package.allow_binary is False
+        assert package.binary is None
+
+    def test_pip_both_fields_binary_takes_precedence(self) -> None:
+        binary_options = PipBinaryFilters(arch="aarch64", os="darwin")
+        package = PipPackageInput(type="pip", allow_binary=True, binary=binary_options)
+        assert package.allow_binary is False
+        assert package.binary is binary_options
+        assert package.binary.arch.filters == {"aarch64"}
+        assert package.binary.os.filters == {"darwin"}
+
+    def test_migrate_bundler_allow_binary_true(self) -> None:
+        package = BundlerPackageInput(type="bundler", allow_binary=True)
+        assert package.allow_binary is False
+        assert package.binary is not None
+        assert isinstance(package.binary, BundlerBinaryFilters)
+        assert package.binary.platform.is_all is True
+        assert package.binary.packages.is_all is True
+
+    def test_bundler_allow_binary_false_no_filters(self) -> None:
+        package = BundlerPackageInput(type="bundler", allow_binary=False)
+        assert package.allow_binary is False
+        assert package.binary is None
+
+    def test_bundler_both_fields_binary_takes_precedence(self) -> None:
+        binary_options = BundlerBinaryFilters(platform="x86_64-linux")
+        package = BundlerPackageInput(type="bundler", allow_binary=True, binary=binary_options)
+        assert package.allow_binary is False
+        assert package.binary is binary_options
+        assert package.binary.platform.filters == {"x86_64-linux"}
