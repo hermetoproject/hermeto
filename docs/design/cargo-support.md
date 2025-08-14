@@ -540,6 +540,31 @@ Cons:
   - Cargo will refuse to vendor an empty directory with a single `Cargo.toml` file, which
   means we'd need to minimally provide a minimal `src/main.rs` file to it.
 
+### Implementation Considerations
+
+#### Minimum Supported Rust Version (MSRV) Resolution Handling
+
+Hermeto sets `CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow` when running
+`cargo vendor` to avoid requiring `rustc` in the container.
+[See issue #1061](https://github.com/hermetoproject/hermeto/issues/1061).
+
+**Why this is safe**
+
+1. **Hermeto requires Cargo.lock** - Projects without lock files are rejected
+2. **Uses `--locked` flag** - Vendors exact versions from the lock file
+3. **No re-resolution occurs** - MSRV choices in the lock file are preserved
+4. **Environment variable only prevents rustc execution** - No functional
+   impact on vendoring
+
+**PERMISSIVE mode edge case**
+
+When Cargo.lock is out-of-sync with Cargo.toml in PERMISSIVE mode:
+- Hermeto regenerates the lock file using `cargo generate-lockfile`
+- This regeneration occurs without MSRV-aware resolution
+- May select newer dependencies than the project's `rust-version` supports
+
+For MSRV compliance in PERMISSIVE mode, ensure Cargo.lock is up-to-date
+before running Hermeto.
 
 ## Approach 2 (alternative): manually fetching the dependencies
 
@@ -989,6 +1014,7 @@ that resorts to invoke `cargo` at some point, but it won't work if a completely 
 created.
   - OTOH, that's not a problem for fetching dependencies, only for actually building the project.
   Given this is only a big IF, this is probably fine.
+
 
 <!-- REFERENCES -->
 
