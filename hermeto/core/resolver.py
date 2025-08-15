@@ -4,7 +4,12 @@ from typing import Any, Callable
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
-from hermeto.core.models.input import PackageManagerType, Request
+from hermeto.core.models.input import (
+    PackageManagerType,
+    Request,
+    normalize_type,
+    refers_to_experimental_pm,
+)
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
 from hermeto.core.rooted_path import RootedPath
@@ -64,14 +69,31 @@ def _resolve_packages(request: Request) -> RequestOutput:
     """Run all requested package managers, return their combined output."""
     _supported_package_managers = _package_managers
     requested_types = set(pkg.type for pkg in request.packages)
-    if "dev-package-managers" in request.flags:
-        _supported_package_managers = _package_managers | _dev_package_managers
+
+    # Convert x-<pkg> -> <pkg> and track which ones are experimental
+    # Use str instead of PackageManagerType since we're working with runtime values
+    normalized_types: set[str] = set()
+    experimental_types: set[str] = set()
+    for t in requested_types:
+        if not refers_to_experimental_pm(t):
+            normalized_types.add(t)
+        else:
+            normalized_type = normalize_type(t)
+            normalized_types.add(normalized_type)
+            experimental_types.add(normalized_type)
+
+    if experimental_types:
+        # Ignore type since we validate these strings are valid package manager types
+        requested_types = normalized_types  # type: ignore[assignment]
+        for pkg in experimental_types:
+            if pkg in _dev_package_managers:
+                _supported_package_managers[pkg] = _dev_package_managers[pkg]  # type: ignore[index]
+    # Validate all requested types are supported
     unsupported_types = requested_types - _supported_package_managers.keys()
     if unsupported_types:
         raise UnsupportedFeature(
             f"Package manager(s) not yet supported: {', '.join(sorted(unsupported_types))}",
-            # unknown package managers shouldn't get past input validation
-            solution="But the good news is that we're already working on it!",
+            solution="Check that you're using the correct package manager name.",
         )
     pkg_managers = [_supported_package_managers[type_] for type_ in sorted(requested_types)]
     return sum([pkg_manager(request) for pkg_manager in pkg_managers], RequestOutput.empty())

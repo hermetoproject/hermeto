@@ -1,17 +1,18 @@
 import re
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, cast, get_args
 from unittest import mock
 
 import pydantic
 import pytest as pytest
 
-from hermeto.core.errors import InvalidInput
+from hermeto.core.errors import InvalidInput, UnsupportedPackageManager
 from hermeto.core.models.input import (
     GomodPackageInput,
     Mode,
     NpmPackageInput,
     PackageInput,
+    PackageManagerType,
     PipPackageInput,
     Request,
     RpmPackageInput,
@@ -393,3 +394,24 @@ class TestRequest:
                 output_dir="/output",
                 packages=[],
             )
+
+
+def test_experimental_package_without_x_prefix_raises_unsupported_package_manager(
+    tmp_path: Path,
+) -> None:
+    """Test that using experimental package without x-prefix raises UnsupportedPackageManager."""
+    original_args = get_args(PackageManagerType)
+    patched_args = original_args + ("x-foo",)
+    with mock.patch("hermeto.core.models.input.get_args", return_value=patched_args):
+        input_data = {
+            "source_dir": str(tmp_path),
+            "output_dir": str(tmp_path / "output"),
+            "packages": [{"type": "foo", "path": "."}],
+        }
+
+        with pytest.raises(UnsupportedPackageManager) as exc_info:
+            parse_user_input(Request.model_validate, input_data)
+
+        exception = exc_info.value
+        assert exception.unsupported_managers == ["foo"]
+        assert exception.suggested_managers == ["x-foo"]
