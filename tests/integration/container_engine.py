@@ -32,15 +32,15 @@ class ContainerEngine(ABC):
         log.info("Run command: %s.", cmd)
 
         # redirect stderr to stdout for easier evaluation/handling of a single stream
-        forced_options = {
+        defaults = {
             "stdout": subprocess.PIPE,
             "stderr": subprocess.STDOUT,
             "encoding": "utf-8",
             "text": True,
         }
 
-        subprocess_kwargs.update(forced_options)
-        process = subprocess.run(cmd, **subprocess_kwargs)
+        opts: dict[str, Any] = defaults | subprocess_kwargs
+        process = subprocess.run(cmd, **opts)
 
         return process.stdout, process.returncode
 
