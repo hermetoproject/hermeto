@@ -6,7 +6,6 @@ import logging
 import os
 import shutil
 import sys
-import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -129,19 +128,6 @@ class HermetoImage(ContainerImage):
         entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
     ) -> tuple[str, int]:
-        netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
-        if netrc_content:
-            with tempfile.TemporaryDirectory() as netrc_tmpdir:
-                netrc_path = Path(netrc_tmpdir, ".netrc")
-                netrc_path.write_text(netrc_content)
-                return super().run_cmd_on_image(
-                    cmd,
-                    tmp_path,
-                    [*mounts, (netrc_path, "/root/.netrc")],
-                    net,
-                    entrypoint,
-                    podman_flags,
-                )
         return super().run_cmd_on_image(cmd, tmp_path, mounts, net, entrypoint, podman_flags)
 
 
@@ -365,7 +351,11 @@ def fetch_deps_and_check_output(
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
-        [*mounts, (test_repo_dir, test_repo_dir)],
+        [
+            *mounts,
+            (test_repo_dir, test_repo_dir),
+            (tmp_path.parent / ".netrc", "/root/.netrc"),
+        ],
         entrypoint=entrypoint,
         podman_flags=podman_flags,
     )

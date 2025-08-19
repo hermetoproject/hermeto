@@ -45,6 +45,18 @@ def top_level_test_dir() -> Path:
     return Path(__file__).parents[1]
 
 
+@pytest.fixture(scope="session", autouse=True)
+def netrc_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    if not (netrc_content := os.getenv("HERMETO_TEST_NETRC_CONTENT")):
+        netrc_content = ""
+
+    session_dir = tmp_path_factory.getbasetemp()
+    netrc_path = session_dir / ".netrc"
+    netrc_path.write_text(netrc_content)
+
+    return netrc_path
+
+
 @pytest.fixture(scope="session")
 def hermeto_image() -> utils.HermetoImage:
     if not (image_ref := os.environ.get("HERMETO_IMAGE")):
