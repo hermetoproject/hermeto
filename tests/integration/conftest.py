@@ -18,13 +18,12 @@ log = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
-def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
+def test_repo_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
         "https://github.com/hermetoproject/integration-tests.git",
     )
-    # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
-    repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
+    repo_dir = tmp_path_factory.mktemp("integration-tests", False)
     Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
     return repo_dir
 
