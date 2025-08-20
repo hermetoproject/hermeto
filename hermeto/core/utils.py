@@ -18,6 +18,14 @@ from hermeto.core.errors import BaseError
 
 log = logging.getLogger(__name__)
 
+# Force Null configuration for the following git commands to ignore any user configuration
+# - https://git-scm.com/docs/git#Documentation/git.txt-GITCONFIGGLOBAL
+# - https://git-scm.com/docs/git#Documentation/git.txt-GITCONFIGNOSYSTEM
+GIT_PRISTINE_ENV = {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+}
+
 
 class _FastCopyFailedFallback(Exception):
     """Signals a fall back from fast-in kernel copying to regular copy."""
