@@ -66,6 +66,10 @@ FETCH_DEPS_HELP = f"""\
             "gomod-vendor"
         ]
     }}'
+
+    \b
+    # any input as a JSON file
+    {APP_NAME} fetch-deps ./input.json
     """
 
 MERGE_SBOMS_HELP = f"""\
@@ -186,16 +190,28 @@ def main(  # noqa: D103; docstring becomes part of --help message
 
 
 def _if_json_then_validate(value: str) -> str:
+    if _looks_like_input_file(value):
+        try:
+            json.loads(Path(value).read_text())
+        except json.JSONDecodeError:
+            raise typer.BadParameter(f"Looks like JSON file but is not valid JSON file: {value!r}")
+
     if _looks_like_json(value):
         try:
             json.loads(value)
         except json.JSONDecodeError:
             raise typer.BadParameter(f"Looks like JSON but is not valid JSON: {value!r}")
+
     return value
 
 
 def _looks_like_json(value: str) -> bool:
     return value.lstrip().startswith(("{", "["))
+
+
+def _looks_like_input_file(value: str) -> bool:
+    path = Path(value)
+    return path.exists() and path.is_file()
 
 
 class _Input(pydantic.BaseModel, extra="forbid"):
@@ -209,7 +225,7 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
     ctx: typer.Context,
     raw_input: str = typer.Argument(
         ...,
-        help="Specify package (within the source repo) to process. See usage examples.",
+        help="Specify JSON input or path to JSON input file to process. See usage examples.",
         metavar="PKG",
         callback=_if_json_then_validate,
     ),
@@ -262,8 +278,10 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
 
     def normalize_input() -> dict[str, list[Any]]:
         """Format raw_input so it can be parsed by the _Input class."""
-        if _looks_like_json(raw_input):
-            parsed_input = json.loads(raw_input)
+        input_str = Path(raw_input).read_text() if _looks_like_input_file(raw_input) else raw_input
+
+        if _looks_like_json(input_str):
+            parsed_input = json.loads(input_str)
 
             if isinstance(parsed_input, dict):
                 if "packages" in parsed_input.keys():
@@ -277,7 +295,7 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
                 return {"packages": parsed_input}
         else:
             # is a str
-            return {"packages": [{"type": raw_input}]}
+            return {"packages": [{"type": input_str}]}
 
     def combine_option_and_json_flags(json_flags: list[Flag]) -> list[str]:
         flag_names = [

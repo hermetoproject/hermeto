@@ -1,5 +1,6 @@
 import datetime
 import importlib.metadata
+import json
 import logging
 import os
 import re
@@ -373,6 +374,55 @@ class TestFetchDeps:
             invoke_expecting_sucess(app, ["fetch-deps", package_arg])
 
     @pytest.mark.parametrize(
+        "package_arg, expect_packages",
+        [
+            pytest.param(
+                {"type": "gomod"},
+                [{"type": "gomod"}],
+                id="single-package",
+            ),
+            pytest.param(
+                {"packages": [{"type": "gomod"}]},
+                [{"type": "gomod"}],
+                id="single-package-in-packages-key",
+            ),
+            pytest.param(
+                {
+                    "packages": [
+                        {"type": "gomod", "path": "pkg_a"},
+                        {"type": "gomod", "path": "pkg_b"},
+                    ]
+                },
+                [
+                    {"type": "gomod", "path": "pkg_a"},
+                    {"type": "gomod", "path": "pkg_b"},
+                ],
+                id="multiple-packages",
+            ),
+        ],
+    )
+    def test_specifiy_packages_as_json_file(
+        self,
+        package_arg: dict,
+        expect_packages: list[dict],
+        tmp_cwd: Path,
+    ) -> None:
+        tmp_cwd.joinpath("pkg_a").mkdir(exist_ok=True)
+        tmp_cwd.joinpath("pkg_b").mkdir(exist_ok=True)
+
+        input_file = tmp_cwd.joinpath("input.json")
+        input_file.write_text(json.dumps(package_arg))
+
+        expect_request = Request(
+            source_dir=tmp_cwd / DEFAULT_SOURCE,
+            output_dir=tmp_cwd / DEFAULT_OUTPUT,
+            packages=expect_packages,
+        )
+
+        with mock_fetch_deps(expect_request):
+            invoke_expecting_sucess(app, ["fetch-deps", str(input_file)])
+
+    @pytest.mark.parametrize(
         "package_arg, expect_error_lines",
         [
             # Invalid JSON
@@ -520,6 +570,15 @@ class TestFetchDeps:
 
         for pattern in expect_error_lines:
             assert_pattern_in_output(pattern, result.output)
+
+    def test_invalid_input_json_file(self, tmp_cwd: Path) -> None:
+        input_file = tmp_cwd.joinpath("input.json")
+        input_file.write_text("}abc{")
+
+        result = invoke_expecting_invalid_usage(app, ["fetch-deps", str(input_file)])
+        assert_pattern_in_output(
+            "'PKG': Looks like JSON file but is not valid JSON file", result.output
+        )
 
     @pytest.mark.parametrize(
         "cli_args, expect_flags",
