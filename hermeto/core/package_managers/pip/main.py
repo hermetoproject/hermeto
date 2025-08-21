@@ -79,7 +79,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             request.source_dir,
             package.requirements_files,
             package.requirements_build_files,
-            package.allow_binary,
+            package.binary is not None,
         )
         purl = _generate_purl_main_package(info["package"], path_within_root)
         components.append(
