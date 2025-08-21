@@ -242,3 +242,31 @@ def test_resolve_with_released_and_dev_package_managers(tmp_path: Path) -> None:
 
         mock_resolve_gomod.assert_has_calls([mock.call(request)])
         mock_resolve_pip.assert_has_calls([mock.call(request)])
+
+
+def test_mixed_stable_and_experimental_package_managers(tmp_path: Path) -> None:
+    """Test that stable and experimental package managers can be used together."""
+    mock_stable_handler = mock.Mock(return_value=RequestOutput.empty())
+    mock_experimental_handler = mock.Mock(return_value=RequestOutput.empty())
+
+    with mock.patch.dict(
+        resolver._package_managers,
+        values={"npm": mock_stable_handler, "x-foo": mock_experimental_handler},
+        clear=True,
+    ):
+        stable_package_input = mock.Mock()
+        stable_package_input.type = "npm"
+
+        experimental_package_input = mock.Mock()
+        experimental_package_input.type = "x-foo"
+
+        request = mock.Mock()
+        request.source_dir = RootedPath(tmp_path)
+        request.flags = []
+        request.packages = [stable_package_input, experimental_package_input]
+
+        result = resolver.resolve_packages(request)
+
+        assert result == RequestOutput.empty()
+        mock_stable_handler.assert_called_once_with(request)
+        mock_experimental_handler.assert_called_once_with(request)

@@ -53,8 +53,18 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     return f"{header}\n{details}"
 
 
-# Supported package managers
-PackageManagerType = Literal["bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "yarn"]
+PackageManagerType = Literal[
+    "bundler",
+    "cargo",
+    "generic",
+    "gomod",
+    "npm",
+    "pip",
+    "rpm",
+    "yarn",
+    # Add experimental package managers here with x- prefix, e.g. "x-foo"
+]
+
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
