@@ -54,7 +54,7 @@ from hermeto.core.package_managers.gomod import (
     fetch_gomod_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.utils import load_json_stream
+from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from tests.common_utils import GIT_REF, write_file_tree
 
 GO_CMD_PATH = "/usr/bin/go"
@@ -1924,8 +1924,8 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
 
     git.Repo.clone_from(remote_repo_path, local_repo_path)
 
-    remote_repo.create_tag("v1.0.0", ref=initial_commit)
-    remote_repo.create_tag("v2.0.0")
+    remote_repo.create_tag("v1.0.0", ref=initial_commit, env=GIT_PRISTINE_ENV),
+    remote_repo.create_tag("v2.0.0", env=GIT_PRISTINE_ENV)
 
     return remote_repo_path, local_repo_path
 
