@@ -659,7 +659,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
 
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
-        tmp_dir_path = Path(tmp_dir)
+        tmp_dir_path = Path(tmp_dir.name)
         go_env = {
             "GOPATH": tmp_dir_path,
             "GO111MODULE": "on",
@@ -673,6 +673,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
+            tmp_dir._go_instance = Go()
             main_module_dir = request.source_dir.join_within_root(subpath)
             go_work = GoWork(main_module_dir)
 
@@ -705,7 +706,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             components.extend(module.to_component() for module in modules)
             components.extend(package.to_component() for package in packages)
 
-        tmp_download_cache_dir = Path(tmp_dir).joinpath("pkg/mod/cache/download")
+        tmp_download_cache_dir = Path(tmp_dir.name).joinpath("pkg/mod/cache/download")
         if tmp_download_cache_dir.exists():
             log.debug(
                 "Adding dependencies from %s to %s",
@@ -1213,7 +1214,7 @@ def _deduplicate_resolved_modules(
     return modules_by_name_and_version.values()
 
 
-class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
+class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
     """
     A wrapper around the TemporaryDirectory context manager to also run `go clean -modcache`.
 
@@ -1221,6 +1222,19 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     tempfile.TemporaryDirectory to fail with a permission error. A way around this is to run
     `go clean -modcache` before the default clean up behavior is run.
     """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize our TemporaryDirectory context manager wrapper.
+
+        Store the Go toolchain version used in this session for the subsequent cleanup.
+        """
+        super().__init__(*args, **kwargs)
+        # store the exact toolchain instance that was used for all actions within the context
+        self._go_instance: Optional[Go] = None
+
+    def __enter__(self) -> "Self":
+        super().__enter__()
+        return self
 
     def __exit__(
         self,
@@ -1230,7 +1244,8 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     ) -> None:
         """Clean up the temporary directory by first cleaning up the Go cache."""
         try:
-            _clean_go_modcache(Go(), self.name)
+            if go := self._go_instance:
+                _clean_go_modcache(go, self.name)
         finally:
             super().__exit__(exc, value, tb)
 

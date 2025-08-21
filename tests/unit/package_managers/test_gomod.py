@@ -1844,27 +1844,30 @@ def test_fetch_gomod_source(
     mock_find_missing_gomod_files.return_value = []
     mock_get_repository_name.return_value = "github.com/my-org/my-repo"
 
+    mock_tmp_dir.name = "tmpdir"
+    mock_tmp_dir.return_value.__enter__.return_value = mock_tmp_dir
+    mock_tmp_dir.return_value.__exit__.return_value = None
+    mock_tmp_dir_path = Path(mock_tmp_dir.name)
+
     # workspaces are tested in test_resolve_gomod, skip them here
     fake_go_work = mock.MagicMock(spec=GoWork)
     fake_go_work.__bool__.return_value = False
     mock_go_work.return_value = fake_go_work
 
     output = fetch_gomod_source(gomod_request)
-
-    tmp_dir = Path(mock_tmp_dir.return_value.__enter__.return_value)
     calls = [
         mock.call(
             gomod_request.source_dir.join_within_root(package.path),
             gomod_request,
-            tmp_dir,
+            mock_tmp_dir_path,
             mock_version_resolver.return_value,
             fake_go_work,
             {
-                "GOPATH": tmp_dir,
+                "GOPATH": mock_tmp_dir_path,
                 "GO111MODULE": "on",
-                "GOCACHE": tmp_dir,
+                "GOCACHE": mock_tmp_dir_path,
                 "PATH": os.environ.get("PATH", ""),
-                "GOMODCACHE": f"{tmp_dir}/pkg/mod",
+                "GOMODCACHE": f"{mock_tmp_dir_path}/pkg/mod",
                 "GOSUMDB": "sum.golang.org",
                 "GOTOOLCHAIN": "auto",
             },
