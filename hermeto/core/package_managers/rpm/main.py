@@ -358,6 +358,7 @@ def _download(
                 files,
                 get_config().concurrency_limit,
                 ssl_context=_get_ssl_context(ssl_options=ssl_options) if ssl_options else None,
+                metadata=metadata,
             )
         )
     return metadata

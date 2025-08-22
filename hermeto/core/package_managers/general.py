@@ -99,15 +99,145 @@ async def _async_download_binary_file(
     log.debug(f"Download completed - {url}")
 
 
+async def _async_download_oci_file(
+    oci_url: str,
+    download_path: Union[str, PathLike[str]],
+    checksum: Optional[str] = None,
+    ssl_context: Optional[ssl.SSLContext] = None,
+) -> None:
+    """
+    Download a binary file from an OCI registry.
+
+    :param str oci_url: OCI URL in format oci://registry/repo:tag
+    :param str download_path: File path location
+    :param str checksum: Expected checksum of the layer to download
+    :param ssl.SSLContext ssl_context: SSL context for secure connections
+    :raise FetchError: If download failed
+    """
+    try:
+        # Parse the OCI URL
+        # oci://registry.example.com/rpms/aardvark-dns:1.14.0
+        if not oci_url.startswith("oci://"):
+            raise ValueError(f"Invalid OCI URL format: {oci_url}")
+        
+        # Remove oci:// prefix and parse
+        registry_path = oci_url[6:]  # Remove "oci://"
+        
+        # Split registry from repository:tag
+        if "/" not in registry_path:
+            raise ValueError(f"Invalid OCI URL format - missing repository: {oci_url}")
+        
+        registry_host = registry_path.split("/", 1)[0]
+        repo_tag = registry_path.split("/", 1)[1]
+        
+        # Split repository from tag
+        if ":" not in repo_tag:
+            repo = repo_tag
+            tag = "latest"
+        else:
+            repo, tag = repo_tag.rsplit(":", 1)
+        
+        full_image_name = f"{registry_host}/{repo}:{tag}"
+        
+        log.debug(f"Fetching OCI manifest for: {full_image_name}")
+        
+        # Use OCI Registry API to fetch manifest and download specific layer
+        registry_url = f"https://{registry_host}"
+        manifest_url = f"{registry_url}/v2/{repo}/manifests/{tag}"
+        
+        # Get Docker authentication if available
+        import json
+        import os
+        from pathlib import Path
+        
+        auth = None
+        docker_config_path = Path.home() / ".docker" / "config.json"
+        if docker_config_path.exists():
+            try:
+                with open(docker_config_path) as f:
+                    docker_config = json.load(f)
+                    auths = docker_config.get("auths", {})
+                    if registry_host in auths:
+                        auth_data = auths[registry_host].get("auth", "")
+                        if auth_data:
+                            import base64
+                            decoded = base64.b64decode(auth_data).decode()
+                            username, password = decoded.split(":", 1)
+                            auth = aiohttp.BasicAuth(username, password)
+            except Exception as e:
+                log.debug(f"Could not read Docker config: {e}")
+        
+        # Set up aiohttp session for OCI registry calls
+        timeout = aiohttp.ClientTimeout(total=get_config().requests_timeout)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            # Fetch the image manifest
+            headers = {"Accept": "application/vnd.docker.distribution.manifest.v2+json"}
+            
+            async with session.get(manifest_url, headers=headers, auth=auth, ssl=ssl_context) as resp:
+                if resp.status != 200:
+                    raise FetchError(f"Failed to fetch manifest from {manifest_url}: HTTP {resp.status}")
+                
+                manifest = await resp.json()
+                
+                # Find the layer matching the checksum
+                target_layer = None
+                if checksum:
+                    # Extract algorithm and digest from checksum (e.g., "sha256:deadbeef...")
+                    if ":" in checksum:
+                        alg, digest = checksum.split(":", 1)
+                        target_digest = f"{alg}:{digest}"
+                        
+                        # Look for matching layer in manifest
+                        for layer in manifest.get("layers", []):
+                            if layer.get("digest") == target_digest:
+                                target_layer = layer
+                                break
+                
+                if not target_layer:
+                    # If no checksum provided or no match found, use the last layer (commonly the application layer)
+                    layers = manifest.get("layers", [])
+                    if not layers:
+                        raise FetchError(f"No layers found in manifest for {oci_url}")
+                    target_layer = layers[-1]
+                    log.warning(f"No matching layer found for checksum {checksum}, using last layer")
+                
+                # Download the target layer blob
+                layer_digest = target_layer["digest"]
+                blob_url = f"{registry_url}/v2/{repo}/blobs/{layer_digest}"
+                
+                log.debug(f"Downloading layer blob: {layer_digest}")
+                
+                async with session.get(blob_url, auth=auth, ssl=ssl_context) as blob_resp:
+                    if blob_resp.status != 200:
+                        raise FetchError(f"Failed to download layer blob from {blob_url}: HTTP {blob_resp.status}")
+                    
+                    # Write the blob directly to the download path
+                    with open(download_path, 'wb') as f:
+                        async for chunk in blob_resp.content.iter_chunked(8192):
+                            f.write(chunk)
+                    
+                    log.debug(f"OCI download completed - {oci_url}")
+                    return
+            
+    except Exception as exception:
+        log.error(f"OCI download failed: {oci_url}")
+        raise FetchError(
+            f"OCI download failed - exception_name: {exception.__class__.__name__}, "
+            f"details: {exception}"
+        ) from None
+
+
 async def async_download_files(
     files_to_download: dict[str, Union[str, PathLike[str]]],
     concurrency_limit: int,
     ssl_context: Optional[ssl.SSLContext] = None,
+    metadata: Optional[dict] = None,
 ) -> None:
     """Asynchronous function to download files.
 
     :param files_to_download: Dict of files to download with file paths
     :param concurrency_limit: Max number of concurrent tasks (downloads).
+    :param metadata: Optional metadata dict indexed by file path, containing checksum info.
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
@@ -137,13 +267,18 @@ async def async_download_files(
                         t.cancel()
                     raise
 
-            tasks.add(
-                asyncio.create_task(
-                    _async_download_binary_file(
-                        session, url, download_path, ssl_context=ssl_context
-                    )
+            # Route to appropriate download function based on URL scheme
+            if url.startswith("oci://"):
+                # Get checksum from metadata if available
+                file_metadata = metadata.get(download_path, {}) if metadata else {}
+                checksum = file_metadata.get("checksum")
+                task = _async_download_oci_file(url, download_path, checksum, ssl_context=ssl_context)
+            else:
+                task = _async_download_binary_file(
+                    session, url, download_path, ssl_context=ssl_context
                 )
-            )
+            
+            tasks.add(asyncio.create_task(task))
 
         await asyncio.gather(*tasks)
 
