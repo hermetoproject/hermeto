@@ -44,7 +44,7 @@ from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import get_repo_for_path, get_repo_id
 from hermeto.core.utils import get_cache_dir, load_json_stream, run_cmd
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
@@ -1646,12 +1646,16 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
     :param context_dir: main module dir OR workspace context (directory containing go.work)
     """
     repo_root = context_dir.root
-    vendor = context_dir.path.relative_to(repo_root).joinpath("vendor")
+
+    # Get the correct repo context (main or submodule)
+    repo, context_relative_path = get_repo_for_path(repo_root, context_dir.path)
+
+    # Calculate vendor paths relative to the active repo
+    vendor = context_relative_path / "vendor"
     modules_txt = vendor / "modules.txt"
 
-    repo = git.Repo(repo_root)
     # Add untracked files but do not stage them
-    repo.git.add("--intent-to-add", "--force", "--", context_dir)
+    repo.git.add("--intent-to-add", "--force", "--", context_relative_path)
 
     try:
         # Diffing modules.txt should catch most issues and produce relatively useful output
@@ -1676,6 +1680,6 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
             )
             return True
     finally:
-        repo.git.reset("--", context_dir)
+        repo.git.reset("--", context_relative_path)
 
     return False

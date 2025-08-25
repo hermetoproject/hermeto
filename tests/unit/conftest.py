@@ -82,3 +82,23 @@ def input_request(tmp_path: Path, request: pytest.FixtureRequest) -> Request:
         output_dir=tmp_path / "output",
         packages=package_input,
     )
+
+
+@pytest.fixture
+def repo_with_submodule(tmp_path: Path) -> git.Repo:
+    """Create a git repository containing a submodule."""
+    submodule_origin = tmp_path / "submodule_origin"
+    _create_git_repo(submodule_origin, {"submodule_file.txt": "initial content"})
+
+    main_dir = tmp_path / "main"
+    main_repo = _create_git_repo(main_dir, {"README.md": "# Main Repository"})
+
+    submodule = main_repo.create_submodule(
+        name="submodule",
+        path="submodule",
+        url=f"file://{submodule_origin}",
+    )
+    main_repo.index.commit("Add submodule")
+    submodule.update(init=True, recursive=True)
+
+    return main_repo
