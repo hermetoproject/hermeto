@@ -1,3 +1,4 @@
+import shutil
 import sys
 import tarfile
 from pathlib import Path
@@ -78,3 +79,56 @@ def input_request(tmp_path: Path, request: pytest.FixtureRequest) -> Request:
         output_dir=tmp_path / "output",
         packages=package_input,
     )
+
+
+@pytest.fixture
+def repo_with_nested_submodules(tmp_path: Path) -> git.Repo:
+    """Create a git repository with nested submodules: main -> submodule -> nested."""
+    # Create nested submodule origin
+    nested_origin = tmp_path / "nested_origin"
+    _create_git_repo(nested_origin, {"nested_file.txt": "nested content"})
+
+    # Create submodule origin with its own nested submodule
+    submodule_origin = tmp_path / "submodule_origin"
+    submodule_repo = _create_git_repo(submodule_origin, {"submodule_file.txt": "initial content"})
+
+    nested_sub = submodule_repo.create_submodule(
+        name="nested",
+        path="nested",
+        url=f"file://{nested_origin}",
+    )
+    submodule_repo.index.commit("Add nested submodule")
+    nested_sub.update(init=True)
+
+    # Create main repository with submodule
+    main_dir = tmp_path / "main"
+    main_repo = _create_git_repo(main_dir, {"README.md": "# Main Repository"})
+
+    submodule = main_repo.create_submodule(
+        name="submodule",
+        path="submodule",
+        url=f"file://{submodule_origin}",
+    )
+    main_repo.index.commit("Add submodule")
+    submodule.update(init=True, recursive=True)
+
+    return main_repo
+
+
+@pytest.fixture
+def repo_with_uninitialized_submodule(
+    repo_with_nested_submodules: git.Repo,
+) -> git.Repo:
+    """Create a test setup with an uninitialized submodule.
+
+    Simulates the state after a fresh clone without --recursive.
+    """
+    main_repo = repo_with_nested_submodules
+    # Get the 'submodule' submodule by name
+    submodule = next(s for s in main_repo.submodules if s.name == "submodule")
+    submodule_path = Path(main_repo.working_dir) / submodule.path
+
+    if submodule_path.exists():
+        shutil.rmtree(submodule_path)
+    submodule_path.mkdir()  # Git expects empty directory
+    return main_repo

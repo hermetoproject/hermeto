@@ -1651,6 +1651,47 @@ def test_vendor_changed(
     assert not repo.git.diff("--diff-filter", "A")
 
 
+@pytest.mark.parametrize("subpath", ["", "some/app/"])
+@pytest.mark.parametrize(
+    "vendor_before, vendor_changes, expected_change", VENDOR_CHANGED_TEST_CASES
+)
+def test_vendor_changed_with_submodule(
+    subpath: str,
+    vendor_before: dict[str, Any],
+    vendor_changes: dict[str, Any],
+    expected_change: Optional[str],
+    repo_with_nested_submodules: git.Repo,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test _vendor_changed when vendor directory is inside a git submodule."""
+    main_repo = repo_with_nested_submodules
+    main_root = Path(main_repo.working_dir)
+
+    # Get the 'submodule' submodule by name
+    submodule = next(s for s in main_repo.submodules if s.name == "submodule")
+
+    # Create app_dir inside the submodule instead of main repo
+    app_dir = RootedPath(main_root).join_within_root(submodule.path, subpath)
+    app_dir.path.mkdir(exist_ok=True, parents=True)
+
+    # Set up initial submodule state
+    write_file_tree(vendor_before, app_dir)
+    submodule_repo = submodule.module()
+    if vendor_before:
+        submodule_repo.index.add([app_dir.join_within_root(path) for path in vendor_before])
+        submodule_repo.index.commit("before vendoring", skip_hooks=True)
+
+    # Post-vendoring changes
+    write_file_tree(vendor_changes, app_dir, exist_ok=True)
+
+    assert _vendor_changed(app_dir, Mode.STRICT) == bool(expected_change)
+    if expected_change:
+        assert expected_change.format(subpath=subpath) in caplog.text
+
+    # The _vendor_changed function should reset the `git add` => added files should not be tracked
+    assert not submodule_repo.git.diff("--diff-filter", "A")
+
+
 @pytest.mark.parametrize(
     "file_tree",
     (

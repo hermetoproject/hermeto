@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Union
 from urllib.parse import urlsplit
 
+import git
 import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -117,3 +118,84 @@ def test_clone_as_tarball_wrong_ref(golang_repo_path: Path, tmp_path: Path) -> N
         match=f'Please verify the supplied reference of "{bad_commit}" is valid',
     ):
         clone_as_tarball(f"file://{golang_repo_path}", bad_commit, tmp_path / "my-repo.tar.gz")
+
+
+class TestGetRepoForPath:
+    """Tests for get_repo_for_path and related submodule handling."""
+
+    @pytest.mark.parametrize(
+        "path_from_main_root,expected_repo_path,expected_relative_path",
+        [
+            pytest.param("", ".", ".", id="main_repo_root"),
+            pytest.param("src", ".", "src", id="directory_in_main"),
+            pytest.param("src/utils", ".", "src/utils", id="nested_directory_in_main"),
+            pytest.param("README.md", ".", "README.md", id="file_in_main"),
+            pytest.param("submodule", "submodule", ".", id="submodule_root"),
+            pytest.param("submodule/src", "submodule", "src", id="directory_in_submodule"),
+            pytest.param(
+                "submodule/src/utils", "submodule", "src/utils", id="nested_dir_in_submodule"
+            ),
+            pytest.param(
+                "submodule/submodule_file.txt",
+                "submodule",
+                "submodule_file.txt",
+                id="file_in_submodule",
+            ),
+            pytest.param("submodule/nested", "submodule/nested", ".", id="nested_submodule_root"),
+            pytest.param(
+                "submodule/nested/nested_file.txt",
+                "submodule/nested",
+                "nested_file.txt",
+                id="file_in_nested",
+            ),
+            pytest.param(
+                "submodule/nested/deep/dir", "submodule/nested", "deep/dir", id="deep_dir_in_nested"
+            ),
+        ],
+    )
+    def test_path_resolution(
+        self,
+        path_from_main_root: str,
+        expected_repo_path: str,
+        expected_relative_path: str,
+        repo_with_nested_submodules: git.Repo,
+    ) -> None:
+        """Test path resolution across nested submodules."""
+        main_repo_root = Path(repo_with_nested_submodules.working_dir)
+
+        # Create the target path (directories or files)
+        full_target_path = main_repo_root / path_from_main_root
+        if "." not in full_target_path.name:  # No extension means it's a directory
+            full_target_path.mkdir(exist_ok=True, parents=True)
+
+        # Calculate expected repository root from the parameter
+        if expected_repo_path == ".":
+            expected_repo_root = main_repo_root
+        else:
+            expected_repo_root = main_repo_root / expected_repo_path
+
+        # Test with both absolute and relative paths
+        paths_to_test = [
+            full_target_path,  # Absolute path
+            Path(path_from_main_root) if path_from_main_root else Path("."),  # Relative path
+        ]
+
+        for path_to_resolve in paths_to_test:
+            resolved_repo, relative_path = get_repo_for_path(main_repo_root, path_to_resolve)
+            assert resolved_repo.working_dir == str(expected_repo_root)
+            assert relative_path == Path(expected_relative_path)
+
+    def test_uninitialized_submodule_error(
+        self, repo_with_uninitialized_submodule: git.Repo
+    ) -> None:
+        """Test error handling for uninitialized submodules."""
+        main_repo = repo_with_uninitialized_submodule
+        main_root = Path(main_repo.working_dir)
+
+        # Get the 'submodule' submodule by name
+        submodule = next(s for s in main_repo.submodules if s.name == "submodule")
+        submodule_path = main_root / submodule.path
+
+        expected_error = f"Submodule '{submodule.path}' is not initialized"
+        with pytest.raises(NotAGitRepo, match=expected_error):
+            get_repo_for_path(main_root, submodule_path / "any_file.txt")
