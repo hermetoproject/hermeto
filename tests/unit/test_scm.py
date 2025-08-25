@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Union
 from urllib.parse import urlsplit
 
+import git
 import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -117,3 +118,31 @@ def test_clone_as_tarball_wrong_ref(golang_repo_path: Path, tmp_path: Path) -> N
         match=f'Please verify the supplied reference of "{bad_commit}" is valid',
     ):
         clone_as_tarball(f"file://{golang_repo_path}", bad_commit, tmp_path / "my-repo.tar.gz")
+
+
+@pytest.mark.parametrize(
+    "path_to_check,expected_repo,expected_path_in_repo",
+    [
+        pytest.param(".", ".", ".", id="main_repo_root"),
+        pytest.param("src", ".", "src", id="directory_in_main"),
+        pytest.param("submodule", "submodule", ".", id="submodule_root"),
+        pytest.param("submodule/src", "submodule", "src", id="directory_in_submodule"),
+    ],
+)
+def test_get_repo_for_path(
+    path_to_check: str,
+    expected_repo: str,
+    expected_path_in_repo: str,
+    repo_with_submodule: git.Repo,
+) -> None:
+    main_repo_root = Path(repo_with_submodule.working_dir)
+    expected_repo_root = main_repo_root / Path(expected_repo)
+
+    absolute_target_path = main_repo_root / path_to_check
+    absolute_target_path.mkdir(exist_ok=True, parents=True)
+    relative_target_path = Path(path_to_check)
+
+    for path_to_resolve in (absolute_target_path, relative_target_path):
+        resolved_repo, resolved_relative_path = get_repo_for_path(main_repo_root, path_to_resolve)
+        assert Path(resolved_repo.working_dir) == expected_repo_root
+        assert resolved_relative_path == Path(expected_path_in_repo)
