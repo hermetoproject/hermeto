@@ -48,13 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        nox_env:
-          - bandit
-          - black
-          - isort
-          - flake8
-          - mypy
 
     container:
       image: python:3.9-slim
@@ -71,8 +64,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Test '${{ matrix.nox_env }}' with nox
-      run: nox -s ${{ matrix.nox_env }}
+    - name: Run linters
+      run: nox -s lint
 
   hadolint:
     name: Hadolint

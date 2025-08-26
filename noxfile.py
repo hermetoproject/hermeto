@@ -22,7 +22,7 @@ import nox
 from nox.sessions import Session
 
 # default sessions to run (sorted alphabetically)
-nox.options.sessions = ["bandit", "black", "flake8", "isort", "mypy", "python"]
+nox.options.sessions = ["lint", "python"]
 
 # reuse virtual environment for all sessions
 nox.options.reuse_venv = "always"
@@ -45,43 +45,26 @@ def parse_supported_python_versions() -> list[str]:
 
 
 @nox.session()
-def bandit(session: Session) -> None:
-    """Run bandit."""
+def lint(session: Session) -> None:
+    """Run linters."""
+    exc = None
     install_requirements(session)
-    cmd = "bandit -c pyproject.toml -r hermeto noxfile.py"
-    session.run(*cmd.split(), *session.posargs, silent=True)
+    cmds = [
+        "bandit -c pyproject.toml -r hermeto noxfile.py",
+        "black --check --diff hermeto tests noxfile.py",
+        "flake8 hermeto tests noxfile.py",
+        "isort --check --diff --color hermeto tests noxfile.py",
+        "mypy --install-types --non-interactive hermeto tests noxfile.py",
+    ]
 
+    for cmd in cmds:
+        try:
+            session.run(*cmd.split(), *session.posargs, silent=True)
+        except Exception as e:
+            exc = e
 
-@nox.session()
-def black(session: Session) -> None:
-    """Run black."""
-    install_requirements(session)
-    cmd = "black --check --diff hermeto tests noxfile.py"
-    session.run(*cmd.split(), *session.posargs, silent=True)
-
-
-@nox.session()
-def flake8(session: Session) -> None:
-    """Run flake8."""
-    install_requirements(session)
-    cmd = "flake8 hermeto tests noxfile.py"
-    session.run(*cmd.split(), *session.posargs, silent=True)
-
-
-@nox.session()
-def isort(session: Session) -> None:
-    """Run isort."""
-    install_requirements(session)
-    cmd = "isort --check --diff --color hermeto tests noxfile.py"
-    session.run(*cmd.split(), *session.posargs, silent=True)
-
-
-@nox.session()
-def mypy(session: Session) -> None:
-    """Run mypy."""
-    install_requirements(session)
-    cmd = "mypy --install-types --non-interactive hermeto tests noxfile.py"
-    session.run(*cmd.split(), *session.posargs, silent=True)
+    if exc:
+        raise exc
 
 
 @nox.session(name="python", python=parse_supported_python_versions())
