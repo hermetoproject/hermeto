@@ -193,12 +193,12 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alt
         """
     )
 
-    assert (
-        not expected_alternate_config_location.exists()
-    ), "Unexpected .bundle/config in rooted_tmp_path"
-    assert (
-        not expected_alternate_config_location.parent.exists()
-    ), "Unexpected .bundle/ in rooted_tmp_path"
+    assert not expected_alternate_config_location.exists(), (
+        "Unexpected .bundle/config in rooted_tmp_path"
+    )
+    assert not expected_alternate_config_location.parent.exists(), (
+        "Unexpected .bundle/ in rooted_tmp_path"
+    )
 
     expected_alternate_config_location.parent.mkdir()
     expected_alternate_config_location.write_text(existing_preamble)

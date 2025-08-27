@@ -39,9 +39,9 @@ def _assert_merging_sboms_produces_correct_number_of_packages(
     )
     assert expected_num_of_packages == actual_num_of_packages, msg
 
-    assert len(merged_sbom.relationships) == len(
-        set(merged_sbom.relationships)
-    ), "Relationships length mismatch"
+    assert len(merged_sbom.relationships) == len(set(merged_sbom.relationships)), (
+        "Relationships length mismatch"
+    )
 
 
 def _assert_merging_two_distinct_sboms_produces_correct_number_of_packages(
@@ -103,9 +103,9 @@ def _assert_no_relation_is_missing(sbom: SPDXSbom) -> None:
     # I.e. ther are at least as many relations as packages
     # (each package will relate to at least one other package and that would be
     # thr root document).
-    assert len(sbom.relationships) == len(
-        set(sbom.relationships)
-    ), "There are duplicate relationships"
+    assert len(sbom.relationships) == len(set(sbom.relationships)), (
+        "There are duplicate relationships"
+    )
     fail_msg = (
         "Some packages are not having relationships: not enough relationships for all packages"
     )
@@ -114,9 +114,9 @@ def _assert_no_relation_is_missing(sbom: SPDXSbom) -> None:
 
 def _assert_no_relationship_points_out(sbom: SPDXSbom) -> None:
     packages = set(p.SPDXID for p in sbom.packages)
-    assert all(
-        r.relatedSpdxElement in packages for r in sbom.relationships
-    ), "Found stray relationship(s)"
+    assert all(r.relatedSpdxElement in packages for r in sbom.relationships), (
+        "Found stray relationship(s)"
+    )
 
 
 def _assert_no_unrelated_packages(sbom: SPDXSbom) -> None:
