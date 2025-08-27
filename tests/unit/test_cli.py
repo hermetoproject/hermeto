@@ -69,9 +69,7 @@ def invoke_expecting_sucess(app: typer.Typer, args: list[str]) -> typer.testing.
 def invoke_expecting_invalid_usage(app: typer.Typer, args: list[str]) -> typer.testing.Result:
     result = runner.invoke(app, args)
     assert result.exit_code == 2, (
-        f"expected exit_code=2, got exit_code={result.exit_code}\n"
-        "command output:\n"
-        f"{result.output}"
+        f"expected exit_code=2, got exit_code={result.exit_code}\ncommand output:\n{result.output}"
     )
     return result
 

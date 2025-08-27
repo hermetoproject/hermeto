@@ -373,9 +373,9 @@ def fetch_deps_and_check_output(
         f"Fetching deps ended with unexpected exitcode: {exit_code} != "
         f"{test_params.expected_exit_code}, output-cmd: {output}"
     )
-    assert test_params.expected_output in str(
-        output
-    ), f"Expected msg {test_params.expected_output} was not found in cmd output: {output}"
+    assert test_params.expected_output in str(output), (
+        f"Expected msg {test_params.expected_output} was not found in cmd output: {output}"
+    )
 
     if test_params.check_output:
         build_config = _load_json_or_yaml(output_dir.joinpath(".build-config.json"))
