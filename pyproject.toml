@@ -36,12 +36,6 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
-  "bandit",
-  "black",
-  "flake8",
-  "flake8-docstrings",
-  "flake8-pyproject",
-  "isort[colors]",
   "mkdocs-material",
   "mypy",
   "nox",
@@ -108,13 +102,6 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-[tool.black]
-line-length = 100
-
-[tool.isort]
-profile = "black"
-line_length = 100
-
 [tool.mypy]
 python_version = "3.9"
 plugins = ["pydantic.mypy"]
@@ -146,28 +133,7 @@ exclude_lines = [
   "return NotImplemented",
 ]
 
-[tool.bandit]
-skips = [
-  "B404", # import subprocess
-  "B603", # subprocess_without_shell_equals_true
-]
-
 [tool.pytest.ini_options]
 log_cli_level = "DEBUG"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
-
-[tool.flake8]
-show_source = true
-ignore = [
-  "D100", # missing docstring in public module
-  "D104", # missing docstring in public package
-  "D105", # missing docstring in magic method
-  "W503", # line break before binary operator
-  "E203", # whitespace before ':'
-  "E501", # line too long
-  "E731", # do not assign a lambda expression
-]
-per-file-ignores = [
-  "tests/*:D101,D102,D103", # missing docstring in public class, method, function
-]

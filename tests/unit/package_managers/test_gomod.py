@@ -1459,7 +1459,7 @@ def test_vendor_deps(
     mock_vendor_changed.return_value = False
 
     # Test that vendor-changes == True in permissive mode also leads to a success path
-    # [black] - skip formatting because it would remove the parentheses making it less readable
+    # [ruff] - skip formatting because it would remove the parentheses making it less readable
     mock_vendor_changed.return_value = (enforcing_mode != Mode.STRICT)  # fmt: skip
 
     _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", enforcing_mode, run_params)
