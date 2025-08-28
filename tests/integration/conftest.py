@@ -17,14 +17,22 @@ from . import utils
 log = logging.getLogger(__name__)
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--debug-hermeto",
+        action="store_true",
+        default=False,
+        help="Enable interactive debugging with ipdb/pudb with PYTHONBREAKPOINT",
+    )
+
+
 @pytest.fixture(scope="session")
-def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
+def test_repo_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
         "https://github.com/hermetoproject/integration-tests.git",
     )
-    # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
-    repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
+    repo_dir = tmp_path_factory.mktemp("integration-tests", False)
     Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
     return repo_dir
 
@@ -46,17 +54,32 @@ def top_level_test_dir() -> Path:
     return Path(__file__).parents[1]
 
 
+@pytest.fixture(scope="session", autouse=True)
+def netrc_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    if not (netrc_content := os.getenv("HERMETO_TEST_NETRC_CONTENT")):
+        netrc_content = ""
+
+    session_dir = tmp_path_factory.getbasetemp()
+    netrc_path = session_dir / ".netrc"
+    netrc_path.write_text(netrc_content)
+
+    return netrc_path
+
+
 @pytest.fixture(scope="session")
-def hermeto_image() -> utils.HermetoImage:
+def hermeto_image(request: pytest.FixtureRequest) -> utils.HermetoImage:
+    debug = request.config.getoption("--debug-hermeto")
     if not (image_ref := os.environ.get("HERMETO_IMAGE")):
-        image_ref = "localhost/hermeto:latest"
-        log.info("Building local hermeto:latest image")
+        image = "hermeto" if not debug else "hermeto-toolbox"
+        image_ref = f"localhost/{image}:latest"
+
+        log.info("Building '%s' image", image_ref)
         # <arbitrary_path>/hermeto/tests/integration/conftest.py
         #                   [2] <- [1]  <-  [0]  <- parents
         repo_root = Path(__file__).parents[2]
-        utils.build_image(repo_root, tag=image_ref)
+        utils.build_image(repo_root, tag=image_ref, debug=debug)
 
-    hermeto = utils.HermetoImage(image_ref)
+    hermeto = utils.HermetoImage(image_ref, debug=debug)
     if not image_ref.startswith("localhost/"):
         hermeto.pull_image()
 
