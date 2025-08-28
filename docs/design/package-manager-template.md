@@ -1,8 +1,14 @@
 # [Package Manager Name] Design Document
 
 This template is intended to help contributors add support for a new package manager (ecosystem).
+Yes it is big - please try not to be intimidated by its size! The sections and probative questions
+are based on the community's experiences adding new package manager ecosystems to Hermeto.
+
+**Contributors**:
+
 Completed design documents are not required prior to contributing code - they are meant to
-facilitate conversation and technical decisionmaking.
+facilitate conversation and technical decisionmaking. _You do not need to submit a completed_
+_document in a single pull request or commit_.
 
 To get started:
 
@@ -13,6 +19,13 @@ To get started:
   implementation.
 - Complete the "Implementation Notes" sections as desired, or when the package manager is ready to
   be enabled by default.
+
+**Maintainers**:
+
+Design documentation review is meant to facilitate conversation and future improvements. Regular
+review _and merging_ is vital to keep the discussion and implementation moving forward. Aim for
+_progress_ over _perfection_ when reviewing and approving submissions.
+
 
 ## Overview
 
