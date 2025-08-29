@@ -19,7 +19,14 @@ spec:
     tasks:
       - name: fetch-repository
         taskRef:
-          name: git-clone
+          params:
+            - name: name
+              value: git-clone
+            - name: bundle
+              value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:7939000e2f92fc8b5d2c4ee4ba9000433c5aa7700d2915a1d4763853d5fd1fd4
+            - name: kind
+              value: task
+          resolver: bundles
         workspaces:
           - name: output
             workspace: workspace
