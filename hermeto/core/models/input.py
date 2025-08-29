@@ -11,6 +11,8 @@ from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
+BINARY_FILTER_ALL = ":all:"
+
 if TYPE_CHECKING:
     from pydantic.error_wrappers import ErrorDict
 
@@ -19,6 +21,37 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
+
+
+def _handle_legacy_allow_binary(
+    instance: Union["PipPackageInput", "BundlerPackageInput"],
+    binary_filter_class: Union[type["PipBinaryFilters"], type["BundlerBinaryFilters"]],
+) -> None:
+    """Handle backward compatibility for allow_binary field."""
+    # If allow_binary is already False, nothing to process
+    if not instance.allow_binary:
+        return
+
+    # Check if user provided both fields originally
+    user_provided_both = instance.allow_binary and instance.binary is not None
+    # Determine if allow_binary should be migrated to binary field
+    should_migrate_allow_binary = instance.allow_binary and instance.binary is None
+
+    if user_provided_both:
+        log.warning(
+            "Both 'allow_binary' and 'binary' fields specified. "
+            "The 'binary' field will take precedence. "
+            "Please remove 'allow_binary' as it is deprecated."
+        )
+    elif should_migrate_allow_binary:
+        log.warning(
+            "The 'allow_binary' field is deprecated and will be removed in the next major version. "
+            "Please use 'binary': {} instead of 'allow_binary': true."
+        )
+        instance.binary = binary_filter_class.with_allow_binary_behavior()
+
+    # Set allow_binary to False to prevent duplicate processing
+    instance.allow_binary = False
 
 
 def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
@@ -140,11 +173,113 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
         return self
 
 
+class BinaryFilter(pydantic.BaseModel, extra="forbid"):
+    """Represents a filter for binary packages.
+
+    An empty filters set means "accept all" (no filtering).
+    A populated filters set means "accept only these specific items".
+    """
+
+    filters: set[str] = set()
+
+    @property
+    def is_all(self) -> bool:
+        """Return True if this filter accepts all (no filtering)."""
+        return not self.filters
+
+    def __str__(self) -> str:
+        return ":all:" if self.is_all else ",".join(sorted(self.filters))
+
+    def __repr__(self) -> str:
+        return (
+            f"<{type(self).__name__} "
+            f"filters={':all:' if self.is_all else ','.join(sorted(self.filters))}>"
+        )
+
+
+def _parse_binary_filter(value: Any) -> BinaryFilter:
+    """Parse either None, BinaryFilter, or comma-separated string into a BinaryFilter object."""
+    if value is None:
+        return BinaryFilter()
+    if isinstance(value, BinaryFilter):
+        return value
+    if not isinstance(value, str):
+        raise ValueError(
+            (
+                f"Binary filter must be a string (e.g., 'x86_64,aarch64' or ':all:'). "
+                f"Got type: {type(value).__name__}"
+            )
+        )
+
+    value = value.strip()
+    if value == BINARY_FILTER_ALL:
+        return BinaryFilter()
+
+    filters = {f.strip() for f in value.split(",") if f.strip()}
+    if not filters:
+        raise ValueError(f"No valid filters found for binary filter: {value}")
+    if BINARY_FILTER_ALL in filters:
+        return BinaryFilter()
+
+    return BinaryFilter(filters=filters)
+
+
+BinaryFilterField = Annotated[BinaryFilter, pydantic.BeforeValidator(_parse_binary_filter)]
+
+
+class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
+    """Base configuration for binary package handling."""
+
+    packages: BinaryFilterField = BinaryFilterField()
+
+
+class PipBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to pip packages."""
+
+    arch: BinaryFilterField = BinaryFilterField(filters={"x86_64"})
+    os: BinaryFilterField = BinaryFilterField(filters={"linux"})
+    py_version: BinaryFilterField = BinaryFilterField()
+    py_impl: BinaryFilterField = BinaryFilterField(filters={"cp"})
+
+    @classmethod
+    def with_allow_binary_behavior(cls) -> Self:
+        """Create filters that mimic the old allow_binary=True behavior."""
+        return cls(
+            arch=BinaryFilterField(),
+            os=BinaryFilterField(),
+            py_impl=BinaryFilterField(),
+        )
+
+
+class BundlerBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to bundler packages."""
+
+    platform: BinaryFilterField = BinaryFilterField()
+
+    @classmethod
+    def with_allow_binary_behavior(cls) -> Self:
+        """Create filters that mimic the old allow_binary=True behavior."""
+        return cls()
+
+
+class RpmBinaryFilters(pydantic.BaseModel, extra="forbid"):
+    """Binary filters specific to RPM packages."""
+
+    arch: BinaryFilterField = BinaryFilterField()
+
+
 class BundlerPackageInput(_PackageInputBase):
     """Accepted input for a bundler package."""
 
     type: Literal["bundler"]
     allow_binary: bool = False
+    binary: Optional[BundlerBinaryFilters] = None
+
+    @pydantic.model_validator(mode="after")
+    def _handle_legacy_allow_binary_field(self) -> Self:
+        """Handle backward compatibility for allow_binary field."""
+        _handle_legacy_allow_binary(self, BundlerBinaryFilters)
+        return self
 
 
 class CargoPackageInput(_PackageInputBase):
@@ -179,6 +314,7 @@ class PipPackageInput(_PackageInputBase):
     requirements_files: Optional[list[Path]] = None
     requirements_build_files: Optional[list[Path]] = None
     allow_binary: bool = False
+    binary: Optional[PipBinaryFilters] = None
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
     def _no_explicit_none(cls, paths: Optional[list[Path]]) -> list[Path]:
@@ -193,6 +329,12 @@ class PipPackageInput(_PackageInputBase):
         for p in paths:
             check_sane_relpath(p)
         return paths
+
+    @pydantic.model_validator(mode="after")
+    def _handle_legacy_allow_binary_field(self) -> Self:
+        """Handle backward compatibility for allow_binary field."""
+        _handle_legacy_allow_binary(self, PipBinaryFilters)
+        return self
 
 
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):
@@ -253,6 +395,7 @@ class RpmPackageInput(_PackageInputBase):
     type: Literal["rpm"]
     include_summary_in_sbom: bool = False
     options: Optional[ExtraOptions] = None
+    binary: Optional[RpmBinaryFilters] = None
 
 
 class YarnPackageInput(_PackageInputBase):
