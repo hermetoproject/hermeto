@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi@sha256:3816d303e75dec4da2d10eeb9e8651eef4393721598bea4690c607282635aa57 AS ubi
+FROM registry.access.redhat.com/ubi10@sha256:9bd3aebdfdf6eebb6a18541d838cac9e9a35d2f807aa8e36d9518978cc86371f AS ubi
 FROM mirror.gcr.io/library/golang:1.25.5-alpine AS golang
 FROM mirror.gcr.io/library/node:24.12-bookworm-slim AS node
 
@@ -11,7 +11,7 @@ RUN dnf -y install \
     --nodocs \
     git-core \
     jq \
-    python3.11 \
+    python3.12 \
     rubygem-bundler \
     rubygem-json \
     subscription-manager && \
@@ -28,14 +28,14 @@ RUN dnf -y install \
     gcc \
     # not a build dependency, but we copy the binary to the final image
     cargo \
-    python3.11-devel \
-    python3.11-pip \
-    python3.11-setuptools \
+    python3.12-devel \
+    python3.12-pip \
+    python3.12-setuptools \
     && dnf clean all
 
 # Install dependencies in a separate layer to maximize layer caching
 COPY requirements.txt .
-RUN python3.11 -m venv /venv && \
+RUN python3.12 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
     /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes
 
