@@ -757,9 +757,9 @@ class TestPipRequirementsFile:
                 expected_value = expected_attr_changes.get(pip_requirement.raw_package, {}).get(
                     attr, getattr(pip_requirement, attr)
                 )
-                assert (
-                    getattr(new_pip_requirement, attr) == expected_value
-                ), f"unexpected {attr!r} value for package {pip_requirement.raw_package!r}"
+                assert getattr(new_pip_requirement, attr) == expected_value, (
+                    f"unexpected {attr!r} value for package {pip_requirement.raw_package!r}"
+                )
 
     def test_write_requirements_file(self, rooted_tmp_path: RootedPath) -> None:
         """Test PipRequirementsFile.write method."""
@@ -1068,10 +1068,10 @@ class TestPipRequirementsFile:
         for attr, expected_value in expected_requirement.items():
             if attr in ("version_specs", "extras"):
                 # Account for differences in order
-                assert set(getattr(pip_requirement, attr)) == set(
-                    expected_value
-                ), f"unexpected value for {attr!r}"
+                assert set(getattr(pip_requirement, attr)) == set(expected_value), (
+                    f"unexpected value for {attr!r}"
+                )
             else:
-                assert (
-                    getattr(pip_requirement, attr) == expected_value
-                ), f"unexpected value for {attr!r}"
+                assert getattr(pip_requirement, attr) == expected_value, (
+                    f"unexpected value for {attr!r}"
+                )

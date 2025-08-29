@@ -22,7 +22,7 @@ import nox
 from nox.sessions import Session
 
 # default sessions to run (sorted alphabetically)
-nox.options.sessions = ["lint", "python"]
+nox.options.sessions = ["ruff", "lint", "python"]
 
 # reuse virtual environment for all sessions
 nox.options.reuse_venv = "always"
@@ -50,10 +50,8 @@ def lint(session: Session) -> None:
     exc = None
     install_requirements(session)
     cmds = [
-        "bandit -c pyproject.toml -r hermeto noxfile.py",
-        "black --check --diff hermeto tests noxfile.py",
-        "flake8 hermeto tests noxfile.py",
-        "isort --check --diff --color hermeto tests noxfile.py",
+        "ruff check hermeto tests noxfile.py",
+        "ruff format --check --diff hermeto tests noxfile.py",
         "mypy --install-types --non-interactive hermeto tests noxfile.py",
     ]
 
@@ -62,7 +60,24 @@ def lint(session: Session) -> None:
             session.run(*cmd.split(), *session.posargs, silent=True)
         except Exception as e:
             exc = e
+    if exc:
+        raise exc
 
+
+@nox.session(name="ruff-fix")
+def ruff_fix(session: Session) -> None:
+    """Run ruff with auto-fix for linting and formatting."""
+    install_requirements(session)
+    cmds = [
+        "ruff check --fix hermeto tests noxfile.py",
+        "ruff format hermeto tests noxfile.py",
+    ]
+
+    for cmd in cmds:
+        try:
+            session.run(*cmd.split(), *session.posargs, silent=True)
+        except Exception as e:
+            exc = e
     if exc:
         raise exc
 
