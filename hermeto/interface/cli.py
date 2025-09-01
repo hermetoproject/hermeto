@@ -210,8 +210,11 @@ def _looks_like_json(value: str) -> bool:
 
 
 def _looks_like_input_file(value: str) -> bool:
-    path = Path(value)
-    return path.exists() and path.is_file()
+    try:
+        path = Path(value)
+        return path.exists() and path.is_file()
+    except OSError:
+        return False
 
 
 class _Input(pydantic.BaseModel, extra="forbid"):

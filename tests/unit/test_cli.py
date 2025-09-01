@@ -357,6 +357,34 @@ class TestFetchDeps:
                     {"type": "gomod", "path": "pkg_b"},
                 ],
             ),
+            pytest.param(
+                dedent(
+                    """
+                    [{"type": "rpm", "path": ".", "options": {"dnf": {
+                        "some-very-long-repo-id-aarch64-rpms": {"gpgcheck": 0},
+                        "some-very-long-repo-id-ppc64le-rpms": {"gpgcheck": 0},
+                        "some-very-long-repo-id-x86_64-rpms": {"gpgcheck": 0},
+                        "some-very-long-repo-id-s390x-rpms": {"gpgcheck": 0}
+                    }}}
+                    ]
+                    """
+                ),
+                [
+                    {
+                        "type": "rpm",
+                        "path": ".",
+                        "options": {
+                            "dnf": {
+                                "some-very-long-repo-id-aarch64-rpms": {"gpgcheck": 0},
+                                "some-very-long-repo-id-ppc64le-rpms": {"gpgcheck": 0},
+                                "some-very-long-repo-id-x86_64-rpms": {"gpgcheck": 0},
+                                "some-very-long-repo-id-s390x-rpms": {"gpgcheck": 0},
+                            }
+                        },
+                    }
+                ],
+                id="very-long-input-string",
+            ),
         ],
     )
     def test_specify_packages(
