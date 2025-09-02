@@ -841,7 +841,7 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
     GO_121 = version.Version("1.21")
     go = Go()
     target_version = None
-    go_max_version = version.Version("1.24")
+    go_max_version = version.Version("1.25")
     go_base_version = go.version
     go_mod_version_msg = "go.mod reported versions: '%s'[go], '%s'[toolchain]"
 
