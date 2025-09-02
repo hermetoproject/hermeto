@@ -20,6 +20,10 @@ spec:
       value: Containerfile
     - name: slack-webhook-notification-team
       value: build
+    - name: build-platforms
+      value:
+      - linux/x86_64
+      - linux/arm64
   pipelineRef:
     params:
       - name: bundle

@@ -19,6 +19,10 @@ spec:
       value: "quay.io/konflux-ci/pull-request-builds:hermeto-build-{{revision}}"
     - name: dockerfile
       value: Containerfile
+    - name: build-platforms
+      value:
+      - linux/x86_64
+      - linux/arm64
   pipelineRef:
     params:
       - name: bundle
