@@ -471,7 +471,7 @@ def _clone_repo_pack_archive(
         info["host"],  # host
         info["namespace"],
         info["repo"],
-        f'{info["repo"]}-external-gitcommit-{info["ref"]}.tgz',
+        f"{info['repo']}-external-gitcommit-{info['ref']}.tgz",
     )
 
     # Create missing directories
@@ -507,7 +507,7 @@ def _get_npm_dependencies(
             download_paths[url] = _clone_repo_pack_archive(url, download_dir)
         else:
             if dep_type == "registry":
-                archive_name = f'{info["name"]}-{info["version"]}.tgz'.removeprefix("@").replace(
+                archive_name = f"{info['name']}-{info['version']}.tgz".removeprefix("@").replace(
                     "/", "-"
                 )
                 download_paths[url] = download_dir.join_within_root(archive_name)

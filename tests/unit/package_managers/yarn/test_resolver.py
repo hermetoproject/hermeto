@@ -281,9 +281,9 @@ def mock_package_json(
 
     if is_hardlink:
         if not package.cache_path:
-            assert not (
-                packjson_path or packjson_content
-            ), f"cache_path=None, is_hardlink=True => can't mock package.json: {package.raw_locator}"
+            assert not (packjson_path or packjson_content), (
+                f"cache_path=None, is_hardlink=True => can't mock package.json: {package.raw_locator}"
+            )
             return
 
         zipfile_path = Path(package.cache_path)

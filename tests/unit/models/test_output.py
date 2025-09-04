@@ -178,7 +178,6 @@ class TestEnvironmentVariable:
         expected: str,
         mappings: dict[str, str],
     ) -> None:
-
         assert env_variables[var].resolve_value(mappings) == expected
         assert "kind" not in env_variables[var].model_dump()
 
