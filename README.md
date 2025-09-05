@@ -211,7 +211,7 @@ See docs/generic.md for more details.
 
 ### [gomod][]
 
-Current version: 1.24 [^2] [^3]
+Current version: 1.25 [^2] [^3]
 
 The gomod package manager works by parsing the [go.mod][] file present in the
 source repository to determine which dependencies to download. Hermeto does not
