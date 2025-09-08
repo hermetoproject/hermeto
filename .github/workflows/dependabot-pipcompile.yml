@@ -69,7 +69,7 @@ jobs:
       #   - https://github.com/actions/github-script/issues/247#issuecomment-1079839739
       #   - https://github.com/actions/github-script/issues/220#issuecomment-1007633429
       - name: Comment on pull request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: env.GIT_DIFF != ''
         env:
           DIFF: "Changes to requirements files are needed. If you're experiencing CI test failures, please apply the following patch and update the pull request:\n```diff\n${{ env.GIT_DIFF }}\n```"
