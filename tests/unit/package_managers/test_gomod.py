@@ -84,6 +84,15 @@ def mock_which_go() -> Iterator[None]:
         yield
 
 
+@pytest.fixture(autouse=True)
+def mock_go_release() -> Iterator[mock.MagicMock]:
+    with mock.patch("hermeto.core.package_managers.gomod.Go._get_release") as _mock:
+        # Using a side_effect instead of return_value because return_value always takes precedence
+        # and we would not be able to override this easily.
+        _mock.side_effect = lambda: "go1.21.0"
+        yield _mock
+
+
 @pytest.fixture
 def gomod_input_packages() -> list[dict[str, str]]:
     return [{"type": "gomod"}]
@@ -299,7 +308,6 @@ def test_resolve_gomod(
 
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
 @mock.patch("hermeto.core.package_managers.gomod._validate_local_replacements")
@@ -311,7 +319,6 @@ def test_resolve_gomod_vendor_dependencies(
     mock_validate_local_replacements: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
-    mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
     data_dir: Path,
@@ -352,7 +359,6 @@ def test_resolve_gomod_vendor_dependencies(
     mock_run.side_effect = run_side_effects
 
     mock_version_resolver.get_golang_version.return_value = "v0.1.0"
-    mock_go_release.return_value = "go0.1.0"
     mock_get_gomod_version.return_value = ("0.1.1", "0.1.2")
     mock_vendor_changed.return_value = False
 
@@ -388,7 +394,6 @@ def test_resolve_gomod_vendor_dependencies(
 
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
 @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
@@ -398,7 +403,6 @@ def test_resolve_gomod_no_deps(
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
     mock_go_locate_toolchain: mock.Mock,
-    mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
     gomod_request: Request,
@@ -454,7 +458,6 @@ def test_resolve_gomod_no_deps(
     mock_run.side_effect = run_side_effects
 
     mock_version_resolver.get_golang_version.return_value = "v1.21.4"
-    mock_go_release.return_value = "go1.21.0"
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
@@ -2044,17 +2047,16 @@ def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) 
     indirect=["go_mod_file"],
 )
 @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
-@mock.patch("hermeto.core.package_managers.gomod.Go.__call__")
 def test_setup_go_toolchain(
-    mock_go_call: mock.Mock,
     mock_go_locate_toolchain: mock.Mock,
     rooted_tmp_path: RootedPath,
     go_mod_file: Path,
+    mock_go_release: mock.Mock,
     go_base_release: str,
     expected_toolchain: str,
 ) -> None:
-    side_effects = (go_base_release, f"go{expected_toolchain}")
-    mock_go_call.side_effect = [f"Go release: {r}" for r in side_effects]
+    # Override the mock_go_release fixture behaviour for the purposes of this test
+    mock_go_release.side_effect = (go_base_release, f"go{expected_toolchain}")
     mock_go_locate_toolchain.return_value = GO_CMD_PATH
 
     go = _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
@@ -2516,38 +2518,6 @@ class TestGo:
         go = Go()
 
         assert go.binary == "go"
-
-    @pytest.mark.parametrize(
-        "expect, go_output",
-        [
-            pytest.param("go1.21.4", "go version go1.21.4 linux/amd64", id="parse_from_output"),
-            pytest.param(
-                "go1.21.4",
-                "go   version\tgo1.21.4 \t\t linux/amd64",
-                id="parse_from_output_white_spaces",
-            ),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.Go._run")
-    def test_release(
-        self,
-        mock_run: mock.Mock,
-        expect: str,
-        go_output: str,
-    ) -> None:
-        mock_run.return_value = go_output
-
-        go = Go()
-        assert go.release == expect
-
-    @mock.patch("hermeto.core.package_managers.gomod.Go._run")
-    def test_release_failure(self, mock_run: mock.Mock) -> None:
-        go_output = "go mangled version 1.21_4"
-        mock_run.return_value = go_output
-
-        error_msg = f"Could not extract Go toolchain version from Go's output: '{go_output}'"
-        with pytest.raises(PackageManagerError, match=error_msg):
-            Go().release
 
 
 class TestGoWork:

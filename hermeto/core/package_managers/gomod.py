@@ -398,12 +398,7 @@ class Go:
     @cached_property
     def version(self) -> GoVersion:
         """Version of the Go toolchain as a GoVersion object."""
-        return GoVersion(self.release)
-
-    @cached_property
-    def release(self) -> str:
-        """Release name of the Go Toolchain, e.g. go1.20 ."""
-        return self._get_release()
+        return GoVersion(self._get_release())
 
     @staticmethod
     def _locate_toolchain(release: str) -> Optional[str]:
@@ -759,7 +754,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             main_module_dir = request.source_dir.join_within_root(subpath)
 
             go = _setup_go_toolchain(main_module_dir.join_within_root("go.mod"))
-            log.info(f"Using Go release: {go.release}")
+            log.info(f"Using Go release: {go.version}")
 
             tmp_dir._go_instance = go
             go_work = GoWork(main_module_dir)
