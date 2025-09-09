@@ -50,10 +50,10 @@ spec:
           steps:
             - name: get-semver-tag
               image: registry.access.redhat.com/ubi9/python-39
-              workingDir: $(workspaces.output.path)
+              workingDir: $(workspaces.output.path)/source
               env:
               - name: WORKSPACE_OUTPUT_PATH
-                value: $(workspaces.output.path)
+                value: $(workspaces.output.path)/source
               - name: PARAM_REVISION
                 value: $(params.revision)
               script: |
@@ -79,7 +79,7 @@ spec:
 
             - name: push-semver-tag-to-image
               image: registry.access.redhat.com/ubi9/skopeo
-              workingDir: $(workspaces.output.path)
+              workingDir: $(workspaces.output.path)/source
               env:
               - name: PARAM_REVISION
                 value: $(params.revision)
