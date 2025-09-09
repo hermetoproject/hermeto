@@ -367,7 +367,11 @@ def fetch_deps_and_check_output(
     # remove untracked files and directories from the working tree
     # git will refuse to modify untracked nested git repositories unless a second -f is given
     repo.git.clean("-ffdx")
-    repo.git.checkout(test_params.branch)
+    # --recurse-submodules is to prevent checkout failures when submodule structure changes
+    # between branches
+    repo.git.checkout(test_params.branch, "--recurse-submodules")
+    # Ensure submodules are properly initialized and synchronized
+    repo.submodule_update(init=True, force_reset=True, recursive=True)
 
     output_dir = tmp_path.joinpath(fetch_output_dirname)
     cmd = [
