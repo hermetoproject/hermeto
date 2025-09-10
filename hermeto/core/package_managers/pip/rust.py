@@ -50,14 +50,19 @@ def _depends_on_rust(extracted_dir: Path) -> bool:
     return False
 
 
-def _get_rust_root_dir(cargo_files: Iterable[Path]) -> Path:
-    # find the top-most Cargo.toml in the package - that's not necessarily the most accurate
-    # solution, but this heuristic has proven to work on the most popular python packages
-    # that have rust dependencies; if this stops working, then we would probably need to check
-    # pyproject toml config section for maturin or setuptools-rust...
-    # More info on this issue in the design doc
-    # https://github.com/hermetoproject/hermeto/blob/e5fa5c0fcd0dff62cf02be5b0d219e04c1ea440c/docs/design/cargo-support.md#L806
-    return min(cargo_files, key=lambda x: len(x.parts)).parent
+def _get_rust_root_dir(cargo_lockfiles: Iterable[Path]) -> Path:
+    """Find the top-most Cargo.lock in the package.
+
+    NOTE: This is not necessarily the most accurate solution, but this heuristic has proven to work
+    on the most popular python packages with rust dependencies. A repository may have multiple
+    Cargo.toml files (e.g. workspace), but we are mostly interested in Cargo.lock file.
+
+    Also, on the same level as Cargo.lock file, there is always a Cargo.toml file.
+
+    If this solution is not accurate enough, then we would probably need to check for the manifest
+    path in pyproject.toml config section for maturin or setuptools-rust.
+    """
+    return min(cargo_lockfiles, key=lambda x: len(x.parts)).parent
 
 
 def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[CargoPackageInput]:
@@ -80,8 +85,8 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         extract_dir = pip_deps_dir / filename
         shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
 
-        cargo_files = list(extract_dir.rglob("Cargo.toml"))
-        if not cargo_files:
+        cargo_lockfiles = list(extract_dir.rglob("Cargo.lock"))
+        if not cargo_lockfiles:
             shutil.rmtree(extract_dir, ignore_errors=True)
             continue
 
@@ -97,7 +102,7 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         if not _depends_on_rust(source_dir):
             shutil.rmtree(extract_dir, ignore_errors=True)
             continue
-        rust_root_dir = _get_rust_root_dir(cargo_files)
+        rust_root_dir = _get_rust_root_dir(cargo_lockfiles)
         packages_containing_rust_code.append(
             CargoPackageInput(
                 type="cargo",
