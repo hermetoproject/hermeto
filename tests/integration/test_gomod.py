@@ -45,6 +45,16 @@ log = logging.getLogger(__name__)
             ),
             id="gomod_correct_vendor_passes_vendor_check",
         ),
+        # The same test case and project as above, but with the project in a git submodule.
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/correct-vendor-in-submodule-passes-vendor-check",
+                packages=({"path": "integration-tests", "type": "gomod"},),
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="gomod_correct_vendor_in_submodule_passes_vendor_check",
+        ),
         # Test case checks if request will fail when source provided wrong vendor.
         pytest.param(
             utils.TestParameters(
@@ -60,6 +70,21 @@ log = logging.getLogger(__name__)
                 ),
             ),
             id="gomod_wrong_vendor_fails_vendor_check",
+        ),
+        # The same test case and project as above, but with the project in a git submodule.
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/wrong-vendor-in-submodule-fails-vendor-check",
+                packages=({"path": "integration-tests", "type": "gomod"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=2,
+                expected_output=(
+                    "PackageRejected: The content of the vendor directory is not "
+                    "consistent with go.mod. Please check the logs for more details"
+                ),
+            ),
+            id="gomod_wrong_vendor_in_submodule_fails_vendor_check",
         ),
         pytest.param(
             utils.TestParameters(
