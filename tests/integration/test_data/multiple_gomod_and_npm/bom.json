@@ -449,6 +449,17 @@
       "type": "library"
     },
     {
+      "name": "internal/runtime/cgroup",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/cgroup?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/runtime/exithook",
       "properties": [
         {
@@ -457,6 +468,61 @@
         }
       ],
       "purl": "pkg:golang/internal/runtime/exithook?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/gc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/gc?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/maps",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/maps?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/math",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/math?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/strconv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/strconv?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/sys",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/sys?type=package",
       "type": "library"
     },
     {
@@ -479,6 +545,28 @@
         }
       ],
       "purl": "pkg:golang/internal/stringslite?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/sync",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/sync?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/synctest",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/synctest?type=package",
       "type": "library"
     },
     {
@@ -512,6 +600,17 @@
         }
       ],
       "purl": "pkg:golang/internal/testlog?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/trace/tracev2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/trace/tracev2?type=package",
       "type": "library"
     },
     {
@@ -633,28 +732,6 @@
         }
       ],
       "purl": "pkg:golang/reflect?type=package",
-      "type": "library"
-    },
-    {
-      "name": "runtime/internal/math",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/math?type=package",
-      "type": "library"
-    },
-    {
-      "name": "runtime/internal/sys",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/sys?type=package",
       "type": "library"
     },
     {

@@ -24,6 +24,17 @@
       "type": "library"
     },
     {
+      "name": "cmp",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/cmp?type=package",
+      "type": "library"
+    },
+    {
       "name": "compress/flate",
       "properties": [
         {
@@ -156,6 +167,28 @@
       "type": "library"
     },
     {
+      "name": "crypto/fips140",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/fips140?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/hkdf",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/hkdf?type=package",
+      "type": "library"
+    },
+    {
       "name": "crypto/hmac",
       "properties": [
         {
@@ -164,28 +197,6 @@
         }
       ],
       "purl": "pkg:golang/crypto/hmac?type=package",
-      "type": "library"
-    },
-    {
-      "name": "crypto/internal/alias",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/crypto/internal/alias?type=package",
-      "type": "library"
-    },
-    {
-      "name": "crypto/internal/bigmod",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/crypto/internal/bigmod?type=package",
       "type": "library"
     },
     {
@@ -222,47 +233,366 @@
       "type": "library"
     },
     {
-      "name": "crypto/internal/edwards25519/field",
+      "name": "crypto/internal/entropy",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/crypto/internal/edwards25519/field?type=package",
+      "purl": "pkg:golang/crypto/internal/entropy?type=package",
       "type": "library"
     },
     {
-      "name": "crypto/internal/edwards25519",
+      "name": "crypto/internal/fips140/aes/gcm",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/crypto/internal/edwards25519?type=package",
+      "purl": "pkg:golang/crypto/internal/fips140/aes/gcm?type=package",
       "type": "library"
     },
     {
-      "name": "crypto/internal/nistec/fiat",
+      "name": "crypto/internal/fips140/aes",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/crypto/internal/nistec/fiat?type=package",
+      "purl": "pkg:golang/crypto/internal/fips140/aes?type=package",
       "type": "library"
     },
     {
-      "name": "crypto/internal/nistec",
+      "name": "crypto/internal/fips140/alias",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/crypto/internal/nistec?type=package",
+      "purl": "pkg:golang/crypto/internal/fips140/alias?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/bigmod",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/bigmod?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/check",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/check?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/drbg",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/drbg?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/ecdh",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/ecdh?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/ecdsa",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/ecdsa?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/ed25519",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/ed25519?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/edwards25519/field",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/edwards25519/field?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/edwards25519",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/edwards25519?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/hkdf",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/hkdf?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/hmac",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/hmac?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/mlkem",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/mlkem?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/nistec/fiat",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/nistec/fiat?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/nistec",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/nistec?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/rsa",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/rsa?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/sha256",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/sha256?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/sha3",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/sha3?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/sha512",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/sha512?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/subtle",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/subtle?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/tls12",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/tls12?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140/tls13",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/tls13?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140cache",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140cache?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140deps/byteorder",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140deps/byteorder?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140deps/cpu",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140deps/cpu?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140deps/godebug",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140deps/godebug?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140hash",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140hash?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/fips140only",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140only?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/hpke",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/hpke?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/impl",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/impl?type=package",
       "type": "library"
     },
     {
@@ -274,6 +604,17 @@
         }
       ],
       "purl": "pkg:golang/crypto/internal/randutil?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/internal/sysrand",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/sysrand?type=package",
       "type": "library"
     },
     {
@@ -343,6 +684,17 @@
       "type": "library"
     },
     {
+      "name": "crypto/sha3",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/sha3?type=package",
+      "type": "library"
+    },
+    {
       "name": "crypto/sha512",
       "properties": [
         {
@@ -362,6 +714,17 @@
         }
       ],
       "purl": "pkg:golang/crypto/subtle?type=package",
+      "type": "library"
+    },
+    {
+      "name": "crypto/tls/internal/fips140tls",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/tls/internal/fips140tls?type=package",
       "type": "library"
     },
     {
@@ -406,17 +769,6 @@
         }
       ],
       "purl": "pkg:golang/crypto?type=package",
-      "type": "library"
-    },
-    {
-      "name": "embed",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/embed?type=package",
       "type": "library"
     },
     {
@@ -728,17 +1080,6 @@
       "type": "library"
     },
     {
-      "name": "go/internal/typeparams",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/go/internal/typeparams?type=package",
-      "type": "library"
-    },
-    {
       "name": "go/parser",
       "properties": [
         {
@@ -865,6 +1206,17 @@
       "type": "library"
     },
     {
+      "name": "internal/asan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/asan?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/bisect",
       "properties": [
         {
@@ -898,6 +1250,28 @@
       "type": "library"
     },
     {
+      "name": "internal/byteorder",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/byteorder?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/chacha8rand",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/chacha8rand?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/coverage/rtcov",
       "properties": [
         {
@@ -917,6 +1291,17 @@
         }
       ],
       "purl": "pkg:golang/internal/cpu?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/filepathlite",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/filepathlite?type=package",
       "type": "library"
     },
     {
@@ -1008,17 +1393,6 @@
       "type": "library"
     },
     {
-      "name": "internal/intern",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/internal/intern?type=package",
-      "type": "library"
-    },
-    {
       "name": "internal/itoa",
       "properties": [
         {
@@ -1038,6 +1412,17 @@
         }
       ],
       "purl": "pkg:golang/internal/lazyregexp?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/msan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/msan?type=package",
       "type": "library"
     },
     {
@@ -1085,6 +1470,17 @@
       "type": "library"
     },
     {
+      "name": "internal/profilerecord",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/profilerecord?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/race",
       "properties": [
         {
@@ -1107,14 +1503,113 @@
       "type": "library"
     },
     {
-      "name": "internal/safefilepath",
+      "name": "internal/runtime/atomic",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/internal/safefilepath?type=package",
+      "purl": "pkg:golang/internal/runtime/atomic?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/cgroup",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/cgroup?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/exithook",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/exithook?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/gc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/gc?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/maps",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/maps?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/math",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/math?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/strconv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/strconv?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/sys",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/sys?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/runtime/syscall",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/syscall?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/saferio",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/saferio?type=package",
       "type": "library"
     },
     {
@@ -1126,6 +1621,39 @@
         }
       ],
       "purl": "pkg:golang/internal/singleflight?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/stringslite",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/stringslite?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/sync",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/sync?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/synctest",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/synctest?type=package",
       "type": "library"
     },
     {
@@ -1151,6 +1679,17 @@
       "type": "library"
     },
     {
+      "name": "internal/syslist",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/syslist?type=package",
+      "type": "library"
+    },
+    {
       "name": "internal/testlog",
       "properties": [
         {
@@ -1159,6 +1698,17 @@
         }
       ],
       "purl": "pkg:golang/internal/testlog?type=package",
+      "type": "library"
+    },
+    {
+      "name": "internal/trace/tracev2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/trace/tracev2?type=package",
       "type": "library"
     },
     {
@@ -1206,6 +1756,17 @@
       "type": "library"
     },
     {
+      "name": "iter",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/iter?type=package",
+      "type": "library"
+    },
+    {
       "name": "log/internal",
       "properties": [
         {
@@ -1239,6 +1800,17 @@
       "type": "library"
     },
     {
+      "name": "maps",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/maps?type=package",
+      "type": "library"
+    },
+    {
       "name": "math/big",
       "properties": [
         {
@@ -1258,6 +1830,17 @@
         }
       ],
       "purl": "pkg:golang/math/bits?type=package",
+      "type": "library"
+    },
+    {
+      "name": "math/rand/v2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/math/rand/v2?type=package",
       "type": "library"
     },
     {
@@ -1335,6 +1918,17 @@
         }
       ],
       "purl": "pkg:golang/net/http/internal/ascii?type=package",
+      "type": "library"
+    },
+    {
+      "name": "net/http/internal/httpcommon",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/net/http/internal/httpcommon?type=package",
       "type": "library"
     },
     {
@@ -1481,50 +2075,6 @@
       "type": "library"
     },
     {
-      "name": "runtime/internal/atomic",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/atomic?type=package",
-      "type": "library"
-    },
-    {
-      "name": "runtime/internal/math",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/math?type=package",
-      "type": "library"
-    },
-    {
-      "name": "runtime/internal/sys",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/sys?type=package",
-      "type": "library"
-    },
-    {
-      "name": "runtime/internal/syscall",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/runtime/internal/syscall?type=package",
-      "type": "library"
-    },
-    {
       "name": "runtime",
       "properties": [
         {
@@ -1533,6 +2083,17 @@
         }
       ],
       "purl": "pkg:golang/runtime?type=package",
+      "type": "library"
+    },
+    {
+      "name": "slices",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/slices?type=package",
       "type": "library"
     },
     {
@@ -1668,6 +2229,17 @@
       "type": "library"
     },
     {
+      "name": "unique",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/unique?type=package",
+      "type": "library"
+    },
+    {
       "name": "unsafe",
       "properties": [
         {
@@ -1720,17 +2292,6 @@
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/cryptobyte?type=package",
-      "type": "library"
-    },
-    {
-      "name": "vendor/golang.org/x/crypto/hkdf",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/vendor/golang.org/x/crypto/hkdf?type=package",
       "type": "library"
     },
     {
@@ -1863,6 +2424,17 @@
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/text/unicode/norm?type=package",
+      "type": "library"
+    },
+    {
+      "name": "weak",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/weak?type=package",
       "type": "library"
     }
   ],
