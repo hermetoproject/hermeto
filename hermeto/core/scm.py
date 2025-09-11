@@ -5,9 +5,10 @@ import tarfile
 import tempfile
 from os import PathLike
 from pathlib import Path
-from typing import NamedTuple, Union
+from typing import NamedTuple, Optional, Union
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
+import git
 from git.exc import InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
 
@@ -68,6 +69,60 @@ def get_repo_id(repo: Union[str, PathLike[str], Repo]) -> RepoID:
     url = _canonicalize_origin_url(origin.url)
     commit_id = repo.head.commit.hexsha
     return RepoID(url, commit_id)
+
+
+def _find_submodule_containing_path(repo: Repo, target_path: Path) -> Optional[git.Submodule]:
+    """Find the submodule containing the target path, if any.
+
+    :param repo: Git repository to search in
+    :param target_path: Path to find containing submodule for
+    :return: submodule containing the target_path or None if no submodule contains it
+    """
+    for submodule in repo.submodules:
+        submodule_path = Path(repo.working_dir, submodule.path)
+        if target_path.is_relative_to(submodule_path):
+            return submodule
+    return None
+
+
+def _get_submodule_repo(submodule: git.Submodule) -> Repo:
+    """Get the repository for a submodule with initialization validation.
+
+    :param submodule: Git submodule to access
+    :return: Git repository for the submodule
+    :raises NotAGitRepo: if submodule is not initialized
+    """
+    try:
+        return submodule.module()
+    except InvalidGitRepositoryError:
+        raise NotAGitRepo(
+            f"Submodule '{submodule.path}' is not initialized",
+            solution=f"Run 'git submodule update --init --recursive {submodule.path}' to initialize it",
+        )
+
+
+def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[Repo, Path]:
+    """
+    Get the appropriate git.Repo and relative path for a target path.
+
+    Handles nested submodules by iteratively finding the deepest submodule
+    containing the target path.
+
+    :param repo_root: Root of the main repository
+    :param target_path: Path to operate on
+    :return: Tuple of (repo, relative_path)
+    :raises NotAGitRepo: if target is in an uninitialized submodule
+    """
+    if not target_path.is_absolute():
+        target_path = repo_root / target_path
+
+    current_repo = Repo(repo_root)
+
+    while (submodule := _find_submodule_containing_path(current_repo, target_path)) is not None:
+        current_repo = _get_submodule_repo(submodule)
+
+    relative_path = target_path.relative_to(current_repo.working_dir)
+    return current_repo, relative_path
 
 
 def _canonicalize_origin_url(url: str) -> str:

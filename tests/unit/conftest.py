@@ -1,12 +1,40 @@
 import sys
 import tarfile
+from os import PathLike
 from pathlib import Path
+from typing import Optional, Union
 
 import git
 import pytest
 
 from hermeto.core.models.input import Request
 from hermeto.core.rooted_path import RootedPath
+
+StrPath = Union[str, PathLike[str]]
+FileContents = str
+
+
+def _create_git_repo(path: Path, files: Optional[dict[StrPath, FileContents]] = None) -> git.Repo:
+    """Create a git repository with initial files.
+
+    :param path: Directory to create the repository in
+    :param files: Dictionary mapping file paths to content (empty string creates empty file)
+    :return: Initialized git repository
+    """
+    path.mkdir(exist_ok=True)
+    repo = git.Repo.init(path)
+    repo.git.config("user.name", "user")
+    repo.git.config("user.email", "user@example.com")
+
+    if files is not None:
+        for file_path, content in files.items():
+            file_full_path = path / file_path
+            file_full_path.parent.mkdir(parents=True, exist_ok=True)
+            file_full_path.write_text(content)
+            repo.index.add([file_path])
+        repo.index.commit("Initial commit")
+
+    return repo
 
 
 @pytest.fixture
@@ -36,14 +64,7 @@ def rooted_tmp_path(tmp_path: Path) -> RootedPath:
 @pytest.fixture
 def rooted_tmp_path_repo(rooted_tmp_path: RootedPath) -> RootedPath:
     """Return RootedPath object wrapper for the tmp_path fixture with initialized git repository."""
-    repo = git.Repo.init(rooted_tmp_path)
-    repo.git.config("user.name", "user")
-    repo.git.config("user.email", "user@example.com")
-
-    Path(rooted_tmp_path, "README.md").touch()
-    repo.index.add(["README.md"])
-    repo.index.commit("Initial commit")
-
+    _create_git_repo(rooted_tmp_path.path, {"README.md": ""})
     return rooted_tmp_path
 
 
@@ -61,3 +82,23 @@ def input_request(tmp_path: Path, request: pytest.FixtureRequest) -> Request:
         output_dir=tmp_path / "output",
         packages=package_input,
     )
+
+
+@pytest.fixture
+def repo_with_submodule(tmp_path: Path) -> git.Repo:
+    """Create a git repository containing a submodule."""
+    submodule_origin = tmp_path / "submodule_origin"
+    _create_git_repo(submodule_origin, {"submodule_file.txt": "initial content"})
+
+    main_dir = tmp_path / "main"
+    main_repo = _create_git_repo(main_dir, {"README.md": "# Main Repository"})
+
+    submodule = main_repo.create_submodule(
+        name="submodule",
+        path="submodule",
+        url=f"file://{submodule_origin}",
+    )
+    main_repo.index.commit("Add submodule")
+    submodule.update(init=True, recursive=True)
+
+    return main_repo
