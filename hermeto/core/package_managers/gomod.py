@@ -847,7 +847,7 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
     go_mod_version_msg = "go.mod reported versions: '%s'[go], '%s'[toolchain]"
 
     go_version_str, toolchain_version_str = _get_gomod_version(go_mod_file)
-    log.info(
+    log.debug(
         go_mod_version_msg,
         go_version_str if go_version_str else "-",
         toolchain_version_str if toolchain_version_str else "-",
