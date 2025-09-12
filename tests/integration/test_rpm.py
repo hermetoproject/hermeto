@@ -70,6 +70,16 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
+                branch="rpm/multiple-archs",
+                packages=({"path": ".", "type": "rpm", "binary": {"arch": "x86_64"}},),
+                check_output=True,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+            ),
+            id="rpm_multiple_archs_with_filtering",
+        ),
+        pytest.param(
+            utils.TestParameters(
                 branch="rpm/dnf-tls-client-auth",
                 packages=(
                     {

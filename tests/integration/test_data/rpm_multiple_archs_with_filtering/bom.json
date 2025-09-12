@@ -1,0 +1,27 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "name": "gpm-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=x86_64&checksum=sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd&repository_id=appstream",
+      "type": "library",
+      "version": "1.20.7"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

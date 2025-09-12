@@ -17,10 +17,11 @@ from pydantic import ValidationError
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.errors import PackageManagerError, PackageRejected
-from hermeto.core.models.input import ExtraOptions, Request, SSLOptions
+from hermeto.core.models.input import ExtraOptions, Request, RpmBinaryFilters, SSLOptions
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.rpm.binary_filters import RPMArchitectureFilter
 from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import run_cmd
@@ -225,6 +226,7 @@ def fetch_rpm_source(request: Request) -> RequestOutput:
                 request.output_dir,
                 options=package.options,
                 include_summary_in_sbom=package.include_summary_in_sbom,
+                binary_filter=package.binary,
             )
         )
 
@@ -262,6 +264,7 @@ def _resolve_rpm_project(
     output_dir: RootedPath,
     options: Optional[ExtraOptions] = None,
     include_summary_in_sbom: bool = False,
+    binary_filter: Optional[RpmBinaryFilters] = None,
 ) -> list[Component]:
     """
     Process a request for a single RPM source directory.
@@ -306,7 +309,7 @@ def _resolve_rpm_project(
             )
 
         package_dir = output_dir.join_within_root(DEFAULT_PACKAGE_DIR)
-        metadata = _download(redhat_rpms_lock, package_dir.path, ssl_options)
+        metadata = _download(redhat_rpms_lock, package_dir.path, ssl_options, binary_filter)
         _verify_downloaded(metadata)
 
         lockfile_relative_path = source_dir.subpath_from_root / DEFAULT_LOCKFILE_NAME
@@ -317,6 +320,7 @@ def _download(
     lockfile: RedhatRpmsLock,
     output_dir: Path,
     ssl_options: Optional[SSLOptions] = None,
+    binary_filter: Optional[RpmBinaryFilters] = None,
 ) -> dict[Path, Any]:
     """
     Download packages and module metadata mentioned in the lockfile.
@@ -326,8 +330,11 @@ def _download(
     for later verification (size, checksum) after download.
     Prepare a list of files to be downloaded, and then download files.
     """
+    arch_filter = RPMArchitectureFilter(binary_filter)
+    arches_to_process = arch_filter.validate_and_filter(lockfile.arches)
+
     metadata = {}
-    for arch in lockfile.arches:
+    for arch in arches_to_process:
         log.info(f"Downloading files for '{arch.arch}' architecture.")
         # files per URL for downloading packages & sources
         files: dict[str, Union[str, PathLike[str]]] = {}

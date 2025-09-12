@@ -9,7 +9,7 @@ import yaml
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError, PackageRejected
-from hermeto.core.models.input import ExtraOptions, RpmPackageInput, SSLOptions
+from hermeto.core.models.input import ExtraOptions, RpmBinaryFilters, RpmPackageInput, SSLOptions
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
 from hermeto.core.package_managers.rpm.main import (
@@ -358,7 +358,7 @@ def test_resolve_rpm_project(
 
     _resolve_rpm_project(source_dir, output_dir, None)
     mock_download.assert_called_once_with(
-        mock_model_validate.return_value, mock_package_dir_path, None
+        mock_model_validate.return_value, mock_package_dir_path, None, None
     )
     mock_verify_downloaded.assert_called_once_with({})
     mock_generate_sbom_components.assert_called_once_with({}, Path("rpms.lock.yaml"), False)
@@ -591,6 +591,30 @@ def test_download(
         ssl_context=None,
     )
     mock_asyncio.assert_called_once()
+
+
+@mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
+def test_download_filters_architectures(
+    mock_asyncio: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """Test that _download only processes architectures matching the filter."""
+    lock = RedhatRpmsLock.model_validate(
+        {
+            "lockfileVersion": 1,
+            "lockfileVendor": "redhat",
+            "arches": [
+                {"arch": "x86_64", "packages": [{"url": "http://x86.rpm"}]},
+                {"arch": "aarch64", "packages": [{"url": "http://arm.rpm"}]},
+            ],
+        }
+    )
+
+    metadata = _download(lock, rooted_tmp_path.path, None, RpmBinaryFilters(arch="x86_64"))
+
+    # The paths should only be for x86_64 packages
+    paths = [str(p) for p in metadata.keys()]
+    assert all("x86_64" in p for p in paths)
+    assert not any("aarch64" in p for p in paths)
 
 
 @mock.patch("pathlib.Path.stat")
