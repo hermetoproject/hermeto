@@ -66,7 +66,7 @@ hermeto fetch-deps \
 - `--output` the path to the directory where Hermeto will write all output
   `[default: ./hermeto-output]`
 - `--sbom-output-type` the format of generated SBOM, supported values are
-  `cyclonedx` (outputs [CycloneDX v1.4][]) and `spdx` (outputs [SPDX v2.3][])
+  `cyclonedx` (outputs [CycloneDX v1.6][]) and `spdx` (outputs [SPDX v2.3][])
   `[default: cyclonedx]`
 - `{JSON}` specifies a *package* (a directory) within the repository to process
 
@@ -261,7 +261,7 @@ privileges): `sudo podman network create --internal isolated-network; sudo
 podman build --network isolated-network ...`.
 
 [buildah#4227]: https://github.com/containers/buildah/issues/4227
-[CycloneDX v1.4]: https://cyclonedx.org/docs/1.4/json
+[CycloneDX v1.6]: https://cyclonedx.org/docs/1.6/json
 [limited set]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13
-[properties]: https://cyclonedx.org/docs/1.4/json/#components_items_properties
+[properties]: https://cyclonedx.org/docs/1.6/json/#components_items_properties
 [SPDX v2.3]: https://spdx.github.io/spdx-spec/v2.3/

@@ -89,7 +89,7 @@ Here's an example SBOM generated for above file.
       }
     ]
   },
-  "specVersion": "1.4",
+  "specVersion": "1.6",
   "version": 1
 }
 ```
