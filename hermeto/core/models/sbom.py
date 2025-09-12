@@ -56,7 +56,7 @@ class Component(pydantic.BaseModel):
     """A software component such as a dependency or a package.
 
     Compliant to the CycloneDX specification:
-    https://cyclonedx.org/docs/1.4/json/#components
+    https://cyclonedx.org/docs/1.6/json/#components
     """
 
     name: str
@@ -133,7 +133,7 @@ class Sbom(pydantic.BaseModel):
     """Software bill of materials in the CycloneDX format.
 
     See full specification at:
-    https://cyclonedx.org/docs/1.4/json
+    https://cyclonedx.org/docs/1.6/json
     """
 
     model_config = pydantic.ConfigDict(extra="forbid")
@@ -141,7 +141,7 @@ class Sbom(pydantic.BaseModel):
     bom_format: Literal["CycloneDX"] = pydantic.Field(alias="bomFormat", default="CycloneDX")
     components: list[Component] = []
     metadata: Metadata = Metadata()
-    spec_version: str = pydantic.Field(alias="specVersion", default="1.4")
+    spec_version: str = pydantic.Field(alias="specVersion", default="1.6")
     version: int = 1
 
     def __add__(self, other: Union["Sbom", "SPDXSbom"]) -> "Sbom":
