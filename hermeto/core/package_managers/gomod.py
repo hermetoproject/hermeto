@@ -508,21 +508,6 @@ class GoWork(UserDict):
         """Return the go.work file path."""
         return self._path.path
 
-    def _parse(self, go: Go, run_params: dict[str, Any] = {}) -> "Self":
-        """Actually parse the go.work file and fill in the instance with returned data."""
-        # NOTE: This is only a temporary solution. This method is to be merged to __init__. We
-        # can't do that just yet because this is being called from fetch_gomod_source which is
-        # before we set up the correct Go toolchains. We don't need toolchains to query the GOWORK
-        # env variable, but we need correct toolchain for everything else, otherwise go might
-        # complain about not meeting the required versions, so make this effectively a "lazy"
-        # evaluation driven by the caller.
-        if self.data or self._path is None:
-            return self
-
-        go_work_json = self._get_go_work(go, run_params)
-        self.data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
-        return self
-
     @cached_property
     def workspace_paths(self) -> list[Path]:
         """Get a list of absolute paths to all workspace modules."""
