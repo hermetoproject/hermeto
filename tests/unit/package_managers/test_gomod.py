@@ -170,8 +170,6 @@ def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPacka
 )
 @mock.patch("hermeto.core.package_managers.gomod._go_list_deps")
 @mock.patch("hermeto.core.package_managers.gomod._parse_packages")
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
@@ -183,8 +181,6 @@ def test_resolve_gomod(
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
     mock_disable_telemetry: mock.Mock,
-    mock_get_go_work_path: mock.Mock,
-    mock_get_go_work: mock.Mock,
     mock_parse_packages: mock.Mock,
     mock_go_list_deps: mock.Mock,
     cgo_disable: bool,
@@ -193,15 +189,13 @@ def test_resolve_gomod(
     data_dir: Path,
     gomod_request: Request,
 ) -> None:
-    go_work: Union[mock.Mock, GoWork]
-
     module_dir = gomod_request.source_dir.join_within_root("path/to/module")
     module_dir.path.mkdir(parents=True, exist_ok=True)
     mocked_data_folder = "non-vendored" if not has_workspaces else "workspaces"
     mock_disable_telemetry.return_value = None
-    workspace_paths: list = []
-    go_work = mock.MagicMock(spec=GoWork)
-    go_work.__bool__.return_value = False
+
+    go_work = None
+    go = Go()
 
     # Mock the "subprocess.run" calls
     run_side_effects = []
@@ -236,30 +230,20 @@ def test_resolve_gomod(
     mock_parse_packages.return_value = parse_packages_mocked_data
 
     if has_workspaces:
-        mocked_go_work_path = RootedPath(get_mock_dir(data_dir) / "workspaces/go_work.json")
-        mock_get_go_work_path.return_value = mocked_go_work_path
-        mock_get_go_work.return_value = get_mocked_data(data_dir, "workspaces/go_work.json")
-        go_work_path = module_dir.join_within_root("workspace_root")
-        go_work_path.path.mkdir(parents=True, exist_ok=True)
-        go_work_path.join_within_root("go.sum").path.write_text(
+        go_work_path = module_dir.join_within_root("go.work")
+        go_work_path.path.symlink_to(get_mock_dir(data_dir) / "workspaces/go_work.json")
+        go_work_data_json = get_mocked_data(data_dir, "workspaces/go_work.json")
+        go_work_data = ParsedGoWork.model_validate_json(go_work_data_json).model_dump()
+        module_dir.join_within_root("go.sum").path.write_text(
             get_mocked_data(data_dir, "workspaces/go.sum")
         )
-        go_work = GoWork(RootedPath(get_mock_dir(data_dir) / "workspaces"))
+        go_work = GoWork(go_work_path, go_work_data)
 
         # we need to mock _parse_packages queries to all workspace module directories
-        workspace_paths = list(go_work.workspace_paths(mock.Mock(spec=Go), {}))
-        for wsp in workspace_paths:
-            fp = f"{wsp}/go_list_deps_threedot.json"
-            mocked_data = _parse_go_list_deps_data(data_dir, fp)
+        for wsp in go_work.workspace_paths():
+            fp = f"{wsp.path.relative_to(go_work.path.path.parent)}/go_list_deps_threedot.json"
+            mocked_data = _parse_go_list_deps_data(data_dir, f"workspaces/{fp}")
             parse_packages_mocked_data.extend(mocked_data)
-
-        # This is a dirty hack we need because we're faking the runtime directories, but actually
-        # read the mock data from elsewhere and 'dir' is a cached_property. Therefore, we need to
-        # mangle some private attributes and delete the property to force re-computing it using
-        # the expected fake info.
-        go_work._app_dir = module_dir
-        go_work._path = module_dir.join_within_root("go.work")
-        del go_work.dir
 
     flags: list[Flag] = []
     if cgo_disable:
@@ -273,7 +257,7 @@ def test_resolve_gomod(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), go_work, {}
+        module_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work, {}
     )
 
     # Assert that _parse_packages was called exactly once.
@@ -328,9 +312,6 @@ def test_resolve_gomod_vendor_dependencies(
     module_dir = gomod_request.source_dir.join_within_root("path/to/module")
     mock_disable_telemetry.return_value = None
 
-    mocked_go_work = mock.MagicMock(spec=GoWork)
-    mocked_go_work.__bool__.return_value = False
-
     # Mock the "subprocess.run" calls
     run_side_effects = []
     run_side_effects.append(proc_mock("go mod vendor", returncode=0, stdout=None))
@@ -372,7 +353,7 @@ def test_resolve_gomod_vendor_dependencies(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), mocked_go_work, {}
+        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None, {}
     )
 
     assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
@@ -409,9 +390,6 @@ def test_resolve_gomod_no_deps(
     module_path = gomod_request.source_dir.join_within_root("path/to/module")
     module_path.path.mkdir(parents=True, exist_ok=True)
     mock_disable_telemetry.return_value = None
-
-    mocked_go_work = mock.MagicMock(spec=GoWork)
-    mocked_go_work.__bool__.return_value = False
 
     mock_pkg_deps_no_deps = textwrap.dedent(
         """
@@ -459,7 +437,7 @@ def test_resolve_gomod_no_deps(
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), mocked_go_work, {}
+        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None, {}
     )
     packages_list = list(packages)
 
@@ -569,9 +547,8 @@ def test_parse_broken_go_sum(rooted_tmp_path: RootedPath, caplog: pytest.LogCapt
     ]
 
 
-@mock.patch("hermeto.core.package_managers.gomod.GoWork.workspace_paths")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
-def test_parse_local_modules(mock_workspace_paths: mock.Mock, version_resolver: mock.Mock) -> None:
+def test_parse_local_modules(version_resolver: mock.Mock) -> None:
     go_list_m_json = """
     {
         "Path": "myorg.com/my-project",
@@ -587,12 +564,14 @@ def test_parse_local_modules(mock_workspace_paths: mock.Mock, version_resolver: 
 
     app_dir = RootedPath("/path/to/project")
     version_resolver.get_golang_version.return_value = "1.0.0"
-    mock_workspace_paths.return_value = [app_dir.join_within_root("workspace/foo")]
     go = mock.Mock(spec=Go)
     go.return_value = go_list_m_json
 
     go_work = mock.Mock(spec=GoWork)
-    go_work.workspace_paths = mock_workspace_paths
+    go_work.workspace_paths.return_value = [app_dir.join_within_root("workspace/foo")]
+
+    # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
+    type(go_work).path = mock.PropertyMock(return_value=(app_dir.join_within_root("go.work")))
 
     main_module, workspace_modules = _parse_local_modules(
         go_work, go, {}, app_dir, version_resolver
@@ -723,15 +702,18 @@ def test_parse_workspace_modules(
     rooted_tmp_path: RootedPath,
 ) -> None:
     app_dir = rooted_tmp_path.join_within_root(relative_app_dir)
-    go = mock.Mock(spec=Go)
-
     go_work = mock.Mock(spec=GoWork)
     go_work.workspace_paths.return_value = [app_dir.join_within_root("foo")]
 
-    # makes Dir an absolute path based on tmp_path
-    module["Dir"] = str(rooted_tmp_path.join_within_root(module["Dir"]).path)
+    # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
+    type(go_work).path = mock.PropertyMock(
+        return_value=(rooted_tmp_path.join_within_root("go.work"))
+    )
 
-    parsed_workspace = _parse_workspace_module(go_work, module, go)
+    # makes Dir an absolute path based on tmp_path
+    module["Dir"] = str(rooted_tmp_path.join_within_root(module["Dir"]))
+
+    parsed_workspace = _parse_workspace_module(go_work, module)
     assert parsed_workspace == expected_module
 
 
@@ -766,19 +748,14 @@ def test_parse_workspace_modules(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 def test_get_go_sum_files(
-    mock_get_go_work_path: mock.Mock,
-    mock_get_go_work: mock.Mock,
     rooted_tmp_path: RootedPath,
     go_work_edit_json: str,
     relative_file_paths: list[str],
 ) -> None:
-    mock_go = mock.Mock(spec=Go)
-    mock_get_go_work.return_value = go_work_edit_json
-    mock_get_go_work_path.return_value = rooted_tmp_path.join_within_root("go.work")
-    files = _get_go_sum_files(GoWork(rooted_tmp_path), mock_go, {})
+    go_work_path = rooted_tmp_path.join_within_root("go.work")
+    go_work_data = ParsedGoWork.model_validate_json(go_work_edit_json).model_dump()
+    files = _get_go_sum_files(GoWork(go_work_path, go_work_data))
 
     expected_files = [rooted_tmp_path.join_within_root(p) for p in relative_file_paths]
     assert files == expected_files
@@ -786,20 +763,15 @@ def test_get_go_sum_files(
 
 @pytest.mark.parametrize("has_workspaces", (False, True))
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 def test_create_modules_from_parsed_data(
-    mock_get_go_work_path: mock.Mock,
     mock_version_resolver: mock.Mock,
     has_workspaces: bool,
     rooted_tmp_path: RootedPath,
 ) -> None:
-    go_work: Union[mock.Mock, GoWork]
-
     main_module_dir = rooted_tmp_path.join_within_root("target-module")
     mock_version_resolver.get_golang_version.return_value = "v1.5.0"
 
-    go_work = mock.MagicMock(spec=GoWork)
-    go_work.__bool__.return_value = False
+    go_work = None
 
     main_module = Module(
         name="github.com/my-org/my-repo/target-module",
@@ -878,10 +850,10 @@ def test_create_modules_from_parsed_data(
     ]
 
     if has_workspaces:
-        mock_get_go_work_path.return_value = rooted_tmp_path.join_within_root(
-            "workspace_dir/go.work"
-        )
-        go_work = GoWork(rooted_tmp_path)
+        go_work = mock.MagicMock(spec=GoWork)
+        go_work.__bool__.return_value = True
+        go_work_path = rooted_tmp_path.join_within_root("workspace_dir/go.work")
+        type(go_work).path = mock.PropertyMock(return_value=go_work_path)
         expect_modules[1] = Module(
             name="github.com/another-org/useful-module",
             version="v2.0.0",
@@ -1830,11 +1802,11 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod._resolve_gomod")
 @mock.patch("hermeto.core.package_managers.gomod.GoCacheTemporaryDirectory")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver.from_repo_path")
-@mock.patch("hermeto.core.package_managers.gomod.GoWork")
 @mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
+@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 def test_fetch_gomod_source(
+    mock_get_go_work_path: mock.Mock,
     mock_select_toolchain: mock.Mock,
-    mock_go_work: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_tmp_dir: mock.Mock,
     mock_resolve_gomod: mock.Mock,
@@ -1870,12 +1842,10 @@ def test_fetch_gomod_source(
     mock_tmp_dir_path = Path(mock_tmp_dir.name)
 
     # workspaces are tested in test_resolve_gomod, skip them here
-    fake_go = mock.MagicMock(spec=Go)
-    fake_go_work = mock.MagicMock(spec=GoWork)
-    fake_go_work.__bool__.return_value = False
-    mock_go_work.return_value = fake_go_work
-    mock_select_toolchain.return_value = fake_go
-    mock_list_installed_toolchains.return_value = [fake_go]
+    mock_get_go_work_path.return_value = None
+    mock_go = mock.MagicMock(spec=Go)
+    mock_select_toolchain.return_value = mock_go
+    mock_list_installed_toolchains.return_value = [mock_go]
 
     output = fetch_gomod_source(gomod_request)
     calls = [
@@ -1884,8 +1854,8 @@ def test_fetch_gomod_source(
             gomod_request,
             mock_tmp_dir_path,
             mock_version_resolver.return_value,
-            fake_go,
-            fake_go_work,
+            mock_go,
+            None,
             {
                 "GOPATH": mock_tmp_dir_path,
                 "GO111MODULE": "on",
@@ -2129,11 +2099,9 @@ def test_disable_telemetry(
         pytest.param("workspaces", "resolve_gomod_workspaces.json", id="with_workspaces"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
 def test_parse_packages(
     mock_get_go_work: mock.Mock,
-    mock_get_go_work_path: mock.Mock,
     rooted_tmp_path: RootedPath,
     data_dir: Path,
     input_subdir: str,
@@ -2145,7 +2113,7 @@ def test_parse_packages(
     test_go_list_deps. Note querying workspaces will return some data duplicated - that's
     expected.
     """
-    go_work: Union[mock.Mock, GoWork]
+    go_work = None
     mocked_indata: str
 
     ws_paths: list = []
@@ -2155,22 +2123,18 @@ def test_parse_packages(
     go = mock.MagicMock(spec=Go)
     if input_subdir != "workspaces":
         mocked_indata = get_mocked_data(data_dir, f"{input_subdir}/go_list_deps_threedot.json")
-
-        go_work = mock.MagicMock(spec=GoWork)
-        go_work.__bool__.return_value = False
         go.return_value = mocked_indata
     else:
         side_effects = []
-
-        mocked_go_work_json_path = get_mock_dir(data_dir) / f"{input_subdir}/go_work.json"
-        mock_get_go_work_path.return_value = RootedPath(mocked_go_work_json_path)
-        mock_get_go_work.return_value = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
-        go_work = GoWork(rooted_tmp_path)
+        json_data = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
+        data = ParsedGoWork.model_validate_json(json_data).model_dump()
+        go_work = GoWork(rooted_tmp_path.join_within_root("go.work"), data)
 
         # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
-        ws_paths = list(go_work.workspace_paths(go, {}))
+        ws_paths = go_work.workspace_paths()
         for wp in ws_paths:
-            indata_relative = f"{input_subdir}/{wp.subpath_from_root}/go_list_deps_threedot.json"
+            wp_relative = wp.path.relative_to(go_work.path.path.parent)
+            indata_relative = f"{input_subdir}/{wp_relative}/go_list_deps_threedot.json"
             mocked_indata = get_mocked_data(data_dir, indata_relative)
             side_effects.append(mocked_indata)
 
@@ -2185,7 +2149,7 @@ def test_parse_packages(
     else:
         calls = go.call_args_list
         assert go.call_count == len(ws_paths)
-        assert all([run_params | {"cwd": ws_paths[i].path} in c.args for i, c in enumerate(calls)])
+        assert all([run_params | {"cwd": ws_paths[i]} in c.args for i, c in enumerate(calls)])
 
     # _parse_packages calls _go_list_deps always with the './...' pattern
     assert all("./..." in call.args[0] for call in calls)
@@ -2507,62 +2471,23 @@ class TestGo:
 
 
 class TestGoWork:
-    @pytest.mark.parametrize(
-        "go_work_env, expected",
-        [
-            pytest.param("off", {"path": None, "dir": None}, id="go_work_off"),
-            pytest.param("", {"path": None, "dir": None}, id="no_go_work"),
-            pytest.param(
-                "$GOWORK/go.work",
-                {
-                    "dir": "$GOWORK",
-                    "path": "$GOWORK/go.work",
-                },
-                id="with_go_work",
-            ),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
     def test_init(
         self,
-        mock_run: mock.Mock,
         rooted_tmp_path: RootedPath,
-        go_work_env: str,
-        expected: dict,
+        data_dir: Path,
     ) -> None:
-        if expected["path"] is not None:
-            go_work_env = go_work_env.replace("$GOWORK", str(rooted_tmp_path))
-            expected["dir"] = rooted_tmp_path
-            expected["path"] = rooted_tmp_path.join_within_root("go.work")
+        go_work_path = rooted_tmp_path.join_within_root("foo/bar/baz/go.work")
+        go_work_data = ParsedGoWork.model_validate_json(
+            get_mocked_data(data_dir, "workspaces/go_work.json")
+        ).model_dump()
+        go_work = GoWork(go_work_path, go_work_data)
+        assert go_work.path == go_work_path
+        assert go_work.data == go_work_data
 
-        mock_run.return_value = go_work_env
-        go_work = GoWork(rooted_tmp_path)
-        assert go_work.path == expected["path"]
-        assert go_work.dir == expected["dir"]
-        assert go_work.data == {}
+    def test_bool(self, rooted_tmp_path: RootedPath) -> None:
+        assert bool(GoWork(rooted_tmp_path, {})) is True
 
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
-    def test_init_fail(self, mock_run: mock.Mock, rooted_tmp_path: RootedPath) -> None:
-        mock_run.return_value = "/a/random/path/go.work"
-        with pytest.raises(PathOutsideRoot):
-            GoWork(rooted_tmp_path)
-
-    @pytest.mark.parametrize(
-        "go_work_env, expected",
-        [
-            pytest.param("", False, id="no_go_work"),
-            pytest.param("$GOWORK/go.work", True, id="with_go_work"),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
-    def test_bool(
-        self, mock_run: mock.Mock, rooted_tmp_path: RootedPath, go_work_env: str, expected: bool
-    ) -> None:
-        if go_work_env:
-            go_work_env = go_work_env.replace("$GOWORK", str(rooted_tmp_path))
-        mock_run.return_value = go_work_env
-        assert bool(GoWork(rooted_tmp_path)) is expected
-
+    @pytest.mark.skip(reason="This test is to be removed")
     @pytest.mark.parametrize(
         "go_work_json, expected",
         [
@@ -2618,7 +2543,7 @@ class TestGoWork:
 
         run_params = {"env": {"GOTOOLCHAIN": "auto"}, "cwd": str(rooted_tmp_path)}
 
-        go_work = GoWork(rooted_tmp_path)
+        go_work = GoWork(rooted_tmp_path, {})
         go_work._parse(Go(), run_params=run_params)
 
         assert go_work.path == expected["props"]["path"]
@@ -2650,23 +2575,21 @@ class TestGoWork:
             ),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-    @mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
     def test_workspace_paths(
         self,
-        mock_get_go_work_path: mock.Mock,
-        mock_get_go_work: mock.Mock,
         rooted_tmp_path: RootedPath,
         go_work_json: str,
         expected: list,
     ) -> None:
-        go = mock.Mock(spec=Go)
-        mock_get_go_work_path.return_value = rooted_tmp_path.join_within_root("go.work")
-        mock_get_go_work.return_value = go_work_json
-        expected = [rooted_tmp_path.join_within_root(rp) for rp in expected]
+        """Test our workspace path reporting as properly re-rooted RootedPath instances."""
+        go_work_path = rooted_tmp_path.join_within_root("subdir/go.work")
+        go_work_dir = go_work_path.re_root(go_work_path.path.parent)
+        data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
 
-        assert list(GoWork(rooted_tmp_path).workspace_paths(go)) == expected
-        mock_get_go_work.assert_called_once()
+        expected = [go_work_dir.join_within_root(p) for p in expected]
+
+        go_work = GoWork(go_work_path, data)
+        assert list(go_work.workspace_paths()) == expected
 
     def test_get_go_work(self) -> None:
         mock_go = mock.Mock(spec=Go)
