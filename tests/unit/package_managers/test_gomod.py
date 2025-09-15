@@ -2503,8 +2503,15 @@ class TestGoWork:
         assert go_work.path == go_work_path
         assert go_work.data == go_work_data
 
-    def test_bool(self, rooted_tmp_path: RootedPath) -> None:
-        assert bool(GoWork(rooted_tmp_path, {})) is True
+    @pytest.mark.parametrize(
+        "go_work_data, expected",
+        [
+            pytest.param({}, False, id="empty"),
+            pytest.param({"foo": "bar"}, True, id="with_data"),
+        ],
+    )
+    def test_bool(self, rooted_tmp_path: RootedPath, go_work_data: dict, expected: bool) -> None:
+        assert bool(GoWork(rooted_tmp_path, go_work_data)) is expected
 
     @pytest.mark.skip(reason="This test is to be removed")
     @pytest.mark.parametrize(
