@@ -2608,3 +2608,12 @@ class TestGoWork:
 
         assert list(GoWork(rooted_tmp_path).workspace_paths(go)) == expected
         mock_get_go_work.assert_called_once()
+
+    def test_get_go_work(self) -> None:
+        mock_go = mock.Mock(spec=Go)
+        mock_go.return_value = None
+
+        GoWork._get_go_work(mock_go, {})
+
+        mock_go.assert_called_once()
+        assert mock_go.call_args[0][0] == ["work", "edit", "-json"]
