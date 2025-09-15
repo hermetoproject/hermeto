@@ -484,7 +484,7 @@ class GoWork(UserDict):
         return cls(go_work_path, data)
 
     def __bool__(self) -> bool:
-        return self._path is not None
+        return bool(self.data)
 
     @staticmethod
     def _get_go_work(go: Go, run_params: dict[str, Any]) -> str:
