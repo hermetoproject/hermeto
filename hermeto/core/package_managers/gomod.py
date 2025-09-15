@@ -496,14 +496,6 @@ class GoWork(UserDict):
         return self._path
 
     @cached_property
-    def dir(self) -> Optional[RootedPath]:
-        """Return the base directory for the go.work file."""
-        if self._path is None:
-            return None
-
-        return RootedPath(self._path.root).join_within_root(self._path.subpath_from_root.parent)
-
-    @cached_property
     def path(self) -> Path:
         """Return the go.work file path."""
         return self._path.path
