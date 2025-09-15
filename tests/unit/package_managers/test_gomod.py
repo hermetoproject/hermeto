@@ -18,7 +18,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.sbom import Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
     Go,
     GoWork,
@@ -1730,7 +1730,9 @@ def test_missing_gomod_file(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[Property(name=f"{APP_NAME}:missing_hash:in_file", value="go.sum")],
+                    properties=[
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum")
+                    ],
                 ),
                 Component(
                     name="golang.org/x/tools",
@@ -1796,7 +1798,7 @@ def test_missing_gomod_file(
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
                     properties=[
-                        Property(name=f"{APP_NAME}:missing_hash:in_file", value="path/go.sum")
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum")
                     ],
                 ),
                 Component(
@@ -1824,7 +1826,7 @@ def test_fetch_gomod_source(
     gomod_request: Request,
     packages_output_by_path: dict[str, ResolvedGoModule],
     expect_components: list[Component],
-    env_variables: list[dict[str, Any]],
+    env_variables: list[EnvironmentVariable],
 ) -> None:
     def resolve_gomod_mocked(
         app_dir: RootedPath,
