@@ -517,7 +517,7 @@ class GoWork(UserDict):
         self.data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
         return self
 
-    def workspace_paths(self, go: Go, run_params: dict[str, Any] = {}) -> Iterable[RootedPath]:
+    def workspace_paths(self, go: Go, run_params: dict[str, Any] = {}) -> list[RootedPath]:
         """Get a list of paths to all workspace modules.
 
         :return:RootedPath instance iterable where root is go.work's containing directory
@@ -531,7 +531,7 @@ class GoWork(UserDict):
         # This re-root is going to be useful when constructing workspace ParsedModule.
         # mypy doesn't see that self.dir is directly connected to self._path which we checked
         go_work_dir_reroot = RootedPath(self.dir.path)  # type: ignore
-        return (go_work_dir_reroot.join_within_root(p["disk_path"]) for p in self["use"])
+        return [go_work_dir_reroot.join_within_root(p["disk_path"]) for p in self["use"]]
 
 
 ModuleID = tuple[str, str]
