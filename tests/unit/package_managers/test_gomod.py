@@ -241,8 +241,8 @@ def test_resolve_gomod(
         go_work = GoWork.from_file(go_work_path, go, {})
 
         # we need to mock _parse_packages queries to all workspace module directories
-        for wsp in go_work.workspace_paths():
-            fp = f"{wsp.path.relative_to(go_work.path.parent)}/go_list_deps_threedot.json"
+        for wsp in go_work.workspace_paths:
+            fp = f"{wsp.relative_to(go_work.path.parent)}/go_list_deps_threedot.json"
             mocked_data = _parse_go_list_deps_data(data_dir, f"workspaces/{fp}")
             parse_packages_mocked_data.extend(mocked_data)
 
@@ -569,10 +569,10 @@ def test_parse_local_modules(version_resolver: mock.Mock) -> None:
     go.return_value = go_list_m_json
 
     go_work = mock.Mock(spec=GoWork)
-    go_work.workspace_paths.return_value = [app_dir.join_within_root("workspace/foo")]
 
     # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
     type(go_work).path = mock.PropertyMock(return_value=(app_dir.path / "go.work"))
+    type(go_work).workspace_paths = mock.PropertyMock(return_value=[app_dir.path / "workspace/foo"])
 
     main_module, workspace_modules = _parse_local_modules(
         go_work, go, {}, app_dir, version_resolver
@@ -700,17 +700,17 @@ def test_parse_workspace_modules(
     relative_app_dir: str,
     module: dict[str, Any],
     expected_module: ParsedModule,
-    rooted_tmp_path: RootedPath,
+    tmp_path: Path,
 ) -> None:
-    app_dir = rooted_tmp_path.join_within_root(relative_app_dir)
+    app_dir = tmp_path / relative_app_dir
     go_work = mock.Mock(spec=GoWork)
-    go_work.workspace_paths.return_value = [app_dir.join_within_root("foo")]
 
     # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
-    type(go_work).path = mock.PropertyMock(return_value=(rooted_tmp_path.path / "go.work"))
+    type(go_work).path = mock.PropertyMock(return_value=(app_dir / "go.work"))
+    type(go_work).workspace_paths = mock.PropertyMock(return_value=[app_dir / "foo"])
 
     # makes Dir an absolute path based on tmp_path
-    module["Dir"] = str(rooted_tmp_path.join_within_root(module["Dir"]))
+    module["Dir"] = str(tmp_path / module["Dir"])
 
     parsed_workspace = _parse_workspace_module(go_work, module)
     assert parsed_workspace == expected_module
@@ -2132,9 +2132,9 @@ def test_parse_packages(
         go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go, {})
 
         # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
-        ws_paths = go_work.workspace_paths()
+        ws_paths = go_work.workspace_paths
         for wp in ws_paths:
-            wp_relative = wp.path.relative_to(go_work.path.parent)
+            wp_relative = wp.relative_to(go_work.path.parent)
             indata_relative = f"{input_subdir}/{wp_relative}/go_list_deps_threedot.json"
             mocked_indata = get_mocked_data(data_dir, indata_relative)
             side_effects.append(mocked_indata)
@@ -2612,12 +2612,13 @@ class TestGoWork:
         """Test our workspace path reporting as properly re-rooted RootedPath instances."""
         mock_get_go_work.return_value = go_work_json
         go_work_path = rooted_tmp_path.join_within_root("subdir/go.work")
-        go_work_dir = go_work_path.re_root(go_work_path.path.parent)
+        mock_get_go_work.return_value = go_work_json
 
-        expected = [go_work_dir.join_within_root(p) for p in expected]
+        expected = [go_work_path.path.parent / p for p in expected]
 
         go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
-        assert list(go_work.workspace_paths()) == expected
+        assert list(go_work.workspace_paths) == expected
+        mock_get_go_work.assert_called_once()
 
     def test_get_go_work(self) -> None:
         mock_go = mock.Mock(spec=Go)
