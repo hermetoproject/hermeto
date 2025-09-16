@@ -2090,7 +2090,6 @@ def test_disable_telemetry(
 def test_parse_packages(
     mock_get_go_work: mock.Mock,
     mock_get_go_work_path: mock.Mock,
-    request: pytest.FixtureRequest,
     rooted_tmp_path: RootedPath,
     data_dir: Path,
     input_subdir: str,
@@ -2110,7 +2109,7 @@ def test_parse_packages(
     expected = [ParsedPackage(**package) for package in mocked_outdata["packages"]]
 
     go = mock.MagicMock()
-    if request.node.callspec.id == "without_workspaces":
+    if input_subdir != "workspaces":
         mocked_indata = get_mocked_data(data_dir, f"{input_subdir}/go_list_deps_threedot.json")
 
         go_work = mock.MagicMock()
@@ -2137,7 +2136,7 @@ def test_parse_packages(
     pkgs = _parse_packages(go_work, go, run_params)
 
     calls = go.call_args_list
-    if request.node.callspec.id == "without_workspaces":
+    if input_subdir != "workspaces":
         go.assert_called_once()
     else:
         calls = go.call_args_list
