@@ -242,7 +242,7 @@ def test_resolve_gomod(
 
         # we need to mock _parse_packages queries to all workspace module directories
         for wsp in go_work.workspace_paths():
-            fp = f"{wsp.path.relative_to(go_work.path.path.parent)}/go_list_deps_threedot.json"
+            fp = f"{wsp.path.relative_to(go_work.path.parent)}/go_list_deps_threedot.json"
             mocked_data = _parse_go_list_deps_data(data_dir, f"workspaces/{fp}")
             parse_packages_mocked_data.extend(mocked_data)
 
@@ -572,7 +572,7 @@ def test_parse_local_modules(version_resolver: mock.Mock) -> None:
     go_work.workspace_paths.return_value = [app_dir.join_within_root("workspace/foo")]
 
     # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
-    type(go_work).path = mock.PropertyMock(return_value=(app_dir.join_within_root("go.work")))
+    type(go_work).path = mock.PropertyMock(return_value=(app_dir.path / "go.work"))
 
     main_module, workspace_modules = _parse_local_modules(
         go_work, go, {}, app_dir, version_resolver
@@ -707,9 +707,7 @@ def test_parse_workspace_modules(
     go_work.workspace_paths.return_value = [app_dir.join_within_root("foo")]
 
     # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
-    type(go_work).path = mock.PropertyMock(
-        return_value=(rooted_tmp_path.join_within_root("go.work"))
-    )
+    type(go_work).path = mock.PropertyMock(return_value=(rooted_tmp_path.path / "go.work"))
 
     # makes Dir an absolute path based on tmp_path
     module["Dir"] = str(rooted_tmp_path.join_within_root(module["Dir"]))
@@ -857,7 +855,7 @@ def test_create_modules_from_parsed_data(
         go_work = mock.MagicMock(spec=GoWork)
         go_work.__bool__.return_value = True
         go_work_path = rooted_tmp_path.join_within_root("workspace_dir/go.work")
-        type(go_work).path = mock.PropertyMock(return_value=go_work_path)
+        type(go_work).rooted_path = mock.PropertyMock(return_value=go_work_path)
         expect_modules[1] = Module(
             name="github.com/another-org/useful-module",
             version="v2.0.0",
@@ -2136,7 +2134,7 @@ def test_parse_packages(
         # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
         ws_paths = go_work.workspace_paths()
         for wp in ws_paths:
-            wp_relative = wp.path.relative_to(go_work.path.path.parent)
+            wp_relative = wp.path.relative_to(go_work.path.parent)
             indata_relative = f"{input_subdir}/{wp_relative}/go_list_deps_threedot.json"
             mocked_indata = get_mocked_data(data_dir, indata_relative)
             side_effects.append(mocked_indata)
@@ -2484,7 +2482,8 @@ class TestGoWork:
             get_mocked_data(data_dir, "workspaces/go_work.json")
         ).model_dump()
         go_work = GoWork(go_work_path, go_work_data)
-        assert go_work.path == go_work_path
+        assert go_work.rooted_path == go_work_path
+        assert go_work.path == go_work_path.path
         assert go_work.data == go_work_data
 
     @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
@@ -2500,7 +2499,8 @@ class TestGoWork:
             get_mocked_data(data_dir, "workspaces/go_work.json")
         ).model_dump()
         go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
-        assert go_work.path == go_work_path
+        assert go_work.rooted_path == go_work_path
+        assert go_work.path == go_work_path.path
         assert go_work.data == go_work_data
 
     @pytest.mark.parametrize(
