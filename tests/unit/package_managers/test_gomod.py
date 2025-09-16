@@ -184,7 +184,7 @@ def test_resolve_gomod(
     mocked_data_folder = "non-vendored" if not has_workspaces else "workspaces"
     mock_disable_telemetry.return_value = None
     workspace_paths: list = []
-    go_work = mock.MagicMock()
+    go_work = mock.MagicMock(spec=GoWork)
     go_work.__bool__.return_value = False
 
     # Mock the "subprocess.run" calls
@@ -232,7 +232,7 @@ def test_resolve_gomod(
         go_work = GoWork(RootedPath(get_mock_dir(data_dir) / "workspaces"))
 
         # we need to mock _parse_packages queries to all workspace module directories
-        workspace_paths = list(go_work.workspace_paths(mock.Mock(), {}))
+        workspace_paths = list(go_work.workspace_paths(mock.Mock(spec=Go), {}))
         for wsp in workspace_paths:
             fp = f"{wsp}/go_list_deps_threedot.json"
             mocked_data = _parse_go_list_deps_data(data_dir, fp)
@@ -317,7 +317,7 @@ def test_resolve_gomod_vendor_dependencies(
     module_dir = gomod_request.source_dir.join_within_root("path/to/module")
     mock_disable_telemetry.return_value = None
 
-    mocked_go_work = mock.MagicMock()
+    mocked_go_work = mock.MagicMock(spec=GoWork)
     mocked_go_work.__bool__.return_value = False
 
     # Mock the "subprocess.run" calls
@@ -407,7 +407,7 @@ def test_resolve_gomod_no_deps(
     mock_disable_telemetry.return_value = None
     mock_go_locate_toolchain.return_value = GO_CMD_PATH
 
-    mocked_go_work = mock.MagicMock()
+    mocked_go_work = mock.MagicMock(spec=GoWork)
     mocked_go_work.__bool__.return_value = False
 
     mock_pkg_deps_no_deps = textwrap.dedent(
@@ -493,8 +493,8 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     tmp_path = gomod_request.source_dir.path
     tmp_path.joinpath(symlinked_file).parent.mkdir(parents=True, exist_ok=True)
     tmp_path.joinpath(symlinked_file).symlink_to("/foo")
-    version_resolver = mock.Mock()
-    go_work = mock.Mock()
+    version_resolver = mock.Mock(spec=ModuleVersionResolver)
+    go_work = mock.Mock(spec=GoWork)
 
     app_dir = gomod_request.source_dir
 
@@ -587,10 +587,10 @@ def test_parse_local_modules(mock_workspace_paths: mock.Mock, version_resolver: 
     app_dir = RootedPath("/path/to/project")
     version_resolver.get_golang_version.return_value = "1.0.0"
     mock_workspace_paths.return_value = [app_dir.join_within_root("workspace/foo")]
-    go = mock.Mock()
+    go = mock.Mock(spec=Go)
     go.return_value = go_list_m_json
 
-    go_work = mock.Mock()
+    go_work = mock.Mock(spec=GoWork)
     go_work.workspace_paths = mock_workspace_paths
 
     main_module, workspace_modules = _parse_local_modules(
@@ -722,9 +722,9 @@ def test_parse_workspace_modules(
     rooted_tmp_path: RootedPath,
 ) -> None:
     app_dir = rooted_tmp_path.join_within_root(relative_app_dir)
-    go = mock.Mock()
+    go = mock.Mock(spec=Go)
 
-    go_work = mock.Mock()
+    go_work = mock.Mock(spec=GoWork)
     go_work.workspace_paths.return_value = [app_dir.join_within_root("foo")]
 
     # makes Dir an absolute path based on tmp_path
@@ -774,7 +774,7 @@ def test_get_go_sum_files(
     go_work_edit_json: str,
     relative_file_paths: list[str],
 ) -> None:
-    mock_go = mock.Mock()
+    mock_go = mock.Mock(spec=Go)
     mock_get_go_work.return_value = go_work_edit_json
     mock_get_go_work_path.return_value = rooted_tmp_path.join_within_root("go.work")
     files = _get_go_sum_files(GoWork(rooted_tmp_path), mock_go, {})
@@ -797,7 +797,7 @@ def test_create_modules_from_parsed_data(
     main_module_dir = rooted_tmp_path.join_within_root("target-module")
     mock_version_resolver.get_golang_version.return_value = "v1.5.0"
 
-    go_work = mock.MagicMock()
+    go_work = mock.MagicMock(spec=GoWork)
     go_work.__bool__.return_value = False
 
     main_module = Module(
@@ -1846,7 +1846,7 @@ def test_fetch_gomod_source(
     mock_get_repository_name.return_value = "github.com/my-org/my-repo"
 
     # workspaces are tested in test_resolve_gomod, skip them here
-    fake_go_work = mock.MagicMock()
+    fake_go_work = mock.MagicMock(spec=GoWork)
     fake_go_work.__bool__.return_value = False
     mock_go_work.return_value = fake_go_work
 
@@ -2109,11 +2109,11 @@ def test_parse_packages(
     mocked_outdata = json.loads(get_mocked_data(data_dir, f"expected-results/{expected_outfile}"))
     expected = [ParsedPackage(**package) for package in mocked_outdata["packages"]]
 
-    go = mock.MagicMock()
+    go = mock.MagicMock(spec=Go)
     if input_subdir != "workspaces":
         mocked_indata = get_mocked_data(data_dir, f"{input_subdir}/go_list_deps_threedot.json")
 
-        go_work = mock.MagicMock()
+        go_work = mock.MagicMock(spec=GoWork)
         go_work.__bool__.return_value = False
         go.return_value = mocked_indata
     else:
@@ -2601,7 +2601,7 @@ class TestGoWork:
         go_work_json: str,
         expected: list,
     ) -> None:
-        go = mock.Mock()
+        go = mock.Mock(spec=Go)
         mock_get_go_work_path.return_value = rooted_tmp_path.join_within_root("go.work")
         mock_get_go_work.return_value = go_work_json
         expected = [rooted_tmp_path.join_within_root(rp) for rp in expected]
