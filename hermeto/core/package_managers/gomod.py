@@ -523,15 +523,14 @@ class GoWork(UserDict):
         self.data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
         return self
 
-    def workspace_paths(self) -> list[RootedPath]:
-        """Get a list of paths to all workspace modules.
+    @cached_property
+    def workspace_paths(self) -> list[Path]:
+        """Get a list of absolute paths to all workspace modules."""
+        _dir = RootedPath(self._path.root).join_within_root(self.path.parent)
+        wp_paths = [p["disk_path"] for p in self["use"]]
 
-        :return:RootedPath instance iterable where root is go.work's containing directory
-        """
-        # This re-root is going to be useful when constructing workspace ParsedModule.
-        # mypy doesn't see that self.dir is directly connected to self._path which we checked
-        go_work_dir_reroot = RootedPath(self._path.path.parent)  # type: ignore
-        return [go_work_dir_reroot.join_within_root(p["disk_path"]) for p in self["use"]]
+        # Make sure the workspace paths don't point outside our rooted path
+        return [(self.path.parent / wp).resolve() for wp in wp_paths if _dir.join_within_root(wp)]
 
 
 ModuleID = tuple[str, str]
@@ -1035,7 +1034,7 @@ def _parse_packages(
     else:
         # If there are workspace modules we need to run 'list -e ./...' under every local module
         # path because 'go list' command isn't fully properly workspace context aware
-        for wsp in go_work.workspace_paths():
+        for wsp in go_work.workspace_paths:
             log.debug(f"Querying workspace module '{wsp}' for list of packages")
 
             packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp}))
@@ -1184,7 +1183,7 @@ def _parse_workspace_module(go_work: GoWork, module: ModuleDict) -> ParsedModule
     The replacement info returned will always be relative to the go.work file path.
     """
     # there's only ever going to be a single match
-    for wp in go_work.workspace_paths():
+    for wp in go_work.workspace_paths:
         if str(wp) == module["Dir"]:
             break
     else:
@@ -1193,7 +1192,7 @@ def _parse_workspace_module(go_work: GoWork, module: ModuleDict) -> ParsedModule
 
     return ParsedModule(
         path=module["Path"],
-        replace=ParsedModule(path=f"./{wp.path.relative_to(go_work.path.parent)}"),
+        replace=ParsedModule(path=f"./{wp.relative_to(go_work.path.parent)}"),
     )
 
 
@@ -1216,9 +1215,7 @@ def _get_go_sum_files(
 ) -> list[RootedPath]:
     """Find all go.sum files present in the related workspaces."""
     go_work_rooted = go_work.rooted_path
-    go_sums = [
-        go_work_rooted.join_within_root(wp.path / "go.sum") for wp in go_work.workspace_paths()
-    ]
+    go_sums = [go_work_rooted.join_within_root(wp / "go.sum") for wp in go_work.workspace_paths]
     go_sums.append(go_work_rooted.join_within_root(go_work.path.parent / "go.work.sum"))
 
     return go_sums
