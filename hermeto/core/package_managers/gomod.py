@@ -491,8 +491,8 @@ class GoWork(UserDict):
         return go(["work", "edit", "-json"], run_params)
 
     @property
-    def path(self) -> RootedPath:
-        """Return the go.work file path."""
+    def rooted_path(self) -> RootedPath:
+        """Return the go.work file path as rooted."""
         return self._path
 
     @cached_property
@@ -502,6 +502,11 @@ class GoWork(UserDict):
             return None
 
         return RootedPath(self._path.root).join_within_root(self._path.subpath_from_root.parent)
+
+    @cached_property
+    def path(self) -> Path:
+        """Return the go.work file path."""
+        return self._path.path
 
     def _parse(self, go: Go, run_params: dict[str, Any] = {}) -> "Self":
         """Actually parse the go.work file and fill in the instance with returned data."""
@@ -578,7 +583,7 @@ def _create_modules_from_parsed_data(
 
             if mod_id not in modules_in_go_sum:
                 if go_work:
-                    go_work_subpath = go_work.path.subpath_from_root
+                    go_work_subpath = go_work.rooted_path.subpath_from_root
                     missing_hash_in_file = go_work_subpath.parent / "go.work.sum"
                 else:
                     missing_hash_in_file = main_module_dir.subpath_from_root / "go.sum"
@@ -1188,7 +1193,7 @@ def _parse_workspace_module(go_work: GoWork, module: ModuleDict) -> ParsedModule
 
     return ParsedModule(
         path=module["Path"],
-        replace=ParsedModule(path=f"./{wp.path.relative_to(go_work.path.path.parent)}"),
+        replace=ParsedModule(path=f"./{wp.path.relative_to(go_work.path.parent)}"),
     )
 
 
@@ -1210,11 +1215,11 @@ def _get_go_sum_files(
     go_work: GoWork,
 ) -> list[RootedPath]:
     """Find all go.sum files present in the related workspaces."""
-    go_work_rooted = go_work.path
+    go_work_rooted = go_work.rooted_path
     go_sums = [
         go_work_rooted.join_within_root(wp.path / "go.sum") for wp in go_work.workspace_paths()
     ]
-    go_sums.append(go_work_rooted.join_within_root(go_work.path.path.parent / "go.work.sum"))
+    go_sums.append(go_work_rooted.join_within_root(go_work.path.parent / "go.work.sum"))
 
     return go_sums
 
