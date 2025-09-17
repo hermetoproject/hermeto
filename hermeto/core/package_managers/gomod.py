@@ -435,7 +435,8 @@ class Go:
         log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
         return str(go_dest_dir / "bin/go")
 
-    def _retry(self, cmd: list[str], **kwargs: Any) -> str:
+    @staticmethod
+    def _retry(cmd: list[str], **kwargs: Any) -> str:
         """Run gomod command in a networking context.
 
         Commands that involve networking, such as dependency downloads, may fail due to network
@@ -455,7 +456,7 @@ class Go:
             reraise=True,
         )
         def run_go(_cmd: list[str], **kwargs: Any) -> str:
-            return self._run(_cmd, **kwargs)
+            return Go._run(_cmd, **kwargs)
 
         try:
             return run_go(cmd, **kwargs)
