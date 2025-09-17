@@ -461,6 +461,13 @@ class GoWork(UserDict):
         super().__init__(**data)
         self._path = go_work_path
 
+    @classmethod
+    def from_file(cls, go_work_path: RootedPath, go: Go, go_env: dict[str, Any]) -> "GoWork":
+        """Instantiate GoWork from an absolute path to the go.work file."""
+        go_work_json = cls._get_go_work(go, {"env": go_env, "cwd": go_work_path.path.parent})
+        data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
+        return cls(go_work_path, data)
+
     def __bool__(self) -> bool:
         return self._path is not None
 
@@ -705,9 +712,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
             tmp_dir._go_instance = go
             if (go_work_path := _get_go_work_path(go, main_module_dir)) is not None:
-                go_work_json = GoWork._get_go_work(go, {"env": {"GOTOOLCHAIN": "auto"}})
-                data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
-                go_work = GoWork(go_work_path, data)
+                go_work = GoWork.from_file(go_work_path, go, go_env=go_env)
 
             try:
                 resolve_result = _resolve_gomod(
