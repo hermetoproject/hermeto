@@ -2087,7 +2087,7 @@ def test_disable_telemetry(
     mock_run_cmd.side_effect = [GOTELEMETRY, None]
 
     go = Go()
-    cmd = [go._bin, "telemetry", "off"]
+    cmd = [go.binary, "telemetry", "off"]
     params = {"env": {"GOTOOLCHAIN": "auto"}}
     _disable_telemetry(go, params)
 
@@ -2238,7 +2238,7 @@ class TestGo:
         else:
             go = Go()
 
-        cmd = [go._bin, "mod", "download"]
+        cmd = [go.binary, "mod", "download"]
         go._retry(cmd, **params)
         mock_run.assert_called_with(cmd, params)
         assert mock_run.call_count == tries_needed
@@ -2256,10 +2256,10 @@ class TestGo:
         mock_run.side_effect = [failure] * 5
         go = Go()
 
-        error_msg = f"Go execution failed: {APP_NAME} re-tried running `{go._bin} mod download` command 5 times."
+        error_msg = f"Go execution failed: {APP_NAME} re-tried running `{go.binary} mod download` command 5 times."
 
         with pytest.raises(PackageManagerError, match=error_msg):
-            go._retry([go._bin, "mod", "download"])
+            go._retry([go.binary, "mod", "download"])
 
         assert mock_run.call_count == 5
         assert mock_sleep.call_count == 4
@@ -2327,7 +2327,7 @@ class TestGo:
         go = Go()
         go(opts, retry=retry, params=env)
 
-        cmd = [go._bin, *opts]
+        cmd = [go.binary, *opts]
         if not retry:
             mock_run.assert_called_once_with(cmd, **env)
         else:
@@ -2394,7 +2394,7 @@ class TestGo:
 
         go = Go()
 
-        assert Path(go._bin) == go_bin_dir / "go"
+        assert Path(go.binary) == go_bin_dir / "go"
 
     @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
     def test_locate_toolchain_failure(
@@ -2406,7 +2406,7 @@ class TestGo:
         release = "go1.20"
         go = Go(release=release)
 
-        assert go._bin == GO_CMD_PATH
+        assert go.binary == GO_CMD_PATH
 
     @pytest.mark.parametrize(
         "release, expect, go_output",
