@@ -12,7 +12,6 @@ from unittest import mock
 
 import git
 import pytest
-from packaging import version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
@@ -50,7 +49,6 @@ from hermeto.core.package_managers.gomod import (
     _process_modules_json_stream,
     _resolve_gomod,
     _select_toolchain,
-    _setup_go_toolchain,
     _validate_local_replacements,
     _vendor_changed,
     _vendor_deps,
@@ -2035,58 +2033,6 @@ INVALID_VERSION_STRINGS = [
 )
 def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) -> None:
     assert _get_gomod_version(rooted_tmp_path.join_within_root("go.mod")) == (None, None)
-
-
-@pytest.mark.parametrize(
-    "go_mod_file, go_base_release, expected_toolchain",
-    [
-        pytest.param("", "go1.20.4", "1.20.4", id="mod_too_old_fallback_to_1.20"),
-        pytest.param("go 1.19", "go1.21.4", "1.20", id="mod_older_than_base_fallback_to_1.20"),
-        pytest.param("go 1.21.4", "go1.20.4", "1.21.0", id="base_older_than_mod"),
-        pytest.param("go 1.21.4", "go1.21.6", "1.21.0", id="mod_older_than_base_use_1.21.0"),
-        pytest.param("toolchain go1.21.4", "go1.21.6", "1.21.0", id="decide_based_on_toolchain"),
-    ],
-    indirect=["go_mod_file"],
-)
-@mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
-def test_setup_go_toolchain(
-    mock_go_locate_toolchain: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    go_mod_file: Path,
-    mock_go_release: mock.Mock,
-    go_base_release: str,
-    expected_toolchain: str,
-) -> None:
-    # Override the mock_go_release fixture behaviour for the purposes of this test
-    mock_go_release.side_effect = (go_base_release, f"go{expected_toolchain}")
-    mock_go_locate_toolchain.return_value = GO_CMD_PATH
-
-    go = _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
-    assert str(go.version) == expected_toolchain
-
-
-@pytest.mark.parametrize(
-    "unsupported_version",
-    [
-        pytest.param(("99.99.0", None), id="go_version_higher_than_max"),
-        pytest.param((None, "99.99.0"), id="toolchain_version_higher_than_max"),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.Go.version", new_callable=mock.PropertyMock)
-def test_setup_go_toolchain_failure(
-    mock_go_version: mock.Mock,
-    mock_get_gomod_version: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    unsupported_version: tuple[Optional[str], Optional[str]],
-) -> None:
-    mock_go_version.return_value = version.Version("1.21.0")
-    mock_get_gomod_version.return_value = unsupported_version
-    unsupported = unsupported_version[0] if unsupported_version[0] else unsupported_version[1]
-
-    error_msg = f"Required/recommended Go toolchain version '{unsupported}' is not supported yet."
-    with pytest.raises(PackageManagerError, match=error_msg):
-        _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
 
 
 @pytest.mark.parametrize(
