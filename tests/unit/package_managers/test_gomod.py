@@ -1223,7 +1223,7 @@ def test_go_list_deps_fail(
 
     with pytest.raises(PackageManagerError) as ex:
         _go_list_deps(Go(), "./...", {})
-        expect_error in str(ex)
+        assert expect_error in str(ex)
 
 
 def test_deduplicate_resolved_modules() -> None:
