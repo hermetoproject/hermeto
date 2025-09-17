@@ -1212,7 +1212,14 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
     ]
 
     mock_run_cmd.return_value = go_list_deps_json
-    call_args = ["go", "list", "-e", "-deps", "-json=ImportPath,Module,Standard,Deps", pattern]
+    call_args = [
+        GO_CMD_PATH,
+        "list",
+        "-e",
+        "-deps",
+        "-json=ImportPath,Module,Standard,Deps",
+        pattern,
+    ]
     assert list(_go_list_deps(Go(), pattern, {})) == parsed_packages
     mock_run_cmd.assert_called_once_with(call_args, {})
 
@@ -1467,7 +1474,7 @@ def test_vendor_deps(
 
     _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", enforcing_mode, run_params)
 
-    mock_run_cmd.assert_called_once_with(["go", go_vendor_cmd, "vendor"], **run_params)
+    mock_run_cmd.assert_called_once_with([GO_CMD_PATH, go_vendor_cmd, "vendor"], **run_params)
     mock_vendor_changed.assert_called_once_with(app_dir, enforcing_mode)
 
 
@@ -2342,7 +2349,7 @@ class TestGo:
         mock_run.side_effect = [failure]
 
         opts = ["mod", "download"]
-        cmd = ["go", *opts]
+        cmd = [GO_CMD_PATH, *opts]
         error_msg = "Go execution failed: "
         if retry:
             error_msg += f"{APP_NAME} re-tried running `{' '.join(cmd)}` command {tries} times."
@@ -2398,7 +2405,7 @@ class TestGo:
         release = "go1.20"
         go = Go(release=release)
 
-        assert go._bin == "go"
+        assert go._bin == GO_CMD_PATH
         assert go._install_toolchain is True
 
     @pytest.mark.parametrize(
@@ -2561,7 +2568,7 @@ class TestGoWork:
         if go_work_json:
             # test if _parse is idempotent
             go_work._parse(Go(), run_params=run_params)
-            mock_run.assert_called_once_with(["go", "work", "edit", "-json"], run_params)
+            mock_run.assert_called_once_with([GO_CMD_PATH, "work", "edit", "-json"], run_params)
 
     @pytest.mark.parametrize(
         "go_work_json, expected",
