@@ -405,6 +405,7 @@ def test_resolve_gomod_no_deps(
     module_path = gomod_request.source_dir.join_within_root("path/to/module")
     module_path.path.mkdir(parents=True, exist_ok=True)
     mock_disable_telemetry.return_value = None
+    mock_go_locate_toolchain.return_value = GO_CMD_PATH
 
     mocked_go_work = mock.MagicMock()
     mocked_go_work.__bool__.return_value = False
@@ -453,7 +454,7 @@ def test_resolve_gomod_no_deps(
 
     mock_version_resolver.get_golang_version.return_value = "v1.21.4"
     mock_go_release.return_value = "go1.21.0"
-    mock_go_install.return_value = "/usr/bin/go"
+    mock_go_install.return_value = GO_CMD_PATH
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
