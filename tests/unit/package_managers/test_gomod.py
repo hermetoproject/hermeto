@@ -2402,9 +2402,7 @@ class TestGo:
         mock_cache_dir: mock.Mock,
     ) -> None:
         mock_cache_dir.return_value = f"{APP_NAME}"
-
-        release = "go1.20"
-        go = Go(release=release)
+        go = Go()
 
         assert go.binary == GO_CMD_PATH
 
@@ -2442,7 +2440,7 @@ class TestGo:
 
         error_msg = f"Could not extract Go toolchain version from Go's output: '{go_output}'"
         with pytest.raises(PackageManagerError, match=error_msg):
-            Go(release=None).release
+            Go().release
 
 
 class TestGoWork:
