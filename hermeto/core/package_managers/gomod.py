@@ -230,7 +230,7 @@ class Go:
 
     def __init__(
         self,
-        binary: Union[str, os.PathLike[str]] = "go",
+        binary: Union[str, os.PathLike[str]] = "/usr/local/bin/go",
         release: Optional[str] = None,
     ) -> None:
         """Initialize the Go toolchain wrapper.
