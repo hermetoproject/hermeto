@@ -372,7 +372,7 @@ class Go:
         return None
 
     def _get_release(self) -> str:
-        output = self(["version"])
+        output = self(["version"], params={"env": {"GOTOOLCHAIN": "local"}})
         log.debug(f"Go release: {output}")
         release_pattern = f"go{version.VERSION_PATTERN}"
 
