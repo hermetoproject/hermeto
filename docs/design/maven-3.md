@@ -438,11 +438,17 @@ for experimental package managers, but should be completed before the package ma
 by default.
 -->
 
-### Deprecation of `maven` Generic Prefetcher
+### `maven` Generic Prefetcher
 
-The "generic" prefetcher supports one-off downloads of [Maven artifacts](../generic.md). As this
-feature matures, the Maven option for the generic prefetcher should be deprecated. Removal should
-be considered if/when Hermeto declares a v1.0 version.
+The "generic" prefetcher supports one-off downloads of [Maven artifacts](../generic.md). This was
+initially created as a work-around for full Maven support. However, in many scenarios Java binaries
+are installed from Maven repositories directly and incorporated into a non-Java build (ex: download
+in a container image build). The current `maven` flavor of the [generic pre-fetcher](https://hermetoproject.github.io/hermeto/generic/#maven-artifacts)
+produces a more accurate SBOM in this situation, allowing downstream systems to better monitor
+these dependencies for vulnerabilities.
+
+In light of this use case, the `maven` generic prefetcher should not be deprecated. Documentation
+will need to guide developers to the right Hermeto package manager for their use case.
 
 ### Current Limitations
 
