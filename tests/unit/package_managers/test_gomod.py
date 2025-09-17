@@ -168,6 +168,7 @@ def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPacka
         pytest.param(False, True, id="has_workspaces"),
     ),
 )
+@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
 @mock.patch("hermeto.core.package_managers.gomod._go_list_deps")
 @mock.patch("hermeto.core.package_managers.gomod._parse_packages")
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
@@ -183,6 +184,7 @@ def test_resolve_gomod(
     mock_disable_telemetry: mock.Mock,
     mock_parse_packages: mock.Mock,
     mock_go_list_deps: mock.Mock,
+    mock_get_go_work: mock.Mock,
     cgo_disable: bool,
     has_workspaces: bool,
     tmp_path: Path,
@@ -232,12 +234,11 @@ def test_resolve_gomod(
     if has_workspaces:
         go_work_path = module_dir.join_within_root("go.work")
         go_work_path.path.symlink_to(get_mock_dir(data_dir) / "workspaces/go_work.json")
-        go_work_data_json = get_mocked_data(data_dir, "workspaces/go_work.json")
-        go_work_data = ParsedGoWork.model_validate_json(go_work_data_json).model_dump()
         module_dir.join_within_root("go.sum").path.write_text(
             get_mocked_data(data_dir, "workspaces/go.sum")
         )
-        go_work = GoWork(go_work_path, go_work_data)
+        mock_get_go_work.return_value = go_work_path.path.read_text()
+        go_work = GoWork.from_file(go_work_path, go, {})
 
         # we need to mock _parse_packages queries to all workspace module directories
         for wsp in go_work.workspace_paths():
@@ -748,14 +749,17 @@ def test_parse_workspace_modules(
         ),
     ],
 )
+@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
 def test_get_go_sum_files(
+    mock_get_go_work: mock.Mock,
     rooted_tmp_path: RootedPath,
     go_work_edit_json: str,
     relative_file_paths: list[str],
 ) -> None:
+    mock_go = mock.Mock(spec=Go)
+    mock_get_go_work.return_value = go_work_edit_json
     go_work_path = rooted_tmp_path.join_within_root("go.work")
-    go_work_data = ParsedGoWork.model_validate_json(go_work_edit_json).model_dump()
-    files = _get_go_sum_files(GoWork(go_work_path, go_work_data))
+    files = _get_go_sum_files(GoWork.from_file(go_work_path, mock_go, {}))
 
     expected_files = [rooted_tmp_path.join_within_root(p) for p in relative_file_paths]
     assert files == expected_files
@@ -2126,9 +2130,8 @@ def test_parse_packages(
         go.return_value = mocked_indata
     else:
         side_effects = []
-        json_data = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
-        data = ParsedGoWork.model_validate_json(json_data).model_dump()
-        go_work = GoWork(rooted_tmp_path.join_within_root("go.work"), data)
+        mock_get_go_work.return_value = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
+        go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go, {})
 
         # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
         ws_paths = go_work.workspace_paths()
@@ -2484,6 +2487,22 @@ class TestGoWork:
         assert go_work.path == go_work_path
         assert go_work.data == go_work_data
 
+    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
+    def test_from_file(
+        self,
+        mock_get_go_work: mock.Mock,
+        rooted_tmp_path: RootedPath,
+        data_dir: Path,
+    ) -> None:
+        go_work_path = rooted_tmp_path.join_within_root("go.work")
+        mock_get_go_work.return_value = get_mocked_data(data_dir, "workspaces/go_work.json")
+        go_work_data = ParsedGoWork.model_validate_json(
+            get_mocked_data(data_dir, "workspaces/go_work.json")
+        ).model_dump()
+        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
+        assert go_work.path == go_work_path
+        assert go_work.data == go_work_data
+
     def test_bool(self, rooted_tmp_path: RootedPath) -> None:
         assert bool(GoWork(rooted_tmp_path, {})) is True
 
@@ -2575,20 +2594,22 @@ class TestGoWork:
             ),
         ],
     )
+    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
     def test_workspace_paths(
         self,
+        mock_get_go_work: mock.Mock,
         rooted_tmp_path: RootedPath,
         go_work_json: str,
         expected: list,
     ) -> None:
         """Test our workspace path reporting as properly re-rooted RootedPath instances."""
+        mock_get_go_work.return_value = go_work_json
         go_work_path = rooted_tmp_path.join_within_root("subdir/go.work")
         go_work_dir = go_work_path.re_root(go_work_path.path.parent)
-        data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
 
         expected = [go_work_dir.join_within_root(p) for p in expected]
 
-        go_work = GoWork(go_work_path, data)
+        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
         assert list(go_work.workspace_paths()) == expected
 
     def test_get_go_work(self) -> None:
