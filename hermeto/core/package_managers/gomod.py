@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 import re
@@ -281,7 +282,7 @@ class GoVersion(version.Version):
         return version.Version(f"{self.major}.{self.minor}")
 
 
-# NOTE: Skim the class once we don't need to work with multiple versions of Go
+@dataclasses.dataclass(frozen=True, init=True, eq=True)
 class Go:
     """High level wrapper over the 'go' CLI command.
 
@@ -289,21 +290,15 @@ class Go:
     parses various Go files, etc.
     """
 
-    def __init__(
-        self,
-        binary: Union[str, os.PathLike[str]] = "/usr/local/bin/go",
-        release: Optional[str] = None,
-    ) -> None:
+    binary: str = dataclasses.field(default="/usr/local/bin/go", hash=True)
+
+    def __post_init__(self) -> None:
         """Initialize the Go toolchain wrapper.
 
-        :param binary: path-like string to the Go binary or direct command (in PATH)
-        :param release: Go release version string, e.g. go1.20, go1.21.10
         :returns: a callable instance
         """
-        # run_cmd will take care of checking any bogus passed in 'binary'
-        self.binary = str(binary)
-        self._version: Optional[GoVersion] = None
-        self._release: Optional[str] = release
+        # the suggested way to override dataclass __init__ is via a __post_init__ method.
+        pass
 
     def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
@@ -322,20 +317,18 @@ class Go:
 
         return self._run(cmd, **params)
 
-    @property
+    def __lt__(self, other: "Go") -> bool:
+        return self.version < other.version
+
+    @cached_property
     def version(self) -> GoVersion:
         """Version of the Go toolchain as a GoVersion object."""
-        if not self._version:
-            self._version = GoVersion(self.release)
-        return self._version
+        return GoVersion(self.release)
 
-    @property
+    @cached_property
     def release(self) -> str:
         """Release name of the Go Toolchain, e.g. go1.20 ."""
-        # lazy evaluation: defer running 'go'
-        if not self._release:
-            self._release = self._get_release()
-        return self._release
+        return self._get_release()
 
     @staticmethod
     def _locate_toolchain(release: str) -> Optional[str]:
