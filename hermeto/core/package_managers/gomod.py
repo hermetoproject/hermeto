@@ -653,6 +653,17 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
 
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
+        tmp_dir_path = Path(tmp_dir)
+        go_env = {
+            "GOPATH": tmp_dir_path,
+            "GO111MODULE": "on",
+            "GOCACHE": tmp_dir_path,
+            "PATH": os.environ.get("PATH", ""),
+            "GOMODCACHE": f"{tmp_dir_path}/pkg/mod",
+            "GOSUMDB": "sum.golang.org",
+            "GOTOOLCHAIN": "auto",
+        }
+
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
@@ -661,7 +672,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, Path(tmp_dir), version_resolver, go_work
+                    main_module_dir, request, tmp_dir_path, version_resolver, go_work, go_env
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -961,6 +972,7 @@ def _resolve_gomod(
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
     go_work: GoWork,
+    go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
@@ -978,36 +990,22 @@ def _resolve_gomod(
 
     config = get_config()
 
-    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
-
-    if should_vendor:
+    if should_vendor := app_dir.join_within_root("vendor").path.is_dir():
         # Even though we do not perform a "go mod download" when vendoring is detected, some
         # go commands still download dependencies as a side effect. Since we don't want those
         # copied to the output dir, we need to set the GOMODCACHE to a different directory.
-        gomod_cache = f"{tmp_dir}/vendor-cache"
-    else:
-        gomod_cache = f"{tmp_dir}/pkg/mod"
-
-    env = {
-        "GOPATH": tmp_dir,
-        "GO111MODULE": "on",
-        "GOCACHE": tmp_dir,
-        "PATH": os.environ.get("PATH", ""),
-        "GOMODCACHE": gomod_cache,
-        "GOSUMDB": "sum.golang.org",
-        "GOTOOLCHAIN": "auto",
-    }
+        go_env["GOMODCACHE"] = f"{tmp_dir}/vendor-cache"
 
     if config.goproxy_url:
-        env["GOPROXY"] = config.goproxy_url
+        go_env["GOPROXY"] = config.goproxy_url
 
     if "cgo-disable" in request.flags:
-        env["CGO_ENABLED"] = "0"
+        go_env["CGO_ENABLED"] = "0"
 
     go = _setup_go_toolchain(app_dir.join_within_root("go.mod"))
     log.info(f"Using Go release: {go.release}")
 
-    run_params = {"env": env, "cwd": app_dir}
+    run_params = {"env": go_env, "cwd": app_dir}
 
     # Explicitly disable toolchain telemetry for go >= 1.23
     _disable_telemetry(go, run_params)

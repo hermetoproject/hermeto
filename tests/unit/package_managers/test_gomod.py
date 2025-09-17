@@ -258,10 +258,8 @@ def test_resolve_gomod(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, go_work
+        module_dir, gomod_request, tmp_path, mock_version_resolver, go_work, {}
     )
-
-    assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/pkg/mod"
 
     # Assert that _parse_packages was called exactly once.
     # Assert that the module-parsing _go_list_deps call was called with the 'all' pattern. The
@@ -362,7 +360,7 @@ def test_resolve_gomod_vendor_dependencies(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, mocked_go_work
+        module_dir, gomod_request, tmp_path, mock_version_resolver, mocked_go_work, {}
     )
 
     assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
@@ -458,7 +456,7 @@ def test_resolve_gomod_no_deps(
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, mocked_go_work
+        module_path, gomod_request, tmp_path, mock_version_resolver, mocked_go_work, {}
     )
     packages_list = list(packages)
 
@@ -499,7 +497,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     app_dir = gomod_request.source_dir
 
     with pytest.raises(PathOutsideRoot):
-        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, go_work)
+        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, go_work, {})
 
 
 @pytest.mark.parametrize(
@@ -1835,6 +1833,7 @@ def test_fetch_gomod_source(
         tmp_dir: Path,
         version_resolver: ModuleVersionResolver,
         go_work: GoWork,
+        go_env: dict,
     ) -> ResolvedGoModule:
         # Find package output based on the path being processed
         return packages_output_by_path[
@@ -1860,6 +1859,15 @@ def test_fetch_gomod_source(
             tmp_dir,
             mock_version_resolver.return_value,
             fake_go_work,
+            {
+                "GOPATH": tmp_dir,
+                "GO111MODULE": "on",
+                "GOCACHE": tmp_dir,
+                "PATH": os.environ.get("PATH", ""),
+                "GOMODCACHE": f"{tmp_dir}/pkg/mod",
+                "GOSUMDB": "sum.golang.org",
+                "GOTOOLCHAIN": "auto",
+            },
         )
         for package in gomod_request.packages
     ]
