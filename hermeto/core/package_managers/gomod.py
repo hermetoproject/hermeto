@@ -302,7 +302,7 @@ class Go:
         :returns: a callable instance
         """
         # run_cmd will take care of checking any bogus passed in 'binary'
-        self._bin = str(binary)
+        self.binary = str(binary)
         self._version: Optional[GoVersion] = None
         self._release: Optional[str] = release
 
@@ -317,7 +317,7 @@ class Go:
         if params is None:
             params = {}
 
-        cmd = [self._bin] + cmd
+        cmd = [self.binary] + cmd
         if retry:
             return self._retry(cmd, **params)
 
@@ -415,7 +415,7 @@ class Go:
                 "GOPATH": td,
                 "GOCACHE": str(Path(td, "cache")),
             }
-            self._retry([self._bin, "install", url], env=env)
+            self._retry([self.binary, "install", url], env=env)
 
             log.debug(f"Downloading Go {release} SDK")
             self._retry([f"{td}/bin/{release}", "download"], env=env)
