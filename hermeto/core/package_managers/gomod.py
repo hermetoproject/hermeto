@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 import re
@@ -44,6 +45,7 @@ log = EnforcingModeLoggerAdapter(logging.getLogger(__name__), {"enforcing_mode":
 GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
 GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
 VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
+HERMETO_GO_INSTALL_DIR = Path("/usr/local")
 
 ModuleDict = dict[str, Any]
 
@@ -220,7 +222,68 @@ class StandardPackage(NamedTuple):
         return Component(name=self.name, purl=self.purl)
 
 
-# NOTE: Skim the class once we don't need to work with multiple versions of Go
+class GoVersion(version.Version):
+    """packaging.version.Version wrapper handling Go version/release reporting aspects.
+
+    >>> v = GoVersion("1.21")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 0)
+
+    >>> v = GoVersion("go1.21.4")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 4)
+
+    >>> v = GoVersion("1.21")
+    >>> str(v.language)
+    '1.21'
+
+    >>> v = GoVersion("go1.22.1")
+    >>> str(v.language)
+    '1.22'
+
+    >>> GoVersion("1.21") < GoVersion("1.22")
+    True
+    >>> GoVersion("1.21.4") > GoVersion("1.21.0")
+    True
+    >>> GoVersion("go1.21") == GoVersion("1.21")
+    True
+    """
+
+    # NOTE: It might not be obvious at first glance why we need this wrapper to represent a Go
+    # language/toolchain version string instead of semver - semver requires all parts to be
+    # specified, i.e. 'major.minor.patch' which golang historically didn't use to represent
+    # language versions, only toolchains, e.g. 1.22 is still an acceptable way of specifying a
+    # required Go version in one's go.mod file.
+
+    # !THIS IS WHERE THE SUPPORTED GO VERSION BY HERMETO NEEDS TO BE BUMPED!
+    MAX_VERSION: str = "1.25"
+
+    def __init__(self, version_str: str) -> None:
+        """Initialize the GoVersion instance.
+
+        :param version_str: version string in the form of X.Y(.Z)?
+                            Note we also accept standard Go release strings prefixed with 'go'
+        """
+        ver = version_str if not version_str.startswith("go") else version_str[2:]
+        return super().__init__(ver)
+
+    @classmethod
+    def max(cls) -> "GoVersion":
+        """Instantiate and return a GoVersion object with the maximum supported version of Go."""
+        return cls(cls.MAX_VERSION)
+
+    @cached_property
+    def language(self) -> version.Version:
+        """
+        Language version for the given Go version.
+
+        Go differentiates between Go language versions (major, minor) and toolchain versions (major,
+        minor, micro).
+        """
+        return version.Version(f"{self.major}.{self.minor}")
+
+
+@dataclasses.dataclass(frozen=True, init=True, eq=True)
 class Go:
     """High level wrapper over the 'go' CLI command.
 
@@ -228,30 +291,15 @@ class Go:
     parses various Go files, etc.
     """
 
-    def __init__(
-        self,
-        binary: Union[str, os.PathLike[str]] = "go",
-        release: Optional[str] = None,
-    ) -> None:
+    binary: str = dataclasses.field(default="/usr/local/bin/go", hash=True)
+
+    def __post_init__(self) -> None:
         """Initialize the Go toolchain wrapper.
 
-        :param binary: path-like string to the Go binary or direct command (in PATH)
-        :param release: Go release version string, e.g. go1.20, go1.21.10
         :returns: a callable instance
         """
-        # run_cmd will take care of checking any bogus passed in 'binary'
-        self._bin = str(binary)
-        self._release = release
-
-        self._version: Optional[version.Version] = None
-        self._install_toolchain: bool = False
-
-        if self._release:
-            if bin_ := self._locate_toolchain(self._release):
-                self._bin = bin_
-            else:
-                log.debug(f"Desired toolchain '{self._release}' not found, will download it lazily")
-                self._install_toolchain = True
+        # the suggested way to override dataclass __init__ is via a __post_init__ method.
+        pass
 
     def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
@@ -264,70 +312,21 @@ class Go:
         if params is None:
             params = {}
 
-        # we check both values to silence the type checker complaining self._release might be None
-        if self._install_toolchain and self._release:
-            self._bin = self._install(self._release)
-            self._install_toolchain = False
-
-        cmd = [self._bin] + cmd
+        cmd = [self.binary] + cmd
         if retry:
             return self._retry(cmd, **params)
 
         return self._run(cmd, **params)
 
-    @property
-    def version(self) -> version.Version:
-        """Version of the Go toolchain as a packaging.version.Version object."""
-        if not self._version:
-            self._version = version.Version(self.release[2:])
-        return self._version
+    def __lt__(self, other: "Go") -> bool:
+        return self.version < other.version
 
-    @property
-    def release(self) -> str:
-        """Release name of the Go Toolchain, e.g. go1.20 ."""
-        # lazy evaluation: defer running 'go'
-        if not self._release:
-            output = self(["version"])
-            log.debug(f"Go release: {output}")
-            release_pattern = f"go{version.VERSION_PATTERN}"
-
-            # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
-            # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
-            if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
-                self._release = match.group(0)
-            else:
-                # This should not happen, otherwise we must figure out a more reliable way of
-                # extracting Go version
-                raise PackageManagerError(
-                    f"Could not extract Go toolchain version from Go's output: '{output}'",
-                    solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
-                )
-        return self._release
-
-    @staticmethod
-    def _locate_toolchain(release: str) -> Optional[str]:
-        """Given a release locate an alternative Go toolchain.
-
-        Locate an alternative Go toolchain under the one of the following locations:
-            - /usr/local/go/                    for container environments (pre-installed)
-            - $XDG_CACHE_HOME/hermeto/go         for local environments (download & cache)
-        """
-        local_cache = get_cache_dir()
-        go_path_stub = f"go/{release}/bin/go"
-        for p in [Path("/usr/local/", go_path_stub), Path(local_cache, go_path_stub)]:
-            status = "SUCCESS" if p.exists() else "FAIL"
-
-            log.debug(f"Trying to locate Go toolchain at '{p}': {status}")
-            if p.exists():
-                return str(p)
-
-        return None
-
-    def _install(self, release: str) -> str:
+    @classmethod
+    def from_missing_toolchain(cls, binary: str, release: str) -> "Go":
         """Fetch and install an alternative version of main Go toolchain.
 
         This method should only ever be needed with local installs, but not in container
-        environment installs where we pre-install multiple Go versions.
+        environment installs where we pre-install the latest Go toolchain available.
         Because Go can't really be told where the toolchain should be installed to, the process is
         as follows:
             1) we use the base Go toolchain to fetch a versioned toolchain shim to a temporary
@@ -341,8 +340,9 @@ class Go:
             5) we delete any build artifacts go created as part of downloading the SDK as those
                can occupy >~70MB of storage
 
-        :param release: Go release version string, e.g. go1.20, go1.21.10
-        :param env: params to use with the underlying subprocess and 'go' execution
+        :param binary: path to Go binary to use to download/install 'release' versioned toolchain
+        :param version: target Go version, e.g. 1.20, 1.21.10
+        :param tmp_dir: global tmp dir where the SDK should be downloaded to
         :returns: path-like string to the newly installed toolchain binary
         """
         base_url = "golang.org/dl/"
@@ -350,28 +350,62 @@ class Go:
 
         # Download the go<release> shim to a temporary directory and wipe it after we're done
         # Go would download the shim to $HOME too, but unlike 'go download' we can at least adjust
-        # 'go install' to point elsewhere using $GOPATH
+        # 'go install' to point elsewhere using $GOPATH. This is a known pitfall of Go, see the
+        # references below:
+        # [1] https://github.com/golang/go/issues/26520
+        # [2] https://golang.org/cl/34385
         with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
-            log.debug(f"Installing Go {release} toolchain shim from '{url}'")
+            log.debug("Installing Go %s toolchain shim from '%s'", release, url)
             env = {
                 "PATH": os.environ.get("PATH", ""),
                 "GOPATH": td,
                 "GOCACHE": str(Path(td, "cache")),
+                "HOME": Path.home().as_posix(),
             }
-            self._retry([self._bin, "install", url], env=env)
+            cls._retry([binary, "install", url], env=env)
 
-            log.debug(f"Downloading Go {release} SDK")
-            self._retry([f"{td}/bin/{release}", "download"], env=env)
+            log.debug("Downloading Go %s SDK", release)
+            env["HOME"] = td
+            cls._retry([f"{td}/bin/{release}", "download"], env=env)
 
-            # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/hermeto/go
-            sdk_download_dir = Path.home() / f"sdk/{release}"
+            # move the newly downloaded SDK to $HOME/.cache/hermeto/go
+            sdk_download_dir = Path(td, f"sdk/{release}")
             go_dest_dir = get_cache_dir() / "go" / release
             shutil.move(sdk_download_dir, go_dest_dir)
 
         log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
-        return str(go_dest_dir / "bin/go")
+        return cls((go_dest_dir / "bin/go").as_posix())
 
-    def _retry(self, cmd: list[str], **kwargs: Any) -> str:
+    @cached_property
+    def version(self) -> GoVersion:
+        """Version of the Go toolchain as a GoVersion object."""
+        return GoVersion(self._get_release())
+
+    def _get_release(self) -> str:
+        output = self(["version"], params={"env": {"GOTOOLCHAIN": "local"}})
+        log.debug(f"Go release: {output}")
+        release_pattern = f"go{version.VERSION_PATTERN}"
+
+        # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
+        # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
+        if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
+            release = match.group(0)
+        else:
+            # This should not happen, otherwise we must figure out a more reliable way of
+            # extracting Go version.
+            # Ideally we'd want to rely only on doing 'go env GOVERSION' which doesn't require any
+            # further post-processing, but GOVERSION variable was introduced in Go 1.16 and so
+            # 'go version' has been around for longer, then again, it's CLI output bound to
+            # change.
+            raise PackageManagerError(
+                f"Could not extract Go toolchain version from Go's output: '{output}'",
+                solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
+            )
+
+        return release
+
+    @staticmethod
+    def _retry(cmd: list[str], **kwargs: Any) -> str:
         """Run gomod command in a networking context.
 
         Commands that involve networking, such as dependency downloads, may fail due to network
@@ -391,7 +425,7 @@ class Go:
             reraise=True,
         )
         def run_go(_cmd: list[str], **kwargs: Any) -> str:
-            return self._run(_cmd, **kwargs)
+            return Go._run(_cmd, **kwargs)
 
         try:
             return run_go(cmd, **kwargs)
@@ -417,79 +451,48 @@ class Go:
 class GoWork(UserDict):
     """Representation of Go's go.work file."""
 
-    def __init__(self, app_dir: RootedPath) -> None:
-        """Initialize GoWork dict."""
-        super().__init__()
-        self._path = None
-        self._app_dir = app_dir
+    def __init__(self, go_work_path: RootedPath, data: dict) -> None:
+        """
+        Initialize GoWork dict from a parsed go.work file.
 
-        # workspaces may not be enabled -> empty instance
-        if (rooted_path := self._get_go_work_path(app_dir)) is None:
-            return
+        :param go_work_path: absolute rooted path to the go.work file.
+        :param go: a Go instance to use to query information
+        """
+        super().__init__(**data)
+        self._path = go_work_path
 
-        self._path = rooted_path
+    @classmethod
+    def from_file(cls, go_work_path: RootedPath, go: Go, go_env: dict[str, Any]) -> "GoWork":
+        """Instantiate GoWork from an absolute path to the go.work file."""
+        go_work_json = cls._get_go_work(go, {"env": go_env, "cwd": go_work_path.path.parent})
+        data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
+        return cls(go_work_path, data)
 
     def __bool__(self) -> bool:
-        return self._path is not None
+        return bool(self.data)
 
     @staticmethod
     def _get_go_work(go: Go, run_params: dict[str, Any]) -> str:
         return go(["work", "edit", "-json"], run_params)
 
-    @staticmethod
-    def _get_go_work_path(app_dir: RootedPath) -> Optional[RootedPath]:
-        go_work_file = Go()(["env", "GOWORK"], {"cwd": app_dir}).rstrip()
-
-        # workspaces can be disabled explicitly with GOWORK=off
-        if not go_work_file or go_work_file == "off":
-            return None
-
-        # make sure that the path to go.work is within the request's root
-        return app_dir.join_within_root(go_work_file)
-
     @property
-    def path(self) -> Optional[RootedPath]:
-        """Return the go.work file path."""
+    def rooted_path(self) -> RootedPath:
+        """Return the go.work file path as rooted."""
         return self._path
 
     @cached_property
-    def dir(self) -> Optional[RootedPath]:
-        """Return the base directory for the go.work file."""
-        if self._path is None:
-            return None
+    def path(self) -> Path:
+        """Return the go.work file path."""
+        return self._path.path
 
-        return RootedPath(self._app_dir.root).join_within_root(self._path.subpath_from_root.parent)
+    @cached_property
+    def workspace_paths(self) -> list[Path]:
+        """Get a list of absolute paths to all workspace modules."""
+        _dir = RootedPath(self._path.root).join_within_root(self.path.parent)
+        wp_paths = [p["disk_path"] for p in self["use"]]
 
-    def _parse(self, go: Go, run_params: dict[str, Any] = {}) -> "Self":
-        """Actually parse the go.work file and fill in the instance with returned data."""
-        # NOTE: This is only a temporary solution. This method is to be merged to __init__. We
-        # can't do that just yet because this is being called from fetch_gomod_source which is
-        # before we set up the correct Go toolchains. We don't need toolchains to query the GOWORK
-        # env variable, but we need correct toolchain for everything else, otherwise go might
-        # complain about not meeting the required versions, so make this effectively a "lazy"
-        # evaluation driven by the caller.
-        if self.data or self._path is None:
-            return self
-
-        go_work_json = self._get_go_work(go, run_params)
-        self.data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
-        return self
-
-    def workspace_paths(self, go: Go, run_params: dict[str, Any] = {}) -> Iterable[RootedPath]:
-        """Get a list of paths to all workspace modules.
-
-        :return:RootedPath instance iterable where root is go.work's containing directory
-        """
-        if not self.data:
-            self._parse(go, run_params)
-
-        if self._path is None or self.get("use", []) == []:
-            return []
-
-        # This re-root is going to be useful when constructing workspace ParsedModule.
-        # mypy doesn't see that self.dir is directly connected to self._path which we checked
-        go_work_dir_reroot = RootedPath(self.dir.path)  # type: ignore
-        return (go_work_dir_reroot.join_within_root(p["disk_path"]) for p in self["use"])
+        # Make sure the workspace paths don't point outside our rooted path
+        return [(self.path.parent / wp).resolve() for wp in wp_paths if _dir.join_within_root(wp)]
 
 
 ModuleID = tuple[str, str]
@@ -527,7 +530,7 @@ def _create_modules_from_parsed_data(
     parsed_modules: Iterable[ParsedModule],
     modules_in_go_sum: frozenset[ModuleID],
     version_resolver: "ModuleVersionResolver",
-    go_work: GoWork,
+    go_work: Optional[GoWork],
 ) -> list[Module]:
     def _create_module(module: ParsedModule) -> Module:
         mod_id = _get_module_id(module)
@@ -541,8 +544,8 @@ def _create_modules_from_parsed_data(
 
             if mod_id not in modules_in_go_sum:
                 if go_work:
-                    # __bool__ checks go_work.dir, so it can't be None
-                    missing_hash_in_file = go_work.dir.subpath_from_root / "go.work.sum"  # type: ignore
+                    go_work_subpath = go_work.rooted_path.subpath_from_root
+                    missing_hash_in_file = go_work_subpath.parent / "go.work.sum"
                 else:
                     missing_hash_in_file = main_module_dir.subpath_from_root / "go.sum"
 
@@ -618,6 +621,12 @@ def _create_packages_from_parsed_data(
     return [_create_package(package) for package in parsed_packages]
 
 
+def _clean_go_modcache(go: Go, dir_: Optional[Union[str, os.PathLike[str]]]) -> None:
+    # It's easier to mock a helper when testing a huge function than individual object instances
+    if dir_ is not None:
+        go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
+
+
 def fetch_gomod_source(request: Request) -> RequestOutput:
     """
     Resolve and fetch gomod dependencies for a given request.
@@ -631,6 +640,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
     if not subpaths:
         return RequestOutput.empty()
+
+    if not (installed_toolchains := _list_installed_toolchains()):
+        raise FetchError(
+            "Could not find any installed Go toolchains in known locations",
+            solution="Please make sure at least one go toolchain is installed in the system",
+        )
+    go: Optional[Go] = next(iter(installed_toolchains))
 
     invalid_gomod_files = _find_missing_gomod_files(request.source_dir, subpaths)
 
@@ -648,20 +664,40 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     repo_name = _get_repository_name(request.source_dir)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
 
+    gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
+    gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
-        gomod_download_dir = request.output_dir.join_within_root(
-            "deps/gomod/pkg/mod/cache/download"
-        )
-        gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+        tmp_dir_path = Path(tmp_dir.name)
+        go_env = {
+            "GOPATH": tmp_dir_path,
+            "GO111MODULE": "on",
+            "GOCACHE": tmp_dir_path,
+            "PATH": os.environ.get("PATH", ""),
+            "GOMODCACHE": f"{tmp_dir_path}/pkg/mod",
+            "GOSUMDB": "sum.golang.org",
+            "GOTOOLCHAIN": "auto",
+        }
+
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
+            go_work: Optional[GoWork] = None
 
             main_module_dir = request.source_dir.join_within_root(subpath)
-            go_work = GoWork(main_module_dir)
+            go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
+            if go is None:
+                raise FetchError(
+                    "Could not match any suitable Go toolchain for the job",
+                    solution="Please make sure a suitable Go toolchain is installed on the system",
+                )
+
+            tmp_dir._go_instance = go
+            if (go_work_path := _get_go_work_path(go, main_module_dir)) is not None:
+                go_work = GoWork.from_file(go_work_path, go, go_env=go_env)
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, Path(tmp_dir), version_resolver, go_work
+                    main_module_dir, request, tmp_dir_path, version_resolver, go, go_work, go_env
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -688,7 +724,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             components.extend(module.to_component() for module in modules)
             components.extend(package.to_component() for package in packages)
 
-        tmp_download_cache_dir = Path(tmp_dir).joinpath("pkg/mod/cache/download")
+        tmp_download_cache_dir = Path(tmp_dir.name).joinpath("pkg/mod/cache/download")
         if tmp_download_cache_dir.exists():
             log.debug(
                 "Adding dependencies from %s to %s",
@@ -838,12 +874,16 @@ def _find_missing_gomod_files(source_path: RootedPath, subpaths: list[str]) -> l
     return invalid_gomod_files
 
 
-def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
-    GO_121 = version.Version("1.21")
-    go = Go()
-    target_version = None
-    go_max_version = version.Version("1.25")
-    go_base_version = go.version
+def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Optional[Go]:
+    """
+    Pick the closest matching installed toolchain give a go.mod file.
+
+    :param go_mod_file: path to an application go.mod file as RootedPath
+    :param installed_toolchains: an iterable of Go instances pointing to actual Go binaries
+    :return: a Go instance which matches the go.mod version constraints or None if we could not find
+             a satisfying toolchain version installed
+    """
+    go_max_version = GoVersion.max()
     go_mod_version_msg = "go.mod reported versions: '%s'[go], '%s'[toolchain]"
 
     go_version_str, toolchain_version_str = _get_gomod_version(go_mod_file)
@@ -864,15 +904,15 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
     if not toolchain_version_str:
         toolchain_version_str = go_version_str
 
-    go_mod_version = version.Version(go_version_str)
-    go_mod_toolchain_version = version.Version(toolchain_version_str)
+    go_mod_version = GoVersion(go_version_str)
+    go_mod_toolchain_version = GoVersion(toolchain_version_str)
 
     if go_mod_version >= go_mod_toolchain_version:
         target_version = go_mod_version
     else:
         target_version = go_mod_toolchain_version
 
-    if target_version.major > go_max_version.major or target_version.minor > go_max_version.minor:
+    if target_version.language > go_max_version.language:
         raise PackageManagerError(
             f"Required/recommended Go toolchain version '{target_version}' is not supported yet.",
             solution=(
@@ -881,24 +921,33 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
             ),
         )
 
-    if target_version >= GO_121:
-        # Project makes use of Go >=1.21:
-        # - always use the 'X.Y.0' toolchain to make sure GOTOOLCHAIN=auto fetches anything newer
-        # - container environments need to have it pre-installed
-        # - local environments will always install 1.21.0 SDK and then pull any newer toolchain
-        go = Go(release="go1.21.0")
-    elif go_base_version >= GO_121:
-        # Starting with Go 1.21, Go doesn't try to be semantically backwards compatible in that the
-        # 'go X.Y' line now denotes the minimum required version of Go, no a "suggested" version.
-        # What it means in practice is that a Go toolchain >= 1.21 enforces the biggest common
-        # toolchain denominator across all dependencies and so if the input project specifies e.g.
-        # 'go 1.19' and **any** of its dependencies specify 'go 1.21' (or higher), then the default
-        # 1.21 toolchain will bump the input project's go.mod file to make sure the minimum
-        # required Go version is met across all dependencies. That is a problem, because it'll lead
-        # to fatal build failures forcing everyone to update their build recipes. Note that at some
-        # point they'll have to do that anyway, but until majority of projects in the ecosystem
-        # adopt 1.21, we need a fallback to an older toolchain version.
-        go = Go(release="go1.20")
+    # If we cannot find a matching toolchain, we'll try to fallback to a 1.21 one
+    matching_toolchains = filter(lambda t: t.version >= target_version, installed_toolchains)
+    try:
+        go = min(matching_toolchains)
+        log.debug("Using Go toolchain version '%s'", go.version)
+    except ValueError:
+        try:
+            go = max(filter(lambda t: t.version >= GoVersion("1.21"), installed_toolchains))
+            log.debug("Best matching Go toolchain version: '%s'", go.version)
+            log.debug("Will use Go toolchain version '%s' [via GOTOOLCHAIN=auto]", target_version)
+        except ValueError:
+            # This is a long shot - we couldn't find a matching toolchain, we don't have a toolchain
+            # that can do GOTOOLCHAIN=auto, so we pick any installed toolchain (we know we have
+            # any) and use it to download a new full-blown SDK for the target version
+            log.debug("Installing Go toolchain version '%s'", target_version)
+            release_str = f"go{str(target_version)}"
+            try:
+                work_toolchain = next(iter(installed_toolchains))
+                go = Go.from_missing_toolchain(work_toolchain.binary, release=release_str)
+                log.debug("Using Go toolchain version '%s'", go.version)
+            except StopIteration:
+                # should not happen, we test this in fetch_gomod_source, this is only for unit tests
+                log.error("No Go toolchains installed on the system")
+                return None
+            except Exception as ex:
+                log.error("Failed to download a Go toolchain version '%s': '%s'", release_str, ex)
+                return None
     return go
 
 
@@ -926,7 +975,9 @@ def _go_list_deps(
     )
 
 
-def _parse_packages(go_work: GoWork, go: Go, run_params: dict[str, Any]) -> Iterator[ParsedPackage]:
+def _parse_packages(
+    go_work: Optional[GoWork], go: Go, run_params: dict[str, Any]
+) -> Iterator[ParsedPackage]:
     """Return all Go packages for the project.
 
     Query the packages from the root of the project. If the project uses Go workspaces (1.18+) we
@@ -940,16 +991,16 @@ def _parse_packages(go_work: GoWork, go: Go, run_params: dict[str, Any]) -> Iter
     """
     all_packages: Iterable[ParsedPackage] = []
 
-    if not go_work:
+    if go_work is None:
         log.debug("Querying for list of packages")
         all_packages = _go_list_deps(go, "./...", run_params)
     else:
         # If there are workspace modules we need to run 'list -e ./...' under every local module
         # path because 'go list' command isn't fully properly workspace context aware
-        for wsp in go_work.workspace_paths(go, run_params):
-            log.debug(f"Querying workspace module '{wsp.path}' for list of packages")
+        for wsp in go_work.workspace_paths:
+            log.debug(f"Querying workspace module '{wsp}' for list of packages")
 
-            packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp.path}))
+            packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp}))
             log.debug(packages)
             all_packages = chain(all_packages, packages)
     return iter(all_packages)
@@ -960,11 +1011,14 @@ def _resolve_gomod(
     request: Request,
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
-    go_work: GoWork,
+    go: Go,
+    go_work: Optional[GoWork],
+    go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
 
+    :param go: Go instance/release to use for processing the request
     :param app_dir: the full path to the application source code
     :param request: app request this is for
     :param tmp_dir: one temporary directory for all go modules
@@ -978,42 +1032,25 @@ def _resolve_gomod(
 
     config = get_config()
 
-    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
-
-    if should_vendor:
+    if should_vendor := app_dir.join_within_root("vendor").path.is_dir():
         # Even though we do not perform a "go mod download" when vendoring is detected, some
         # go commands still download dependencies as a side effect. Since we don't want those
         # copied to the output dir, we need to set the GOMODCACHE to a different directory.
-        gomod_cache = f"{tmp_dir}/vendor-cache"
-    else:
-        gomod_cache = f"{tmp_dir}/pkg/mod"
-
-    env = {
-        "GOPATH": tmp_dir,
-        "GO111MODULE": "on",
-        "GOCACHE": tmp_dir,
-        "PATH": os.environ.get("PATH", ""),
-        "GOMODCACHE": gomod_cache,
-        "GOSUMDB": "sum.golang.org",
-        "GOTOOLCHAIN": "auto",
-    }
+        go_env["GOMODCACHE"] = f"{tmp_dir}/vendor-cache"
 
     if config.goproxy_url:
-        env["GOPROXY"] = config.goproxy_url
+        go_env["GOPROXY"] = config.goproxy_url
 
     if "cgo-disable" in request.flags:
-        env["CGO_ENABLED"] = "0"
+        go_env["CGO_ENABLED"] = "0"
 
-    go = _setup_go_toolchain(app_dir.join_within_root("go.mod"))
-    log.info(f"Using Go release: {go.release}")
-
-    run_params = {"env": env, "cwd": app_dir}
+    run_params = {"env": go_env, "cwd": app_dir}
 
     # Explicitly disable toolchain telemetry for go >= 1.23
     _disable_telemetry(go, run_params)
 
     if go_work:
-        modules_in_go_sum = _parse_go_sum_from_workspaces(go_work, go, run_params)
+        modules_in_go_sum = _parse_go_sum_from_workspaces(go_work)
     else:
         modules_in_go_sum = _parse_go_sum(app_dir.join_within_root("go.sum"))
 
@@ -1044,7 +1081,7 @@ def _resolve_gomod(
 
 
 def _parse_local_modules(
-    go_work: GoWork,
+    go_work: Optional[GoWork],
     go: Go,
     run_params: dict[str, Any],
     app_dir: RootedPath,
@@ -1055,6 +1092,7 @@ def _parse_local_modules(
 
     :return: A tuple containing the main module and a list of workspaces
     """
+    workspace_modules = []
     modules_json_stream = go(["list", "-e", "-m", "-json"], run_params).rstrip()
     main_module_dict, workspace_dict_list = _process_modules_json_stream(
         app_dir, modules_json_stream
@@ -1069,9 +1107,8 @@ def _parse_local_modules(
         main=True,
     )
 
-    workspace_modules = [
-        _parse_workspace_module(go_work, ws, go, run_params) for ws in workspace_dict_list
-    ]
+    if go_work is not None:
+        workspace_modules = [_parse_workspace_module(go_work, ws) for ws in workspace_dict_list]
     return main_module, workspace_modules
 
 
@@ -1103,18 +1140,15 @@ def _process_modules_json_stream(
     return main_module, module_list
 
 
-def _parse_workspace_module(
-    go_work: GoWork, module: ModuleDict, go: Go, run_params: dict[str, Any] = {}
-) -> ParsedModule:
+def _parse_workspace_module(go_work: GoWork, module: ModuleDict) -> ParsedModule:
     """Create a ParsedModule from a listed workspace.
 
     The replacement info returned will always be relative to the go.work file path.
     """
     # there's only ever going to be a single match
-    ws_rootedpath = None
-    for wsp_rooted in go_work.workspace_paths(go, run_params):
-        if str(wsp_rooted.path) == module["Dir"]:
-            ws_rootedpath = wsp_rooted
+    wp = None
+    for wp in go_work.workspace_paths:
+        if str(wp) == module["Dir"]:
             break
     else:
         # This should be impossible
@@ -1122,17 +1156,15 @@ def _parse_workspace_module(
 
     return ParsedModule(
         path=module["Path"],
-        replace=ParsedModule(path=f"./{ws_rootedpath.subpath_from_root}"),
+        replace=ParsedModule(path=f"./{wp.relative_to(go_work.path.parent)}"),
     )
 
 
 def _parse_go_sum_from_workspaces(
     go_work: GoWork,
-    go: Go,
-    run_params: dict[str, Any],
 ) -> frozenset[ModuleID]:
     """Return the set of modules present in all go.sum files across the existing workspaces."""
-    go_sum_files = _get_go_sum_files(go_work, go, run_params)
+    go_sum_files = _get_go_sum_files(go_work)
 
     modules: frozenset[ModuleID] = frozenset()
 
@@ -1144,15 +1176,11 @@ def _parse_go_sum_from_workspaces(
 
 def _get_go_sum_files(
     go_work: GoWork,
-    go: Go,
-    run_params: dict[str, Any],
 ) -> list[RootedPath]:
     """Find all go.sum files present in the related workspaces."""
-    workspace_paths = go_work.workspace_paths(go, run_params)
-
-    # mypy doesn't see that go_work is true here and true means .path and .dir are set
-    go_sums = [go_work.dir.join_within_root(wp.path / "go.sum") for wp in workspace_paths]  # type: ignore
-    go_sums.append(go_work.dir.join_within_root("go.work.sum"))  # type: ignore
+    go_work_rooted = go_work.rooted_path
+    go_sums = [go_work_rooted.join_within_root(wp / "go.sum") for wp in go_work.workspace_paths]
+    go_sums.append(go_work_rooted.join_within_root(go_work.path.parent / "go.work.sum"))
 
     return go_sums
 
@@ -1209,7 +1237,7 @@ def _deduplicate_resolved_modules(
     return modules_by_name_and_version.values()
 
 
-class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
+class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
     """
     A wrapper around the TemporaryDirectory context manager to also run `go clean -modcache`.
 
@@ -1217,6 +1245,19 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     tempfile.TemporaryDirectory to fail with a permission error. A way around this is to run
     `go clean -modcache` before the default clean up behavior is run.
     """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize our TemporaryDirectory context manager wrapper.
+
+        Store the Go toolchain version used in this session for the subsequent cleanup.
+        """
+        super().__init__(*args, **kwargs)
+        # store the exact toolchain instance that was used for all actions within the context
+        self._go_instance: Go
+
+    def __enter__(self) -> "Self":
+        super().__enter__()
+        return self
 
     def __exit__(
         self,
@@ -1226,7 +1267,9 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     ) -> None:
         """Clean up the temporary directory by first cleaning up the Go cache."""
         try:
-            Go()(["clean", "-modcache"], {"env": {"GOPATH": self.name, "GOCACHE": self.name}})
+            go = self._go_instance if self._go_instance else Go()
+            if go:
+                _clean_go_modcache(go, self.name)
         finally:
             super().__exit__(exc, value, tb)
 
@@ -1673,3 +1716,54 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
         repo.git.reset("--", context_relative_path)
 
     return False
+
+
+def _list_installed_toolchains() -> set[Go]:
+    """List all Go SDK installations we recognize.
+
+    We look at (in this exact order of precedence):
+        - /usr/local/go/                    container environments (Go pre-installed by us)
+        - $XDG_CACHE_HOME/<APP_NAME>/go     local environments (Go downloaded & cached by us)
+        - $PATH/go                          default system-wide Go installation
+
+    :returns: A list of Go instances corresponding to the installations found
+    """
+    ret: set[Go] = set()
+    paths: set[Path] = set()
+
+    if pathvar := os.environ.get("PATH"):
+        paths = {Path(p).resolve() for p in pathvar.split(":")}
+
+    # we historically installed toolchains under (/usr/local|<our_cache_dir>)/go/go<version>/
+    for path in (HERMETO_GO_INSTALL_DIR, get_cache_dir()):
+        paths |= {p.resolve().parent for p in Path(path).rglob("bin/go")}
+
+    for path in paths:
+        bin_path = Path(path, "go")
+        if not bin_path.exists():
+            continue
+
+        try:
+            log.debug("Probing %s toolchain...", path)
+            ret.add(Go(binary=bin_path.as_posix()))
+        except Exception as e:
+            # Logging toolchain probing failures due due to [1].
+            # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
+            log.debug("Toolchain %s failed probing: %s, skipping...", path, e)
+            continue
+
+    log.debug(
+        "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
+    )
+    return ret
+
+
+def _get_go_work_path(go: Go, app_dir: RootedPath) -> Optional[RootedPath]:
+    go_work_file = go(["env", "GOWORK"], {"cwd": app_dir}).strip()
+
+    # workspaces can be disabled explicitly with GOWORK=off
+    if not go_work_file or go_work_file == "off":
+        return None
+
+    # make sure that the path to go.work is within the request's root
+    return app_dir.join_within_root(go_work_file)
