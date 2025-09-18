@@ -57,7 +57,7 @@ from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from tests.common_utils import GIT_REF, write_file_tree
 
-GO_CMD_PATH = "/usr/bin/go"
+GO_CMD_PATH = "/usr/local/bin/go"
 
 
 @pytest.fixture(scope="module")
