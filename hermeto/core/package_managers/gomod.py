@@ -641,6 +641,16 @@ def _clean_go_modcache(go: Go, dir_: Optional[StrPath]) -> None:
         go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
 
 
+def _list_toolchain_files(dir_path: str, files: list[str]) -> list[str]:
+    def is_a_toolchain_path(path: Union[str, os.PathLike[str]]) -> bool:
+        # Go automatically downloads toolchains to paths like:
+        #   - pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.21.5.*
+        #   - pkg/mod/cache/download/sumdb/sum.golang.org/lookup/golang.org/toolchain@v0.0.1-go1.21.5.*
+        return "golang.org/toolchain" in str(path) and "pkg/mod/cache" in str(path)
+
+    return [file for file in files if is_a_toolchain_path(Path(dir_path) / file)]
+
+
 def fetch_gomod_source(request: Request) -> RequestOutput:
     """
     Resolve and fetch gomod dependencies for a given request.
@@ -737,6 +747,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 tmp_download_cache_dir,
                 str(gomod_download_dir),
                 dirs_exist_ok=True,
+                ignore=_list_toolchain_files,
             )
 
     env_vars_template = {
