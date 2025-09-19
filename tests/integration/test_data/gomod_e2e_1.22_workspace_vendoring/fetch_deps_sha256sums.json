@@ -60,9 +60,6 @@
   "gomod/pkg/mod/cache/download/github.com/valyala/fasttemplate/@v/v1.2.2.mod": "sha256:c6ae2aa5b434e9c34b0fd7469bfe88ada9fa619af0b3effb7c20b41b30b4cf8b",
   "gomod/pkg/mod/cache/download/github.com/valyala/fasttemplate/@v/v1.2.2.zip": "sha256:86f15c8e9fa85757afe7a865402f1fd6208e85bde797cd934b3a2cf64b5a9f4d",
   "gomod/pkg/mod/cache/download/github.com/valyala/fasttemplate/@v/v1.2.2.ziphash": "sha256:1cb81eb5db0f38a5ea59cead6f236b975b8e2092d44fe34874670ccacd1039e8",
-  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.zip": "sha256:ceb93c3a4d91f6cb8a11ce4221f34bae78825941a31e6564ea52c56c41efe446",
-  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.ziphash": "sha256:8fa09b7d07c332cf94810cb28709c785a43bd905ac3dc10f8710526522ce2877",
   "gomod/pkg/mod/cache/download/golang.org/x/crypto/@v/list": "sha256:6a3af52fc45d4d44da571603218a7509b399b8c3694be82441271d61641bd937",
   "gomod/pkg/mod/cache/download/golang.org/x/crypto/@v/v0.17.0.info": "sha256:7431e9c9e57e9e46db1fc99983371de69f061a524b2750d90acce5a938f8fbdd",
   "gomod/pkg/mod/cache/download/golang.org/x/crypto/@v/v0.17.0.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -130,6 +127,5 @@
   "gomod/pkg/mod/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "gomod/pkg/mod/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.mod": "sha256:21579860a20306fcf43b1bd234d1fba319499c77611b71c05f9bf3ba90dab939",
   "gomod/pkg/mod/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.zip": "sha256:aab8fbc4e6300ea08e6afe1caea18a21c90c79f489f52c53e2f20431f1a9a015",
-  "gomod/pkg/mod/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.ziphash": "sha256:700bb88b7be96cd699d6d9597ae915dc09c61599c5153f8013b1e5869e23902e",
-  "gomod/pkg/mod/cache/download/sumdb/sum.golang.org/lookup/golang.org/toolchain@v0.0.1-go1.22.0.linux-amd64": "unstable"
+  "gomod/pkg/mod/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.ziphash": "sha256:700bb88b7be96cd699d6d9597ae915dc09c61599c5153f8013b1e5869e23902e"
 }
