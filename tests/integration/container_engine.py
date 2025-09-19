@@ -32,15 +32,15 @@ class ContainerEngine(ABC):
         log.info("Run command: %s.", cmd)
 
         # redirect stderr to stdout for easier evaluation/handling of a single stream
-        forced_options = {
+        defaults = {
             "stdout": subprocess.PIPE,
             "stderr": subprocess.STDOUT,
             "encoding": "utf-8",
             "text": True,
         }
 
-        subprocess_kwargs.update(forced_options)
-        process = subprocess.run(cmd, **subprocess_kwargs)
+        opts: dict[str, Any] = defaults | subprocess_kwargs
+        process = subprocess.run(cmd, **opts)
 
         return process.stdout, process.returncode
 
@@ -74,6 +74,7 @@ class ContainerEngine(ABC):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
 
@@ -92,16 +93,20 @@ class PodmanEngine(ContainerEngine):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
         if flags is None:
             flags = []
 
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
+
         if entrypoint:
             flags.append(f"--entrypoint={entrypoint}")
 
         image_cmd = [self.name, "run", "--rm", *flags, image] + cmd
-        return self._run_cmd(image_cmd)
+        return self._run_cmd(image_cmd, **subprocess_kwargs)
 
 
 class BuildahEngine(ContainerEngine):
@@ -194,6 +199,7 @@ class BuildahEngine(ContainerEngine):
         cmd: list[str],
         entrypoint: Optional[str] = None,
         flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         """Run command using buildah."""
         with self._configure_buildah_container(image) as container_name:

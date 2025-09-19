@@ -5,6 +5,7 @@
 !hermeto/
 !pyproject.toml
 !requirements.txt
+!toolbox/
 !MANIFEST.in
 
 # Temporary Konflux workaround
