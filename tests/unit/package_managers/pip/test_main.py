@@ -1202,7 +1202,7 @@ def test_get_external_requirement_filepath(component_kind: str, url: str) -> Non
     ],
 )
 def test_check_metadata_from_sdist(sdist_filename: str, data_dir: Path) -> None:
-    sdist_path = data_dir / sdist_filename
+    sdist_path = data_dir / "archives" / sdist_filename
     pip._check_metadata_in_sdist(sdist_path)
 
 
@@ -1223,7 +1223,7 @@ def test_skip_check_on_tar_z(caplog: pytest.LogCaptureFixture) -> None:
 def test_metadata_check_fails_from_sdist(
     sdist_filename: Path, expected_error: str, data_dir: Path
 ) -> None:
-    sdist_path = data_dir / sdist_filename
+    sdist_path = data_dir / "archives" / sdist_filename
     with pytest.raises(PackageRejected, match=expected_error):
         pip._check_metadata_in_sdist(sdist_path)
 
