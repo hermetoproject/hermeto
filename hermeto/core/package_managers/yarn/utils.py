@@ -1,11 +1,12 @@
 import os
 import subprocess
-from typing import Optional, Union
+from typing import Optional
 
 from semver import Version
 
 from hermeto.core.errors import PackageManagerError
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.type_aliases import SemverLike
 from hermeto.core.utils import run_cmd
 
 
@@ -29,9 +30,6 @@ def run_yarn_cmd(
     except subprocess.CalledProcessError as e:
         # the yarn command writes the errors to stdout
         raise PackageManagerError(f"Yarn command failed: {' '.join(cmd)}", stderr=e.stdout)
-
-
-SemverLike = Union[Version, str]
 
 
 class VersionsRange:
