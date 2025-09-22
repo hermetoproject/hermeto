@@ -1202,21 +1202,12 @@ def test_get_external_requirement_filepath(component_kind: str, url: str) -> Non
     ],
 )
 def test_check_metadata_from_sdist(sdist_filename: str, data_dir: Path) -> None:
-    sdist_path = data_dir / sdist_filename
+    sdist_path = data_dir / "archives" / sdist_filename
     pip._check_metadata_in_sdist(sdist_path)
 
 
-@pytest.mark.parametrize(
-    "sdist_filename",
-    [
-        "myapp-0.1.tar.Z",
-        "myapp-without-pkg-info.tar.Z",
-    ],
-)
-def test_skip_check_on_tar_z(
-    sdist_filename: str, data_dir: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    sdist_path = data_dir / sdist_filename
+def test_skip_check_on_tar_z(caplog: pytest.LogCaptureFixture) -> None:
+    sdist_path = Path("app.tar.Z")
     pip._check_metadata_in_sdist(sdist_path)
     assert f"Skip checking metadata from compressed sdist {sdist_path.name}" in caplog.text
 
@@ -1232,7 +1223,7 @@ def test_skip_check_on_tar_z(
 def test_metadata_check_fails_from_sdist(
     sdist_filename: Path, expected_error: str, data_dir: Path
 ) -> None:
-    sdist_path = data_dir / sdist_filename
+    sdist_path = data_dir / "archives" / sdist_filename
     with pytest.raises(PackageRejected, match=expected_error):
         pip._check_metadata_in_sdist(sdist_path)
 

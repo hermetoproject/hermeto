@@ -45,7 +45,7 @@ def data_dir() -> Path:
 @pytest.fixture
 def golang_repo_path(data_dir: Path, tmp_path: Path) -> Path:
     """Return extracted Golang git repository inside a temporary directory."""
-    with tarfile.open(data_dir / "golang_git_repo.tar.gz") as tar:
+    with tarfile.open(data_dir / "archives" / "golang_git_repo.tar.gz") as tar:
         if sys.version_info >= (3, 12):
             tar.extractall(tmp_path, filter="fully_trusted")
         else:

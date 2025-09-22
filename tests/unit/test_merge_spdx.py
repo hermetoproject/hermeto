@@ -157,20 +157,20 @@ def _assert_no_relationship_is_duplicated(sbom: SPDXSbom) -> None:
     "sbom_main,sbom_other",
     [
         [
-            "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
-            "./tests/unit/data/something.more.simple.0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/something.more.simple.0.100.0.spdx.pretty.json",
         ],
         [
-            "./tests/unit/data/something.more.simple.0.100.0.spdx.pretty.json",
-            "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/something.more.simple.0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
         ],
         [
-            "./tests/unit/data/alpine.pretty.json",
-            "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/alpine.pretty.json",
+            "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
         ],
         [
-            "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
-            "./tests/unit/data/alpine.pretty.json",
+            "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+            "./tests/unit/data/sboms/alpine.pretty.json",
         ],
     ],
 )
@@ -199,9 +199,9 @@ def test_merging_two_spdx_sboms_works_in_general_independent_of_order(
     [
         pytest.param(
             (
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
-                "./tests/unit/data/something.more.simple.0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.more.simple.0.100.0.spdx.pretty.json",
             ),
             id="three unique SBOMs",
         ),
@@ -226,19 +226,19 @@ def test_merging_several_spdx_sboms_works_in_general_independent_of_order(
     [
         pytest.param(
             (
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
-                "./tests/unit/data/something.more.simple.0.100.0.spdx.pretty.json",
-                "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.more.simple.0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
             ),
             id="three unique SBOMs and a duplicate",
         ),
         pytest.param(
             (
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
             ),
             id="merging with self",
         ),
@@ -263,10 +263,10 @@ def test_merging_same_spdx_sbom_multiple_times_does_not_increase_the_number_of_p
     [
         pytest.param(
             (
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
-                "./tests/unit/data/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
+                "./tests/unit/data/sboms/alpine.pretty.json",
             ),
             id="merging with self",
         ),
@@ -299,8 +299,8 @@ def _same_relationship_order(sbom1: SPDXSbom, sbom2: SPDXSbom) -> bool:
     [
         pytest.param(
             (
-                "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
-                "./tests/unit/data/something.more.simple.0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.more.simple.0.100.0.spdx.pretty.json",
             ),
             id="two sboms",
         ),
