@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import logging
+import os
 import re
 import tarfile
 import tempfile
-from os import PathLike
 from pathlib import Path
 from typing import NamedTuple, Optional, Union
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
@@ -14,6 +14,7 @@ from git.repo import Repo
 
 from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
 
@@ -37,14 +38,14 @@ class RepoID(NamedTuple):
         return f"git+{self.origin_url}@{self.commit_id}"
 
 
-def get_repo_id(repo: Union[str, PathLike[str], Repo]) -> RepoID:
+def get_repo_id(repo: Union[StrPath, Repo]) -> RepoID:
     """Get the RepoID for a git.Repo object or a git directory.
 
     If the remote url is an scp-style [user@]host:path, convert it into ssh://[user@]host/path.
 
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
     """
-    if isinstance(repo, (str, PathLike)):
+    if isinstance(repo, (str, os.PathLike)):
         try:
             repo = Repo(repo, search_parent_directories=True)
         except (InvalidGitRepositoryError, NoSuchPathError):

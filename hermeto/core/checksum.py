@@ -3,11 +3,11 @@ import hashlib
 import logging
 from collections import defaultdict
 from collections.abc import Iterable
-from os import PathLike
 from pathlib import Path
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional
 
 from hermeto.core.errors import PackageRejected
+from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class _MismatchInfo(NamedTuple):
 
 
 def must_match_any_checksum(
-    file_path: Union[str, PathLike[str]],
+    file_path: StrPath,
     expected_checksums: Iterable[ChecksumInfo],
     chunk_size: int = 10240,
 ) -> None:
@@ -105,7 +105,7 @@ def _group_by_algorithm(checksums: Iterable[ChecksumInfo]) -> dict[str, set[str]
     return digests_by_algorithm
 
 
-def _get_hexdigest(file_path: Union[str, PathLike[str]], algorithm: str, chunk_size: int) -> str:
+def _get_hexdigest(file_path: StrPath, algorithm: str, chunk_size: int) -> str:
     with open(file_path, "rb") as f:
         hasher = hashlib.new(algorithm)
         while chunk := f.read(chunk_size):

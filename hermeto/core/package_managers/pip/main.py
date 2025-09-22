@@ -4,9 +4,8 @@ import logging
 import tarfile
 import zipfile
 from collections.abc import Iterable, Iterator
-from os import PathLike
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from urllib import parse as urlparse
 
 import pypi_simple
@@ -47,6 +46,7 @@ from hermeto.core.package_managers.pip.rust import (
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball, get_repo_id
+from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
 
@@ -328,9 +328,7 @@ def _process_pypi_req(
         req, pip_deps_dir, allow_binary, index_url
     )
 
-    files: dict[str, Union[str, PathLike[str]]] = {
-        dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()
-    }
+    files: dict[str, StrPath] = {dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()}
     asyncio.run(async_download_files(files, get_config().concurrency_limit))
 
     for artifact in artifacts:

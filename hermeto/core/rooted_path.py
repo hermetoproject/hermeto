@@ -1,16 +1,16 @@
-from os import PathLike
+import os
 from pathlib import Path
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 from pydantic_core import CoreSchema, core_schema
 
 from hermeto.core.errors import PathOutsideRoot
+from hermeto.core.type_aliases import StrPath
 
-StrPath = Union[str, PathLike[str]]
 RootedPathT = TypeVar("RootedPathT", bound="RootedPath")
 
 
-class RootedPath(PathLike[str]):
+class RootedPath(os.PathLike[str]):
     """A safer way to handle subpaths.
 
     Get a subpath, guaranteeing that it really is a subpath:
@@ -117,6 +117,6 @@ class RootedPath(PathLike[str]):
 
     @staticmethod
     def _validate(value: Any) -> "RootedPath":
-        if not isinstance(value, (str, PathLike)):
+        if not isinstance(value, (str, os.PathLike)):
             raise ValueError(f"expected str or os.PathLike, got {type(value).__name__}")
         return RootedPath(path=value)

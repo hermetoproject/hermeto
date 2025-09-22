@@ -20,8 +20,9 @@ from git import Repo
 
 from hermeto import APP_NAME
 from hermeto.core import resolver
+from hermeto.core.type_aliases import StrPath
 from hermeto.interface.cli import DEFAULT_OUTPUT
-from tests.integration.container_engine import StrPath, get_container_engine
+from tests.integration.container_engine import get_container_engine
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from typing import Union
+
+from hermeto.core.type_aliases import StrPath
 
 GIT_REF = "f" * 40
 
@@ -13,9 +14,7 @@ class Symlink(str):
     """
 
 
-def write_file_tree(
-    tree_def: dict, rooted_at: Union[str, os.PathLike[str]], exist_ok: bool = False
-) -> None:
+def write_file_tree(tree_def: dict, rooted_at: StrPath, exist_ok: bool = False) -> None:
     """
     Write a file tree to disk.
 

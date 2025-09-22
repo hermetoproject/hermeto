@@ -2,8 +2,7 @@
 import asyncio
 import logging
 import ssl
-from os import PathLike
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 import aiohttp
@@ -18,6 +17,7 @@ from hermeto.core.http_requests import (
     SAFE_REQUEST_METHODS,
     get_requests_session,
 )
+from hermeto.core.type_aliases import StrPath
 
 pkg_requests_session = get_requests_session(retry_options={"allowed_methods": SAFE_REQUEST_METHODS})
 
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 def download_binary_file(
     url: str,
-    download_path: Union[str, PathLike[str]],
+    download_path: StrPath,
     auth: Optional[AuthBase] = None,
     insecure: bool = False,
     chunk_size: int = 8192,
@@ -35,7 +35,7 @@ def download_binary_file(
     Download a binary file (such as a TAR archive) from a URL.
 
     :param str url: URL for file download
-    :param (str | PathLike) download_path: Path to download file to
+    :param [StrPath] download_path: Path to download file to
     :param requests.auth.AuthBase auth: Authentication for the URL
     :param bool insecure: Do not verify SSL for the URL
     :param int chunk_size: Chunk size param for Response.iter_content()
@@ -58,7 +58,7 @@ def download_binary_file(
 async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
-    download_path: Union[str, PathLike[str]],
+    download_path: StrPath,
     auth: Optional[aiohttp.BasicAuth] = None,
     ssl_context: Optional[ssl.SSLContext] = None,
     chunk_size: int = 8192,
@@ -100,7 +100,7 @@ async def _async_download_binary_file(
 
 
 async def async_download_files(
-    files_to_download: dict[str, Union[str, PathLike[str]]],
+    files_to_download: dict[str, StrPath],
     concurrency_limit: int,
     ssl_context: Optional[ssl.SSLContext] = None,
 ) -> None:

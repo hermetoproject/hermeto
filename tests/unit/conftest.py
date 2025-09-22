@@ -1,16 +1,15 @@
 import sys
 import tarfile
-from os import PathLike
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import git
 import pytest
 
 from hermeto.core.models.input import Request
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.type_aliases import StrPath
 
-StrPath = Union[str, PathLike[str]]
 FileContents = str
 
 

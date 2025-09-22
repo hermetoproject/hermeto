@@ -7,9 +7,9 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Generator, Optional, Union
 
-log = logging.getLogger(__name__)
+from hermeto.core.type_aliases import StrPath
 
-StrPath = Union[str, os.PathLike[str]]
+log = logging.getLogger(__name__)
 
 
 class ContainerEngine(ABC):

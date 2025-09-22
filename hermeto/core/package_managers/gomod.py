@@ -34,6 +34,7 @@ from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_for_path, get_repo_id
+from hermeto.core.type_aliases import StrPath
 from hermeto.core.utils import GIT_PRISTINE_ENV, get_cache_dir, load_json_stream, run_cmd
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
@@ -230,7 +231,7 @@ class Go:
 
     def __init__(
         self,
-        binary: Union[str, os.PathLike[str]] = "go",
+        binary: StrPath = "go",
         release: Optional[str] = None,
     ) -> None:
         """Initialize the Go toolchain wrapper.
