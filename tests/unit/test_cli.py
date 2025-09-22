@@ -1102,7 +1102,7 @@ class TestMergeSboms:
         [
             [
                 "./tests/unit/data/sboms/hermeto.bom.spdx.json",
-                "./tests/unit/data/something.simple0.100.0.spdx.pretty.json",
+                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
             ],
         ],
     )
