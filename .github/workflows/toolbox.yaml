@@ -1,0 +1,36 @@
+name: Build and Publish Hermeto-toolbox Container Image
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from release tag
+        id: version
+        run: |
+          echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      - name: Build and push image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/hermeto-toolbox
+          docker build -f toolbox/Containerfile.toolbox -t $IMAGE_NAME:${{ steps.version.outputs.VERSION }} .
+          docker tag $IMAGE_NAME:${{ steps.version.outputs.VERSION }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ steps.version.outputs.VERSION }}
+          docker push $IMAGE_NAME:latest
+
