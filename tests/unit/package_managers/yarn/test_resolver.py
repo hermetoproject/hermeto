@@ -995,31 +995,37 @@ def test_get_pedigree(
     assert resolver._pedigree_mapping == expected_pedigree
 
 
-@pytest.mark.parametrize(
-    "patch",
-    [
-        pytest.param(
-            Path("foo.patch"),
-            id="path_patch_without_workspace",
-        ),
-        pytest.param(
-            "builtin<bogus/patch>",
-            id="builtin_patch_from_unknown_plugin",
-        ),
-    ],
-)
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
-def test_get_pedigree_with_unsupported_locators(
+def test_get_pedigree_with_path_patch_without_workspace_locator_is_now_supported(
     mock_get_yarn_version: mock.Mock,
     mock_get_repo_id: mock.Mock,
-    patch: Union[Path, str],
     rooted_tmp_path: RootedPath,
 ) -> None:
+    """Test that path patches without workspace locators are now supported (Yarn v4)."""
     mock_get_yarn_version.return_value = Version(3, 0, 0)
     mock_get_repo_id.return_value = MOCK_REPO_ID
 
-    patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), [patch], None)]
+    patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), [Path("foo.patch")], None)]
+    mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+
+    # This should NOT raise UnsupportedFeature anymore
+    resolver = _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+    assert resolver is not None
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_get_pedigree_with_unsupported_builtin_patch(
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that builtin patches from unknown plugins still raise UnsupportedFeature."""
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), ["builtin<bogus/patch>"], None)]
     mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
