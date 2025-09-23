@@ -134,7 +134,7 @@ def main() -> None:
 
     print_banner(
         "You can copy the following to tests/unit/package_managers/yarn/test_resolver.py "
-        "(you will need to re-format it with 'black')"
+        "(you will need to re-format it with 'ruff')"
     )
 
     pprint.pprint(selected_packages, sort_dicts=False)

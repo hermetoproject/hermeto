@@ -119,11 +119,10 @@ Note: `--dev-package-managers` is deprecated (no-op) and will be removed; use `x
 
 ### Coding standards
 
-Hermeto's codebase conforms to standards enforced by a collection of formatters, linters and other code checkers:
+Hermeto's codebase relies on Ruff & other code quality tools to conform to common and widely used
+standards:
 
-* [black](https://black.readthedocs.io/en/stable/) (with a line-length of 100) for consistent formatting
-* [isort](https://pycqa.github.io/isort/) to keep imports sorted
-* [flake8](https://flake8.pycqa.org/en/latest/) to (de-)lint the code and ~~politely~~ ask for docstrings
+* [Ruff](https://docs.astral.sh/ruff/rules/) for formatting, import sorting, and linting
 * [mypy](https://mypy.readthedocs.io/en/stable/) for type-checking. Please include type annotations for new code.
 * [pytest](https://docs.pytest.org/en/7.1.x/) to run unit tests and report coverage stats. Please aim for (near) full
   coverage of new code.
