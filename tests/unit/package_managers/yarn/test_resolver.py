@@ -1024,3 +1024,62 @@ def test_get_pedigree_with_unsupported_locators(
 
     with pytest.raises(UnsupportedFeature):
         _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+def test_get_path_patch_url_with_no_workspace_locator(
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that _get_path_patch_url can handle PatchLocator with locator=None."""
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    patch_locator = PatchLocator(
+        package=NpmLocator(None, "test-package", "1.0.0"),
+        patches=[Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")],
+        locator=None
+    )
+
+    resolver = _ComponentResolver(
+        {}, [],
+        mock_project(rooted_tmp_path.re_root("source")),
+        rooted_tmp_path.re_root("output")
+    )
+
+    # This should not raise UnsupportedFeature
+    result = resolver._get_path_patch_url(
+        patch_locator,
+        Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")
+    )
+
+    # Should return some URL string
+    assert isinstance(result, str)
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+def test_get_path_patch_url_generates_correct_url_for_project_root_patch(
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that project-root patches generate correct PURL URLs."""
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    patch_locator = PatchLocator(
+        package=NpmLocator(None, "test-package", "1.0.0"),
+        patches=[Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")],
+        locator=None
+    )
+
+    resolver = _ComponentResolver(
+        {}, [],
+        mock_project(rooted_tmp_path.re_root("source")),
+        rooted_tmp_path.re_root("output")
+    )
+
+    result = resolver._get_path_patch_url(
+        patch_locator,
+        Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")
+    )
+
+    expected_url = "git+https://github.com/org/project.git@fffffff#.yarn/patches/test-package-npm-1.0.0-abc123.patch"
+    assert result == expected_url
