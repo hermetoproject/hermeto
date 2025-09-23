@@ -457,17 +457,18 @@ class _ComponentResolver:
 
     def _get_path_patch_url(self, patch_locator: PatchLocator, patch_path: Path) -> str:
         """Return a PURL-style VCS URL qualifier with subpath for a Patch."""
-        if patch_locator.locator is None:
-            raise UnsupportedFeature(
-                f"{patch_locator} is missing an associated workspace locator "
-                "and {APP_NAME} expects all non-builtin yarn patches to have one"
-            )
-
         project_path = self._project.source_dir
-        workspace_path = patch_locator.locator.relpath
-        normalized = self._project.source_dir.join_within_root(workspace_path, patch_path)
         repo_url = get_repo_id(project_path.root).as_vcs_url_qualifier()
-        subpath_from_root = str(normalized.subpath_from_root)
+
+        if patch_locator.locator is None:
+            # Project-root patch (Yarn v4 format) - patch path is relative to project root
+            normalized = self._project.source_dir.join_within_root(patch_path)
+            subpath_from_root = str(normalized.subpath_from_root)
+        else:
+            # Workspace-bound patch (existing format) - patch path is relative to workspace
+            workspace_path = patch_locator.locator.relpath
+            normalized = self._project.source_dir.join_within_root(workspace_path, patch_path)
+            subpath_from_root = str(normalized.subpath_from_root)
 
         return f"{repo_url}#{subpath_from_root}"
 
