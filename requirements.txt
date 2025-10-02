@@ -229,6 +229,10 @@ createrepo-c==1.2.1 ; sys_platform == 'linux' \
     --hash=sha256:f54469eec2b5fbff817a75fe04eb4b65bc468c1fe328dd3539c3ea12a559454d \
     --hash=sha256:fb24bf426d318cf34c04a9f1a5e0423f29520fb20994886955a72b98f0aa48e5
     # via hermeto (pyproject.toml)
+filelock==3.19.1 \
+    --hash=sha256:66eda1888b0171c998b35be2bcc0f6d75c388a7ce20c3f3f37aa8e96c2dddf58 \
+    --hash=sha256:d38e30481def20772f5baf097c122c3babc4fcdb7e14e57049eb9d88c6dc017d
+    # via huggingface-hub
 frozenlist==1.7.0 \
     --hash=sha256:04fb24d104f425da3540ed83cbfc31388a586a7696142004c577fa61c6298c3f \
     --hash=sha256:05579bf020096fe05a764f1f84cd104a12f78eaab68842d036772dc6d4870b4b \
@@ -337,6 +341,10 @@ frozenlist==1.7.0 \
     # via
     #   aiohttp
     #   aiosignal
+fsspec==2025.9.0 \
+    --hash=sha256:19fd429483d25d28b65ec68f9f4adc16c17ea2c7c7bf54ec61360d478fb19c19 \
+    --hash=sha256:530dc2a2af60a414a832059574df4a6e10cce927f6f4a78209390fe38955cfb7
+    # via huggingface-hub
 gitdb==4.0.12 \
     --hash=sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571 \
     --hash=sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf
@@ -344,6 +352,20 @@ gitdb==4.0.12 \
 gitpython==3.1.45 \
     --hash=sha256:85b0ee964ceddf211c41b9f27a49086010a190fd8132a24e21f362a4b36a791c \
     --hash=sha256:8908cb2e02fb3b93b7eb0f2827125cb699869470432cc885f019b8fd0fccff77
+    # via hermeto (pyproject.toml)
+hf-xet==1.1.10 ; platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' \
+    --hash=sha256:0a0005fd08f002180f7a12d4e13b22be277725bc23ed0529f8add5c7a6309c06 \
+    --hash=sha256:408aef343800a2102374a883f283ff29068055c111f003ff840733d3b715bb97 \
+    --hash=sha256:5f54b19cc347c13235ae7ee98b330c26dd65ef1df47e5316ffb1e87713ca7045 \
+    --hash=sha256:686083aca1a6669bc85c21c0563551cbcdaa5cf7876a91f3d074a030b577231d \
+    --hash=sha256:6b6bceb6361c80c1cc42b5a7b4e3efd90e64630bcf11224dcac50ef30a47e435 \
+    --hash=sha256:71081925383b66b24eedff3013f8e6bbd41215c3338be4b94ba75fd75b21513b \
+    --hash=sha256:eae7c1fc8a664e54753ffc235e11427ca61f4b0477d757cc4eb9ae374b69f09c \
+    --hash=sha256:f900481cf6e362a6c549c61ff77468bd59d6dd082f3170a36acfef2eb6a6793f
+    # via huggingface-hub
+huggingface-hub==0.35.3 \
+    --hash=sha256:0e3a01829c19d86d03793e4577816fe3bdfc1602ac62c7fb220d593d351224ba \
+    --hash=sha256:350932eaa5cc6a4747efae85126ee220e4ef1b54e29d31c3b45c5612ddf0b32a
     # via hermeto (pyproject.toml)
 idna==3.10 \
     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \
@@ -491,6 +513,7 @@ packaging==25.0 \
     # via
     #   hermeto (pyproject.toml)
     #   build
+    #   huggingface-hub
     #   pypi-simple
 pip==25.2 \
     --hash=sha256:578283f006390f85bb6282dffb876454593d637f5d1be494b5202ce4877e71f2 \
@@ -789,12 +812,15 @@ pyyaml==6.0.2 \
     --hash=sha256:efdca5630322a10774e8e98e1af481aad470dd62c3170801852d752aa7a783ba \
     --hash=sha256:f753120cb8181e736c57ef7636e83f31b9c0d1722c516f7e86cf15b7aa57ff12 \
     --hash=sha256:ff3824dc5261f50c9b0dfb3be22b4567a6f938ccce4587b38952d85fd9e9afe4
-    # via hermeto (pyproject.toml)
+    # via
+    #   hermeto (pyproject.toml)
+    #   huggingface-hub
 requests==2.32.5 \
     --hash=sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6 \
     --hash=sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf
     # via
     #   hermeto (pyproject.toml)
+    #   huggingface-hub
     #   pybuild-deps
     #   pypi-simple
 rich==14.1.0 \
@@ -866,6 +892,10 @@ tomlkit==0.13.3 \
     --hash=sha256:430cf247ee57df2b94ee3fbe588e71d362a941ebb545dec29b53961d61add2a1 \
     --hash=sha256:c89c649d79ee40629a9fda55f8ace8c6a1b42deb912b2a8fd8d942ddadb606b0
     # via hermeto (pyproject.toml)
+tqdm==4.67.1 \
+    --hash=sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2 \
+    --hash=sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2
+    # via huggingface-hub
 typer==0.17.3 \
     --hash=sha256:0c600503d472bcf98d29914d4dcd67f80c24cc245395e2e00ba3603c9332e8ba \
     --hash=sha256:643919a79182ab7ac7581056d93c6a2b865b026adf2872c4d02c72758e6f095b
@@ -877,6 +907,7 @@ typing-extensions==4.15.0 \
     #   aiosignal
     #   beautifulsoup4
     #   gitpython
+    #   huggingface-hub
     #   multidict
     #   pydantic
     #   pydantic-core
