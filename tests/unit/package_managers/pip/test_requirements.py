@@ -5,6 +5,7 @@ from typing import Any, Union
 import pytest
 
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.requirements import (
     PipRequirement,
     PipRequirementsFile,
@@ -18,7 +19,7 @@ def test_validate_whl_url_when_binaries_allowed() -> None:
     url = "https://example.org/file.whl"
     req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
 
-    validate_requirements([req], allow_binary=True)
+    validate_requirements([req], PipBinaryFilters.with_allow_binary_behavior())
 
 
 def test_validate_whl_url_when_binaries_not_allowed() -> None:
@@ -26,7 +27,7 @@ def test_validate_whl_url_when_binaries_not_allowed() -> None:
     req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
 
     with pytest.raises(PackageRejected):
-        validate_requirements([req], allow_binary=False)
+        validate_requirements([req], None)
 
 
 class TestPipRequirementsFile:

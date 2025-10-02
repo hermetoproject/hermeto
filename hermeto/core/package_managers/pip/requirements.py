@@ -12,6 +12,7 @@ from packaging.utils import canonicalize_name
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -588,7 +589,9 @@ def process_requirements_options(options: list[str]) -> dict[str, Any]:
     return opts
 
 
-def validate_requirements(requirements: list[PipRequirement], allow_binary: bool) -> None:
+def validate_requirements(
+    requirements: list[PipRequirement], binary_filters: Optional[PipBinaryFilters] = None
+) -> None:
     """
     Validate that all requirements meet our expectations.
 
@@ -648,7 +651,7 @@ def validate_requirements(requirements: list[PipRequirement], allow_binary: bool
                     docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
-            if allow_binary:
+            if binary_filters is not None:
                 allowed_extensions = ALL_FILE_EXTENSIONS
             else:
                 allowed_extensions = SDIST_FILE_EXTENSIONS

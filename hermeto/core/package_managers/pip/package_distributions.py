@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, Literal, Optional, cast
 
 import pypi_simple
 import requests
@@ -12,6 +12,7 @@ from packaging.utils import canonicalize_version
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError, PackageRejected
+from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.requirements import PipRequirement
 from hermeto.core.rooted_path import RootedPath
 
@@ -121,7 +122,7 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
 def process_package_distributions(
     requirement: PipRequirement,
     pip_deps_dir: RootedPath,
-    allow_binary: bool = False,
+    binary_filters: Optional[PipBinaryFilters] = None,
     index_url: str = pypi_simple.PYPI_SIMPLE_ENDPOINT,
 ) -> list[DistributionPackageInfo]:
     """
@@ -145,11 +146,11 @@ def process_package_distributions(
 
     :param requirement: which pip package to process
     :param str pip_deps_dir:
-    :param bool allow_binary: process wheels?
+    :param binary_filters: process wheels?
     :return: a list of DPI
     :rtype: list[DistributionPackageInfo]
     """
-    allowed_distros = ["sdist", "wheel"] if allow_binary else ["sdist"]
+    allowed_distros = ["sdist", "wheel"] if binary_filters is not None else ["sdist"]
     client = pypi_simple.PyPISimple(index_url)
     processed_dpis: list[DistributionPackageInfo] = []
     name = requirement.package
@@ -213,7 +214,7 @@ def process_package_distributions(
         log.warning("No sdist found for package %s==%s", name, version)
 
         if len(wheels) == 0:
-            if allow_binary:
+            if binary_filters is not None:
                 solution = (
                     "Please check that the package exists on PyPI or that the name"
                     " and version are correct.\n"

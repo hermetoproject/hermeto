@@ -15,7 +15,7 @@ from packaging.utils import canonicalize_name
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
@@ -79,7 +79,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             request.source_dir,
             package.requirements_files,
             package.requirements_build_files,
-            package.binary is not None,
+            package.binary,
         )
         purl = _generate_purl_main_package(info["package"], path_within_root)
         components.append(
@@ -320,12 +320,12 @@ def _process_pypi_req(
     requirements_file: PipRequirementsFile,
     index_url: str,
     pip_deps_dir: RootedPath,
-    allow_binary: bool,
+    binary_filters: Optional[PipBinaryFilters] = None,
 ) -> list[dict[str, Any]]:
     download_infos: list[dict[str, Any]] = []
 
     artifacts: list[DistributionPackageInfo] = process_package_distributions(
-        req, pip_deps_dir, allow_binary, index_url
+        req, pip_deps_dir, binary_filters, index_url
     )
 
     files: dict[str, StrPath] = {dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()}
@@ -374,14 +374,14 @@ def _process_url_req(
 def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
-    allow_binary: bool = False,
+    binary_filters: Optional[PipBinaryFilters] = None,
 ) -> list[dict[str, Any]]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
 
     :param output_dir: the root output directory for this request
     :param requirements_file: A requirements.txt file
-    :param bool allow_binary: process wheels?
+    :param binary_filters: process wheels?
     :return: Info about downloaded packages; all items will contain "kind" and "path" keys
         (and more based on kind, see _download_*_package functions for more details)
     :rtype: list[dict]
@@ -406,7 +406,7 @@ def _download_dependencies(
         )
         require_hashes = False
 
-    validate_requirements(requirements_file.requirements, allow_binary)
+    validate_requirements(requirements_file.requirements, binary_filters)
     validate_requirements_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
@@ -420,7 +420,7 @@ def _download_dependencies(
                 requirements_file=requirements_file,
                 index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
                 pip_deps_dir=pip_deps_dir,
-                allow_binary=allow_binary,
+                binary_filters=binary_filters,
             )
             processed.extend(download_infos)
         elif req.kind == "vcs":
@@ -527,14 +527,16 @@ def _add_cachito_hash_to_url(parsed_url: urlparse.ParseResult, hash_spec: str) -
 
 
 def _download_from_requirement_files(
-    output_dir: RootedPath, files: list[RootedPath], allow_binary: bool = False
+    output_dir: RootedPath,
+    files: list[RootedPath],
+    binary_filters: Optional[PipBinaryFilters] = None,
 ) -> list[dict[str, Any]]:
     """
     Download dependencies listed in the requirement files.
 
     :param output_dir: the root output directory for this request
     :param files: list of absolute paths to pip requirements files
-    :param allow_binary: process wheels?
+    :param binary_filters: process wheels?
     :return: Info about downloaded packages; see download_dependencies return docs for further
         reference
     :raises PackageRejected: If requirement file does not exist
@@ -547,7 +549,7 @@ def _download_from_requirement_files(
                 solution="Please check that you have specified correct requirements file paths",
             )
         requirements.extend(
-            _download_dependencies(output_dir, PipRequirementsFile(req_file), allow_binary)
+            _download_dependencies(output_dir, PipRequirementsFile(req_file), binary_filters)
         )
 
     return requirements
@@ -572,7 +574,7 @@ def _resolve_pip(
     source_dir: RootedPath,
     requirement_files: Optional[list[Path]] = None,
     build_requirement_files: Optional[list[Path]] = None,
-    allow_binary: bool = False,
+    binary_filters: Optional[PipBinaryFilters] = None,
 ) -> dict[str, Any]:
     """
     Resolve and fetch pip dependencies for the given pip application.
@@ -583,7 +585,7 @@ def _resolve_pip(
         to be used to compile a list of dependencies to be fetched
     :param list build_requirement_files: a list of str representing paths to the Python build
         requirement files to be used to compile a list of build dependencies to be fetched
-    :param bool allow_binary: process wheels?
+    :param binary_filters: process wheels?
     :return: a dictionary that has the following keys:
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
@@ -606,13 +608,13 @@ def _resolve_pip(
     resolved_req_files = resolve_req_files(requirement_files, False)
     resolved_build_req_files = resolve_req_files(build_requirement_files, True)
 
-    requires = _download_from_requirement_files(output_dir, resolved_req_files, allow_binary)
+    requires = _download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
     build_requires = _download_from_requirement_files(
-        output_dir, resolved_build_req_files, allow_binary
+        output_dir, resolved_build_req_files, binary_filters
     )
 
     # No need to search for Rust code when a user requested just binaries.
-    if allow_binary or get_config().ignore_pip_dependencies_crates:
+    if binary_filters is not None or get_config().ignore_pip_dependencies_crates:
         packages_containing_rust_code = []
     else:
         packages_containing_rust_code = filter_packages_with_rust_code(requires + build_requires)
