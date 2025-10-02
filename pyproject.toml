@@ -21,6 +21,7 @@ dependencies = [
   "aiohttp-retry",
   "createrepo-c ; sys_platform == 'linux'",
   "gitpython",
+  "huggingface-hub",
   "packageurl-python",
   "packaging",
   "pyarn",
