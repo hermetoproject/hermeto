@@ -4,30 +4,9 @@ from typing import Any, Union
 
 import pytest
 
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
-from hermeto.core.models.input import PipBinaryFilters
-from hermeto.core.package_managers.pip.requirements import (
-    PipRequirement,
-    PipRequirementsFile,
-    validate_requirements,
-)
+from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
+from hermeto.core.package_managers.pip.requirements import PipRequirement, PipRequirementsFile
 from hermeto.core.rooted_path import RootedPath
-from tests.unit.package_managers.pip.test_main import mock_requirement
-
-
-def test_validate_whl_url_when_binaries_allowed() -> None:
-    url = "https://example.org/file.whl"
-    req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
-
-    validate_requirements([req], PipBinaryFilters.with_allow_binary_behavior())
-
-
-def test_validate_whl_url_when_binaries_not_allowed() -> None:
-    url = "https://example.org/file.whl"
-    req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
-
-    with pytest.raises(PackageRejected):
-        validate_requirements([req], None)
 
 
 class TestPipRequirementsFile:

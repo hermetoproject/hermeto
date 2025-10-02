@@ -406,7 +406,7 @@ def _download_dependencies(
         )
         require_hashes = False
 
-    validate_requirements(requirements_file.requirements, binary_filters)
+    validate_requirements(requirements_file.requirements)
     validate_requirements_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")

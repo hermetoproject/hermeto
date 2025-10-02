@@ -12,7 +12,6 @@ from packaging.utils import canonicalize_name
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
-from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -589,9 +588,7 @@ def process_requirements_options(options: list[str]) -> dict[str, Any]:
     return opts
 
 
-def validate_requirements(
-    requirements: list[PipRequirement], binary_filters: Optional[PipBinaryFilters] = None
-) -> None:
+def validate_requirements(requirements: list[PipRequirement]) -> None:
     """
     Validate that all requirements meet our expectations.
 
@@ -651,16 +648,11 @@ def validate_requirements(
                     docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
-            if binary_filters is not None:
-                allowed_extensions = ALL_FILE_EXTENSIONS
-            else:
-                allowed_extensions = SDIST_FILE_EXTENSIONS
-
             url = urlparse.urlparse(req.url)
-            if not any(url.path.endswith(ext) for ext in allowed_extensions):
+            if not any(url.path.endswith(ext) for ext in ALL_FILE_EXTENSIONS):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
-                    f"{req.download_line} (expected one of {', '.join(allowed_extensions)})"
+                    f"{req.download_line} (expected one of {', '.join(ALL_FILE_EXTENSIONS)})"
                 )
                 raise PackageRejected(msg, solution=None)
 
