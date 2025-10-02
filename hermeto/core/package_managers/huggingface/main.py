@@ -38,7 +38,15 @@ def fetch_huggingface_source(request: Request) -> RequestOutput:
     components = []
     for package in request.huggingface_packages:
         path = request.source_dir.join_within_root(package.path)
-        lockfile = package.lockfile or path.join_within_root(DEFAULT_LOCKFILE_NAME).path
+        if package.lockfile:
+            if not package.lockfile.is_absolute():
+                raise PackageRejected(
+                    f"Hugging Face lockfile path '{package.lockfile}' is not absolute",
+                    solution="Provide an absolute path to the lockfile",
+                )
+            lockfile = package.lockfile
+        else:
+            lockfile = path.join_within_root(DEFAULT_LOCKFILE_NAME).path
 
         components.extend(_resolve_huggingface_lockfile(lockfile, request.output_dir))
 
