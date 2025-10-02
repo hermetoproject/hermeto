@@ -1,0 +1,12 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "components": [
+    {
+      "name": "hf-internal-testing/tiny-random-gpt2",
+      "type": "ml-model",
+      "purl": "pkg:huggingface/hf-internal-testing/tiny-random-gpt2"
+    }
+  ]
+}
