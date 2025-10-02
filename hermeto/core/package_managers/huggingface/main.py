@@ -27,6 +27,17 @@ DEFAULT_LOCKFILE_NAME = "huggingface.lock.yaml"
 DEFAULT_DEPS_DIR = "deps/huggingface/hub"
 DEFAULT_HF_ENDPOINT = "https://huggingface.co"
 
+# File patterns that execute arbitrary code when LOADED by user's application
+# (not during Hermeto's fetch - Hermeto only downloads files without deserialization)
+UNSAFE_FILE_PATTERNS = [
+    "*.bin",  # PyTorch pickle format - executes code during model loading
+    "*.pt",  # PyTorch pickle format - executes code during model loading
+    "*.pkl",  # Python pickle format - executes code during deserialization
+    "*.pickle",  # Python pickle format - executes code during deserialization
+    "modeling_*.py",  # Custom model code - imported by transformers library
+    "*.pth",  # PyTorch checkpoint format - executes code during loading
+]
+
 
 def fetch_huggingface_source(request: Request) -> RequestOutput:
     """
@@ -86,6 +97,8 @@ def _resolve_huggingface_lockfile(lockfile_path: Path, output_dir: RootedPath) -
         log.info(
             f"Fetching {model_entry.type} '{model_entry.repository}' at revision {model_entry.revision}"
         )
+        # Check for unsafe file patterns and warn user
+        _check_unsafe_patterns(model_entry)
         component = _fetch_model(model_entry, cache_manager)
         components.append(component)
 
@@ -246,6 +259,43 @@ def _should_include_file(filename: str, include_patterns: Optional[list[str]]) -
                 return True
 
     return False
+
+
+def _check_unsafe_patterns(model_entry: HuggingFaceModel) -> None:
+    """
+    Check if model entry allows downloading unsafe file formats and log warnings.
+
+    Note: The risk is NOT during Hermeto's fetch (which only downloads files via HTTP),
+    but during model loading by the user's application (pickle deserialization).
+
+    :param model_entry: Model entry from lockfile
+    """
+    if model_entry.include_patterns is None:
+        # No patterns means everything is downloaded, including unsafe files
+        log.warning(
+            f"Security warning: Model '{model_entry.repository}' has no include_patterns specified. "
+            f"This will download ALL files including potentially unsafe formats (*.bin, *.pt, *.pkl) "
+            f"that execute arbitrary code when YOUR application loads them (not during Hermeto's fetch). "
+            f"Consider restricting to safe formats like *.safetensors"
+        )
+        return
+
+    # Check if any unsafe patterns are explicitly included
+    unsafe_patterns_found = []
+    for pattern in model_entry.include_patterns:
+        for unsafe_pattern in UNSAFE_FILE_PATTERNS:
+            # Simple pattern matching - check if they're the same or if the pattern could match
+            if pattern == unsafe_pattern or unsafe_pattern in pattern:
+                unsafe_patterns_found.append(pattern)
+                break
+
+    if unsafe_patterns_found:
+        log.warning(
+            f"Security warning: Model '{model_entry.repository}' includes potentially unsafe patterns: "
+            f"{unsafe_patterns_found}. These file formats use pickle serialization which executes "
+            f"arbitrary code when YOUR application loads the model (not during Hermeto's fetch). "
+            f"Consider using SafeTensors format (*.safetensors) instead."
+        )
 
 
 def _generate_environment_variables() -> list[EnvironmentVariable]:
