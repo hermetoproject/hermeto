@@ -158,16 +158,19 @@ The only supported format for the config file is YAML.
 
 ## Package managers
 
-| Package manager             | Ecosystem  |
-|-----------------------------|------------|
-| [bundler](#bundler)         | Ruby       |
-| [cargo](#cargo)             | Rust       |
-| [generic](#generic-fetcher) | N/A        |
-| [gomod](#gomod)             | Go         |
-| [npm](#npm)                 | JavaScript |
-| [pip](#pip)                 | Python     |
-| [rpm](#rpm)                 | RPM        |
-| [yarn](#yarn)               | JavaScript |
+| Package manager                       | Ecosystem         |
+|---------------------------------------|-------------------|
+| [bundler](#bundler)                   | Ruby              |
+| [cargo](#cargo)                       | Rust              |
+| [generic](#generic-fetcher)           | N/A               |
+| [gomod](#gomod)                       | Go                |
+| [huggingface](#huggingface) ⚠️        | ML Models         |
+| [npm](#npm)                           | JavaScript        |
+| [pip](#pip)                           | Python            |
+| [rpm](#rpm)                           | RPM               |
+| [yarn](#yarn)                         | JavaScript        |
+
+⚠️ = Experimental (see [CONTRIBUTING.md](CONTRIBUTING.md#experimental-features))
 
 ### [bundler][]
 
@@ -228,6 +231,24 @@ added benefit of downloading fewer dependencies (as noted in the changelog), in
 some cases drastically so.
 
 See docs/gomod.md for more details.
+
+### Hugging Face
+
+⚠️ **EXPERIMENTAL**: This package manager is experimental and not production-ready.
+
+Hermeto supports Hugging Face by fetching ML models and datasets from
+[Hugging Face Hub][] using a custom lockfile format. The lockfile declares which
+models/datasets to download along with their specific Git revisions for
+reproducibility.
+
+Downloaded models are stored in a cache structure compatible with Hugging Face's
+offline mode (`HF_HUB_OFFLINE=1`), enabling hermetic builds of ML applications.
+
+The lockfile format allows filtering files using glob patterns to download only
+what's needed (e.g., only SafeTensors weights, excluding PyTorch or TensorFlow
+formats).
+
+See docs/huggingface.md for more details.
 
 ### [npm][]
 
@@ -317,6 +338,7 @@ Hermeto was derived from (but is not a direct fork of) [Cachito][].
 [hermetic]: https://slsa.dev/spec/v0.1/requirements#hermetic
 [hermeto container status]: https://quay.io/repository/konflux-ci/hermeto/tag/latest
 [hermeto coverage status]: https://codecov.io/github/hermetoproject/hermeto
+[Hugging Face Hub]: https://huggingface.co
 [npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
 [npm]: https://docs.npmjs.com
 [package-lock.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json
