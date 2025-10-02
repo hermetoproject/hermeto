@@ -109,6 +109,7 @@ PackageManagerType = Literal[
     "rpm",
     "yarn",
     # Add experimental package managers here with x- prefix, e.g. "x-foo"
+    "x-huggingface",
 ]
 
 
@@ -271,6 +272,13 @@ class GomodPackageInput(_PackageInputBase):
     type: Literal["gomod"]
 
 
+class HuggingfacePackageInput(_PackageInputBase):
+    """Accepted input for a Hugging Face package."""
+
+    type: Literal["x-huggingface"]
+    lockfile: Optional[Path] = None
+
+
 class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
@@ -380,6 +388,7 @@ PackageInput = Annotated[
         CargoPackageInput,
         GenericPackageInput,
         GomodPackageInput,
+        HuggingfacePackageInput,
         NpmPackageInput,
         PipPackageInput,
         RpmPackageInput,
@@ -472,6 +481,11 @@ class Request(pydantic.BaseModel):
     def gomod_packages(self) -> list[GomodPackageInput]:
         """Get the gomod packages specified for this request."""
         return self._packages_by_type(GomodPackageInput)
+
+    @property
+    def huggingface_packages(self) -> list[HuggingfacePackageInput]:
+        """Get the Hugging Face packages specified for this request."""
+        return self._packages_by_type(HuggingfacePackageInput)
 
     @property
     def npm_packages(self) -> list[NpmPackageInput]:
