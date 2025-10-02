@@ -2170,7 +2170,6 @@ class TestGo:
         mock_run: mock.Mock,
         params: dict,
     ) -> None:
-
         cmd = [GO_CMD_PATH, "mod", "download"]
         Go._run(cmd, **params)
         mock_run.assert_called_once_with(cmd, params)
