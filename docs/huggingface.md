@@ -193,6 +193,41 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
 ## Limitations
 
+### Security: Arbitrary code execution risk
+
+⚠️ **CRITICAL SECURITY WARNING**: PyTorch model files (`*.bin`, `*.pt`, `*.pkl`) use Python's pickle serialization format, which **executes arbitrary code during deserialization**. Malicious actors can embed code in these files that will execute when you load the model with `AutoModel.from_pretrained()` or similar functions.
+
+**Important distinction:**
+- ✅ **Hermeto itself is NOT at risk** - During the fetch phase, Hermeto only downloads files via HTTP and creates cache directories. No model loading or deserialization occurs, so Hermeto cannot be compromised.
+- ⚠️ **Your application IS at risk** - The arbitrary code execution happens when YOUR code loads the downloaded models (e.g., `AutoModel.from_pretrained()`). This occurs during your build or runtime, not during Hermeto's fetch.
+
+**Safe formats:**
+- `*.safetensors` - SafeTensors format (no code execution possible, **strongly recommended**)
+- `*.json` - Configuration files
+- `*.txt` - Vocabulary files
+
+**Unsafe formats (arbitrary code execution risk):**
+- `*.bin` - PyTorch pickle format
+- `*.pt` - PyTorch pickle format
+- `*.pkl` - Python pickle format
+- `modeling_*.py` - Custom model code (imported and executed by transformers library)
+
+**Recommendation:** Always use `include_patterns` to download only SafeTensors weights:
+
+```yaml
+models:
+  - repository: "gpt2"
+    revision: "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
+    type: "model"
+    include_patterns:
+      - "*.safetensors"  # Safe format - no code execution
+      - "config.json"
+      - "tokenizer*"
+      - "vocab.txt"
+```
+
+Hermeto will warn you if your lockfile allows downloading potentially unsafe file formats.
+
 ### Framework-specific files
 
 By default, Hermeto downloads all files for a model. Models often include weights for multiple frameworks (PyTorch, TensorFlow, JAX, etc.). Use `include_patterns` to download only what you need:
