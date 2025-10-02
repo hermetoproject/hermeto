@@ -1,6 +1,7 @@
 """This module provides functionality to process package distributions from PyPI (sdist and wheel)."""
 
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, Optional, cast
@@ -119,6 +120,26 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
     return yanked_pref, filetype_pref
 
 
+def _get_project_packages_from(
+    index_url: str,
+    name: str,
+    version: str,
+) -> Iterable[pypi_simple.DistributionPackage]:
+    """Get all the project packages from the given index URL."""
+    timeout = get_config().requests_timeout
+    with pypi_simple.PyPISimple(index_url) as client:
+        try:
+            project_page = client.get_project_page(name, timeout)
+        except (requests.RequestException, pypi_simple.NoSuchProjectError) as e:
+            raise FetchError(f"PyPI query failed: {e}") from e
+
+    return filter(
+        lambda p: p.version is not None
+        and canonicalize_version(p.version) == canonicalize_version(version),
+        project_page.packages,
+    )
+
+
 def process_package_distributions(
     requirement: PipRequirement,
     pip_deps_dir: RootedPath,
@@ -151,32 +172,17 @@ def process_package_distributions(
     :rtype: list[DistributionPackageInfo]
     """
     allowed_distros = ["sdist", "wheel"] if binary_filters is not None else ["sdist"]
-    client = pypi_simple.PyPISimple(index_url)
     processed_dpis: list[DistributionPackageInfo] = []
     name = requirement.package
     version = requirement.version_specs[0][1]
-    normalized_version = canonicalize_version(version)
     sdists: list[DistributionPackageInfo] = []
     req_file_checksums = set(map(ChecksumInfo.from_hash, requirement.hashes))
     wheels: list[DistributionPackageInfo] = []
 
-    try:
-        timeout = get_config().requests_timeout
-        project_page = client.get_project_page(name, timeout)
-        packages: list[pypi_simple.DistributionPackage] = project_page.packages
-    except (requests.RequestException, pypi_simple.NoSuchProjectError) as e:
-        raise FetchError(f"PyPI query failed: {e}")
-
-    def _is_valid(pkg: pypi_simple.DistributionPackage) -> bool:
-        return (
-            pkg.version is not None
-            and canonicalize_version(pkg.version) == normalized_version
-            and pkg.package_type is not None
-            and pkg.package_type in allowed_distros
-        )
+    packages = _get_project_packages_from(index_url, name, version)
 
     for package in packages:
-        if not _is_valid(package):
+        if package.package_type is None or package.package_type not in allowed_distros:
             continue
 
         pypi_checksums: set[ChecksumInfo] = {
