@@ -472,7 +472,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-huggingface', 'yarn'",
                 ],
             ),
             (
@@ -480,7 +480,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-huggingface', 'yarn'",
                 ],
             ),
             (
@@ -488,7 +488,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-huggingface', 'yarn'",
                 ],
             ),
             # Missing package type
