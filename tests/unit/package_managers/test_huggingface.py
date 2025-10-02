@@ -11,6 +11,7 @@ from hermeto.core.models.input import HuggingfacePackageInput
 from hermeto.core.package_managers.huggingface.cache import HFCacheManager
 from hermeto.core.package_managers.huggingface.main import (
     DEFAULT_LOCKFILE_NAME,
+    _check_unsafe_patterns,
     _load_lockfile,
     _should_include_file,
     fetch_huggingface_source,
@@ -283,6 +284,92 @@ class TestFileFiltering:
         assert _should_include_file("nested/config.json", patterns)
         assert _should_include_file("deeply/nested/file.json", patterns)
         assert not _should_include_file("model.safetensors", patterns)
+
+
+class TestUnsafePatternDetection:
+    """Tests for unsafe pattern detection and security warnings."""
+
+    def test_no_patterns_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that missing include_patterns triggers warning."""
+        model = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            # No include_patterns specified
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" in caplog.text
+        assert "no include_patterns specified" in caplog.text
+        assert "*.bin, *.pt, *.pkl" in caplog.text
+        assert "not during Hermeto's fetch" in caplog.text
+
+    def test_safe_patterns_no_warning(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that safe patterns don't trigger warning."""
+        model = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            include_patterns=["*.safetensors", "config.json", "tokenizer.json"],
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" not in caplog.text
+
+    def test_unsafe_pattern_bin_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that *.bin pattern triggers warning."""
+        model = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            include_patterns=["*.bin", "config.json"],
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" in caplog.text
+        assert "*.bin" in caplog.text
+        assert "pickle serialization" in caplog.text
+        assert "not during Hermeto's fetch" in caplog.text
+
+    def test_unsafe_pattern_pt_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that *.pt pattern triggers warning."""
+        model = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            include_patterns=["*.pt"],
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" in caplog.text
+        assert "*.pt" in caplog.text
+
+    def test_unsafe_pattern_modeling_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that modeling_*.py pattern triggers warning."""
+        model = HuggingFaceModel(
+            repository="custom/model",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            include_patterns=["modeling_*.py", "config.json"],
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" in caplog.text
+        assert "modeling_*.py" in caplog.text
+
+    def test_multiple_unsafe_patterns_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test that multiple unsafe patterns all get reported."""
+        model = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            include_patterns=["*.bin", "*.pt", "config.json"],
+        )
+        with caplog.at_level("WARNING"):
+            _check_unsafe_patterns(model)
+
+        assert "Security warning" in caplog.text
+        # Should mention at least one unsafe pattern
+        assert "*.bin" in caplog.text or "*.pt" in caplog.text
 
 
 class TestFetchHuggingfaceSource:
