@@ -6,6 +6,7 @@ import pytest
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import FetchError, PackageRejected
+from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.package_distributions import (
     _sdist_preference,
     process_package_distributions,
@@ -109,17 +110,20 @@ def test_process_existing_wheel_only_package(
         None,
         None,
     )
-    artifacts = process_package_distributions(req, rooted_tmp_path, allow_binary=True)
+    artifacts = process_package_distributions(
+        req, rooted_tmp_path, PipBinaryFilters.with_allow_binary_behavior()
+    )
+
     assert artifacts[0].package_type != "sdist"
     assert len(artifacts) == 2
     assert f"No sdist found for package {package_name}=={version}" in caplog.text
 
 
-@pytest.mark.parametrize("allow_binary", (True, False))
+@pytest.mark.parametrize("binary_filters", (PipBinaryFilters.with_allow_binary_behavior(), None))
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
 def test_process_existing_package_without_any_distributions(
     mock_get_project_page: mock.Mock,
-    allow_binary: bool,
+    binary_filters: Optional[PipBinaryFilters],
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -128,12 +132,12 @@ def test_process_existing_package_without_any_distributions(
     req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
 
     with pytest.raises(PackageRejected) as exc_info:
-        process_package_distributions(req, rooted_tmp_path, allow_binary=allow_binary)
+        process_package_distributions(req, rooted_tmp_path, binary_filters=binary_filters)
 
     assert f"No sdist found for package {package_name}=={version}" in caplog.text
     assert str(exc_info.value) == f"No distributions found for package {package_name}=={version}"
 
-    if allow_binary:
+    if binary_filters is not None:
         assert str(exc_info.value.solution) == (
             "Please check that the package exists on PyPI or that the name"
             " and version are correct.\n"
@@ -213,7 +217,9 @@ def test_process_package_distributions_with_checksums(
         None,
         None,
     )
-    artifacts = process_package_distributions(req, rooted_tmp_path, allow_binary=True)
+    artifacts = process_package_distributions(
+        req, rooted_tmp_path, PipBinaryFilters.with_allow_binary_behavior()
+    )
 
     if use_user_hashes and use_pypi_digests:
         assert (
@@ -273,7 +279,9 @@ def test_process_package_distributions_with_different_checksums(
         None,
     )
 
-    artifacts = process_package_distributions(req, rooted_tmp_path, allow_binary=True)
+    artifacts = process_package_distributions(
+        req, rooted_tmp_path, PipBinaryFilters.with_allow_binary_behavior()
+    )
 
     assert len(artifacts) == 1
     assert f"Filtering out {package_name} due to checksum mismatch" in caplog.text

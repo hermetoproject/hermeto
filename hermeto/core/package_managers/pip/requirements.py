@@ -588,7 +588,7 @@ def process_requirements_options(options: list[str]) -> dict[str, Any]:
     return opts
 
 
-def validate_requirements(requirements: list[PipRequirement], allow_binary: bool) -> None:
+def validate_requirements(requirements: list[PipRequirement]) -> None:
     """
     Validate that all requirements meet our expectations.
 
@@ -648,16 +648,11 @@ def validate_requirements(requirements: list[PipRequirement], allow_binary: bool
                     docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
-            if allow_binary:
-                allowed_extensions = ALL_FILE_EXTENSIONS
-            else:
-                allowed_extensions = SDIST_FILE_EXTENSIONS
-
             url = urlparse.urlparse(req.url)
-            if not any(url.path.endswith(ext) for ext in allowed_extensions):
+            if not any(url.path.endswith(ext) for ext in ALL_FILE_EXTENSIONS):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
-                    f"{req.download_line} (expected one of {', '.join(allowed_extensions)})"
+                    f"{req.download_line} (expected one of {', '.join(ALL_FILE_EXTENSIONS)})"
                 )
                 raise PackageRejected(msg, solution=None)
 

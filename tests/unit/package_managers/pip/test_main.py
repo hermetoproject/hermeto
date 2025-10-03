@@ -15,7 +15,7 @@ from git import Repo
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
-from hermeto.core.models.input import CargoPackageInput, PackageInput, Request
+from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
@@ -551,7 +551,9 @@ class TestDownload:
         msg = "Not a valid hash specifier: 'malformed' (expected 'algorithm:digest')"
         assert str(exc_info.value) == msg
 
-    @pytest.mark.parametrize("allow_binary", [True, False])
+    @pytest.mark.parametrize(
+        "binary_filters", (PipBinaryFilters.with_allow_binary_behavior(), None)
+    )
     @pytest.mark.parametrize(
         "index_url", [None, pypi_simple.PYPI_SIMPLE_ENDPOINT, CUSTOM_PYPI_ENDPOINT]
     )
@@ -570,7 +572,7 @@ class TestDownload:
         mock_process_package_distributions: mock.Mock,
         missing_req_file_checksum: bool,
         index_url: Optional[str],
-        allow_binary: bool,
+        binary_filters: Optional[PipBinaryFilters],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -635,7 +637,7 @@ class TestDownload:
         expected_downloads = [sdist_d_i]
 
         wheels_DPI: list[pip.DistributionPackageInfo] = []
-        if allow_binary:
+        if binary_filters is not None:
             wheel_0_download = pip_deps.join_within_root("foo-1.0-cp35-many-linux.whl").path
             wheel_1_download = pip_deps.join_within_root("foo-1.0-cp25-win32.whl").path
             wheel_2_download = pip_deps.join_within_root("foo-1.0-any.whl").path
@@ -680,7 +682,7 @@ class TestDownload:
 
         mock_process_package_distributions.return_value = [sdist_DPI] + wheels_DPI
 
-        if allow_binary:
+        if binary_filters is not None:
             mock_must_match_any_checksum.side_effect = [
                 None,  # sdist_download
                 None,  # wheel_0_download - checksums OK
@@ -694,7 +696,7 @@ class TestDownload:
         # </setup>
 
         # <call>
-        found_downloads = pip._download_dependencies(rooted_tmp_path, req_file, allow_binary)
+        found_downloads = pip._download_dependencies(rooted_tmp_path, req_file, binary_filters)
         assert found_downloads == expected_downloads
         assert pip_deps.path.is_dir()
         # </call>
@@ -702,7 +704,7 @@ class TestDownload:
         # <check calls that must always be made>
         mock_check_metadata_in_sdist.assert_called_once_with(sdist_DPI.path)
         mock_process_package_distributions.assert_called_once_with(
-            req, pip_deps, allow_binary, expect_index_url
+            req, pip_deps, binary_filters, expect_index_url
         )
         # </check calls that must always be made>
 
@@ -710,7 +712,7 @@ class TestDownload:
             verify_sdist_checksum_call,
         ]
 
-        if allow_binary:
+        if binary_filters is not None:
             if missing_req_file_checksum:
                 verify_checksums_calls.extend(
                     [
@@ -741,7 +743,7 @@ class TestDownload:
         # </check basic logging output>
 
         # <check downloaded wheels>
-        if allow_binary:
+        if binary_filters is not None:
             # wheel 1 does not match any checksums
             assert (
                 f"Download '{wheel_1_download.name}' was removed from the output directory"
@@ -829,7 +831,7 @@ class TestDownload:
         # </setup>
 
         # <call>
-        found_download = pip._download_dependencies(rooted_tmp_path, req_file, False)
+        found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
         expected_download = [
             url_download_info | {"kind": "url"},
         ]
@@ -923,7 +925,7 @@ class TestDownload:
         # </setup>
 
         # <call>
-        found_download = pip._download_dependencies(rooted_tmp_path, req_file, False)
+        found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
         expected_download = [
             vcs_download_info | {"kind": "vcs"},
         ]
@@ -1488,13 +1490,13 @@ def test_fetch_pip_source(
 
     if n_pip_packages >= 1:
         mock_resolve_pip.assert_any_call(
-            source_dir, output_dir, source_dir, [Path("requirements.txt")], None, False
+            source_dir, output_dir, source_dir, [Path("requirements.txt")], None, None
         )
         mock_replace_requirements.assert_any_call("/package_a/requirements.txt")
         mock_replace_requirements.assert_any_call("/package_a/requirements-build.txt")
     if n_pip_packages >= 2:
         mock_resolve_pip.assert_any_call(
-            source_dir.join_within_root("foo"), output_dir, source_dir, None, [], False
+            source_dir.join_within_root("foo"), output_dir, source_dir, None, [], None
         )
         mock_replace_requirements.assert_any_call("/package_b/requirements.txt")
 
