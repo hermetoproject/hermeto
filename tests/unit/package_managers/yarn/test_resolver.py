@@ -2,7 +2,7 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple, Optional, Union
+from typing import Any, NamedTuple, Optional
 from unittest import mock
 from urllib.parse import quote
 
@@ -995,32 +995,77 @@ def test_get_pedigree(
     assert resolver._pedigree_mapping == expected_pedigree
 
 
-@pytest.mark.parametrize(
-    "patch",
-    [
-        pytest.param(
-            Path("foo.patch"),
-            id="path_patch_without_workspace",
-        ),
-        pytest.param(
-            "builtin<bogus/patch>",
-            id="builtin_patch_from_unknown_plugin",
-        ),
-    ],
-)
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
-def test_get_pedigree_with_unsupported_locators(
+def test_get_pedigree_with_path_patch_without_workspace_locator(
     mock_get_yarn_version: mock.Mock,
     mock_get_repo_id: mock.Mock,
-    patch: Union[Path, str],
     rooted_tmp_path: RootedPath,
 ) -> None:
+    """Path patches without workspace locators are OK (Yarn v4)."""
     mock_get_yarn_version.return_value = Version(3, 0, 0)
     mock_get_repo_id.return_value = MOCK_REPO_ID
 
-    patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), [patch], None)]
+    patch_locators = [
+        PatchLocator(
+            package=NpmLocator(None, "foo", "1.0.0"),
+            patches=[Path("foo.patch")],
+            locator=None,
+        )
+    ]
+    mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+
+    resolver = _ComponentResolver(
+        {}, patch_locators, mock_project, rooted_tmp_path.re_root("output")
+    )
+    assert resolver is not None
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_get_pedigree_with_unsupported_builtin_patch(
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Builtin patches from unknown plugins are NOT OK (raise `UnsupportedFeature`)."""
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    patch_locators = [
+        PatchLocator(
+            package=NpmLocator(None, "foo", "1.0.0"),
+            patches=["builtin<bogus/patch>"],
+            locator=None,
+        )
+    ]
     mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
         _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+def test_get_path_patch_url_no_workspace_locator_AND_correct_PURLs(
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """_get_path_patch_url should handle patches with `locator=None` and generates correct PURLs."""
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    patch_locator = PatchLocator(
+        package=NpmLocator(None, "test-package", "1.0.0"),
+        patches=[Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")],
+        locator=None,
+    )
+
+    resolver = _ComponentResolver(
+        {}, [], mock_project(rooted_tmp_path.re_root("source")), rooted_tmp_path.re_root("output")
+    )
+
+    result_purl = resolver._get_path_patch_url(
+        patch_locator, Path(".yarn/patches/test-package-npm-1.0.0-abc123.patch")
+    )
+
+    expected_purl = "git+https://github.com/org/project.git@fffffff#.yarn/patches/test-package-npm-1.0.0-abc123.patch"
+    assert result_purl == expected_purl
