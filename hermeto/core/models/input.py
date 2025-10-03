@@ -109,6 +109,7 @@ PackageManagerType = Literal[
     "rpm",
     "yarn",
     # Add experimental package managers here with x- prefix, e.g. "x-foo"
+    "x-huggingface",
 ]
 
 
@@ -271,6 +272,21 @@ class GomodPackageInput(_PackageInputBase):
     type: Literal["gomod"]
 
 
+class HuggingfacePackageInput(_PackageInputBase):
+    """Accepted input for a Hugging Face package."""
+
+    type: Literal["x-huggingface"]
+    lockfile: Optional[Path] = None
+
+    @pydantic.field_validator("lockfile")
+    @classmethod
+    def _lockfile_must_be_absolute(cls, lockfile: Optional[Path]) -> Optional[Path]:
+        """Validate that lockfile path is absolute if provided."""
+        if lockfile is not None and not lockfile.is_absolute():
+            raise ValueError(f"Lockfile path must be absolute, got relative path: {lockfile}")
+        return lockfile
+
+
 class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
@@ -380,6 +396,7 @@ PackageInput = Annotated[
         CargoPackageInput,
         GenericPackageInput,
         GomodPackageInput,
+        HuggingfacePackageInput,
         NpmPackageInput,
         PipPackageInput,
         RpmPackageInput,
@@ -472,6 +489,11 @@ class Request(pydantic.BaseModel):
     def gomod_packages(self) -> list[GomodPackageInput]:
         """Get the gomod packages specified for this request."""
         return self._packages_by_type(GomodPackageInput)
+
+    @property
+    def huggingface_packages(self) -> list[HuggingfacePackageInput]:
+        """Get the Hugging Face packages specified for this request."""
+        return self._packages_by_type(HuggingfacePackageInput)
 
     @property
     def npm_packages(self) -> list[NpmPackageInput]:
