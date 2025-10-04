@@ -278,7 +278,7 @@ def _process_req(
     if dpi:
         if dpi.req_file_checksums:
             download_info["missing_req_file_checksum"] = False
-        if dpi.has_checksums_to_match:
+        if dpi.checksums_to_match:
             _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match)
         if dpi.package_type == "sdist":
             _check_metadata_in_sdist(dpi.path)
