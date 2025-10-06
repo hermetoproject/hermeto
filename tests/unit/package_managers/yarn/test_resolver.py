@@ -13,6 +13,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
+    Locator,
     NpmLocator,
     PatchLocator,
     WorkspaceLocator,
@@ -930,69 +931,121 @@ def test_create_components_cache_path_reported_but_missing(rooted_tmp_path: Root
         )
 
 
+@pytest.mark.parametrize(
+    "patch_locators_spec, expected_urls",
+    [
+        pytest.param(
+            [
+                {
+                    "package": ("fsevents", "1.0.0"),
+                    "patches": ["./my-patches/fsevents.patch", "./my-patches/fsevents-2.patch"],
+                    "locator": ("foo-project", "."),
+                },
+                {
+                    "package": "PREVIOUS",  # base patch marker
+                    "patches": ["./my-patches/fsevents-3.patch"],
+                    "locator": ("foo-project", "."),
+                },
+                {
+                    "package": "PREVIOUS",  # base patch marker
+                    "patches": ["builtin<compat/fsevents>"],
+                    "locator": None,
+                },
+            ],
+            [
+                "git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch",
+                "git+https://github.com/org/project.git@fffffff#my-patches/fsevents-2.patch",
+                "git+https://github.com/org/project.git@fffffff#my-patches/fsevents-3.patch",
+                "git+https://github.com/yarnpkg/berry@%40yarnpkg/cli/3.0.0#packages/plugin-compat/sources/patches/fsevents.patch.ts",
+            ],
+            id="nested_patches_with_workspace",
+        ),
+        pytest.param(
+            [
+                {
+                    "package": ("fsevents", "1.0.0"),
+                    "patches": ["~/my-patches/fsevents.patch"],
+                    "locator": None,
+                },
+            ],
+            [
+                "git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch",
+            ],
+            id="project_relative_patch_without_locator",
+        ),
+        pytest.param(
+            [
+                {
+                    "package": ("fsevents", "1.0.0"),
+                    "patches": ["{source_dir}/absolute-patches/fsevents.patch"],
+                    "locator": None,
+                },
+            ],
+            [
+                "git+https://github.com/org/project.git@fffffff#absolute-patches/fsevents.patch",
+            ],
+            id="absolute_patch_without_locator",
+        ),
+    ],
+)
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_get_pedigree(
-    mock_get_yarn_version: mock.Mock, mock_get_repo_id: mock.Mock, rooted_tmp_path: RootedPath
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    patch_locators_spec: list[dict[str, Any]],
+    expected_urls: list[str],
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
     mock_get_repo_id.return_value = MOCK_REPO_ID
 
-    project_workspace = WorkspaceLocator(None, "foo-project", Path("."))
-    patched_package = NpmLocator(None, "fsevents", "1.0.0")
+    source_dir = rooted_tmp_path.re_root("source")
 
-    first_patch_locator = PatchLocator(
-        patched_package,
-        [Path("./my-patches/fsevents.patch"), Path("./my-patches/fsevents-2.patch")],
-        project_workspace,
-    )
-    second_patch_locator = PatchLocator(
-        first_patch_locator, [Path("./my-patches/fsevents-3.patch")], project_workspace
-    )
-    third_patch_locator = PatchLocator(second_patch_locator, ["builtin<compat/fsevents>"], None)
-    patch_locators = [
-        first_patch_locator,
-        second_patch_locator,
-        third_patch_locator,
-    ]
+    # Build patch locators from specs
+    patch_locators: list[PatchLocator] = []
+    base_package: Optional[NpmLocator] = None
 
-    expected_pedigree = {
-        patched_package: Pedigree(
-            patches=[
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-2.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-3.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/yarnpkg/berry@%40yarnpkg/cli/3.0.0#packages/plugin-compat/sources/patches/fsevents.patch.ts"
-                    ),
-                ),
-            ]
-        ),
+    for spec in patch_locators_spec:
+        if spec["package"] == "PREVIOUS":
+            # Wrap previous PatchLocator as package
+            package: Locator = patch_locators[-1]
+        else:
+            name, version = spec["package"]
+            package = NpmLocator(None, name, version)
+            if base_package is None:
+                base_package = package
+
+        patches: list[Union[str, Path]] = []
+        for p in spec["patches"]:
+            p_resolved = p.replace("{source_dir}", str(source_dir.join_within_root("").path))
+            patches.append(
+                Path(p_resolved) if not p_resolved.startswith("builtin<") else p_resolved
+            )
+
+        workspace_locator: Optional[WorkspaceLocator] = None
+        if spec["locator"]:
+            name, relpath = spec["locator"]
+            workspace_locator = WorkspaceLocator(None, name, Path(relpath))
+
+        patch_loc = PatchLocator(package, patches, workspace_locator)
+        patch_locators.append(patch_loc)
+
+    # Build expected pedigree
+    assert base_package is not None
+    expected_pedigree: dict[Locator, Pedigree] = {
+        base_package: Pedigree(
+            patches=[Patch(type="unofficial", diff=PatchDiff(url=url)) for url in expected_urls]
+        )
     }
 
-    mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+    mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
         {}, patch_locators, mock_project, rooted_tmp_path.re_root("output")
     )
 
-    assert resolver._pedigree_mapping == expected_pedigree
+    actual_pedigree = resolver._get_pedigree_mapping(patch_locators)
+    assert actual_pedigree == expected_pedigree
 
 
 @pytest.mark.parametrize(

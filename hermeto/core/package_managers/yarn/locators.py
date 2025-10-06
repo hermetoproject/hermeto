@@ -12,6 +12,9 @@ from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-http/sources/constants.ts
 TARBALL_RE = re.compile(r"^[^?]*\.(?:tar\.gz|tgz)(?:\?.*)?(?:#.*)?$")
 
+# https://github.com/yarnpkg/berry/blob/8ff18d709a4211f92837ff2f59eaf4972ca579c0/packages/plugin-patch/sources/patchUtils.ts#L11
+BUILTIN_REGEXP: re.Pattern[str] = re.compile(r"^builtin<([^>]+)>$")
+
 # --- Locator types ---
 
 
@@ -208,17 +211,27 @@ def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
     original_package = parse_locator(reference.source)
 
     def process_patch_path(patch: str) -> Union[str, Path]:
+        # Almost verbatim from
+        # https://github.com/yarnpkg/berry/blob/8ff18d709a4211f92837ff2f59eaf4972ca579c0/packages/plugin-patch/sources/patchUtils.ts#L122
+        #
         # Yarn patches can be optional, where failing to apply the patch is not fatal, only a warning
-        # '~' denotes an optional patch in Yarn v3
-        # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-patch/sources/patchUtils.ts#L92
-        patch = patch.removeprefix("~")
         # `optional!' denotes an optional patch in Yarn v4
         # https://github.com/yarnpkg/berry/blob/93a56643ba3c813a87920dcf75c644eaf3b38e6f/packages/plugin-patch/sources/patchUtils.ts#L147
-        patch = patch.removeprefix("optional!")
-        if re.match(r"^builtin<([^>]+)>$", patch):
-            return patch
+        # Flags are currently unused by Hermeto, but must be stripped for path parsing
+        flag_index = patch.rfind("!")
+        if flag_index != -1:
+            path = patch[flag_index + 1 :]
         else:
-            return Path(patch)
+            path = patch
+        # '~' denotes an optional patch in Yarn v3; BUT '~/' can be part of the patch path
+        # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-patch/sources/patchUtils.ts#L92
+        if path.startswith("~") and not path.startswith("~/"):
+            path = path.removeprefix("~")
+
+        if BUILTIN_REGEXP.fullmatch(path):
+            return path
+        else:
+            return Path(path)
 
     patches = tuple(process_patch_path(p) for p in reference.selector.split("&"))
     if locator_param := reference.get_param("locator"):
