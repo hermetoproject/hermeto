@@ -56,6 +56,12 @@ SUPPORTED_LOCATORS = [
     # multiple patches of all kinds
     "is-positive@npm:3.1.0",
     "is-negative@patch:is-positive@npm%3A3.1.0#~builtin<foo>&./my-patches/is-positive.patch&builtin<bar>&~./baz.patch::version=3.1.0&locator=berryscary%40workspace%3A.",
+    # project-relative patch without locator
+    "left-pad@patch:left-pad@npm%3A1.3.0#~/patches/left-pad.patch::version=1.3.0&hash=629bda",
+    # absolute patch without locator
+    "left-pad@patch:left-pad@npm%3A1.3.0#/tmp/patches/left-pad.patch::version=1.3.0&hash=629bda",
+    # multiple flags patch
+    "left-pad@patch:left-pad@npm%3A1.3.0#optional!locator!./patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
 ]
 
 UNSUPPORTED_LOCATORS = [
@@ -301,6 +307,49 @@ PARSED_LOCATORS_AND_REFERENCES = [
     (
         _ParsedLocator(
             scope=None,
+            name="left-pad",
+            raw_reference="patch:left-pad@npm%3A1.3.0#~/patches/left-pad.patch::version=1.3.0&hash=629bda",
+        ),
+        _ParsedReference(
+            protocol="patch:",
+            source="left-pad@npm:1.3.0",
+            selector="~/patches/left-pad.patch",
+            params={"version": ["1.3.0"], "hash": ["629bda"]},
+        ),
+    ),
+    (
+        _ParsedLocator(
+            scope=None,
+            name="left-pad",
+            raw_reference="patch:left-pad@npm%3A1.3.0#/tmp/patches/left-pad.patch::version=1.3.0&hash=629bda",
+        ),
+        _ParsedReference(
+            protocol="patch:",
+            source="left-pad@npm:1.3.0",
+            selector="/tmp/patches/left-pad.patch",
+            params={"version": ["1.3.0"], "hash": ["629bda"]},
+        ),
+    ),
+    (
+        _ParsedLocator(
+            scope=None,
+            name="left-pad",
+            raw_reference="patch:left-pad@npm%3A1.3.0#optional!locator!./patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
+        ),
+        _ParsedReference(
+            protocol="patch:",
+            source="left-pad@npm:1.3.0",
+            selector="optional!locator!./patches/left-pad.patch",
+            params={
+                "version": ["1.3.0"],
+                "hash": ["629bda"],
+                "locator": ["berryscary@workspace:."],
+            },
+        ),
+    ),
+    (
+        _ParsedLocator(
+            scope=None,
             name="holy-hand-grenade",
             raw_reference="exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
         ),
@@ -449,6 +498,21 @@ PARSED_SUPPORTED_LOCATORS = [
             "builtin<bar>",
             Path("baz.patch"),
         ),
+        locator=WorkspaceLocator(scope=None, name="berryscary", relpath=Path(".")),
+    ),
+    PatchLocator(
+        package=NpmLocator(scope=None, name="left-pad", version="1.3.0"),
+        patches=(Path("~/patches/left-pad.patch"),),
+        locator=None,
+    ),
+    PatchLocator(
+        package=NpmLocator(scope=None, name="left-pad", version="1.3.0"),
+        patches=(Path("/tmp/patches/left-pad.patch"),),
+        locator=None,
+    ),
+    PatchLocator(
+        package=NpmLocator(scope=None, name="left-pad", version="1.3.0"),
+        patches=(Path("patches/left-pad.patch"),),
         locator=WorkspaceLocator(scope=None, name="berryscary", relpath=Path(".")),
     ),
 ]
