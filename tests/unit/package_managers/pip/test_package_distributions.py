@@ -8,6 +8,8 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.package_distributions import (
+    WheelsFilter,
+    _parse_py_version,
     _sdist_preference,
     process_package_distributions,
 )
@@ -335,3 +337,160 @@ def test_process_package_distributions_noncanonical_version(
     assert artifacts[0].package_type == "sdist"
     assert artifacts[0].version == requested_version
     assert all(w.version == requested_version for w in artifacts[1:])
+
+
+class TestWheelsFilter:
+    @pytest.mark.parametrize(
+        "filter_kwargs, expected",
+        [
+            pytest.param(
+                {},
+                {
+                    "packages": None,
+                    "arch": {"x86_64"},
+                    "os": {"linux"},
+                    "py_version": None,
+                    "py_impl": {"cp"},
+                    "abi": None,
+                    "platform_regex": None,
+                },
+                id="default_filters",
+            ),
+            pytest.param(
+                {
+                    "packages": "numpy,pandas",
+                    "arch": "x86_64,aarch64",
+                    "os": "linux,macos",
+                    "py_version": 312,
+                    "py_impl": "cp,pp",
+                },
+                {
+                    "packages": {"numpy", "pandas"},
+                    "arch": {"x86_64", "aarch64"},
+                    "os": {"linux", "macos"},
+                    "py_version": 312,
+                    "py_impl": {"cp", "pp"},
+                },
+                id="custom_filters",
+            ),
+            pytest.param(
+                {
+                    "packages": ":all:",
+                    "arch": ":all:",
+                    "os": ":all:",
+                    "py_impl": ":all:",
+                    "abi": ":all:",
+                },
+                {
+                    "packages": None,
+                    "arch": None,
+                    "os": None,
+                    "py_impl": None,
+                    "abi": None,
+                },
+                id="all_keyword",
+            ),
+        ],
+    )
+    def test_init_with_valid_values(self, filter_kwargs: dict, expected: dict) -> None:
+        filters = PipBinaryFilters(**filter_kwargs)
+        wheels_filter = WheelsFilter(filters)
+
+        for attr, expected_value in expected.items():
+            assert getattr(wheels_filter, attr) == expected_value
+
+    @pytest.mark.parametrize(
+        "filter_kwargs",
+        [
+            pytest.param({"py_version": 3.12}, id="invalid_py_version_type"),
+            pytest.param(
+                {"platform": "manylinux.*", "os": "linux", "arch": "aarch64"},
+                id="invalid_platform_os_and_arch_combination",
+            ),
+            pytest.param({"platform": "*"}, id="invalid_platform_regex_syntax"),
+        ],
+    )
+    def test_init_with_invalid_values_fails(self, filter_kwargs: dict) -> None:
+        with pytest.raises(ValueError):
+            PipBinaryFilters(**filter_kwargs)
+
+    def test_parse_py_version_from_interpreter(self) -> None:
+        assert _parse_py_version("cp312") == 312
+        assert _parse_py_version("pp312") == 312
+        assert _parse_py_version("py3") == 3
+        assert _parse_py_version("py2.py3") == 3
+
+    def test_filter_with_invalid_wheel_filename_is_skipped(self) -> None:
+        filters = PipBinaryFilters()
+        wheels_filter = WheelsFilter(filters)
+
+        wheels = [mock_pypi_simple_distribution_package("foo.whl", "1.0.0")]
+
+        result = wheels_filter.filter(wheels)
+        assert result == []
+
+    def test_filter_with_arch_and_os_fields(self) -> None:
+        filters = PipBinaryFilters(arch="aarch64", os="macos")
+        wheels_filter = WheelsFilter(filters)
+
+        wrong_os = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-manylinux_2_28_aarch64.whl", "1.0.0"
+        )
+        wrong_arch = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-macos_10_9_x86_64.whl", "1.0.0"
+        )
+        correct = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-macos_10_9_aarch64.whl", "1.0.0"
+        )
+
+        wheels = [wrong_arch, wrong_os, correct]
+        result = wheels_filter.filter(wheels)
+        assert result == [correct]
+
+    def test_filter_with_platform_regex_field(self) -> None:
+        filters = PipBinaryFilters(platform="manylinux.*")
+        wheels_filter = WheelsFilter(filters)
+
+        wrong_platform = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-linux_x86_64.whl", "1.0.0"
+        )
+        correct_platform_1 = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-manylinux_2_28_x86_64.whl", "1.0.0"
+        )
+        correct_platform_2 = mock_pypi_simple_distribution_package(
+            "package-1.0.0-cp312-cp312-manylinux_2_28_aarch64.whl", "1.0.0"
+        )
+
+        wheels = [wrong_platform, correct_platform_1, correct_platform_2]
+        result = wheels_filter.filter(wheels)
+        assert result == [correct_platform_1, correct_platform_2]
+
+    @pytest.mark.parametrize(
+        "wheel_filename, matches",
+        [
+            pytest.param(
+                "package-1.0.0-cp312-cp312-linux_x86_64.whl", True, id="identical_py_version"
+            ),
+            pytest.param(
+                "package-1.0.0-cp311-abi3-linux_x86_64.whl", True, id="lower_py_version_with_abi3"
+            ),
+            pytest.param(
+                "package-1.0.0-cp311-none-linux_x86_64.whl", True, id="lower_py_version_with_none"
+            ),
+            pytest.param(
+                "package-1.0.0-cp311-cp311-linux_x86_64.whl", False, id="lower_py_version"
+            ),
+            pytest.param(
+                "package-1.0.0-cp313-cp313-linux_x86_64.whl", False, id="higher_py_version"
+            ),
+        ],
+    )
+    def test_filter_with_specific_py_version(self, wheel_filename: str, matches: bool) -> None:
+        filters = PipBinaryFilters(py_version=312)
+        wheels_filter = WheelsFilter(filters)
+
+        test_wheel = mock_pypi_simple_distribution_package(wheel_filename, "1.0.0")
+
+        wheels = [test_wheel]
+        result = wheels_filter.filter(wheels)
+        assert result == wheels if matches else result == []
