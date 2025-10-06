@@ -23,7 +23,12 @@ from packageurl import PackageURL
 from semver import Version
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageManagerError, PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    PackageManagerError,
+    PackageRejected,
+    PathOutsideRoot,
+    UnsupportedFeature,
+)
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
@@ -457,18 +462,32 @@ class _ComponentResolver:
 
     def _get_path_patch_url(self, patch_locator: PatchLocator, patch_path: Path) -> str:
         """Return a PURL-style VCS URL qualifier with subpath for a Patch."""
-        if patch_locator.locator is None:
-            raise UnsupportedFeature(
-                f"{patch_locator} is missing an associated workspace locator "
-                "and {APP_NAME} expects all non-builtin yarn patches to have one"
-            )
+        patch_str = str(patch_path)
+        pp_root = self._project.source_dir.root
+        pp_join = self._project.source_dir.join_within_root
+        project_relative_prefix = "~/"
 
-        project_path = self._project.source_dir
-        workspace_path = patch_locator.locator.relpath
-        normalized = self._project.source_dir.join_within_root(workspace_path, patch_path)
-        repo_url = get_repo_id(project_path.root).as_vcs_url_qualifier()
+        if patch_path.is_absolute():
+            try:
+                normalized = pp_join(patch_path)
+            except PathOutsideRoot as exc:
+                raise UnsupportedFeature(
+                    f"Absolute patch path {patch_path} is outside the project root {pp_root}"
+                ) from exc
+        elif patch_str.startswith(project_relative_prefix):
+            project_relative_path = Path(patch_str.removeprefix(project_relative_prefix))
+            normalized = pp_join(project_relative_path)
+        else:
+            if patch_locator.locator is None:
+                raise UnsupportedFeature(
+                    f"{patch_locator} is missing an associated workspace locator "
+                    f"and {APP_NAME} expects all relative yarn patches to have one"
+                )
+            workspace_path = patch_locator.locator.relpath
+            normalized = pp_join(workspace_path, patch_path)
+
         subpath_from_root = str(normalized.subpath_from_root)
-
+        repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
         return f"{repo_url}#{subpath_from_root}"
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:
