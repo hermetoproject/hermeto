@@ -102,9 +102,6 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
 
     Prefer files that are not yanked over ones that are.
     Within the same category (yanked vs. not), prefer .tar.gz > .zip > anything else.
-
-    :param dict sdist_pkg: An item of the "urls" array in a PyPI response
-    :return: Tuple of integers to use as sorting key
     """
     # Higher number = higher preference
     yanked_pref = 0 if sdist_pkg.is_yanked else 1
@@ -118,6 +115,15 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
         filetype_pref = 0
 
     return yanked_pref, filetype_pref
+
+
+def _find_the_best_sdist(sdists: list[DistributionPackageInfo]) -> DistributionPackageInfo:
+    """Find the best sdist package based on our preference."""
+    best = max(sdists, key=_sdist_preference)
+    if best.is_yanked:
+        log.warning("Package %s==%s is yanked, use a different version", best.name, best.version)
+
+    return best
 
 
 def _get_project_packages_from(
@@ -210,12 +216,8 @@ def process_package_distributions(
             log.info("Filtering out %s due to checksum mismatch", package.filename)
 
     if sdists:
-        best_sdist = max(sdists, key=_sdist_preference)
+        best_sdist = _find_the_best_sdist(sdists)
         processed_dpis.append(best_sdist)
-        if best_sdist.is_yanked:
-            log.warning(
-                "The version %s of package %s is yanked, use a different version", version, name
-            )
     else:
         log.warning("No sdist found for package %s==%s", name, version)
 

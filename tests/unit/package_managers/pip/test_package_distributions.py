@@ -174,10 +174,7 @@ def test_process_yanked_package_distributions(
     )
 
     process_package_distributions(req, rooted_tmp_path)
-    assert (
-        f"The version {version} of package {package_name} is yanked, use a different version"
-        in caplog.text
-    )
+    assert f"Package {package_name}=={version} is yanked, use a different version" in caplog.text
 
 
 @pytest.mark.parametrize("use_user_hashes", (True, False))
