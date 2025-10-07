@@ -303,6 +303,7 @@ def _generate_environment_variables() -> list[EnvironmentVariable]:
     env_vars = {
         "HF_HOME": "${output_dir}/deps/huggingface",
         "HF_HUB_CACHE": "${output_dir}/deps/huggingface/hub",
+        "HF_DATASETS_CACHE": "${output_dir}/deps/huggingface/hub",
         "HF_HUB_OFFLINE": "1",
         "HUGGINGFACE_HUB_CACHE": "${output_dir}/deps/huggingface/hub",
     }
