@@ -140,6 +140,7 @@ This structure enables offline usage with `HF_HUB_OFFLINE=1`:
 
 ```bash
 export HF_HUB_CACHE=/path/to/hermeto-output/deps/huggingface/hub
+export HF_DATASETS_CACHE=/path/to/hermeto-output/deps/huggingface/hub
 export HF_HUB_OFFLINE=1
 
 python your_script.py
@@ -150,6 +151,7 @@ Or in Python code:
 ```python
 import os
 os.environ["HF_HUB_CACHE"] = "/path/to/hermeto-output/deps/huggingface/hub"
+os.environ["HF_DATASETS_CACHE"] = "/path/to/hermeto-output/deps/huggingface/hub"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
 from transformers import AutoModel
@@ -174,6 +176,7 @@ RUN pip install -r requirements.txt
 
 # Set Hugging Face cache environment variables
 ENV HF_HUB_CACHE=/tmp/hermeto-output/deps/huggingface/hub
+ENV HF_DATASETS_CACHE=/tmp/hermeto-output/deps/huggingface/hub
 ENV HF_HUB_OFFLINE=1
 
 # Copy your application code
