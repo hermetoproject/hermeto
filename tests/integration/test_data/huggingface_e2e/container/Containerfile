@@ -7,6 +7,7 @@ RUN pip install transformers torch --no-cache-dir
 
 # Set HuggingFace cache to use hermeto output
 ENV HF_HUB_CACHE=/tmp/hermeto-output/deps/huggingface/hub
+ENV HF_DATASETS_CACHE=/tmp/hermeto-output/deps/huggingface/hub
 ENV HF_HUB_OFFLINE=1
 
 # Copy a simple test script
