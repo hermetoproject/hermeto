@@ -4,6 +4,7 @@ import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from itertools import chain
 from pathlib import Path
 from typing import Any, Literal, Optional, cast
 
@@ -185,17 +186,37 @@ def process_package_distributions(
     :return: a list of DPI
     :rtype: list[DistributionPackageInfo]
     """
-    allowed_distros = ["sdist", "wheel"] if binary_filters is not None else ["sdist"]
-    processed_dpis: list[DistributionPackageInfo] = []
     name = requirement.package
     version = requirement.version_specs[0][1]
-    sdists: list[DistributionPackageInfo] = []
     req_file_checksums = set(map(ChecksumInfo.from_hash, requirement.hashes))
-    wheels: list[DistributionPackageInfo] = []
 
-    packages = _get_project_packages_from(index_url, name, version)
+    packages = list(_get_project_packages_from(index_url, name, version))
+    sdists = filter(lambda x: x.package_type == "sdist", packages)
+    wheels = filter(lambda x: x.package_type == "wheel", packages)
 
-    for package in packages:
+    # process only sdists if no binary filters are provided
+    if binary_filters is None:
+        allowed_distros = ["sdist"]
+        to_process = chain(sdists)
+    else:
+        wheels_filter = WheelsFilter(binary_filters)
+        # process both sdists and wheels if no packages are provided in the binary filters
+        if wheels_filter.packages is None:
+            allowed_distros = ["sdist", "wheel"]
+            to_process = chain(sdists, wheels_filter.filter(wheels))
+        # process only wheels for packages in the binary filters
+        elif name in wheels_filter.packages:
+            allowed_distros = ["wheel"]
+            to_process = chain(wheels_filter.filter(wheels))
+        # process only sdists for packages NOT in the binary filters
+        else:
+            allowed_distros = ["sdist"]
+            to_process = chain(sdists)
+
+    filtered_sdists: list[DistributionPackageInfo] = []
+    filtered_wheels: list[DistributionPackageInfo] = []
+
+    for package in to_process:
         if package.package_type is None or package.package_type not in allowed_distros:
             continue
 
@@ -217,43 +238,56 @@ def process_package_distributions(
 
         if dpi.should_download():
             if dpi.package_type == "sdist":
-                sdists.append(dpi)
+                filtered_sdists.append(dpi)
             else:
-                wheels.append(dpi)
+                filtered_wheels.append(dpi)
         else:
             log.info("Filtering out %s due to checksum mismatch", package.filename)
 
-    if sdists:
-        best_sdist = _find_the_best_sdist(sdists)
-        processed_dpis.append(best_sdist)
-    else:
-        log.warning("No sdist found for package %s==%s", name, version)
+    if allowed_distros == ["sdist"]:
+        return _process_no_binary_mode(filtered_sdists, name, version)
 
-        if len(wheels) == 0:
-            if binary_filters is not None:
-                solution = (
-                    "Please check that the package exists on PyPI or that the name"
-                    " and version are correct.\n"
-                )
-                docs = None
-            else:
-                solution = (
-                    "It seems that this version does not exist or isn't published as an"
-                    " sdist.\n"
-                    "Try to specify the dependency directly via a URL instead, for example,"
-                    " the tarball for a GitHub release.\n"
-                    "Alternatively, allow the use of wheels."
-                )
-                docs = PIP_NO_SDIST_DOC
-            raise PackageRejected(
-                f"No distributions found for package {name}=={version}",
-                solution=solution,
-                docs=docs,
-            )
+    if allowed_distros == ["wheel"]:
+        return _process_only_binary_mode(filtered_wheels, name, version)
 
-    processed_dpis.extend(wheels)
+    return _process_prefer_binary_mode(filtered_sdists, filtered_wheels, name, version)
 
-    return processed_dpis
+
+def _process_no_binary_mode(
+    sdists: list[DistributionPackageInfo],
+    name: str,
+    version: str,
+) -> list[DistributionPackageInfo]:
+    if not sdists:
+        raise PackageRejected(
+            f"No distributions found for package {name}=={version}",
+            solution="Please check that the package exists and that the name and version are correct.",
+        )
+
+    return [_find_the_best_sdist(sdists)]
+
+
+def _process_prefer_binary_mode(
+    sdists: list[DistributionPackageInfo],
+    wheels: list[DistributionPackageInfo],
+    name: str,
+    version: str,
+) -> list[DistributionPackageInfo]:
+    return wheels if wheels else _process_no_binary_mode(sdists, name, version)
+
+
+def _process_only_binary_mode(
+    wheels: list[DistributionPackageInfo],
+    name: str,
+    version: str,
+) -> list[DistributionPackageInfo]:
+    if not wheels:
+        raise PackageRejected(
+            f"No wheels found for package {name}=={version}",
+            solution="Please update the binary filters.",
+        )
+
+    return wheels
 
 
 class WheelsFilter(BinaryPackageFilter):
