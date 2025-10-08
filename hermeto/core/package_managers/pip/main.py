@@ -76,7 +76,6 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         info = _resolve_pip(
             package_path,
             request.output_dir,
-            request.source_dir,
             package.requirements_files,
             package.requirements_build_files,
             package.binary,
@@ -571,7 +570,6 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
 def _resolve_pip(
     package_path: RootedPath,
     output_dir: RootedPath,
-    source_dir: RootedPath,
     requirement_files: Optional[list[Path]] = None,
     build_requirement_files: Optional[list[Path]] = None,
     binary_filters: Optional[PipBinaryFilters] = None,
