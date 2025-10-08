@@ -122,7 +122,7 @@ def _get_blocksize(fd: int) -> int:
     return blocksize
 
 
-def _fast_copy(src: Path, dest: Path, *, follow_symlinks: bool = True) -> int:
+def _fast_copy(src: Path, dest: Path) -> int:
     """Perform a fast in-kernel copy using os.copy_file_range syscall.
 
     Copy data from source path to destination path using a high-performance copy_file_range(2)

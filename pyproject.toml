@@ -71,6 +71,7 @@ select = [
     "D1",  # Missing docstrings only
     "I",   # isort
     "S",   # bandit security rules
+    "ARG", # flake8 unused arguments
 ]
 
 ignore = [
@@ -93,6 +94,7 @@ ignore = [
     "S113",  # requests call without timeout (acceptable in tests)
     "S202",  # tarfile-unsafe-members (acceptable in tests)
     "S311",  # suspicious-non-cryptographic-random-usage (acceptable in tests)
+    "ARG",   # flake8 unused arguments (expected in tests - mocking)
 ]
 
 [tool.ruff.format]

@@ -38,7 +38,7 @@ class _GemMetadata(pydantic.BaseModel):
     name: str
     version: str
 
-    def download_to(self, deps_dir: RootedPath) -> None:
+    def download_to(self, deps_dir: RootedPath) -> None:  # noqa: ARG002
         """Download gem to the specified directory."""
         return None
 

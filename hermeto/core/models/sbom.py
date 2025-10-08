@@ -617,7 +617,7 @@ class SPDXSbom(pydantic.BaseModel):
             other_class = other.__class__.__name__
             raise ValueError(f"Cannot merge {other_class} to {self_class}")
 
-    def to_spdx(self, *a: Any, **k: Any) -> Self:
+    def to_spdx(self, *a: Any, **k: Any) -> Self:  # noqa: ARG002
         """Return self, ignore arguments, self is already a SPDX document."""
         # This is a short-cut, but since it is unlikely that we would ever add more Sbom types
         # it is acceptable. If, however this ever happens a proper base class will be needed.

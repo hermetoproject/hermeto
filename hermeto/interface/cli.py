@@ -156,7 +156,7 @@ def version_callback(value: bool) -> None:
 @app.callback()
 @handle_errors
 def main(  # noqa: D103 docstring becomes part of --help message
-    version: bool = typer.Option(
+    version: bool = typer.Option(  # noqa: ARG001
         False,
         "--version",
         callback=version_callback,
@@ -178,7 +178,7 @@ def main(  # noqa: D103 docstring becomes part of --help message
         case_sensitive=False,
         help="Set log level.",
     ),
-    mode: Mode = typer.Option(
+    mode: Mode = typer.Option(  # noqa: ARG001
         Mode.STRICT,
         "--mode",
         help="Treat input requirements violations as errors or warnings (may affect SBOM accuracy).",

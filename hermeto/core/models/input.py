@@ -322,7 +322,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     ssl: Optional[SSLOptions] = None
 
     @pydantic.model_validator(mode="before")
-    def _validate_dnf_options(cls, data: Any, info: pydantic.ValidationInfo) -> Any:
+    def _validate_dnf_options(cls, data: Any) -> Any:
         """DNF options model.
 
         DNF options can be provided via 2 'streams':
