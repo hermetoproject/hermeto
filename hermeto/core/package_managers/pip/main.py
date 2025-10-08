@@ -72,16 +72,16 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         ]
 
     for package in request.pip_packages:
-        path_within_root = request.source_dir.join_within_root(package.path)
+        package_path = request.source_dir.join_within_root(package.path)
         info = _resolve_pip(
-            path_within_root,
+            package_path,
             request.output_dir,
             request.source_dir,
             package.requirements_files,
             package.requirements_build_files,
             package.binary,
         )
-        purl = _generate_purl_main_package(info["package"], path_within_root)
+        purl = _generate_purl_main_package(info["package"], package_path)
         components.append(
             Component(name=info["package"]["name"], version=info["package"]["version"], purl=purl)
         )
@@ -569,7 +569,7 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
 
 
 def _resolve_pip(
-    app_path: RootedPath,
+    package_path: RootedPath,
     output_dir: RootedPath,
     source_dir: RootedPath,
     requirement_files: Optional[list[Path]] = None,
@@ -593,15 +593,15 @@ def _resolve_pip(
     :raises PackageRejected | UnsupportedFeature: if the package is not compatible with our
     requirements/expectations
     """
-    pkg_name, pkg_version = _get_pip_metadata(app_path)
+    pkg_name, pkg_version = _get_pip_metadata(package_path)
 
     def resolve_req_files(req_files: Optional[list[Path]], devel: bool) -> list[RootedPath]:
         resolved: list[RootedPath] = []
         # This could be an empty list
         if req_files is None:
-            resolved.extend(_default_requirement_file_list(app_path, devel=devel))
+            resolved.extend(_default_requirement_file_list(package_path, devel=devel))
         else:
-            resolved.extend([app_path.join_within_root(r) for r in req_files])
+            resolved.extend([package_path.join_within_root(r) for r in req_files])
 
         return resolved
 
