@@ -252,7 +252,7 @@ and DNF server with `tests/dnfserver/start.sh &` to speed up the tests.
 To run integration-tests with custom image, specify the HERMETO\_IMAGE environment variable. Examples:
 
 ```shell
-HERMETO_IMAGE=quay.io/konflux-ci/hermeto:{tag} nox -s integration-tests
+HERMETO_IMAGE=ghcr.io/hermetoproject/hermeto:{tag} nox -s integration-tests
 HERMETO_IMAGE=localhost/hermeto:latest nox -s  integration-tests
 ```
 

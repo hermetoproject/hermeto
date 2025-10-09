@@ -70,15 +70,13 @@ To install Hermeto for local development, see CONTRIBUTING.md.
 [![container badge]][hermeto container status]
 
 ```text
-quay.io/konflux-ci/hermeto:latest
+ghcr.io/hermetoproject/hermeto
 ```
-
-The container is re-built automatically on every merge to the main branch.
 
 You may wish to set up an alias to make local usage more convenient
 
 ```shell
-alias hermeto='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/hermeto:latest'
+alias hermeto='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" ghcr.io/hermetoproject/hermeto:latest'
 ```
 
 Note that the alias mounts the current working directory — the container will
@@ -315,7 +313,7 @@ Hermeto was derived from (but is not a direct fork of) [Cachito][].
 [go.mod]: https://go.dev/ref/mod#go-mod-file
 [gomod]: https://go.dev/ref/mod
 [hermetic]: https://slsa.dev/spec/v0.1/requirements#hermetic
-[hermeto container status]: https://quay.io/repository/konflux-ci/hermeto/tag/latest
+[hermeto container status]: https://github.com/hermetoproject/hermeto/pkgs/container/hermeto/versions?filters%5Bversion_type%5D=tagged
 [hermeto coverage status]: https://codecov.io/github/hermetoproject/hermeto
 [npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
 [npm]: https://docs.npmjs.com
