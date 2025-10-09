@@ -4,6 +4,24 @@ on:
   release:
     types: [published]
 
+  # Manual trigger: Allows re-running the workflow for an existing tag
+  # Use case: If the automatic release build fails due to transient errors
+  # (e.g., GitHub infrastructure issues), you can manually retry without
+  # needing to delete and recreate the release.
+  #
+  # To use:
+  # 1. Go to Actions → "Publish Container Image" → "Run workflow"
+  # 2. In "Use workflow from" dropdown: select the TAG as the ref you want to rebuild
+  # 3. Check "Also push as latest tag" if this is a stable release and not a pre-release
+  # 4. Click "Run workflow"
+  workflow_dispatch:
+    inputs:
+      push_latest:
+        description: 'Also push as latest tag'
+        required: true
+        type: boolean
+        default: false
+
 permissions:
   contents: read
   packages: write
@@ -43,7 +61,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ (github.event_name == 'workflow_dispatch' && inputs.push_latest) || (github.event_name == 'release' && !github.event.release.prerelease) }}
 
       # Multi-arch build setup
       - name: Build and push container image
