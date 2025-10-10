@@ -6,7 +6,6 @@ import logging
 import os
 import shutil
 import sys
-import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -76,9 +75,10 @@ class TestParameters:
 
 
 class ContainerImage:
-    def __init__(self, repository: str):
+    def __init__(self, repository: str, debug: bool = False):
         """Initialize ContainerImage object with associated repository."""
         self.repository = repository
+        self.debug = debug
 
     def __enter__(self) -> "ContainerImage":
         return self
@@ -97,9 +97,13 @@ class ContainerImage:
         net: Optional[str] = None,
         entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
         if podman_flags is None:
             podman_flags = []
+
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
 
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
 
@@ -108,7 +112,9 @@ class ContainerImage:
         if net:
             podman_flags.append(f"--net={net}")
 
-        return container_engine.run(self.repository, cmd, entrypoint, podman_flags)
+        return container_engine.run(
+            self.repository, cmd, entrypoint, podman_flags, subprocess_kwargs
+        )
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any) -> None:
         output, exit_code = container_engine.rmi(self.repository)
@@ -125,25 +131,52 @@ class HermetoImage(ContainerImage):
         net: Optional[str] = "host",
         entrypoint: Optional[str] = None,
         podman_flags: Optional[list[str]] = None,
+        subprocess_kwargs: Optional[dict[str, Any]] = None,
     ) -> tuple[str, int]:
-        netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
-        if netrc_content:
-            with tempfile.TemporaryDirectory() as netrc_tmpdir:
-                netrc_path = Path(netrc_tmpdir, ".netrc")
-                netrc_path.write_text(netrc_content)
-                return super().run_cmd_on_image(
-                    cmd,
-                    tmp_path,
-                    [*mounts, (netrc_path, "/root/.netrc")],
-                    net,
-                    entrypoint,
-                    podman_flags,
-                )
-        return super().run_cmd_on_image(cmd, tmp_path, mounts, net, entrypoint, podman_flags)
+        if podman_flags is None:
+            podman_flags = []
+
+        if subprocess_kwargs is None:
+            subprocess_kwargs = {}
+
+        if self.debug:
+            # toolbox image must use CMD instead of ENTRYPOINT, so we need to force the command name
+            cmd = ["hermeto"] + cmd
+
+            # these subprocess options are needed for the interactive flag below to work properly
+            subprocess_kwargs = {
+                "stdin": sys.stdin,
+                "stdout": sys.stdout,
+                "stderr": sys.stderr,
+            }
+
+            # need to pass '-it' to podman + set std in/outs explicitly for subprocess for
+            # podman to propagate the interactive debugger session
+            podman_flags.extend(["--interactive", "--tty"])
+
+            debuggers = ("ipdb", "pudb")
+            debugger = os.environ.get("HERMETO_TEST_DEBUGGER")
+            if debugger is not None:
+                if debugger not in debuggers:
+                    raise ValueError(
+                        f"Invalid value 'HERMETO_TEST_DEBUGGER={debugger}', please choose one of: "
+                        f"{debuggers}"
+                    )
+
+                # make sure to override the debugger of choice with user's value
+                podman_flags.append(f"--env=PYTHONBREAKPOINT={debugger}.set_trace")
+
+        return super().run_cmd_on_image(
+            cmd, tmp_path, mounts, net, entrypoint, podman_flags, subprocess_kwargs
+        )
 
 
-def build_image(context_dir: Path, tag: str) -> ContainerImage:
-    return _build_image(flags=[], tag=tag, context_dir=context_dir)
+def build_image(context_dir: Path, tag: str, debug: bool) -> ContainerImage:
+    flags = []
+    if debug:
+        flags = ["-f", "toolbox/Containerfile.toolbox"]
+
+    return _build_image(flags=flags, tag=tag, context_dir=context_dir)
 
 
 def build_image_for_test_case(
@@ -366,7 +399,11 @@ def fetch_deps_and_check_output(
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
-        [*mounts, (test_repo_dir, test_repo_dir)],
+        [
+            *mounts,
+            (test_repo_dir, test_repo_dir),
+            (tmp_path.parent / ".netrc", "/root/.netrc"),
+        ],
         entrypoint=entrypoint,
         podman_flags=podman_flags,
     )
