@@ -8,6 +8,7 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.package_distributions import (
+    WheelsFilter,
     _sdist_preference,
     process_package_distributions,
 )
@@ -92,14 +93,13 @@ def test_process_non_existing_package_distributions(
 def test_process_existing_wheel_only_package(
     mock_get_project_page: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
-    package_name = "aiowsgi"
+    package_name = "pkg"
     version = "0.1.0"
     req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
 
     file_1 = package_name + "-" + version + "-py3-none-any.whl"
-    file_2 = package_name + "-" + version + "-manylinux1_x86_64.whl"
+    file_2 = package_name + "-" + version + "-cp311-cp311-any.whl"
 
     mock_get_project_page.return_value = pypi_simple.ProjectPage(
         package_name,
@@ -114,9 +114,9 @@ def test_process_existing_wheel_only_package(
         req, rooted_tmp_path, PipBinaryFilters.with_allow_binary_behavior()
     )
 
-    assert artifacts[0].package_type != "sdist"
+    assert artifacts[0].package_type == "wheel"
+    assert artifacts[1].package_type == "wheel"
     assert len(artifacts) == 2
-    assert f"No sdist found for package {package_name}=={version}" in caplog.text
 
 
 @pytest.mark.parametrize("binary_filters", (PipBinaryFilters.with_allow_binary_behavior(), None))
@@ -125,31 +125,10 @@ def test_process_existing_package_without_any_distributions(
     mock_get_project_page: mock.Mock,
     binary_filters: Optional[PipBinaryFilters],
     rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
-    package_name = "aiowsgi"
-    version = "0.1.0"
-    req = mock_requirement(package_name, "pypi", version_specs=[("==", version)])
-
-    with pytest.raises(PackageRejected) as exc_info:
+    req = mock_requirement("pkg-0.1.0-py3-none-any.whl", "pypi", version_specs=[("==", "0.1.0")])
+    with pytest.raises(PackageRejected):
         process_package_distributions(req, rooted_tmp_path, binary_filters=binary_filters)
-
-    assert f"No sdist found for package {package_name}=={version}" in caplog.text
-    assert str(exc_info.value) == f"No distributions found for package {package_name}=={version}"
-
-    if binary_filters is not None:
-        assert str(exc_info.value.solution) == (
-            "Please check that the package exists on PyPI or that the name"
-            " and version are correct.\n"
-        )
-    else:
-        assert str(exc_info.value.solution) == (
-            "It seems that this version does not exist or isn't published as an"
-            " sdist.\n"
-            "Try to specify the dependency directly via a URL instead, for example,"
-            " the tarball for a GitHub release.\n"
-            "Alternatively, allow the use of wheels."
-        )
 
 
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
@@ -174,10 +153,7 @@ def test_process_yanked_package_distributions(
     )
 
     process_package_distributions(req, rooted_tmp_path)
-    assert (
-        f"The version {version} of package {package_name} is yanked, use a different version"
-        in caplog.text
-    )
+    assert f"Package {package_name}=={version} is yanked, use a different version" in caplog.text
 
 
 @pytest.mark.parametrize("use_user_hashes", (True, False))
@@ -190,7 +166,7 @@ def test_process_package_distributions_with_checksums(
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    package_name = "aiowsgi"
+    package_name = "pkg-0.1.0-py3-none-any.whl"
     version = "0.1.0"
     req = mock_requirement(
         package_name,
@@ -202,7 +178,6 @@ def test_process_package_distributions_with_checksums(
     mock_get_project_page.return_value = pypi_simple.ProjectPage(
         package_name,
         [
-            mock_pypi_simple_distribution_package(package_name, version, "sdist"),
             mock_pypi_simple_distribution_package(
                 package_name,
                 version,
@@ -226,14 +201,14 @@ def test_process_package_distributions_with_checksums(
             f"{package_name}: using intersection of requirements-file and PyPI-reported checksums"
             in caplog.text
         )
-        assert artifacts[1].checksums_to_match == {
+        assert artifacts[0].checksums_to_match == {
             ChecksumInfo("sha128", "abcdef"),
             ChecksumInfo("sha256", "abcdef"),
         }
 
     elif use_user_hashes and not use_pypi_digests:
         assert f"{package_name}: using requirements-file checksums" in caplog.text
-        assert artifacts[1].checksums_to_match == {
+        assert artifacts[0].checksums_to_match == {
             ChecksumInfo("sha128", "abcdef"),
             ChecksumInfo("sha256", "abcdef"),
             ChecksumInfo("sha512", "xxxxxx"),
@@ -241,7 +216,7 @@ def test_process_package_distributions_with_checksums(
 
     elif use_pypi_digests and not use_user_hashes:
         assert f"{package_name}: using PyPI-reported checksums" in caplog.text
-        assert artifacts[1].checksums_to_match == {
+        assert artifacts[0].checksums_to_match == {
             ChecksumInfo("sha128", "abcdef"),
             ChecksumInfo("sha256", "abcdef"),
             ChecksumInfo("sha512", "yyyyyy"),
@@ -252,7 +227,7 @@ def test_process_package_distributions_with_checksums(
             f"{package_name}: no checksums reported by PyPI or specified in requirements file"
             in caplog.text
         )
-        assert artifacts[1].checksums_to_match == set()
+        assert artifacts[0].checksums_to_match == set()
 
 
 @mock.patch("pypi_simple.PyPISimple.get_project_page")
@@ -261,7 +236,7 @@ def test_process_package_distributions_with_different_checksums(
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    package_name = "aiowsgi"
+    package_name = "pkg-0.1.0-py3-none-any.whl"
     version = "0.1.0"
     req = mock_requirement(
         package_name, "pypi", version_specs=[("==", version)], hashes=["sha128:abcdef"]
@@ -338,3 +313,142 @@ def test_process_package_distributions_noncanonical_version(
     assert artifacts[0].package_type == "sdist"
     assert artifacts[0].version == requested_version
     assert all(w.version == requested_version for w in artifacts[1:])
+
+
+class TestWheelsFilter:
+    """Don't let the sound of your own wheels drive you crazy."""
+
+    def test_init_with_default_filters(self) -> None:
+        filters = PipBinaryFilters()
+        wheels_filter = WheelsFilter(filters)
+
+        assert wheels_filter.packages is None
+        assert wheels_filter.arch == {"x86_64"}
+        assert wheels_filter.os == {"linux"}
+        assert wheels_filter.py_version is None
+        assert wheels_filter.py_impl == {"cp"}
+
+    def test_init_with_custom_filters(self) -> None:
+        filters = PipBinaryFilters(
+            packages="numpy,pandas",
+            arch="x86_64,aarch64",
+            os="linux,macos",
+            py_version="38,39",
+            py_impl="cp,pp",
+        )
+        wheels_filter = WheelsFilter(filters)
+
+        assert wheels_filter.packages == {"numpy", "pandas"}
+        assert wheels_filter.arch == {"x86_64", "aarch64"}
+        assert wheels_filter.os == {"linux", "macos"}
+        assert wheels_filter.py_version == {"38", "39"}
+        assert wheels_filter.py_impl == {"cp", "pp"}
+
+    def test_init_with_all_keyword(self) -> None:
+        filters = PipBinaryFilters(
+            packages=":all:",
+            arch=":all:",
+            os=":all:",
+            py_version=":all:",
+            py_impl=":all:",
+        )
+        wheels_filter = WheelsFilter(filters)
+
+        assert wheels_filter.packages is None
+        assert wheels_filter.arch is None
+        assert wheels_filter.os is None
+        assert wheels_filter.py_version is None
+        assert wheels_filter.py_impl is None
+
+    def test_filter_with_empty_list(self) -> None:
+        filters = PipBinaryFilters()
+        wheels_filter = WheelsFilter(filters)
+
+        result = wheels_filter.filter([])
+        assert result == []
+
+    def test_filter_with_whitespace_in_constraints(self) -> None:
+        filters = PipBinaryFilters(
+            arch=" x86_64 , aarch64 ",
+            os=" linux , macos ",
+            py_version=" 38 , 39 ",
+            py_impl=" cp , pp ",
+        )
+        wheels_filter = WheelsFilter(filters)
+
+        assert wheels_filter.arch == {"x86_64", "aarch64"}
+        assert wheels_filter.os == {"linux", "macos"}
+        assert wheels_filter.py_version == {"38", "39"}
+        assert wheels_filter.py_impl == {"cp", "pp"}
+
+    def test_filter_with_duplicate_constraint_values(self) -> None:
+        filters = PipBinaryFilters(
+            arch="x86_64,x86_64,aarch64",
+            os="linux,linux,macos",
+            py_version="38,38,39",
+            py_impl="cp,cp,pp",
+        )
+        wheels_filter = WheelsFilter(filters)
+
+        assert wheels_filter.arch == {"x86_64", "aarch64"}
+        assert wheels_filter.os == {"linux", "macos"}
+        assert wheels_filter.py_version == {"38", "39"}
+        assert wheels_filter.py_impl == {"cp", "pp"}
+
+    def test_filter_with_no_matching_wheels(self) -> None:
+        filters = PipBinaryFilters(arch="aarch64", os="macos")
+        wheels_filter = WheelsFilter(filters)
+
+        wheels = [
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-linux_x86_64.whl", "1.0.0"
+            ),
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-linux_aarch64.whl", "1.0.0"
+            ),
+        ]
+
+        result = wheels_filter.filter(wheels)
+        assert result == []
+
+    def test_filter_with_matching_wheels(self) -> None:
+        filters = PipBinaryFilters(
+            arch="x86_64,amd64",
+            os="linux,macos,win",
+            py_version="39,310",
+            py_impl="cp",
+        )
+        wheels_filter = WheelsFilter(filters)
+
+        wheels = [
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-linux_x86_64.whl",
+                "1.0.0",
+            ),
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-macos_10_9_x86_64.whl",
+                "1.0.0",
+            ),
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-win_amd64.whl",
+                "1.0.0",
+            ),
+            # wrong arch
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp39-cp39-linux_aarch64.whl",
+                "1.0.0",
+            ),
+            # wrong Python version
+            mock_pypi_simple_distribution_package(
+                "package-1.0.0-cp38-cp38-linux_x86_64.whl",
+                "1.0.0",
+            ),
+        ]
+
+        result = wheels_filter.filter(wheels)
+        assert len(result) == 3
+
+        filenames = [wheel.filename for wheel in result]
+        assert "package-1.0.0-cp39-cp39-linux_x86_64.whl" in filenames
+        assert "package-1.0.0-cp39-cp39-macos_10_9_x86_64.whl" in filenames
+        assert "package-1.0.0-cp39-cp39-win_amd64.whl" in filenames
