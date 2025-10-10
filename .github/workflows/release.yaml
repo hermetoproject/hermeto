@@ -1,0 +1,73 @@
+name: Publish Container Image
+
+on:
+  release:
+    types: [published]
+
+  # Manual trigger: Allows re-running the workflow for an existing tag
+  # Use case: If the automatic release build fails due to transient errors
+  # (e.g., GitHub infrastructure issues), you can manually retry without
+  # needing to delete and recreate the release.
+  #
+  # To use:
+  # 1. Go to Actions → "Release Container Image" → "Run workflow"
+  # 2. In "Use workflow from" dropdown: select the TAG as the ref you want to rebuild
+  # 3. Check "Also push as latest tag" if this is a stable release and not a pre-release
+  # 4. Click "Run workflow"
+  workflow_dispatch:
+    inputs:
+      push_latest:
+        description: 'Also push as latest tag'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and push container image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # NOTE: the resulting image is tagged as follows:
+      # 1. [ALWAYS] Semantic version tag:
+      #    - extracts version from github.ref (must be a git tag ref)
+      #
+      # 2. [CONDITIONAL] 'latest' tag to ensure latest points to stable releases only:
+      #    - release event: only for stable releases, i.e. '!github.event.release.prerelease'
+      #    - manual workflow trigger: only if 'push_latest' checkbox is checked
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' && inputs.push_latest || github.event_name == 'release' && !github.event.release.prerelease }}
+
+      # Multi-arch build setup
+      - name: Build and push container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
