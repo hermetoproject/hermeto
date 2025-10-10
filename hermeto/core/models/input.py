@@ -109,6 +109,7 @@ PackageManagerType = Literal[
     "rpm",
     "yarn",
     # Add experimental package managers here with x- prefix, e.g. "x-foo"
+    "x-dvc",
 ]
 
 
@@ -374,6 +375,12 @@ class YarnPackageInput(_PackageInputBase):
     type: Literal["yarn"]
 
 
+class DVCPackageInput(_PackageInputBase):
+    """Accepted input for an experimental DVC package."""
+
+    type: Literal["x-dvc"]
+
+
 PackageInput = Annotated[
     Union[
         BundlerPackageInput,
@@ -384,6 +391,7 @@ PackageInput = Annotated[
         PipPackageInput,
         RpmPackageInput,
         YarnPackageInput,
+        DVCPackageInput,
     ],
     # https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
     pydantic.Field(discriminator="type"),
@@ -492,6 +500,11 @@ class Request(pydantic.BaseModel):
     def yarn_packages(self) -> list[YarnPackageInput]:
         """Get the yarn packages specified for this request."""
         return self._packages_by_type(YarnPackageInput)
+
+    @property
+    def dvc_packages(self) -> list[DVCPackageInput]:
+        """Get the DVC packages specified for this request."""
+        return self._packages_by_type(DVCPackageInput)
 
     def _packages_by_type(self, pkgtype: type[T]) -> list[T]:
         return [package for package in self.packages if isinstance(package, pkgtype)]
