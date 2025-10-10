@@ -167,6 +167,7 @@ The only supported format for the config file is YAML.
 | [npm](#npm)                 | JavaScript |
 | [pip](#pip)                 | Python     |
 | [rpm](#rpm)                 | RPM        |
+| [x-dvc](#x-dvc-experimental)| ML/AI      |
 | [yarn](#yarn)               | JavaScript |
 
 ### [bundler][]
@@ -263,6 +264,27 @@ repository and downloading the declared dependencies. To generate this YAML
 
 See docs/rpm.md for more details.
 
+### x-dvc (Experimental)
+
+Hermeto supports [DVC (Data Version Control)][dvc] for tracking ML models,
+datasets, and other large files as external dependencies. DVC is used by some
+ML/AI workflows to version control data with git-like semantics.
+
+Hermeto reads `dvc.lock` files and uses the `dvc fetch` command to download
+dependencies into a cache. During hermetic builds, your build process runs
+`dvc pull` to checkout files from the pre-populated cache without network access.
+
+Supported dependency sources include:
+
+- HuggingFace Hub (with special PURL handling)
+- S3, GCS, Azure storage
+- HTTP/HTTPS URLs
+
+**Status**: Experimental. This package manager is marked with the `x-` prefix to
+indicate it is not yet production-ready.
+
+See docs/dvc.md for more details.
+
 ### [yarn][]
 
 Current version: v4
@@ -305,6 +327,7 @@ Hermeto was derived from (but is not a direct fork of) [Cachito][].
 [config.py]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/config.py
 [container badge]: https://img.shields.io/badge/container-latest-blue
 [coverage badge]: https://codecov.io/github/hermetoproject/hermeto/graph/badge.svg?token=VJKRTZQBMY
+[dvc]: https://dvc.org
 [Gemfile.lock]: https://bundler.io/guides/using_bundler_in_applications.html#gemfilelock
 [Gemfile]: https://bundler.io/v2.5/man/gemfile.5.html
 [Go 1.17 changelog]: https://tip.golang.org/doc/go1.17#go-command
