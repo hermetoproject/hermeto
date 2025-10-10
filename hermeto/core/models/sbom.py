@@ -77,6 +77,7 @@ class Component(pydantic.BaseModel):
         return self.purl
 
     @pydantic.field_validator("properties")
+    @classmethod
     def _add_found_by_property(cls, properties: list[Property]) -> list[Property]:
         if FOUND_BY_APP_PROPERTY not in properties:
             properties.append(FOUND_BY_APP_PROPERTY)
@@ -155,6 +156,7 @@ class Sbom(pydantic.BaseModel):
             return self + other.to_cyclonedx()
 
     @pydantic.field_validator("components")
+    @classmethod
     def _unique_components(cls, components: list[Component]) -> list[Component]:
         """Sort and de-duplicate components."""
         return unique_sorted(components, by=lambda component: component.key())
@@ -391,6 +393,7 @@ class SPDXPackage(pydantic.BaseModel):
         return hashlib.sha256(json.dumps(package_dict, sort_keys=True).encode()).hexdigest()
 
     @pydantic.field_validator("externalRefs")
+    @classmethod
     def _purls_validation(
         cls, refs: list[SPDXPackageExternalRefType]
     ) -> list[SPDXPackageExternalRefType]:
@@ -539,6 +542,7 @@ class SPDXSbom(pydantic.BaseModel):
         return sorted(unique_items.values(), key=lambda item: (item.name, item.versionInfo or ""))
 
     @pydantic.field_validator("packages")
+    @classmethod
     def _unique_packages(cls, packages: list[SPDXPackage]) -> list[SPDXPackage]:
         """Sort and de-duplicate components."""
         return cls.deduplicate_spdx_packages(packages)

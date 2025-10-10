@@ -136,11 +136,13 @@ class BuildConfig(pydantic.BaseModel):
     options: Optional[dict[str, Any]] = None
 
     @pydantic.field_validator("environment_variables")
+    @classmethod
     def _unique_env_vars(cls, env_vars: list[EnvironmentVariable]) -> list[EnvironmentVariable]:
         """Sort and de-duplicate environment variables by name."""
         return unique_sorted(env_vars, by=lambda env_var: env_var.name)
 
     @pydantic.field_validator("project_files")
+    @classmethod
     def _unique_project_files(cls, project_files: list[ProjectFile]) -> list[ProjectFile]:
         """Sort and de-duplicate project files by path."""
         return unique_sorted(project_files, by=lambda f: f.abspath)

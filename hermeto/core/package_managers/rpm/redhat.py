@@ -69,6 +69,7 @@ class RedhatRpmsLock(BaseModel):
         return self.generated_repoid + "-source"
 
     @field_validator("lockfileVersion")
+    @classmethod
     def _version_redhat(cls, version: PositiveInt) -> PositiveInt:
         """Evaluate whether the lockfile header matches the format specification."""
         if version != 1:
@@ -76,6 +77,7 @@ class RedhatRpmsLock(BaseModel):
         return version
 
     @field_validator("lockfileVendor")
+    @classmethod
     def _vendor_redhat(cls, vendor: str) -> str:
         """Evaluate whether the lockfile header matches the format specification."""
         if vendor != "redhat":

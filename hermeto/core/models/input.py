@@ -134,6 +134,7 @@ class _PackageInputBase(pydantic.BaseModel, extra="forbid"):
     path: Path = Path(".")
 
     @pydantic.field_validator("path")
+    @classmethod
     def _path_is_relative(cls, path: Path) -> Path:
         return check_sane_relpath(path)
 
@@ -287,6 +288,7 @@ class PipPackageInput(_PackageInputBase):
     binary: Optional[PipBinaryFilters] = None
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @classmethod
     def _no_explicit_none(cls, paths: Optional[list[Path]]) -> list[Path]:
         """Fail if the user explicitly passes None."""
         if paths is None:
@@ -295,6 +297,7 @@ class PipPackageInput(_PackageInputBase):
         return paths
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @classmethod
     def _requirements_file_path_is_relative(cls, paths: list[Path]) -> list[Path]:
         for p in paths:
             check_sane_relpath(p)
@@ -322,6 +325,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     ssl: Optional[SSLOptions] = None
 
     @pydantic.model_validator(mode="before")
+    @classmethod
     def _validate_dnf_options(cls, data: Any) -> Any:
         """DNF options model.
 
@@ -400,11 +404,13 @@ class Request(pydantic.BaseModel):
     mode: Mode = Mode.STRICT
 
     @pydantic.field_validator("packages")
+    @classmethod
     def _unique_packages(cls, packages: list[PackageInput]) -> list[PackageInput]:
         """De-duplicate the packages to be processed."""
         return unique(packages, by=lambda pkg: (pkg.type, pkg.path))
 
     @pydantic.field_validator("packages")
+    @classmethod
     def _check_packages_paths(
         cls, packages: list[PackageInput], info: pydantic.ValidationInfo
     ) -> list[PackageInput]:
@@ -428,6 +434,7 @@ class Request(pydantic.BaseModel):
         return packages
 
     @pydantic.field_validator("flags")
+    @classmethod
     def _deprecation_warning(cls, flags: frozenset[Flag]) -> frozenset[Flag]:
         """Print a deprecation warning for flags, if needed."""
         if "gomod-vendor" in flags:
@@ -447,6 +454,7 @@ class Request(pydantic.BaseModel):
         return flags
 
     @pydantic.field_validator("packages")
+    @classmethod
     def _packages_not_empty(cls, packages: list[PackageInput]) -> list[PackageInput]:
         """Check that the packages list is not empty."""
         if len(packages) == 0:

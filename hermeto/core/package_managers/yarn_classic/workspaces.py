@@ -25,6 +25,7 @@ class Workspace(pydantic.BaseModel):
     package_json: PackageJson
 
     @pydantic.field_validator("package_json")
+    @classmethod
     def _ensure_package_is_named(cls, package_json: PackageJson) -> PackageJson:
         if "name" not in package_json.data:
             raise ValueError("Workspaces must contain 'name' field.")
