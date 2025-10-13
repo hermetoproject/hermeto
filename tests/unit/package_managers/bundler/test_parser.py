@@ -168,7 +168,7 @@ def test_parse_gemlock(
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "ruby",
+            "platforms": ["ruby"],
             **base_dep,
         },
     ]
@@ -360,7 +360,7 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "i8080_cpm",
+            "platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
@@ -397,7 +397,7 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "i8080_cpm",
+            "platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
