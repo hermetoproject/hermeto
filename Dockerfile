@@ -1,12 +1,12 @@
-FROM registry.access.redhat.com/ubi9/ubi@sha256:dbc1e98d14a022542e45b5f22e0206d3f86b5bdf237b58ee7170c9ddd1b3a283 as ubi
-FROM mirror.gcr.io/library/golang:1.20.0-bullseye as golang_120
-FROM mirror.gcr.io/library/golang:1.21.0-bullseye as golang_121
-FROM mirror.gcr.io/library/node:24.8-bullseye as node
+FROM registry.access.redhat.com/ubi9/ubi@sha256:dbc1e98d14a022542e45b5f22e0206d3f86b5bdf237b58ee7170c9ddd1b3a283 AS ubi
+FROM mirror.gcr.io/library/golang:1.20.0-bullseye AS golang_120
+FROM mirror.gcr.io/library/golang:1.21.0-bullseye AS golang_121
+FROM mirror.gcr.io/library/node:24.8-bullseye AS node
 
 ########################
 # PREPARE OUR BASE IMAGE
 ########################
-FROM ubi as base
+FROM ubi AS base
 RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
@@ -21,7 +21,7 @@ RUN dnf -y install \
 ###############
 # BUILD/INSTALL
 ###############
-FROM base as builder
+FROM base AS builder
 WORKDIR /src
 RUN dnf -y install \
     --setopt install_weak_deps=0 \
