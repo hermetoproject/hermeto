@@ -11,6 +11,7 @@ import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -365,7 +366,9 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
     ]
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
-    result = parse_lockfile(rooted_tmp_path, allow_binary=True)
+    result = parse_lockfile(
+        rooted_tmp_path, binary_filters=BundlerBinaryFilters.with_allow_binary_behavior()
+    )
 
     expected_deps = [
         GemPlatformSpecificDependency(
@@ -400,7 +403,7 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     ]
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
-    result = parse_lockfile(rooted_tmp_path, allow_binary=False)
+    result = parse_lockfile(rooted_tmp_path)
 
     expected_deps: list = []  # mypy demanded this annotation and is content with it.
 

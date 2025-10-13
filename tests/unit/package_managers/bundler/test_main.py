@@ -64,7 +64,7 @@ def test_resolve_bundler_package(
 
     components, git_paths = _resolve_bundler_package(package_dir=package_dir, output_dir=output_dir)
 
-    mock_parse_lockfile.assert_called_once_with(package_dir, False)
+    mock_parse_lockfile.assert_called_once_with(package_dir, None)
     mock_get_main_package_name_and_version.assert_called_once_with(package_dir, deps)
     mock_gem_dep_download_to.assert_called_with(deps_dir)
     mock_git_dep_download_to.assert_called_with(deps_dir)
