@@ -2,6 +2,7 @@ import json
 import logging
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import BundlerBinaryFilters
@@ -49,29 +50,30 @@ def parse_lockfile(
 
     bundler_version: str = json_output["bundler_version"]
     log.info("Package %s is bundled with version %s", package_dir.path.name, bundler_version)
-    dependencies: list[dict[str, str]] = json_output["dependencies"]
+    dependencies: list[dict[str, Any]] = json_output["dependencies"]
 
     result: ParseResult = []
     for dep in dependencies:
         if dep["type"] == "rubygems":
-            if dep["platform"] == "ruby":
-                result.append(GemDependency(**dep))
-            else:
-                full_name = "-".join([dep["name"], dep["version"], dep["platform"]])
-                log.info("Found a binary dependency %s", full_name)
-                if binary_filters is not None:
-                    log.warning(
-                        "Will download binary dependency %s because 'allow_binary' is set to True",
-                        full_name,
-                    )
-                    result.append(GemPlatformSpecificDependency(**dep))
+            for platform in dep["platforms"]:
+                if platform == "ruby":
+                    result.append(GemDependency(**dep))
                 else:
-                    # No need to force a platform if we skip the packages.
-                    log.warning(
-                        "Skipping binary dependency %s because 'allow_binary' is set to False."
-                        " This will likely result in an unbuildable package.",
-                        full_name,
-                    )
+                    full_name = "-".join([dep["name"], dep["version"], platform])
+                    log.info("Found a binary dependency %s", full_name)
+                    if binary_filters is not None:
+                        log.warning(
+                            "Will download binary dependency %s because 'allow_binary' is set to True",
+                            full_name,
+                        )
+                        result.append(GemPlatformSpecificDependency(platform=platform, **dep))
+                    else:
+                        # No need to force a platform if we skip the packages.
+                        log.warning(
+                            "Skipping binary dependency %s because 'allow_binary' is set to False."
+                            " This will likely result in an unbuildable package.",
+                            full_name,
+                        )
         elif dep["type"] == "git":
             result.append(GitDependency(**dep))
         elif dep["type"] == "path":
