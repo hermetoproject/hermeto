@@ -37,16 +37,15 @@ As a result, gems with native extensions will be compiled from the source.
 
 However, occasionally some gems do not have a version for the ruby platform and
 are only available as pre-compiled binaries. In this case, you may need to
-enable the pre-fetching of gems for specific platforms to avoid potential
-failures with the `allow_binary` option set to `true` when running the
-`fetch-deps` command.
+enable the pre-fetching of gems for specific platforms using the `binary` field
+when running the `fetch-deps` command.
 
-```bash
-cd path-to-your-ruby-project
-hermeto fetch-deps '{"type": "bundler", "allow_binary": "true"}'
-```
-
-By default, the `allow_binary` option is disabled.
+> **WARNING**
+>
+> The `binary` field is not fully supported yet. When the `binary` field is specified,
+> no platform filtering is performed. Instead, all available pre-compiled gems
+> from the Gemfile.lock are downloaded, regardless of platform-specific
+> requirements. See [#1075](https://github.com/hermetoproject/hermeto/issues/1075).
 
 ## Configuration
 

@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -23,7 +24,9 @@ BundlerDependency = GemDependency | GemPlatformSpecificDependency | GitDependenc
 ParseResult = list[BundlerDependency]
 
 
-def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> ParseResult:
+def parse_lockfile(
+    package_dir: RootedPath, binary_filters: BundlerBinaryFilters | None = None
+) -> ParseResult:
     """Parse a Gemfile.lock file and return a list of dependencies."""
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
@@ -56,16 +59,16 @@ def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> Parse
             else:
                 full_name = "-".join([dep["name"], dep["version"], dep["platform"]])
                 log.info("Found a binary dependency %s", full_name)
-                if allow_binary:
+                if binary_filters is not None:
                     log.warning(
-                        "Will download binary dependency %s because 'allow_binary' is set to True",
+                        "Will download binary dependency %s because 'binary' field is set",
                         full_name,
                     )
                     result.append(GemPlatformSpecificDependency(**dep))
                 else:
                     # No need to force a platform if we skip the packages.
                     log.warning(
-                        "Skipping binary dependency %s because 'allow_binary' is set to False."
+                        "Skipping binary dependency %s because 'binary' field is not set."
                         " This will likely result in an unbuildable package.",
                         full_name,
                     )

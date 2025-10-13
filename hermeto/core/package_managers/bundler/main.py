@@ -7,7 +7,7 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import BundlerBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
@@ -40,7 +40,7 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
         _comps, _git_paths = _resolve_bundler_package(
             package_dir=path_within_root,
             output_dir=request.output_dir,
-            allow_binary=package.binary is not None,
+            binary_filters=package.binary,
         )
         components.extend(_comps)
         git_paths.extend(_git_paths)
@@ -64,12 +64,12 @@ FSDepName = str
 def _resolve_bundler_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
-    allow_binary: bool = False,
+    binary_filters: BundlerBinaryFilters | None = None,
 ) -> tuple[list[Component], list[tuple[DepName, FSDepName]]]:
     """Process a request for a single bundler package."""
     deps_dir = output_dir.join_within_root("deps", "bundler")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
-    dependencies = parse_lockfile(package_dir, allow_binary)
+    dependencies = parse_lockfile(package_dir, binary_filters)
 
     name, version = _get_main_package_name_and_version(package_dir, dependencies)
     vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()

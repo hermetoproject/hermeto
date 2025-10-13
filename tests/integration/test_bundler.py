@@ -68,7 +68,7 @@ def test_bundler_packages(
         pytest.param(
             utils.TestParameters(
                 branch="bundler/e2e",
-                packages=({"path": ".", "type": "bundler", "allow_binary": "true"},),
+                packages=({"path": ".", "type": "bundler", "binary": {}},),
                 check_output=True,
                 check_deps_checksums=False,
                 expected_exit_code=0,
@@ -81,7 +81,7 @@ def test_bundler_packages(
         pytest.param(
             utils.TestParameters(
                 branch="bundler/e2e-missing-gemspec",
-                packages=({"path": ".", "type": "bundler", "allow_binary": "true"},),
+                packages=({"path": ".", "type": "bundler", "binary": {}},),
                 check_output=True,
                 check_deps_checksums=False,
                 expected_exit_code=0,
