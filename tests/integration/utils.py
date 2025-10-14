@@ -33,7 +33,6 @@ PATHS_TO_CODE = frozenset(
         Path("hermeto"),
         Path("tests/integration"),
         Path("Dockerfile"),
-        Path("Containerfile"),
         Path("requirements.txt"),
         Path("requirements-extras.txt"),
         Path("pyproject.toml"),
@@ -634,8 +633,6 @@ def is_testable_code(c: Path) -> bool:
     >>> is_testable_code(Path('requirements-extras.txt'))
     True
     >>> is_testable_code(Path('Dockerfile'))
-    True
-    >>> is_testable_code(Path('Containerfile'))
     True
     """
     return any(c.is_relative_to(p) for p in PATHS_TO_CODE)
