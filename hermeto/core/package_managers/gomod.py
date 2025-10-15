@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 import re
@@ -7,7 +8,7 @@ import tempfile
 from collections import UserDict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime, timezone
-from functools import cached_property
+from functools import cache, cached_property, total_ordering
 from itertools import chain
 from pathlib import Path
 from types import TracebackType
@@ -45,6 +46,7 @@ log = EnforcingModeLoggerAdapter(logging.getLogger(__name__), {"enforcing_mode":
 GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
 GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
 VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
+HERMETO_GO_INSTALL_DIR = Path("/usr/local/go")
 
 ModuleDict = dict[str, Any]
 
@@ -221,7 +223,69 @@ class StandardPackage(NamedTuple):
         return Component(name=self.name, purl=self.purl)
 
 
-# NOTE: Skim the class once we don't need to work with multiple versions of Go
+class GoVersion(version.Version):
+    """packaging.version.Version wrapper handling Go version/release reporting aspects.
+
+    >>> v = GoVersion("1.21")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 0)
+
+    >>> v = GoVersion("go1.21.4")
+    >>> v.major, v.minor, v.micro
+    (1, 21, 4)
+
+    >>> v = GoVersion("1.21")
+    >>> str(v.to_language_version)
+    '1.21'
+
+    >>> v = GoVersion("go1.22.1")
+    >>> str(v.to_language_version)
+    '1.22'
+
+    >>> GoVersion("1.21") < GoVersion("1.22")
+    True
+    >>> GoVersion("1.21.4") > GoVersion("1.21.0")
+    True
+    >>> GoVersion("go1.21") == GoVersion("1.21")
+    True
+    """
+
+    # NOTE: It might not be obvious at first glance why we need this wrapper to represent a Go
+    # language/toolchain version string instead of semver - semver requires all parts to be
+    # specified, i.e. 'major.minor.patch' which golang historically didn't use to represent
+    # language versions, only toolchains, e.g. 1.22 is still an acceptable way of specifying a
+    # required Go version in one's go.mod file.
+
+    # !THIS IS WHERE THE SUPPORTED GO VERSION BY HERMETO NEEDS TO BE BUMPED!
+    MAX_VERSION: str = "1.25"
+
+    def __init__(self, version_str: str) -> None:
+        """Initialize the GoVersion instance.
+
+        :param version_str: version string in the form of X.Y(.Z)?
+                            Note we also accept standard Go release strings prefixed with 'go'
+        """
+        ver = version_str if not version_str.startswith("go") else version_str[2:]
+        super().__init__(ver)
+
+    @classmethod
+    def max(cls) -> "GoVersion":
+        """Instantiate and return a GoVersion object with the maximum supported version of Go."""
+        return cls(cls.MAX_VERSION)
+
+    @cache
+    def to_language_version(self) -> version.Version:
+        """
+        Language version for the given Go version.
+
+        Go differentiates between Go language versions (major, minor) and toolchain versions (major,
+        minor, micro).
+        """
+        return version.Version(f"{self.major}.{self.minor}")
+
+
+@total_ordering
+@dataclasses.dataclass(frozen=True, init=True, eq=True)
 class Go:
     """High level wrapper over the 'go' CLI command.
 
@@ -229,30 +293,27 @@ class Go:
     parses various Go files, etc.
     """
 
-    def __init__(
-        self,
-        binary: StrPath = "go",
-        release: Optional[str] = None,
-    ) -> None:
+    binary: str = dataclasses.field(default="go", hash=True)
+
+    def __post_init__(self) -> None:
         """Initialize the Go toolchain wrapper.
 
-        :param binary: path-like string to the Go binary or direct command (in PATH)
-        :param release: Go release version string, e.g. go1.20, go1.21.10
-        :returns: a callable instance
+        Validate binary existence as part of the process.
+
+        :return: a callable instance
+        :raises PackageManagerError: if Go toolchain is not found or invalid
         """
-        # run_cmd will take care of checking any bogus passed in 'binary'
-        self._bin = str(binary)
-        self._release = release
+        resolved = shutil.which(self.binary)
 
-        self._version: Optional[version.Version] = None
-        self._install_toolchain: bool = False
+        if resolved is None:
+            raise PackageManagerError(
+                f"Invalid Go binary path: {self.binary}",
+                solution=(
+                    "Please ensure Go is installed in $PATH or provide a valid path to the Go binary"
+                ),
+            )
 
-        if self._release:
-            if bin_ := self._locate_toolchain(self._release):
-                self._bin = bin_
-            else:
-                log.debug(f"Desired toolchain '{self._release}' not found, will download it lazily")
-                self._install_toolchain = True
+        object.__setattr__(self, "binary", resolved)
 
     def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
@@ -265,70 +326,21 @@ class Go:
         if params is None:
             params = {}
 
-        # we check both values to silence the type checker complaining self._release might be None
-        if self._install_toolchain and self._release:
-            self._bin = self._install(self._release)
-            self._install_toolchain = False
-
-        cmd = [self._bin] + cmd
+        cmd = [self.binary] + cmd
         if retry:
             return self._retry(cmd, **params)
 
         return self._run(cmd, **params)
 
-    @property
-    def version(self) -> version.Version:
-        """Version of the Go toolchain as a packaging.version.Version object."""
-        if not self._version:
-            self._version = version.Version(self.release[2:])
-        return self._version
+    def __lt__(self, other: "Go") -> bool:
+        return self.version < other.version
 
-    @property
-    def release(self) -> str:
-        """Release name of the Go Toolchain, e.g. go1.20 ."""
-        # lazy evaluation: defer running 'go'
-        if not self._release:
-            output = self(["version"])
-            log.debug(f"Go release: {output}")
-            release_pattern = f"go{version.VERSION_PATTERN}"
-
-            # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
-            # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
-            if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
-                self._release = match.group(0)
-            else:
-                # This should not happen, otherwise we must figure out a more reliable way of
-                # extracting Go version
-                raise PackageManagerError(
-                    f"Could not extract Go toolchain version from Go's output: '{output}'",
-                    solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
-                )
-        return self._release
-
-    @staticmethod
-    def _locate_toolchain(release: str) -> Optional[str]:
-        """Given a release locate an alternative Go toolchain.
-
-        Locate an alternative Go toolchain under the one of the following locations:
-            - /usr/local/go/                    for container environments (pre-installed)
-            - $XDG_CACHE_HOME/hermeto/go         for local environments (download & cache)
-        """
-        local_cache = get_cache_dir()
-        go_path_stub = f"go/{release}/bin/go"
-        for p in [Path("/usr/local/", go_path_stub), Path(local_cache, go_path_stub)]:
-            status = "SUCCESS" if p.exists() else "FAIL"
-
-            log.debug(f"Trying to locate Go toolchain at '{p}': {status}")
-            if p.exists():
-                return str(p)
-
-        return None
-
-    def _install(self, release: str) -> str:
+    @classmethod
+    def from_missing_toolchain(cls, release: str, binary: str = "go") -> "Go":
         """Fetch and install an alternative version of main Go toolchain.
 
         This method should only ever be needed with local installs, but not in container
-        environment installs where we pre-install multiple Go versions.
+        environment installs where we pre-install the latest Go toolchain available.
         Because Go can't really be told where the toolchain should be installed to, the process is
         as follows:
             1) we use the base Go toolchain to fetch a versioned toolchain shim to a temporary
@@ -342,8 +354,9 @@ class Go:
             5) we delete any build artifacts go created as part of downloading the SDK as those
                can occupy >~70MB of storage
 
-        :param release: Go release version string, e.g. go1.20, go1.21.10
-        :param env: params to use with the underlying subprocess and 'go' execution
+        :param release: target Go release, e.g. go1.20, go1.21.10
+        :param binary: path to Go binary to use to download/install 'release' versioned toolchain
+        :param tmp_dir: global tmp dir where the SDK should be downloaded to
         :returns: path-like string to the newly installed toolchain binary
         """
         base_url = "golang.org/dl/"
@@ -351,28 +364,67 @@ class Go:
 
         # Download the go<release> shim to a temporary directory and wipe it after we're done
         # Go would download the shim to $HOME too, but unlike 'go download' we can at least adjust
-        # 'go install' to point elsewhere using $GOPATH
+        # 'go install' to point elsewhere using $GOPATH. This is a known pitfall of Go, see the
+        # references below:
+        # [1] https://github.com/golang/go/issues/26520
+        # [2] https://golang.org/cl/34385
         with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
-            log.debug(f"Installing Go {release} toolchain shim from '{url}'")
+            log.debug("Installing Go %s toolchain shim from '%s'", release, url)
             env = {
                 "PATH": os.environ.get("PATH", ""),
                 "GOPATH": td,
                 "GOCACHE": str(Path(td, "cache")),
+                "HOME": Path.home().as_posix(),
             }
-            self._retry([self._bin, "install", url], env=env)
+            cls._retry([binary, "install", url], env=env)
 
-            log.debug(f"Downloading Go {release} SDK")
-            self._retry([f"{td}/bin/{release}", "download"], env=env)
+            log.debug("Downloading Go %s SDK", release)
+            env["HOME"] = td
+            cls._retry([f"{td}/bin/{release}", "download"], env=env)
 
-            # move the newly downloaded SDK from $HOME/sdk to $HOME/.cache/hermeto/go
-            sdk_download_dir = Path.home() / f"sdk/{release}"
+            # move the newly downloaded SDK to $HOME/.cache/hermeto/go
+            sdk_download_dir = Path(td, f"sdk/{release}")
             go_dest_dir = get_cache_dir() / "go" / release
+            if go_dest_dir.exists():
+                if go_dest_dir.is_dir():
+                    shutil.rmtree(go_dest_dir, ignore_errors=True)
+                else:
+                    go_dest_dir.unlink()
             shutil.move(sdk_download_dir, go_dest_dir)
 
         log.debug(f"Go {release} toolchain installed at: {go_dest_dir}")
-        return str(go_dest_dir / "bin/go")
+        return cls((go_dest_dir / "bin/go").as_posix())
 
-    def _retry(self, cmd: list[str], **kwargs: Any) -> str:
+    @cached_property
+    def version(self) -> GoVersion:
+        """Version of the Go toolchain as a GoVersion object."""
+        return GoVersion(self._get_release())
+
+    def _get_release(self) -> str:
+        output = self(["version"], params={"env": {"GOTOOLCHAIN": "local"}})
+        log.debug(f"Go release: {output}")
+        release_pattern = f"go{version.VERSION_PATTERN}"
+
+        # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
+        # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
+        if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
+            release = match.group(0)
+        else:
+            # This should not happen, otherwise we must figure out a more reliable way of
+            # extracting Go version.
+            # Ideally we'd want to rely only on doing 'go env GOVERSION' which doesn't require any
+            # further post-processing, but GOVERSION variable was introduced in Go 1.16 and so
+            # 'go version' has been around for longer, then again, it's CLI output bound to
+            # change.
+            raise PackageManagerError(
+                f"Could not extract Go toolchain version from Go's output: '{output}'",
+                solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
+            )
+
+        return release
+
+    @staticmethod
+    def _retry(cmd: list[str], **kwargs: Any) -> str:
         """Run gomod command in a networking context.
 
         Commands that involve networking, such as dependency downloads, may fail due to network
@@ -392,7 +444,7 @@ class Go:
             reraise=True,
         )
         def run_go(_cmd: list[str], **kwargs: Any) -> str:
-            return self._run(_cmd, **kwargs)
+            return Go._run(_cmd, **kwargs)
 
         try:
             return run_go(cmd, **kwargs)
@@ -619,6 +671,12 @@ def _create_packages_from_parsed_data(
     return [_create_package(package) for package in parsed_packages]
 
 
+def _clean_go_modcache(go: Go, dir_: Optional[StrPath]) -> None:
+    # It's easier to mock a helper when testing a huge function than individual object instances
+    if dir_ is not None:
+        go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
+
+
 def fetch_gomod_source(request: Request) -> RequestOutput:
     """
     Resolve and fetch gomod dependencies for a given request.
@@ -632,6 +690,12 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
     if not subpaths:
         return RequestOutput.empty()
+
+    if not (installed_toolchains := _list_installed_toolchains()):
+        raise FetchError(
+            "Could not find any installed Go toolchains in known locations",
+            solution="Please make sure at least one go toolchain is installed in the system",
+        )
 
     invalid_gomod_files = _find_missing_gomod_files(request.source_dir, subpaths)
 
@@ -649,20 +713,38 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     repo_name = _get_repository_name(request.source_dir)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
 
+    gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
+    gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
-        gomod_download_dir = request.output_dir.join_within_root(
-            "deps/gomod/pkg/mod/cache/download"
-        )
-        gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+        tmp_dir_path = Path(tmp_dir.name)
+        go_env = {
+            "GOPATH": tmp_dir_path,
+            "GO111MODULE": "on",
+            "GOCACHE": tmp_dir_path,
+            "PATH": os.environ.get("PATH", ""),
+            "GOMODCACHE": f"{tmp_dir_path}/pkg/mod",
+            "GOSUMDB": "sum.golang.org",
+            "GOTOOLCHAIN": "auto",
+        }
+
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
 
             main_module_dir = request.source_dir.join_within_root(subpath)
+            go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
+            if go is None:
+                raise FetchError(
+                    "Could not match any suitable Go toolchain for the job",
+                    solution="Please make sure a suitable Go toolchain is installed on the system",
+                )
+
+            tmp_dir._go_instance = go
             go_work = GoWork(main_module_dir)
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, Path(tmp_dir), version_resolver, go_work
+                    main_module_dir, request, tmp_dir_path, version_resolver, go, go_work, go_env
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -689,7 +771,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             components.extend(module.to_component() for module in modules)
             components.extend(package.to_component() for package in packages)
 
-        tmp_download_cache_dir = Path(tmp_dir).joinpath("pkg/mod/cache/download")
+        tmp_download_cache_dir = Path(tmp_dir.name).joinpath("pkg/mod/cache/download")
         if tmp_download_cache_dir.exists():
             log.debug(
                 "Adding dependencies from %s to %s",
@@ -839,20 +921,27 @@ def _find_missing_gomod_files(source_path: RootedPath, subpaths: list[str]) -> l
     return invalid_gomod_files
 
 
-def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
-    GO_121 = version.Version("1.21")
-    go = Go()
-    target_version = None
-    go_max_version = version.Version("1.25")
-    go_base_version = go.version
-    go_mod_version_msg = "go.mod reported versions: '%s'[go], '%s'[toolchain]"
+def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Optional[Go]:
+    """
+    Pick the closest matching installed toolchain give a go.mod file.
 
+    :param go_mod_file: path to an application go.mod file as RootedPath
+    :param installed_toolchains: an iterable of Go instances pointing to actual Go binaries
+    :return: a Go instance which matches the go.mod version constraints or None if we could not find
+             a satisfying toolchain version installed
+    """
+    go_max_version = GoVersion.max()
     go_version_str, toolchain_version_str = _get_gomod_version(go_mod_file)
-    log.debug(
-        go_mod_version_msg,
-        go_version_str if go_version_str else "-",
-        toolchain_version_str if toolchain_version_str else "-",
-    )
+
+    if go_version_str:
+        log.debug("go.mod file reports: 'go %s'", go_version_str)
+    else:
+        log.debug("No 'go' directive found in the go.mod file")
+
+    if toolchain_version_str:
+        log.debug("go.mod file reports: 'toolchain %s'", toolchain_version_str)
+    else:
+        log.debug("No 'toolchain' directive found in the go.mod file")
 
     if not go_version_str:
         # Go added the 'go' directive to go.mod in 1.12 [1]. If missing, 1.16 is assumed [2].
@@ -865,15 +954,15 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
     if not toolchain_version_str:
         toolchain_version_str = go_version_str
 
-    go_mod_version = version.Version(go_version_str)
-    go_mod_toolchain_version = version.Version(toolchain_version_str)
+    go_mod_version = GoVersion(go_version_str)
+    go_mod_toolchain_version = GoVersion(toolchain_version_str)
 
     if go_mod_version >= go_mod_toolchain_version:
         target_version = go_mod_version
     else:
         target_version = go_mod_toolchain_version
 
-    if target_version.major > go_max_version.major or target_version.minor > go_max_version.minor:
+    if target_version.to_language_version() > go_max_version.to_language_version():
         raise PackageManagerError(
             f"Required/recommended Go toolchain version '{target_version}' is not supported yet.",
             solution=(
@@ -882,24 +971,30 @@ def _setup_go_toolchain(go_mod_file: RootedPath) -> Go:
             ),
         )
 
-    if target_version >= GO_121:
-        # Project makes use of Go >=1.21:
-        # - always use the 'X.Y.0' toolchain to make sure GOTOOLCHAIN=auto fetches anything newer
-        # - container environments need to have it pre-installed
-        # - local environments will always install 1.21.0 SDK and then pull any newer toolchain
-        go = Go(release="go1.21.0")
-    elif go_base_version >= GO_121:
-        # Starting with Go 1.21, Go doesn't try to be semantically backwards compatible in that the
-        # 'go X.Y' line now denotes the minimum required version of Go, no a "suggested" version.
-        # What it means in practice is that a Go toolchain >= 1.21 enforces the biggest common
-        # toolchain denominator across all dependencies and so if the input project specifies e.g.
-        # 'go 1.19' and **any** of its dependencies specify 'go 1.21' (or higher), then the default
-        # 1.21 toolchain will bump the input project's go.mod file to make sure the minimum
-        # required Go version is met across all dependencies. That is a problem, because it'll lead
-        # to fatal build failures forcing everyone to update their build recipes. Note that at some
-        # point they'll have to do that anyway, but until majority of projects in the ecosystem
-        # adopt 1.21, we need a fallback to an older toolchain version.
-        go = Go(release="go1.20")
+    # If we cannot find a matching toolchain, we'll try to fallback to a 1.21 one
+    matching_toolchains = filter(lambda t: t.version >= target_version, installed_toolchains)
+    try:
+        go = min(matching_toolchains)
+        log.debug("Using Go toolchain version '%s'", go.version)
+    except ValueError:
+        try:
+            # No installed toolchain satisfied the exact version spec, relax the condition
+            go = max(filter(lambda t: t.version >= GoVersion("1.21"), installed_toolchains))
+            log.debug("Best matching Go toolchain version: '%s'", go.version)
+            log.debug("Will use Go toolchain version '%s' [via GOTOOLCHAIN=auto]", target_version)
+        except ValueError:
+            # This is a long shot - we couldn't find a matching toolchain, nor have a toolchain
+            # that can do GOTOOLCHAIN=auto, so we pick any installed toolchain (we know we have
+            # some) and use it to download a new full-blown SDK for the target version
+            log.debug("Installing Go toolchain version '%s'", target_version)
+            release_str = f"go{str(target_version)}"
+            try:
+                work_toolchain = next(iter(installed_toolchains))
+                go = Go.from_missing_toolchain(release_str, work_toolchain.binary)
+                log.debug("Using Go toolchain version '%s'", go.version)
+            except Exception as ex:
+                log.error("Failed to download a Go toolchain version '%s': '%s'", release_str, ex)
+                return None
     return go
 
 
@@ -961,11 +1056,14 @@ def _resolve_gomod(
     request: Request,
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
+    go: Go,
     go_work: GoWork,
+    go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
 
+    :param go: Go instance/release to use for processing the request
     :param app_dir: the full path to the application source code
     :param request: app request this is for
     :param tmp_dir: one temporary directory for all go modules
@@ -979,36 +1077,19 @@ def _resolve_gomod(
 
     config = get_config()
 
-    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
-
-    if should_vendor:
+    if should_vendor := app_dir.join_within_root("vendor").path.is_dir():
         # Even though we do not perform a "go mod download" when vendoring is detected, some
         # go commands still download dependencies as a side effect. Since we don't want those
         # copied to the output dir, we need to set the GOMODCACHE to a different directory.
-        gomod_cache = f"{tmp_dir}/vendor-cache"
-    else:
-        gomod_cache = f"{tmp_dir}/pkg/mod"
-
-    env = {
-        "GOPATH": tmp_dir,
-        "GO111MODULE": "on",
-        "GOCACHE": tmp_dir,
-        "PATH": os.environ.get("PATH", ""),
-        "GOMODCACHE": gomod_cache,
-        "GOSUMDB": "sum.golang.org",
-        "GOTOOLCHAIN": "auto",
-    }
+        go_env["GOMODCACHE"] = f"{tmp_dir}/vendor-cache"
 
     if config.goproxy_url:
-        env["GOPROXY"] = config.goproxy_url
+        go_env["GOPROXY"] = config.goproxy_url
 
     if "cgo-disable" in request.flags:
-        env["CGO_ENABLED"] = "0"
+        go_env["CGO_ENABLED"] = "0"
 
-    go = _setup_go_toolchain(app_dir.join_within_root("go.mod"))
-    log.info(f"Using Go release: {go.release}")
-
-    run_params = {"env": env, "cwd": app_dir}
+    run_params = {"env": go_env, "cwd": app_dir}
 
     # Explicitly disable toolchain telemetry for go >= 1.23
     _disable_telemetry(go, run_params)
@@ -1210,7 +1291,7 @@ def _deduplicate_resolved_modules(
     return modules_by_name_and_version.values()
 
 
-class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
+class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
     """
     A wrapper around the TemporaryDirectory context manager to also run `go clean -modcache`.
 
@@ -1218,6 +1299,19 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     tempfile.TemporaryDirectory to fail with a permission error. A way around this is to run
     `go clean -modcache` before the default clean up behavior is run.
     """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize our TemporaryDirectory context manager wrapper.
+
+        Store the Go toolchain version used in this session for the subsequent cleanup.
+        """
+        super().__init__(*args, **kwargs)
+        # store the exact toolchain instance that was used for all actions within the context
+        self._go_instance: Optional[Go] = None
+
+    def __enter__(self) -> "Self":
+        super().__enter__()
+        return self
 
     def __exit__(
         self,
@@ -1227,7 +1321,8 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory[str]):
     ) -> None:
         """Clean up the temporary directory by first cleaning up the Go cache."""
         try:
-            Go()(["clean", "-modcache"], {"env": {"GOPATH": self.name, "GOCACHE": self.name}})
+            if go := self._go_instance:
+                _clean_go_modcache(go, self.name)
         finally:
             super().__exit__(exc, value, tb)
 
@@ -1674,3 +1769,42 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
         repo.git.reset("--", context_relative_path)
 
     return False
+
+
+def _list_installed_toolchains() -> set[Go]:
+    """List all Go SDK installations we recognize.
+
+    We look at:
+        - /usr/local/go/                    container environments (Go pre-installed by us)
+        - $XDG_CACHE_HOME/<APP_NAME>/go     local environments (Go downloaded & cached by us)
+        - $PATH/go                          default system-wide Go installation
+
+    :returns: A set of Go instances corresponding to the installations found
+    """
+    ret: set[Go] = set()
+    paths: set[Path] = set()
+
+    if pathvar := os.environ.get("PATH"):
+        paths = {Path(p).resolve() for p in pathvar.split(":")}
+
+    # we historically installed toolchains under (/usr/local|<our_cache_dir>)/go/go<version>/
+    for path in (HERMETO_GO_INSTALL_DIR, get_cache_dir()):
+        paths |= {p.resolve().parent for p in Path(path).rglob("bin/go")}
+
+    for path in paths:
+        bin_path = Path(path, "go")
+        if not bin_path.exists():
+            continue
+
+        try:
+            log.debug("Probing %s toolchain...", path)
+            ret.add(Go(binary=bin_path.as_posix()))
+        except Exception as e:
+            # Logging toolchain probing failures due to [1].
+            # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
+            log.debug("Toolchain %s failed probing: %s, skipping...", path, e)
+
+    log.debug(
+        "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
+    )
+    return ret

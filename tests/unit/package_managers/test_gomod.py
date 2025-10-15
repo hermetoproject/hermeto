@@ -12,7 +12,6 @@ from unittest import mock
 
 import git
 import pytest
-from packaging import version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
@@ -21,6 +20,7 @@ from hermeto.core.models.output import BuildConfig, EnvironmentVariable, Request
 from hermeto.core.models.sbom import Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
     Go,
+    GoVersion,
     GoWork,
     Module,
     ModuleDict,
@@ -40,6 +40,7 @@ from hermeto.core.package_managers.gomod import (
     _get_gomod_version,
     _get_repository_name,
     _go_list_deps,
+    _list_installed_toolchains,
     _parse_go_sum,
     _parse_local_modules,
     _parse_packages,
@@ -47,7 +48,7 @@ from hermeto.core.package_managers.gomod import (
     _parse_workspace_module,
     _process_modules_json_stream,
     _resolve_gomod,
-    _setup_go_toolchain,
+    _select_toolchain,
     _validate_local_replacements,
     _vendor_changed,
     _vendor_deps,
@@ -83,6 +84,15 @@ def mock_which_go() -> Iterator[None]:
         yield
 
 
+@pytest.fixture(autouse=True)
+def mock_go_release() -> Iterator[mock.MagicMock]:
+    with mock.patch("hermeto.core.package_managers.gomod.Go._get_release") as _mock:
+        # Using a side_effect instead of return_value because return_value always takes precedence
+        # and we would not be able to override this easily.
+        _mock.side_effect = lambda: "go1.21.0"
+        yield _mock
+
+
 @pytest.fixture
 def gomod_input_packages() -> list[dict[str, str]]:
     return [{"type": "gomod"}]
@@ -108,6 +118,13 @@ def go_mod_file(tmp_path: Path, request: pytest.FixtureRequest) -> None:
 
     with open(output_file, "w") as f:
         f.write(request.param)
+
+
+def mock_go_class(binary: str) -> mock.Mock:
+    """Create a mock Go instance with a specific binary path."""
+    mock_go = mock.Mock(spec=Go)
+    mock_go.binary = binary
+    return mock_go
 
 
 def proc_mock(
@@ -155,7 +172,6 @@ def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPacka
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
 @mock.patch("hermeto.core.package_managers.gomod._validate_local_replacements")
@@ -165,7 +181,6 @@ def test_resolve_gomod(
     mock_validate_local_replacements: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
-    mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     mock_get_go_work_path: mock.Mock,
     mock_get_go_work: mock.Mock,
@@ -214,7 +229,6 @@ def test_resolve_gomod(
     ]
 
     mock_version_resolver.get_golang_version.return_value = "v0.1.0"
-    mock_go_release.return_value = "go0.1.0"
     mock_get_gomod_version.return_value = ("0.1.1", "0.1.2")
 
     parse_packages_mocked_data: list[ParsedPackage] = []
@@ -258,10 +272,8 @@ def test_resolve_gomod(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, go_work
+        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), go_work, {}
     )
-
-    assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/pkg/mod"
 
     # Assert that _parse_packages was called exactly once.
     # Assert that the module-parsing _go_list_deps call was called with the 'all' pattern. The
@@ -296,7 +308,6 @@ def test_resolve_gomod(
 
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
 @mock.patch("hermeto.core.package_managers.gomod._validate_local_replacements")
@@ -308,7 +319,6 @@ def test_resolve_gomod_vendor_dependencies(
     mock_validate_local_replacements: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
-    mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
     data_dir: Path,
@@ -349,7 +359,6 @@ def test_resolve_gomod_vendor_dependencies(
     mock_run.side_effect = run_side_effects
 
     mock_version_resolver.get_golang_version.return_value = "v0.1.0"
-    mock_go_release.return_value = "go0.1.0"
     mock_get_gomod_version.return_value = ("0.1.1", "0.1.2")
     mock_vendor_changed.return_value = False
 
@@ -362,7 +371,7 @@ def test_resolve_gomod_vendor_dependencies(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, mocked_go_work
+        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), mocked_go_work, {}
     )
 
     assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
@@ -385,9 +394,6 @@ def test_resolve_gomod_vendor_dependencies(
 
 
 @mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.Go.release", new_callable=mock.PropertyMock)
-@mock.patch("hermeto.core.package_managers.gomod.Go._install")
-@mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
 @mock.patch("subprocess.run")
@@ -395,9 +401,6 @@ def test_resolve_gomod_no_deps(
     mock_run: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_get_gomod_version: mock.Mock,
-    mock_go_locate_toolchain: mock.Mock,
-    mock_go_install: mock.Mock,
-    mock_go_release: mock.PropertyMock,
     mock_disable_telemetry: mock.Mock,
     tmp_path: Path,
     gomod_request: Request,
@@ -405,7 +408,6 @@ def test_resolve_gomod_no_deps(
     module_path = gomod_request.source_dir.join_within_root("path/to/module")
     module_path.path.mkdir(parents=True, exist_ok=True)
     mock_disable_telemetry.return_value = None
-    mock_go_locate_toolchain.return_value = GO_CMD_PATH
 
     mocked_go_work = mock.MagicMock(spec=GoWork)
     mocked_go_work.__bool__.return_value = False
@@ -453,12 +455,10 @@ def test_resolve_gomod_no_deps(
     mock_run.side_effect = run_side_effects
 
     mock_version_resolver.get_golang_version.return_value = "v1.21.4"
-    mock_go_release.return_value = "go1.21.0"
-    mock_go_install.return_value = GO_CMD_PATH
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, mocked_go_work
+        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), mocked_go_work, {}
     )
     packages_list = list(packages)
 
@@ -499,7 +499,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     app_dir = gomod_request.source_dir
 
     with pytest.raises(PathOutsideRoot):
-        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, go_work)
+        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, Go(), go_work, {})
 
 
 @pytest.mark.parametrize(
@@ -1212,7 +1212,14 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
     ]
 
     mock_run_cmd.return_value = go_list_deps_json
-    call_args = ["go", "list", "-e", "-deps", "-json=ImportPath,Module,Standard,Deps", pattern]
+    call_args = [
+        GO_CMD_PATH,
+        "list",
+        "-e",
+        "-deps",
+        "-json=ImportPath,Module,Standard,Deps",
+        pattern,
+    ]
     assert list(_go_list_deps(Go(), pattern, {})) == parsed_packages
     mock_run_cmd.assert_called_once_with(call_args, {})
 
@@ -1467,7 +1474,7 @@ def test_vendor_deps(
 
     _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", enforcing_mode, run_params)
 
-    mock_run_cmd.assert_called_once_with(["go", go_vendor_cmd, "vendor"], **run_params)
+    mock_run_cmd.assert_called_once_with([GO_CMD_PATH, go_vendor_cmd, "vendor"], **run_params)
     mock_vendor_changed.assert_called_once_with(app_dir, enforcing_mode)
 
 
@@ -1660,11 +1667,16 @@ def test_vendor_changed(
         {"foo": {}, "bar": {"go.mod": ""}},
     ),
 )
+@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
 @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
 def test_missing_gomod_file(
-    mock_run_cmd: mock.Mock, file_tree: dict[str, Any], tmp_path: Path
+    mock_run_cmd: mock.Mock,
+    mock_list_installed_toolchains: mock.Mock,
+    file_tree: dict[str, Any],
+    tmp_path: Path,
 ) -> None:
     mock_run_cmd.return_value = "go version go0.0.1"
+    mock_list_installed_toolchains.return_value = [mock.Mock(spec=Go)]
     write_file_tree(file_tree, tmp_path, exist_ok=True)
 
     packages = [{"path": path, "type": "gomod"} for path, _ in file_tree.items()]
@@ -1811,19 +1823,23 @@ def test_missing_gomod_file(
         ),
     ),
 )
+@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
 @mock.patch("hermeto.core.package_managers.gomod._get_repository_name")
 @mock.patch("hermeto.core.package_managers.gomod._find_missing_gomod_files")
 @mock.patch("hermeto.core.package_managers.gomod._resolve_gomod")
 @mock.patch("hermeto.core.package_managers.gomod.GoCacheTemporaryDirectory")
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver.from_repo_path")
 @mock.patch("hermeto.core.package_managers.gomod.GoWork")
+@mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
 def test_fetch_gomod_source(
+    mock_select_toolchain: mock.Mock,
     mock_go_work: mock.Mock,
     mock_version_resolver: mock.Mock,
     mock_tmp_dir: mock.Mock,
     mock_resolve_gomod: mock.Mock,
     mock_find_missing_gomod_files: mock.Mock,
     mock_get_repository_name: mock.Mock,
+    mock_list_installed_toolchains: mock.Mock,
     gomod_request: Request,
     packages_output_by_path: dict[str, ResolvedGoModule],
     expect_components: list[Component],
@@ -1834,7 +1850,9 @@ def test_fetch_gomod_source(
         request: Request,
         tmp_dir: Path,
         version_resolver: ModuleVersionResolver,
+        go: Go,
         go_work: GoWork,
+        go_env: dict,
     ) -> ResolvedGoModule:
         # Find package output based on the path being processed
         return packages_output_by_path[
@@ -1845,21 +1863,37 @@ def test_fetch_gomod_source(
     mock_find_missing_gomod_files.return_value = []
     mock_get_repository_name.return_value = "github.com/my-org/my-repo"
 
+    mock_tmp_dir.name = "tmpdir"
+    mock_tmp_dir.return_value.__enter__.return_value = mock_tmp_dir
+    mock_tmp_dir.return_value.__exit__.return_value = None
+    mock_tmp_dir_path = Path(mock_tmp_dir.name)
+
     # workspaces are tested in test_resolve_gomod, skip them here
+    fake_go = mock.MagicMock(spec=Go)
     fake_go_work = mock.MagicMock(spec=GoWork)
     fake_go_work.__bool__.return_value = False
     mock_go_work.return_value = fake_go_work
+    mock_select_toolchain.return_value = fake_go
+    mock_list_installed_toolchains.return_value = [fake_go]
 
     output = fetch_gomod_source(gomod_request)
-
-    tmp_dir = Path(mock_tmp_dir.return_value.__enter__.return_value)
     calls = [
         mock.call(
             gomod_request.source_dir.join_within_root(package.path),
             gomod_request,
-            tmp_dir,
+            mock_tmp_dir_path,
             mock_version_resolver.return_value,
+            fake_go,
             fake_go_work,
+            {
+                "GOPATH": mock_tmp_dir_path,
+                "GO111MODULE": "on",
+                "GOCACHE": mock_tmp_dir_path,
+                "PATH": os.environ.get("PATH", ""),
+                "GOMODCACHE": f"{mock_tmp_dir_path}/pkg/mod",
+                "GOSUMDB": "sum.golang.org",
+                "GOTOOLCHAIN": "auto",
+            },
         )
         for package in gomod_request.packages
     ]
@@ -1999,55 +2033,64 @@ def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) 
 
 
 @pytest.mark.parametrize(
-    "go_mod_file, go_base_release, expected_toolchain",
+    "go_version,toolchain_version,installed_versions,expected_result",
     [
-        pytest.param("", "go1.20.4", "1.20.4", id="mod_too_old_fallback_to_1.20"),
-        pytest.param("go 1.19", "go1.21.4", "1.20", id="mod_older_than_base_fallback_to_1.20"),
-        pytest.param("go 1.21.4", "go1.20.4", "1.21.0", id="base_older_than_mod"),
-        pytest.param("go 1.21.4", "go1.21.6", "1.21.0", id="mod_older_than_base_use_1.21.0"),
-        pytest.param("toolchain go1.21.4", "go1.21.6", "1.21.0", id="decide_based_on_toolchain"),
-    ],
-    indirect=["go_mod_file"],
-)
-@mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
-@mock.patch("hermeto.core.package_managers.gomod.Go.__call__")
-def test_setup_go_toolchain(
-    mock_go_call: mock.Mock,
-    mock_go_locate_toolchain: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    go_mod_file: Path,
-    go_base_release: str,
-    expected_toolchain: str,
-) -> None:
-    mock_go_call.return_value = f"Go release: {go_base_release}"
-    mock_go_locate_toolchain.return_value = None
-
-    go = _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
-    assert str(go.version) == expected_toolchain
-
-
-@pytest.mark.parametrize(
-    "unsupported_version",
-    [
-        pytest.param(("99.99.0", None), id="go_version_higher_than_max"),
-        pytest.param((None, "99.99.0"), id="toolchain_version_higher_than_max"),
+        pytest.param(None, None, ["1.20.0", "1.21.0"], "1.20.0", id="missing_go_version"),
+        pytest.param("1.21.5", None, ["1.21.5", "1.22.0"], "1.21.5", id="go_version_only"),
+        pytest.param("1.21", "1.21.4", ["1.21.6", "1.21.4"], "1.21.4", id="exact_match"),
+        pytest.param(
+            "1.21", "1.22.1", ["1.22.4", "1.22.6", "1.21.2"], "1.22.4", id="closest_match"
+        ),
+        pytest.param("1.21", "1.21.4", ["1.22.1"], "1.22.1", id="newer_minor"),
+        pytest.param("1.22", "1.22.1", ["1.21.0", "1.20"], "1.21.0", id="fallback_to_1_21"),
+        pytest.param("1.22", "1.22.1", ["1.20", "1.19.2"], None, id="no_suitable"),
     ],
 )
+@mock.patch("hermeto.core.package_managers.gomod.Go._get_release")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.Go.version", new_callable=mock.PropertyMock)
-def test_setup_go_toolchain_failure(
-    mock_go_version: mock.Mock,
+def test_select_toolchain(
+    mock_get_gomod_version: mock.Mock,
+    mock_go_get_release: mock.Mock,
+    go_version: Optional[str],
+    toolchain_version: Optional[str],
+    installed_versions: list[str],
+    expected_result: Optional[str],
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_get_gomod_version.return_value = (go_version, toolchain_version)
+    mock_go_get_release.side_effect = [f"go{version_str}" for version_str in installed_versions]
+
+    go_mod_file = rooted_tmp_path.join_within_root("go.mod")
+    go_mod_file.path.touch()
+
+    # Create mock Go instances with static versions (no subprocess calls)
+    installed_toolchains = []
+    for version_str in installed_versions:
+        go = Go(f"/usr/bin/go{version_str}")
+        installed_toolchains.append(go)
+
+    result = _select_toolchain(go_mod_file, installed_toolchains)
+
+    mock_get_gomod_version.assert_called_once_with(go_mod_file)
+    if expected_result is None:
+        assert result is None
+    else:
+        assert result is not None
+        assert str(result.version) == expected_result
+
+
+@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
+def test_select_toolchain_fail(
     mock_get_gomod_version: mock.Mock,
     rooted_tmp_path: RootedPath,
-    unsupported_version: tuple[Optional[str], Optional[str]],
 ) -> None:
-    mock_go_version.return_value = version.Version("1.21.0")
-    mock_get_gomod_version.return_value = unsupported_version
-    unsupported = unsupported_version[0] if unsupported_version[0] else unsupported_version[1]
+    mock_get_gomod_version.return_value = ("9999.999", None)
+    mock_go = mock_go_class("/usr/bin/go")
+    mock_go.version = GoVersion("1.21.0")
 
-    error_msg = f"Required/recommended Go toolchain version '{unsupported}' is not supported yet."
-    with pytest.raises(PackageManagerError, match=error_msg):
-        _setup_go_toolchain(rooted_tmp_path.join_within_root("go.mod"))
+    go_mod_file = rooted_tmp_path.join_within_root("go.mod")
+    with pytest.raises(PackageManagerError, match="is not supported yet"):
+        _select_toolchain(go_mod_file, {mock_go})
 
 
 @pytest.mark.parametrize(
@@ -2061,14 +2104,13 @@ def test_setup_go_toolchain_failure(
 @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
 def test_disable_telemetry(
     mock_run_cmd: mock.Mock,
-    rooted_tmp_path: RootedPath,
     GOTELEMETRY: str,
     telemetry_disable: bool,
 ) -> None:
     mock_run_cmd.side_effect = [GOTELEMETRY, None]
 
     go = Go()
-    cmd = [go._bin, "telemetry", "off"]
+    cmd = [go.binary, "telemetry", "off"]
     params = {"env": {"GOTOOLCHAIN": "auto"}}
     _disable_telemetry(go, params)
 
@@ -2149,6 +2191,82 @@ def test_parse_packages(
     assert list(pkgs) == expected
 
 
+@pytest.mark.parametrize(
+    "PATH,file_tree,binary_count",
+    [
+        pytest.param(None, {}, 0, id="no_go_binaries"),
+        pytest.param(
+            None,
+            {"usr": {"local": {"go": {"bin": {"go": ""}}}}},
+            1,
+            id="none_path_with_usr_local",
+        ),
+        pytest.param(
+            "",
+            {"usr": {"local": {"go": {"bin": {"go": ""}}}}},
+            1,
+            id="empty_path_with_usr_local",
+        ),
+        pytest.param(
+            "/bin:/usr/bin",
+            {
+                "bin": {},
+                "usr": {"bin": {}},
+                ".cache": {"go": {"go1.21": {"bin": {"go": ""}}, "go1.22": {"bin": {"go": ""}}}},
+            },
+            2,
+            id="only_in_cache",
+        ),
+        pytest.param(
+            "/bin:/usr/bin",
+            {
+                "bin": {"go": ""},
+                "usr": {"bin": {"go": ""}, "local": {"bin": {"go": ""}}},
+                ".cache": {"go": {"go1.21": {"bin": {"go": ""}}, "go1.22": {"bin": {"go": ""}}}},
+            },
+            5,
+            id="path_and_cache",
+        ),
+        pytest.param(
+            "/usr/go/bin:/usr/go/bin",
+            {"usr": {"bin": {"go": ""}, "local": {"bin": {"go": ""}}}},
+            2,
+            id="deduplicate_paths",
+        ),
+    ],
+)
+@mock.patch.dict(os.environ, {}, clear=False)
+@mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
+@mock.patch("hermeto.core.package_managers.gomod.Go", spec=Go)
+def test_list_installed_toolchains(
+    mock_go: mock.Mock,
+    mock_get_cache_dir: mock.Mock,
+    tmp_path: Path,
+    PATH: Optional[str],
+    file_tree: dict,
+    binary_count: int,
+) -> None:
+    """Test various combinations of PATH, cache, and /usr/local Go installations."""
+    mock_get_cache_dir.return_value = tmp_path
+    mock_go.side_effect = mock_go_class
+    write_file_tree(file_tree, tmp_path, exist_ok=True)
+
+    if not PATH:
+        os.environ.update({"PATH": ""})
+    else:
+        paths = PATH.split(":")
+        prefixed_paths = [f"{tmp_path}/{path}" for path in paths]
+        os.environ["PATH"] = ":".join(prefixed_paths)
+
+    with mock.patch(
+        "hermeto.core.package_managers.gomod.HERMETO_GO_INSTALL_DIR",
+        new=Path(tmp_path, "usr/local"),
+    ):
+        result = _list_installed_toolchains()
+    assert len(result) == binary_count
+    assert mock_go.call_count == binary_count
+
+
 class TestGo:
     @pytest.mark.parametrize(
         "params",
@@ -2218,7 +2336,7 @@ class TestGo:
         else:
             go = Go()
 
-        cmd = [go._bin, "mod", "download"]
+        cmd = [go.binary, "mod", "download"]
         go._retry(cmd, **params)
         mock_run.assert_called_with(cmd, params)
         assert mock_run.call_count == tries_needed
@@ -2236,95 +2354,99 @@ class TestGo:
         mock_run.side_effect = [failure] * 5
         go = Go()
 
-        error_msg = f"Go execution failed: {APP_NAME} re-tried running `{go._bin} mod download` command 5 times."
+        error_msg = f"Go execution failed: {APP_NAME} re-tried running `{go.binary} mod download` command 5 times."
 
         with pytest.raises(PackageManagerError, match=error_msg):
-            go._retry([go._bin, "mod", "download"])
+            go._retry([go.binary, "mod", "download"])
 
         assert mock_run.call_count == 5
         assert mock_sleep.call_count == 4
 
     @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
+    @mock.patch.object(Go, "__post_init__", lambda self: None)
+    @mock.patch("hermeto.core.package_managers.gomod.tempfile.TemporaryDirectory")
     @mock.patch("pathlib.Path.home")
     @mock.patch("hermeto.core.package_managers.gomod.Go._retry")
     @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    def test_install(
+    def test_from_missing_toolchain(
         self,
         mock_cache_dir: mock.Mock,
         mock_go_retry: mock.Mock,
         mock_path_home: mock.Mock,
+        mock_temp_dir: mock.Mock,
         tmp_path: Path,
         release: str,
     ) -> None:
+        """
+        Test that given a release string we can download a Go SDK from the official sources and
+        instantiate a new Go instance from the downloaded toolchain.
+
+        NOTE: There is a module-level 'shutil.which' mock that applies to all tests and that would
+        collide with what we're trying to test, so we need to override it and mock one level above:
+        __post_init__.
+        """
         dest_cache_dir = tmp_path / "cache"
-        env_vars = ["PATH", "GOPATH", "GOCACHE"]
+        temp_dir = tmp_path / "tmpdir"
+        env_vars = ["PATH", "GOPATH", "GOCACHE", "HOME"]
+
+        # This is to simulate the filesystem operations the tested method performs
+        temp_dir.mkdir()
+        sdk_source_dir = temp_dir / f"sdk/{release}"
+        sdk_bin_dir = sdk_source_dir / "bin"
+        sdk_bin_dir.mkdir(parents=True)
+        sdk_bin_dir.joinpath("go").touch()
 
         mock_cache_dir.return_value = dest_cache_dir
         mock_go_retry.return_value = 0
         mock_path_home.return_value = tmp_path
+        mock_temp_dir.return_value.__enter__.return_value = str(temp_dir)
+        mock_temp_dir.return_value.__exit__.return_value = None
 
-        sdk_download_dir = tmp_path / f"sdk/{release}"
-        sdk_bin_dir = sdk_download_dir / "bin"
-        sdk_bin_dir.mkdir(parents=True)
-        sdk_bin_dir.joinpath("go").touch()
+        result_go = Go.from_missing_toolchain(release, GO_CMD_PATH)
 
-        go = Go(release=release)
-        binary = Path(go._install(release))
+        assert mock_go_retry.call_count == 2  # 'go install' && '<go-shim> download'
+        assert mock_go_retry.call_args_list[0][0][0][0] == GO_CMD_PATH
         assert mock_go_retry.call_args_list[0][0][0][1] == "install"
         assert mock_go_retry.call_args_list[0][0][0][2] == f"golang.org/dl/{release}@latest"
         assert mock_go_retry.call_args_list[0][1].get("env") is not None
-        assert set(mock_go_retry.call_args_list[0][1]["env"].keys()) & set(env_vars)
-        assert not sdk_download_dir.exists()
-        assert dest_cache_dir.exists()
-        assert binary.exists()
-        assert str(binary) == f"{dest_cache_dir}/go/{release}/bin/go"
+        assert set(mock_go_retry.call_args_list[0][1]["env"].keys()) == set(env_vars)
+        assert mock_go_retry.call_args_list[1][0][0][1] == "download"
+
+        target_binary = dest_cache_dir / f"go/{release}/bin/go"
+        assert not sdk_source_dir.exists()
+        assert target_binary.exists()
+        assert result_go.binary == str(target_binary)
 
     @pytest.mark.parametrize(
-        "release, needs_install, retry",
+        "release, retry",
         [
-            pytest.param(None, False, False, id="bundled_go"),
-            pytest.param("go1.20", False, True, id="custom_release_installed"),
-            pytest.param("go1.21.0", True, True, id="custom_release_needs_installation"),
+            pytest.param(None, False, id="bundled_go"),
+            pytest.param("go1.20", True, id="custom_release_installed"),
+            pytest.param("go1.21.0", True, id="custom_release_needs_installation"),
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._locate_toolchain")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._install")
     @mock.patch("hermeto.core.package_managers.gomod.Go._run")
     def test_call(
         self,
         mock_run: mock.Mock,
-        mock_install: mock.Mock,
-        mock_locate_toolchain: mock.Mock,
         mock_get_config: mock.Mock,
         tmp_path: Path,
         release: Optional[str],
-        needs_install: bool,
         retry: bool,
     ) -> None:
-        go_bin = tmp_path / f"go/{release}/bin/go"
-
-        if not needs_install:
-            mock_locate_toolchain.return_value = go_bin.as_posix()
-        else:
-            mock_locate_toolchain.return_value = None
-            mock_install.return_value = go_bin.as_posix()
-
         env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}
         opts = ["mod", "download"]
-        go = Go(release=release)
+        go = Go()
         go(opts, retry=retry, params=env)
 
-        cmd = [go._bin, *opts]
+        cmd = [go.binary, *opts]
         if not retry:
             mock_run.assert_called_once_with(cmd, **env)
         else:
             mock_get_config.return_value.gomod_download_max_tries = 1
             mock_run.call_count = 1
             mock_run.assert_called_with(cmd, **env)
-
-        if needs_install:
-            assert go._install_toolchain is False
 
     @pytest.mark.parametrize("retry", [False, True])
     @mock.patch("hermeto.core.package_managers.gomod.get_config")
@@ -2341,7 +2463,7 @@ class TestGo:
         mock_run.side_effect = [failure]
 
         opts = ["mod", "download"]
-        cmd = ["go", *opts]
+        cmd = [GO_CMD_PATH, *opts]
         error_msg = "Go execution failed: "
         if retry:
             error_msg += f"{APP_NAME} re-tried running `{' '.join(cmd)}` command {tries} times."
@@ -2353,89 +2475,6 @@ class TestGo:
             go(opts, retry=retry)
 
         assert mock_run.call_count == 1
-
-    @pytest.mark.parametrize(
-        "base_path",
-        [
-            pytest.param("usr/local", id="locate_in_system_path"),
-            pytest.param(f"{APP_NAME}", id="locate_in_XDG_CACHE_HOME"),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    @mock.patch("hermeto.core.package_managers.gomod.Path")
-    def test_locate_toolchain(
-        self, mock_path: mock.Mock, mock_cache_dir: mock.Mock, tmp_path: Path, base_path: str
-    ) -> None:
-        def prefix_path(*args: Any) -> Path:
-            # we have to mock Path creation to prevent tests touching real system paths
-
-            my_args = list(args)
-            if str(tmp_path) not in my_args[0] and my_args[0].startswith("/"):
-                my_args[0] = my_args[0][1:]
-            return Path(tmp_path, *my_args)
-
-        mock_path.side_effect = prefix_path
-        mock_cache_dir.return_value = f"{APP_NAME}"
-
-        release = "go1.20"
-        go_bin_dir = tmp_path / f"{base_path}/go/{release}/bin"
-        go_bin_dir.mkdir(parents=True)
-        go_bin_dir.joinpath("go").touch()
-
-        go = Go(release=release)
-
-        assert Path(go._bin) == go_bin_dir / "go"
-        assert go._install_toolchain is False
-
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-    def test_locate_toolchain_failure(
-        self,
-        mock_cache_dir: mock.Mock,
-    ) -> None:
-        mock_cache_dir.return_value = f"{APP_NAME}"
-
-        release = "go1.20"
-        go = Go(release=release)
-
-        assert go._bin == "go"
-        assert go._install_toolchain is True
-
-    @pytest.mark.parametrize(
-        "release, expect, go_output",
-        [
-            pytest.param("go1.20", "go1.20", None, id="explicit_release"),
-            pytest.param(
-                None, "go1.21.4", "go version go1.21.4 linux/amd64", id="parse_from_output"
-            ),
-            pytest.param(
-                None,
-                "go1.21.4",
-                "go   version\tgo1.21.4 \t\t linux/amd64",
-                id="parse_from_output_white_spaces",
-            ),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.Go._run")
-    def test_release(
-        self,
-        mock_run: mock.Mock,
-        release: Optional[str],
-        expect: str,
-        go_output: str,
-    ) -> None:
-        mock_run.return_value = go_output
-
-        go = Go(release=release)
-        assert go.release == expect
-
-    @mock.patch("hermeto.core.package_managers.gomod.Go._run")
-    def test_release_failure(self, mock_run: mock.Mock) -> None:
-        go_output = "go mangled version 1.21_4"
-        mock_run.return_value = go_output
-
-        error_msg = f"Could not extract Go toolchain version from Go's output: '{go_output}'"
-        with pytest.raises(PackageManagerError, match=error_msg):
-            Go(release=None).release
 
 
 class TestGoWork:
@@ -2560,7 +2599,7 @@ class TestGoWork:
         if go_work_json:
             # test if _parse is idempotent
             go_work._parse(Go(), run_params=run_params)
-            mock_run.assert_called_once_with(["go", "work", "edit", "-json"], run_params)
+            mock_run.assert_called_once_with([GO_CMD_PATH, "work", "edit", "-json"], run_params)
 
     @pytest.mark.parametrize(
         "go_work_json, expected",
