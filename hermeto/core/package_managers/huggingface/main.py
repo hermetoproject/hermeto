@@ -210,7 +210,6 @@ def _fetch_model(model_entry: HuggingFaceModel, cache_manager: HFCacheManager) -
                 repo_type=repo_type,
                 cache_dir=temp_path,
                 local_dir=temp_path / "download",
-                local_dir_use_symlinks=False,
             )
 
             # Add to our cache structure
