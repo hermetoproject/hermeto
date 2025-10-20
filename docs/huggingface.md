@@ -132,15 +132,19 @@ Note: The lockfile path must be absolute.
 
 ## Using fetched dependencies
 
-Hermeto downloads models and datasets into the `deps/huggingface/hub/`
-subdirectory of the output directory. The cache structure follows Hugging
-Face Hub's native format with blobs, snapshots, and refs directories.
+Hermeto downloads models and datasets into the `deps/huggingface/`
+subdirectory of the output directory:
+
+- **Models**: Stored in `deps/huggingface/hub/` using Hugging Face Hub's
+  native cache format with blobs, snapshots, and refs directories
+- **Datasets**: Raw files in `deps/huggingface/hub/` and processed Arrow
+  cache files in `deps/huggingface/datasets/`
 
 This structure enables offline usage with `HF_HUB_OFFLINE=1`:
 
 ```bash
 export HF_HUB_CACHE=/path/to/hermeto-output/deps/huggingface/hub
-export HF_DATASETS_CACHE=/path/to/hermeto-output/deps/huggingface/hub
+export HF_DATASETS_CACHE=/path/to/hermeto-output/deps/huggingface/datasets
 export HF_HUB_OFFLINE=1
 
 python your_script.py
@@ -151,11 +155,17 @@ Or in Python code:
 ```python
 import os
 os.environ["HF_HUB_CACHE"] = "/path/to/hermeto-output/deps/huggingface/hub"
-os.environ["HF_DATASETS_CACHE"] = "/path/to/hermeto-output/deps/huggingface/hub"
+os.environ["HF_DATASETS_CACHE"] = "/path/to/hermeto-output/deps/huggingface/datasets"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
 from transformers import AutoModel
+from datasets import load_dataset
+
+# Load model from hub cache
 model = AutoModel.from_pretrained("gpt2")
+
+# Load dataset from datasets cache (Arrow files)
+dataset = load_dataset("squad")
 ```
 
 ## Hermetic build
@@ -176,7 +186,7 @@ RUN pip install -r requirements.txt
 
 # Set Hugging Face cache environment variables
 ENV HF_HUB_CACHE=/tmp/hermeto-output/deps/huggingface/hub
-ENV HF_DATASETS_CACHE=/tmp/hermeto-output/deps/huggingface/hub
+ENV HF_DATASETS_CACHE=/tmp/hermeto-output/deps/huggingface/datasets
 ENV HF_HUB_OFFLINE=1
 
 # Copy your application code

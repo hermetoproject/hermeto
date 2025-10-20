@@ -25,12 +25,14 @@ class HuggingFaceModel(BaseModel):
 
     :param repository: Repository identifier (e.g., "gpt2" or "microsoft/deberta-v3-base")
     :param revision: Git commit hash for the specific version
+    :param ref: Reference name (e.g., "main", "v1.0") - defaults to "main"
     :param type: Type of repository - "model" or "dataset"
     :param include_patterns: Optional list of glob patterns to filter files (e.g., ["*.safetensors"])
     """
 
     repository: str
     revision: str
+    ref: str = "main"
     type: Literal["model", "dataset"] = "model"
     include_patterns: Optional[list[str]] = None
     model_config = ConfigDict(extra="forbid")

@@ -19,6 +19,7 @@ dependencies = [
   "aiohttp",
   "aiohttp-retry",
   "createrepo-c ; sys_platform == 'linux'",
+  "datasets",
   "gitpython",
   "huggingface-hub",
   "packageurl-python",
@@ -119,6 +120,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "nox.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "datasets.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
