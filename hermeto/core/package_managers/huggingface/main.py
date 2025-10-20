@@ -69,6 +69,18 @@ def _resolve_huggingface_lockfile(lockfile_path: Path, output_dir: RootedPath) -
     :param output_dir: Output directory to store dependencies
     :return: List of SBOM components
     """
+    # Check if HF_HUB_OFFLINE is set - hermeto cannot run in offline mode
+    import os
+
+    if os.environ.get("HF_HUB_OFFLINE") == "1":
+        raise PackageRejected(
+            f"{APP_NAME} cannot fetch Hugging Face dependencies in offline mode",
+            solution=(
+                "Unset the HF_HUB_OFFLINE environment variable before running hermeto. "
+                f"{APP_NAME} needs network access to download dependencies from Hugging Face Hub."
+            ),
+        )
+
     if not lockfile_path.exists():
         raise PackageRejected(
             f"{APP_NAME} Hugging Face lockfile '{lockfile_path}' does not exist",
@@ -82,6 +94,10 @@ def _resolve_huggingface_lockfile(lockfile_path: Path, output_dir: RootedPath) -
     cache_root = output_dir.join_within_root(DEFAULT_DEPS_DIR)
     cache_root.path.mkdir(parents=True, exist_ok=True)
 
+    # Create datasets cache directory
+    datasets_cache = output_dir.join_within_root("deps/huggingface/datasets")
+    datasets_cache.path.mkdir(parents=True, exist_ok=True)
+
     log.info(f"Reading Hugging Face lockfile: {lockfile_path}")
     lockfile = _load_lockfile(lockfile_path)
 
@@ -93,7 +109,7 @@ def _resolve_huggingface_lockfile(lockfile_path: Path, output_dir: RootedPath) -
         )
         # Check for unsafe file patterns and warn user
         _check_unsafe_patterns(model_entry)
-        component = _fetch_model(model_entry, cache_root.path)
+        component = _fetch_model(model_entry, cache_root.path, datasets_cache.path)
         components.append(component)
 
     return components
@@ -126,44 +142,109 @@ def _load_lockfile(lockfile_path: Path) -> HuggingFaceLockfile:
         ) from e
 
 
-def _fetch_model(model_entry: HuggingFaceModel, cache_root: Path) -> Component:
+def _fetch_model(
+    model_entry: HuggingFaceModel, cache_root: Path, datasets_cache: Path
+) -> Component:
     """
     Fetch a single model or dataset from Hugging Face Hub.
 
     :param model_entry: Model entry from lockfile
-    :param cache_root: Root directory for HuggingFace cache
+    :param cache_root: Root directory for HuggingFace hub cache
+    :param datasets_cache: Root directory for datasets cache
     :return: SBOM component for the model
     """
+
     repo_type = model_entry.type
     repo_id = model_entry.repository
     revision = model_entry.revision
 
     # Download entire snapshot using HuggingFace's native cache management
     try:
-        snapshot_download(
+        snapshot_path = snapshot_download(
             repo_id=repo_id,
             revision=revision,
             repo_type=repo_type,
             cache_dir=cache_root,
             allow_patterns=model_entry.include_patterns,
         )
-    except HfHubHTTPError as e:
-        if e.response.status_code == 404:
-            raise PackageRejected(
-                f"Repository '{repo_id}' not found on Hugging Face Hub at revision {revision}",
-                solution=(
-                    "Check that the repository name is correct and the revision exists. "
-                    "You can verify on https://huggingface.co/"
-                ),
-            ) from e
+    except Exception as e:
+        # Handle various exception types from huggingface_hub
+        if isinstance(e, HfHubHTTPError) and hasattr(e, "response") and e.response:
+            if e.response.status_code == 404:
+                raise PackageRejected(
+                    f"Repository '{repo_id}' not found on Hugging Face Hub at revision {revision}",
+                    solution=(
+                        "Check that the repository name is correct and the revision exists. "
+                        "You can verify on https://huggingface.co/"
+                    ),
+                ) from e
+        # Re-raise with generic error message
         raise PackageRejected(
             f"Failed to fetch repository '{repo_id}': {e}",
             solution="Check your internet connection and that the repository is accessible.",
         ) from e
 
+    # Create a ref pointing to this revision for easier resolution
+    # snapshot_download doesn't create refs when given a specific commit hash
+    repo_cache_dir = Path(
+        snapshot_path
+    ).parent.parent  # Go up from snapshots/{revision} to repo root
+    refs_dir = repo_cache_dir / "refs"
+    refs_dir.mkdir(exist_ok=True)
+    (refs_dir / model_entry.ref).write_text(revision)
+    log.debug(f"Created ref: {refs_dir / model_entry.ref} -> {revision}")
+
+    # For datasets, load them to populate the Arrow cache
+    if repo_type == "dataset":
+        log.info(f"Loading dataset '{repo_id}' to populate Arrow cache...")
+        _load_dataset_to_cache(repo_id, revision, datasets_cache)
+
     # Generate SBOM component
     download_url = f"{DEFAULT_HF_ENDPOINT}/{repo_id}"
     return model_entry.get_sbom_component(download_url)
+
+
+def _load_dataset_to_cache(repo_id: str, revision: str, datasets_cache: Path) -> None:
+    """
+    Load a dataset to populate the Arrow cache.
+
+    This allows the dataset to be used in offline mode by downstream applications.
+
+    :param repo_id: Repository identifier
+    :param revision: Git commit hash
+    :param datasets_cache: Root directory for datasets cache
+    """
+    try:
+        from datasets import load_dataset
+    except ImportError:
+        log.warning(
+            f"datasets library not available - skipping Arrow cache population for '{repo_id}'. "
+            f"Install with: pip install datasets"
+        )
+        return
+
+    try:
+        # Load the dataset - this will create Arrow cache files
+        log.debug(f"Loading dataset '{repo_id}' at revision {revision}")
+        dataset = load_dataset(
+            repo_id,
+            revision=revision,
+            cache_dir=datasets_cache,
+            trust_remote_code=False,
+        )
+
+        # Log successful loading
+        if isinstance(dataset, dict):
+            splits = ", ".join(dataset.keys())
+            log.info(f"Successfully loaded dataset '{repo_id}' with splits: {splits}")
+        else:
+            log.info(f"Successfully loaded dataset '{repo_id}'")
+
+    except Exception as e:
+        log.warning(
+            f"Failed to load dataset '{repo_id}' for Arrow cache population: {e}. "
+            f"The dataset files are downloaded but may not work in offline mode."
+        )
 
 
 def _check_unsafe_patterns(model_entry: HuggingFaceModel) -> None:
