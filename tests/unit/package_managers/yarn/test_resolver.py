@@ -2,7 +2,7 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Optional
 from unittest import mock
 from urllib.parse import quote
 
@@ -13,8 +13,10 @@ from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
+    Locator,
     NpmLocator,
     PatchLocator,
+    WorkspaceLocator,
     parse_locator,
 )
 from hermeto.core.package_managers.yarn.project import PackageJson, Project, YarnRc
@@ -927,6 +929,146 @@ def test_create_components_cache_path_reported_but_missing(rooted_tmp_path: Root
             mock_project(rooted_tmp_path),
             output_dir=RootedPath("/unused"),
         )
+
+
+@pytest.mark.parametrize(
+    "patch_path_template, workspace_locator, expected_url",
+    [
+        pytest.param(
+            "{source_dir}/absolute-patches/fsevents.patch",
+            None,
+            "git+https://github.com/org/project.git@fffffff#absolute-patches/fsevents.patch",
+            id="absolute_path",
+        ),
+        pytest.param(
+            "~/my-patches/fsevents.patch",
+            None,
+            "git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch",
+            id="project_relative_path",
+        ),
+        pytest.param(
+            "./my-patches/fsevents.patch",
+            WorkspaceLocator(None, "foo-project", Path(".")),
+            "git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch",
+            id="workspace_relative_path",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_get_path_patch_url(
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    patch_path_template: str,
+    workspace_locator: Optional[WorkspaceLocator],
+    expected_url: str,
+) -> None:
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    source_dir_path = rooted_tmp_path.path / "source"
+    source_dir_path.mkdir()
+    source_dir = rooted_tmp_path.re_root("source")
+
+    patch_path_str = patch_path_template.replace("{source_dir}", str(source_dir.path))
+    patch_path = Path(patch_path_str)
+
+    package = NpmLocator(None, "fsevents", "1.0.0")
+    patch_locator = PatchLocator(package, [patch_path], workspace_locator)
+
+    mock_project = mock.Mock(source_dir=source_dir)
+    resolver = _ComponentResolver(
+        {}, [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+    )
+
+    actual_url = resolver._get_path_patch_url(patch_locator, patch_path)
+    assert actual_url == expected_url
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_get_builtin_patch_url(
+    mock_get_yarn_version: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+
+    source_dir_path = rooted_tmp_path.path / "source"
+    source_dir_path.mkdir()
+    source_dir = rooted_tmp_path.re_root("source")
+    package = NpmLocator(None, "fsevents", "1.0.0")
+    builtin_patch = "builtin<compat/fsevents>"
+    patch_locator = PatchLocator(package, [builtin_patch], None)
+
+    mock_project = mock.Mock(source_dir=source_dir)
+    resolver = _ComponentResolver(
+        {}, [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+    )
+
+    actual_url = resolver._get_builtin_patch_url(builtin_patch, Version(3, 0, 0))
+    expected_url = (
+        "git+https://github.com/yarnpkg/berry@%40yarnpkg/cli/3.0.0"
+        "#packages/plugin-compat/sources/patches/fsevents.patch.ts"
+    )
+    assert actual_url == expected_url
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_pedigree_mapping_flattens_nested_patches(
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+
+    source_dir_path = rooted_tmp_path.path / "source"
+    source_dir_path.mkdir()
+    source_dir = rooted_tmp_path.re_root("source")
+
+    base_package = NpmLocator(None, "fsevents", "1.0.0")
+    workspace_locator = WorkspaceLocator(None, "foo-project", Path("."))
+
+    patch1 = Path("./my-patches/fsevents.patch")
+    patch2 = Path("./my-patches/fsevents-2.patch")
+    patch3 = Path("./my-patches/fsevents-3.patch")
+
+    patch_locator1 = PatchLocator(base_package, [patch1, patch2], workspace_locator)
+    patch_locator2 = PatchLocator(patch_locator1, [patch3], workspace_locator)
+
+    mock_project = mock.Mock(source_dir=source_dir)
+    resolver = _ComponentResolver(
+        {}, [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
+    )
+
+    actual_pedigree = resolver._get_pedigree_mapping([patch_locator1, patch_locator2])
+
+    expected_pedigree: dict[Locator, Pedigree] = {
+        base_package: Pedigree(
+            patches=[
+                Patch(
+                    type="unofficial",
+                    diff=PatchDiff(
+                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch"
+                    ),
+                ),
+                Patch(
+                    type="unofficial",
+                    diff=PatchDiff(
+                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-2.patch"
+                    ),
+                ),
+                Patch(
+                    type="unofficial",
+                    diff=PatchDiff(
+                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-3.patch"
+                    ),
+                ),
+            ]
+        )
+    }
+    assert actual_pedigree == expected_pedigree
 
 
 @pytest.mark.parametrize(
