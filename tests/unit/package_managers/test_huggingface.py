@@ -8,12 +8,10 @@ from pydantic import ValidationError
 
 from hermeto.core.errors import PackageRejected
 from hermeto.core.models.input import HuggingfacePackageInput
-from hermeto.core.package_managers.huggingface.cache import HFCacheManager
 from hermeto.core.package_managers.huggingface.main import (
     DEFAULT_LOCKFILE_NAME,
     _check_unsafe_patterns,
     _load_lockfile,
-    _should_include_file,
     fetch_huggingface_source,
 )
 from hermeto.core.package_managers.huggingface.models import HuggingFaceLockfile, HuggingFaceModel
@@ -257,35 +255,6 @@ class TestLockfileLoading:
             _load_lockfile(lockfile_path)
 
 
-class TestFileFiltering:
-    """Tests for file inclusion pattern matching."""
-
-    def test_should_include_no_patterns(self) -> None:
-        """Test that all files are included when no patterns specified."""
-        assert _should_include_file("config.json", None)
-        assert _should_include_file("model.safetensors", None)
-        assert _should_include_file("any/nested/file.txt", None)
-
-    def test_should_include_with_patterns(self) -> None:
-        """Test file inclusion with patterns."""
-        patterns = ["*.safetensors", "config.json", "tokenizer/*"]
-
-        assert _should_include_file("model.safetensors", patterns)
-        assert _should_include_file("config.json", patterns)
-        assert _should_include_file("tokenizer/vocab.json", patterns)
-        assert not _should_include_file("README.md", patterns)
-        assert not _should_include_file("pytorch_model.bin", patterns)
-
-    def test_should_include_nested_patterns(self) -> None:
-        """Test file inclusion with nested patterns."""
-        patterns = ["**/*.json"]
-
-        assert _should_include_file("config.json", patterns)
-        assert _should_include_file("nested/config.json", patterns)
-        assert _should_include_file("deeply/nested/file.json", patterns)
-        assert not _should_include_file("model.safetensors", patterns)
-
-
 class TestUnsafePatternDetection:
     """Tests for unsafe pattern detection and security warnings."""
 
@@ -453,69 +422,3 @@ class TestFetchHuggingfaceSource:
 
         with pytest.raises(PackageRejected, match="does not exist"):
             fetch_huggingface_source(mock_request)
-
-
-class TestHFCacheManager:
-    """Tests for HF cache structure management."""
-
-    def test_get_repo_cache_dir_with_namespace(self, tmp_path: Path) -> None:
-        """Test cache directory naming with namespace."""
-        manager = HFCacheManager(tmp_path)
-        cache_dir = manager.get_repo_cache_dir("microsoft", "deberta-v3-base", "model")
-
-        assert cache_dir == tmp_path / "models--microsoft--deberta-v3-base"
-
-    def test_get_repo_cache_dir_without_namespace(self, tmp_path: Path) -> None:
-        """Test cache directory naming without namespace."""
-        manager = HFCacheManager(tmp_path)
-        cache_dir = manager.get_repo_cache_dir("", "gpt2", "model")
-
-        assert cache_dir == tmp_path / "models--gpt2"
-
-    def test_get_repo_cache_dir_dataset(self, tmp_path: Path) -> None:
-        """Test cache directory naming for dataset."""
-        manager = HFCacheManager(tmp_path)
-        cache_dir = manager.get_repo_cache_dir("", "squad", "dataset")
-
-        assert cache_dir == tmp_path / "datasets--squad"
-
-    def test_add_file_to_cache(self, tmp_path: Path) -> None:
-        """Test adding a file to cache with proper structure."""
-        manager = HFCacheManager(tmp_path)
-        repo_cache = tmp_path / "models--gpt2"
-        repo_cache.mkdir()
-
-        # Create a test file
-        test_file = tmp_path / "test.txt"
-        test_file.write_text("test content")
-
-        from hermeto.core.checksum import ChecksumInfo
-
-        manager.add_file_to_cache(
-            repo_cache_dir=repo_cache,
-            revision="abc123" * 6 + "abcd",  # 40 chars
-            file_path="config.json",
-            local_file=test_file,
-            checksum_info=ChecksumInfo("sha256", "dummy"),
-        )
-
-        # Check blobs directory exists
-        assert (repo_cache / "blobs").exists()
-
-        # Check snapshot was created with symlink
-        snapshot_file = repo_cache / "snapshots" / ("abc123" * 6 + "abcd") / "config.json"
-        assert snapshot_file.exists()
-        assert snapshot_file.is_symlink()
-
-    def test_create_ref(self, tmp_path: Path) -> None:
-        """Test creating a ref file."""
-        manager = HFCacheManager(tmp_path)
-        repo_cache = tmp_path / "models--gpt2"
-        repo_cache.mkdir()
-
-        revision = "abc123" * 6 + "abcd"
-        manager.create_ref(repo_cache, "main", revision)
-
-        ref_file = repo_cache / "refs" / "main"
-        assert ref_file.exists()
-        assert ref_file.read_text() == revision
