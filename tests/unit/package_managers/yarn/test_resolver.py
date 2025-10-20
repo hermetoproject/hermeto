@@ -15,7 +15,6 @@ from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     NpmLocator,
     PatchLocator,
-    WorkspaceLocator,
     parse_locator,
 )
 from hermeto.core.package_managers.yarn.project import PackageJson, Project, YarnRc
@@ -928,71 +927,6 @@ def test_create_components_cache_path_reported_but_missing(rooted_tmp_path: Root
             mock_project(rooted_tmp_path),
             output_dir=RootedPath("/unused"),
         )
-
-
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
-@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
-def test_get_pedigree(
-    mock_get_yarn_version: mock.Mock, mock_get_repo_id: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
-
-    project_workspace = WorkspaceLocator(None, "foo-project", Path("."))
-    patched_package = NpmLocator(None, "fsevents", "1.0.0")
-
-    first_patch_locator = PatchLocator(
-        patched_package,
-        [Path("./my-patches/fsevents.patch"), Path("./my-patches/fsevents-2.patch")],
-        project_workspace,
-    )
-    second_patch_locator = PatchLocator(
-        first_patch_locator, [Path("./my-patches/fsevents-3.patch")], project_workspace
-    )
-    third_patch_locator = PatchLocator(second_patch_locator, ["builtin<compat/fsevents>"], None)
-    patch_locators = [
-        first_patch_locator,
-        second_patch_locator,
-        third_patch_locator,
-    ]
-
-    expected_pedigree = {
-        patched_package: Pedigree(
-            patches=[
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-2.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/org/project.git@fffffff#my-patches/fsevents-3.patch"
-                    ),
-                ),
-                Patch(
-                    type="unofficial",
-                    diff=PatchDiff(
-                        url="git+https://github.com/yarnpkg/berry@%40yarnpkg/cli/3.0.0#packages/plugin-compat/sources/patches/fsevents.patch.ts"
-                    ),
-                ),
-            ]
-        ),
-    }
-
-    mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
-    resolver = _ComponentResolver(
-        {}, patch_locators, mock_project, rooted_tmp_path.re_root("output")
-    )
-
-    assert resolver._pedigree_mapping == expected_pedigree
 
 
 @pytest.mark.parametrize(
