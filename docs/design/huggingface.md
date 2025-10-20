@@ -732,20 +732,43 @@ The cache manager:
 
 **Example cache structure:**
 ```
-hermeto-output/deps/huggingface/hub/
-└── models--microsoft--deberta-v3-base/
-    ├── blobs/
-    │   ├── a1b2c3d4e5f6...  # config.json content
-    │   ├── f1e2d3c4b5a6...  # tokenizer.json content
-    │   └── 559062ad13d3...  # model.safetensors content
-    ├── refs/
-    │   └── main  # Contains "559062ad13d311b87b2c455e67dcd5f1c8f65111"
-    └── snapshots/
-        └── 559062ad13d311b87b2c455e67dcd5f1c8f65111/
-            ├── config.json -> ../../blobs/a1b2c3d4e5f6...
-            ├── tokenizer.json -> ../../blobs/f1e2d3c4b5a6...
-            └── model.safetensors -> ../../blobs/559062ad13d3...
+hermeto-output/deps/huggingface/
+├── hub/                                  # Hub cache (models and raw dataset files)
+│   ├── models--microsoft--deberta-v3-base/
+│   │   ├── blobs/
+│   │   │   ├── a1b2c3d4e5f6...  # config.json content
+│   │   │   ├── f1e2d3c4b5a6...  # tokenizer.json content
+│   │   │   └── 559062ad13d3...  # model.safetensors content
+│   │   ├── refs/
+│   │   │   └── main  # Contains "559062ad13d311b87b2c455e67dcd5f1c8f65111"
+│   │   └── snapshots/
+│   │       └── 559062ad13d311b87b2c455e67dcd5f1c8f65111/
+│   │           ├── config.json -> ../../blobs/a1b2c3d4e5f6...
+│   │           ├── tokenizer.json -> ../../blobs/f1e2d3c4b5a6...
+│   │           └── model.safetensors -> ../../blobs/559062ad13d3...
+│   └── datasets--garage-bAInd--open-platypus/
+│       ├── blobs/
+│       │   ├── 1a2b3c4d5e6f...  # README.md content
+│       │   └── 7f8e9d0c1b2a...  # data.parquet content
+│       ├── refs/
+│       │   └── main  # Contains dataset revision hash
+│       └── snapshots/
+│           └── abc123def456.../
+│               ├── README.md -> ../../blobs/1a2b3c4d5e6f...
+│               └── data.parquet -> ../../blobs/7f8e9d0c1b2a...
+└── datasets/                             # Datasets cache (processed Arrow files)
+    └── garage-bAInd___open-platypus/
+        └── default/
+            └── 0.0.0/
+                ├── dataset_info.json
+                └── open-platypus-train.arrow  # Processed Arrow format
 ```
+
+**Note on datasets caching:**
+For dataset-type entries, Hermeto not only downloads the raw files to the hub cache
+but also loads the dataset using the `datasets` library. This populates the Arrow
+cache with processed files, enabling seamless offline usage. The datasets library
+requires these pre-processed Arrow files to work in offline mode (with `HF_HUB_OFFLINE=1`).
 
 ### SBOM Generation
 
@@ -785,7 +808,7 @@ Hermeto generates environment variables for hermetic builds:
 ```bash
 HF_HOME=${output_dir}/deps/huggingface
 HF_HUB_CACHE=${output_dir}/deps/huggingface/hub
-HF_DATASETS_CACHE=${output_dir}/deps/huggingface/hub
+HF_DATASETS_CACHE=${output_dir}/deps/huggingface/datasets
 HF_HUB_OFFLINE=1
 HUGGINGFACE_HUB_CACHE=${output_dir}/deps/huggingface/hub
 ```
@@ -794,6 +817,9 @@ These variables:
 - Point Hugging Face libraries to the prefetched cache
 - Enable offline mode (`HF_HUB_OFFLINE=1`)
 - Work with transformers, datasets, diffusers, and other HF libraries
+- **Note**: `HF_DATASETS_CACHE` uses a separate directory from `HF_HUB_CACHE`
+  to avoid conflicts between the hub cache (raw files) and datasets cache
+  (processed Arrow files)
 
 ### Error Handling
 
