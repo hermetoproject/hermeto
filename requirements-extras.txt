@@ -383,7 +383,9 @@ exceptiongroup==1.3.0 ; python_full_version < '3.11' \
 filelock==3.19.1 \
     --hash=sha256:66eda1888b0171c998b35be2bcc0f6d75c388a7ce20c3f3f37aa8e96c2dddf58 \
     --hash=sha256:d38e30481def20772f5baf097c122c3babc4fcdb7e14e57049eb9d88c6dc017d
-    # via virtualenv
+    # via
+    #   huggingface-hub
+    #   virtualenv
 frozenlist==1.7.0 \
     --hash=sha256:04fb24d104f425da3540ed83cbfc31388a586a7696142004c577fa61c6298c3f \
     --hash=sha256:05579bf020096fe05a764f1f84cd104a12f78eaab68842d036772dc6d4870b4b \
@@ -492,6 +494,10 @@ frozenlist==1.7.0 \
     # via
     #   aiohttp
     #   aiosignal
+fsspec==2025.9.0 \
+    --hash=sha256:19fd429483d25d28b65ec68f9f4adc16c17ea2c7c7bf54ec61360d478fb19c19 \
+    --hash=sha256:530dc2a2af60a414a832059574df4a6e10cce927f6f4a78209390fe38955cfb7
+    # via huggingface-hub
 ghp-import==2.1.0 \
     --hash=sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619 \
     --hash=sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343
@@ -503,6 +509,20 @@ gitdb==4.0.12 \
 gitpython==3.1.45 \
     --hash=sha256:85b0ee964ceddf211c41b9f27a49086010a190fd8132a24e21f362a4b36a791c \
     --hash=sha256:8908cb2e02fb3b93b7eb0f2827125cb699869470432cc885f019b8fd0fccff77
+    # via hermeto (pyproject.toml)
+hf-xet==1.1.10 ; platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' \
+    --hash=sha256:0a0005fd08f002180f7a12d4e13b22be277725bc23ed0529f8add5c7a6309c06 \
+    --hash=sha256:408aef343800a2102374a883f283ff29068055c111f003ff840733d3b715bb97 \
+    --hash=sha256:5f54b19cc347c13235ae7ee98b330c26dd65ef1df47e5316ffb1e87713ca7045 \
+    --hash=sha256:686083aca1a6669bc85c21c0563551cbcdaa5cf7876a91f3d074a030b577231d \
+    --hash=sha256:6b6bceb6361c80c1cc42b5a7b4e3efd90e64630bcf11224dcac50ef30a47e435 \
+    --hash=sha256:71081925383b66b24eedff3013f8e6bbd41215c3338be4b94ba75fd75b21513b \
+    --hash=sha256:eae7c1fc8a664e54753ffc235e11427ca61f4b0477d757cc4eb9ae374b69f09c \
+    --hash=sha256:f900481cf6e362a6c549c61ff77468bd59d6dd082f3170a36acfef2eb6a6793f
+    # via huggingface-hub
+huggingface-hub==0.35.3 \
+    --hash=sha256:0e3a01829c19d86d03793e4577816fe3bdfc1602ac62c7fb220d593d351224ba \
+    --hash=sha256:350932eaa5cc6a4747efae85126ee220e4ef1b54e29d31c3b45c5612ddf0b32a
     # via hermeto (pyproject.toml)
 idna==3.10 \
     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \
@@ -843,6 +863,7 @@ packaging==25.0 \
     #   hermeto (pyproject.toml)
     #   build
     #   dependency-groups
+    #   huggingface-hub
     #   mkdocs
     #   nox
     #   pypi-simple
@@ -1219,6 +1240,7 @@ pyyaml==6.0.3 \
     --hash=sha256:fc09d0aa354569bc501d4e787133afc08552722d3ab34836a80547331bb5d4a0
     # via
     #   hermeto (pyproject.toml)
+    #   huggingface-hub
     #   mkdocs
     #   mkdocs-get-deps
     #   pymdown-extensions
@@ -1238,6 +1260,7 @@ requests==2.32.5 \
     --hash=sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf
     # via
     #   hermeto (pyproject.toml)
+    #   huggingface-hub
     #   mkdocs-material
     #   pybuild-deps
     #   pypi-simple
@@ -1404,26 +1427,26 @@ rpds-py==0.27.1 \
     # via
     #   jsonschema
     #   referencing
-ruff==0.13.2 \
-    --hash=sha256:17d95fb32218357c89355f6f6f9a804133e404fc1f65694372e02a557edf8585 \
-    --hash=sha256:1887c230c2c9d65ed1b4e4cfe4d255577ea28b718ae226c348ae68df958191aa \
-    --hash=sha256:1dbc875cf3720c64b3990fef8939334e74cb0ca65b8dbc61d1f439201a38101b \
-    --hash=sha256:3196bc13ab2110c176b9a4ae5ff7ab676faaa1964b330a1383ba20e1e19645f2 \
-    --hash=sha256:3796345842b55f033a78285e4f1641078f902020d8450cade03aad01bffd81c3 \
-    --hash=sha256:4f8f9e3cd6714358238cd6626b9d43026ed19c0c018376ac1ef3c3a04ffb42d8 \
-    --hash=sha256:50e2d52acb8de3804fc5f6e2fa3ae9bdc6812410a9e46837e673ad1f90a18736 \
-    --hash=sha256:5b939a1b2a960e9742e9a347e5bbc9b3c3d2c716f86c6ae273d9cbd64f193f22 \
-    --hash=sha256:5bcb10276b69b3cfea3a102ca119ffe5c6ba3901e20e60cf9efb53fa417633c3 \
-    --hash=sha256:6ae3f469b5465ba6d9721383ae9d49310c19b452a161b57507764d7ef15f4b07 \
-    --hash=sha256:7c2a0b7c1e87795fec3404a485096bcd790216c7c146a922d121d8b9c8f1aaac \
-    --hash=sha256:aed130b2fde049cea2019f55deb939103123cdd191105f97a0599a3e753d61b0 \
-    --hash=sha256:afa721017aa55a555b2ff7944816587f1cb813c2c0a882d158f59b832da1660d \
-    --hash=sha256:c6ed79584a8f6cbe2e5d7dbacf7cc1ee29cbdb5df1172e77fbdadc8bb85a1f89 \
-    --hash=sha256:c75e9d2a2fafd1fdd895d0e7e24b44355984affdde1c412a6f6d3f6e16b22d46 \
-    --hash=sha256:cb12fffd32fb16d32cef4ed16d8c7cdc27ed7c944eaa98d99d01ab7ab0b710ff \
-    --hash=sha256:cceac74e7bbc53ed7d15d1042ffe7b6577bf294611ad90393bf9b2a0f0ec7cb6 \
-    --hash=sha256:da711b14c530412c827219312b7d7fbb4877fb31150083add7e8c5336549cea7 \
-    --hash=sha256:ff7e4dda12e683e9709ac89e2dd436abf31a4d8a8fc3d89656231ed808e231d2
+ruff==0.13.3 \
+    --hash=sha256:17b951f9d9afb39330b2bdd2dd144ce1c1335881c277837ac1b50bfd99985ed3 \
+    --hash=sha256:1a993b17ec03719c502881cb2d5f91771e8742f2ca6de740034433a97c561989 \
+    --hash=sha256:1c9e6469864f94a98f412f20ea143d547e4c652f45e44f369d7b74ee78185838 \
+    --hash=sha256:2bdad6512fb666b40fcadb65e33add2b040fc18a24997d2e47fee7d66f7fcae2 \
+    --hash=sha256:311860a4c5e19189c89d035638f500c1e191d283d0cc2f1600c8c80d6dcd430c \
+    --hash=sha256:4fb75e7c402d504f7a9a259e0442b96403fa4a7310ffe3588d11d7e170d2b1e3 \
+    --hash=sha256:5b0ba0db740eefdfbcce4299f49e9eaefc643d4d007749d77d047c2bab19908e \
+    --hash=sha256:5bf62b705f319476c78891e0e97e965b21db468b3c999086de8ffb0d40fd2822 \
+    --hash=sha256:6052f8088728898e0a449f0dde8fafc7ed47e4d878168b211977e3e7e854f662 \
+    --hash=sha256:621e2e5812b691d4f244638d693e640f188bacbb9bc793ddd46837cea0503dd2 \
+    --hash=sha256:6b139f638a80eae7073c691a5dd8d581e0ba319540be97c343d60fb12949c8d0 \
+    --hash=sha256:6b547def0a40054825de7cfa341039ebdfa51f3d4bfa6a0772940ed351d2746c \
+    --hash=sha256:78cc1abed87ce40cb07ee0667ce99dbc766c9f519eabfd948ed87295d8737c60 \
+    --hash=sha256:8e5640349493b378431637019366bbd73c927e515c9c1babfea3e932f5e68e1d \
+    --hash=sha256:9cc48a3564423915c93573f1981d57d101e617839bef38504f85f3677b3a0a3e \
+    --hash=sha256:9e9e9d699841eaf4c2c798fa783df2fabc680b72059a02ca0ed81c460bc58330 \
+    --hash=sha256:dc742c50f4ba72ce2a3be362bd359aef7d0d302bf7637a6f942eaa763bd292af \
+    --hash=sha256:f14e0d1fe6460f07814d03c6e32e815bff411505178a1f539a38f6097d3e8ee3 \
+    --hash=sha256:fc6fa4637284708d6ed4e5e970d52fc3b76a557d7b4e85a53013d9d201d93286
     # via hermeto (pyproject.toml)
 semver==3.0.4 \
     --hash=sha256:9c824d87ba7f7ab4a1890799cec8596f15c1241cb473404ea1cb0c55e4b04746 \
@@ -1500,6 +1523,10 @@ tomlkit==0.13.3 \
     --hash=sha256:430cf247ee57df2b94ee3fbe588e71d362a941ebb545dec29b53961d61add2a1 \
     --hash=sha256:c89c649d79ee40629a9fda55f8ace8c6a1b42deb912b2a8fd8d942ddadb606b0
     # via hermeto (pyproject.toml)
+tqdm==4.67.1 \
+    --hash=sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2 \
+    --hash=sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2
+    # via huggingface-hub
 typer==0.19.2 \
     --hash=sha256:755e7e19670ffad8283db353267cb81ef252f595aa6834a0d1ca9312d9326cb9 \
     --hash=sha256:9ad824308ded0ad06cc716434705f691d4ee0bfd0fb081839d2e426860e7fdca
@@ -1513,6 +1540,7 @@ typing-extensions==4.15.0 \
     #   beautifulsoup4
     #   exceptiongroup
     #   gitpython
+    #   huggingface-hub
     #   multidict
     #   mypy
     #   pydantic
@@ -1680,7 +1708,7 @@ yarl==1.20.1 \
     --hash=sha256:fe41919b9d899661c5c28a8b4b0acf704510b88f27f0934ac7a7bebdd8938d5e \
     --hash=sha256:ff70f32aa316393eaf8222d518ce9118148eddb8a53073c2403863b41033eed5
     # via aiohttp
-zipp==3.22.0 ; python_full_version < '3.10.2' \
-    --hash=sha256:dd2f28c3ce4bc67507bfd3781d21b7bb2be31103b51a4553ad7d90b84e57ace5 \
-    --hash=sha256:fe208f65f2aca48b81f9e6fd8cf7b8b32c26375266b009b413d45306b6148343
+zipp==3.23.0 ; python_full_version < '3.10.2' \
+    --hash=sha256:071652d6115ed432f5ce1d34c336c0adfd6a884660d1e9712a256d3d3bd4b14e \
+    --hash=sha256:a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166
     # via importlib-metadata
