@@ -470,79 +470,49 @@ class Go:
 class GoWork(UserDict):
     """Representation of Go's go.work file."""
 
-    def __init__(self, app_dir: RootedPath) -> None:
-        """Initialize GoWork dict."""
-        super().__init__()
-        self._path = None
-        self._app_dir = app_dir
+    def __init__(self, go_work_path: RootedPath, data: dict) -> None:
+        """
+        Initialize GoWork dict from a parsed go.work file.
 
-        # workspaces may not be enabled -> empty instance
-        if (rooted_path := self._get_go_work_path(app_dir)) is None:
-            return
+        :param go_work_path: absolute rooted path to the go.work file.
+        :param go: a Go instance to use to query information
+        """
+        super().__init__(**data)
+        self._path = go_work_path
 
-        self._path = rooted_path
+    @classmethod
+    def from_file(cls, go_work_path: RootedPath, go: Go, go_env: dict[str, Any]) -> "GoWork":
+        """Instantiate GoWork from an absolute path to the go.work file."""
+        go_env["GOWORK"] = go_work_path.path
+        go_work_json = cls._get_go_work(go, {"env": go_env})
+        data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
+        return cls(go_work_path, data)
 
     def __bool__(self) -> bool:
-        return self._path is not None
+        return bool(self.data)
 
     @staticmethod
     def _get_go_work(go: Go, run_params: dict[str, Any]) -> str:
         return go(["work", "edit", "-json"], run_params)
 
-    @staticmethod
-    def _get_go_work_path(app_dir: RootedPath) -> Optional[RootedPath]:
-        go_work_file = Go()(["env", "GOWORK"], {"cwd": app_dir}).rstrip()
-
-        # workspaces can be disabled explicitly with GOWORK=off
-        if not go_work_file or go_work_file == "off":
-            return None
-
-        # make sure that the path to go.work is within the request's root
-        return app_dir.join_within_root(go_work_file)
-
     @property
-    def path(self) -> Optional[RootedPath]:
-        """Return the go.work file path."""
+    def rooted_path(self) -> RootedPath:
+        """Return the go.work file path as rooted."""
         return self._path
 
     @cached_property
-    def dir(self) -> Optional[RootedPath]:
-        """Return the base directory for the go.work file."""
-        if self._path is None:
-            return None
+    def path(self) -> Path:
+        """Return the go.work file path."""
+        return self._path.path
 
-        return RootedPath(self._app_dir.root).join_within_root(self._path.subpath_from_root.parent)
+    @cached_property
+    def workspace_paths(self) -> list[Path]:
+        """Get a list of absolute paths to all workspace modules."""
+        _dir = RootedPath(self._path.root).join_within_root(self.path.parent)
+        wp_paths = [p["disk_path"] for p in self["use"]]
 
-    def _parse(self, go: Go, run_params: dict[str, Any] = {}) -> "Self":
-        """Actually parse the go.work file and fill in the instance with returned data."""
-        # NOTE: This is only a temporary solution. This method is to be merged to __init__. We
-        # can't do that just yet because this is being called from fetch_gomod_source which is
-        # before we set up the correct Go toolchains. We don't need toolchains to query the GOWORK
-        # env variable, but we need correct toolchain for everything else, otherwise go might
-        # complain about not meeting the required versions, so make this effectively a "lazy"
-        # evaluation driven by the caller.
-        if self.data or self._path is None:
-            return self
-
-        go_work_json = self._get_go_work(go, run_params)
-        self.data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
-        return self
-
-    def workspace_paths(self, go: Go, run_params: dict[str, Any] = {}) -> Iterable[RootedPath]:
-        """Get a list of paths to all workspace modules.
-
-        :return:RootedPath instance iterable where root is go.work's containing directory
-        """
-        if not self.data:
-            self._parse(go, run_params)
-
-        if self._path is None or self.get("use", []) == []:
-            return []
-
-        # This re-root is going to be useful when constructing workspace ParsedModule.
-        # mypy doesn't see that self.dir is directly connected to self._path which we checked
-        go_work_dir_reroot = RootedPath(self.dir.path)  # type: ignore
-        return (go_work_dir_reroot.join_within_root(p["disk_path"]) for p in self["use"])
+        # Make sure the workspace paths don't point outside our rooted path
+        return [(self.path.parent / wp).resolve() for wp in wp_paths if _dir.join_within_root(wp)]
 
 
 ModuleID = tuple[str, str]
@@ -580,7 +550,7 @@ def _create_modules_from_parsed_data(
     parsed_modules: Iterable[ParsedModule],
     modules_in_go_sum: frozenset[ModuleID],
     version_resolver: "ModuleVersionResolver",
-    go_work: GoWork,
+    go_work: Optional[GoWork],
 ) -> list[Module]:
     def _create_module(module: ParsedModule) -> Module:
         mod_id = _get_module_id(module)
@@ -594,8 +564,8 @@ def _create_modules_from_parsed_data(
 
             if mod_id not in modules_in_go_sum:
                 if go_work:
-                    # __bool__ checks go_work.dir, so it can't be None
-                    missing_hash_in_file = go_work.dir.subpath_from_root / "go.work.sum"  # type: ignore
+                    go_work_subpath = go_work.rooted_path.subpath_from_root
+                    missing_hash_in_file = go_work_subpath.parent / "go.work.sum"
                 else:
                     missing_hash_in_file = main_module_dir.subpath_from_root / "go.sum"
 
@@ -730,6 +700,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
+            go_work: Optional[GoWork] = None
 
             main_module_dir = request.source_dir.join_within_root(subpath)
             go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
@@ -740,7 +711,8 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 )
 
             tmp_dir._go_instance = go
-            go_work = GoWork(main_module_dir)
+            if (go_work_path := _get_go_work_path(go, main_module_dir)) is not None:
+                go_work = GoWork.from_file(go_work_path, go, go_env=go_env)
 
             try:
                 resolve_result = _resolve_gomod(
@@ -1022,7 +994,9 @@ def _go_list_deps(
     )
 
 
-def _parse_packages(go_work: GoWork, go: Go, run_params: dict[str, Any]) -> Iterator[ParsedPackage]:
+def _parse_packages(
+    go_work: Optional[GoWork], go: Go, run_params: dict[str, Any]
+) -> Iterator[ParsedPackage]:
     """Return all Go packages for the project.
 
     Query the packages from the root of the project. If the project uses Go workspaces (1.18+) we
@@ -1036,16 +1010,16 @@ def _parse_packages(go_work: GoWork, go: Go, run_params: dict[str, Any]) -> Iter
     """
     all_packages: Iterable[ParsedPackage] = []
 
-    if not go_work:
+    if go_work is None:
         log.debug("Querying for list of packages")
         all_packages = _go_list_deps(go, "./...", run_params)
     else:
         # If there are workspace modules we need to run 'list -e ./...' under every local module
         # path because 'go list' command isn't fully properly workspace context aware
-        for wsp in go_work.workspace_paths(go, run_params):
-            log.debug(f"Querying workspace module '{wsp.path}' for list of packages")
+        for wsp in go_work.workspace_paths:
+            log.debug(f"Querying workspace module '{wsp}' for list of packages")
 
-            packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp.path}))
+            packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp}))
             log.debug(packages)
             all_packages = chain(all_packages, packages)
     return iter(all_packages)
@@ -1057,7 +1031,7 @@ def _resolve_gomod(
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
     go: Go,
-    go_work: GoWork,
+    go_work: Optional[GoWork],
     go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
@@ -1095,7 +1069,7 @@ def _resolve_gomod(
     _disable_telemetry(go, run_params)
 
     if go_work:
-        modules_in_go_sum = _parse_go_sum_from_workspaces(go_work, go, run_params)
+        modules_in_go_sum = _parse_go_sum_from_workspaces(go_work)
     else:
         modules_in_go_sum = _parse_go_sum(app_dir.join_within_root("go.sum"))
 
@@ -1126,7 +1100,7 @@ def _resolve_gomod(
 
 
 def _parse_local_modules(
-    go_work: GoWork,
+    go_work: Optional[GoWork],
     go: Go,
     run_params: dict[str, Any],
     app_dir: RootedPath,
@@ -1137,6 +1111,7 @@ def _parse_local_modules(
 
     :return: A tuple containing the main module and a list of workspaces
     """
+    workspace_modules = []
     modules_json_stream = go(["list", "-e", "-m", "-json"], run_params).rstrip()
     main_module_dict, workspace_dict_list = _process_modules_json_stream(
         app_dir, modules_json_stream
@@ -1151,9 +1126,8 @@ def _parse_local_modules(
         main=True,
     )
 
-    workspace_modules = [
-        _parse_workspace_module(go_work, ws, go, run_params) for ws in workspace_dict_list
-    ]
+    if go_work is not None:
+        workspace_modules = [_parse_workspace_module(go_work, ws) for ws in workspace_dict_list]
     return main_module, workspace_modules
 
 
@@ -1185,18 +1159,15 @@ def _process_modules_json_stream(
     return main_module, module_list
 
 
-def _parse_workspace_module(
-    go_work: GoWork, module: ModuleDict, go: Go, run_params: dict[str, Any] = {}
-) -> ParsedModule:
+def _parse_workspace_module(go_work: GoWork, module: ModuleDict) -> ParsedModule:
     """Create a ParsedModule from a listed workspace.
 
     The replacement info returned will always be relative to the go.work file path.
     """
     # there's only ever going to be a single match
-    ws_rootedpath = None
-    for wsp_rooted in go_work.workspace_paths(go, run_params):
-        if str(wsp_rooted.path) == module["Dir"]:
-            ws_rootedpath = wsp_rooted
+    wp = None
+    for wp in go_work.workspace_paths:
+        if str(wp) == module["Dir"]:
             break
     else:
         # This should be impossible
@@ -1204,17 +1175,15 @@ def _parse_workspace_module(
 
     return ParsedModule(
         path=module["Path"],
-        replace=ParsedModule(path=f"./{ws_rootedpath.subpath_from_root}"),
+        replace=ParsedModule(path=f"./{wp.relative_to(go_work.path.parent)}"),
     )
 
 
 def _parse_go_sum_from_workspaces(
     go_work: GoWork,
-    go: Go,
-    run_params: dict[str, Any],
 ) -> frozenset[ModuleID]:
     """Return the set of modules present in all go.sum files across the existing workspaces."""
-    go_sum_files = _get_go_sum_files(go_work, go, run_params)
+    go_sum_files = _get_go_sum_files(go_work)
 
     modules: frozenset[ModuleID] = frozenset()
 
@@ -1226,15 +1195,11 @@ def _parse_go_sum_from_workspaces(
 
 def _get_go_sum_files(
     go_work: GoWork,
-    go: Go,
-    run_params: dict[str, Any],
 ) -> list[RootedPath]:
     """Find all go.sum files present in the related workspaces."""
-    workspace_paths = go_work.workspace_paths(go, run_params)
-
-    # mypy doesn't see that go_work is true here and true means .path and .dir are set
-    go_sums = [go_work.dir.join_within_root(wp.path / "go.sum") for wp in workspace_paths]  # type: ignore
-    go_sums.append(go_work.dir.join_within_root("go.work.sum"))  # type: ignore
+    go_work_rooted = go_work.rooted_path
+    go_sums = [go_work_rooted.join_within_root(wp / "go.sum") for wp in go_work.workspace_paths]
+    go_sums.append(go_work_rooted.join_within_root(go_work.path.parent / "go.work.sum"))
 
     return go_sums
 
@@ -1808,3 +1773,14 @@ def _list_installed_toolchains() -> set[Go]:
         "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
     )
     return ret
+
+
+def _get_go_work_path(go: Go, app_dir: RootedPath) -> Optional[RootedPath]:
+    go_work_file = go(["env", "GOWORK"], {"cwd": app_dir}).strip()
+
+    # workspaces can be disabled explicitly with GOWORK=off
+    if not go_work_file or go_work_file == "off":
+        return None
+
+    # make sure that the path to go.work is within the request's root
+    return app_dir.join_within_root(go_work_file)
