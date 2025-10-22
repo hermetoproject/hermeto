@@ -11,6 +11,7 @@ from pyarn.lockfile import Package as PYarnPackage
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.models.input import Mode
 from hermeto.core.package_managers.yarn_classic.main import MIRROR_DIR
 from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.package_managers.yarn_classic.resolver import (
@@ -303,15 +304,18 @@ def test_resolve_packages(
     output = resolve_packages(project, rooted_tmp_path.join_within_root(MIRROR_DIR))
     mock_extract_workspaces.assert_called_once_with(rooted_tmp_path)
     mock_get_yarn_lock.assert_called_once_with(yarn_lock_path)
-    mock_get_main_package.assert_called_once_with(project.source_dir, project.package_json)
+    mock_get_main_package.assert_called_once_with(
+        project.source_dir, project.package_json, Mode.STRICT
+    )
     mock_get_workspace_packages.assert_called_once_with(
-        rooted_tmp_path, mock_extract_workspaces.return_value
+        rooted_tmp_path, mock_extract_workspaces.return_value, Mode.STRICT
     )
     mock_get_lockfile_packages.assert_called_once_with(
         rooted_tmp_path,
         rooted_tmp_path.join_within_root(MIRROR_DIR),
         mock_get_yarn_lock.return_value,
         find_runtime_deps.return_value,
+        Mode.STRICT,
     )
     assert list(output) == expected_output
 
@@ -374,6 +378,7 @@ def test_package_purl(rooted_tmp_path_repo: RootedPath) -> None:
     repo.create_remote("origin", "https://github.com/org/repo.git")
 
     example_repo_id = get_repo_id(repo)
+    assert example_repo_id is not None
     example_vcs_url = example_repo_id.as_vcs_url_qualifier()
     purl_vcs_url = quote(example_vcs_url, safe=":/")
 
@@ -443,6 +448,49 @@ def test_package_purl(rooted_tmp_path_repo: RootedPath) -> None:
 
     for package, expected_purl in yarn_classic_packages:
         assert package.purl == expected_purl
+
+
+def test_package_purl_without_vcs_url(
+    rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test package PURL generation without vcs_url (non-git source)."""
+    # Patch get_repo_id to return None, ensuring test doesn't depend on tmp path.
+    monkeypatch.setattr(
+        "hermeto.core.package_managers.yarn_classic.resolver.get_repo_id",
+        lambda *args, **kwargs: None,
+    )
+
+    yarn_classic_packages: list[tuple[YarnClassicPackage, str]] = [
+        (
+            FilePackage(
+                name="file-pkg",
+                version="5.0.0",
+                path=rooted_tmp_path.join_within_root("path/to/package"),
+            ),
+            "pkg:npm/file-pkg@5.0.0#path/to/package",
+        ),
+        (
+            WorkspacePackage(
+                name="workspace-pkg",
+                version="6.0.0",
+                path=rooted_tmp_path.join_within_root("workspace/package"),
+            ),
+            "pkg:npm/workspace-pkg@6.0.0#workspace/package",
+        ),
+        (
+            LinkPackage(
+                name="link-pkg",
+                version="7.0.0",
+                path=rooted_tmp_path.join_within_root("link/to/package"),
+            ),
+            "pkg:npm/link-pkg@7.0.0#link/to/package",
+        ),
+    ]
+
+    for package, expected_purl in yarn_classic_packages:
+        purl = package.purl
+        assert purl == expected_purl
+        assert "vcs_url" not in purl
 
 
 def mock_tarball(path: RootedPath, package_json_content: dict[str, str]) -> RootedPath:

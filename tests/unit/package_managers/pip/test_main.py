@@ -1604,6 +1604,16 @@ def test_generate_purl_main_package(
     assert purl == expected_purl
 
 
+def test_generate_purl_main_package_without_vcs_url(rooted_tmp_path: RootedPath) -> None:
+    """Test _generate_purl_main_package without vcs_url (non-git source)."""
+    package = {"name": "my-package", "version": "2.0.0", "type": "pip"}
+
+    purl = pip._generate_purl_main_package(package, rooted_tmp_path)
+
+    assert purl == "pkg:pypi/my-package@2.0.0"
+    assert "vcs_url" not in purl
+
+
 @pytest.mark.parametrize(
     "packages",
     [

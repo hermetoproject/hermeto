@@ -24,6 +24,7 @@ from semver import Version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnsupportedFeature,
@@ -310,9 +311,13 @@ class _ComponentResolver:
             project_path = project.source_dir
             workspace_path = package.locator.relpath
 
-            repo = get_repo_id(project_path.root)
-
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            try:
+                repo = get_repo_id(project_path.root)
+                if repo is not None:
+                    qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            except NotAGitRepo:
+                # Not a git repository in permissive mode
+                pass
             subpath = str(workspace_path)
 
         elif isinstance(package.locator, (FileLocator, LinkLocator, PortalLocator)):
@@ -322,8 +327,13 @@ class _ComponentResolver:
 
             normalized = project_path.join_within_root(workspace_path, package_path)
 
-            repo = get_repo_id(project_path.root)
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            try:
+                repo = get_repo_id(project_path.root)
+                if repo is not None:
+                    qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            except NotAGitRepo:
+                # Not a git repository in permissive mode
+                pass
             subpath = str(normalized.subpath_from_root)
 
         elif isinstance(package.locator, PatchLocator):
@@ -479,8 +489,20 @@ class _ComponentResolver:
             normalized = pp_join(workspace_path, patch_path)
 
         subpath_from_root = str(normalized.subpath_from_root)
-        repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
-        return f"{repo_url}#{subpath_from_root}"
+
+        try:
+            repo = get_repo_id(pp_root)
+            if repo is not None:
+                repo_url = repo.as_vcs_url_qualifier()
+                retval = f"{repo_url}#{subpath_from_root}"
+            else:
+                # Not a repo in permissive mode - path only
+                retval = f"#{subpath_from_root}"
+        except NotAGitRepo:
+            # Not a repo in strict mode - path only
+            retval = f"#{subpath_from_root}"
+
+        return retval
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:
         """Return a PURL-style VCS URL qualifier with subpath for a builtin Patch."""

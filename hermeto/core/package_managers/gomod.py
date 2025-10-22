@@ -684,7 +684,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
     components: list[Component] = []
 
-    repo_name = _get_repository_name(request.source_dir)
+    repo_name = _get_repository_name(request.source_dir, mode=request.mode)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
@@ -768,11 +768,16 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath, repo_name: Optional[str], parsed_main_module: ParsedModule
 ) -> Module:
     resolved_subpath = main_module_dir.subpath_from_root
 
-    if str(resolved_subpath) == ".":
+    # If repo_name is None (not a git repository in permissive mode), use module path
+    if repo_name is None:
+        resolved_path = (
+            str(resolved_subpath) if str(resolved_subpath) != "." else parsed_main_module.path
+        )
+    elif str(resolved_subpath) == ".":
         resolved_path = repo_name
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
@@ -789,12 +794,16 @@ def _create_main_module_from_parsed_data(
     )
 
 
-def _get_repository_name(source_dir: RootedPath) -> str:
+def _get_repository_name(source_dir: RootedPath, mode: Mode = Mode.STRICT) -> Optional[str]:
     """Return the name resolved from the Git origin URL.
 
     The name is a treated form of the URL, after stripping the scheme, user and .git extension.
+    Returns None if not a git repository and in permissive mode.
     """
-    url = get_repo_id(source_dir).parsed_origin_url
+    repo_id = get_repo_id(source_dir, mode=mode)
+    if repo_id is None:
+        return None
+    url = repo_id.parsed_origin_url
     return f"{url.hostname}{url.path.rstrip('/').removesuffix('.git')}"
 
 

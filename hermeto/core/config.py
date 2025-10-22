@@ -50,7 +50,7 @@ def get_config() -> Config:
     """Get the configuration singleton."""
     global config
 
-    if not config:
+    if config is None:
         config = Config()
 
     return config

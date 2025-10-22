@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import Mode
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -23,7 +24,9 @@ BundlerDependency = GemDependency | GemPlatformSpecificDependency | GitDependenc
 ParseResult = list[BundlerDependency]
 
 
-def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> ParseResult:
+def parse_lockfile(
+    package_dir: RootedPath, allow_binary: bool = False, mode: Mode = Mode.STRICT
+) -> ParseResult:
     """Parse a Gemfile.lock file and return a list of dependencies."""
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
@@ -72,6 +75,6 @@ def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> Parse
         elif dep["type"] == "git":
             result.append(GitDependency(**dep))
         elif dep["type"] == "path":
-            result.append(PathDependency(**dep, root=package_dir))
+            result.append(PathDependency(**dep, root=package_dir, mode=mode))
 
     return result
