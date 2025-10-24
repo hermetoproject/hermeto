@@ -178,6 +178,7 @@ def test_parse_gemlock(
     result = parse_lockfile(rooted_tmp_path)
 
     expected_deps = [
+        GemDependency(name="example", version="0.1.0", source="https://rubygems.org/"),
         GitDependency(
             name="example",
             version="0.1.0",
@@ -191,7 +192,6 @@ def test_parse_gemlock(
             root=str(rooted_tmp_path),
             subpath="vendor/pathgem",
         ),
-        GemDependency(name="example", version="0.1.0", source="https://rubygems.org/"),
     ]
 
     assert f"Package {rooted_tmp_path.path.name} is bundled with version 2.5.10" in caplog.messages
@@ -349,7 +349,7 @@ def test_purls(rooted_tmp_path_repo: RootedPath) -> None:
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
-def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to(
+def test_platform_specific_gems_with_binary_filters(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
     sample_parser_output: dict[str, Any],
@@ -368,7 +368,7 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
     result = parse_lockfile(
-        rooted_tmp_path, binary_filters=BundlerBinaryFilters.with_allow_binary_behavior()
+        rooted_tmp_path, binary_filters=BundlerBinaryFilters(platform="i8080_cpm")
     )
 
     expected_deps = [
@@ -380,13 +380,14 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
         ),
     ]
 
-    assert some_message_contains_substring("Found a binary dependency", caplog.messages)
-    assert some_message_contains_substring("Will download binary dependency", caplog.messages)
+    assert some_message_contains_substring(
+        "Binary filtering enabled: downloading gems for allowed platforms", caplog.messages
+    )
     assert result == expected_deps
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
-def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
+def test_platform_specific_gems_without_binary_filters(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
     sample_parser_output: dict[str, Any],
@@ -404,13 +405,20 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     ]
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
-    result = parse_lockfile(rooted_tmp_path)
+    result = parse_lockfile(rooted_tmp_path, None)
 
-    expected_deps: list = []  # mypy demanded this annotation and is content with it.
+    expected_deps = [
+        GemDependency(
+            name="example",
+            version="0.1.0",
+            source="https://rubygems.org/",
+        ),
+    ]
 
-    assert some_message_contains_substring("Found a binary dependency", caplog.messages)
-    assert some_message_contains_substring("Skipping binary dependency", caplog.messages)
-
+    assert some_message_contains_substring(
+        "Binary filtering disabled: downloading all gems for pure 'ruby' platform",
+        caplog.messages,
+    )
     assert result == expected_deps
 
 

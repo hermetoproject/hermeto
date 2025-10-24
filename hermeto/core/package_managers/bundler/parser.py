@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+from itertools import chain
 from pathlib import Path
 from typing import Any
 
@@ -53,34 +54,36 @@ def parse_lockfile(
     log.info("Package %s is bundled with version %s", package_dir.path.name, bundler_version)
     dependencies: list[dict[str, Any]] = json_output["dependencies"]
 
+    rubygems_deps = [dep for dep in dependencies if dep["type"] == "rubygems"]
+    other_deps = [dep for dep in dependencies if dep["type"] != "rubygems"]
+
+    if binary_filters is None:
+        log.warning("Binary filtering disabled: downloading all gems for pure 'ruby' platform")
+        _clean_gem_platforms(rubygems_deps)
+    else:
+        log.warning("Binary filtering enabled: downloading gems for allowed platforms")
+        GemsFilter(binary_filters).apply_platform_filters(rubygems_deps)
+
     result: ParseResult = []
-    for dep in dependencies:
+    for dep in chain(rubygems_deps, other_deps):
         if dep["type"] == "rubygems":
             for platform in dep["platforms"]:
                 if platform == "ruby":
                     result.append(GemDependency(**dep))
                 else:
-                    full_name = "-".join([dep["name"], dep["version"], platform])
-                    log.info("Found a binary dependency %s", full_name)
-                    if binary_filters is not None:
-                        log.warning(
-                            "Will download binary dependency %s because 'allow_binary' is set to True",
-                            full_name,
-                        )
-                        result.append(GemPlatformSpecificDependency(platform=platform, **dep))
-                    else:
-                        # No need to force a platform if we skip the packages.
-                        log.warning(
-                            "Skipping binary dependency %s because 'allow_binary' is set to False."
-                            " This will likely result in an unbuildable package.",
-                            full_name,
-                        )
+                    result.append(GemPlatformSpecificDependency(platform=platform, **dep))
+
         elif dep["type"] == "git":
             result.append(GitDependency(**dep))
         elif dep["type"] == "path":
             result.append(PathDependency(**dep, root=package_dir))
 
     return result
+
+
+def _clean_gem_platforms(gems: list[dict[str, Any]]) -> None:
+    for gem in gems:
+        gem["platforms"] = ["ruby"]
 
 
 class GemsFilter(BinaryPackageFilter):
