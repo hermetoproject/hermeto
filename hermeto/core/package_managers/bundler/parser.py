@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from hermeto.core.binary_filters import BinaryPackageFilter
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
@@ -80,3 +81,44 @@ def parse_lockfile(
             result.append(PathDependency(**dep, root=package_dir))
 
     return result
+
+
+class GemsFilter(BinaryPackageFilter):
+    """Filter gems based on the filter constraints."""
+
+    def __init__(self, filters: BundlerBinaryFilters) -> None:
+        """Initialize the filter."""
+        self.packages = self._parse_filter_spec(filters.packages)
+        self.platform = self._parse_filter_spec(filters.platform)
+
+    def __contains__(self, item: Any) -> bool:
+        return NotImplemented
+
+    def _apply_prefer_binary_mode(self, gem: dict[str, Any]) -> None:
+        if "ruby" in gem["platforms"] and len(gem["platforms"]) > 1:
+            gem["platforms"].remove("ruby")
+
+    def apply_platform_filters(self, gems: list[dict[str, Any]]) -> None:
+        """Update platforms for each gem based on the filter constraints."""
+        for gem in gems:
+            # all packages & all platforms
+            if self.packages is None and self.platform is None:
+                self._apply_prefer_binary_mode(gem)
+
+            # all packages & specific platforms
+            elif self.packages is None and self.platform is not None:
+                gem["platforms"] = sorted(self.platform)
+
+            # specific packages & all platforms
+            elif self.packages is not None and self.platform is None:
+                if gem["name"] in self.packages:
+                    self._apply_prefer_binary_mode(gem)
+                else:
+                    gem["platforms"] = ["ruby"]
+
+            # specific packages & specific platforms
+            elif self.packages is not None and self.platform is not None:
+                if gem["name"] in self.packages:
+                    gem["platforms"] = sorted(self.platform)
+                else:
+                    gem["platforms"] = ["ruby"]

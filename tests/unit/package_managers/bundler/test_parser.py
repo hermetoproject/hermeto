@@ -22,6 +22,7 @@ from hermeto.core.package_managers.bundler.parser import (
     GEMFILE,
     GEMFILE_LOCK,
     BundlerDependency,
+    GemsFilter,
     parse_lockfile,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -411,3 +412,98 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     assert some_message_contains_substring("Skipping binary dependency", caplog.messages)
 
     assert result == expected_deps
+
+
+class TestGemsFilter:
+    def test_init_with_all_filters(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages is None
+        assert gems_filter.platform is None
+
+    def test_init_with_specific_values(self) -> None:
+        filters = BundlerBinaryFilters(
+            packages="rails,rack",
+            platform="x86_64-linux,x86_64-darwin",
+        )
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages == {"rails", "rack"}
+        assert gems_filter.platform == {"x86_64-linux", "x86_64-darwin"}
+
+    def test_init_with_specific_values_and_all(self) -> None:
+        filters = BundlerBinaryFilters(
+            packages="rails,:all:,rack",
+            platform="x86_64-linux,:all:,x86_64-darwin",
+        )
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages is None
+        assert gems_filter.platform is None
+
+    def test_apply_platform_filters_all_packages_all_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "x86_64-linux"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-darwin", "x86_64-linux"]
+
+    def test_apply_platform_filters_all_packages_specific_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform="x86_64-linux,x86_64-darwin")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "i8080_cpm"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # the platform from the filter is a set that is applied to the gem platforms, so we need to
+        # sort the platforms to ignore the order
+        assert sorted(gems[0]["platforms"]) == sorted(["x86_64-linux", "x86_64-darwin"])
+        assert sorted(gems[1]["platforms"]) == sorted(["x86_64-linux", "x86_64-darwin"])
+
+    def test_apply_platform_filters_specific_packages_all_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages="rails,rack", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin"]},
+            {"name": "nokogiri", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # rails and rack should prefer binary (remove ruby)
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-darwin"]
+        # nokogiri should be ruby-only since it's not in the packages list
+        assert gems[2]["platforms"] == ["ruby"]
+
+    def test_apply_platform_filters_specific_packages_specific_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages="rails,rack", platform="x86_64-linux")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "i8080_cpm"]},
+            {"name": "nokogiri", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # rails and rack should use specific platform
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-linux"]
+        # nokogiri should be ruby-only since it's not in the packages list
+        assert gems[2]["platforms"] == ["ruby"]
