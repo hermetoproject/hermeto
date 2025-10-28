@@ -4,13 +4,14 @@ import logging
 import shutil
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from pybuild_deps import parsers
 
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.package_managers.cargo import fetch_cargo_source
+from hermeto.core.package_managers.pip.requirements import WHEEL_FILE_EXTENSION
 
 log = logging.getLogger(__name__)
 
@@ -72,16 +73,16 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
     for p in packages:
         # File name and package name may differ e.g. when there is a hyphen in
         # package name it might be replaced by an underscore in a file name.
-        package_path = p.get("path", "")
-        if not package_path:
+        package_path: Optional[Path] = p.get("path")
+        if package_path is None or package_path.suffix == WHEEL_FILE_EXTENSION:
             continue
 
-        filename = Path(Path(package_path).name)
+        filename = Path(package_path.name)
         extract_filter = "data" if filename.suffix != ".zip" else None
         while filename.suffix in (".zip", ".tar", ".gz", ".tgz"):
             filename = filename.with_suffix("")
 
-        pip_deps_dir = Path(package_path).parent
+        pip_deps_dir = package_path.parent
         extract_dir = pip_deps_dir / filename
         shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
 
