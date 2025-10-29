@@ -1312,7 +1312,10 @@ class ModuleVersionResolver:
         repo = git.Repo(repo_path)
         commit = repo.commit(repo.rev_parse("HEAD").hexsha)
         try:
-            repo.remote().fetch(force=True, tags=True)
+            # Do not run 'git fetch --tags' because that fetches pretty much everything from the
+            # remote. Save bandwidth and storage with an explicit refspec instead.
+            # See man 1 git-fetch for the authoritative answer.
+            repo.remote().fetch(refspec="+refs/tags/*:refs/tags/*", force=True)
         except Exception as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
