@@ -1336,6 +1336,10 @@ class ModuleVersionResolver:
         """
         Return all of the tags associated with the current commit.
 
+        Note that we cannot simply run 'git describe SHA' here because that always only returns a
+        single entry rather than multiple which may not be of the required semver format that we may
+        have to filter further!
+
         :param all_reachable: True to get all tags on the current commit and all commits preceding
                               it. False to get the tags on the current commit only.
         :return: a list of tag names
