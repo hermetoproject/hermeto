@@ -145,6 +145,15 @@ Run all the checks that your pull request will be subjected to:
 nox
 ```
 
+Cachi2 is a collaborative project and as such it needs to conform to a number
+of coding standards which cannot be enforced by linters alone. This is the
+reason for code reviews existence. The most important aspects are outlined in
+this document, those which are not explicitly outlined default to industry best
+practices. If a need to gain further insight into principles used when
+assessing a change arises please refer to supplementary
+[coding best practices](./docs/hacking/coding_best_practices.md).
+
+
 ### Pull request guidelines
 
 Observe the following guidelines when submitting a pull request for review
