@@ -1,5 +1,6 @@
 import enum
 import logging
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, Optional, TypeVar, Union
 
@@ -209,8 +210,36 @@ class PipBinaryFilters(BinaryModeOptions):
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
-    py_version: BinaryFilterStr = BINARY_FILTER_ALL
+    py_version: Optional[int] = None
     py_impl: BinaryFilterStr = "cp"
+    abi: BinaryFilterStr = BINARY_FILTER_ALL
+    platform: Optional[str] = None
+
+    @pydantic.model_validator(mode="after")
+    def _validate_platform_exclusivity(self) -> Self:
+        has_platform = self.platform is not None
+        has_custom_os = self.os != "linux"
+        has_custom_arch = self.arch != "x86_64"
+
+        if has_platform and (has_custom_os or has_custom_arch):
+            raise ValueError(
+                "Use either 'platform' (regex pattern) or 'os' with 'arch', but not both."
+            )
+
+        return self
+
+    @pydantic.field_validator("platform")
+    @classmethod
+    def _validate_platform(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+
+        try:
+            re.compile(value)
+        except re.error as e:
+            raise ValueError(f"Invalid platform regex: {value}") from e
+
+        return value
 
     @classmethod
     def with_allow_binary_behavior(cls) -> Self:
