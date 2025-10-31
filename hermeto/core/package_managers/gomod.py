@@ -476,10 +476,9 @@ class GoWork(UserDict):
         self._path = go_work_path
 
     @classmethod
-    def from_file(cls, go_work_path: RootedPath, go: Go, go_env: dict[str, Any]) -> "GoWork":
+    def from_file(cls, go_work_path: RootedPath, go: Go) -> "GoWork":
         """Instantiate GoWork from an absolute path to the go.work file."""
-        go_env["GOWORK"] = go_work_path.path
-        go_work_json = cls._get_go_work(go, {"env": go_env})
+        go_work_json = cls._get_go_work(go, {"env": {"GOWORK": go_work_path.path}})
         data = ParsedGoWork.model_validate_json(go_work_json).model_dump()
         return cls(go_work_path, data)
 
@@ -682,17 +681,6 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
 
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
-        tmp_dir_path = Path(tmp_dir.name)
-        go_env = {
-            "GOPATH": tmp_dir_path,
-            "GO111MODULE": "on",
-            "GOCACHE": tmp_dir_path,
-            "PATH": os.environ.get("PATH", ""),
-            "GOMODCACHE": f"{tmp_dir_path}/pkg/mod",
-            "GOSUMDB": "sum.golang.org",
-            "GOTOOLCHAIN": "auto",
-        }
-
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
             go_work: Optional[GoWork] = None
@@ -707,11 +695,11 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
             tmp_dir._go_instance = go
             if (go_work_path := _get_go_work_path(go, main_module_dir)) is not None:
-                go_work = GoWork.from_file(go_work_path, go, go_env=go_env)
+                go_work = GoWork.from_file(go_work_path, go)
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, tmp_dir_path, version_resolver, go, go_work, go_env
+                    main_module_dir, request, Path(tmp_dir.name), version_resolver, go, go_work
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -1027,7 +1015,6 @@ def _resolve_gomod(
     version_resolver: "ModuleVersionResolver",
     go: Go,
     go_work: Optional[GoWork],
-    go_env: dict[str, Any],
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
@@ -1046,19 +1033,33 @@ def _resolve_gomod(
 
     config = get_config()
 
-    if should_vendor := app_dir.join_within_root("vendor").path.is_dir():
+    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
+
+    if should_vendor:
         # Even though we do not perform a "go mod download" when vendoring is detected, some
         # go commands still download dependencies as a side effect. Since we don't want those
         # copied to the output dir, we need to set the GOMODCACHE to a different directory.
-        go_env["GOMODCACHE"] = f"{tmp_dir}/vendor-cache"
+        gomod_cache = f"{tmp_dir}/vendor-cache"
+    else:
+        gomod_cache = f"{tmp_dir}/pkg/mod"
+
+    env = {
+        "GOPATH": tmp_dir,
+        "GO111MODULE": "on",
+        "GOCACHE": tmp_dir,
+        "PATH": os.environ.get("PATH", ""),
+        "GOMODCACHE": gomod_cache,
+        "GOSUMDB": "sum.golang.org",
+        "GOTOOLCHAIN": "auto",
+    }
 
     if config.goproxy_url:
-        go_env["GOPROXY"] = config.goproxy_url
+        env["GOPROXY"] = config.goproxy_url
 
     if "cgo-disable" in request.flags:
-        go_env["CGO_ENABLED"] = "0"
+        env["CGO_ENABLED"] = "0"
 
-    run_params = {"env": go_env, "cwd": app_dir}
+    run_params = {"env": env, "cwd": app_dir}
 
     # Explicitly disable toolchain telemetry for go >= 1.23
     _disable_telemetry(go, run_params)

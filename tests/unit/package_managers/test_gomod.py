@@ -238,7 +238,7 @@ def test_resolve_gomod(
             get_mocked_data(data_dir, "workspaces/go.sum")
         )
         mock_get_go_work.return_value = go_work_path.path.read_text()
-        go_work = GoWork.from_file(go_work_path, go, {})
+        go_work = GoWork.from_file(go_work_path, go)
 
         # we need to mock _parse_packages queries to all workspace module directories
         for wsp in go_work.workspace_paths:
@@ -258,8 +258,10 @@ def test_resolve_gomod(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work, {}
+        module_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work
     )
+
+    assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/pkg/mod"
 
     # Assert that _parse_packages was called exactly once.
     # Assert that the module-parsing _go_list_deps call was called with the 'all' pattern. The
@@ -354,7 +356,7 @@ def test_resolve_gomod_vendor_dependencies(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None, {}
+        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None
     )
 
     assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
@@ -438,7 +440,7 @@ def test_resolve_gomod_no_deps(
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None, {}
+        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None
     )
     packages_list = list(packages)
 
@@ -479,7 +481,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     app_dir = gomod_request.source_dir
 
     with pytest.raises(PathOutsideRoot):
-        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, Go(), go_work, {})
+        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, Go(), go_work)
 
 
 @pytest.mark.parametrize(
@@ -757,7 +759,7 @@ def test_get_go_sum_files(
     mock_go = mock.Mock(spec=Go)
     mock_get_go_work.return_value = go_work_edit_json
     go_work_path = rooted_tmp_path.join_within_root("go.work")
-    files = _get_go_sum_files(GoWork.from_file(go_work_path, mock_go, {}))
+    files = _get_go_sum_files(GoWork.from_file(go_work_path, mock_go))
 
     expected_files = [rooted_tmp_path.join_within_root(p) for p in relative_file_paths]
     assert files == expected_files
@@ -1827,7 +1829,6 @@ def test_fetch_gomod_source(
         version_resolver: ModuleVersionResolver,
         go: Go,
         go_work: GoWork,
-        go_env: dict,
     ) -> ResolvedGoModule:
         # Find package output based on the path being processed
         return packages_output_by_path[
@@ -1858,15 +1859,6 @@ def test_fetch_gomod_source(
             mock_version_resolver.return_value,
             mock_go,
             None,
-            {
-                "GOPATH": mock_tmp_dir_path,
-                "GO111MODULE": "on",
-                "GOCACHE": mock_tmp_dir_path,
-                "PATH": os.environ.get("PATH", ""),
-                "GOMODCACHE": f"{mock_tmp_dir_path}/pkg/mod",
-                "GOSUMDB": "sum.golang.org",
-                "GOTOOLCHAIN": "auto",
-            },
         )
         for package in gomod_request.packages
     ]
@@ -2129,7 +2121,7 @@ def test_parse_packages(
     else:
         side_effects = []
         mock_get_go_work.return_value = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
-        go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go, {})
+        go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go)
 
         # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
         ws_paths = go_work.workspace_paths
@@ -2498,7 +2490,7 @@ class TestGoWork:
         go_work_data = ParsedGoWork.model_validate_json(
             get_mocked_data(data_dir, "workspaces/go_work.json")
         ).model_dump()
-        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
+        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go))
         assert go_work.rooted_path == go_work_path
         assert go_work.path == go_work_path.path
         assert go_work.data == go_work_data
@@ -2548,7 +2540,7 @@ class TestGoWork:
 
         expected = [go_work_path.path.parent / p for p in expected]
 
-        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go), {})
+        go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go))
         assert list(go_work.workspace_paths) == expected
         mock_get_go_work.assert_called_once()
 
