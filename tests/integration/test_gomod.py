@@ -268,6 +268,36 @@ def test_gomod_packages(
             [""],
             id="gomod_e2e_1.22_workspace_vendoring",
         ),
+        # This test case is about ordering of package subpaths
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/e2e-vendor-nonvendor-module-mix",
+                packages=(
+                    {"path": "vendored-module", "type": "gomod"},
+                    {"path": "non-vendored-module", "type": "gomod"},
+                ),
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            [],  # check using CMD defined in Dockerfile
+            [""],
+            id="gomod_e2e_vendor_nonvendor_module_mix_ordering_1",
+        ),
+        # This test case is about ordering of package subpaths
+        pytest.param(
+            utils.TestParameters(
+                branch="gomod/e2e-vendor-nonvendor-module-mix",
+                packages=(
+                    {"path": "non-vendored-module", "type": "gomod"},
+                    {"path": "vendored-module", "type": "gomod"},
+                ),
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            [],  # check using CMD defined in Dockerfile
+            [""],
+            id="gomod_e2e_vendor_nonvendor_module_mix_ordering_2",
+        ),
     ],
 )
 def test_e2e_gomod(

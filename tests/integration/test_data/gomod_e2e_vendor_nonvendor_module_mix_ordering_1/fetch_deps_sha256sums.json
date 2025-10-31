@@ -1,0 +1,8 @@
+{
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/list": "sha256:ff2e4b6f44b8dcf44c2cb561b5b968175eaace513d526b6effd1ce1ed9b29223",
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/v1.6.0.info": "sha256:3703c19d7d948a8bc5354b7e515d5297d3c5a8316958bcdd69eec2a7629513d7",
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/v1.6.0.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/v1.6.0.mod": "sha256:73da47b6338b00a082fd451aa35a3273d3adc09b8e9bba98dab01091e402af6e",
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/v1.6.0.zip": "sha256:d0f02f377217f42702e259684e06441edbf5140dddcc34ba9bea56038b38a6ed",
+  "gomod/pkg/mod/cache/download/github.com/google/uuid/@v/v1.6.0.ziphash": "sha256:da189739bfb89927b3fa0b5c332458bd197b639610db3fea6d51449a49094004"
+}
