@@ -1,10 +1,13 @@
 import json
 import logging
 import subprocess
+from itertools import chain
 from pathlib import Path
-from typing import Union
+from typing import Any, Optional, Union
 
+from hermeto.core.binary_filters import BinaryPackageFilter
 from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -26,7 +29,9 @@ BundlerDependency = Union[
 ParseResult = list[BundlerDependency]
 
 
-def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> ParseResult:
+def parse_lockfile(
+    package_dir: RootedPath, binary_filters: Optional[BundlerBinaryFilters] = None
+) -> ParseResult:
     """Parse a Gemfile.lock file and return a list of dependencies."""
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
@@ -49,32 +54,76 @@ def parse_lockfile(package_dir: RootedPath, allow_binary: bool = False) -> Parse
 
     bundler_version: str = json_output["bundler_version"]
     log.info("Package %s is bundled with version %s", package_dir.path.name, bundler_version)
-    dependencies: list[dict[str, str]] = json_output["dependencies"]
+    dependencies: list[dict[str, Any]] = json_output["dependencies"]
+
+    rubygems_deps = [dep for dep in dependencies if dep["type"] == "rubygems"]
+    other_deps = [dep for dep in dependencies if dep["type"] != "rubygems"]
+
+    if binary_filters is None:
+        log.warning("Binary filtering disabled: downloading all gems for pure 'ruby' platform")
+        _clean_gem_platforms(rubygems_deps)
+    else:
+        log.warning("Binary filtering enabled: downloading gems for allowed platforms")
+        GemsFilter(binary_filters).apply_platform_filters(rubygems_deps)
 
     result: ParseResult = []
-    for dep in dependencies:
+    for dep in chain(rubygems_deps, other_deps):
         if dep["type"] == "rubygems":
-            if dep["platform"] == "ruby":
-                result.append(GemDependency(**dep))
-            else:
-                full_name = "-".join([dep["name"], dep["version"], dep["platform"]])
-                log.info("Found a binary dependency %s", full_name)
-                if allow_binary:
-                    log.warning(
-                        "Will download binary dependency %s because 'allow_binary' is set to True",
-                        full_name,
-                    )
-                    result.append(GemPlatformSpecificDependency(**dep))
+            for platform in dep["platforms"]:
+                if platform == "ruby":
+                    result.append(GemDependency(**dep))
                 else:
-                    # No need to force a platform if we skip the packages.
-                    log.warning(
-                        "Skipping binary dependency %s because 'allow_binary' is set to False."
-                        " This will likely result in an unbuildable package.",
-                        full_name,
-                    )
+                    result.append(GemPlatformSpecificDependency(platform=platform, **dep))
+
         elif dep["type"] == "git":
             result.append(GitDependency(**dep))
         elif dep["type"] == "path":
             result.append(PathDependency(**dep, root=package_dir))
 
     return result
+
+
+def _clean_gem_platforms(gems: list[dict[str, Any]]) -> None:
+    for gem in gems:
+        gem["platforms"] = ["ruby"]
+
+
+class GemsFilter(BinaryPackageFilter):
+    """Filter gems based on the filter constraints."""
+
+    def __init__(self, filters: BundlerBinaryFilters) -> None:
+        """Initialize the filter."""
+        self.packages = self._parse_filter_spec(filters.packages)
+        self.platform = self._parse_filter_spec(filters.platform)
+
+    def __contains__(self, item: Any) -> bool:
+        return NotImplemented
+
+    def _prefer_binary(self, gem: dict[str, Any]) -> None:
+        if "ruby" in gem["platforms"] and len(gem["platforms"]) > 1:
+            gem["platforms"].remove("ruby")
+
+    def apply_platform_filters(self, gems: list[dict[str, Any]]) -> None:
+        """Update platforms for each gem based on the filter constraints."""
+        for gem in gems:
+            # all packages | all platforms
+            if self.packages is None and self.platform is None:
+                self._prefer_binary(gem)
+
+            # all packages | specific platforms
+            elif self.packages is None and self.platform is not None:
+                gem["platforms"] = list(self.platform)
+
+            # specific packages | all platforms
+            elif self.packages is not None and self.platform is None:
+                if gem["name"] in self.packages:
+                    self._prefer_binary(gem)
+                else:
+                    gem["platforms"] = ["ruby"]
+
+            # specific packages | specific platforms
+            elif self.packages is not None and self.platform is not None:
+                if gem["name"] in self.packages:
+                    gem["platforms"] = list(self.platform)
+                else:
+                    gem["platforms"] = ["ruby"]
