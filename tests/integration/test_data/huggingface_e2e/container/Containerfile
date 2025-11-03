@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install transformers
+RUN pip install transformers torch --no-cache-dir
+
+# Set HuggingFace cache to use hermeto output
+ENV HF_HUB_CACHE=/tmp/hermeto-output/deps/huggingface/hub
+ENV HF_DATASETS_CACHE=/tmp/hermeto-output/deps/huggingface/hub
+ENV HF_HUB_OFFLINE=1
+
+# Copy a simple test script
+RUN echo 'from transformers import AutoModel; model = AutoModel.from_pretrained("hf-internal-testing/tiny-random-gpt2", local_files_only=True); print("SUCCESS")' > test.py
+
+CMD ["python3", "test.py"]
