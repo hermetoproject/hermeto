@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import ssl
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import aiohttp
@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 def download_binary_file(
     url: str,
     download_path: StrPath,
-    auth: Optional[AuthBase] = None,
+    auth: AuthBase | None = None,
     insecure: bool = False,
     chunk_size: int = 8192,
 ) -> None:
@@ -59,8 +59,8 @@ async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
-    auth: Optional[aiohttp.BasicAuth] = None,
-    ssl_context: Optional[ssl.SSLContext] = None,
+    auth: aiohttp.BasicAuth | None = None,
+    ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
 ) -> None:
     """
@@ -102,7 +102,7 @@ async def _async_download_binary_file(
 async def async_download_files(
     files_to_download: dict[str, StrPath],
     concurrency_limit: int,
-    ssl_context: Optional[ssl.SSLContext] = None,
+    ssl_context: ssl.SSLContext | None = None,
 ) -> None:
     """Asynchronous function to download files.
 

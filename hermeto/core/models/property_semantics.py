@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pydantic
 
@@ -40,7 +40,7 @@ class PropertySet:
     """Represents the semantic meaning of the set of Properties of a single Component."""
 
     bundler_package_binary: bool = False
-    found_by: Optional[str] = None
+    found_by: str | None = None
     missing_hash_in_file: frozenset[str] = field(default_factory=frozenset)
     npm_bundled: bool = False
     npm_development: bool = False

@@ -5,11 +5,11 @@ import logging
 import os
 import re
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Callable, Optional, Union
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -48,7 +48,7 @@ def tmp_cwd(tmp_path: Path) -> Iterator[Path]:
 
 @contextmanager
 def mock_fetch_deps(
-    expect_request: Optional[Request] = None, output: Optional[RequestOutput] = None
+    expect_request: Request | None = None, output: RequestOutput | None = None
 ) -> Iterator[mock.MagicMock]:
     output = output or RequestOutput.empty()
 
@@ -74,7 +74,7 @@ def invoke_expecting_invalid_usage(app: typer.Typer, args: list[str]) -> typer.t
     return result
 
 
-def assert_pattern_in_output(pattern: Union[str, re.Pattern], output: str) -> None:
+def assert_pattern_in_output(pattern: str | re.Pattern, output: str) -> None:
     if isinstance(pattern, re.Pattern):
         match = bool(pattern.search(output))
     else:
@@ -832,7 +832,7 @@ class TestGenerateEnv:
         self,
         extra_args: list[str],
         make_output: Callable[[Path], str],
-        output_file: Optional[str],
+        output_file: str | None,
         use_relative_path: bool,
         tmp_cwd_as_output_dir: Path,
     ) -> None:
@@ -927,7 +927,7 @@ class TestInjectFiles:
     @pytest.mark.parametrize("for_output_dir", [None, "/hermeto/output"])
     def test_inject_files(
         self,
-        for_output_dir: Optional[str],
+        for_output_dir: str | None,
         tmp_cwd_as_output_dir: Path,
         caplog: pytest.LogCaptureFixture,
     ) -> None:

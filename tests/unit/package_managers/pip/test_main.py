@@ -4,7 +4,7 @@ from collections.abc import Collection
 from copy import deepcopy
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 from unittest import mock
 from urllib.parse import urlparse
 
@@ -79,9 +79,7 @@ def mock_requirement(
     )
 
 
-def mock_requirements_file(
-    requirements: Optional[list] = None, options: Optional[list] = None
-) -> Any:
+def mock_requirements_file(requirements: list | None = None, options: list | None = None) -> Any:
     """Mock a requirements.txt file."""
     return mock.Mock(requirements=requirements or [], options=options or [])
 
@@ -448,7 +446,7 @@ class TestDownload:
         ],
     )
     def test_url_dep_invalid_hash_count(
-        self, hashes: list[str], cachito_hash: Optional[str], total: int
+        self, hashes: list[str], cachito_hash: str | None, total: int
     ) -> None:
         """Test that if URL requirement specifies 0 or more than 1 hash, validation fails."""
         if cachito_hash:
@@ -571,8 +569,8 @@ class TestDownload:
         mock_must_match_any_checksum: mock.Mock,
         mock_process_package_distributions: mock.Mock,
         missing_req_file_checksum: bool,
-        index_url: Optional[str],
-        binary_filters: Optional[PipBinaryFilters],
+        index_url: str | None,
+        binary_filters: PipBinaryFilters | None,
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -1287,7 +1285,7 @@ def test_metadata_check_invalid_argument() -> None:
     ],
 )
 def test_replace_external_requirements(
-    original_content: str, expect_replaced: Optional[str], rooted_tmp_path: RootedPath
+    original_content: str, expect_replaced: str | None, rooted_tmp_path: RootedPath
 ) -> None:
     requirements_file = rooted_tmp_path.join_within_root("requirements.txt")
     requirements_file.path.write_text(original_content)

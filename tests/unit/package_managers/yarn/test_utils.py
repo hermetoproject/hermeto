@@ -1,6 +1,5 @@
 import os
 from subprocess import CalledProcessError
-from typing import Optional
 from unittest import mock
 
 import pytest
@@ -21,7 +20,7 @@ from hermeto.core.rooted_path import RootedPath
 @mock.patch("hermeto.core.package_managers.yarn.utils.run_cmd")
 def test_run_yarn_cmd(
     mock_run_cmd: mock.Mock,
-    env: Optional[dict[str, str]],
+    env: dict[str, str] | None,
     expect_path: str,
     rooted_tmp_path: RootedPath,
 ) -> None:

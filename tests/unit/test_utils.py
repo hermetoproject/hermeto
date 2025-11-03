@@ -3,7 +3,6 @@ import io
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 from unittest import mock
 
 import pytest
@@ -41,8 +40,8 @@ from hermeto.core.utils import (
 def test_run_cmd_logs_stdouterr_on_failure(
     mock_shutil_which: mock.Mock,
     mock_subprocess_run: mock.Mock,
-    stdout: Optional[str],
-    stderr: Optional[str],
+    stdout: str | None,
+    stderr: str | None,
     expect_logs: list[str],
     caplog: pytest.LogCaptureFixture,
 ) -> None:

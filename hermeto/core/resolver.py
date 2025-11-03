@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Callable
+from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.models.input import PackageManagerType, Request

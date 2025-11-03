@@ -1,7 +1,7 @@
 import ssl
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -94,8 +94,8 @@ arches:
 def test_fetch_rpm_source(
     mock_resolve_rpm_project: mock.Mock,
     mock_from_obj_list: mock.Mock,
-    model_input: Union[mock.Mock, RpmPackageInput, list[RpmPackageInput]],
-    result_options: Optional[dict[str, dict[str, Any]]],
+    model_input: mock.Mock | RpmPackageInput | list[RpmPackageInput],
+    result_options: dict[str, dict[str, Any]] | None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     def _has_multiple_options(rpm_models: list[RpmPackageInput]) -> bool:
@@ -427,7 +427,7 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
     ],
 )
 def test_generate_repofiles(
-    rooted_tmp_path: RootedPath, expected_repofile: str, options: Optional[dict[str, Any]]
+    rooted_tmp_path: RootedPath, expected_repofile: str, options: dict[str, Any] | None
 ) -> None:
     package_dir = rooted_tmp_path.join_within_root(DEFAULT_PACKAGE_DIR)
     arch_dir = Path(package_dir.path, "x86_64")
@@ -676,7 +676,7 @@ class TestRepofile:
         ],
     )
     def test_empty(
-        self, data: dict[str, Any], defaults: Optional[dict[str, Any]], expected: bool
+        self, data: dict[str, Any], defaults: dict[str, Any] | None, expected: bool
     ) -> None:
         actual = _Repofile(defaults)
         actual.read_dict(data)
@@ -703,7 +703,7 @@ class TestRepofile:
         ],
     )
     def test_apply_defaults(
-        self, data: dict[str, Any], defaults: Optional[dict[str, Any]], expected: dict[str, Any]
+        self, data: dict[str, Any], defaults: dict[str, Any] | None, expected: dict[str, Any]
     ) -> None:
         expected_r = _Repofile()
         expected_r.read_dict(expected)

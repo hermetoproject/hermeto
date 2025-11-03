@@ -12,7 +12,7 @@ from functools import cache, cached_property, total_ordering
 from itertools import chain
 from pathlib import Path
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 
 import git
 import pydantic
@@ -76,7 +76,7 @@ class ParsedModule(_ParsedModel):
     """
 
     path: str
-    version: Optional[str] = None
+    version: str | None = None
     main: bool = False
     replace: Optional["ParsedModule"] = None
 
@@ -90,7 +90,7 @@ class ParsedPackage(_ParsedModel):
 
     import_path: str
     standard: bool = False
-    module: Optional[ParsedModule] = None
+    module: ParsedModule | None = None
 
 
 class _GoWorkUseStruct(_ParsedModel):
@@ -103,8 +103,8 @@ class ParsedGoWork(_ParsedModel):
     See: go work help edit
     """
 
-    go: Optional[str] = None
-    toolchain: Optional[str] = None
+    go: str | None = None
+    toolchain: str | None = None
     use: list[_GoWorkUseStruct] = []
 
 
@@ -134,7 +134,7 @@ class Module(NamedTuple):
     real_path: str
     version: str
     main: bool = False
-    missing_hash_in_file: Optional[Path] = None
+    missing_hash_in_file: Path | None = None
 
     @property
     def purl(self) -> str:
@@ -169,7 +169,7 @@ class Package(NamedTuple):
     module: parent module for this package
     """
 
-    relative_path: Optional[str]
+    relative_path: str | None
     module: Module
 
     @property
@@ -315,7 +315,7 @@ class Go:
 
         object.__setattr__(self, "binary", resolved)
 
-    def __call__(self, cmd: list[str], params: Optional[dict] = None, retry: bool = False) -> str:
+    def __call__(self, cmd: list[str], params: dict | None = None, retry: bool = False) -> str:
         """Run a Go command using the underlying toolchain, same as running GoToolchain()().
 
         :param cmd: Go CLI options
@@ -544,7 +544,7 @@ def _create_modules_from_parsed_data(
     parsed_modules: Iterable[ParsedModule],
     modules_in_go_sum: frozenset[ModuleID],
     version_resolver: "ModuleVersionResolver",
-    go_work: Optional[GoWork],
+    go_work: GoWork | None,
 ) -> list[Module]:
     def _create_module(module: ParsedModule) -> Module:
         mod_id = _get_module_id(module)
@@ -594,11 +594,11 @@ def _create_modules_from_parsed_data(
 
 def _create_packages_from_parsed_data(
     modules: list[Module], parsed_packages: Iterable[ParsedPackage]
-) -> list[Union[Package, StandardPackage]]:
+) -> list[Package | StandardPackage]:
     # in case of replacements, the packages still refer to their parent module by its original name
     indexed_modules = {module.original_name: module for module in modules}
 
-    def _create_package(package: ParsedPackage) -> Union[Package, StandardPackage]:
+    def _create_package(package: ParsedPackage) -> Package | StandardPackage:
         if package.standard:
             return StandardPackage(name=package.import_path)
 
@@ -635,14 +635,14 @@ def _create_packages_from_parsed_data(
     return [_create_package(package) for package in parsed_packages]
 
 
-def _clean_go_modcache(go: Go, dir_: Optional[StrPath]) -> None:
+def _clean_go_modcache(go: Go, dir_: StrPath | None) -> None:
     # It's easier to mock a helper when testing a huge function than individual object instances
     if dir_ is not None:
         go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
 
 
 def _list_toolchain_files(dir_path: str, files: list[str]) -> list[str]:
-    def is_a_toolchain_path(path: Union[str, os.PathLike[str]]) -> bool:
+    def is_a_toolchain_path(path: str | os.PathLike[str]) -> bool:
         # Go automatically downloads toolchains to paths like:
         #   - pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.21.5.*
         #   - pkg/mod/cache/download/sumdb/sum.golang.org/lookup/golang.org/toolchain@v0.0.1-go1.21.5.*
@@ -693,7 +693,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
         for subpath in subpaths:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
-            go_work: Optional[GoWork] = None
+            go_work: GoWork | None = None
 
             main_module_dir = request.source_dir.join_within_root(subpath)
             go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
@@ -799,7 +799,7 @@ def _get_repository_name(source_dir: RootedPath) -> str:
 
 
 # NOTE: get rid of this go.mod parser once we can assume Go > 1.21 (1.20 can't parse micro release)
-def _get_gomod_version(go_mod_file: RootedPath) -> tuple[Optional[str], Optional[str]]:
+def _get_gomod_version(go_mod_file: RootedPath) -> tuple[str | None, str | None]:
     """Return the required/recommended version of Go from go.mod.
 
     We need to extract the desired version of Go ourselves as older versions of Go might fail
@@ -852,7 +852,7 @@ def _protect_against_symlinks(app_dir: RootedPath) -> None:
         that leads outside the source directory
     """
 
-    def check_potential_symlink(relative_path: Union[str, Path]) -> None:
+    def check_potential_symlink(relative_path: str | Path) -> None:
         app_dir.join_within_root(relative_path)
 
     # we purposefully skip checking go.work here because it is being checked elsewhere
@@ -887,7 +887,7 @@ def _find_missing_gomod_files(source_path: RootedPath, subpaths: list[str]) -> l
     return invalid_gomod_files
 
 
-def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Optional[Go]:
+def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Go | None:
     """
     Pick the closest matching installed toolchain give a go.mod file.
 
@@ -972,7 +972,7 @@ def _disable_telemetry(go: Go, run_params: dict[str, Any]) -> None:
 
 
 def _go_list_deps(
-    go: Go, pattern: Literal["./...", "all"], run_params: Optional[dict[str, Any]] = None
+    go: Go, pattern: Literal["./...", "all"], run_params: dict[str, Any] | None = None
 ) -> Iterator[ParsedPackage]:
     """Run go list -deps -json and return the parsed list of packages.
 
@@ -989,7 +989,7 @@ def _go_list_deps(
 
 
 def _parse_packages(
-    go_work: Optional[GoWork], go: Go, run_params: dict[str, Any]
+    go_work: GoWork | None, go: Go, run_params: dict[str, Any]
 ) -> Iterator[ParsedPackage]:
     """Return all Go packages for the project.
 
@@ -1025,7 +1025,7 @@ def _resolve_gomod(
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
     go: Go,
-    go_work: Optional[GoWork],
+    go_work: GoWork | None,
 ) -> ResolvedGoModule:
     """
     Resolve and fetch gomod dependencies for given app source archive.
@@ -1107,7 +1107,7 @@ def _resolve_gomod(
 
 
 def _parse_local_modules(
-    go_work: Optional[GoWork],
+    go_work: GoWork | None,
     go: Go,
     run_params: dict[str, Any],
     app_dir: RootedPath,
@@ -1278,7 +1278,7 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
         """
         super().__init__(*args, **kwargs)
         # store the exact toolchain instance that was used for all actions within the context
-        self._go_instance: Optional[Go] = None
+        self._go_instance: Go | None = None
 
     def __enter__(self) -> "Self":
         super().__enter__()
@@ -1286,9 +1286,9 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
 
     def __exit__(
         self,
-        exc: Optional[type[BaseException]],
-        value: Optional[BaseException],
-        tb: Optional[TracebackType],
+        exc: type[BaseException] | None,
+        value: BaseException | None,
+        tb: TracebackType | None,
     ) -> None:
         """Clean up the temporary directory by first cleaning up the Go cache."""
         try:
@@ -1421,8 +1421,8 @@ class ModuleVersionResolver:
         )
 
     def _get_highest_semver_tag_on_current_commit(
-        self, major_versions_to_try: tuple[int, ...], subpath: Optional[str]
-    ) -> Optional[str]:
+        self, major_versions_to_try: tuple[int, ...], subpath: str | None
+    ) -> str | None:
         """Return the highest semver tag on the current commit."""
         for major_version in major_versions_to_try:
             # Get the highest semantic version tag on the commit with a matching major version
@@ -1444,8 +1444,8 @@ class ModuleVersionResolver:
         return None
 
     def _get_highest_reachable_semver_tag(
-        self, major_versions_to_try: tuple[int, ...], subpath: Optional[str]
-    ) -> Optional[str]:
+        self, major_versions_to_try: tuple[int, ...], subpath: str | None
+    ) -> str | None:
         """Return the pseudo-version using the highest reachable semver tag as a base."""
         # This logic is based on:
         # https://github.com/golang/go/blob/a23f9afd9899160b525dbc10d01045d9a3f072a0/src/cmd/go/internal/modfetch/coderepo.go#L511-L521
@@ -1476,8 +1476,8 @@ class ModuleVersionResolver:
         self,
         major_version: int,
         all_reachable: bool = False,
-        subpath: Optional[str] = None,
-    ) -> Optional[git.Tag]:
+        subpath: str | None = None,
+    ) -> git.Tag | None:
         """
         Get the highest semantic version tag related to the input commit.
 
@@ -1495,7 +1495,7 @@ class ModuleVersionResolver:
         filtered_tags = [tag_name for tag_name in tag_names if tag_name.startswith(prefix)]
 
         not_semver_tag_msg = "%s is not a semantic version tag"
-        highest: Optional[dict[str, Any]] = None
+        highest: dict[str, Any] | None = None
 
         for tag_name in filtered_tags:
             try:
@@ -1519,9 +1519,9 @@ class ModuleVersionResolver:
 
     def _get_golang_pseudo_version(
         self,
-        tag: Optional[git.Tag] = None,
-        module_major_version: Optional[int] = None,
-        subpath: Optional[str] = None,
+        tag: git.Tag | None = None,
+        module_major_version: int | None = None,
+        subpath: str | None = None,
     ) -> str:
         """
         Get the Go module's pseudo-version when a non-version commit is used.
@@ -1566,7 +1566,7 @@ class ModuleVersionResolver:
 
     @staticmethod
     def _get_semantic_version_from_tag(
-        tag_name: str, subpath: Optional[str] = None
+        tag_name: str, subpath: str | None = None
     ) -> semver.version.Version:
         """
         Parse a version tag to a semantic version.
@@ -1781,7 +1781,7 @@ def _list_installed_toolchains() -> set[Go]:
     return ret
 
 
-def _get_go_work_path(go: Go, app_dir: RootedPath) -> Optional[RootedPath]:
+def _get_go_work_path(go: Go, app_dir: RootedPath) -> RootedPath | None:
     go_work_file = go(["env", "GOWORK"], {"cwd": app_dir}).strip()
 
     # workspaces can be disabled explicitly with GOWORK=off

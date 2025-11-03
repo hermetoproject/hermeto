@@ -1,6 +1,6 @@
 import re
 from textwrap import dedent
-from typing import Any, Union
+from typing import Any
 
 import pytest
 
@@ -623,7 +623,7 @@ class TestPipRequirementsFile:
         ),
     )
     def test_parsing_of_invalid_cases(
-        self, file_contents: str, expected_error: Union[str, Exception], rooted_tmp_path: RootedPath
+        self, file_contents: str, expected_error: str | Exception, rooted_tmp_path: RootedPath
     ) -> None:
         """Test the invalid use cases of requirements in a requirements file."""
         requirements_file = rooted_tmp_path.join_within_root("requirements.txt")
@@ -1020,7 +1020,7 @@ class TestPipRequirementsFile:
         self,
         requirement_line: str,
         requirement_options: list[str],
-        new_values: Union[dict[str, str], dict[str, list[str]]],
+        new_values: dict[str, str] | dict[str, list[str]],
         expected_changes: dict[str, str],
     ) -> None:
         """Test PipRequirement.copy method."""

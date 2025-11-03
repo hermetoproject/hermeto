@@ -15,14 +15,14 @@ import functools
 import logging
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, TypeGuard
 
 import tomlkit
 import tomlkit.exceptions
 from packaging.utils import canonicalize_version
-from typing_extensions import TypeGuard
 
 from hermeto.core.errors import PackageRejected
 from hermeto.core.rooted_path import RootedPath
@@ -50,7 +50,7 @@ def _any_to_version(obj: Any) -> str:
 
 
 def _get_top_level_attr(
-    body: list[ast.stmt], attr_name: str, before_line: Optional[int] = None
+    body: list[ast.stmt], attr_name: str, before_line: int | None = None
 ) -> Any:
     """
     Get attribute from module if it is defined at top level and assigned to a literal expression.
@@ -105,11 +105,11 @@ class SetupFile(ABC):
         return self._setup_file.path.is_file()
 
     @abstractmethod
-    def get_name(self) -> Optional[str]:
+    def get_name(self) -> str | None:
         """Attempt to determine the package name. Should only be called if file exists."""
 
     @abstractmethod
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         """Attempt to determine the package version. Should only be called if file exists."""
 
 
@@ -124,7 +124,7 @@ class PyProjectTOML(SetupFile):
         """
         super().__init__(top_dir, "pyproject.toml")
 
-    def get_name(self) -> Optional[str]:
+    def get_name(self) -> str | None:
         """Get project name if present."""
         try:
             return self._parsed_toml["project"]["name"]
@@ -132,7 +132,7 @@ class PyProjectTOML(SetupFile):
             log.warning("No project.name in pyproject.toml")
             return None
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         """Get project version if present."""
         try:
             return self._parsed_toml["project"]["version"]
@@ -169,7 +169,7 @@ class SetupCFG(SetupFile):
         """
         super().__init__(top_dir, "setup.cfg")
 
-    def get_name(self) -> Optional[str]:
+    def get_name(self) -> str | None:
         """Get metadata.name if present."""
         name = self._get_option("metadata", "name")
         if not name:
@@ -179,7 +179,7 @@ class SetupCFG(SetupFile):
         log.info("Found metadata.name in setup.cfg: %r", name)
         return name
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         """
         Get metadata.version if present.
 
@@ -206,7 +206,7 @@ class SetupCFG(SetupFile):
         return version
 
     @functools.cached_property
-    def _parsed(self) -> Optional[configparser.ConfigParser]:
+    def _parsed(self) -> configparser.ConfigParser | None:
         """
         Try to parse config file, return None if parsing failed.
 
@@ -223,7 +223,7 @@ class SetupCFG(SetupFile):
                 log.error("Failed to parse setup.cfg: %s", e)
                 return None
 
-    def _get_option(self, section: str, option: str) -> Optional[str]:
+    def _get_option(self, section: str, option: str) -> str | None:
         """Get option from config section, return None if option missing or file invalid."""
         if self._parsed is None:
             return None
@@ -232,7 +232,7 @@ class SetupCFG(SetupFile):
         except (configparser.NoSectionError, configparser.NoOptionError):
             return None
 
-    def _resolve_version(self, raw_version: str) -> Optional[str]:
+    def _resolve_version(self, raw_version: str) -> str | None:
         """Attempt to resolve the version attribute."""
         if raw_version.startswith("file:"):
             file_arg = raw_version[len("file:") :].strip()
@@ -244,7 +244,7 @@ class SetupCFG(SetupFile):
             version = raw_version
         return version
 
-    def _read_version_from_file(self, file_path: str) -> Optional[str]:
+    def _read_version_from_file(self, file_path: str) -> str | None:
         """Read version from file."""
         version_file = self._top_dir.join_within_root(file_path)
         if version_file.path.is_file():
@@ -255,7 +255,7 @@ class SetupCFG(SetupFile):
             log.error("Version file %r does not exist or is not a file", file_path)
             return None
 
-    def _read_version_from_attr(self, attr_spec: str) -> Optional[str]:
+    def _read_version_from_attr(self, attr_spec: str) -> str | None:
         """
         Read version from module attribute.
 
@@ -296,8 +296,8 @@ class SetupCFG(SetupFile):
             return None
 
     def _find_module(
-        self, module_name: str, package_dir: Optional[dict[str, str]] = None
-    ) -> Optional[RootedPath]:
+        self, module_name: str, package_dir: dict[str, str] | None = None
+    ) -> RootedPath | None:
         """
         Try to find a module in the project directory and return path to source file.
 
@@ -343,7 +343,7 @@ class SetupCFG(SetupFile):
             )
         return Path(*parts)
 
-    def _get_package_dirs(self) -> Optional[dict[str, str]]:
+    def _get_package_dirs(self) -> dict[str, str] | None:
         """
         Get options.package_dir and convert to dict if present.
 
@@ -377,7 +377,7 @@ class ASTPathElement:
 
     node: ast.AST
     attr: str  # Child node is (in) this field
-    index: Optional[int] = None  # If field is a list, this is the index of the child node
+    index: int | None = None  # If field is a list, this is the index of the child node
 
     @property
     def field(self) -> Any:
@@ -467,7 +467,7 @@ class SetupPY(SetupFile):
         """
         super().__init__(top_dir, "setup.py")
 
-    def get_name(self) -> Optional[str]:
+    def get_name(self) -> str | None:
         """Attempt to extract package name from setup.py."""
         name = self._get_setup_kwarg("name")
         if not name or not isinstance(name, str):
@@ -479,7 +479,7 @@ class SetupPY(SetupFile):
         log.info("Found name in setup.py: %r", name)
         return name
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         """
         Attempt to extract package version from setup.py.
 
@@ -505,7 +505,7 @@ class SetupPY(SetupFile):
         return version
 
     @functools.cached_property
-    def _ast(self) -> Optional[ast.AST]:
+    def _ast(self) -> ast.AST | None:
         """Try to parse the AST."""
         log.debug("Parsing setup.py at %r", str(self._setup_file))
         try:
@@ -515,7 +515,7 @@ class SetupPY(SetupFile):
             return None
 
     @functools.cached_property
-    def _setup_branch(self) -> Optional[SetupBranch]:
+    def _setup_branch(self) -> SetupBranch | None:
         """
         Find setup() call anywhere in the file, return setup branch.
 
@@ -539,9 +539,7 @@ class SetupPY(SetupFile):
         log.debug("Pseudo-path: %s", path_repr)
         return SetupBranch(setup_call, setup_path)
 
-    def _find_setup_call(
-        self, root_node: ast.AST
-    ) -> tuple[Optional[ast.Call], list[ASTPathElement]]:
+    def _find_setup_call(self, root_node: ast.AST) -> tuple[ast.Call | None, list[ASTPathElement]]:
         """
         Find setup() or setuptools.setup() call anywhere in or under root_node.
 
@@ -580,7 +578,7 @@ class SetupPY(SetupFile):
             and fn.value.id == "setuptools"
         )
 
-    def _get_setup_kwarg(self, arg_name: str) -> Optional[Any]:
+    def _get_setup_kwarg(self, arg_name: str) -> Any | None:
         """
         Find setup() call, extract specified argument from keyword arguments.
 
@@ -635,7 +633,7 @@ class SetupPY(SetupFile):
 
     def _get_variable(
         self, var_name: str, call_node: ast.Call, path_to_call_node: list[ASTPathElement]
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Walk back up the AST along setup branch, look for first assignment of variable."""
         lineno = call_node.lineno
 

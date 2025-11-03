@@ -8,7 +8,7 @@ from collections.abc import Iterable
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Union
 from urllib.parse import urlparse
 
 import pydantic
@@ -61,13 +61,13 @@ class Component(pydantic.BaseModel):
 
     name: str
     purl: str
-    version: Optional[str] = None
+    version: str | None = None
     properties: list[Property] = pydantic.Field(default_factory=list, validate_default=True)
     type: Literal["library", "file"] = "library"
-    external_references: Optional[list[ExternalReference]] = pydantic.Field(
+    external_references: list[ExternalReference] | None = pydantic.Field(
         serialization_alias="externalReferences", default=None
     )
-    pedigree: Optional[Pedigree] = None
+    pedigree: Pedigree | None = None
 
     def key(self) -> str:
         """Uniquely identifies a package.
@@ -330,7 +330,7 @@ SPDXPackageExternalRefSecurityType = Annotated[
 
 
 SPDXPackageExternalRefType = Annotated[
-    Union[SPDXPackageExternalRefPackageManagerType, SPDXPackageExternalRefSecurityType],
+    SPDXPackageExternalRefPackageManagerType | SPDXPackageExternalRefSecurityType,
     pydantic.Field(discriminator="referenceCategory"),
 ]
 
@@ -368,9 +368,9 @@ class SPDXPackage(pydantic.BaseModel):
     https://spdx.github.io/spdx-spec/v2.3/package-information/
     """
 
-    SPDXID: Optional[str] = None
+    SPDXID: str | None = None
     name: str
-    versionInfo: Optional[str] = None
+    versionInfo: str | None = None
     externalRefs: list[SPDXPackageExternalRefType] = []
     annotations: list[SPDXPackageAnnotation] = []
     downloadLocation: str = "NOASSERTION"
@@ -460,7 +460,7 @@ class SPDXRelation(pydantic.BaseModel):
     """
 
     spdxElementId: str
-    comment: Optional[str] = None
+    comment: str | None = None
     relatedSpdxElement: str
     relationshipType: str
 

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import pydantic
@@ -36,7 +36,7 @@ from hermeto.core.package_managers.yarn.locators import (
     WorkspaceLocator,
     parse_locator,
 )
-from hermeto.core.package_managers.yarn.project import Optional, Project
+from hermeto.core.package_managers.yarn.project import Project
 from hermeto.core.package_managers.yarn.utils import extract_yarn_version_from_env, run_yarn_cmd
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -82,16 +82,16 @@ class Package:
     """
 
     raw_locator: str
-    version: Optional[str]
-    checksum: Optional[str]
-    cache_path: Optional[str]
+    version: str | None
+    checksum: str | None
+    cache_path: str | None
 
     @classmethod
     def from_info_string(cls, info: str) -> "Package":
         """Create a Package from the output of yarn info."""
         entry = _YarnInfoEntry.model_validate_json(info)
         locator = entry.value
-        version: Optional[str] = entry.children.version
+        version: str | None = entry.children.version
         if version == "0.0.0-use.local":
             version = None
 
@@ -110,8 +110,8 @@ class Package:
 
 
 class _YarnInfoCache(pydantic.BaseModel):
-    checksum: Optional[str] = pydantic.Field(alias="Checksum")
-    path: Optional[str] = pydantic.Field(alias="Path")
+    checksum: str | None = pydantic.Field(alias="Checksum")
+    path: str | None = pydantic.Field(alias="Path")
 
 
 class _YarnInfoChildren(pydantic.BaseModel):
@@ -202,8 +202,8 @@ class _ResolvedPackage:
 
     locator: Locator
     name: str
-    version: Optional[str]
-    checksum: Optional[str]
+    version: str | None
+    checksum: str | None
 
 
 class _CouldNotResolve(ValueError):
@@ -243,7 +243,7 @@ class _ComponentResolver:
         return dict(pedigree_mapping)
 
     def _get_patch_url(
-        self, patch_locator: PatchLocator, patch: Union[Path, str], yarn_version: Version
+        self, patch_locator: PatchLocator, patch: Path | str, yarn_version: Version
     ) -> str:
         if isinstance(patch, Path):
             return self._get_path_patch_url(patch_locator, patch)
@@ -426,14 +426,12 @@ class _ComponentResolver:
 
         return name
 
-    def _scoped_name(self, locator: Union[NpmLocator, WorkspaceLocator, LinkLocator]) -> str:
+    def _scoped_name(self, locator: NpmLocator | WorkspaceLocator | LinkLocator) -> str:
         if locator.scope:
             return f"@{locator.scope}/{locator.name}"
         return locator.name
 
-    def _read_name_version_from_packjson(
-        self, packjson_path: RootedPath
-    ) -> tuple[str, Optional[str]]:
+    def _read_name_version_from_packjson(self, packjson_path: RootedPath) -> tuple[str, str | None]:
         try:
             packjson = json.loads(packjson_path.path.read_text())
         except FileNotFoundError as e:
@@ -446,7 +444,7 @@ class _ComponentResolver:
 
         return name, packjson.get("version")
 
-    def _project_subpath(self, *parts: Union[str, Path]) -> RootedPath:
+    def _project_subpath(self, *parts: str | Path) -> RootedPath:
         return self._project.source_dir.join_within_root(*parts)
 
     def _cache_path_as_rooted(self, cache_path: str) -> RootedPath:

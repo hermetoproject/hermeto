@@ -8,7 +8,7 @@ from configparser import ConfigParser
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
-from typing import Any, Optional, Union, no_type_check
+from typing import Any, no_type_check
 
 import yaml
 from packageurl import PackageURL
@@ -45,17 +45,17 @@ class Package:
     release: str
     arch: str
     download_url: str
-    epoch: Optional[str] = None
-    vendor: Optional[str] = None
-    checksum: Optional[str] = None
-    repository_id: Optional[str] = None
-    summary: Optional[str] = None
-    modularity_label: Optional[str] = None
+    epoch: str | None = None
+    vendor: str | None = None
+    checksum: str | None = None
+    repository_id: str | None = None
+    summary: str | None = None
+    modularity_label: str | None = None
 
     @classmethod
     def from_filepath(cls, rpm_filepath: Path, rpm_download_metadata: dict[str, Any]) -> "Package":
         """Instantiate a package dataclass instance from a download RPM file path."""
-        kwargs: dict[str, Optional[str]] = {}
+        kwargs: dict[str, str | None] = {}
         kwargs.update(cls._query_rpm_fields(rpm_filepath))
 
         repoid = rpm_download_metadata.get("repoid")
@@ -262,9 +262,9 @@ def fetch_rpm_source(request: Request) -> RequestOutput:
 def _resolve_rpm_project(
     source_dir: RootedPath,
     output_dir: RootedPath,
-    options: Optional[ExtraOptions] = None,
+    options: ExtraOptions | None = None,
     include_summary_in_sbom: bool = False,
-    binary_filter: Optional[RpmBinaryFilters] = None,
+    binary_filter: RpmBinaryFilters | None = None,
 ) -> list[Component]:
     """
     Process a request for a single RPM source directory.
@@ -319,8 +319,8 @@ def _resolve_rpm_project(
 def _download(
     lockfile: RedhatRpmsLock,
     output_dir: Path,
-    ssl_options: Optional[SSLOptions] = None,
-    binary_filter: Optional[RpmBinaryFilters] = None,
+    ssl_options: SSLOptions | None = None,
+    binary_filter: RpmBinaryFilters | None = None,
 ) -> dict[Path, Any]:
     """
     Download packages and module metadata mentioned in the lockfile.
@@ -337,7 +337,7 @@ def _download(
     for arch in arches_to_process:
         log.info(f"Downloading files for '{arch.arch}' architecture.")
         # files per URL for downloading packages & sources
-        files: dict[str, Union[str, PathLike[str]]] = {}
+        files: dict[str, str | PathLike[str]] = {}
         rpm_iterator = zip(itertools.repeat("rpm"), arch.packages)
         srpm_iterator = zip(itertools.repeat("srpm"), arch.source)
         mmd_iterator = zip(itertools.repeat("module_metadata"), arch.module_metadata)
@@ -460,7 +460,7 @@ def _createrepo(reponame: str, repodir: Path) -> None:
 
 
 def _generate_repofiles(
-    from_output_dir: Path, for_output_dir: Path, options: Optional[dict] = None
+    from_output_dir: Path, for_output_dir: Path, options: dict | None = None
 ) -> None:
     """
     Generate templates of repofiles for all arches.

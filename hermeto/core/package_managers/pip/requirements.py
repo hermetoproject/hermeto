@@ -4,7 +4,9 @@ import functools
 import io
 import logging
 import re
-from typing import IO, Any, Iterator, Literal, Optional, Pattern, Union
+from collections.abc import Iterator
+from re import Pattern
+from typing import IO, Any, Literal
 from urllib import parse as urlparse
 
 from packaging.requirements import InvalidRequirement, Requirement
@@ -121,7 +123,7 @@ class PipRequirementsFile:
 
         :return: a dict with the keys ``requirements`` and ``options``
         """
-        parsed: dict[str, list[Union[str, PipRequirement]]] = {"requirements": [], "options": []}
+        parsed: dict[str, list[str | PipRequirement]] = {"requirements": [], "options": []}
 
         for line in self._read_lines():
             (
@@ -244,7 +246,7 @@ class PipRequirement:
         self.raw_package: str = ""
         self.extras: set[str] = set()
         self.version_specs: list[tuple[str, str]] = []
-        self.environment_marker: Optional[str] = None
+        self.environment_marker: str | None = None
         self.hashes: list[str] = []
         self.qualifiers: dict[str, str] = {}
 
@@ -275,9 +277,7 @@ class PipRequirement:
         line.extend(f"--hash={h}" for h in self.hashes)
         return " ".join(line)
 
-    def copy(
-        self, url: Optional[str] = None, hashes: Optional[list[str]] = None
-    ) -> "PipRequirement":
+    def copy(self, url: str | None = None, hashes: list[str] | None = None) -> "PipRequirement":
         """Duplicate this instance of PipRequirement.
 
         :param str url: set a new direct access URL for the requirement. If provided, the
@@ -373,7 +373,7 @@ class PipRequirement:
         return requirement
 
     @staticmethod
-    def _assess_direct_access_requirement(line: str) -> Optional[Literal["url", "vcs"]]:
+    def _assess_direct_access_requirement(line: str) -> Literal["url", "vcs"] | None:
         """Determine if the line contains a direct access requirement.
 
         :param str line: the requirement line

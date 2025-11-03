@@ -1,6 +1,5 @@
 import re
 import textwrap
-from typing import Optional
 
 import pytest
 import semver
@@ -249,7 +248,7 @@ def test_parsing_cache_folder_that_resolves_outside_of_the_repository(
     ],
 )
 def test_get_semver_from_yarn_path(
-    yarn_path: str, expected_result: Optional[semver.version.Version]
+    yarn_path: str, expected_result: semver.version.Version | None
 ) -> None:
     yarn_semver = get_semver_from_yarn_path(yarn_path)
 
@@ -298,7 +297,7 @@ def test_get_semver_from_yarn_path(
     ],
 )
 def test_get_semver_from_package_manager(
-    package_manager: str, expected_result: Optional[semver.version.Version]
+    package_manager: str, expected_result: semver.version.Version | None
 ) -> None:
     yarn_semver = get_semver_from_package_manager(package_manager)
 

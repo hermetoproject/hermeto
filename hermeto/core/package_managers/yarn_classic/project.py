@@ -9,7 +9,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Union
+from typing import Any
 
 from pyarn import lockfile  # type: ignore
 
@@ -118,7 +118,7 @@ class YarnLock(_CommonConfigFile):
         return cls(path, yarn_lockfile.data, yarn_lockfile)
 
 
-ConfigFile = Union[PackageJson, YarnLock]
+ConfigFile = PackageJson | YarnLock
 
 
 @dataclass(frozen=True)

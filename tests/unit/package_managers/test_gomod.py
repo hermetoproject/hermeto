@@ -7,7 +7,7 @@ import textwrap
 from collections.abc import Iterator
 from pathlib import Path
 from string import Template
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 from unittest import mock
 
 import git
@@ -130,7 +130,7 @@ def mock_go_class(binary: str) -> mock.Mock:
 
 
 def proc_mock(
-    args: Union[str, list[str]] = "", *, returncode: int, stdout: Optional[str]
+    args: str | list[str] = "", *, returncode: int, stdout: str | None
 ) -> subprocess.CompletedProcess:
     return subprocess.CompletedProcess(args, returncode=returncode, stdout=stdout)
 
@@ -139,7 +139,7 @@ def get_mock_dir(data_dir: Path) -> Path:
     return data_dir / "gomod-mocks"
 
 
-def get_mocked_data(data_dir: Path, filepath: Union[str, Path]) -> str:
+def get_mocked_data(data_dir: Path, filepath: str | Path) -> str:
     return get_mock_dir(data_dir).joinpath(filepath).read_text()
 
 
@@ -514,7 +514,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     ],
 )
 def test_parse_go_sum(
-    go_sum_content: Optional[str],
+    go_sum_content: str | None,
     expect_modules: set[ModuleID],
     rooted_tmp_path: RootedPath,
 ) -> None:
@@ -1387,7 +1387,7 @@ def test_get_golang_version(
     module_suffix: str,
     ref: str,
     expected: str,
-    subpath: Optional[str],
+    subpath: str | None,
 ) -> None:
     module_name = f"github.com/mprahl/test-golang-pseudo-versions{module_suffix}"
 
@@ -1614,7 +1614,7 @@ def test_vendor_changed(
     subpath: str,
     vendor_before: dict[str, Any],
     vendor_changes: dict[str, Any],
-    expected_change: Optional[str],
+    expected_change: str | None,
     rooted_tmp_path_repo: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -2017,10 +2017,10 @@ def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) 
 def test_select_toolchain(
     mock_get_gomod_version: mock.Mock,
     mock_go_get_release: mock.Mock,
-    go_version: Optional[str],
-    toolchain_version: Optional[str],
+    go_version: str | None,
+    toolchain_version: str | None,
     installed_versions: list[str],
-    expected_result: Optional[str],
+    expected_result: str | None,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_gomod_version.return_value = (go_version, toolchain_version)
@@ -2201,7 +2201,7 @@ def test_list_installed_toolchains(
     mock_go: mock.Mock,
     mock_get_cache_dir: mock.Mock,
     tmp_path: Path,
-    PATH: Optional[str],
+    PATH: str | None,
     file_tree: dict,
     binary_count: int,
 ) -> None:
@@ -2236,7 +2236,7 @@ def test_list_installed_toolchains(
     ],
 )
 def test_get_go_work_path(
-    rooted_tmp_path: RootedPath, gowork_output: str, expected: Optional[str]
+    rooted_tmp_path: RootedPath, gowork_output: str, expected: str | None
 ) -> None:
     mock_go = mock.Mock(spec=Go)
     mock_go.return_value = gowork_output
@@ -2468,7 +2468,7 @@ class TestGo:
         mock_run: mock.Mock,
         mock_get_config: mock.Mock,
         tmp_path: Path,
-        release: Optional[str],
+        release: str | None,
         retry: bool,
     ) -> None:
         env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}

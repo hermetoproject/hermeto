@@ -1,7 +1,6 @@
 import sys
 import tarfile
 from pathlib import Path
-from typing import Optional
 
 import git
 import pytest
@@ -13,7 +12,7 @@ from hermeto.core.type_aliases import StrPath
 FileContents = str
 
 
-def _create_git_repo(path: Path, files: Optional[dict[StrPath, FileContents]] = None) -> git.Repo:
+def _create_git_repo(path: Path, files: dict[StrPath, FileContents] | None = None) -> git.Repo:
     """Create a git repository with initial files.
 
     :param path: Directory to create the repository in

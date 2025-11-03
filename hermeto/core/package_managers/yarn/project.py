@@ -10,7 +10,7 @@ import logging
 import re
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, Optional, TypedDict
+from typing import Any, Literal, NamedTuple, TypedDict
 
 import semver
 import yaml
@@ -174,7 +174,7 @@ class Project(NamedTuple):
         return cls(source_dir, yarn_rc, package_json)
 
 
-def get_semver_from_yarn_path(yarn_path: Optional[str]) -> Optional[semver.version.Version]:
+def get_semver_from_yarn_path(yarn_path: str | None) -> semver.version.Version | None:
     """Parse yarnPath from yarnrc and return a semver Version if possible else None."""
     if not yarn_path:
         return None
@@ -208,8 +208,8 @@ def get_semver_from_yarn_path(yarn_path: Optional[str]) -> Optional[semver.versi
 
 
 def get_semver_from_package_manager(
-    package_manager: Optional[str],
-) -> Optional[semver.version.Version]:
+    package_manager: str | None,
+) -> semver.version.Version | None:
     """Parse packageManager from package.json and return a semver Version if possible.
 
     :raises UnexpectedFormat:

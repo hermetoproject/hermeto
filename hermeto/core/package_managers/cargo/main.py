@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
@@ -44,8 +44,8 @@ class CargoPackage:
 
     name: str
     version: str
-    source: Optional[str] = None  # [git|registry]+https://github.com/<org>/<package>#[|<sha>]
-    checksum: Optional[str] = None
+    source: str | None = None  # [git|registry]+https://github.com/<org>/<package>#[|<sha>]
+    checksum: str | None = None
 
     @cached_property
     def purl(self) -> PackageURL:
@@ -73,9 +73,9 @@ class LocalCargoPackage:
     """Represents a local dependency in the project or a workspace."""
 
     name: str
-    version: Optional[str] = None
-    vcs_url: Optional[str] = None
-    subpath: Optional[str] = None
+    version: str | None = None
+    vcs_url: str | None = None
+    subpath: str | None = None
 
     @cached_property
     def purl(self) -> PackageURL:
@@ -151,7 +151,7 @@ def _parse_toml_project_file(path: Path) -> dict[str, Any]:
     return parsed_toml.value
 
 
-def _resolve_main_package(package_dir: RootedPath) -> tuple[str, Optional[str]]:
+def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     """Resolve package name and version from Cargo.toml."""
     parsed_toml = _parse_toml_project_file(package_dir.path / "Cargo.toml")
 

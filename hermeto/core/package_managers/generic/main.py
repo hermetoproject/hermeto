@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Union
 
 import yaml
 from pydantic import ValidationError
@@ -63,7 +62,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
 
     log.info(f"Reading generic lockfile: {lockfile_path}")
     lockfile = _load_lockfile(lockfile_path, output_dir)
-    to_download: dict[str, Union[str, os.PathLike[str]]] = {}
+    to_download: dict[str, str | os.PathLike[str]] = {}
 
     for artifact in lockfile.artifacts:
         # create the parent directory for the artifact

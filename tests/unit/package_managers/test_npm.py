@@ -3,7 +3,7 @@ import os
 import urllib.parse
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -524,7 +524,7 @@ class TestPurlifier:
     )
     def test_get_purl_for_remote_package(
         self,
-        pkg_data: tuple[str, Optional[str], Optional[str]],
+        pkg_data: tuple[str, str | None, str | None],
         expect_purl: str,
         rooted_tmp_path: RootedPath,
     ) -> None:
@@ -579,7 +579,7 @@ class TestPurlifier:
     def test_get_purl_for_local_package(
         self,
         main_pkg_subpath: str,
-        pkg_data: tuple[str, Optional[str], str],
+        pkg_data: tuple[str, str | None, str],
         expect_purl: PackageURL,
         rooted_tmp_path: RootedPath,
         mock_get_repo_id: mock.Mock,
@@ -607,8 +607,8 @@ class TestPurlifier:
     def test_get_purl_integrity_handling(
         self,
         resolved_url: str,
-        integrity: Optional[str],
-        expect_checksum_qualifier: Optional[str],
+        integrity: str | None,
+        expect_checksum_qualifier: str | None,
         mock_get_repo_id: mock.Mock,
     ) -> None:
         purl = _Purlifier(RootedPath("/foo")).get_purl("foo", None, resolved_url, integrity)
@@ -1404,7 +1404,7 @@ def test_resolve_npm(
     mock_get_npm_dependencies: mock.Mock,
     rooted_tmp_path: RootedPath,
     main_pkg_subpath: str,
-    package_lock_json: dict[str, Union[str, dict]],
+    package_lock_json: dict[str, str | dict],
     expected_output: dict[str, Any],
     mock_get_repo_id: mock.Mock,
 ) -> None:
@@ -1616,7 +1616,7 @@ def test_get_npm_dependencies(
     mock_must_match_any_checksum: mock.Mock,
     mock_async_download_files: mock.Mock,
     rooted_tmp_path: RootedPath,
-    deps_to_download: dict[str, dict[str, Optional[str]]],
+    deps_to_download: dict[str, dict[str, str | None]],
     expected_download_subpaths: dict[str, str],
 ) -> None:
     def args_based_return_checksum(integrity: str) -> ChecksumInfo:

@@ -2,7 +2,6 @@ import filecmp
 import sys
 import tarfile
 from pathlib import Path
-from typing import Union
 from urllib.parse import urlsplit
 
 import git
@@ -43,7 +42,7 @@ class TestRepoID:
         ],
     )
     def test_get_repo_id(
-        self, repo_url: str, expect_result: Union[str, Exception], golang_repo_path: Path
+        self, repo_url: str, expect_result: str | Exception, golang_repo_path: Path
     ) -> None:
         Repo(golang_repo_path).create_remote("origin", repo_url)
         expect_commit_id = "4a481f0bae82adef3ea6eae3d167af6e74499cb2"

@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
-from typing import Any, Optional
+from typing import Any
 
 import jsonschema
 import requests
@@ -93,9 +93,9 @@ class ContainerImage:
         cmd: list[str],
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
-        net: Optional[str] = None,
-        entrypoint: Optional[str] = None,
-        podman_flags: Optional[list[str]] = None,
+        net: str | None = None,
+        entrypoint: str | None = None,
+        podman_flags: list[str] | None = None,
     ) -> tuple[str, int]:
         if podman_flags is None:
             podman_flags = []
@@ -121,9 +121,9 @@ class HermetoImage(ContainerImage):
         cmd: list[str],
         tmp_path: Path,
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
-        net: Optional[str] = "host",
-        entrypoint: Optional[str] = None,
-        podman_flags: Optional[list[str]] = None,
+        net: str | None = "host",
+        entrypoint: str | None = None,
+        podman_flags: list[str] | None = None,
     ) -> tuple[str, int]:
         netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
@@ -319,8 +319,8 @@ def fetch_deps_and_check_output(
     test_data_dir: Path,
     hermeto_image: ContainerImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
-    entrypoint: Optional[str] = None,
-    podman_flags: Optional[list[str]] = None,
+    entrypoint: str | None = None,
+    podman_flags: list[str] | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> None:
     """
@@ -426,7 +426,7 @@ def build_image_and_check_cmd(
     check_cmd: list,
     expected_cmd_output: str,
     hermeto_image: ContainerImage,
-    hermeto_image_entrypoint: Optional[str] = None,
+    hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
 ) -> None:

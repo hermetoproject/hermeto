@@ -6,7 +6,7 @@ import json
 import logging
 import os.path
 from pathlib import Path
-from typing import Any, Literal, NewType, Optional, TypedDict
+from typing import Any, Literal, NewType, TypedDict
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
@@ -45,7 +45,7 @@ class NpmComponentInfo(TypedDict):
     version: str
     dev: bool
     bundled: bool
-    missing_hash_in_file: Optional[Path]
+    missing_hash_in_file: Path | None
 
 
 class ResolvedNpmPackage(TypedDict):
@@ -76,7 +76,7 @@ class Package:
         return self._package_dict
 
     @property
-    def integrity(self) -> Optional[str]:
+    def integrity(self) -> str | None:
         """Get the package integrity."""
         return self._package_dict.get("integrity")
 
@@ -95,7 +95,7 @@ class Package:
         return self._package_dict["version"]
 
     @property
-    def resolved_url(self) -> Optional[str]:
+    def resolved_url(self) -> str | None:
         """Get the location where the package was resolved from.
 
         For package-lock.json `packages`, this will be the "resolved" key
@@ -291,7 +291,7 @@ class PackageLock:
 
         return list(map(to_component, packages))
 
-    def get_dependencies_to_download(self) -> dict[str, dict[str, Optional[str]]]:
+    def get_dependencies_to_download(self) -> dict[str, dict[str, str | None]]:
         """Return a Dict of URL dependencies to download."""
         packages = self._packages
         return {
@@ -324,9 +324,9 @@ class _Purlifier:
     def get_purl(
         self,
         name: str,
-        version: Optional[str],
-        resolved_url: Optional[str],
-        integrity: Optional[str],
+        version: str | None,
+        resolved_url: str | None,
+        integrity: str | None,
     ) -> PackageURL:
         """Get the purl for an npm package.
 
@@ -337,8 +337,8 @@ class _Purlifier:
             # (differentiation between bundled and registry should be done elsewhere)
             return PackageURL(type="npm", name=name.lower(), version=version)
 
-        qualifiers: Optional[dict[str, str]] = None
-        subpath: Optional[str] = None
+        qualifiers: dict[str, str] | None = None
+        subpath: str | None = None
 
         resolved_url = _normalize_resolved_url(resolved_url)
         dep_type = _classify_resolved_url(resolved_url)
@@ -483,7 +483,7 @@ def _clone_repo_pack_archive(
 
 
 def _get_npm_dependencies(
-    download_dir: RootedPath, deps_to_download: dict[str, dict[str, Optional[str]]]
+    download_dir: RootedPath, deps_to_download: dict[str, dict[str, str | None]]
 ) -> dict[NormalizedUrl, RootedPath]:
     """
     Download npm dependencies.

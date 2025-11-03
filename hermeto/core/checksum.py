@@ -4,7 +4,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from hermeto.core.errors import PackageRejected
 from hermeto.core.type_aliases import StrPath
@@ -50,7 +50,7 @@ class ChecksumInfo(NamedTuple):
 
 class _MismatchInfo(NamedTuple):
     algorithm: str
-    maybe_digest: Optional[str]  # None == algorithm is not supported
+    maybe_digest: str | None  # None == algorithm is not supported
 
 
 def must_match_any_checksum(

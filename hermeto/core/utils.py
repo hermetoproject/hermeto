@@ -6,11 +6,11 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from functools import cache
 from itertools import filterfalse, tee
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
@@ -74,7 +74,7 @@ def run_cmd(cmd: Sequence[str], params: dict, suppress_errors: bool = False) -> 
     return response.stdout
 
 
-def _log_error_output(out_or_err: str, output: Optional[str]) -> None:
+def _log_error_output(out_or_err: str, output: str | None) -> None:
     if output:
         log.error("%s:\n%s", out_or_err, output.rstrip())
     else:

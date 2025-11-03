@@ -2,7 +2,7 @@ import logging
 import string
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import pydantic
 
@@ -33,7 +33,7 @@ class EnvironmentVariable(pydantic.BaseModel):
 
     name: str
     value: str
-    kind: Optional[Literal["literal", "path"]] = pydantic.Field(default=None, exclude=True)
+    kind: Literal["literal", "path"] | None = pydantic.Field(default=None, exclude=True)
 
     def resolve_value(self, mappings: dict[str, str]) -> str:
         """Return the resolved value of this templated environment variable.
@@ -133,7 +133,7 @@ class BuildConfig(pydantic.BaseModel):
 
     environment_variables: list[EnvironmentVariable] = []
     project_files: list[ProjectFile] = []
-    options: Optional[dict[str, Any]] = None
+    options: dict[str, Any] | None = None
 
     @pydantic.field_validator("environment_variables")
     @classmethod
@@ -204,9 +204,9 @@ class RequestOutput(pydantic.BaseModel):
     def from_obj_list(
         cls,
         components: list[Component],
-        environment_variables: Optional[list[EnvironmentVariable]] = None,
-        project_files: Optional[list[ProjectFile]] = None,
-        options: Optional[dict[str, Any]] = None,
+        environment_variables: list[EnvironmentVariable] | None = None,
+        project_files: list[ProjectFile] | None = None,
+        options: dict[str, Any] | None = None,
     ) -> "RequestOutput":
         """Create a RequestOutput from components, environment variables and project files."""
         if environment_variables is None:

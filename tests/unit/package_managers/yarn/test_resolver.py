@@ -2,7 +2,7 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple, Optional, Union
+from typing import Any, NamedTuple
 from unittest import mock
 from urllib.parse import quote
 
@@ -257,8 +257,8 @@ def test_validate_unsupported_locators(
 class MockedPackage(NamedTuple):
     package: Package
     is_hardlink: bool
-    packjson_path: Optional[str] = None
-    packjson_content: Optional[str] = None
+    packjson_path: str | None = None
+    packjson_content: str | None = None
 
     def resolve_cache_path(self, root_dir: RootedPath) -> "MockedPackage":
         cache_path = self.package.cache_path
@@ -1013,7 +1013,7 @@ def test_get_pedigree(
 def test_get_pedigree_with_unsupported_locators(
     mock_get_yarn_version: mock.Mock,
     mock_get_repo_id: mock.Mock,
-    patch: Union[Path, str],
+    patch: Path | str,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)

@@ -1,7 +1,7 @@
 """Base classes for binary package filtering."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Set
+from typing import Any
 
 from hermeto.core.models.input import BINARY_FILTER_ALL
 
@@ -9,7 +9,7 @@ from hermeto.core.models.input import BINARY_FILTER_ALL
 class BinaryPackageFilter(ABC):
     """Abstract base class for binary package filtering."""
 
-    def _parse_filter_spec(self, spec: str) -> Optional[Set[str]]:
+    def _parse_filter_spec(self, spec: str) -> set[str] | None:
         """Parse filter specification into allowed values set.
 
         Returns None if spec is ':all:' or contains ':all:' as any item.

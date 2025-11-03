@@ -5,7 +5,7 @@ import re
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
@@ -38,7 +38,7 @@ class RepoID(NamedTuple):
         return f"git+{self.origin_url}@{self.commit_id}"
 
 
-def get_repo_id(repo: Union[StrPath, Repo]) -> RepoID:
+def get_repo_id(repo: StrPath | Repo) -> RepoID:
     """Get the RepoID for a git.Repo object or a git directory.
 
     If the remote url is an scp-style [user@]host:path, convert it into ssh://[user@]host/path.
@@ -72,7 +72,7 @@ def get_repo_id(repo: Union[StrPath, Repo]) -> RepoID:
     return RepoID(url, commit_id)
 
 
-def _find_submodule_containing_path(repo: Repo, target_path: Path) -> Optional[git.Submodule]:
+def _find_submodule_containing_path(repo: Repo, target_path: Path) -> git.Submodule | None:
     """Find the submodule containing the target path, if any.
 
     :param repo: Git repository to search in

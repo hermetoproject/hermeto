@@ -1,6 +1,6 @@
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import pytest
 
@@ -89,7 +89,7 @@ class TestPyprojectTOML:
     def test_get_name(
         self,
         toml_content: str,
-        expect_name: Optional[str],
+        expect_name: str | None,
         expect_logs: list[str],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
@@ -163,7 +163,7 @@ class TestPyprojectTOML:
     def test_get_version(
         self,
         toml_content: str,
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
@@ -224,7 +224,7 @@ class TestSetupCFG:
     def test_get_name(
         self,
         cfg_content: str,
-        expect_name: Optional[str],
+        expect_name: str | None,
         expect_logs: list[str],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
@@ -273,7 +273,7 @@ class TestSetupCFG:
     def test_get_version_basic(
         self,
         cfg_content: str,
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
@@ -294,9 +294,9 @@ class TestSetupCFG:
     def _test_version_with_file_tree(
         self,
         project_tree: dict[str, Any],
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
-        expect_error: Optional[BaseError],
+        expect_error: BaseError | None,
         rooted_tmpdir: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -408,9 +408,9 @@ class TestSetupCFG:
     def test_get_version_file(
         self,
         project_tree: dict[str, Any],
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
-        expect_error: Optional[BaseError],
+        expect_error: BaseError | None,
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -695,9 +695,9 @@ class TestSetupCFG:
     def test_get_version_attr(
         self,
         project_tree: dict[str, Any],
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
-        expect_error: Optional[BaseError],
+        expect_error: BaseError | None,
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -863,9 +863,9 @@ class TestSetupCFG:
     def test_get_version_attr_with_package_dir(
         self,
         project_tree: dict[str, Any],
-        expect_version: Optional[str],
+        expect_version: str | None,
         expect_logs: list[str],
-        expect_error: Optional[BaseError],
+        expect_error: BaseError | None,
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -892,7 +892,7 @@ class TestSetupPY:
         rooted_tmpdir: RootedPath,
         caplog: pytest.LogCaptureFixture,
         script_content: str,
-        expect_val: Optional[str],
+        expect_val: str | None,
         expect_logs: list[str],
         what: Literal["name", "version"] = "name",
     ) -> None:
@@ -1016,7 +1016,7 @@ class TestSetupPY:
     def test_get_kwarg_literal(
         self,
         script_content: str,
-        expect_val: Optional[str],
+        expect_val: str | None,
         expect_logs: list[str],
         what: Literal["name", "version"],
         rooted_tmp_path: RootedPath,
@@ -1315,7 +1315,7 @@ class TestSetupPY:
     def test_get_kwarg_var(
         self,
         script_content: str,
-        expect_val: Optional[str],
+        expect_val: str | None,
         expect_logs: list[str],
         what: Literal["name", "version"],
         rooted_tmp_path: RootedPath,

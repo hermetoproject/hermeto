@@ -1,4 +1,3 @@
-from typing import Optional
 from unittest import mock
 
 import pytest
@@ -27,7 +26,7 @@ from hermeto.core.package_managers.rpm.redhat import LockfileArch
     ],
 )
 def test_validate_and_filter_success(
-    filters: Optional[RpmBinaryFilters], expected_arches: list[str]
+    filters: RpmBinaryFilters | None, expected_arches: list[str]
 ) -> None:
     """Test validate_and_filter with satisfiable constraints."""
     arch_filter = RPMArchitectureFilter(filters)
@@ -48,7 +47,7 @@ def test_validate_and_filter_success(
         pytest.param(RpmBinaryFilters(arch="x86_64,armv7l"), id="partial_match"),
     ],
 )
-def test_validate_and_filter_unsatisfiable_constraints(filters: Optional[RpmBinaryFilters]) -> None:
+def test_validate_and_filter_unsatisfiable_constraints(filters: RpmBinaryFilters | None) -> None:
     """Test validate_and_filter raises UnsatisfiableArchitectureFilter for unsatisfiable constraints."""
     arch_filter = RPMArchitectureFilter(filters)
 

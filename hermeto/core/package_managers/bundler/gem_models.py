@@ -1,7 +1,7 @@
 import logging
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 from urllib.parse import urljoin, urlparse
 
 import pydantic
@@ -53,7 +53,7 @@ class GemDependency(_GemMetadata):
     """
 
     source: str
-    checksum: Optional[str] = None
+    checksum: str | None = None
 
     @cached_property
     def purl(self) -> str:
@@ -114,7 +114,7 @@ class GitDependency(_GemMetadata):
     """
 
     url: AcceptedUrl
-    branch: Optional[str] = None
+    branch: str | None = None
     ref: AcceptedGitRef
 
     @cached_property

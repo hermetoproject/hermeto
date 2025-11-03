@@ -5,8 +5,9 @@ import json
 import logging
 import shutil
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import pydantic
 import typer
@@ -353,7 +354,7 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
     )
 
     if sbom_type == SBOMFormat.cyclonedx:
-        sbom: Union[Sbom, SPDXSbom] = request_output.generate_sbom()
+        sbom: Sbom | SPDXSbom = request_output.generate_sbom()
     else:
         sbom = request_output.generate_sbom().to_spdx(doc_namespace="NOASSERTION")
     request.output_dir.join_within_root("bom.json").path.write_text(
@@ -382,9 +383,9 @@ FOR_OUTPUT_DIR_OPTION = typer.Option(
 @handle_errors
 def generate_env(
     from_output_dir: Path = FROM_OUTPUT_DIR_ARG,
-    for_output_dir: Optional[Path] = FOR_OUTPUT_DIR_OPTION,
-    output: Optional[Path] = OUTFILE_OPTION,
-    fmt: Optional[EnvFormat] = typer.Option(
+    for_output_dir: Path | None = FOR_OUTPUT_DIR_OPTION,
+    output: Path | None = OUTFILE_OPTION,
+    fmt: EnvFormat | None = typer.Option(
         None,
         "-f",
         "--format",
@@ -409,7 +410,7 @@ def generate_env(
 @handle_errors
 def inject_files(
     from_output_dir: Path = FROM_OUTPUT_DIR_ARG,
-    for_output_dir: Optional[Path] = FOR_OUTPUT_DIR_OPTION,
+    for_output_dir: Path | None = FOR_OUTPUT_DIR_OPTION,
 ) -> None:
     """Inject the project files needed to use the fetched dependencies."""
     for_output_dir = for_output_dir or from_output_dir
@@ -469,14 +470,14 @@ def merge_sboms(  # noqa: D103; docstring becomes part of --help message
         readable=True,
         help="Names of files with SBOMs to merge.",
     ),
-    output_sbom_file_name: Optional[Path] = OUTFILE_OPTION,
+    output_sbom_file_name: Path | None = OUTFILE_OPTION,
     sbom_type: SBOMFormat = SBOM_TYPE_OPTION,
-    sbom_name: Optional[str] = typer.Option(
+    sbom_name: str | None = typer.Option(
         None, "--sbom-name", help="Name of the resulting merged SBOM."
     ),
 ) -> None:
     """Merge two or more SBOMs into one."""
-    sboms_to_merge: list[Union[SPDXSbom, Sbom]] = []
+    sboms_to_merge: list[SPDXSbom | Sbom] = []
     for sbom_file in sbom_files_to_merge:
         sbom_dict = json.loads(sbom_file.read_text())
         # Remove extra fields which are not in Sbom or SPDXSbom models
@@ -492,7 +493,7 @@ def merge_sboms(  # noqa: D103; docstring becomes part of --help message
                     f"{sbom_file} does not appear to be a valid {APP_NAME} SBOM."
                 )
     # start_sbom will later coerce every other SBOM to its type.
-    start_sbom: Union[Sbom, SPDXSbom]  # this visual noise is demanded by mypy.
+    start_sbom: Sbom | SPDXSbom  # this visual noise is demanded by mypy.
     if sbom_type == SBOMFormat.cyclonedx:
         start_sbom = sboms_to_merge[0].to_cyclonedx()
     else:

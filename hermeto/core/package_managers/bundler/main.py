@@ -2,7 +2,6 @@ import logging
 import os
 from pathlib import Path
 from textwrap import dedent
-from typing import Optional
 
 from packageurl import PackageURL
 
@@ -102,7 +101,7 @@ def _resolve_bundler_package(
 def _get_main_package_name_and_version(
     package_dir: RootedPath,
     dependencies: ParseResult,
-) -> tuple[str, Optional[str]]:
+) -> tuple[str, str | None]:
     """
     Get main package name and version.
 
@@ -130,7 +129,7 @@ def _get_main_package_name_and_version(
     return name, None
 
 
-def _get_name_and_version_from_lockfile(dependencies: ParseResult) -> Optional[tuple[str, str]]:
+def _get_name_and_version_from_lockfile(dependencies: ParseResult) -> tuple[str, str] | None:
     """
     Extract the package name and version from dependencies in the Gemfile.lock.
 
@@ -169,7 +168,7 @@ def _prepare_environment_variables_for_hermetic_build() -> list[EnvironmentVaria
 
 
 def _prepare_for_hermetic_build(
-    source_dir: RootedPath, output_dir: RootedPath, git_paths: Optional[list] = None
+    source_dir: RootedPath, output_dir: RootedPath, git_paths: list | None = None
 ) -> ProjectFile:
     """Prepare a package for hermetic build by injecting necessary config."""
     potential_bundle_config = source_dir.join_within_root(".bundle/config").path

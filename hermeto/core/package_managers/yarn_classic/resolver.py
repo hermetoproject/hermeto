@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
@@ -46,8 +46,8 @@ class _BasePackage(ABC):
     """A base Yarn 1.x package."""
 
     name: str
-    version: Optional[str] = None
-    integrity: Optional[str] = None
+    version: str | None = None
+    integrity: str | None = None
     dev: bool = False
 
     @property
@@ -178,14 +178,9 @@ class LinkPackage(_BasePackage, _PathMixin):
         ).to_string()
 
 
-YarnClassicPackage = Union[
-    FilePackage,
-    GitPackage,
-    LinkPackage,
-    RegistryPackage,
-    UrlPackage,
-    WorkspacePackage,
-]
+YarnClassicPackage = (
+    FilePackage | GitPackage | LinkPackage | RegistryPackage | UrlPackage | WorkspacePackage
+)
 
 
 class _YarnClassicPackageFactory:

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections import Counter
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 from urllib.parse import urljoin, urlparse
 
 from packageurl import PackageURL
@@ -220,7 +220,7 @@ class GenericLockfileV1(BaseModel):
     """Defines format of our generic lockfile, version 1.0."""
 
     metadata: LockfileMetadata
-    artifacts: list[Union[LockfileArtifactUrl, LockfileArtifactMaven]]
+    artifacts: list[LockfileArtifactUrl | LockfileArtifactMaven]
     model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")

@@ -8,9 +8,9 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any, Callable, Optional
-from collections.abc import Iterator
+from typing import Any
 
 
 def print_banner(content: str) -> None:
@@ -92,7 +92,7 @@ def process_yarninfo(yarninfo_output: str, repo_dir: Path) -> list[dict[str, Any
 def _filter_pkgs(
     predicate: Callable[[dict[str, Any]], bool],
     pkgs: list[dict[str, Any]],
-    max_items: Optional[int] = None,
+    max_items: int | None = None,
 ) -> Iterator[dict[str, Any]]:
     filtered = filter(predicate, pkgs)
     if max_items:
@@ -104,7 +104,7 @@ def _filter_pkgs(
 def _filter_pkgs_by_pattern(
     pattern: str,
     pkgs: list[dict[str, Any]],
-    max_items: Optional[int] = None,
+    max_items: int | None = None,
 ) -> Iterator[dict[str, Any]]:
     # check if the locator contains the regex pattern
     def matches_pattern(pkg: dict[str, Any]) -> bool:

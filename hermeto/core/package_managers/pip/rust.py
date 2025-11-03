@@ -2,9 +2,10 @@
 
 import logging
 import shutil
+from collections.abc import Iterable
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Iterable, Optional
+from typing import Any
 
 from pybuild_deps import parsers
 
@@ -73,7 +74,7 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
     for p in packages:
         # File name and package name may differ e.g. when there is a hyphen in
         # package name it might be replaced by an underscore in a file name.
-        package_path: Optional[Path] = p.get("path")
+        package_path: Path | None = p.get("path")
         if package_path is None or package_path.suffix == WHEEL_FILE_EXTENSION:
             continue
 

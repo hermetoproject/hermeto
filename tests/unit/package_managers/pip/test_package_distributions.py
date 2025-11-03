@@ -1,4 +1,3 @@
-from typing import Optional
 from unittest import mock
 
 import pypi_simple
@@ -24,7 +23,7 @@ def mock_pypi_simple_distribution_package(
     filename: str,
     version: str,
     package_type: str = "sdist",
-    digests: Optional[dict[str, str]] = None,
+    digests: dict[str, str] | None = None,
     is_yanked: bool = False,
 ) -> pypi_simple.DistributionPackage:
     return pypi_simple.DistributionPackage(
@@ -124,7 +123,7 @@ def test_process_existing_wheel_only_package(
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
 def test_process_existing_package_without_any_distributions(
     mock_get_project_page: mock.Mock,
-    binary_filters: Optional[PipBinaryFilters],
+    binary_filters: PipBinaryFilters | None,
     rooted_tmp_path: RootedPath,
 ) -> None:
     req = mock_requirement("pkg-0.1.0-py3-none-any.whl", "pypi", version_specs=[("==", "0.1.0")])

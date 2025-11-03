@@ -1,5 +1,5 @@
 import textwrap
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from hermeto import APP_NAME
 
@@ -10,14 +10,14 @@ class BaseError(Exception):
     """Root of the error hierarchy. Don't raise this directly, use more specific error types."""
 
     is_invalid_usage: ClassVar[bool] = False
-    default_solution: ClassVar[Optional[str]] = None
+    default_solution: ClassVar[str | None] = None
 
     def __init__(
         self,
         reason: str,
         *,
-        solution: Optional[str] = _argument_not_specified,
-        docs: Optional[str] = None,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
     ) -> None:
         """Initialize BaseError.
 
@@ -57,8 +57,8 @@ class PathOutsideRoot(UsageError):
         s_other: str = "",
         s_root: str = "",
         *,
-        solution: Optional[str] = _argument_not_specified,
-        docs: Optional[str] = None,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
     ) -> None:
         """Initialize a PathOutsideRoot.
 
@@ -88,7 +88,7 @@ class PackageRejected(UsageError):
     b) The package does not meet our extra requirements (e.g. missing checksums).
     """
 
-    def __init__(self, reason: str, *, solution: Optional[str], docs: Optional[str] = None) -> None:
+    def __init__(self, reason: str, *, solution: str | None, docs: str | None = None) -> None:
         """Initialize a Package Rejected error.
 
         Compared to the parent class, the solution param is required (but can be explicitly None).
@@ -144,9 +144,9 @@ class PackageManagerError(BaseError):
         self,
         reason: str,
         *,
-        stderr: Optional[str] = None,
-        solution: Optional[str] = _argument_not_specified,
-        docs: Optional[str] = None,
+        stderr: str | None = None,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
     ) -> None:
         """Initialize a PackageManagerError.
 

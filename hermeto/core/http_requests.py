@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import requests
 from requests import Session
@@ -24,7 +24,7 @@ DEFAULT_RETRY_OPTIONS: dict[str, Any] = {
 }
 
 
-def get_requests_session(retry_options: Optional[dict] = None) -> Session:
+def get_requests_session(retry_options: dict | None = None) -> Session:
     """
     Create a requests session with retries.
 

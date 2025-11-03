@@ -1,6 +1,6 @@
 """RPM-specific binary package filtering."""
 
-from typing import Any, Optional
+from typing import Any
 
 from hermeto.core.binary_filters import BinaryPackageFilter
 from hermeto.core.errors import PackageRejected
@@ -15,10 +15,10 @@ class UnsatisfiableArchitectureFilter(PackageRejected):
 class RPMArchitectureFilter(BinaryPackageFilter):
     """Filter RPM architectures based on user constraints."""
 
-    def __init__(self, filters: Optional[RpmBinaryFilters] = None) -> None:
+    def __init__(self, filters: RpmBinaryFilters | None = None) -> None:
         """Initialize with optional filters, defaulting to accept all."""
         arch_spec = filters.arch if filters else BINARY_FILTER_ALL
-        self.arch_constraints: Optional[set[str]] = self._parse_filter_spec(arch_spec)
+        self.arch_constraints: set[str] | None = self._parse_filter_spec(arch_spec)
 
     def __contains__(self, item: Any) -> bool:
         """Return True if an architecture is allowed by the filter constraints."""

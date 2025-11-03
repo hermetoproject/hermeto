@@ -3,7 +3,6 @@ import re
 from enum import Enum
 from itertools import zip_longest
 from pathlib import Path
-from typing import Optional, Union
 from unittest import mock
 
 import pytest
@@ -99,8 +98,8 @@ def test_configure_yarn_version(
     mock_yarn_path_semver: mock.Mock,
     mock_package_manager_semver: mock.Mock,
     mock_verify_corepack: mock.Mock,
-    yarn_path_version: Optional[semver.version.Version],
-    package_manager_version: Optional[semver.version.Version],
+    yarn_path_version: semver.version.Version | None,
+    package_manager_version: semver.version.Version | None,
 ) -> None:
     mock_project = mock.Mock()
     mock_project.yarn_rc = mock.MagicMock()
@@ -206,8 +205,8 @@ def test_corepack_installed_correct_yarn_version_fail(
 def test_configure_yarn_version_fail(
     mock_yarn_path_semver: mock.Mock,
     mock_package_manager_semver: mock.Mock,
-    yarn_path_version: Optional[semver.version.Version],
-    package_manager_version: Union[semver.version.Version, None, Exception],
+    yarn_path_version: semver.version.Version | None,
+    package_manager_version: semver.version.Version | None | Exception,
     expected_error: Exception,
 ) -> None:
     mock_project = mock.Mock()
@@ -239,7 +238,7 @@ YARN_VERSIONS = [yarn_version.value for yarn_version in YarnVersions.unsupported
 def test_yarn_unsupported_version_fail(
     mock_yarn_path_semver: mock.Mock,
     mock_package_manager_semver: mock.Mock,
-    package_manager_version: Union[semver.version.Version, None, Exception],
+    package_manager_version: semver.version.Version | None | Exception,
     yarn_path_version: semver.version.Version,
 ) -> None:
     mock_project = mock.Mock()

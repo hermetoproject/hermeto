@@ -4,8 +4,9 @@ import os
 import secrets
 import subprocess
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator, Optional, Union
+from typing import Any
 
 from hermeto.core.type_aliases import StrPath
 
@@ -20,7 +21,7 @@ class ContainerEngine(ABC):
     def name(self) -> str:
         """Get the name of the container engine."""
 
-    def _run_cmd(self, cmd: Union[list[str], str], **subprocess_kwargs: Any) -> tuple[str, int]:
+    def _run_cmd(self, cmd: list[str] | str, **subprocess_kwargs: Any) -> tuple[str, int]:
         """
         Run command via subprocess.
 
@@ -44,23 +45,21 @@ class ContainerEngine(ABC):
 
         return process.stdout, process.returncode
 
-    def build(
-        self, context_dir: StrPath = ".", flags: Optional[list[str]] = None
-    ) -> tuple[str, int]:
+    def build(self, context_dir: StrPath = ".", flags: list[str] | None = None) -> tuple[str, int]:
         """Build container image."""
         if flags is None:
             flags = []
 
         return self._run_cmd([self.name, "build", *flags, str(context_dir)])
 
-    def pull(self, image: str, flags: Optional[list[str]] = None) -> tuple[str, int]:
+    def pull(self, image: str, flags: list[str] | None = None) -> tuple[str, int]:
         """Pull container image."""
         if flags is None:
             flags = []
 
         return self._run_cmd([self.name, "pull", *flags, image])
 
-    def rmi(self, image: str, flags: Optional[list[str]] = None) -> tuple[str, int]:
+    def rmi(self, image: str, flags: list[str] | None = None) -> tuple[str, int]:
         """Remove container image."""
         if flags is None:
             flags = []
@@ -72,8 +71,8 @@ class ContainerEngine(ABC):
         self,
         image: str,
         cmd: list[str],
-        entrypoint: Optional[str] = None,
-        flags: Optional[list[str]] = None,
+        entrypoint: str | None = None,
+        flags: list[str] | None = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
 
@@ -90,8 +89,8 @@ class PodmanEngine(ContainerEngine):
         self,
         image: str,
         cmd: list[str],
-        entrypoint: Optional[str] = None,
-        flags: Optional[list[str]] = None,
+        entrypoint: str | None = None,
+        flags: list[str] | None = None,
     ) -> tuple[str, int]:
         """Run command on the image."""
         if flags is None:
@@ -139,8 +138,8 @@ class BuildahEngine(ContainerEngine):
         container_name: str,
         image: str,
         cmd: list[str],
-        entrypoint: Optional[str] = None,
-        flags: Optional[list[str]] = None,
+        entrypoint: str | None = None,
+        flags: list[str] | None = None,
     ) -> list[str]:
         """Generate container run command.
 
@@ -192,8 +191,8 @@ class BuildahEngine(ContainerEngine):
         self,
         image: str,
         cmd: list[str],
-        entrypoint: Optional[str] = None,
-        flags: Optional[list[str]] = None,
+        entrypoint: str | None = None,
+        flags: list[str] | None = None,
     ) -> tuple[str, int]:
         """Run command using buildah."""
         with self._configure_buildah_container(image) as container_name:

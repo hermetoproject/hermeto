@@ -1,8 +1,9 @@
 import enum
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
 
 import pydantic
 from typing_extensions import Self
@@ -26,7 +27,7 @@ ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
 
 def _handle_legacy_allow_binary(
     instance: Union["PipPackageInput", "BundlerPackageInput"],
-    binary_filter_class: Union[type["PipBinaryFilters"], type["BundlerBinaryFilters"]],
+    binary_filter_class: type["PipBinaryFilters"] | type["BundlerBinaryFilters"],
 ) -> None:
     """Handle backward compatibility for allow_binary field.
 
@@ -146,14 +147,14 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
     Defines extra options fields for client TLS authentication.
     """
 
-    client_cert: Optional[str] = None
-    client_key: Optional[str] = None
-    ca_bundle: Optional[str] = None
+    client_cert: str | None = None
+    client_key: str | None = None
+    ca_bundle: str | None = None
     ssl_verify: bool = True
 
     @pydantic.field_validator("client_key", "client_cert", "ca_bundle")
     @classmethod
-    def _validate_auth_file_paths(cls, val: str, info: pydantic.ValidationInfo) -> Optional[str]:
+    def _validate_auth_file_paths(cls, val: str, info: pydantic.ValidationInfo) -> str | None:
         if val is None:
             return val
 
@@ -210,10 +211,10 @@ class PipBinaryFilters(BinaryModeOptions):
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
-    py_version: Optional[int] = None
+    py_version: int | None = None
     py_impl: BinaryFilterStr = "cp"
     abi: BinaryFilterStr = BINARY_FILTER_ALL
-    platform: Optional[str] = None
+    platform: str | None = None
 
     @pydantic.model_validator(mode="after")
     def _validate_platform_exclusivity(self) -> Self:
@@ -230,7 +231,7 @@ class PipBinaryFilters(BinaryModeOptions):
 
     @pydantic.field_validator("platform")
     @classmethod
-    def _validate_platform(cls, value: Optional[str]) -> Optional[str]:
+    def _validate_platform(cls, value: str | None) -> str | None:
         if value is None:
             return value
 
@@ -273,7 +274,7 @@ class BundlerPackageInput(_PackageInputBase):
 
     type: Literal["bundler"]
     allow_binary: bool = False
-    binary: Optional[BundlerBinaryFilters] = None
+    binary: BundlerBinaryFilters | None = None
 
     @pydantic.model_validator(mode="after")
     def _handle_legacy_allow_binary_field(self) -> Self:
@@ -292,7 +293,7 @@ class GenericPackageInput(_PackageInputBase):
     """Accepted input for generic package."""
 
     type: Literal["generic"]
-    lockfile: Optional[Path] = None
+    lockfile: Path | None = None
 
 
 class GomodPackageInput(_PackageInputBase):
@@ -311,14 +312,14 @@ class PipPackageInput(_PackageInputBase):
     """Accepted input for a pip package."""
 
     type: Literal["pip"]
-    requirements_files: Optional[list[Path]] = None
-    requirements_build_files: Optional[list[Path]] = None
+    requirements_files: list[Path] | None = None
+    requirements_build_files: list[Path] | None = None
     allow_binary: bool = False
-    binary: Optional[PipBinaryFilters] = None
+    binary: PipBinaryFilters | None = None
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
     @classmethod
-    def _no_explicit_none(cls, paths: Optional[list[Path]]) -> list[Path]:
+    def _no_explicit_none(cls, paths: list[Path] | None) -> list[Path]:
         """Fail if the user explicitly passes None."""
         if paths is None:
             # Note: same error message as pydantic's default
@@ -350,8 +351,8 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
     """
 
-    dnf: Optional[dict[Union[Literal["main"], str], dict[str, Any]]] = None
-    ssl: Optional[SSLOptions] = None
+    dnf: dict[Literal["main"] | str, dict[str, Any]] | None = None
+    ssl: SSLOptions | None = None
 
     @pydantic.model_validator(mode="before")
     @classmethod
@@ -397,8 +398,8 @@ class RpmPackageInput(_PackageInputBase):
 
     type: Literal["rpm"]
     include_summary_in_sbom: bool = False
-    options: Optional[ExtraOptions] = None
-    binary: Optional[RpmBinaryFilters] = None
+    options: ExtraOptions | None = None
+    binary: RpmBinaryFilters | None = None
 
 
 class YarnPackageInput(_PackageInputBase):
@@ -408,16 +409,14 @@ class YarnPackageInput(_PackageInputBase):
 
 
 PackageInput = Annotated[
-    Union[
-        BundlerPackageInput,
-        CargoPackageInput,
-        GenericPackageInput,
-        GomodPackageInput,
-        NpmPackageInput,
-        PipPackageInput,
-        RpmPackageInput,
-        YarnPackageInput,
-    ],
+    BundlerPackageInput
+    | CargoPackageInput
+    | GenericPackageInput
+    | GomodPackageInput
+    | NpmPackageInput
+    | PipPackageInput
+    | RpmPackageInput
+    | YarnPackageInput,
     # https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
     pydantic.Field(discriminator="type"),
 ]
@@ -447,7 +446,7 @@ class Request(pydantic.BaseModel):
         # Note that any of the other fields may have failed the validation (hence None), because
         # pydantic always validates all fields without failing early [1]
         # [1] https://github.com/pydantic/pydantic/discussions/9533#discussioncomment-9620872
-        source_dir: Optional[RootedPath] = info.data.get("source_dir", None)
+        source_dir: RootedPath | None = info.data.get("source_dir", None)
         if source_dir is not None:
             for p in packages:
                 try:

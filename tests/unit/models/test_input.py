@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, Literal, Type, Union, cast
+from typing import Any, Literal, cast
 from unittest import mock
 
 import pydantic
@@ -538,7 +538,7 @@ class TestLegacyAllowBinary:
     )
     def test_no_migration_when_allow_binary_false(
         self,
-        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_class: type[PipPackageInput | BundlerPackageInput],
         package_type: Literal["pip", "bundler"],
     ) -> None:
         """Test early return when allow_binary=False."""
@@ -555,9 +555,9 @@ class TestLegacyAllowBinary:
     )
     def test_migration_when_allow_binary_true(
         self,
-        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_class: type[PipPackageInput | BundlerPackageInput],
         package_type: Literal["pip", "bundler"],
-        binary_filter_class: Type[Union[PipBinaryFilters, BundlerBinaryFilters]],
+        binary_filter_class: type[PipBinaryFilters | BundlerBinaryFilters],
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Test allow_binary=True migrates to binary filters."""
@@ -576,7 +576,7 @@ class TestLegacyAllowBinary:
     )
     def test_both_fields_binary_unchanged(
         self,
-        package_class: Type[Union[PipPackageInput, BundlerPackageInput]],
+        package_class: type[PipPackageInput | BundlerPackageInput],
         package_type: Literal["pip", "bundler"],
         caplog: pytest.LogCaptureFixture,
     ) -> None:

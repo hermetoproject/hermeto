@@ -2,7 +2,6 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import Union
 
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.package_managers.bundler.gem_models import (
@@ -20,9 +19,7 @@ GEMFILE = "Gemfile"
 GEMFILE_LOCK = "Gemfile.lock"
 
 
-BundlerDependency = Union[
-    GemDependency, GemPlatformSpecificDependency, GitDependency, PathDependency
-]
+BundlerDependency = GemDependency | GemPlatformSpecificDependency | GitDependency | PathDependency
 ParseResult = list[BundlerDependency]
 
 

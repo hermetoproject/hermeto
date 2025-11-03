@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional
 from urllib.parse import parse_qs, unquote
 
 from hermeto import APP_NAME
@@ -27,7 +27,7 @@ class NpmLocator(NamedTuple):
         version: the semver version of the dependency
     """
 
-    scope: Optional[str]
+    scope: str | None
     name: str
     version: str
 
@@ -46,7 +46,7 @@ class WorkspaceLocator(NamedTuple):
 
     # The scope and name in a workspace locator seem reliable, yarnberry won't let you use an
     # arbitrary name (it must match the workspace's package.json)
-    scope: Optional[str]
+    scope: str | None
     name: str
     relpath: Path
 
@@ -69,7 +69,7 @@ class PatchLocator(NamedTuple):
     # not reliable. Yarnberry *will* let you use a completely arbitrary name.
 
     package: "Locator"
-    patches: Sequence[Union[str, Path]]
+    patches: Sequence[str | Path]
     locator: Optional["WorkspaceLocator"]
 
 
@@ -122,7 +122,7 @@ class LinkLocator(NamedTuple):
 
     # Link dependencies don't need to have a package.json, we have no choice but to depend on the
     # scope and name specified by the user.
-    scope: Optional[str]
+    scope: str | None
     name: str
     relpath: Path
     locator: "WorkspaceLocator"
@@ -141,15 +141,15 @@ class HttpsLocator(NamedTuple):
     url: str
 
 
-Locator = Union[
-    NpmLocator,
-    WorkspaceLocator,
-    PatchLocator,
-    FileLocator,
-    PortalLocator,
-    LinkLocator,
-    HttpsLocator,
-]
+Locator = (
+    NpmLocator
+    | WorkspaceLocator
+    | PatchLocator
+    | FileLocator
+    | PortalLocator
+    | LinkLocator
+    | HttpsLocator
+)
 
 
 # --- Parsing locator types ---
@@ -207,7 +207,7 @@ def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
 
     original_package = parse_locator(reference.source)
 
-    def process_patch_path(patch: str) -> Union[str, Path]:
+    def process_patch_path(patch: str) -> str | Path:
         # Yarn patches can be optional, where failing to apply the patch is not fatal, only a warning
         # '~' denotes an optional patch in Yarn v3
         # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-patch/sources/patchUtils.ts#L92
@@ -264,7 +264,7 @@ def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
 # dataclass rather than NamedTuple because NamedTuple doesn't support cached_property
 @dataclass(frozen=True)
 class _ParsedLocator:
-    scope: Optional[str]
+    scope: str | None
     name: str
     raw_reference: str
 
@@ -280,12 +280,12 @@ class _ParsedLocator:
 
 
 class _ParsedReference(NamedTuple):
-    protocol: Optional[str]
-    source: Optional[str]
+    protocol: str | None
+    source: str | None
     selector: str
-    params: Optional[dict[str, list[str]]]
+    params: dict[str, list[str]] | None
 
-    def get_param(self, param_name: str) -> Optional[str]:
+    def get_param(self, param_name: str) -> str | None:
         if not self.params or not (param_value := self.params.get(param_name)):
             return None
         if len(param_value) != 1:

@@ -1,7 +1,6 @@
 import logging
 import uuid
 from functools import cached_property
-from typing import Optional
 
 from pydantic import BaseModel, PositiveInt, field_validator, model_validator
 
@@ -13,10 +12,10 @@ log = logging.getLogger(__name__)
 class LockfilePackage(BaseModel):
     """Package item; represents RPM or SRPM file."""
 
-    repoid: Optional[str] = None
+    repoid: str | None = None
     url: str
-    checksum: Optional[str] = None
-    size: Optional[int] = None
+    checksum: str | None = None
+    size: int | None = None
 
 
 class LockfileModuleMetadata(LockfilePackage):

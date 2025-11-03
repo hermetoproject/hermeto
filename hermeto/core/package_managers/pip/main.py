@@ -5,7 +5,7 @@ import tarfile
 import zipfile
 from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from urllib import parse as urlparse
 
 import pypi_simple
@@ -158,7 +158,7 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
     name = package["name"]
     dependency_kind = package.get("kind", None)
     version = None
-    qualifiers: Optional[dict[str, str]] = None
+    qualifiers: dict[str, str] | None = None
 
     if dependency_kind == "pypi":
         version = package["version"]
@@ -206,7 +206,7 @@ def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
 
 def _extract_metadata_from_config_files(
     package_dir: RootedPath,
-) -> tuple[Optional[str], Optional[str]]:
+) -> tuple[str | None, str | None]:
     """
     Extract package name and version in the following order.
 
@@ -246,7 +246,7 @@ def _extract_metadata_from_config_files(
     return None, None
 
 
-def _get_pip_metadata(package_dir: RootedPath) -> tuple[str, Optional[str]]:
+def _get_pip_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
     """Attempt to retrieve name and version of a pip package."""
     name, version = _extract_metadata_from_config_files(package_dir)
 
@@ -267,7 +267,7 @@ def _process_req(
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
     download_info: dict[str, Any],
-    dpi: Optional[DistributionPackageInfo] = None,
+    dpi: DistributionPackageInfo | None = None,
 ) -> dict[str, Any]:
     download_info["kind"] = req.kind
     download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
@@ -319,7 +319,7 @@ def _process_pypi_req(
     requirements_file: PipRequirementsFile,
     index_url: str,
     pip_deps_dir: RootedPath,
-    binary_filters: Optional[PipBinaryFilters] = None,
+    binary_filters: PipBinaryFilters | None = None,
 ) -> list[dict[str, Any]]:
     download_infos: list[dict[str, Any]] = []
 
@@ -373,7 +373,7 @@ def _process_url_req(
 def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
-    binary_filters: Optional[PipBinaryFilters] = None,
+    binary_filters: PipBinaryFilters | None = None,
 ) -> list[dict[str, Any]]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
@@ -528,7 +528,7 @@ def _add_cachito_hash_to_url(parsed_url: urlparse.ParseResult, hash_spec: str) -
 def _download_from_requirement_files(
     output_dir: RootedPath,
     files: list[RootedPath],
-    binary_filters: Optional[PipBinaryFilters] = None,
+    binary_filters: PipBinaryFilters | None = None,
 ) -> list[dict[str, Any]]:
     """
     Download dependencies listed in the requirement files.
@@ -570,9 +570,9 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
 def _resolve_pip(
     package_path: RootedPath,
     output_dir: RootedPath,
-    requirement_files: Optional[list[Path]] = None,
-    build_requirement_files: Optional[list[Path]] = None,
-    binary_filters: Optional[PipBinaryFilters] = None,
+    requirement_files: list[Path] | None = None,
+    build_requirement_files: list[Path] | None = None,
+    binary_filters: PipBinaryFilters | None = None,
 ) -> dict[str, Any]:
     """
     Resolve and fetch pip dependencies for the given pip application.
@@ -593,7 +593,7 @@ def _resolve_pip(
     """
     pkg_name, pkg_version = _get_pip_metadata(package_path)
 
-    def resolve_req_files(req_files: Optional[list[Path]], devel: bool) -> list[RootedPath]:
+    def resolve_req_files(req_files: list[Path] | None, devel: bool) -> list[RootedPath]:
         resolved: list[RootedPath] = []
         # This could be an empty list
         if req_files is None:
@@ -747,7 +747,7 @@ def _check_metadata_in_sdist(sdist_path: Path) -> None:
         )
 
 
-def _replace_external_requirements(requirements_file_path: RootedPath) -> Optional[ProjectFile]:
+def _replace_external_requirements(requirements_file_path: RootedPath) -> ProjectFile | None:
     """Generate an updated requirements file.
 
     Replace the urls of external dependencies with file paths (templated).
@@ -755,7 +755,7 @@ def _replace_external_requirements(requirements_file_path: RootedPath) -> Option
     """
     requirements_file = PipRequirementsFile(requirements_file_path)
 
-    def maybe_replace(requirement: PipRequirement) -> Optional[PipRequirement]:
+    def maybe_replace(requirement: PipRequirement) -> PipRequirement | None:
         if requirement.kind in ("url", "vcs"):
             path = _get_external_requirement_filepath(requirement)
             templated_abspath = Path("${output_dir}", "deps", "pip", path)

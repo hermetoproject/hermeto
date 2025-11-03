@@ -2,7 +2,7 @@
 import asyncio
 import random
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -30,7 +30,7 @@ from tests.common_utils import GIT_REF
 @pytest.mark.parametrize("chunk_size", [1024, 2048])
 @mock.patch.object(pkg_requests_session, "get")
 def test_download_binary_file(
-    mock_get: Any, auth: Optional[AuthBase], insecure: bool, chunk_size: int, tmp_path: Path
+    mock_get: Any, auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
 ) -> None:
     timeout = get_config().requests_timeout
     url = "http://example.org/example.tar.gz"
