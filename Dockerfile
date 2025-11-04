@@ -11,7 +11,7 @@ RUN dnf -y install \
     --nodocs \
     git-core \
     jq \
-    python3 \
+    python3.11 \
     rubygem-bundler \
     rubygem-json \
     subscription-manager && \
@@ -28,14 +28,14 @@ RUN dnf -y install \
     gcc \
     # not a build dependency, but we copy the binary to the final image
     cargo \
-    python3-devel \
-    python3-pip \
-    python3-setuptools \
+    python3.11-devel \
+    python3.11-pip \
+    python3.11-setuptools \
     && dnf clean all
 
 # Install dependencies in a separate layer to maximize layer caching
 COPY requirements.txt .
-RUN python3 -m venv /venv && \
+RUN python3.11 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
     /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes
 
