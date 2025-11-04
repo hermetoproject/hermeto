@@ -147,9 +147,9 @@ def pip_compile(session: Session) -> None:
     uv_pip_compile_cmd = (
         "pip install uv && "
         # requirements.txt
-        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.9 --refresh --no-strip-markers pyproject.toml && "
+        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.10 --refresh --no-strip-markers pyproject.toml && "
         # requirements-extras.txt
-        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.9 --refresh --no-strip-markers pyproject.toml"
+        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.10 --refresh --no-strip-markers pyproject.toml"
     )
     cmd = [
         "podman",
@@ -159,7 +159,7 @@ def pip_compile(session: Session) -> None:
         f"{PWD}:/hermeto:rw,Z",
         "--workdir",
         "/hermeto",
-        "mirror.gcr.io/library/python:3.9-alpine",
+        "mirror.gcr.io/library/python:3.10-alpine",
         "sh",
         "-c",
         uv_pip_compile_cmd,
