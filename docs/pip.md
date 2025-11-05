@@ -45,15 +45,20 @@ where 'JSON input' is
   // specify *build* requirements files
   // defaults to ["requirements-build.txt"] or [] if the file does not exist
   "requirements_build_files": ["requirements-build.txt"],
-  // option to allow fetching binary distributions (wheels)
-  // defaults to "false"
-  "allow_binary": "false",
+  // binary filter object to prefetch specific wheels
+  // defaults to None - only sdists are prefetched by default
+  "binary": {
+    "packages": "tensorflow",
+    "arch": "x86_64",
+    "os": "linux",
+    "py_version": 312
+  }
 }
 ```
 
 or more simply by just invoking `hermeto fetch-deps pip`.
 
-*For more information on using build requirements and binary distributions, see
+*For more information on using build requirements and binary filter object, see
 [Distribution Formats](#distribution-formats) section.*
 
 The main argument accepts alternative forms of input, see
@@ -423,25 +428,104 @@ Sdists are more difficult to install. Pip must first build a wheel from the
 sdist using a [PEP 517][] build system. To do that, pip has to install the build
 system and its dependencies (defined via [PEP 518][]).
 
-Hermeto (unlike the older Cachito) can download both wheels and sdists. The
-`allow_binary` option controls this behavior.
-
-- `"allow_binary": "true"` download both wheels and sdists
-- `"allow_binary": "false"` download only sdists (default)
-
-> **NOTE**
->
-> Hermeto currently downloads one sdist and all the available wheels per
-> dependency (no filtering is being made by platform or Python version).
-
 ### Building with wheels
 
-Pre-fetching and building with wheels is much easier and faster than
-pre-fetching and building from source (even without filtering of wheels).
-However, downloading all the wheels naturally results in a much larger overall
-download size. Based on sample testing, wheels + sdists will be approximately 5x
-to 15x larger than just the sdists. When building with wheels, dealing with
-build dependencies via requirements-build.txt is unnecessary.
+Building with wheels is helpful when you do not want or cannot build from source.
+Some projects do not even distribute as sdists. For example, [tensorflow][]
+(as of version 2.11.0) distributes wheels only.
+
+You can use the binary filter object to prefetch the wheels you need to reduce
+the total download size and ensure compatibility with your target platform.
+
+Hermeto supports three binary fetching strategies, analogous to pip's
+`--no-binary`, `--prefer-binary`, and `--only-binary` options:
+
+1. **No Binaries** (default)
+   - Configuration: `binary` field unspecified
+   - Behavior: Hermeto operates in source-only mode. No binary artifacts will
+     be prefetched for any packages. This is the default behavior.
+
+2. **Prefer binaries**
+   - Configuration: `binary` field specified with `packages` filter set to `:all:`
+   - Behavior: Hermeto will attempt to prefetch compatible binaries for all
+     dependencies where possible. If no matching binary is available, it will
+     fall back to prefetching sdists instead.
+
+3. **Only binaries for specific packages**
+   - Configuration: `binary` field specified with `packages` filter set to specific
+     package names
+   - Behavior: For packages in the `packages` filter, Hermeto will attempt to
+     prefetch only binaries. If no matching binary can be found for one of these
+     packages, the operation will fail. Sdists for these packages will not be prefetched.
+     For packages not in the `packages` filter, Hermeto falls back to the "no binary"
+     mode above, i.e. only sdists are prefetched.
+
+#### Filter Options
+
+The `binary` object accepts the following filter options:
+
+- **`packages`**: Comma-separated list of package names to limit the filtering scope.
+  Default: `:all:`.
+
+- **`arch`**: Architecture filter. Accepts comma-separated values. Default: `"x86_64"`.
+
+- **`os`**: Operating system filter. Accepts comma-separated values. Default: `"linux"`.
+
+- **`py_version`**: Python version filter. Accepts a single integer consisting of
+  the major and minor versions combined (e.g., 312 for Python 3.12). Default: `None`.
+
+- **`py_impl`**: Python implementation filter. Accepts comma-separated values.
+  Default: `"cp"`.
+
+- **`abi`**: ABI filter. Accepts comma-separated values. Default: `:all:`.
+
+- **`platform`**: Regex pattern to match against platform tags. Default: `None`.
+
+For more information, see the [platform compatibility tags][] specification.
+
+#### Filter Logic
+
+- `:all:` or `None` are equivalent and mean that no filter is applied
+- multiple values within a single filter field are combined with **OR** logic
+- multiple filter fields are combined with **AND** logic
+- `arch` and `os` are mutually exclusive with `platform`
+
+#### Examples
+
+Prefetch wheels with default filters:
+
+```json
+{
+  "type": "pip",
+  "binary": {}
+}
+```
+
+Prefetch wheels for Python 3.12 on Linux aarch64:
+
+```json
+{
+  "type": "pip",
+  "binary": {
+    "os": "linux",
+    "arch": "aarch64",
+    "py_version": 312,
+    "py_impl": "cp,pp"
+  }
+}
+```
+
+Prefetch wheels for specific packages and platforms:
+
+```json
+{
+  "type": "pip",
+  "binary": {
+    "packages": "numpy,pandas",
+    "platform": "^(any|musllinux.*)$"
+  }
+}
+```
 
 ### Building from source
 
@@ -670,9 +754,9 @@ please let us know.
 Some projects do not distribute sdists to PyPI. For example, [tensorflow][] (as
 of version 2.11.0) distributes only wheels.
 
-Possible workarounds
+Possible workarounds:
 
-- Enable pre-fetching wheels using `"allow_binary": "true"` in JSON input.
+- Enable pre-fetching wheels using binary filter object in JSON input.
 - Find the git repository for the project, get the source tarball for a release.
 
 In requirements.txt, specify the dependency [via an https url](#https-urls).
@@ -786,6 +870,7 @@ these steps for you.
 
 [basic pip project]: https://github.com/hermetoproject/doc-examples/tree/pip-basic
 [binary format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format
+[platform compatibility tags]: https://packaging.python.org/en/latest/specifications/platform-compatibility-tags
 [declarative config]: https://setuptools.pypa.io/en/stable/userguide/declarative_config.html
 [discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
 [Hashes]: https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode
