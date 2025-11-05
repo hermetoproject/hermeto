@@ -102,7 +102,7 @@ log = logging.getLogger(__name__)
         pytest.param(
             utils.TestParameters(
                 branch="pip/no-wheels",
-                packages=({"path": ".", "type": "pip", "allow_binary": "true"},),
+                packages=({"path": ".", "type": "pip", "binary": {}},),
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -111,7 +111,7 @@ log = logging.getLogger(__name__)
         pytest.param(
             utils.TestParameters(
                 branch="pip/no-sdists",
-                packages=({"path": ".", "type": "pip", "allow_binary": "false"},),
+                packages=({"path": ".", "type": "pip"},),
                 check_output=False,
                 check_deps_checksums=False,
                 expected_exit_code=2,
@@ -122,7 +122,7 @@ log = logging.getLogger(__name__)
         pytest.param(
             utils.TestParameters(
                 branch="pip/custom-index",
-                packages=({"path": ".", "type": "pip", "allow_binary": True},),
+                packages=({"path": ".", "type": "pip", "binary": {}},),
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
@@ -221,7 +221,7 @@ def test_pip_packages(
                         "type": "pip",
                         "requirements_files": ["requirements.txt"],
                         "requirements_build_files": [],
-                        "allow_binary": "true",
+                        "binary": {"py_version": 312, "platform": "^(any|manylinux.*)$"},
                     },
                 ),
                 expected_exit_code=0,
