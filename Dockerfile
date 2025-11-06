@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi9/ubi@sha256:dec374e05cc13ebbc0975c9f521f3db6942d27f8ccdf06b180160490eef8bdbc AS ubi
 FROM mirror.gcr.io/library/golang:1.25.3-bookworm AS golang
-FROM mirror.gcr.io/library/node:24.8-bullseye AS node
+FROM mirror.gcr.io/library/node:24.11-bullseye AS node
 
 ########################
 # PREPARE OUR BASE IMAGE
