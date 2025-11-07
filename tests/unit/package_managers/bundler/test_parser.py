@@ -84,7 +84,7 @@ def test_parse_lockfile_os_error(
     with pytest.raises(PackageManagerError) as exc_info:
         parse_lockfile(rooted_tmp_path)
 
-    assert f"Failed to parse {empty_bundler_files[1]}" in exc_info.value.friendly_msg()
+    assert "Failed to parse Gemfile.lock" in exc_info.value.friendly_msg()
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
