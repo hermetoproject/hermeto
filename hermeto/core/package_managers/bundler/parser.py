@@ -25,10 +25,7 @@ BundlerDependency = GemDependency | GemPlatformSpecificDependency | GitDependenc
 ParseResult = list[BundlerDependency]
 
 
-def parse_lockfile(
-    package_dir: RootedPath, binary_filters: BundlerBinaryFilters | None = None
-) -> ParseResult:
-    """Parse a Gemfile.lock file and return a list of dependencies."""
+def _ensure_bundler_files_exist(package_dir: RootedPath) -> None:
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
     if not lockfile_path.path.exists() or not gemfile_path.path.exists():
@@ -39,12 +36,19 @@ def parse_lockfile(
         )
         raise PackageRejected(reason=reason, solution=solution)
 
+
+def parse_lockfile(
+    package_dir: RootedPath, binary_filters: BundlerBinaryFilters | None = None
+) -> ParseResult:
+    """Parse a Gemfile.lock file and return a list of dependencies."""
+    _ensure_bundler_files_exist(package_dir)
+
     scripts_dir = Path(__file__).parent / "scripts"
     lockfile_parser = scripts_dir / "lockfile_parser.rb"
     try:
         output = run_cmd(cmd=[str(lockfile_parser)], params={"cwd": package_dir.path})
-    except subprocess.CalledProcessError:
-        raise PackageManagerError(f"Failed to parse {lockfile_path}")
+    except subprocess.CalledProcessError as e:
+        raise PackageManagerError("Failed to parse Gemfile.lock") from e
 
     json_output = json.loads(output)
 

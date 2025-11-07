@@ -18,12 +18,7 @@ from hermeto.core.package_managers.bundler.gem_models import (
     GitDependency,
     PathDependency,
 )
-from hermeto.core.package_managers.bundler.parser import (
-    GEMFILE,
-    GEMFILE_LOCK,
-    BundlerDependency,
-    parse_lockfile,
-)
+from hermeto.core.package_managers.bundler.parser import BundlerDependency, parse_lockfile
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -38,17 +33,6 @@ def some_message_contains_substring(substring: RegexpStr, messages: Iterable[str
     """
     r = re.compile(substring)
     return any(r.match(m) is not None for m in messages)
-
-
-@pytest.fixture
-def empty_bundler_files(rooted_tmp_path: RootedPath) -> tuple[RootedPath, RootedPath]:
-    gemfile_path = rooted_tmp_path.join_within_root(GEMFILE)
-    gemfile_path.path.touch()
-
-    lockfile_path = rooted_tmp_path.join_within_root(GEMFILE_LOCK)
-    lockfile_path.path.touch()
-
-    return gemfile_path, lockfile_path
 
 
 SAMPLE_PARSER_OUTPUT = {
@@ -72,10 +56,11 @@ def test_parse_lockfile_without_bundler_files(rooted_tmp_path: RootedPath) -> No
     )
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_lockfile_os_error(
     mock_run_cmd: mock.MagicMock,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_run_cmd.side_effect = subprocess.CalledProcessError(returncode=1, cmd="cmd")
@@ -83,9 +68,10 @@ def test_parse_lockfile_os_error(
     with pytest.raises(PackageManagerError) as exc_info:
         parse_lockfile(rooted_tmp_path)
 
-    assert f"Failed to parse {empty_bundler_files[1]}" in exc_info.value.friendly_msg()
+    assert "Failed to parse Gemfile.lock" in exc_info.value.friendly_msg()
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 @pytest.mark.parametrize(
     "error, expected_error_msg",
@@ -98,9 +84,9 @@ def test_parse_lockfile_os_error(
 )
 def test_parse_lockfile_invalid_format(
     mock_run_cmd: mock.MagicMock,
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     error: str,
     expected_error_msg: str,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
     sample_parser_output: dict[str, Any],
     rooted_tmp_path: RootedPath,
 ) -> None:
@@ -143,10 +129,11 @@ def test_parse_lockfile_invalid_format(
     assert expected_error_msg in str(exc_info.value)
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock(
     mock_run_cmd: mock.MagicMock,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     sample_parser_output: dict[str, Any],
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
@@ -197,10 +184,11 @@ def test_parse_gemlock(
     assert result == expected_deps
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_empty(
     mock_run_cmd: mock.MagicMock,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -347,10 +335,11 @@ def test_purls(rooted_tmp_path_repo: RootedPath) -> None:
         assert dep.purl == expected_purl
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to(
     mock_run_cmd: mock.MagicMock,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     sample_parser_output: dict[str, Any],
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
@@ -384,10 +373,11 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
     assert result == expected_deps
 
 
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
 def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     mock_run_cmd: mock.MagicMock,
-    empty_bundler_files: tuple[RootedPath, RootedPath],
+    mock_ensure_bundler_files_exist: mock.MagicMock,
     sample_parser_output: dict[str, Any],
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
