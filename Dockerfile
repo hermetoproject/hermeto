@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi9/ubi@sha256:dec374e05cc13ebbc0975c9f521f3db6942d27f8ccdf06b180160490eef8bdbc AS ubi
 FROM mirror.gcr.io/library/golang:1.25.3-bookworm AS golang
 FROM mirror.gcr.io/library/node:24.8-bullseye AS node
+FROM mirror.gcr.io/rust:1.91.0-slim-bookworm as rust
 
 ########################
 # PREPARE OUR BASE IMAGE
@@ -26,8 +27,6 @@ RUN dnf -y install \
     --setopt install_weak_deps=0 \
     --nodocs \
     gcc \
-    # not a build dependency, but we copy the binary to the final image
-    cargo \
     python3.11-devel \
     python3.11-pip \
     python3.11-setuptools \
@@ -52,7 +51,7 @@ LABEL maintainer="Red Hat"
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=builder /usr/bin/cargo /usr/bin/cargo
+COPY --from=rust /usr/local/rustup/toolchains/*/bin/cargo /usr/bin/cargo
 COPY --from=builder /venv /venv
 
 # link corepack, yarn, and go to standard PATH location
