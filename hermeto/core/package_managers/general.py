@@ -114,6 +114,10 @@ async def async_download_files(
     retry_options = aiohttp_retry.JitterRetry(
         attempts=num_attempts,
         statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
+        exceptions={
+            aiohttp.ClientConnectionError,
+            aiohttp.ClientPayloadError,
+        },
     )
     retry_client = aiohttp_retry.RetryClient(
         retry_options=retry_options,
