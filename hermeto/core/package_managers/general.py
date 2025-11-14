@@ -111,7 +111,10 @@ async def async_download_files(
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
-    retry_options = aiohttp_retry.JitterRetry(attempts=num_attempts, retry_all_server_errors=True)
+    retry_options = aiohttp_retry.JitterRetry(
+        attempts=num_attempts,
+        statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
+    )
     retry_client = aiohttp_retry.RetryClient(
         retry_options=retry_options,
         trace_configs=[trace_config],
