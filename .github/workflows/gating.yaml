@@ -106,6 +106,15 @@ jobs:
     # ubuntu 24.04 and respect the YAML tag (revert the commit that added this)
     runs-on: ubuntu-24.04
     steps:
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h /
+          # Android consumes >12G disk space
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk space after cleanup:"
+          df -h /
+
       - name: Install required packages
         run: |
           sudo apt-get update
