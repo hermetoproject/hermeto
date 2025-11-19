@@ -615,6 +615,21 @@ class TestPurlifier:
         assert isinstance(purl.qualifiers, dict)
         assert purl.qualifiers.get("checksum") == expect_checksum_qualifier
 
+    def test_get_purl_for_file_package_without_vcs_url(
+        self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test _Purlifier.get_purl for file package without vcs_url (non-git source)."""
+        # Patch get_repo_id to return None, ensuring test doesn't depend on tmp path.
+        monkeypatch.setattr(
+            "hermeto.core.package_managers.npm.get_repo_id", lambda *args, **kwargs: None
+        )
+
+        purlifier = _Purlifier(rooted_tmp_path)
+        purl = purlifier.get_purl("my-package", "1.0.0", "file:packages/my-package", None)
+        purl_string = purl.to_string()
+        assert purl_string == "pkg:npm/my-package@1.0.0#packages/my-package"
+        assert "vcs_url" not in purl_string
+
 
 @pytest.mark.parametrize(
     "components, expected_components",

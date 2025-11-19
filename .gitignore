@@ -131,3 +131,8 @@ cachi2.env
 
 hermeto-output/
 hermeto.env
+
+# Agents
+.claude
+.agents
+.agent-context

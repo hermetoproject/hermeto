@@ -6,14 +6,14 @@ import json
 import logging
 import os.path
 from pathlib import Path
-from typing import Any, Literal, NewType, TypedDict
+from typing import Any, Literal, NewType, Optional, TypedDict
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -318,8 +318,12 @@ class _Purlifier:
         self._pkg_path = pkg_path
 
     @functools.cached_property
-    def _repo_id(self) -> RepoID:
-        return get_repo_id(self._pkg_path.root)
+    def _repo_id(self) -> Optional[RepoID]:
+        try:
+            # Try to get repo_id, but return None if not a git repository
+            return get_repo_id(self._pkg_path.root)
+        except NotAGitRepo:
+            return None
 
     def get_purl(
         self,
@@ -350,7 +354,9 @@ class _Purlifier:
             repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
-            qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
+            qualifiers = {}
+            if self._repo_id is not None:
+                qualifiers["vcs_url"] = self._repo_id.as_vcs_url_qualifier()
             path = urlparse(resolved_url).path
             subpath_from_root = self._pkg_path.join_within_root(path).subpath_from_root
             if subpath_from_root != Path():

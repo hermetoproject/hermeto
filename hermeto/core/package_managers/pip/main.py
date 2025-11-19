@@ -14,7 +14,7 @@ from packaging.utils import canonicalize_name
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -134,8 +134,15 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
     type = "pypi"
     name = package["name"]
     version = package["version"]
-    url = get_repo_id(package_path.root).as_vcs_url_qualifier()
-    qualifiers = {"vcs_url": url}
+    qualifiers = {}
+    try:
+        repo = get_repo_id(package_path.root)
+        if repo is not None:
+            url = repo.as_vcs_url_qualifier()
+            qualifiers["vcs_url"] = url
+    except NotAGitRepo:
+        # Not a git repository - skip vcs_url in permissive mode
+        pass
     if package_path.subpath_from_root != Path("."):
         subpath = package_path.subpath_from_root.as_posix()
     else:
@@ -189,7 +196,17 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
 def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
     try:
         repo_id = get_repo_id(package_dir.root)
-    except UnsupportedFeature:
+    except (UnsupportedFeature, NotAGitRepo):
+        raise PackageRejected(
+            reason="Unable to infer package name from origin URL",
+            solution=(
+                "Provide valid metadata in the package files or ensure"
+                "the git repository has an 'origin' remote with a valid URL."
+            ),
+            docs=PIP_METADATA_DOC,
+        )
+
+    if repo_id is None:
         raise PackageRejected(
             reason="Unable to infer package name from origin URL",
             solution=(
