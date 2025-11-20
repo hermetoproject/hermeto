@@ -1100,3 +1100,63 @@ def test_get_pedigree_with_unsupported_locators(
 
     with pytest.raises(UnsupportedFeature):
         _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+
+
+@pytest.mark.parametrize(
+    "mocked_package, expect_component_purl_prefix",
+    [
+        pytest.param(
+            MockedPackage(
+                Package(
+                    raw_locator="my-workspace@workspace:./my-workspace",
+                    version=None,
+                    checksum=None,
+                    cache_path=None,
+                ),
+                is_hardlink=False,
+                packjson_path="my-workspace/package.json",
+                packjson_content=json.dumps({"name": "my-workspace", "version": "1.0.0"}),
+            ),
+            "pkg:npm/my-workspace@1.0.0#my-workspace",
+            id="workspace_package_without_vcs_url",
+        ),
+        pytest.param(
+            MockedPackage(
+                Package(
+                    raw_locator="my-file@file:files/my-file.tgz::locator=my-workspace%40workspace%3A.",
+                    version="2.0.0",
+                    checksum="abc123",
+                    cache_path="cache/my-file-file-abc123.zip",
+                ),
+                is_hardlink=True,
+                packjson_path="node_modules/my-file/package.json",
+                packjson_content=json.dumps({"name": "my-file"}),
+            ),
+            "pkg:npm/my-file@2.0.0#files/my-file.tgz",
+            id="file_package_without_vcs_url",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+def test_create_components_without_vcs_url(
+    mock_get_repo_id: mock.Mock,
+    mocked_package: MockedPackage,
+    expect_component_purl_prefix: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test package PURL generation without vcs_url (non-git source)."""
+    # Patch `get_repo_id` to return None, ensuring test doesn't depend on tmp path.
+    mock_get_repo_id.return_value = None
+
+    project_dir = rooted_tmp_path
+    output_dir = rooted_tmp_path.join_within_root("output")
+
+    mocked_package = mocked_package.resolve_cache_path(output_dir)
+    mock_package_json(mocked_package, project_dir)
+
+    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+
+    assert len(components) == 1
+    purl = components[0].purl
+    assert purl.startswith(expect_component_purl_prefix)
+    assert "vcs_url=" not in purl
