@@ -11,6 +11,7 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
@@ -34,11 +35,10 @@ from hermeto.core.package_managers.npm import (
     fetch_npm_source,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import RepoID
 from tests.common_utils import GIT_REF
 
-MOCK_REPO_ID = RepoID("https://github.com/foolish/bar.git", "abcdef1234")
 MOCK_REPO_VCS_URL = "git%2Bhttps://github.com/foolish/bar.git%40abcdef1234"
+MOCK_VCS_QUALIFIERS = {"vcs_url": "git+https://github.com/foolish/bar.git@abcdef1234"}
 
 
 @pytest.fixture
@@ -56,10 +56,12 @@ def npm_request(rooted_tmp_path: RootedPath, npm_input_packages: list[dict[str, 
 
 
 @pytest.fixture
-def mock_get_repo_id() -> Iterator[mock.Mock]:
-    with mock.patch("hermeto.core.package_managers.npm.get_repo_id") as mocked_get_repo_id:
-        mocked_get_repo_id.return_value = MOCK_REPO_ID
-        yield mocked_get_repo_id
+def mock_get_vcs_qualifiers() -> Iterator[mock.Mock]:
+    with mock.patch(
+        "hermeto.core.package_managers.npm.get_vcs_qualifiers"
+    ) as mocked_get_vcs_qualifiers:
+        mocked_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
+        yield mocked_get_vcs_qualifiers
 
 
 class TestPackage:
@@ -595,12 +597,12 @@ class TestPurlifier:
         pkg_data: tuple[str, str | None, str],
         expect_purl: PackageURL,
         rooted_tmp_path: RootedPath,
-        mock_get_repo_id: mock.Mock,
+        mock_get_vcs_qualifiers: mock.Mock,
     ) -> None:
         pkg_path = rooted_tmp_path.join_within_root(main_pkg_subpath)
         purl = _Purlifier(pkg_path).get_purl(*pkg_data, integrity=None)
         assert purl.to_string() == expect_purl
-        mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root)
+        mock_get_vcs_qualifiers.assert_called_once_with(rooted_tmp_path.root, mode=Mode.STRICT)
 
     @pytest.mark.parametrize(
         "resolved_url, integrity, expect_checksum_qualifier",
@@ -622,11 +624,25 @@ class TestPurlifier:
         resolved_url: str,
         integrity: str | None,
         expect_checksum_qualifier: str | None,
-        mock_get_repo_id: mock.Mock,
+        mock_get_vcs_qualifiers: mock.Mock,
     ) -> None:
         purl = _Purlifier(RootedPath("/foo")).get_purl("foo", None, resolved_url, integrity)
         assert isinstance(purl.qualifiers, dict)
         assert purl.qualifiers.get("checksum") == expect_checksum_qualifier
+
+    @mock.patch("hermeto.core.package_managers.npm.get_vcs_qualifiers")
+    def test_get_purl_for_file_package_without_vcs_url(
+        self, mock_get_vcs_qualifiers: mock.Mock, rooted_tmp_path: RootedPath
+    ) -> None:
+        """Test _Purlifier.get_purl for file package without vcs_url (non-git source)."""
+        # Patch `get_vcs_qualifiers` to return empty dict, ensuring test doesn't depend on tmp path
+        mock_get_vcs_qualifiers.return_value = {}
+
+        purlifier = _Purlifier(rooted_tmp_path)
+        purl = purlifier.get_purl("my-package", "1.0.0", "file:packages/my-package", None)
+        purl_string = purl.to_string()
+        assert purl_string == "pkg:npm/my-package@1.0.0#packages/my-package"
+        assert "vcs_url=" not in purl_string
 
 
 @pytest.mark.parametrize(
@@ -1419,7 +1435,7 @@ def test_resolve_npm(
     main_pkg_subpath: str,
     package_lock_json: dict[str, str | dict],
     expected_output: dict[str, Any],
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
 ) -> None:
     """Test _resolve_npm with different package-lock.json inputs."""
     pkg_dir = rooted_tmp_path.join_within_root(main_pkg_subpath)
@@ -1450,7 +1466,7 @@ def test_resolve_npm(
     update_package_json_files.assert_called()
 
     assert pkg_info == expected_output
-    mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root)
+    mock_get_vcs_qualifiers.assert_called_once_with(rooted_tmp_path.root, mode=Mode.STRICT)
 
 
 def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) -> None:
