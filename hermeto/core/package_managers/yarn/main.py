@@ -3,6 +3,7 @@ import logging
 import semver
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -32,7 +33,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        components.extend(_resolve_yarn_project(project, request.output_dir))
+        components.extend(_resolve_yarn_project(project, request.output_dir, mode=request.mode))
 
     return RequestOutput.from_obj_list(
         components, _generate_environment_variables(), project_files=[]
@@ -96,11 +97,14 @@ def _verify_repository(project: Project) -> None:
     _check_lockfile(project)
 
 
-def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Component]:
+def _resolve_yarn_project(
+    project: Project, output_dir: RootedPath, mode: Mode = Mode.STRICT
+) -> list[Component]:
     """Process a request for a single yarn source directory.
 
     :param project: the directory to be processed.
     :param output_dir: the directory where the prefetched dependencies will be placed.
+    :param mode: the mode to use when resolving dependencies.
     :raises PackageManagerError: if fetching dependencies fails
     """
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
@@ -112,7 +116,7 @@ def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Comp
     packages = resolve_packages(project.source_dir)
     _fetch_dependencies(project.source_dir)
 
-    return create_components(packages, project, output_dir)
+    return create_components(packages, project, output_dir, mode=mode)
 
 
 def _configure_yarn_version(project: Project) -> semver.Version:
