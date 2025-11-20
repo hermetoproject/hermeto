@@ -113,7 +113,7 @@ build [lifecycle phase](https://maven.apache.org/guides/introduction/introductio
 
 Plugins can be declared as dependencies in the `pom.xml`, where their default behavior can also be
 configured. See the [Getting Started](https://maven.apache.org/guides/getting-started/index.html#How_do_I_use_plugins.3F)
-guide for more informatoin.
+guide for more information.
 
 ## Design
 
@@ -310,7 +310,7 @@ The Maven [dependency plugin](https://maven.apache.org/plugins/maven-dependency-
 some tooling to facilitate dependency analysis and download content. Though this is an official
 plugin sponsored by Maven's parent foundation (Apache Software Foundation), the maintainers are
 reluctant to add features Hermeto would likely need, such as [checksums](https://lists.apache.org/thread/p1st01lcrp2jy127jtjqwg72v9bbrcyz).
-With the upcoming work in Maven 4, there is a high likelhood that this plugin will be replaced with
+With the upcoming work in Maven 4, there is a high likelihood that this plugin will be replaced with
 an entirely new tool, such as current [toolbox](https://github.com/maveniverse/toolbox) authored by
 active Maven maintainers.
 
