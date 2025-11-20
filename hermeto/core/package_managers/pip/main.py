@@ -14,6 +14,7 @@ from packaging.utils import canonicalize_name
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
@@ -44,7 +45,7 @@ from hermeto.core.package_managers.pip.rust import (
     find_and_fetch_rust_dependencies,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import clone_as_tarball, get_repo_id
+from hermeto.core.scm import clone_as_tarball, get_repo_id, get_vcs_qualifiers
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
@@ -74,8 +75,9 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             package.requirements_files,
             package.requirements_build_files,
             package.binary,
+            mode=request.mode,
         )
-        purl = _generate_purl_main_package(info["package"], package_path)
+        purl = _generate_purl_main_package(info["package"], package_path, mode=request.mode)
         components.append(
             Component(name=info["package"]["name"], version=info["package"]["version"], purl=purl)
         )
@@ -124,13 +126,14 @@ def fetch_pip_source(request: Request) -> RequestOutput:
     return pip_packages + cargo_packages
 
 
-def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPath) -> str:
+def _generate_purl_main_package(
+    package: dict[str, Any], package_path: RootedPath, mode: Mode = Mode.STRICT
+) -> str:
     """Get the purl for this package."""
     type = "pypi"
     name = package["name"]
     version = package["version"]
-    url = get_repo_id(package_path.root).as_vcs_url_qualifier()
-    qualifiers = {"vcs_url": url}
+    qualifiers = get_vcs_qualifiers(package_path.root, mode=mode)
     if package_path.subpath_from_root != Path("."):
         subpath = package_path.subpath_from_root.as_posix()
     else:
@@ -181,17 +184,20 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
     return purl.to_string()
 
 
-def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
+def _infer_package_name_from_origin_url(package_dir: RootedPath, mode: Mode = Mode.STRICT) -> str:
+    error_reason = "Unable to infer package name from origin URL"
+    error_solution = (
+        "Provide valid metadata in the package files or ensure "
+        "the git repository has an 'origin' remote with a valid URL."
+    )
+
     try:
-        repo_id = get_repo_id(package_dir.root)
+        repo_id = get_repo_id(package_dir.root, mode=mode)
     except UnsupportedFeature:
-        raise PackageRejected(
-            reason="Unable to infer package name from origin URL",
-            solution=(
-                "Provide valid metadata in the package files or ensure"
-                "the git repository has an 'origin' remote with a valid URL."
-            ),
-        )
+        raise PackageRejected(reason=error_reason, solution=error_solution)
+
+    if repo_id is None:
+        raise PackageRejected(reason=error_reason, solution=error_solution)
 
     repo_name = Path(repo_id.parsed_origin_url.path).stem
     resolved_name = Path(repo_name).joinpath(package_dir.subpath_from_root)
@@ -240,12 +246,12 @@ def _extract_metadata_from_config_files(
     return None, None
 
 
-def _get_pip_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
+def _get_pip_metadata(package_dir: RootedPath, mode: Mode = Mode.STRICT) -> tuple[str, str | None]:
     """Attempt to retrieve name and version of a pip package."""
     name, version = _extract_metadata_from_config_files(package_dir)
 
     if not name:
-        name = _infer_package_name_from_origin_url(package_dir)
+        name = _infer_package_name_from_origin_url(package_dir, mode=mode)
 
     log.info("Resolved name %s for package at %s", name, package_dir)
     if version:
@@ -567,6 +573,7 @@ def _resolve_pip(
     requirement_files: list[Path] | None = None,
     build_requirement_files: list[Path] | None = None,
     binary_filters: PipBinaryFilters | None = None,
+    mode: Mode = Mode.STRICT,
 ) -> dict[str, Any]:
     """
     Resolve and fetch pip dependencies for the given pip application.
@@ -578,6 +585,7 @@ def _resolve_pip(
     :param list build_requirement_files: a list of str representing paths to the Python build
         requirement files to be used to compile a list of build dependencies to be fetched
     :param binary_filters: process wheels?
+    :param mode: the mode to use when resolving dependencies
     :return: a dictionary that has the following keys:
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
@@ -585,7 +593,7 @@ def _resolve_pip(
     :raises PackageRejected | UnsupportedFeature: if the package is not compatible with our
     requirements/expectations
     """
-    pkg_name, pkg_version = _get_pip_metadata(package_path)
+    pkg_name, pkg_version = _get_pip_metadata(package_path, mode=mode)
 
     def resolve_req_files(req_files: list[Path] | None, devel: bool) -> list[RootedPath]:
         resolved: list[RootedPath] = []
