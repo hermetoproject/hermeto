@@ -6,6 +6,3 @@
 !pyproject.toml
 !requirements.txt
 !MANIFEST.in
-
-# Temporary Konflux workaround
-!labels.json
