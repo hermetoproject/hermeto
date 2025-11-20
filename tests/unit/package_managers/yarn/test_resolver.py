@@ -27,10 +27,9 @@ from hermeto.core.package_managers.yarn.resolver import (
     resolve_packages,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import RepoID
 
-MOCK_REPO_ID = RepoID("https://github.com/org/project.git", "fffffff")
 MOCK_REPO_VCS_URL = quote("git+https://github.com/org/project.git@fffffff", safe="://")
+MOCK_VCS_QUALIFIERS = {"vcs_url": "git+https://github.com/org/project.git@fffffff"}
 
 
 def mock_yarn_info_output(yarn_info_outputs: list[dict[str, Any]]) -> str:
@@ -311,7 +310,7 @@ def mock_project(project_dir: RootedPath) -> Project:
     )
 
 
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @pytest.mark.parametrize(
     "mocked_package, expect_component, expect_logs",
     [
@@ -540,14 +539,14 @@ def mock_project(project_dir: RootedPath) -> Project:
     ],
 )
 def test_create_components_single_package(
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     mocked_package: MockedPackage,
     expect_component: Component,
     expect_logs: list[str],
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
 
     project_dir = RootedPath(tmp_path / "project")
     output_dir = RootedPath(tmp_path / "output")
@@ -562,15 +561,15 @@ def test_create_components_single_package(
     assert caplog.messages == expect_logs
 
 
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_create_components_patched_packages(
     mock_get_yarn_version: mock.Mock,
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
     project_dir = rooted_tmp_path
 
     mocked_packages = [
@@ -643,15 +642,15 @@ def test_create_components_patched_packages(
     assert components == expect_components
 
 
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_create_components_patched_packages_with_multiple_paths(
     mock_get_yarn_version: mock.Mock,
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
     project_dir = rooted_tmp_path
 
     mocked_packages = [
@@ -954,18 +953,18 @@ def test_create_components_cache_path_reported_but_missing(rooted_tmp_path: Root
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_get_path_patch_url(
     mock_get_yarn_version: mock.Mock,
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     rooted_tmp_path: RootedPath,
     patch_path_template: str,
     workspace_locator: Optional[WorkspaceLocator],
     expected_url: str,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
 
     source_dir_path = rooted_tmp_path.path / "source"
     source_dir_path.mkdir()
@@ -1013,15 +1012,15 @@ def test_get_builtin_patch_url(
     assert actual_url == expected_url
 
 
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_pedigree_mapping_flattens_nested_patches(
     mock_get_yarn_version: mock.Mock,
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
 
     source_dir_path = rooted_tmp_path.path / "source"
     source_dir_path.mkdir()
@@ -1084,19 +1083,79 @@ def test_pedigree_mapping_flattens_nested_patches(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_get_pedigree_with_unsupported_locators(
     mock_get_yarn_version: mock.Mock,
-    mock_get_repo_id: mock.Mock,
+    mock_get_vcs_qualifiers: mock.Mock,
     patch: Path | str,
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)
-    mock_get_repo_id.return_value = MOCK_REPO_ID
+    mock_get_vcs_qualifiers.return_value = MOCK_VCS_QUALIFIERS
 
     patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), [patch], None)]
     mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
         _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+
+
+@pytest.mark.parametrize(
+    "mocked_package, expect_component_purl_prefix",
+    [
+        pytest.param(
+            MockedPackage(
+                Package(
+                    raw_locator="my-workspace@workspace:./my-workspace",
+                    version=None,
+                    checksum=None,
+                    cache_path=None,
+                ),
+                is_hardlink=False,
+                packjson_path="my-workspace/package.json",
+                packjson_content=json.dumps({"name": "my-workspace", "version": "1.0.0"}),
+            ),
+            "pkg:npm/my-workspace@1.0.0#my-workspace",
+            id="workspace_package_without_vcs_url",
+        ),
+        pytest.param(
+            MockedPackage(
+                Package(
+                    raw_locator="my-file@file:files/my-file.tgz::locator=my-workspace%40workspace%3A.",
+                    version="2.0.0",
+                    checksum="abc123",
+                    cache_path="cache/my-file-file-abc123.zip",
+                ),
+                is_hardlink=True,
+                packjson_path="node_modules/my-file/package.json",
+                packjson_content=json.dumps({"name": "my-file"}),
+            ),
+            "pkg:npm/my-file@2.0.0#files/my-file.tgz",
+            id="file_package_without_vcs_url",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_vcs_qualifiers")
+def test_create_components_without_vcs_url(
+    mock_get_vcs_qualifiers: mock.Mock,
+    mocked_package: MockedPackage,
+    expect_component_purl_prefix: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test package PURL generation without vcs_url (non-git source)."""
+    # Patch `get_vcs_qualifiers` to return empty dict, ensuring test doesn't depend on tmp path.
+    mock_get_vcs_qualifiers.return_value = {}
+
+    project_dir = rooted_tmp_path
+    output_dir = rooted_tmp_path.join_within_root("output")
+
+    mocked_package = mocked_package.resolve_cache_path(output_dir)
+    mock_package_json(mocked_package, project_dir)
+
+    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+
+    assert len(components) == 1
+    purl = components[0].purl
+    assert purl.startswith(expect_component_purl_prefix)
+    assert "vcs_url=" not in purl
