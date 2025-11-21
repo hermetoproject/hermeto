@@ -1312,7 +1312,10 @@ class ModuleVersionResolver:
         repo = git.Repo(repo_path)
         commit = repo.commit(repo.rev_parse("HEAD").hexsha)
         try:
-            repo.remote().fetch(force=True, tags=True)
+            # Do not run 'git fetch --tags' because that fetches pretty much everything from the
+            # remote. Save bandwidth and storage with an explicit refspec instead.
+            # See man 1 git-fetch for the authoritative answer.
+            repo.remote().fetch(refspec="+refs/tags/*:refs/tags/*", force=True)
         except Exception as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
@@ -1335,6 +1338,10 @@ class ModuleVersionResolver:
     def _get_commit_tags(self, all_reachable: bool = False) -> list[str]:
         """
         Return all of the tags associated with the current commit.
+
+        Note that we cannot simply run 'git describe SHA' here because that always only returns a
+        single entry rather than multiple which may not be of the required semver format that we may
+        have to filter further!
 
         :param all_reachable: True to get all tags on the current commit and all commits preceding
                               it. False to get the tags on the current commit only.
