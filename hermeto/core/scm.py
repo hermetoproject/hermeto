@@ -13,6 +13,7 @@ import git
 from git.exc import BadName, GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     GitError,
