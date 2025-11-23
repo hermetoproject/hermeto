@@ -12,8 +12,9 @@ from urllib.parse import urlparse, urlunparse
 import tomlkit
 from packageurl import PackageURL
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -289,7 +290,8 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
     main_package_name, main_package_version = _resolve_main_package(package_dir)
 
     try:
-        vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+        repo = get_repo_id(package_dir.root)
+        vcs_url = repo.as_vcs_url_qualifier() if repo is not None else None
     except NotAGitRepo:
         # Could become invalid when directories are swapped for nested package managers
         vcs_url = None
