@@ -13,6 +13,7 @@ from pyarn.lockfile import Package as PYarnPackage
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected, UnexpectedFormat
 from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
 from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
@@ -26,7 +27,7 @@ from hermeto.core.package_managers.yarn_classic.workspaces import (
     extract_workspace_metadata,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import get_vcs_qualifiers
 
 # https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/resolvers/exotics/git-resolver.js#L15-L17
 GIT_HOSTS = frozenset(("github.com", "gitlab.com", "bitbucket.com", "bitbucket.org"))
@@ -49,6 +50,7 @@ class _BasePackage(ABC):
     version: str | None = None
     integrity: str | None = None
     dev: bool = False
+    mode: Mode = Mode.STRICT
 
     @property
     @abstractmethod
@@ -64,6 +66,23 @@ class _UrlMixin:
 @dataclass
 class _PathMixin:
     path: RootedPath
+
+
+@dataclass
+class _LocalPathPackage(_BasePackage, _PathMixin):
+    """Base class for local path-based packages (file, workspace, link)."""
+
+    @property
+    def purl(self) -> str:
+        """Return package URL."""
+        qualifiers = get_vcs_qualifiers(self.path.root, mode=self.mode)
+        return PackageURL(
+            type="npm",
+            name=self.name,
+            version=self.version,
+            qualifiers=qualifiers,
+            subpath=str(self.path.subpath_from_root),
+        ).to_string()
 
 
 @dataclass
@@ -125,57 +144,18 @@ class UrlPackage(_BasePackage, _UrlMixin):
 
 
 @dataclass
-class FilePackage(_BasePackage, _PathMixin):
+class FilePackage(_LocalPathPackage):
     """A Yarn 1.x package from a local file path."""
 
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
-        ).to_string()
-
 
 @dataclass
-class WorkspacePackage(_BasePackage, _PathMixin):
+class WorkspacePackage(_LocalPathPackage):
     """A Yarn 1.x local workspace package."""
 
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
-        ).to_string()
-
 
 @dataclass
-class LinkPackage(_BasePackage, _PathMixin):
+class LinkPackage(_LocalPathPackage):
     """A Yarn 1.x local link package."""
-
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
-        ).to_string()
 
 
 YarnClassicPackage = (
@@ -185,11 +165,16 @@ YarnClassicPackage = (
 
 class _YarnClassicPackageFactory:
     def __init__(
-        self, source_dir: RootedPath, mirror_dir: RootedPath, runtime_deps: set[str]
+        self,
+        source_dir: RootedPath,
+        mirror_dir: RootedPath,
+        runtime_deps: set[str],
+        mode: Mode = Mode.STRICT,
     ) -> None:
         self._source_dir = source_dir
         self._mirror_dir = mirror_dir
         self._runtime_deps = runtime_deps
+        self._mode = mode
 
     def create_package_from_pyarn_package(self, package: PYarnPackage) -> YarnClassicPackage:
         def assert_package_has_relative_path(package: PYarnPackage) -> None:
@@ -229,6 +214,7 @@ class _YarnClassicPackageFactory:
                     path=path,
                     integrity=package.checksum,
                     dev=dev,
+                    mode=self._mode,
                 )
 
             package_json_path = path.join_within_root("package.json")
@@ -243,6 +229,7 @@ class _YarnClassicPackageFactory:
                 version=package.version,
                 path=path,
                 dev=dev,
+                mode=self._mode,
             )
         elif _is_git_url(package.url):
             tarball_name = get_git_tarball_mirror_name(package.url)
@@ -323,18 +310,24 @@ def _is_from_npm_registry(url: str) -> bool:
 
 
 def _get_packages_from_lockfile(
-    source_dir: RootedPath, mirror_dir: RootedPath, yarn_lock: YarnLock, runtime_deps: set[str]
+    source_dir: RootedPath,
+    mirror_dir: RootedPath,
+    yarn_lock: YarnLock,
+    runtime_deps: set[str],
+    mode: Mode = Mode.STRICT,
 ) -> list[YarnClassicPackage]:
     """Return a list of Packages for all dependencies in yarn.lock."""
     pyarn_packages: list[PYarnPackage] = yarn_lock.yarn_lockfile.packages()
-    package_factory = _YarnClassicPackageFactory(source_dir, mirror_dir, runtime_deps)
+    package_factory = _YarnClassicPackageFactory(source_dir, mirror_dir, runtime_deps, mode)
 
     return [
         package_factory.create_package_from_pyarn_package(package) for package in pyarn_packages
     ]
 
 
-def _get_main_package(source_dir: RootedPath, package_json: PackageJson) -> WorkspacePackage:
+def _get_main_package(
+    source_dir: RootedPath, package_json: PackageJson, mode: Mode = Mode.STRICT
+) -> WorkspacePackage:
     """Return a WorkspacePackage for the main package in package.json."""
     if "name" not in package_json._data:
         raise PackageRejected(
@@ -345,11 +338,12 @@ def _get_main_package(source_dir: RootedPath, package_json: PackageJson) -> Work
         name=package_json.data.get("name"),  # type: ignore
         version=package_json.data.get("version"),
         path=source_dir,
+        mode=mode,
     )
 
 
 def _get_workspace_packages(
-    source_dir: RootedPath, workspaces: list[Workspace]
+    source_dir: RootedPath, workspaces: list[Workspace], mode: Mode = Mode.STRICT
 ) -> list[WorkspacePackage]:
     """Return a WorkspacePackage for each Workspace."""
     return [
@@ -357,12 +351,15 @@ def _get_workspace_packages(
             name=ws.package_json.data.get("name"),  # type: ignore
             version=ws.package_json.data.get("version"),
             path=source_dir.join_within_root(ws.path),
+            mode=mode,
         )
         for ws in workspaces
     ]
 
 
-def resolve_packages(project: Project, mirror_dir: RootedPath) -> Iterable[YarnClassicPackage]:
+def resolve_packages(
+    project: Project, mirror_dir: RootedPath, mode: Mode = Mode.STRICT
+) -> Iterable[YarnClassicPackage]:
     """Return a list of Packages corresponding to all project dependencies."""
     workspaces = extract_workspace_metadata(project.source_dir)
     yarn_lock = YarnLock.from_file(project.source_dir.join_within_root("yarn.lock"))
@@ -370,10 +367,10 @@ def resolve_packages(project: Project, mirror_dir: RootedPath) -> Iterable[YarnC
 
     result: list[YarnClassicPackage] = []
 
-    result.append(_get_main_package(project.source_dir, project.package_json))
-    result.extend(_get_workspace_packages(project.source_dir, workspaces))
+    result.append(_get_main_package(project.source_dir, project.package_json, mode))
+    result.extend(_get_workspace_packages(project.source_dir, workspaces, mode))
     result.extend(
-        _get_packages_from_lockfile(project.source_dir, mirror_dir, yarn_lock, runtime_deps)
+        _get_packages_from_lockfile(project.source_dir, mirror_dir, yarn_lock, runtime_deps, mode)
     )
     return result
 
