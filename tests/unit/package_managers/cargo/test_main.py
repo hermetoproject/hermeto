@@ -2,7 +2,11 @@ from typing import Any
 
 import pytest
 
-from hermeto.core.package_managers.cargo.main import CargoPackage, _resolve_main_package
+from hermeto.core.package_managers.cargo.main import (
+    CargoPackage,
+    LocalCargoPackage,
+    _resolve_main_package,
+)
 from hermeto.core.rooted_path import RootedPath
 
 
@@ -93,3 +97,16 @@ def test_virtual_workspace_without_workspace_version(rooted_tmp_path: RootedPath
 def test_cargo_package_purl_generation(pkg: dict[str, Any], expected_purl: str) -> None:
     package = CargoPackage(**pkg)
     assert package.purl.to_string() == expected_purl
+
+
+def test_local_cargo_package_without_vcs_url() -> None:
+    """Test LocalCargoPackage PURL generation without vcs_url (non-git source)."""
+    package = LocalCargoPackage(
+        name="my-local-package",
+        version="1.0.0",
+        vcs_url=None,
+        subpath="packages/my-local-package",
+    )
+    purl = package.purl.to_string()
+    assert purl == "pkg:cargo/my-local-package@1.0.0"
+    assert "vcs_url" not in purl
