@@ -13,6 +13,7 @@ from git.exc import InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.type_aliases import StrPath
 
