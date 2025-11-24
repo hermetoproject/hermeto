@@ -2620,3 +2620,104 @@ def test_go_exec_env(
 
     actual = _go_exec_env() if extra_env is None else _go_exec_env(**extra_env)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_fields",
+    [
+        pytest.param(
+            {
+                "Vcs": "git",
+                "Url": "github.com/my-org/some-repo",
+                "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "Ref": "refs/tags/v1.11.0",
+            },
+            {
+                "vcs": "git",
+                "url": "github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_origin",
+        ),
+    ],
+)
+def test_parsed_origin_from_json(input_json: dict, expected_fields: dict) -> None:
+    """Test ParsedOrigin parsing from JSON with PascalCase field mapping."""
+    from hermeto.core.package_managers.gomod import ParsedOrigin
+
+    origin = ParsedOrigin.model_validate(input_json)
+
+    assert origin.vcs == expected_fields["vcs"]
+    assert origin.url == expected_fields["url"]
+    assert origin.hash == expected_fields["hash"]
+    assert origin.tag_sum == expected_fields["tag_sum"]
+    assert origin.ref == expected_fields["ref"]
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_origin",
+    [
+        pytest.param(
+            {
+                "Path": "github.com/my-org/some-repo",
+                "Version": "v1.11.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": {
+                    "Vcs": "git",
+                    "Url": "https://github.com/my-org/some-repo",
+                    "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                    "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                    "Ref": "refs/tags/v1.11.0",
+                },
+            },
+            {
+                "vcs": "git",
+                "url": "https://github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_with_origin",
+        ),
+        pytest.param(
+            {
+                "Path": "example.org/some/package",
+                "Version": "v1.0.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": None,
+            },
+            None,
+            id="module_without_origin",
+        ),
+        pytest.param(
+            {"Path": "example.org/local/package", "Version": None, "Main": True, "Replace": None},
+            None,
+            id="module_missing_origin_field",
+        ),
+    ],
+)
+def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | None) -> None:
+    """Test ParsedModule parsing with optional Origin field."""
+    from hermeto.core.package_managers.gomod import ParsedModule
+
+    module = ParsedModule.model_validate(input_json)
+
+    assert module.path == input_json["Path"]
+    assert module.version == input_json.get("Version")
+    assert module.main == input_json.get("Main", False)
+    assert module.replace == input_json.get("Replace")
+
+    if expected_origin is None:
+        assert module.origin is None
+    else:
+        assert module.origin is not None
+        assert module.origin.vcs == expected_origin["vcs"]
+        assert module.origin.url == expected_origin["url"]
+        assert module.origin.hash == expected_origin["hash"]
+        assert module.origin.tag_sum == expected_origin["tag_sum"]
+        assert module.origin.ref == expected_origin["ref"]
