@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/ibmjava:11-jdk
+FROM mirror.gcr.io/eclipse-temurin:11-jre-jammy
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
