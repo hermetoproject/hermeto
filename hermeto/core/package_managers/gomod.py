@@ -67,6 +67,20 @@ class _ParsedModel(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(alias_generator=to_pascal, populate_by_name=True)
 
 
+class ParsedOrigin(_ParsedModel):
+    """A Go module origin as returned by the -json option of go mod download (relevant fields only).
+
+    See:
+        go help mod download    (Origin struct in Module)
+    """
+
+    vcs: str
+    url: str
+    hash: str
+    tag_sum: str | None = None
+    ref: str | None = None
+
+
 class ParsedModule(_ParsedModel):
     """A Go module as returned by the -json option of various commands (relevant fields only).
 
@@ -79,6 +93,7 @@ class ParsedModule(_ParsedModel):
     version: str | None = None
     main: bool = False
     replace: Optional["ParsedModule"] = None
+    origin: Optional[ParsedOrigin] = None
 
 
 class ParsedPackage(_ParsedModel):
