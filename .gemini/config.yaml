@@ -1,0 +1,4 @@
+code_review:
+  pull_request_opened:
+    include_drafts: false
+    summary: false
