@@ -1,4 +1,5 @@
 import base64
+import binascii
 import hashlib
 import logging
 from collections import defaultdict
@@ -26,7 +27,8 @@ class ChecksumInfo(NamedTuple):
 
         https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
 
-        Note: npm and yarn use this format in their lockfiles.
+        Note: npm and Yarn classic (v1) use this format in their lockfiles; newer Yarn
+        versions use a different integrity representation that does not go through this helper.
         """
         bytes_sha = bytes.fromhex(self.hexdigest)
         base64_sha = base64.b64encode(bytes_sha).decode("utf-8")
@@ -37,9 +39,45 @@ class ChecksumInfo(NamedTuple):
 
     @classmethod
     def from_sri(cls, sri: str) -> "ChecksumInfo":
-        """Convert the input Subresource Integrity value to ChecksumInfo."""
-        algorithm, checksum = sri.split("-", 1)
-        return ChecksumInfo(algorithm, base64.b64decode(checksum).hex())
+        """Convert the input Subresource Integrity value to ChecksumInfo.
+
+        The integrity string may contain multiple hashes separated by whitespace according to the
+        SRI specification [https://www.w3.org/TR/sri-2/].
+
+        When multiple hashes are present, we pick the strongest algorithm
+        (sha512 > sha384 > sha256 > others). Note that while the SRI specification only mentions
+        SHA-2 algorithms (SHA-256, SHA-384, SHA-512), in practice "others" can include legacy
+        algorithms like sha1, which may appear when Git commit hashes are referenced in
+        integrity fields.
+        """
+
+        sri_hash_priorities = {"sha512": 3, "sha384": 2, "sha256": 1}
+        best = None
+
+        for part in sri.split():
+            if "-" not in part:
+                continue
+
+            alg, val = part.strip().split("-", 1)
+            alg, val = alg.lower(), val.strip()
+
+            if not alg or not val:
+                continue
+
+            # (priority, algorithm, value)
+            current = (sri_hash_priorities.get(alg, 0), alg, val)
+            if best is None or current > best:
+                best = current
+
+        try:
+            # If best is None, unpacking will raise TypeError
+            _, alg, val = best  # type: ignore[misc]
+            return ChecksumInfo(alg, base64.b64decode(val).hex())
+        except (TypeError, binascii.Error) as e:
+            raise PackageRejected(
+                "Integrity value is empty or malformed",
+                solution="Please check the integrity value in your lockfile.",
+            ) from e
 
     @classmethod
     def from_hash(cls, h: str) -> "ChecksumInfo":
