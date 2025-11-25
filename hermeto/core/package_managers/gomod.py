@@ -41,8 +41,11 @@ from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
     Annotation,
     Component,
+    ExternalReference,
     create_backend_annotation,
     spdx_now,
 )
@@ -153,6 +156,8 @@ class Module(NamedTuple):
     main: if this is the main module in the repository subpath that is being processed
     missing_hash_in_file: path (relative to repository root) to the go.sum file which should have
         had a checksum for this module but didn't
+    proxy: the list of custom proxy URLs used to fetch this module, or None if the module was
+        fetched directly from VCS or only via the canonical Go proxy (proxy.golang.org).
     """
 
     name: str
@@ -161,6 +166,7 @@ class Module(NamedTuple):
     version: str
     main: bool = False
     missing_hash_in_file: Path | None = None
+    proxy: list[str] | None = None
 
     @property
     def purl(self) -> str:
@@ -180,11 +186,19 @@ class Module(NamedTuple):
         else:
             missing_hash_in_file = frozenset()
 
+        ref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+
+        if self.proxy:
+            refs = [ExternalReference(url=p, **ref_rest) for p in self.proxy]
+        else:
+            refs = None
+
         return Component(
             name=self.name,
             version=self.version,
             purl=self.purl,
             properties=PropertySet(missing_hash_in_file=missing_hash_in_file).to_properties(),
+            external_references=refs,
         )
 
 
@@ -556,6 +570,27 @@ def _get_module_id(module: ParsedModule) -> ModuleID:
     return name, version_or_path
 
 
+def _get_proxy_for_module(module: ParsedModule) -> list[str] | None:
+    """
+    Returns None when the module was fetched directly from VCS (origin is set), or when
+    the configured GOPROXY contains only canonical entries (proxy.golang.org, direct).
+    When custom proxies are present, returns all configured proxy URLs except 'direct',
+    including proxy.golang.org if set alongside custom proxies.
+    """
+    if module.origin:
+        return None
+
+    canonical_proxies = {"direct", "https://proxy.golang.org"}
+    proxy_config = get_config().gomod.proxy_url
+
+    proxies = [p.strip() for p in re.split(r"[|,]", proxy_config) if p.strip()]
+
+    if not any(p not in canonical_proxies for p in proxies):
+        return None
+
+    return [p for p in proxies if p != "direct"]
+
+
 def _create_modules_from_parsed_data(
     main_module: Module,
     main_module_dir: RootedPath,
@@ -573,6 +608,7 @@ def _create_modules_from_parsed_data(
         if not version_or_path.startswith("."):
             version = version_or_path
             real_path = name
+            proxy = _get_proxy_for_module(module)
 
             if mod_id not in modules_in_go_sum:
                 if go_work:
@@ -587,6 +623,7 @@ def _create_modules_from_parsed_data(
             resolved_replacement_path = main_module_dir.join_within_root(version_or_path)
             version = version_resolver.get_golang_version(module.path, resolved_replacement_path)
             real_path = _resolve_path_for_local_replacement(module)
+            proxy = None
 
         return Module(
             name=name,
@@ -594,6 +631,7 @@ def _create_modules_from_parsed_data(
             original_name=original_name,
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
+            proxy=proxy,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
