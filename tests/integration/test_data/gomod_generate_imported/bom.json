@@ -206,7 +206,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
       "type": "library",
-      "version": "v0.0.0-20211026214220-a5af4262860e"
+      "version": "v0.0.0-20211026214220-a5af4262860e",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
