@@ -42,6 +42,13 @@
           "value": "hermeto"
         }
       ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ],
       "purl": "pkg:golang/github.com/cachito-testing/cachi2-gomod/twentyone@v0.0.0?type=module",
       "type": "library",
       "version": "v0.0.0"
@@ -64,6 +71,13 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module",

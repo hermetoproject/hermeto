@@ -22,7 +22,14 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component, Property, PropertyEnum
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    Component,
+    ExternalReference,
+    Property,
+    PropertyEnum,
+)
 from hermeto.core.package_managers.gomod import (
     Go,
     GoVersion,
@@ -839,6 +846,7 @@ def test_create_modules_from_parsed_data(
             version="v0.0.0-20190311183353-d8887717615a",
             original_name="golang.org/a/standard-module",
             real_path="golang.org/a/standard-module",
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/another-org/useful-module",
@@ -846,18 +854,21 @@ def test_create_modules_from_parsed_data(
             original_name="github.com/a-neat-org/useful-module",
             real_path="github.com/another-org/useful-module",
             missing_hash_in_file=Path("target-module/go.sum"),
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/some-org/this-other-module",
             version="v1.5.0",
             original_name="github.com/some-org/this-other-module",
             real_path="github.com/my-org/my-repo/target-module/local-path",
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/some-org/yet-another-module",
             version="v1.5.0",
             original_name="github.com/some-org/yet-another-module",
             real_path="github.com/my-org/my-repo/sibling-path",
+            proxy="https://proxy.golang.org,direct",
         ),
     ]
 
@@ -872,6 +883,7 @@ def test_create_modules_from_parsed_data(
             original_name="github.com/a-neat-org/useful-module",
             real_path="github.com/another-org/useful-module",
             missing_hash_in_file=Path("workspace_dir/go.work.sum"),
+            proxy="https://proxy.golang.org,direct",
         )
 
     modules = _create_modules_from_parsed_data(
@@ -1689,19 +1701,40 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
                     properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum")
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum"),
+                    ],
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
                     ],
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="github.com/my-org/my-repo",
@@ -1751,24 +1784,52 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="github.com/my-org/my-repo/path",
                     purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
                     properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum")
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum"),
+                    ],
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
                     ],
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
             ],
         ),
