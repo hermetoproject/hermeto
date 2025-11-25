@@ -142,21 +142,50 @@ def test_fetch_generic_source(
     mock_resolve_generic_lockfile.assert_called()
 
 
-def test_fetch_generic_source_relative_lockfile_path() -> None:
+@pytest.mark.parametrize(
+    ("pkg_path", "lockfile_value", "expected_result"),
+    [
+        pytest.param(Path("."), None, "artifacts.lock.yaml", id="default-lockfile"),
+        pytest.param(
+            Path("pkg"), Path("relative.yaml"), "pkg/relative.yaml", id="relative-lockfile"
+        ),
+        pytest.param(
+            Path("pkg"),
+            Path("/absolute/path/to/lockfile.yaml"),
+            "/absolute/path/to/lockfile.yaml",
+            id="absolute-lockfile",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.generic.main._resolve_generic_lockfile")
+def test_generic_source_lockfile_paths_are_resolved(
+    mock_resolve_generic_lockfile: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    pkg_path: Path,
+    lockfile_value: Path | None,
+    expected_result: str,
+) -> None:
+    mock_resolve_generic_lockfile.return_value = []
+
+    if Path(expected_result).is_absolute():
+        expected_path = Path(expected_result)
+    else:
+        expected_path = rooted_tmp_path.join_within_root(expected_result).path
+
     model_input = GenericPackageInput.model_construct(
-        type="generic", lockfile=Path("relative.yaml")
+        type="generic",
+        path=pkg_path,
+        lockfile=lockfile_value,
     )
 
     mock_request = mock.Mock()
+    mock_request.source_dir = rooted_tmp_path
     mock_request.generic_packages = [model_input]
 
-    with pytest.raises(PackageRejected) as exc_info:
-        fetch_generic_source(mock_request)
+    fetch_generic_source(mock_request)
 
-    assert (
-        "Supplied generic lockfile path 'relative.yaml' is not absolute, refusing to continue."
-        in str(exc_info.value)
-    )
+    resolved_lockfile = mock_resolve_generic_lockfile.call_args[0][0]
+    assert Path(resolved_lockfile) == Path(expected_path)
 
 
 @mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")

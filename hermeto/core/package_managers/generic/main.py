@@ -31,12 +31,11 @@ def fetch_generic_source(request: Request) -> RequestOutput:
     components = []
     for package in request.generic_packages:
         path = request.source_dir.join_within_root(package.path)
-        lockfile = package.lockfile or path.join_within_root(DEFAULT_LOCKFILE_NAME).path
-        if not lockfile.is_absolute():
-            raise PackageRejected(
-                f"Supplied generic lockfile path '{lockfile}' is not absolute, refusing to continue.",
-                solution="Make sure the supplied path to the generic lockfile is absolute.",
-            )
+        if package.lockfile and package.lockfile.is_absolute():
+            lockfile = package.lockfile
+        else:
+            lockfile_name = package.lockfile or DEFAULT_LOCKFILE_NAME
+            lockfile = path.join_within_root(lockfile_name).path
         components.extend(_resolve_generic_lockfile(lockfile, request.output_dir))
     return RequestOutput.from_obj_list(components=components)
 
