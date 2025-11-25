@@ -898,6 +898,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/Masterminds/semver@v1.4.2?type=module",
@@ -946,6 +950,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=module",
@@ -970,6 +978,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/kr/pretty@v0.1.0?type=module",
@@ -982,6 +994,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7?type=module",
@@ -1006,6 +1022,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/pkg/errors@v0.8.1?type=module",
@@ -1130,6 +1150,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/golang.org/x/tools@v0.0.0-20190325161752-5a8dccf5b48a?type=module",
@@ -1142,6 +1166,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/gopkg.in/check.v1@v1.0.0-20180628173108-788fd7840127?type=module",
@@ -1154,6 +1182,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/gopkg.in/yaml.v2@v2.2.2?type=module",

@@ -150,6 +150,7 @@ class Module(NamedTuple):
     version: str
     main: bool = False
     missing_hash_in_file: Path | None = None
+    proxy: str | None = None
 
     @property
     def purl(self) -> str:
@@ -173,7 +174,9 @@ class Module(NamedTuple):
             name=self.name,
             version=self.version,
             purl=self.purl,
-            properties=PropertySet(missing_hash_in_file=missing_hash_in_file).to_properties(),
+            properties=PropertySet(
+                missing_hash_in_file=missing_hash_in_file, proxy=self.proxy
+            ).to_properties(),
         )
 
 
@@ -567,6 +570,13 @@ def _create_modules_from_parsed_data(
         original_name = module.path
         missing_hash_in_file = None
 
+        if module.origin:
+            # ParsedOrigin exists = direct VCS fetch
+            proxy = None
+        else:
+            # No ParsedOrigin = fetched via proxy
+            proxy = get_config().goproxy_url
+
         if not version_or_path.startswith("."):
             version = version_or_path
             real_path = name
@@ -591,6 +601,7 @@ def _create_modules_from_parsed_data(
             original_name=original_name,
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
+            proxy=proxy,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
@@ -796,11 +807,19 @@ def _create_main_module_from_parsed_data(
         # Should not happen, since the version is always resolved from the Git repo
         raise RuntimeError(f"Version was not identified for main module at {resolved_subpath}")
 
+    if parsed_main_module.origin:
+        # ParsedOrigin exists = direct VCS fetch
+        proxy = None
+    else:
+        # No ParsedOrigin = fetched via proxy
+        proxy = get_config().goproxy_url
+
     return Module(
         name=parsed_main_module.path,
         original_name=parsed_main_module.path,
         version=parsed_main_module.version,
         real_path=resolved_path,
+        proxy=proxy,
     )
 
 

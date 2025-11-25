@@ -52,6 +52,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=module",
