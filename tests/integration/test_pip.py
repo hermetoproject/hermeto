@@ -270,13 +270,13 @@ def test_e2e_pip(
     """
     test_case = request.node.callspec.id
 
-    utils.fetch_deps_and_check_output(
+    actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
-        test_repo_dir,
+        actual_repo_dir,
         test_data_dir,
         test_case,
         check_cmd,

@@ -72,6 +72,7 @@ class TestParameters:
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
+    repo_url: str | None = None
 
 
 class ContainerImage:
@@ -311,6 +312,35 @@ def _fetch_cyclone_dx_schema() -> dict[str, Any]:
     return response.json()
 
 
+def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
+    """
+    Clone a custom integration test repository for a specific test.
+
+    This allows individual tests to use their own fork/repository without affecting
+    other tests. The repository is cloned to a temporary directory.
+
+    :param tmp_path: pytest fixture for temporary directory
+    :param repo_url: URL of the repository to clone
+    :param branch: Branch to checkout after cloning
+    :return: Path to the cloned repository
+    """
+    # Create unique directory name based on repo and branch
+    repo_name = repo_url.rstrip("/").split("/")[-1].removesuffix(".git")
+    safe_branch = branch.replace("/", "_")
+
+    repo_dir = tmp_path / f"{repo_name}_{safe_branch}"
+
+    log.info(f"Cloning custom test repository from {repo_url} (branch: {branch})")
+    Repo.clone_from(
+        url=repo_url,
+        to_path=repo_dir,
+        branch=branch,
+        depth=1,
+        recurse_submodules=True,
+    )
+    return repo_dir
+
+
 def fetch_deps_and_check_output(
     tmp_path: Path,
     test_case: str,
@@ -322,38 +352,46 @@ def fetch_deps_and_check_output(
     entrypoint: str | None = None,
     podman_flags: list[str] | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
-) -> None:
+) -> Path:
     """
     Fetch dependencies for source repo and check expected output.
 
     :param tmp_path: pytest fixture for temporary directory
     :param test_case: Test case name retrieved from pytest id
-    :param test_params: Test case arguments
-    :param test_repo_dir: Path to source repository
+    :param test_params: Test case arguments (may include repo_url for custom repository)
+    :param test_repo_dir: Path to default source repository (ignored if test_params.repo_url is set)
     :param test_data_dir: Relative path to expected output test data
     :param hermeto_image: ContainerImage instance with Hermeto image
     :param mounts: Additional volumes to be mounted to the image
     :param entrypoint: Entrypoint to be used for the image
     :param podman_flags: Additional flags to be passed to podman
     :param fetch_output_dirname: Name of the directory where the fetch output is stored
-    :return: None
+    :return: Path to the repository directory used (for passing to build_image_and_check_cmd)
     """
-    repo = Repo(test_repo_dir)
-    repo.git.reset("--hard")
-    # remove untracked files and directories from the working tree
-    # git will refuse to modify untracked nested git repositories unless a second -f is given
-    repo.git.clean("-ffdx")
-    # --recurse-submodules is to prevent checkout failures when submodule structure changes
-    # between branches
-    repo.git.checkout(test_params.branch, "--recurse-submodules")
-    # Ensure submodules are properly initialized and synchronized
-    repo.submodule_update(init=True, force_reset=True, recursive=True)
+    # Use custom repository if specified, otherwise use the default session-scoped one
+    # To maintain backwards compatibility, we keep the original behavior of cloning default repo at start of whole test
+    if test_params.repo_url is not None:
+        actual_repo_dir = _clone_custom_test_repo(
+            tmp_path, test_params.repo_url, test_params.branch
+        )
+    else:
+        actual_repo_dir = test_repo_dir
+        repo = Repo(actual_repo_dir)
+        repo.git.reset("--hard")
+        # remove untracked files and directories from the working tree
+        # git will refuse to modify untracked nested git repositories unless a second -f is given
+        repo.git.clean("-ffdx")
+        # --recurse-submodules is to prevent checkout failures when submodule structure changes
+        # between branches
+        repo.git.checkout(test_params.branch, "--recurse-submodules")
+        # Ensure submodules are properly initialized and synchronized
+        repo.submodule_update(init=True, force_reset=True, recursive=True)
 
     output_dir = tmp_path.joinpath(fetch_output_dirname)
     cmd = [
         "fetch-deps",
         "--source",
-        str(test_repo_dir),
+        str(actual_repo_dir),
         "--output",
         str(output_dir),
     ]
@@ -365,7 +403,7 @@ def fetch_deps_and_check_output(
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
-        [*mounts, (test_repo_dir, test_repo_dir)],
+        [*mounts, (actual_repo_dir, actual_repo_dir)],
         entrypoint=entrypoint,
         podman_flags=podman_flags,
     )
@@ -382,7 +420,7 @@ def fetch_deps_and_check_output(
         sbom = _load_json_or_yaml(output_dir.joinpath("bom.json"))
 
         if "project_files" in build_config:
-            _replace_tmp_path_with_placeholder(build_config["project_files"], test_repo_dir)
+            _replace_tmp_path_with_placeholder(build_config["project_files"], actual_repo_dir)
 
         # store .build_config as yaml for more readable test data
         expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
@@ -416,6 +454,8 @@ def fetch_deps_and_check_output(
 
         log.info("Compare checksums of fetched deps files")
         assert files_checksums == expected_files_checksums
+
+    return actual_repo_dir
 
 
 def build_image_and_check_cmd(
