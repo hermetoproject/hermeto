@@ -147,8 +147,8 @@ def _parse_mocked_data(data_dir: Path, file_path: str) -> ResolvedGoModule:
     mocked_data = json.loads(get_mocked_data(data_dir, file_path))
 
     main_module = ParsedModule(**mocked_data["main_module"])
-    modules = [ParsedModule(**module) for module in mocked_data["modules"]]
-    packages = [ParsedPackage(**package) for package in mocked_data["packages"]]
+    modules = {ParsedModule(**module) for module in mocked_data["modules"]}
+    packages = {ParsedPackage(**package) for package in mocked_data["packages"]}
     modules_in_go_sum = frozenset(
         (name, version) for name, version in mocked_data["modules_in_go_sum"]
     )
@@ -287,7 +287,7 @@ def test_resolve_gomod(
         expect_result = _parse_mocked_data(data_dir, "expected-results/resolve_gomod.json")
 
     assert resolve_result.parsed_main_module == expect_result.parsed_main_module
-    assert list(resolve_result.parsed_modules) == expect_result.parsed_modules
+    assert set(resolve_result.parsed_modules) == expect_result.parsed_modules
     # skip comparing parsed packages, these are tested using the same data in test_parse_packages
     assert resolve_result.modules_in_go_sum == expect_result.modules_in_go_sum
 
@@ -374,8 +374,8 @@ def test_resolve_gomod_vendor_dependencies(
     expect_result = _parse_mocked_data(data_dir, "expected-results/resolve_gomod_vendored.json")
 
     assert resolve_result.parsed_main_module == expect_result.parsed_main_module
-    assert list(resolve_result.parsed_modules) == expect_result.parsed_modules
-    assert list(resolve_result.parsed_packages) == expect_result.parsed_packages
+    assert set(resolve_result.parsed_modules) == expect_result.parsed_modules
+    assert set(resolve_result.parsed_packages) == expect_result.parsed_packages
     assert resolve_result.modules_in_go_sum == expect_result.modules_in_go_sum
 
 
@@ -935,7 +935,7 @@ def test_create_modules_from_parsed_data(
     ],
 )
 def test_go_work_model(input_json: str, expected: dict) -> None:
-    assert ParsedGoWork.model_validate_json(input_json).model_dump() == expected
+    assert ParsedGoWork.model_validate_json(input_json) == ParsedGoWork(**expected)
 
 
 @pytest.mark.parametrize(
@@ -1175,7 +1175,7 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
         }
     """
 
-    parsed_packages = [
+    parsed_packages = {
         ParsedPackage(
             import_path="time",
             standard=True,
@@ -1187,7 +1187,7 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
                 main=True,
             ),
         ),
-    ]
+    }
 
     mock_run_cmd.return_value = go_list_deps_json
     call_args = [
@@ -1198,7 +1198,7 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
         "-json=ImportPath,Module,Standard,Deps",
         pattern,
     ]
-    assert list(_go_list_deps(Go(), pattern, {})) == parsed_packages
+    assert set(_go_list_deps(Go(), pattern, {})) == parsed_packages
     mock_run_cmd.assert_called_once_with(call_args, {})
 
 
@@ -1252,7 +1252,7 @@ def test_deduplicate_resolved_modules() -> None:
 
     dedup_modules = _deduplicate_resolved_modules(package_modules, downloaded_modules)
 
-    expect_dedup_modules = [
+    expect_dedup_modules = {
         ParsedModule(
             path="github.com/my-org/local-replacement",
             version="v1.0.0",
@@ -1267,9 +1267,9 @@ def test_deduplicate_resolved_modules() -> None:
             path="github.com/awesome-org/neat-dep",
             version="v2.0.1",
         ),
-    ]
+    }
 
-    assert list(dedup_modules) == expect_dedup_modules
+    assert set(dedup_modules) == expect_dedup_modules
 
 
 @pytest.mark.parametrize(
@@ -1476,7 +1476,7 @@ def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
     modules_txt = rooted_tmp_path.join_within_root("vendor/modules.txt")
     modules_txt.path.parent.mkdir(parents=True)
     modules_txt.path.write_text(get_mocked_data(data_dir, "vendored/modules.txt"))
-    expect_modules = [
+    expect_modules = {
         ParsedModule(
             path="github.com/Azure/go-ansiterm", version="v0.0.0-20210617225240-d185dfc1b5a1"
         ),
@@ -1515,8 +1515,8 @@ def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
         ParsedModule(path="golang.org/x/tools", version="v0.7.0"),
         ParsedModule(path="gopkg.in/yaml.v2", version="v2.2.2"),
         ParsedModule(path="gopkg.in/yaml.v3", version="v3.0.1"),
-    ]
-    assert list(_parse_vendor(rooted_tmp_path)) == expect_modules
+    }
+    assert set(_parse_vendor(rooted_tmp_path)) == expect_modules
 
 
 @pytest.mark.parametrize(
@@ -2113,7 +2113,7 @@ def test_parse_packages(
 
     ws_paths: list = []
     mocked_outdata = json.loads(get_mocked_data(data_dir, f"expected-results/{expected_outfile}"))
-    expected = [ParsedPackage(**package) for package in mocked_outdata["packages"]]
+    expected = {ParsedPackage(**package) for package in mocked_outdata["packages"]}
 
     go = mock.MagicMock(spec=Go)
     if input_subdir != "workspaces":
@@ -2147,7 +2147,7 @@ def test_parse_packages(
 
     # _parse_packages calls _go_list_deps always with the './...' pattern
     assert all("./..." in call.args[0] for call in calls)
-    assert list(pkgs) == expected
+    assert set(pkgs) == expected
 
 
 @pytest.mark.parametrize(

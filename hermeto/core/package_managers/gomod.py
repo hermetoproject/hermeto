@@ -64,7 +64,9 @@ class _ParsedModel(pydantic.BaseModel):
     SomeModel(some_attribute="hello")
     """
 
-    model_config = pydantic.ConfigDict(alias_generator=to_pascal, populate_by_name=True)
+    model_config = pydantic.ConfigDict(
+        alias_generator=to_pascal, populate_by_name=True, frozen=True
+    )
 
 
 class ParsedModule(_ParsedModel):
