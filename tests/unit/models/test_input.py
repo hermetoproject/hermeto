@@ -6,13 +6,13 @@ from unittest import mock
 import pydantic
 import pytest as pytest
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.input import (
     BINARY_FILTER_ALL,
     BundlerBinaryFilters,
     BundlerPackageInput,
     GomodPackageInput,
-    Mode,
     NpmPackageInput,
     PackageInput,
     PipBinaryFilters,
