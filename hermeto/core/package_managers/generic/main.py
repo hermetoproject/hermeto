@@ -30,15 +30,31 @@ def fetch_generic_source(request: Request) -> RequestOutput:
     """
     components = []
     for package in request.generic_packages:
-        path = request.source_dir.join_within_root(package.path)
-        lockfile = package.lockfile or path.join_within_root(DEFAULT_LOCKFILE_NAME).path
-        if not lockfile.is_absolute():
-            raise PackageRejected(
-                f"Supplied generic lockfile path '{lockfile}' is not absolute, refusing to continue.",
-                solution="Make sure the supplied path to the generic lockfile is absolute.",
-            )
-        components.extend(_resolve_generic_lockfile(lockfile, request.output_dir))
+        lockfile_path = _resolve_lockfile_path(
+            request.source_dir,
+            package.path,
+            package.lockfile,
+        )
+        components.extend(_resolve_generic_lockfile(lockfile_path, request.output_dir))
     return RequestOutput.from_obj_list(components=components)
+
+
+def _resolve_lockfile_path(
+    source_dir: RootedPath,
+    package_path: Path,
+    lockfile_path: Path | None,
+) -> Path:
+    """
+    Return the lockfile path for a package.
+    """
+    path = source_dir.join_within_root(package_path)
+    lockfile = lockfile_path or path.join_within_root(DEFAULT_LOCKFILE_NAME).path
+    if not lockfile.is_absolute():
+        raise PackageRejected(
+            f"Supplied generic lockfile path '{lockfile}' is not absolute, refusing to continue.",
+            solution="Make sure the supplied path to the generic lockfile is absolute.",
+        )
+    return lockfile
 
 
 def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> list[Component]:
