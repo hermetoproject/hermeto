@@ -47,13 +47,20 @@ def _resolve_lockfile_path(
     """
     Return the lockfile path for a package.
     """
+    if lockfile_path and lockfile_path.is_absolute():
+        return lockfile_path
+
     path = source_dir.join_within_root(package_path)
-    lockfile = lockfile_path or path.join_within_root(DEFAULT_LOCKFILE_NAME).path
-    if not lockfile.is_absolute():
+    lockfile_name = lockfile_path or DEFAULT_LOCKFILE_NAME
+    lockfile = path.join_within_root(lockfile_name).path
+
+    if not lockfile.is_relative_to(path.path):
         raise PackageRejected(
-            f"Supplied generic lockfile path '{lockfile}' is not absolute, refusing to continue.",
-            solution="Make sure the supplied path to the generic lockfile is absolute.",
+            f"Supplied generic lockfile path '{lockfile_name}' must be inside the package "
+            f"path '{package_path}'.",
+            solution="Use a lockfile path located within the package path.",
         )
+
     return lockfile
 
 

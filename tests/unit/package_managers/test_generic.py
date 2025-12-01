@@ -13,6 +13,7 @@ from hermeto.core.package_managers.generic.main import (
     DEFAULT_LOCKFILE_NAME,
     _load_lockfile,
     _resolve_generic_lockfile,
+    _resolve_lockfile_path,
     fetch_generic_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
@@ -142,21 +143,41 @@ def test_fetch_generic_source(
     mock_resolve_generic_lockfile.assert_called()
 
 
-def test_fetch_generic_source_relative_lockfile_path() -> None:
-    model_input = GenericPackageInput.model_construct(
-        type="generic", lockfile=Path("relative.yaml")
-    )
+@pytest.mark.parametrize(
+    ("pkg_path", "lockfile_value", "expected_result"),
+    [
+        pytest.param(Path("."), None, "artifacts.lock.yaml", id="default-lockfile"),
+        pytest.param(
+            Path("pkg"), Path("relative.yaml"), "pkg/relative.yaml", id="relative-lockfile"
+        ),
+        pytest.param(
+            Path("pkg"),
+            Path("/absolute/path/to/lockfile.yaml"),
+            "/absolute/path/to/lockfile.yaml",
+            id="absolute-lockfile",
+        ),
+    ],
+)
+def test_resolve_lockfile_path(
+    rooted_tmp_path: RootedPath,
+    pkg_path: Path,
+    lockfile_value: Path | None,
+    expected_result: str,
+) -> None:
+    if Path(expected_result).is_absolute():
+        expected_path = Path(expected_result)
+    else:
+        expected_path = rooted_tmp_path.join_within_root(expected_result).path
 
-    mock_request = mock.Mock()
-    mock_request.generic_packages = [model_input]
+    resolved = _resolve_lockfile_path(rooted_tmp_path, pkg_path, lockfile_value)
+    assert resolved == Path(expected_path)
 
+
+def test_resolve_lockfile_path_fail(rooted_tmp_path: RootedPath) -> None:
     with pytest.raises(PackageRejected) as exc_info:
-        fetch_generic_source(mock_request)
+        _resolve_lockfile_path(rooted_tmp_path, Path("pkg"), Path("../outside.yaml"))
 
-    assert (
-        "Supplied generic lockfile path 'relative.yaml' is not absolute, refusing to continue."
-        in str(exc_info.value)
-    )
+    assert "must be inside the package path" in str(exc_info.value)
 
 
 @mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")

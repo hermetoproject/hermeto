@@ -16,8 +16,9 @@ because the produced SBOM component will not be accurate.
 
 The generic fetcher requires a lockfile `artifacts.lock.yaml` that specifies
 which files to download. This file is expected to be in the source repository.
-Alternatively, it can be supplied as an absolute path via the `lockfile` key in
-the JSON input to hermeto.
+Alternatively, a different filename or location can be supplied via the
+`lockfile` key in the JSON input to hermeto. The value may be either an absolute
+path or a path relative to the package `path`.
 
 Below are sections for each type of supported artifact. Several artifacts of
 different types can be specified in a single lockfile.
@@ -50,8 +51,8 @@ where 'JSON input' is
   // path to the package (relative to the --source directory)
   // defaults to "."
   "path": ".",
-  // option to specify lockfile path, must be an absolute path if specified
-  // defaults to "artifacts.lock.yaml", relative to path
+  // option to specify lockfile path: absolute or relative to package path
+  // defaults to "artifacts.lock.yaml", resolved relative to package path
   "lockfile": "artifacts.lock.yaml",
 }
 ```
@@ -153,9 +154,11 @@ git clone -b sample-app https://github.com/cachito-testing/cachi2-generic.git
 #### Pre-fetch dependencies
 
 In order to retrieve the archive with the tool, either a `artifacts.lock.yaml`
-needs to be in the repository, or an absolute path needs to be supplied in the
-JSON input, pointing to a lockfile. You can find a sample lockfile below. It is
-identical to the one found in the [sample repository][].
+needs to be in the repository, or a lockfile path needs to be supplied in the
+JSON input (either an absolute path or a path relative to the package `path`).
+You can find
+a sample lockfile below. It is identical to the one found in the
+[sample repository][].
 A lockfile for the generic fetcher must contain a `metadata` header and a list
 of artifacts, where each artifact is represented as a pair of URL and a checksum
 string in the format of `"algorithm:checksum"`. Optionally, you can also specify
