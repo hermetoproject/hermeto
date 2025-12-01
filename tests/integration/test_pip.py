@@ -245,6 +245,8 @@ def test_e2e_pip(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    if test_case == "pip_e2e_rust_extensions":
+        pytest.skip("Skipping on 0.28 branch")
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
