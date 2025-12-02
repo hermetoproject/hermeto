@@ -14,6 +14,16 @@ updates:
       interval: "monthly"
     commit-message:
       prefix: "Dockerfile"
+    ignore:
+      # We must handle major.minor Go releases manually due to direct feature support
+      - dependency-name: "library/golang"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      # Node v25 stopped shipping corepack which we need
+      - dependency-name: "library/node"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "pip"
     directory: "/"
