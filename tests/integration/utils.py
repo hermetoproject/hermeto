@@ -291,6 +291,14 @@ def _yaml_serialize(data: dict[str, Any]) -> str:
     return yaml.safe_dump(data)
 
 
+def _sort_obj(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {k: _sort_obj(v) for k, v in sorted(obj.items())}
+    if isinstance(obj, list):
+        return sorted((_sort_obj(v) for v in obj), key=str)
+    return obj
+
+
 def update_test_data_if_needed(path: Path, data: dict[str, Any]) -> None:
     if path.suffix == ".json":
         serialize = _json_serialize
@@ -434,7 +442,7 @@ def fetch_deps_and_check_output(
 
         log.info("Compare output files")
         assert build_config == expected_build_config
-        assert sbom == expected_sbom
+        assert _sort_obj(sbom) == _sort_obj(expected_sbom)
 
         log.info("Validate SBOM schema")
         schema = _fetch_cyclone_dx_schema()
