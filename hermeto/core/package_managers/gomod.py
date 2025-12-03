@@ -940,6 +940,7 @@ def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go
     # If we cannot find a matching toolchain, we'll try to fallback to a 1.21 one
     matching_toolchains = filter(lambda t: t.version >= target_version, installed_toolchains)
     try:
+        # pick the closest matching toolchain version for best compatibility
         go = min(matching_toolchains)
         log.debug("Using Go toolchain version '%s'", go.version)
     except ValueError:
