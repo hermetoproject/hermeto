@@ -29,6 +29,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -53,6 +57,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -77,6 +85,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20230829115309-5a8c00ce4921?type=module",
@@ -101,6 +113,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         },
         {
           "name": "hermeto:missing_hash:in_file",
@@ -605,6 +621,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.1?type=module",
@@ -629,6 +649,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.2?type=module",
@@ -653,6 +677,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         },
         {
           "name": "hermeto:missing_hash:in_file",
