@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 
 SUPPORTED_ALGORITHMS = hashlib.algorithms_guaranteed
+_SRI_HASH_PRIORITIES = {"sha512": 3, "sha384": 2, "sha256": 1}
 
 
 class ChecksumInfo(NamedTuple):
@@ -37,9 +38,37 @@ class ChecksumInfo(NamedTuple):
 
     @classmethod
     def from_sri(cls, sri: str) -> "ChecksumInfo":
-        """Convert the input Subresource Integrity value to ChecksumInfo."""
-        algorithm, checksum = sri.split("-", 1)
-        return ChecksumInfo(algorithm, base64.b64decode(checksum).hex())
+        """Convert the input Subresource Integrity value to ChecksumInfo.
+
+        The integrity string may contain multiple hashes separated by whitespace.
+        In such cases pick the strongest algorithm (sha512 > sha384 > sha256 > others).
+        """
+
+        parsed: list[tuple[str, str]] = []
+        for part in sri.split():
+            entry = part.strip()
+            if not entry or "-" not in entry:
+                continue
+
+            algorithm, checksum = entry.split("-", 1)
+            algorithm = algorithm.strip().lower()
+            checksum = checksum.strip()
+
+            if not algorithm or not checksum:
+                continue
+
+            parsed.append((algorithm, checksum))
+
+        if not parsed:
+            raise ValueError("Integrity value is empty or malformed")
+
+        strongest_algorithm, strongest_checksum = max(
+            parsed, key=lambda item: (_SRI_HASH_PRIORITIES.get(item[0], 0), item[0])
+        )
+        return ChecksumInfo(
+            strongest_algorithm,
+            base64.b64decode(strongest_checksum).hex(),
+        )
 
     @classmethod
     def from_hash(cls, h: str) -> "ChecksumInfo":
