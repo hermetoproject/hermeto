@@ -180,6 +180,19 @@ class Sbom(pydantic.BaseModel):
     spec_version: str = pydantic.Field(alias="specVersion", default="1.6")
     version: int = 1
 
+    @pydantic.model_serializer(mode="wrap")
+    def serialize_model(self, handler: pydantic.SerializerFunctionWrapHandler) -> dict[str, object]:
+        """
+        Custom serializer that removes the `annotations` field if it is empty.
+
+        https://docs.pydantic.dev/latest/concepts/serialization/#model-serializers
+        """
+        serialized = handler(self)
+        if not self.annotations:
+            serialized.pop("annotations")
+
+        return serialized
+
     def __add__(self, other: Union["Sbom", "SPDXSbom"]) -> "Sbom":
         if isinstance(other, self.__class__):
             return Sbom(
