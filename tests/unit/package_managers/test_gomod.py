@@ -1869,6 +1869,7 @@ def test_fetch_gomod_source(
         expected_output = RequestOutput.empty()
     else:
         expected_output = RequestOutput(
+            annotations=[],
             components=expect_components,
             build_config=BuildConfig(environment_variables=env_variables),
         )

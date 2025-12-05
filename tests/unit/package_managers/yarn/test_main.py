@@ -473,6 +473,7 @@ def test_fetch_yarn_source(
     mock_resolve_yarn.assert_has_calls(calls)
 
     expected_output = RequestOutput(
+        annotations=[],
         components=list(itertools.chain.from_iterable(package_components)),
         build_config=BuildConfig(environment_variables=yarn_env_variables),
     )
