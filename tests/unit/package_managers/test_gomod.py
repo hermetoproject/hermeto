@@ -2358,7 +2358,7 @@ class TestGo:
         tries_needed: int,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
-        mock_config.return_value.gomod_download_max_tries = 5
+        mock_config.return_value.gomod.download_max_tries = 5
 
         # We don't want to mock subprocess.run here, because:
         # 1) the call chain looks like this: Go()._retry->run_go->self._run->run_cmd->subprocess.run
@@ -2384,7 +2384,7 @@ class TestGo:
     def test_retry_failure(
         self, mock_sleep: Any, mock_run: Any, mock_config: Any, caplog: pytest.LogCaptureFixture
     ) -> None:
-        mock_config.return_value.gomod_download_max_tries = 5
+        mock_config.return_value.gomod.download_max_tries = 5
 
         failure = subprocess.CalledProcessError(returncode=1, cmd="foo")
         mock_run.side_effect = [failure] * 5
@@ -2480,7 +2480,7 @@ class TestGo:
         if not retry:
             mock_run.assert_called_once_with(cmd, **env)
         else:
-            mock_get_config.return_value.gomod_download_max_tries = 1
+            mock_get_config.return_value.gomod.download_max_tries = 1
             mock_run.call_count = 1
             mock_run.assert_called_with(cmd, **env)
 
@@ -2494,7 +2494,7 @@ class TestGo:
         retry: bool,
     ) -> None:
         tries = 1
-        mock_get_config.return_value.gomod_download_max_tries = tries
+        mock_get_config.return_value.gomod.download_max_tries = tries
         failure = proc_mock(returncode=1, stdout="")
         mock_run.side_effect = [failure]
 
