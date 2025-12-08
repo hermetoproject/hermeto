@@ -8,7 +8,7 @@ from unittest import mock
 import pytest
 
 from hermeto import APP_NAME
-from hermeto.core.errors import BaseError
+from hermeto.core.errors import ExecutableNotFound
 from hermeto.core.utils import (
     _fast_copy,
     _FastCopyFailedFallback,
@@ -87,7 +87,7 @@ def test_run_cmd_executable_not_found(
 ) -> None:
     mock_shutil_which.return_value = None
 
-    with pytest.raises(BaseError, match="'foo' executable not found in PATH"):
+    with pytest.raises(ExecutableNotFound):
         run_cmd(["foo"], params={})
 
 
