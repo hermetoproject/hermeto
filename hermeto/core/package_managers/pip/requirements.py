@@ -13,7 +13,13 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import (
+    InvalidChecksum,
+    MissingChecksum,
+    PackageRejected,
+    UnexpectedFormat,
+    UnsupportedFeature,
+)
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -587,6 +593,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
     :param list[PipRequirement] requirements: All requirements from a file
     :raise PackageRejected: If any requirement does not meet expectations
     :raise UnsupportedFeature: If any requirement uses unsupported features
+    :raise InvalidChecksum: If any provided checksum data is not valid
     """
     for req in requirements:
         # Fail if PyPI requirement is not pinned to an exact version
@@ -625,13 +632,10 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
         elif req.kind == "url":
             n_hashes = len(req.hashes) + (1 if req.qualifiers.get("cachito_hash") else 0)
             if n_hashes != 1:
-                msg = (
-                    f"URL requirement must specify exactly one hash, but specifies {n_hashes}: "
-                    f"{req.download_line}."
-                )
-                raise PackageRejected(
-                    msg,
+                raise InvalidChecksum(
+                    checksum=req.hashes,
                     solution=(
+                        f"URL requirement must specify exactly one hash, but specifies {n_hashes}"
                         "Please specify the expected hashes for all plain URLs using "
                         "--hash options (one --hash for each)"
                     ),
@@ -652,7 +656,8 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
 
     :param list[PipRequirement] requirements: All requirements from a file
     :param bool require_hashes: True if hashes are required for all requirements
-    :raise PackageRejected: If hashes are missing or have invalid format
+    :raise MissingChecksum: If any hashes are missing
+    :raise InvalidChecksum: If hashes have invalid format
     """
     for req in requirements:
         if req.kind == "url":
@@ -666,14 +671,18 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
             # this for any VCS req in a 'requirements.txt' which has *any* hash
             # (other than a URL req with `cachito_hash``).
             # For URL # requirements, having a hash is required to pass *basic* validation.
-            msg = f"Hash is required, dependency does not specify any: {req.download_line}"
-            raise PackageRejected(
-                msg,
-                solution="Please specify the expected hashes for all dependencies",
+            raise MissingChecksum(
+                None,
+                solution=(
+                    f"Hash is required, dependency does not specify any: {req.download_line}"
+                    "Please specify the expected hashes for all dependencies"
+                ),
             )
 
         for hash_spec in hashes:
             _, _, digest = hash_spec.partition(":")
             if not digest:
-                msg = f"Not a valid hash specifier: {hash_spec!r} (expected 'algorithm:digest')"
-                raise PackageRejected(msg, solution=None)
+                raise InvalidChecksum(
+                    checksum=hash_spec,
+                    solution=f"Not a valid hash specifier: {hash_spec!r} (expected 'algorithm:digest')",
+                )

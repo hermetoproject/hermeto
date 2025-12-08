@@ -3,7 +3,7 @@ import logging
 import semver
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.package_managers.yarn.project import (
@@ -81,12 +81,8 @@ def _check_zero_installs(project: Project) -> None:
 def _check_lockfile(project: Project) -> None:
     lockfile_filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
     if not project.source_dir.join_within_root(lockfile_filename).path.exists():
-        raise PackageRejected(
-            f"Yarn lockfile '{lockfile_filename}' missing, refusing to continue",
-            solution=(
-                "Make sure your repository has a Yarn lockfile (e.g. yarn.lock) checked in "
-                "to the repository"
-            ),
+        raise LockfileNotFound(
+            files=project.source_dir.join_within_root(lockfile_filename).path,
         )
 
 

@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import NamedTuple
 
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import ChecksumVerificationFailed, InvalidChecksum, MissingChecksum
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
@@ -74,10 +74,25 @@ class ChecksumInfo(NamedTuple):
             _, alg, val = best  # type: ignore[misc]
             return ChecksumInfo(alg, base64.b64decode(val).hex())
         except (TypeError, binascii.Error) as e:
-            raise PackageRejected(
-                "Integrity value is empty or malformed",
-                solution="Please check the integrity value in your lockfile.",
-            ) from e
+            # best is None (no valid checksum found) -> pass None
+            # best contains malformed data -> pass the malformed value
+            checksum_value = None if best is None else f"{best[1]}-{best[2]}"
+            if checksum_value is None:
+                raise MissingChecksum(
+                    None,
+                    solution=(
+                        "Integrity value is missing. "
+                        "Please check the integrity value in your lockfile."
+                    ),
+                ) from e
+            else:
+                raise InvalidChecksum(
+                    checksum=checksum_value,
+                    solution=(
+                        "Integrity value is malformed. "
+                        "Please check the integrity value in your lockfile."
+                    ),
+                ) from e
 
     @classmethod
     def from_hash(cls, h: str) -> "ChecksumInfo":
@@ -106,8 +121,8 @@ def must_match_any_checksum(
     :param file_path: path to the file to verify
     :param expected_checksums: all the possible checksums for this file
     :param chunk_size: when computing checksums, read the file in chunks of this size
-    :raises PackageRejected: if none of the expected checksums matched the actual checksum
-                             (for any of the supported algorithms)
+    :raises ChecksumVerificationFailed: if none of the expected checksums matched the actual
+                                        checksum (for any of the supported algorithms)
     """
     filename = Path(file_path).name
     log.info("Verifying checksums of %s", filename)
@@ -126,14 +141,7 @@ def must_match_any_checksum(
             return
 
     _log_mismatches(filename, mismatches)
-    raise PackageRejected(
-        f"Failed to verify {filename} against any of the provided checksums.",
-        solution=(
-            "Please check if the expected checksums are correct.\n"
-            "Caution is advised; if the checksum previously did match, "
-            "someone may have tampered with the file!"
-        ),
-    )
+    raise ChecksumVerificationFailed(filename)
 
 
 def _group_by_algorithm(checksums: Iterable[ChecksumInfo]) -> dict[str, set[str]]:

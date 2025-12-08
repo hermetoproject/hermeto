@@ -5,7 +5,12 @@ import pytest
 import semver
 import yaml
 
-from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.package_managers.yarn.project import (
     PackageJson,
     Project,
@@ -148,7 +153,7 @@ def test_parse_empty_package_json_file(rooted_tmp_path: RootedPath) -> None:
 
 
 def test_parse_invalid_package_json_file(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected, match="Can't parse the package.json file"):
+    with pytest.raises(InvalidLockfileFormat):
         _prepare_package_json_file(rooted_tmp_path, INVALID_JSON)
 
 
@@ -196,8 +201,7 @@ def test_parse_project_folder_without_yarnrc(rooted_tmp_path: RootedPath) -> Non
 
 
 def test_parse_empty_folder(rooted_tmp_path: RootedPath) -> None:
-    message = "The package.json file must be present for the yarn package manager"
-    with pytest.raises(PackageRejected, match=message):
+    with pytest.raises(LockfileNotFound):
         Project.from_source_dir(rooted_tmp_path)
 
 

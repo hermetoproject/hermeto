@@ -6,10 +6,9 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from hermeto import APP_NAME
 from hermeto.core.checksum import must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component
@@ -72,13 +71,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     :param output_dir: the output directory to store the dependencies
     """
     if not lockfile_path.exists():
-        raise PackageRejected(
-            f"{APP_NAME} generic lockfile '{lockfile_path}' does not exist, refusing to continue.",
-            solution=(
-                f"Make sure your repository has {APP_NAME} generic lockfile '{DEFAULT_LOCKFILE_NAME}' "
-                f"checked in to the repository, or the supplied lockfile path is correct."
-            ),
-        )
+        raise LockfileNotFound(files=lockfile_path)
 
     # output_dir is now the root and cannot be escaped
     output_dir = output_dir.re_root(DEFAULT_DEPS_DIR)
@@ -111,8 +104,9 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
         try:
             lockfile_data = yaml.safe_load(f)
         except yaml.YAMLError as e:
-            raise PackageRejected(
-                f"{APP_NAME} lockfile '{lockfile_path}' yaml format is not correct: {e}",
+            raise InvalidLockfileFormat(
+                lockfile_path=lockfile_path,
+                err_details=str(e),
                 solution="Check correct 'yaml' syntax in the lockfile.",
             )
 
@@ -123,8 +117,9 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
         except ValidationError as e:
             loc = e.errors()[0]["loc"]
             msg = e.errors()[0]["msg"]
-            raise PackageRejected(
-                f"{APP_NAME} lockfile '{lockfile_path}' format is not valid: '{loc}: {msg}'",
+            raise InvalidLockfileFormat(
+                lockfile_path=lockfile_path,
+                err_details=f"'{loc}: {msg}'",
                 solution=(
                     "Check the correct format and whether any keys are missing in the lockfile."
                 ),

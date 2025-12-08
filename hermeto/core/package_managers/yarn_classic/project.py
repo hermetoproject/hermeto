@@ -13,7 +13,7 @@ from typing import Any
 
 from pyarn import lockfile  # type: ignore
 
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(name=__name__)
@@ -62,16 +62,17 @@ class PackageJson(_CommonConfigFile):
         try:
             package_json_data = json.loads(path.path.read_text())
         except FileNotFoundError:
-            raise PackageRejected(
-                reason="The package.json file must be present for the yarn package manager",
+            raise LockfileNotFound(
+                files=path.path,
                 solution=(
                     "Please double-check that you have specified the correct path "
                     "to the package directory containing this file"
                 ),
             )
         except json.decoder.JSONDecodeError as e:
-            raise PackageRejected(
-                reason=f"Can't parse the {path.subpath_from_root} file. {e}",
+            raise InvalidLockfileFormat(
+                lockfile_path=path.path,
+                err_details=str(e),
                 solution=(
                     "The package.json file must contain valid JSON. "
                     "Refer to the parser error and fix the contents of the file."
@@ -96,16 +97,17 @@ class YarnLock(_CommonConfigFile):
         try:
             yarn_lockfile = lockfile.Lockfile.from_file(path)
         except FileNotFoundError:
-            raise PackageRejected(
-                reason="The yarn.lock file must be present for the yarn package manager",
+            raise LockfileNotFound(
+                files=path.path,
                 solution=(
                     "Please double-check that you have specified the correct path "
                     "to the package directory containing this file"
                 ),
             )
-        except ValueError:
-            raise PackageRejected(
-                reason=f"Can't parse the {path} file.\n",
+        except ValueError as e:
+            raise InvalidLockfileFormat(
+                lockfile_path=path.path,
+                err_details=str(e),
                 solution="The yarn.lock file must be valid.",
             )
 

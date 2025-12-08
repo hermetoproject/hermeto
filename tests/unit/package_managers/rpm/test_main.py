@@ -8,12 +8,15 @@ import pytest
 import yaml
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import (
+    ChecksumVerificationFailed,
+    InvalidLockfileFormat,
+    LockfileNotFound,
+)
 from hermeto.core.models.input import ExtraOptions, RpmBinaryFilters, RpmPackageInput, SSLOptions
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
 from hermeto.core.package_managers.rpm.main import (
-    DEFAULT_LOCKFILE_NAME,
     DEFAULT_PACKAGE_DIR,
     _createrepo,
     _download,
@@ -127,30 +130,25 @@ def test_fetch_rpm_source(
 
 
 def test_resolve_rpm_project_no_lockfile(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected) as exc_info:
-        mock_source_dir = mock.Mock()
+    with pytest.raises(LockfileNotFound):
+        # MagicMock is to pass Path/str to LockfileNotFound and avoid TypeError
+        mock_source_dir = mock.MagicMock()
         mock_source_dir.join_within_root.return_value.path.exists.return_value = False
         _resolve_rpm_project(mock_source_dir, mock.Mock())
-    assert f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' missing, refusing to continue" in str(
-        exc_info.value
-    )
 
 
 def test_resolve_rpm_project_invalid_yaml_format(rooted_tmp_path: RootedPath) -> None:
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
         # colon is missing at the end
         f.write("lockfileVendor: redhat\nlockfileVersion: 1\narches\n")
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
         # end of line is missing between items
         f.write("lockfileVendor: redhat lockfileVersion: 1\narches:\n")
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-    assert f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' yaml format is not correct" in str(
-        exc_info.value
-    )
 
 
 def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath) -> None:
@@ -163,7 +161,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -175,7 +173,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -187,7 +185,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -199,7 +197,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -211,7 +209,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -233,9 +231,8 @@ def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-    assert f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' format is not valid" in str(exc_info.value)
 
 
 def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
@@ -252,7 +249,7 @@ def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat) as exc_info:
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -269,7 +266,7 @@ def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat) as exc_info:
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
@@ -295,7 +292,7 @@ def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
             },
             f,
         )
-    with pytest.raises(PackageManagerError) as exc_info:
+    with pytest.raises(InvalidLockfileFormat) as exc_info:
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
     assert "At least one field ('packages', 'source') must be set in every arch." in str(
         exc_info.value
@@ -623,16 +620,14 @@ def test_verify_downloaded_unexpected_size(stat_mock: mock.Mock) -> None:
     stat_mock.st_size = 0
     metadata = {Path("foo"): {"size": 12345}}
 
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(ChecksumVerificationFailed):
         _verify_downloaded(metadata)
-    assert "Unexpected file size of" in str(exc_info.value)
 
 
 def test_verify_downloaded_unsupported_hash_alg() -> None:
     metadata = {Path("foo"): {"checksum": "noalg:unmatchedchecksum", "size": None}}
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(ChecksumVerificationFailed):
         _verify_downloaded(metadata)
-    assert "Unsupported hashing algorithm" in str(exc_info.value)
 
 
 @mock.patch(
@@ -642,9 +637,8 @@ def test_verify_downloaded_unsupported_hash_alg() -> None:
 )
 def test_verify_downloaded_unmatched_checksum(mock_open: mock.Mock) -> None:
     metadata = {Path("foo"): {"checksum": "sha256:unmatchedchecksum", "size": None}}
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(ChecksumVerificationFailed):
         _verify_downloaded(metadata)
-    assert "Unmatched checksum of" in str(exc_info.value)
 
 
 class TestRedhatRpmsLock:

@@ -14,7 +14,12 @@ import git
 import pytest
 
 from hermeto import APP_NAME
-from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    FetchError,
+    LockfileNotFound,
+    PackageManagerError,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Component, Property, PropertyEnum
@@ -1635,14 +1640,7 @@ def test_missing_gomod_file(
     packages = [{"path": path, "type": "gomod"} for path, _ in file_tree.items()]
     request = Request(source_dir=tmp_path, output_dir=tmp_path, packages=packages)
 
-    paths_without_gomod = [
-        str(tmp_path / path)
-        for path, contents in file_tree.items()
-        if "go.mod" not in contents.keys()
-    ]
-    path_error_string = "; ".join(paths_without_gomod)
-
-    with pytest.raises(PackageRejected, match=path_error_string):
+    with pytest.raises(LockfileNotFound):
         fetch_gomod_source(request)
 
 

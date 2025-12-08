@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import LockfileNotFound, PackageManagerError
 from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
@@ -29,12 +29,9 @@ def _ensure_bundler_files_exist(package_dir: RootedPath) -> None:
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
     if not lockfile_path.path.exists() or not gemfile_path.path.exists():
-        reason = "Gemfile and Gemfile.lock must be present in the package directory"
-        solution = (
-            "Run `bundle init` to generate the Gemfile.\n"
-            "Run `bundle lock` to generate the Gemfile.lock."
+        raise LockfileNotFound(
+            files=lockfile_path.path if not lockfile_path.path.exists() else gemfile_path.path,
         )
-        raise PackageRejected(reason=reason, solution=solution)
 
 
 def parse_lockfile(

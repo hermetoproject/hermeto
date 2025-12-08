@@ -15,7 +15,12 @@ from typing import Any, Literal, NamedTuple, TypedDict
 import semver
 import yaml
 
-from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -97,16 +102,17 @@ class PackageJson(UserDict):
             with file_path.path.open("r") as f:
                 package_json_data = json.load(f)
         except FileNotFoundError:
-            raise PackageRejected(
-                "The package.json file must be present for the yarn package manager",
+            raise LockfileNotFound(
+                files=file_path.path,
                 solution=(
                     "Please double-check that you have specified the correct path "
                     "to the package directory containing this file"
                 ),
             )
         except json.decoder.JSONDecodeError as e:
-            raise PackageRejected(
-                f"Can't parse the {file_path.subpath_from_root} file. {e}",
+            raise InvalidLockfileFormat(
+                lockfile_path=file_path.path,
+                err_details=str(e),
                 solution=(
                     "The package.json file must contain valid JSON. "
                     "Refer to the parser error and fix the contents of the file."

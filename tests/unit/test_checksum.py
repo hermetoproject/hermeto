@@ -4,7 +4,7 @@ from typing import Literal
 import pytest
 
 from hermeto.core.checksum import SUPPORTED_ALGORITHMS, ChecksumInfo, must_match_any_checksum
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import ChecksumVerificationFailed, PackageRejected
 
 FILE_CONTENT = "Beetlejuice! Beetlejuice! Beetlejuice!"
 
@@ -149,7 +149,7 @@ def test_verify_checksum_failure(
     file.write_text(FILE_CONTENT)
     caplog.set_level("WARNING")
 
-    with pytest.raises(PackageRejected, match="Failed to verify spells.txt"):
+    with pytest.raises(ChecksumVerificationFailed):
         must_match_any_checksum(file, checksums)
 
     expect_messages = [f"spells.txt: {msg}" for msg in expect_log_msgs]

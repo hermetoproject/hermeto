@@ -80,7 +80,7 @@ log = logging.getLogger(__name__)
                 check_output=False,
                 check_deps_checksums=False,
                 expected_exit_code=2,
-                expected_output="Yarn lockfile 'yarn_non_existent.lock' missing, refusing to continue",
+                expected_output="Required files not found:",
             ),
             id="yarn_missing_lockfile",
         ),

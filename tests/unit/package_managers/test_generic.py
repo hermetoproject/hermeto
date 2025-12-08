@@ -5,7 +5,13 @@ from unittest import mock
 import pytest
 
 from hermeto import APP_NAME
-from hermeto.core.errors import BaseError, PackageRejected
+from hermeto.core.errors import (
+    ChecksumVerificationFailed,
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PackageRejected,
+    PathOutsideRoot,
+)
 from hermeto.core.models.input import GenericPackageInput
 from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.generic.main import (
@@ -16,7 +22,7 @@ from hermeto.core.package_managers.generic.main import (
     _resolve_lockfile_path,
     fetch_generic_source,
 )
-from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.rooted_path import RootedPath
 
 LOCKFILE_WRONG_VERSION = """
 metadata:
@@ -183,54 +189,41 @@ def test_resolve_lockfile_path_fail(rooted_tmp_path: RootedPath) -> None:
 @mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")
 def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(LockfileNotFound):
         _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
-    assert (
-        f"{APP_NAME} generic lockfile '{lockfile_path}' does not exist, refusing to continue."
-        in str(exc_info.value)
-    )
     mock_load.assert_not_called()
 
 
 @pytest.mark.parametrize(
-    ["lockfile", "expected_exception", "expected_err"],
+    ["lockfile", "expected_exception"],
     [
-        pytest.param("{", PackageRejected, "yaml format is not correct", id="invalid_yaml"),
-        pytest.param(
-            LOCKFILE_WRONG_VERSION, PackageRejected, "Input should be '1.0'", id="wrong_version"
-        ),
-        pytest.param(
-            LOCKFILE_CHECKSUM_MISSING, PackageRejected, "Field required", id="checksum_missing"
-        ),
+        pytest.param("{", InvalidLockfileFormat, id="invalid_yaml"),
+        pytest.param(LOCKFILE_WRONG_VERSION, InvalidLockfileFormat, id="wrong_version"),
+        pytest.param(LOCKFILE_CHECKSUM_MISSING, InvalidLockfileFormat, id="checksum_missing"),
         pytest.param(
             LOCKFILE_INVALID_FILENAME,
             PathOutsideRoot,
-            "",
             id="invalid_filename",
         ),
         pytest.param(
             LOCKFILE_FILENAME_OVERLAP,
-            PackageRejected,
-            "Duplicate filenames",
+            InvalidLockfileFormat,
             id="conflicting_filenames",
         ),
         pytest.param(
             LOCKFILE_URL_OVERLAP,
-            PackageRejected,
-            "Duplicate download_urls",
+            InvalidLockfileFormat,
             id="conflicting_urls",
         ),
         pytest.param(
             LOCKFILE_WRONG_CHECKSUM,
-            PackageRejected,
-            "Failed to verify archive.zip against any of the provided checksums.",
+            ChecksumVerificationFailed,
             id="wrong_checksum",
         ),
         pytest.param(
             LOCKFILE_WRONG_CHECKSUM_FORMAT,
-            PackageRejected,
-            "Checksum must be in the format 'algorithm:hash'",
-            id="wrong_checksum",
+            InvalidLockfileFormat,
+            id="wrong_checksum_format",
         ),
     ],
 )
@@ -240,8 +233,7 @@ def test_resolve_generic_lockfile_invalid(
     mock_download: mock.Mock,
     mock_asyncio_run: mock.Mock,
     lockfile: str,
-    expected_exception: type[BaseError],
-    expected_err: str,
+    expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
 ) -> None:
     # setup lockfile
@@ -255,10 +247,8 @@ def test_resolve_generic_lockfile_invalid(
     with open(deps_path.join_within_root("archive.zip"), "w") as f:
         f.write("Testfile")
 
-    with pytest.raises(expected_exception) as exc_info:
+    with pytest.raises(expected_exception):
         _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
-
-    assert expected_err in str(exc_info.value)
 
 
 @pytest.mark.parametrize(

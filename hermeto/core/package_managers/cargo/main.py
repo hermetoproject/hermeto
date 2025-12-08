@@ -12,7 +12,7 @@ from urllib.parse import urlparse, urlunparse
 import tomlkit
 from packageurl import PackageURL
 
-from hermeto.core.errors import NotAGitRepo, PackageRejected
+from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
@@ -176,9 +176,9 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
     # a lock file. A user could try and fix this by explicitly locking the
     # package first.
     if not (package_dir.path / "Cargo.lock").exists():
-        raise PackageRejected(
-            f"{package_dir.path} is not locked",
-            solution="Please lock it first by running 'cargo generate-lockfile",
+        raise LockfileNotFound(
+            files=package_dir.path / "Cargo.lock",
+            solution="Please lock it first by running 'cargo generate-lockfile'",
         )
 
 

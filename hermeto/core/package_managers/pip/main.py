@@ -14,7 +14,7 @@ from packaging.utils import canonicalize_name
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -537,8 +537,8 @@ def _download_from_requirement_files(
     requirements: list[dict[str, Any]] = []
     for req_file in files:
         if not req_file.path.exists():
-            raise PackageRejected(
-                f"The requirements file does not exist: {req_file}",
+            raise LockfileNotFound(
+                files=req_file.path,
                 solution="Please check that you have specified correct requirements file paths",
             )
         requirements.extend(

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -216,7 +216,9 @@ def _reject_if_wrong_lockfile_version(project: Project) -> None:
 def _reject_if_lockfile_is_missing(project: Project) -> None:
     yarnlock_path = _get_path_to_yarn_lock(project)
     if not yarnlock_path.exists():
-        raise MissingLockfile()
+        raise LockfileNotFound(
+            files=yarnlock_path,
+        )
 
 
 def _verify_repository(project: Project) -> None:

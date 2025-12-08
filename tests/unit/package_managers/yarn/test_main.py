@@ -8,7 +8,12 @@ from unittest import mock
 import pytest
 import semver
 
-from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    LockfileNotFound,
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
 from hermeto.core.package_managers.yarn.main import (
@@ -355,11 +360,7 @@ def test_check_missing_lockfile(rooted_tmp_path: RootedPath) -> None:
     project.source_dir = rooted_tmp_path
     project.yarn_rc = YarnRc(project.source_dir.join_within_root(".yarnrc.yml"), {})
 
-    lockfile_name = project.yarn_rc.get("lockfileFilename", "yarn.lock")
-    with pytest.raises(
-        PackageRejected,
-        match=f"Yarn lockfile '{lockfile_name}' missing, refusing to continue",
-    ):
+    with pytest.raises(LockfileNotFound):
         _check_lockfile(project)
 
 

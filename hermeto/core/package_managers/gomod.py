@@ -31,6 +31,7 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import (
     FetchError,
     GitError,
+    LockfileNotFound,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
@@ -701,11 +702,11 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     invalid_gomod_files = _find_missing_gomod_files(request.source_dir, subpaths)
 
     if invalid_gomod_files:
-        invalid_files_print = "; ".join(str(file.parent) for file in invalid_gomod_files)
-
-        raise PackageRejected(
-            f"The go.mod file must be present for the Go module(s) at: {invalid_files_print}",
-            solution="Please double-check that you have specified correct paths to your Go modules",
+        raise LockfileNotFound(
+            files=invalid_gomod_files,
+            solution=(
+                "Please double-check that you have specified correct paths to your Go modules"
+            ),
         )
 
     components: list[Component] = []

@@ -14,7 +14,13 @@ from git import Repo
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    InvalidChecksum,
+    LockfileNotFound,
+    MissingChecksum,
+    PackageRejected,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.sbom import Component, Property
@@ -460,12 +466,8 @@ class TestDownload:
         )
         req_file = mock_requirements_file(requirements=[req])
 
-        with pytest.raises(PackageRejected) as exc_info:
+        with pytest.raises(InvalidChecksum):
             pip._download_dependencies(RootedPath("/output"), req_file)
-
-        assert str(exc_info.value) == (
-            f"URL requirement must specify exactly one hash, but specifies {total}: foo @ {url}."
-        )
 
     @pytest.mark.parametrize(
         "url",
@@ -497,7 +499,6 @@ class TestDownload:
         global_require_hash: bool,
         local_hash: bool,
         requirement_kind: str,
-        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Test that missing hashes cause a validation error."""
         if global_require_hash:
@@ -513,19 +514,8 @@ class TestDownload:
         req_2 = mock_requirement("bar", requirement_kind)
         req_file = mock_requirements_file(requirements=[req_1, req_2], options=options)
 
-        with pytest.raises(PackageRejected) as exc_info:
+        with pytest.raises(MissingChecksum):
             pip._download_dependencies(RootedPath("/output"), req_file)
-
-        if global_require_hash:
-            assert "Global --require-hashes option used, will require hashes" in caplog.text
-            bad_req = req_2 if local_hash else req_1
-        else:
-            msg = "At least one dependency uses the --hash option, will require hashes"
-            assert msg in caplog.text
-            bad_req = req_2
-
-        msg = f"Hash is required, dependency does not specify any: {bad_req.download_line}"
-        assert str(exc_info.value) == msg
 
     @pytest.mark.parametrize(
         "requirement_kind, hash_in_url",
@@ -543,11 +533,8 @@ class TestDownload:
         req = mock_requirement("foo", requirement_kind, hashes=hashes, qualifiers=qualifiers)
         req_file = mock_requirements_file(requirements=[req])
 
-        with pytest.raises(PackageRejected) as exc_info:
+        with pytest.raises(InvalidChecksum):
             pip._download_dependencies(RootedPath("/output"), req_file)
-
-        msg = "Not a valid hash specifier: 'malformed' (expected 'algorithm:digest')"
-        assert str(exc_info.value) == msg
 
     @pytest.mark.parametrize(
         "binary_filters", (PipBinaryFilters.with_allow_binary_behavior(), None)
@@ -1040,11 +1027,8 @@ def test_resolve_pip_invalid_req_file_path(
 ) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     invalid_path = Path("foo/bar.txt")
-    expected_error = (
-        f"The requirements file does not exist: {rooted_tmp_path.join_within_root(invalid_path)}"
-    )
     requirement_files = [invalid_path]
-    with pytest.raises(PackageRejected, match=expected_error):
+    with pytest.raises(LockfileNotFound):
         pip._resolve_pip(
             package_path=rooted_tmp_path,
             output_dir=rooted_tmp_path.join_within_root("output"),
@@ -1058,11 +1042,8 @@ def test_resolve_pip_invalid_bld_req_file_path(
 ) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     invalid_path = Path("foo/bar.txt")
-    expected_error = (
-        f"The requirements file does not exist: {rooted_tmp_path.join_within_root(invalid_path)}"
-    )
     build_requirement_files = [invalid_path]
-    with pytest.raises(PackageRejected, match=expected_error):
+    with pytest.raises(LockfileNotFound):
         pip._resolve_pip(
             package_path=rooted_tmp_path,
             output_dir=rooted_tmp_path.join_within_root("output"),

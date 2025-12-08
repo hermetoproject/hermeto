@@ -1,5 +1,6 @@
 import textwrap
-from typing import ClassVar
+from pathlib import Path
+from typing import ClassVar, Iterable
 
 from hermeto import APP_NAME
 
@@ -114,6 +115,147 @@ class UnsupportedFeature(UsageError):
     default_solution = (
         f"If you need {APP_NAME} to support this feature, please contact the maintainers."
     )
+
+
+class ExecutableNotFound(UsageError):
+    """A required executable was not found in PATH."""
+
+    def __init__(
+        self,
+        executable: str,
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize ExecutableNotFound.
+
+        :param executable: Name of the executable that was not found
+        :param solution: politely suggest a potential solution to the user
+        """
+        reason = f"{executable!r} executable not found in PATH"
+        super().__init__(reason, solution=solution)
+
+    default_solution = (
+        "Please make sure that the required executable is installed in your PATH.\n"
+        f"If you are using {APP_NAME} via its container image, this should not happen - "
+        "please report this bug."
+    )
+
+
+class ChecksumVerificationFailed(PackageRejected):
+    """Checksum verification failed for a file."""
+
+    def __init__(
+        self,
+        filename: Path | str,
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize ChecksumVerificationFailed.
+
+        :param filename: Name of the file that failed checksum verification
+        :param solution: politely suggest a potential solution to the user
+        """
+        reason = f"Failed to verify {filename} against any of the provided checksums"
+        super().__init__(reason, solution=solution)
+
+    default_solution = (
+        "Verify that the file has not been corrupted and that the expected checksums are correct."
+    )
+
+
+class InvalidChecksum(PackageRejected):
+    """Provided checksum/hash/integrity is not valid data."""
+
+    def __init__(
+        self,
+        checksum: list[str] | str,
+        reason: str | None = None,
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize InvalidChecksum.
+
+        :param checksum: The name or string representation of invalid checksum value(s)
+        :param solution: politely suggest a potential solution to the user
+        """
+        if reason is None:
+            reason = f"Invalid checksum(s): {checksum!r}"
+
+        super().__init__(reason, solution=solution)
+
+    default_solution = "Please check that the checksum exists and matches the expected format"
+
+
+class MissingChecksum(InvalidChecksum):
+    """Provided checksum/hash/integrity is missing"""
+
+    def __init__(
+        self,
+        element: str | None = None,
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize MissingChecksum.
+
+        :param element: Hint to the missing checksum, or None if checksum is missing entirely
+        :param solution: politely suggest a potential solution to the user
+        """
+        if element is None:
+            reason = "Checksum is missing"
+            checksum_value = ""
+        else:
+            reason = f"{element!r} is missing mandatory integrity checksum."
+            checksum_value = element
+
+        super().__init__(checksum=checksum_value, reason=reason, solution=solution)
+
+    default_solution = "Please check that the checksum exists"
+
+
+class LockfileNotFound(PackageRejected):
+    """A required lockfile was not found."""
+
+    def __init__(
+        self,
+        files: Path | str | Iterable[Path | str],
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize LockfileNotFound.
+
+        :param files: Path(s) where lockfile was expected
+        :param solution: politely suggest a potential solution to the user
+        """
+        if isinstance(files, (Path, str)):
+            files = [files]
+
+        reason = f"Required files not found: {', '.join(str(f) for f in files)}"
+
+        super().__init__(reason, solution=solution)
+
+    default_solution = "Make sure the required files exist and are checked into the repository"
+
+
+class InvalidLockfileFormat(PackageRejected):
+    """Lockfile format is invalid or cannot be parsed."""
+
+    def __init__(
+        self,
+        lockfile_path: Path | str,
+        err_details: str | None,
+        *,
+        solution: str | None = _argument_not_specified,
+    ) -> None:
+        """Initialize InvalidLockfileFormat.
+
+        :param lockfile_path: Path to the invalid lockfile
+        :param err_details: Details about what is invalid
+        :param solution: politely suggest a potential solution to the user
+        """
+        reason = f"lockfile '{lockfile_path}' format is not valid: {err_details}"
+        super().__init__(reason, solution=solution)
+
+    default_solution = "Check correct syntax in the lockfile."
 
 
 class FetchError(BaseError):

@@ -11,7 +11,12 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import (
+    LockfileNotFound,
+    PackageRejected,
+    UnexpectedFormat,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Component, Property
@@ -894,18 +899,20 @@ def test_fetch_npm_source(
 
 
 @pytest.mark.parametrize(
-    "lockfile_exists, node_mods_exists, expected_error",
+    "lockfile_exists, node_mods_exists, expected_error, expected_exception",
     [
         pytest.param(
             False,
             False,
-            "The npm-shrinkwrap.json or package-lock.json file must be present for the npm package manager",
+            "Required files not found:",
+            LockfileNotFound,
             id="no lockfile present",
         ),
         pytest.param(
             True,
             True,
             "The 'node_modules' directory cannot be present in the source repository",
+            PackageRejected,
             id="lockfile present; node_modules present",
         ),
     ],
@@ -916,11 +923,12 @@ def test_resolve_npm_validation(
     lockfile_exists: bool,
     node_mods_exists: bool,
     expected_error: str,
+    expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
 ) -> None:
     mock_exists.side_effect = [lockfile_exists, node_mods_exists]
     npm_deps_dir = mock.Mock(spec=RootedPath)
-    with pytest.raises(PackageRejected, match=expected_error):
+    with pytest.raises(expected_exception, match=expected_error):
         _resolve_npm(rooted_tmp_path, npm_deps_dir)
 
 
