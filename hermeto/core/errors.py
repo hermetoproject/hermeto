@@ -1,4 +1,5 @@
 import textwrap
+from pathlib import Path
 from typing import ClassVar
 
 from hermeto import APP_NAME
@@ -122,6 +123,107 @@ class UnsupportedFeature(UsageError):
     default_solution = (
         f"If you need {APP_NAME} to support this feature, please contact the maintainers."
     )
+
+
+class ExecutableNotFound(UsageError):
+    """A required executable was not found in PATH."""
+
+    def __init__(
+        self,
+        executable: str,
+        *,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
+    ) -> None:
+        """Initialize ExecutableNotFound.
+
+        :param executable: Name of the executable that was not found
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        reason = f"{executable!r} executable not found in PATH"
+        super().__init__(reason, solution=solution, docs=docs)
+
+    default_solution = (
+        "Please make sure that the required executable is installed in your PATH.\n"
+        f"If you are using {APP_NAME} via its container image, this should not happen - "
+        "please report this bug."
+    )
+
+
+class ChecksumVerificationFailed(PackageRejected):
+    """Checksum verification failed for a file."""
+
+    def __init__(
+        self,
+        filename: str | Path,
+        *,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
+    ) -> None:
+        """Initialize ChecksumVerificationFailed.
+
+        :param filename: Name of the file that failed checksum verification
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        reason = f"Failed to verify {filename} against any of the provided checksums"
+        super().__init__(reason, solution=solution, docs=docs)
+
+    default_solution = (
+        "Verify that the file has not been corrupted and that the expected checksums are correct."
+    )
+
+
+class LockfileNotFound(PackageRejected):
+    """A required lockfile was not found."""
+
+    def __init__(
+        self,
+        lockfile_path: Path | str,
+        lockfile_name: str,
+        *,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
+    ) -> None:
+        """Initialize LockfileNotFound.
+
+        :param lockfile_path: Path where lockfile was expected
+        :param lockfile_name: Name of the expected lockfile
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        reason = f"{APP_NAME} lockfile '{lockfile_name}' does not exist in '{lockfile_path}', refusing to continue"
+        if solution == _argument_not_specified:
+            solution = (
+                f"Make sure your repository has {APP_NAME} lockfile '{lockfile_name}' "
+                "checked in to the repository, or the supplied lockfile path is correct."
+            )
+        super().__init__(reason, solution=solution, docs=docs)
+
+
+class InvalidLockfileFormat(PackageRejected):
+    """Lockfile format is invalid or cannot be parsed."""
+
+    def __init__(
+        self,
+        lockfile_path: Path | str,
+        err_details: str | None,
+        *,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
+    ) -> None:
+        """Initialize InvalidLockfileFormat.
+
+        :param lockfile_path: Path to the invalid lockfile
+        :param err_details: Details about what is invalid
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        reason = f"{APP_NAME} lockfile '{lockfile_path}' format is not valid: {err_details}"
+        if solution == _argument_not_specified:
+            solution = "Check correct syntax in the lockfile."
+        super().__init__(reason, solution=solution, docs=docs)
 
 
 class FetchError(BaseError):

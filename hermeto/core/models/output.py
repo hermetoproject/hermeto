@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 import pydantic
 
-from hermeto.core.errors import BaseError
+from hermeto.core.errors import PackageRejected
 from hermeto.core.models.sbom import Component, Sbom, merge_component_properties
 from hermeto.core.models.validators import unique_sorted
 
@@ -82,7 +82,7 @@ class EnvironmentVariable(pydantic.BaseModel):
 
             substituted |= get_placeholders(t_old) & mappings.keys()
             if substituted & p_new:
-                raise BaseError(
+                raise PackageRejected(
                     f"Detected a cycle in environment variable expansion of '{self.name}'",
                     solution=(
                         "Inspect all relevant environment variables and make sure their "
@@ -90,7 +90,6 @@ class EnvironmentVariable(pydantic.BaseModel):
                         "variables altogether."
                     ),
                 )
-
         return ret
 
 
