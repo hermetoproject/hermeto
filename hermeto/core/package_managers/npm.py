@@ -14,6 +14,7 @@ from packageurl import PackageURL
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.errors import (
+    ChecksumMissing,
     LockfileNotFound,
     PackageRejected,
     UnexpectedFormat,
@@ -520,11 +521,11 @@ def _get_npm_dependencies(
                 if info["integrity"]:
                     algorithm, digest = ChecksumInfo.from_sri(info["integrity"])
                 else:
-                    raise PackageRejected(
-                        f"{info['name']} is missing integrity checksum. It is mandatory"
+                    raise ChecksumMissing(
+                        f"{info['name']} is missing integrity checksum. It is mandatory "
                         f"for https dependencies.",
-                        solution="Please double-check provided package-lock.json that"
-                        " your dependencies specify integrity. Try to "
+                        solution="Please double-check provided package-lock.json that "
+                        "your dependencies specify integrity. Try to "
                         "rerun `npm install` on your repository.",
                     )
                 download_paths[url] = download_dir.join_within_root(

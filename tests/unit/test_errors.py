@@ -65,3 +65,28 @@ def test_fetch_error_friendly_msg() -> None:
         """
     ).strip()
     assert err.friendly_msg() == expect_msg
+
+
+def test_checksum_missing_friendly_msg() -> None:
+    err = errors.ChecksumMissing(
+        "Package 'foo' is missing integrity checksum",
+        solution="Please ensure checksums are specified in the lockfile",
+    )
+    expect_msg = dedent(
+        """
+        Package 'foo' is missing integrity checksum
+          Please ensure checksums are specified in the lockfile
+        """
+    ).strip()
+    assert err.friendly_msg() == expect_msg
+
+
+def test_checksum_missing_default_solution() -> None:
+    err = errors.ChecksumMissing("Package 'bar' is missing hash")
+    expect_msg = dedent(
+        """
+        Package 'bar' is missing hash
+          Please ensure that all dependencies have proper checksums/hashes specified in the lockfile.
+        """
+    ).strip()
+    assert err.friendly_msg() == expect_msg

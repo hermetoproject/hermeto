@@ -175,6 +175,27 @@ class ChecksumVerificationFailed(PackageRejected):
     )
 
 
+class ChecksumMissing(PackageRejected):
+    """Required checksum/hash/integrity is missing for a dependency."""
+
+    def __init__(
+        self,
+        reason: str,
+        *,
+        solution: str | None = _argument_not_specified,
+        docs: str | None = None,
+    ) -> None:
+        """Initialize ChecksumMissing.
+
+        :param reason: explain what checksum is missing and for which dependency
+        :param solution: politely suggest a potential solution to the user
+        :param docs: include a link to relevant documentation (if there is any)
+        """
+        super().__init__(reason, solution=solution, docs=docs)
+
+    default_solution = "Please ensure that all dependencies have proper checksums/hashes specified in the lockfile."
+
+
 class LockfileNotFound(PackageRejected):
     """A required lockfile was not found."""
 
