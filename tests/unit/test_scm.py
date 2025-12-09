@@ -8,7 +8,7 @@ import git
 import pytest
 from git.repo import Repo
 
-from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.errors import FetchError, GitOperationError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
@@ -58,7 +58,7 @@ class TestRepoID:
 
     def test_get_repo_id_no_origin(self, golang_repo_path: Path) -> None:
         with pytest.raises(
-            UnsupportedFeature,
+            GitOperationError,
             match="cannot process repositories that don't have an 'origin' remote",
         ):
             get_repo_id(golang_repo_path)

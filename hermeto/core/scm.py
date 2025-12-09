@@ -9,11 +9,12 @@ from typing import Any, NamedTuple
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
-from git.exc import InvalidGitRepositoryError, NoSuchPathError
+from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
+from gitdb.exc import BadName  # type: ignore
 
 from hermeto import APP_NAME
-from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.errors import FetchError, GitOperationError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
     try:
         origin = repo.remote("origin")
     except ValueError:
-        raise UnsupportedFeature(
+        raise GitOperationError(
             f"{APP_NAME} cannot process repositories that don't have an 'origin' remote",
             solution=(
                 "Repositories cloned via git clone should always have one.\n"
@@ -68,7 +69,15 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
         )
 
     url = _canonicalize_origin_url(origin.url)
-    commit_id = repo.head.commit.hexsha
+
+    try:
+        commit_id = repo.head.commit.hexsha
+    except ValueError:
+        raise GitOperationError(
+            f"{APP_NAME} Cannot access HEAD commit in repository",
+            solution="The repository appears to have no commits.",
+        )
+
     return RepoID(url, commit_id)
 
 
@@ -117,7 +126,15 @@ def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[Repo, Path]:
     if not target_path.is_absolute():
         target_path = repo_root / target_path
 
-    current_repo = Repo(repo_root)
+    try:
+        current_repo = Repo(repo_root)
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        raise NotAGitRepo(
+            f"The provided path {repo_root} cannot be processed as a valid git repository.",
+            solution=(
+                "Please ensure that the path is correct and that it is a valid git repository."
+            ),
+        )
 
     while (submodule := _find_submodule_containing_path(current_repo, target_path)) is not None:
         current_repo = _get_submodule_repo(submodule)
@@ -171,8 +188,9 @@ class GitCloner:
             Cloned git.Repo object
 
         Raises:
-            FetchError: If cloning fails
+            GitOperationError: If any git-related failures
         """
+
         list_url = [url]
         if "ssh://" in url:
             list_url.append(url.replace("ssh://", "https://"))
@@ -192,7 +210,7 @@ class GitCloner:
                 if branch is not None:
                     repo.git.checkout(branch)
 
-            except Exception as ex:
+            except GitCommandError as ex:
                 log.warning(
                     "Failed cloning the Git repository from %s, ref: %s, exception: %s, exception-msg: %s",
                     url,
@@ -208,22 +226,20 @@ class GitCloner:
             log.debug("Successfully cloned %s to %s", url, to_path)
             return repo
 
-        raise FetchError("Failed cloning the Git repository")
+        raise GitOperationError("Failed cloning the Git repository")
 
     def _reset_git_head(self, repo: Repo, ref: str) -> None:
         """Reset git repository to specific commit reference."""
         try:
             repo.head.reference = repo.commit(ref)  # type: ignore # 'reference' is a weird property
             repo.head.reset(index=True, working_tree=True)
-        except Exception as ex:
+        except (BadName, ValueError) as ex:
             log.exception(
                 "Failed on checking out the Git ref %s, exception: %s",
                 ref,
                 type(ex).__name__,
             )
-            # Not necessarily a FetchError, but the checkout *does* also fetch stuff
-            #   (because we clone with --filter=blob:none)
-            raise FetchError(
+            raise GitOperationError(
                 "Failed on checking out the Git repository. Please verify the supplied reference "
                 f'of "{ref}" is valid.'
             )
@@ -239,12 +255,16 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
     :param to_path: create the tarball at this path
     """
     with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
-        cloner = GitCloner()
-        repo = cloner.clone(url=url, to_path=Path(temp_dir), ref=ref, filter="blob:none")
+        try:
+            cloner = GitCloner()
+            repo = cloner.clone(url=url, to_path=Path(temp_dir), ref=ref, filter="blob:none")
+        except GitOperationError as ex:
+            log.exception(
+                "Failed cloning git repository from %s: %s",
+                url,
+                type(ex).__name__,
+            )
+            raise FetchError(f"Failed to clone git repository from {url}: {ex}")
 
         with tarfile.open(to_path, mode="w:gz") as archive:
             archive.add(repo.working_dir, "app")
-
-
-
-

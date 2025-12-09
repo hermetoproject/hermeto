@@ -14,7 +14,7 @@ from packaging.utils import canonicalize_name
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import GitOperationError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -189,7 +189,7 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
 def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
     try:
         repo_id = get_repo_id(package_dir.root)
-    except UnsupportedFeature:
+    except GitOperationError:
         raise PackageRejected(
             reason="Unable to infer package name from origin URL",
             solution=(

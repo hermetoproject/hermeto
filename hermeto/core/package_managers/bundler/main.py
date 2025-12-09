@@ -6,7 +6,7 @@ from textwrap import dedent
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import GitOperationError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -116,7 +116,7 @@ def _get_main_package_name_and_version(
     try:
         name = _get_repo_name_from_origin_remote(package_dir)
     # if the git repository does not have an origin remote
-    except UnsupportedFeature:
+    except GitOperationError:
         raise PackageRejected(
             reason="Failed to extract package name from origin remote",
             solution=(
