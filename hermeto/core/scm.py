@@ -5,7 +5,7 @@ import re
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
@@ -14,6 +14,7 @@ from git.repo import Repo
 
 from hermeto import APP_NAME
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.models.input import PackageManagerType
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
@@ -156,39 +157,69 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
     :param ref: the revision to check out
     :param to_path: create the tarball at this path
     """
+    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
+        repo = _clone_git_repo(url=url, to_path=Path(temp_dir), ref=ref, filter="blob:none")
+
+        with tarfile.open(to_path, mode="w:gz") as archive:
+            archive.add(repo.working_dir, "app")
+
+
+def _clone_git_repo(
+    url: str,
+    to_path: Path,
+    ref: str,
+    branch: str | None = None,
+    filter: str | None = None,
+) -> Repo:
+    """Clone a git repository with common options and error handling.
+
+    Args:
+        url: Git repository URL
+        to_path: Destination path for cloning
+        ref: Git reference to checkout
+        branch: Optional branch to checkout
+        filter: Git filter for partial clone (e.g., 'blob:none', 'tree:0', 'blob:limit=1m')
+
+    Returns:
+        Cloned git.Repo object
+
+    Raises:
+        FetchError: If cloning fails
+    """
     list_url = [url]
-    # Fallback to `https` if cloning source via ssh fails
     if "ssh://" in url:
         list_url.append(url.replace("ssh://", "https://"))
 
-    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
-        for url in list_url:
-            log.debug("Cloning the Git repository from %s", url)
-            try:
-                repo = Repo.clone_from(
-                    url,
-                    temp_dir,
-                    no_checkout=True,
-                    filter="blob:none",
-                    # Don't allow git to prompt for a username if we don't have access
-                    env={"GIT_TERMINAL_PROMPT": "0"},
-                )
-            except Exception as ex:
-                log.warning(
-                    "Failed cloning the Git repository from %s, ref: %s, exception: %s, exception-msg: %s",
-                    url,
-                    ref,
-                    type(ex).__name__,
-                    str(ex),
-                )
-                continue
+    # Don't allow git to prompt for a username if we don't have access
+    env = {"GIT_TERMINAL_PROMPT": "0"}
+    kwargs: dict[str, Any] = {"no_checkout": True}
 
-            _reset_git_head(repo, ref)
+    if filter is not None:
+        kwargs["filter"] = filter
 
-            with tarfile.open(to_path, mode="w:gz") as archive:
-                archive.add(repo.working_dir, "app")
+    for url in list_url:
+        log.debug("Cloning git repository from %s", url)
+        try:
+            repo = Repo.clone_from(url, to_path, env=env, **kwargs)
 
-            return
+            if branch is not None:
+                repo.git.checkout(branch)
+
+        except Exception as ex:
+            log.warning(
+                "Failed cloning git repository from %s, ref: %s, exception: %s, exception-msg: %s",
+                url,
+                ref,
+                type(ex).__name__,
+                str(ex),
+            )
+            continue
+
+        # Reset to specific commit
+        _reset_git_head(repo, ref)
+
+        log.debug("Successfully cloned %s to %s", url, to_path)
+        return repo
 
     raise FetchError("Failed cloning the Git repository")
 
@@ -209,3 +240,88 @@ def _reset_git_head(repo: Repo, ref: str) -> None:
             "Failed on checking out the Git repository. Please verify the supplied reference "
             f'of "{ref}" is valid.'
         )
+
+
+class GitSupportConfig:
+    """Base configuration class for package manager git support."""
+
+    def __init__(
+        self,
+        supported_schemes: list[str],
+        package_manager: PackageManagerType,
+    ):
+        """Initialize GitSupportConfig.
+
+        Args:
+            supported_schemes: List of supported git URL schemes (e.g. ['git+https', 'git+ssh'])
+            package_manager: The package manager this configuration is for
+        """
+        self.supported_schemes = supported_schemes
+        self.package_manager = package_manager
+
+
+def validate_git_dependency(url: str, config: GitSupportConfig) -> None:
+    """Validate git dependency requirements using package manager configuration.
+
+    Args:
+        url: Git repository URL
+        config: GitSupportConfig object with package manager settings
+
+    Raises:
+        UnsupportedFeature: If git dependencies are not supported or invalid
+    """
+    # Check if git dependencies are supported at all
+    if not config.supported_schemes:
+        raise UnsupportedFeature(
+            f"{APP_NAME} does not support Git dependencies for {config.package_manager}",
+            solution="Use registry-published packages instead of git dependencies",
+        )
+
+    # Parse and validate URL scheme
+    parsed_url = urlparse(url)
+    if parsed_url.scheme not in config.supported_schemes:
+        supported = ", ".join(config.supported_schemes)
+        raise UnsupportedFeature(
+            f"Unsupported VCS scheme for {config.package_manager}: {parsed_url.scheme} "
+            f"(supported: {supported})",
+            solution=f"Use one of the supported git URL schemes: {supported}",
+        )
+
+
+def clone_git_dependency(
+    url: str, ref: str, to_path: Path, config: GitSupportConfig, branch: str | None = None
+) -> None:
+    """Clone a git dependency using the appropriate method for the package manager.
+
+    Args:
+        url: Git repository URL
+        ref: Git reference (full commit hash)
+        to_path: Destination path for cloning
+        config: GitSupportConfig object with package manager settings
+        branch: Optional branch to checkout
+
+    Raises:
+        UnsupportedFeature: If git dependencies are not supported
+        FetchError: If cloning fails
+    """
+
+    validate_git_dependency(url, config)
+
+    log.debug("Cloning git repository from %s for %s", url, config.package_manager)
+
+    try:
+        _clone_git_repo(
+            url=url,
+            to_path=to_path,
+            ref=ref,
+            branch=branch,
+        )
+
+    except Exception as ex:
+        log.exception(
+            "Failed cloning git repository from %s for %s: %s",
+            url,
+            config.package_manager,
+            type(ex).__name__,
+        )
+        raise FetchError(f"Failed to clone git repository for {config.package_manager}: {url}")

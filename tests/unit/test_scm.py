@@ -9,7 +9,15 @@ import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
+from hermeto.core.scm import (
+    GitSupportConfig,
+    RepoID,
+    clone_as_tarball,
+    clone_git_dependency,
+    get_repo_for_path,
+    get_repo_id,
+    validate_git_dependency,
+)
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -145,3 +153,61 @@ def test_get_repo_for_path(
         resolved_repo, resolved_relative_path = get_repo_for_path(main_repo_root, path_to_resolve)
         assert Path(resolved_repo.working_dir) == expected_repo_root
         assert resolved_relative_path == Path(expected_path_in_repo)
+
+
+class TestGitSupportConfig:
+    def test_config_creation(self) -> None:
+        config = GitSupportConfig(
+            supported_schemes=["git", "git+https"],
+            package_manager="bundler",
+        )
+
+        assert config.supported_schemes == ["git", "git+https"]
+        assert config.package_manager == "bundler"
+
+
+class TestValidateGitDependency:
+    def test_valid_git_dependency(self) -> None:
+        config = GitSupportConfig(
+            supported_schemes=["git", "git+https"],
+            package_manager="bundler",
+        )
+
+        # Should not raise exception
+        validate_git_dependency(
+            "git+https://github.com/example/repo.git",
+            config,
+        )
+
+    def test_unsupported_scheme(self) -> None:
+        config = GitSupportConfig(
+            supported_schemes=["git+https"],  # Only https, not ssh
+            package_manager="bundler",
+        )
+
+        with pytest.raises(
+            UnsupportedFeature, match="Unsupported VCS scheme for bundler: git\\+ssh"
+        ):
+            validate_git_dependency("git+ssh://github.com/example/repo.git", config)
+
+
+class TestCloneGitDependency:
+    """Test the clone_git_dependency function."""
+
+    def test_clone_git_dependency_bundler(self, golang_repo_path: Path, tmp_path: Path) -> None:
+        """Test cloning git dependency for bundler."""
+        bundler_config = GitSupportConfig(
+            supported_schemes=["git", "git+https", "file"],  # Add file scheme for testing
+            package_manager="bundler",
+        )
+
+        clone_git_dependency(
+            url=f"file://{golang_repo_path}",
+            ref=INITIAL_COMMIT,
+            to_path=tmp_path / "bundler_clone",
+            config=bundler_config,
+        )
+
+        assert (tmp_path / "bundler_clone" / "README.md").exists()
+        cloned_repo = Repo(tmp_path / "bundler_clone")
+        assert cloned_repo.commit().hexsha == INITIAL_COMMIT

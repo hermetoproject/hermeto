@@ -5,13 +5,12 @@ from typing import Annotated
 from urllib.parse import urljoin, urlparse
 
 import pydantic
-from git import Repo
 from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto.core.package_managers.general import download_binary_file
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import GitSupportConfig, clone_git_dependency, get_repo_id
 
 AcceptedUrl = Annotated[
     pydantic.HttpUrl,
@@ -24,6 +23,12 @@ AcceptedGitRef = Annotated[
 ]
 
 log = logging.getLogger(__name__)
+
+
+BUNDLER_GIT_CONFIG = GitSupportConfig(
+    supported_schemes=["git", "git+http", "git+https", "git+ssh", "https", "ssh"],
+    package_manager="bundler",
+)
 
 
 class _GemMetadata(pydantic.BaseModel):
@@ -143,16 +148,14 @@ class GitDependency(_GemMetadata):
         git_repo_path.path.mkdir(parents=True)
 
         log.info("Cloning git repository %s", self.url)
-        repo = Repo.clone_from(
+
+        clone_git_dependency(
             url=str(self.url),
+            ref=self.ref,
             to_path=git_repo_path.path,
-            env={"GIT_TERMINAL_PROMPT": "0"},
+            config=BUNDLER_GIT_CONFIG,
+            branch=self.branch,
         )
-
-        if self.branch is not None:
-            repo.git.checkout(self.branch)
-
-        repo.git.reset("--hard", self.ref)
 
 
 class PathDependency(_GemMetadata):
