@@ -425,7 +425,7 @@ def fetch_deps_and_check_output(
 
     if test_params.check_output:
         build_config = _load_json_or_yaml(output_dir.joinpath(".build-config.json"))
-        sbom = _load_json_or_yaml(output_dir.joinpath("bom.json"))
+        sbom = _replace_timestamps(_load_json_or_yaml(output_dir.joinpath("bom.json")))
 
         if "project_files" in build_config:
             _replace_tmp_path_with_placeholder(build_config["project_files"], actual_repo_dir)
@@ -438,7 +438,7 @@ def fetch_deps_and_check_output(
         update_test_data_if_needed(expected_sbom_path, sbom)
 
         expected_build_config = _load_json_or_yaml(expected_build_config_path)
-        expected_sbom = _load_json_or_yaml(expected_sbom_path)
+        expected_sbom = _replace_timestamps(_load_json_or_yaml(expected_sbom_path))
 
         log.info("Compare output files")
         assert build_config == expected_build_config
@@ -559,6 +559,23 @@ def _replace_tmp_path_with_placeholder(
         # is available only in Python 3.12 or later.
         relative_path = os.path.relpath(item["abspath"], test_repo_dir)
         item["abspath"] = "${test_case_tmp_path}/" + str(relative_path)
+
+
+def _replace_timestamps(json_obj: Any) -> Any:
+    """
+    Recursively replace all "timestamp" values with a fixed timestamp.
+    This ensures deterministic test output in the SBOM.
+    """
+    if isinstance(json_obj, dict):
+        return {
+            key: "2025-01-01T00:00:00Z" if key == "timestamp" else _replace_timestamps(value)
+            for key, value in json_obj.items()
+        }
+
+    if isinstance(json_obj, list):
+        return [_replace_timestamps(item) for item in json_obj]
+
+    return json_obj
 
 
 def _validate_expected_dep_file_contents(dep_contents_file: Path, output_dir: Path) -> None:
