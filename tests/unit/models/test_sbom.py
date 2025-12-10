@@ -276,9 +276,9 @@ class TestSPDXPackage:
             )
 
 
-@mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+@mock.patch("hermeto.core.models.sbom.timestamp_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSbom:
-    def test_sort_and_dedupe_components(self, mock_spdx_now: str) -> None:
+    def test_sort_and_dedupe_components(self, mock_timestamp_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -326,7 +326,7 @@ class TestSbom:
         ]
 
     # Handles generic PM use-case.
-    def test_to_spdx_when_a_file_is_present(self, mock_spdx_now: str) -> None:
+    def test_to_spdx_when_a_file_is_present(self, mock_timestamp_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -378,7 +378,7 @@ class TestSbom:
             ),
         ]
 
-    def test_to_spdx(self, mock_spdx_now: str) -> None:
+    def test_to_spdx(self, mock_timestamp_now: str) -> None:
         sbom = Sbom(
             components=[
                 {
@@ -514,7 +514,7 @@ class TestSbom:
         ]
 
     def test_cyclonedx_sbom_can_be_converted_to_spdx_and_back_without_loosing_any_data(
-        self, mock_spdx_now: str
+        self, mock_timestamp_now: str
     ) -> None:
         sbom = Sbom(
             components=[
@@ -605,9 +605,9 @@ def _root_contains(spdxid: str) -> SPDXRelation:
     )
 
 
-@mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+@mock.patch("hermeto.core.models.sbom.timestamp_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSPDXSbom:
-    def test_sort_and_dedupe_packages(self, mock_spdx_now: str) -> None:
+    def test_sort_and_dedupe_packages(self, mock_timestamp_now: str) -> None:
         sbom = SPDXSbom(
             creationInfo={"creators": [], "created": SPDX_EPOCH_STRFTIME},
             documentNamespace="NOASSERTION",
@@ -780,7 +780,7 @@ class TestSPDXSbom:
         assert sbom.packages == expected_packages
 
     def test_package_external_ref_invalid_reference_type_for_category(
-        self, mock_spdx_now: str
+        self, mock_timestamp_now: str
     ) -> None:
         adapter: pydantic.TypeAdapter = pydantic.TypeAdapter(SPDXPackageExternalRefType)
 
@@ -809,7 +809,7 @@ class TestSPDXSbom:
                 )
             )
 
-    def test_package_external_ref_invalid_reference(self, mock_spdx_now: str) -> None:
+    def test_package_external_ref_invalid_reference(self, mock_timestamp_now: str) -> None:
         adapter: pydantic.TypeAdapter = pydantic.TypeAdapter(SPDXPackageExternalRefType)
         with pytest.raises(
             pydantic.ValidationError,
@@ -822,7 +822,7 @@ class TestSPDXSbom:
                 )
             )
 
-    def test_to_cyclonedx(self, mock_spdx_now: str) -> None:
+    def test_to_cyclonedx(self, mock_timestamp_now: str) -> None:
         sbom = SPDXSbom(
             documentNamespace="NOASSERTION",
             creationInfo={
@@ -1256,7 +1256,7 @@ class TestSPDXSbom:
         ),
     )
     def test_spdx_sbom_can_be_converted_to_cyclonedx_and_back_without_loosing_any_data(
-        self, mock_spdx_now: str, original_sbom: SPDXSbom
+        self, mock_timestamp_now: str, original_sbom: SPDXSbom
     ) -> None:
         converted_sbom = original_sbom.to_cyclonedx().to_spdx("NOASSERTION")
 

@@ -32,7 +32,7 @@ from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Annotation, Component, timestamp_now
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -760,12 +760,29 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     }
     env_vars_template.update(config.default_environment_variables.get("gomod", {}))
 
+    annotations = []
+    # If we reached this spot in the permissive mode, we can be sure
+    # that the vendor directory was changed after vendoring.
+    if request.mode == Mode.PERMISSIVE:
+        for c in components:
+            c.update_bom_ref()
+
+        annotations.append(
+            Annotation(
+                subjects=[c.bom_ref for c in components],
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=timestamp_now(),
+                text="hermeto:permissive-mode:gomod:vendor-directory-changed-after-vendoring",
+            )
+        )
+
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[
             EnvironmentVariable(name=key, value=value) for key, value in env_vars_template.items()
         ],
         project_files=[],
+        annotations=annotations,
     )
 
 

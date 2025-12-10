@@ -153,6 +153,7 @@ def test_project_files_fix_for_work_copy(
 
         abspath = request.source_dir.path if with_path_replacement else request.output_dir.path
         return RequestOutput(
+            annotations=[],
             components=[],
             build_config=BuildConfig(
                 environment_variables=[],

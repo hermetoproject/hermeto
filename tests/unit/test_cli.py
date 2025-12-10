@@ -750,10 +750,10 @@ class TestFetchDeps:
             ),
         ],
     )
-    @mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
+    @mock.patch("hermeto.core.models.sbom.timestamp_now", return_value=SPDX_EPOCH_STRFTIME)
     def test_write_json_output_spdx(
         self,
-        mock_spdx_now: str,
+        mock_timestamp_now: str,
         request_output: RequestOutput,
         tmp_cwd: Path,
     ) -> None:
