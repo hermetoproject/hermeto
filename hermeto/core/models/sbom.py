@@ -1,10 +1,10 @@
-import datetime
 import hashlib
 import json
 import logging
 import re
 from collections import defaultdict
 from collections.abc import Iterable
+from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
@@ -20,6 +20,28 @@ from hermeto.core.models.property_semantics import Property, PropertyEnum, Prope
 from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
+
+
+def datetime_to_iso_8601(value: datetime) -> str:
+    """Serialize a datetime to a string in ISO 8601 standard."""
+    return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
+
+
+class Annotation(pydantic.BaseModel):
+    """
+    A comment, note, explanation, or similar textual content
+    which provides additional context to the object(s) being annotated.
+
+    https://cyclonedx.org/docs/1.6/json/#annotations
+    """
+
+    subjects: list[str]
+    annotator: dict[Literal["organization", "individual", "component", "service"], dict[str, str]]
+    timestamp: ISODatetime
+    text: str
 
 
 class ExternalReference(pydantic.BaseModel):
@@ -112,13 +134,13 @@ class Metadata(pydantic.BaseModel):
     tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
 
 
-def spdx_now() -> str:
+def spdx_now() -> datetime:
     """Return a time stamp in SPDX-compliant format.
 
     See https://spdx.github.io/spdx-spec/v2.3/search.html?q=date
     for details.
     """
-    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(timezone.utc)
 
 
 def sanitize_spdxid(spdxid: str) -> str:
@@ -347,7 +369,7 @@ class SPDXPackageAnnotation(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(frozen=True)
 
     annotator: str
-    annotationDate: str
+    annotationDate: ISODatetime
     annotationType: Literal["OTHER", "REVIEW"]
     comment: str
 
@@ -451,7 +473,7 @@ class SPDXCreationInfo(pydantic.BaseModel):
     """
 
     creators: list[str] = []
-    created: str
+    created: ISODatetime
 
 
 class SPDXRelation(pydantic.BaseModel):

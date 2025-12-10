@@ -7,7 +7,7 @@ from typing import Any, Literal
 import pydantic
 
 from hermeto.core.errors import BaseError
-from hermeto.core.models.sbom import Component, Sbom, merge_component_properties
+from hermeto.core.models.sbom import Annotation, Component, Sbom, merge_component_properties
 from hermeto.core.models.validators import unique_sorted
 
 log = logging.getLogger(__name__)
@@ -151,6 +151,7 @@ class BuildConfig(pydantic.BaseModel):
 class RequestOutput(pydantic.BaseModel):
     """Results of processing one or more package managers."""
 
+    annotations: list[Annotation] = pydantic.Field(default_factory=list)
     components: list[Component]
     build_config: BuildConfig
 
@@ -165,6 +166,8 @@ class RequestOutput(pydantic.BaseModel):
     def __add__(self, other: "RequestOutput") -> "RequestOutput":
         if not isinstance(other, self.__class__):
             raise TypeError(f"Cannot add {type(other)} to {self.__class__.__name__}")
+
+        annotations = self.annotations + other.annotations
         components = self.components + other.components
         env_vars = (
             self.build_config.environment_variables + other.build_config.environment_variables
@@ -189,6 +192,7 @@ class RequestOutput(pydantic.BaseModel):
             # cannot be None at this point.
             options.update(rhs)  # type: ignore
         return self.__class__.from_obj_list(
+            annotations=annotations,
             components=components,
             environment_variables=env_vars,
             project_files=project_files,
@@ -198,7 +202,7 @@ class RequestOutput(pydantic.BaseModel):
     @classmethod
     def empty(cls) -> "RequestOutput":
         """Return an empty RequestOutput."""
-        return cls(components=[], build_config=BuildConfig())
+        return cls(annotations=[], components=[], build_config=BuildConfig())
 
     @classmethod
     def from_obj_list(
@@ -207,6 +211,7 @@ class RequestOutput(pydantic.BaseModel):
         environment_variables: list[EnvironmentVariable] | None = None,
         project_files: list[ProjectFile] | None = None,
         options: dict[str, Any] | None = None,
+        annotations: list[Annotation] | None = None,
     ) -> "RequestOutput":
         """Create a RequestOutput from components, environment variables and project files."""
         if environment_variables is None:
@@ -215,7 +220,11 @@ class RequestOutput(pydantic.BaseModel):
         if project_files is None:
             project_files = []
 
+        if annotations is None:
+            annotations = []
+
         return RequestOutput(
+            annotations=annotations,
             components=components,
             build_config=BuildConfig(
                 environment_variables=environment_variables,
