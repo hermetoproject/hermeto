@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -34,16 +34,6 @@ log = logging.getLogger(__name__)
 MIRROR_DIR = "deps/yarn-classic"
 YARN_NETWORK_TIMEOUT_MILLISECONDS = 600000
 _yarn_classic_pattern = "yarn lockfile v1"  # See [yarn_classic_trait].
-
-
-class MissingLockfile(PackageRejected):
-    """Indicate that a lock file is missing."""
-
-    def __init__(self) -> None:
-        """Initialize a Missing Lockfile error."""
-        reason = "Yarn lockfile 'yarn.lock' missing, refusing to continue"
-        solution = "Make sure your repository has a Yarn lockfile (i.e. yarn.lock) checked in"
-        super().__init__(reason, solution=solution)
 
 
 class NotV1Lockfile(PackageRejected):
@@ -216,7 +206,7 @@ def _reject_if_wrong_lockfile_version(project: Project) -> None:
 def _reject_if_lockfile_is_missing(project: Project) -> None:
     yarnlock_path = _get_path_to_yarn_lock(project)
     if not yarnlock_path.exists():
-        raise MissingLockfile()
+        raise LockfileNotFound(lockfile_path=yarnlock_path, lockfile_name="yarn.lock")
 
 
 def _verify_repository(project: Project) -> None:

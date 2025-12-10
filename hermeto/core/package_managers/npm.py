@@ -13,7 +13,13 @@ from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import (
+    ChecksumMissing,
+    LockfileNotFound,
+    PackageRejected,
+    UnexpectedFormat,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -515,11 +521,11 @@ def _get_npm_dependencies(
                 if info["integrity"]:
                     algorithm, digest = ChecksumInfo.from_sri(info["integrity"])
                 else:
-                    raise PackageRejected(
-                        f"{info['name']} is missing integrity checksum. It is mandatory"
+                    raise ChecksumMissing(
+                        f"{info['name']} is missing integrity checksum. It is mandatory "
                         f"for https dependencies.",
-                        solution="Please double-check provided package-lock.json that"
-                        " your dependencies specify integrity. Try to "
+                        solution="Please double-check provided package-lock.json that "
+                        "your dependencies specify integrity. Try to "
                         "rerun `npm install` on your repository.",
                     )
                 download_paths[url] = download_dir.join_within_root(
@@ -708,10 +714,9 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
         if package_lock_path.path.exists():
             break
     else:
-        raise PackageRejected(
-            "The npm-shrinkwrap.json or package-lock.json file must be present for the npm "
-            "package manager",
-            solution="Please double-check that you have specified the correct path to the package directory containing one of those two files",
+        raise LockfileNotFound(
+            lockfile_path=package_lock_path.path,
+            lockfile_name="npm-shrinkwrap.json or package-lock.json",
         )
 
     node_modules_path = pkg_path.join_within_root("node_modules")

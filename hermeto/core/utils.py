@@ -14,7 +14,7 @@ from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
-from hermeto.core.errors import BaseError
+from hermeto.core.errors import ExecutableNotFound
 
 log = logging.getLogger(__name__)
 
@@ -51,13 +51,7 @@ def run_cmd(cmd: Sequence[str], params: dict, suppress_errors: bool = False) -> 
     executable, *args = cmd
     executable_path = shutil.which(executable)
     if executable_path is None:
-        raise BaseError(
-            f"{executable!r} executable not found in PATH",
-            solution=(
-                f"Please make sure that the {executable!r} executable is installed in your PATH.\n"
-                f"If you are using {APP_NAME} via its container image, this should not happen - please report this bug."
-            ),
-        )
+        raise ExecutableNotFound(executable)
 
     response = subprocess.run([executable_path, *args], **params)
 
