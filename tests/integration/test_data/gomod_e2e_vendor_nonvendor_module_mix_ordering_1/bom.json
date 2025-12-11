@@ -425,6 +425,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/google/uuid@v1.6.0?type=module",
@@ -449,6 +453,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/non-vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
@@ -485,6 +493,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
