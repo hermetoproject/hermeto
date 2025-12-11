@@ -363,7 +363,7 @@ def _download(
         asyncio.run(
             async_download_files(
                 files,
-                get_config().concurrency_limit,
+                get_config().runtime.concurrency_limit,
                 ssl_context=_get_ssl_context(ssl_options=ssl_options) if ssl_options else None,
             )
         )

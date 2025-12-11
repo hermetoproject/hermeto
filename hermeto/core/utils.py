@@ -46,7 +46,7 @@ def run_cmd(cmd: Sequence[str], params: dict, suppress_errors: bool = False) -> 
     params.setdefault("encoding", "utf-8")
 
     conf = get_config()
-    params.setdefault("timeout", conf.subprocess_timeout)
+    params.setdefault("timeout", conf.runtime.subprocess_timeout)
 
     executable, *args = cmd
     executable_path = shutil.which(executable)
