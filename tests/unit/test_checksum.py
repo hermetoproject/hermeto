@@ -11,6 +11,11 @@ FILE_CONTENT = "Beetlejuice! Beetlejuice! Beetlejuice!"
 SHA512 = "da518fe8b800b3325fe35ca680085fe37626414d0916937a01a25ef8f5d7aa769b7233073235fce85eec717e02bb9d72062656cf2d79223792a784910c267b54"
 SHA256 = "ed1f8cd69bfacf0528744b6a7084f36e8841b6128de0217503e215612a0ee835"
 MD5 = "308764bc995153f7d853827a675e6731"
+SHA512_SRI = "sha512-Ml8Hhh4KuIjZBgaxB0/elW/TlU3MTG5Bjb/52KqDQrVQdIFAiDK/qsjkjzRNxlDI3w+BgsAnHtn6IzqjLDKYOQ=="
+SHA512_HEX = (
+    "325f07861e0ab888d90606b1074fde956fd3954dcc4c6e418dbff9d8aa8342b5507481408832bfaac8e48f344"
+    "dc650c8df0f8182c0271ed9fa233aa32c329839"
+)
 
 SUPPORTED_ALG_STR = ", ".join(sorted(SUPPORTED_ALGORITHMS))
 
@@ -154,17 +159,7 @@ def test_verify_checksum_failure(
 @pytest.mark.parametrize(
     "checksum, algorithm, expected",
     [
-        (
-            (
-                "325f07861e0ab888d90606b1074fde956fd3954dcc4c6e418dbff9d8aa8342b5507481408832bfaac"
-                "8e48f344dc650c8df0f8182c0271ed9fa233aa32c329839"
-            ),
-            "sha512",
-            (
-                "sha512-Ml8Hhh4KuIjZBgaxB0/elW/TlU3MTG5Bjb/52KqDQrVQdIFAiDK/qsjkjzRNxlDI3w+BgsAnHt"
-                "n6IzqjLDKYOQ=="
-            ),
-        ),
+        (SHA512_HEX, "sha512", SHA512_SRI),
         ("a" * 40, "sha1", "sha1-qqqqqqqqqqqqqqqqqqqqqqqqqqo="),
     ],
 )
@@ -175,19 +170,37 @@ def test_convert_hex_checksum_to_sri(checksum: str, algorithm: str, expected: st
 @pytest.mark.parametrize(
     "integrity, algorithm, expected",
     [
+        (SHA512_SRI, "sha512", SHA512_HEX),
         (
-            (
-                "sha512-Ml8Hhh4KuIjZBgaxB0/elW/TlU3MTG5Bjb/52KqDQrVQdIFAiDK/qsjkjzRNxlDI3w+BgsAnHtn6Izqj"
-                "LDKYOQ=="
-            ),
+            "sha1-ignored== sha256-ignored-too== " + SHA512_SRI,
             "sha512",
-            (
-                "325f07861e0ab888d90606b1074fde956fd3954dcc4c6e418dbff9d8aa8342b5507481408832bfaac8e48f344"
-                "dc650c8df0f8182c0271ed9fa233aa32c329839"
-            ),
+            SHA512_HEX,
+        ),
+        (
+            "sha512 " + SHA512_SRI,
+            "sha512",
+            SHA512_HEX,
         ),
     ],
 )
 def test_convert_sri_to_hex_checksum(integrity: str, algorithm: str, expected: str) -> None:
     rv = ChecksumInfo.from_sri(integrity)
+    assert rv.algorithm == algorithm
     assert rv.hexdigest == expected
+
+
+@pytest.mark.parametrize(
+    "integrity",
+    [
+        "",
+        "   ",
+        "sha512",
+        "sha512-",
+        "-noalgo",
+        "sha256-",
+        "sha512-not-base64",
+    ],
+)
+def test_convert_sri_to_hex_checksum_invalid(integrity: str) -> None:
+    with pytest.raises(PackageRejected):
+        ChecksumInfo.from_sri(integrity)
