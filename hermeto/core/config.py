@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from pydantic import BaseModel, model_validator
@@ -9,7 +9,6 @@ from hermeto import APP_NAME
 from hermeto.core.models.input import parse_user_input
 
 log = logging.getLogger(__name__)
-config = None
 
 
 class Config(BaseModel, extra="forbid"):
@@ -44,11 +43,14 @@ class Config(BaseModel, extra="forbid"):
         return data
 
 
+config: Optional[Config] = None
+
+
 def get_config() -> Config:
     """Get the configuration singleton."""
     global config
 
-    if not config:
+    if config is None:
         config = Config()
 
     return config

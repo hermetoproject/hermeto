@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 from git.repo import Repo
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected
 from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
@@ -17,6 +18,7 @@ from hermeto.core.package_managers.bundler.parser import (
     PathDependency,
 )
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import RepoID
 from tests.common_utils import GIT_REF
 
 
@@ -64,8 +66,10 @@ def test_resolve_bundler_package(
 
     components, git_paths = _resolve_bundler_package(package_dir=package_dir, output_dir=output_dir)
 
-    mock_parse_lockfile.assert_called_once_with(package_dir, False)
-    mock_get_main_package_name_and_version.assert_called_once_with(package_dir, deps)
+    mock_parse_lockfile.assert_called_once_with(package_dir, False, mode=Mode.STRICT)
+    mock_get_main_package_name_and_version.assert_called_once_with(
+        package_dir, deps, mode=Mode.STRICT
+    )
     mock_gem_dep_download_to.assert_called_with(deps_dir)
     mock_git_dep_download_to.assert_called_with(deps_dir)
     mock_path_dep_download_to.assert_called_with(deps_dir)
@@ -97,7 +101,14 @@ def test_get_main_package_name_and_version(rooted_tmp_path: RootedPath) -> None:
     assert version == "0.2.0"
 
 
-def test_get_main_package_name_and_version_from_repo(rooted_tmp_path_repo: RootedPath) -> None:
+@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
+def test_get_main_package_name_and_version_from_repo(
+    mock_get_repo_id: mock.Mock, rooted_tmp_path_repo: RootedPath
+) -> None:
+    # mock `get_repo_id`` to return fixed `RepoID`, ensuring test doesn't depend on git state.
+    mock_get_repo_id.return_value = RepoID(
+        origin_url="git@github.com:user/example.git", commit_id="abc123"
+    )
     repo = Repo(rooted_tmp_path_repo)
     repo.create_remote("origin", "git@github.com:user/example.git")
 

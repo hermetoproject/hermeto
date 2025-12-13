@@ -8,6 +8,7 @@ from unittest import mock
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageManagerError
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
@@ -127,7 +128,9 @@ def test_fetch_yarn_source(
     output = fetch_yarn_source(input_request)
 
     mock_create_project.assert_has_calls([mock.call(path) for path in package_dirs])
-    mock_resolve_yarn.assert_has_calls([mock.call(p, input_request.output_dir) for p in projects])
+    mock_resolve_yarn.assert_has_calls(
+        [mock.call(p, input_request.output_dir, input_request.mode) for p in projects]
+    )
     mock_verify_repository.assert_has_calls([mock.call(p) for p in projects])
 
     expected_output = RequestOutput(
@@ -152,13 +155,15 @@ def test_resolve_yarn_project(
     project = _prepare_project(rooted_tmp_path, {})
     output_dir = rooted_tmp_path.join_within_root("output")
 
-    _resolve_yarn_project(project, output_dir)
+    _resolve_yarn_project(project, output_dir, Mode.STRICT)
 
     mock_verify_yarn_version.assert_called_once_with(
         project.source_dir, mock_prefetch_env_vars.return_value
     )
     mock_fetch_dependencies.assert_called_once_with(project.source_dir, output_dir)
-    mock_resolve_packages.assert_called_once_with(project, output_dir.join_within_root(MIRROR_DIR))
+    mock_resolve_packages.assert_called_once_with(
+        project, output_dir.join_within_root(MIRROR_DIR), Mode.STRICT
+    )
 
 
 @pytest.mark.parametrize(

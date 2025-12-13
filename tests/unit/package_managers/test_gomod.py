@@ -14,8 +14,9 @@ import git
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
-from hermeto.core.models.input import Flag, Mode, Request
+from hermeto.core.models.input import Flag, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (

@@ -5,7 +5,7 @@ import re
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Optional, Union
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
@@ -13,6 +13,7 @@ from git.exc import InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.type_aliases import StrPath
 
@@ -38,10 +39,12 @@ class RepoID(NamedTuple):
         return f"git+{self.origin_url}@{self.commit_id}"
 
 
-def get_repo_id(repo: StrPath | Repo) -> RepoID:
+def get_repo_id(repo: Union[StrPath, Repo], mode: Mode = Mode.STRICT) -> Optional[RepoID]:
     """Get the RepoID for a git.Repo object or a git directory.
 
     If the remote url is an scp-style [user@]host:path, convert it into ssh://[user@]host/path.
+
+    In permissive mode, returns None for non-git repositories instead of raising NotAGitRepo.
 
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
     """
@@ -49,6 +52,8 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
         try:
             repo = Repo(repo, search_parent_directories=True)
         except (InvalidGitRepositoryError, NoSuchPathError):
+            if mode == Mode.PERMISSIVE:
+                return None
             raise NotAGitRepo(
                 f"The provided path {repo} cannot be processed as a valid git repository.",
                 solution=(

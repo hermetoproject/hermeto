@@ -463,10 +463,13 @@ def test_fetch_yarn_source(
     ]
     mock_project_from_source_dir.assert_has_calls(calls)
 
+    from hermeto.core.constants import Mode
+
     calls = [
         mock.call(
             project,
             input_request.output_dir,
+            mode=Mode.STRICT,
         )
         for project in mock_project
     ]

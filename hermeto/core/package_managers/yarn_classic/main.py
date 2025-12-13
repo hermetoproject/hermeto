@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -68,20 +69,20 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
 
         _verify_repository(project)
         _ensure_mirror_dir_exists(request.output_dir)
-        components.extend(_resolve_yarn_project(project, request.output_dir))
+        components.extend(_resolve_yarn_project(project, request.output_dir, request.mode))
 
     return RequestOutput.from_obj_list(
         components, _generate_build_environment_variables(), project_files=[]
     )
 
 
-def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Component]:
+def _resolve_yarn_project(project: Project, output_dir: RootedPath, mode: Mode) -> list[Component]:
     """Process a request for a single yarn source directory."""
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
     _verify_corepack_yarn_version(project.source_dir, _get_prefetch_environment_variables())
     _fetch_dependencies(project.source_dir, output_dir)
-    packages = resolve_packages(project, output_dir.join_within_root(MIRROR_DIR))
+    packages = resolve_packages(project, output_dir.join_within_root(MIRROR_DIR), mode)
     _verify_no_offline_mirror_collisions(packages)
 
     return _create_sbom_components(packages)

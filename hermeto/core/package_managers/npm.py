@@ -6,14 +6,15 @@ import json
 import logging
 import os.path
 from pathlib import Path
-from typing import Any, Literal, NewType, TypedDict
+from typing import Any, Literal, NewType, Optional, TypedDict
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -148,11 +149,14 @@ class Package:
 class PackageLock:
     """A npm package-lock.json file."""
 
-    def __init__(self, lockfile_path: RootedPath, lockfile_data: dict[str, Any]) -> None:
+    def __init__(
+        self, lockfile_path: RootedPath, lockfile_data: dict[str, Any], mode: Mode = Mode.STRICT
+    ) -> None:
         """Initialize a PackageLock."""
         self._workspaces: list[str] = []
         self._lockfile_path = lockfile_path
         self._lockfile_data = lockfile_data
+        self._mode = mode
         self._main_package, self._packages = self._get_packages()
 
     @property
@@ -189,10 +193,10 @@ class PackageLock:
     @functools.cached_property
     def _purlifier(self) -> "_Purlifier":
         pkg_path = self._lockfile_path.join_within_root("..")
-        return _Purlifier(pkg_path)
+        return _Purlifier(pkg_path, mode=self._mode)
 
     @classmethod
-    def from_file(cls, lockfile_path: RootedPath) -> "PackageLock":
+    def from_file(cls, lockfile_path: RootedPath, mode: Mode = Mode.STRICT) -> "PackageLock":
         """Create a PackageLock from a package-lock.json file."""
         with lockfile_path.path.open("r") as f:
             lockfile_data = json.load(f)
@@ -204,7 +208,7 @@ class PackageLock:
                 solution="Please use a supported lockfileVersion, which are versions 2 and 3",
             )
 
-        return cls(lockfile_path, lockfile_data)
+        return cls(lockfile_path, lockfile_data, mode)
 
     def get_project_file(self) -> ProjectFile:
         """Return a ProjectFile for the npm package-lock.json data."""
@@ -313,13 +317,21 @@ class PackageLock:
 class _Purlifier:
     """Generates purls for npm packages."""
 
-    def __init__(self, pkg_path: RootedPath) -> None:
+    def __init__(self, pkg_path: RootedPath, mode: Mode = Mode.STRICT) -> None:
         """Init a purlifier for the package at pkg_path."""
         self._pkg_path = pkg_path
+        self._mode = mode
 
     @functools.cached_property
-    def _repo_id(self) -> RepoID:
-        return get_repo_id(self._pkg_path.root)
+    def _repo_id(self) -> Optional[RepoID]:
+        try:
+            # Try to get repo_id, but return None if not a git repository.
+            return get_repo_id(self._pkg_path.root, mode=self._mode)
+        except NotAGitRepo:
+            # Not a git repository; omit vcs_url in permissive mode.
+            if self._mode == Mode.STRICT:
+                raise
+            return None
 
     def get_purl(
         self,
@@ -350,7 +362,9 @@ class _Purlifier:
             repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
-            qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
+            qualifiers = {}
+            if self._repo_id is not None:
+                qualifiers["vcs_url"] = self._repo_id.as_vcs_url_qualifier()
             path = urlparse(resolved_url).path
             subpath_from_root = self._pkg_path.join_within_root(path).subpath_from_root
             if subpath_from_root != Path():
@@ -674,7 +688,9 @@ def fetch_npm_source(request: Request) -> RequestOutput:
     npm_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     for package in request.npm_packages:
-        info = _resolve_npm(request.source_dir.join_within_root(package.path), npm_deps_dir)
+        info = _resolve_npm(
+            request.source_dir.join_within_root(package.path), npm_deps_dir, mode=request.mode
+        )
         component_info.append(info["package"])
 
         for dependency in info["dependencies"]:
@@ -690,10 +706,14 @@ def fetch_npm_source(request: Request) -> RequestOutput:
     )
 
 
-def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmPackage:
+def _resolve_npm(
+    pkg_path: RootedPath, npm_deps_dir: RootedPath, mode: Mode = Mode.STRICT
+) -> ResolvedNpmPackage:
     """Resolve and fetch npm dependencies for the given package.
 
     :param pkg_path: the path to the directory containing npm-shrinkwrap.json or package-lock.json
+    :param npm_deps_dir: the directory where npm dependencies will be downloaded
+    :param mode: the mode to use when resolving dependencies
     :return: a dictionary that has the following keys:
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
@@ -721,7 +741,7 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
             solution="Ensure that there are no 'node_modules' directories in your repo",
         )
 
-    original_package_lock = PackageLock.from_file(package_lock_path)
+    original_package_lock = PackageLock.from_file(package_lock_path, mode=mode)
     package_lock = copy.deepcopy(original_package_lock)
 
     # Download dependencies via resolved URLs and return download_paths for updating
