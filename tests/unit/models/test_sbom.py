@@ -309,9 +309,36 @@ class TestSbom:
                 {"name": "fmt", "version": None, "purl": "pkg:golang/fmt"},
                 {"name": "fmt", "version": None, "purl": "pkg:golang/fmt"},
                 {"name": "bytes", "version": None, "purl": "pkg:golang/bytes"},
+                {
+                    "name": "mypkg",
+                    "version": "1.0.0",
+                    "purl": "pkg:generic/mypkg@1.0.0",
+                },
+                {
+                    "name": "mypkg",
+                    "version": "1.0.0",
+                    "purl": "pkg:generic/mypkg@1.0.0",
+                    "properties": [{"name": f"{APP_NAME}:missing_hash:in_file", "value": "file2"}],
+                },
+                {
+                    "name": "mypkg",
+                    "version": "1.0.0",
+                    "purl": "pkg:generic/mypkg@1.0.0",
+                    "properties": [{"name": f"{APP_NAME}:missing_hash:in_file", "value": "file1"}],
+                },
             ],
         )
         assert sbom.components == [
+            Component(
+                name="mypkg",
+                purl="pkg:generic/mypkg@1.0.0",
+                version="1.0.0",
+                properties=[
+                    FOUND_BY_APP_PROPERTY,
+                    Property(name=f"{APP_NAME}:missing_hash:in_file", value="file1"),
+                    Property(name=f"{APP_NAME}:missing_hash:in_file", value="file2"),
+                ],
+            ),
             Component(name="bytes", purl="pkg:golang/bytes"),
             Component(name="fmt", purl="pkg:golang/fmt"),
             Component(

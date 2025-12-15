@@ -17,7 +17,6 @@ from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
-from hermeto.core.models.validators import unique_sorted
 from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
@@ -159,7 +158,7 @@ class Sbom(pydantic.BaseModel):
     @classmethod
     def _unique_components(cls, components: list[Component]) -> list[Component]:
         """Sort and de-duplicate components."""
-        return unique_sorted(components, by=lambda component: component.key())
+        return merge_component_properties(components)
 
     def to_cyclonedx(self) -> Self:
         """Return self, self is already the right type of Sbom."""
