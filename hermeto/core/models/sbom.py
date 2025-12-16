@@ -442,6 +442,10 @@ class SPDXPackage(pydantic.BaseModel):
     externalRefs: list[SPDXPackageExternalRefType] = []
     annotations: list[SPDXPackageAnnotation] = []
     downloadLocation: str = "NOASSERTION"
+    # sourceInfo should be present if proxy URL were set for a package
+    # manager. If more than one URL were provided then individual URLs
+    # should be separated with semicolons.
+    sourceInfo: str | None = None
 
     def __lt__(self, other: "SPDXPackage") -> bool:
         return (self.SPDXID or "") < (other.SPDXID or "")
@@ -454,6 +458,13 @@ class SPDXPackage(pydantic.BaseModel):
             + hash(self.downloadLocation)
             + sum(hash(e) for e in self.externalRefs)
             + sum(hash(a) for a in self.annotations)
+            # NOTE: in a rare case when several proxies exist and a package
+            # ends up being downloaded twice in two different environments each
+            # containing the same set of proxy URLs, there is a small chance
+            # that it will be downloaded from different locations. In that case
+            # we will not have any means to differentiate between these two
+            # packages since the entire set of URLs is used for computing a hash.
+            + hash(self.sourceInfo)
         )
 
     @staticmethod
