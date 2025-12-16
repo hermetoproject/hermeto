@@ -48,7 +48,16 @@ class ExternalReference(pydantic.BaseModel):
     """An ExternalReference inside an SBOM component."""
 
     url: str
+    # "distribution" URLs in conjunction with comment field set to "proxy URL"
+    # are to be used to indicate actual download location for a component when
+    # a package was downloaded through a proxy. Comment field is necessary
+    # since some package managers already use external references with type
+    # explicitly set to distribution. Multiple proxies must all be specified
+    # as separate ExternalReferences. This type of ExternalReference should be
+    # added along with "distribution" ExternalReference.
+    # NOTE: CycloneDX.ExternalReference != SPDX.ExternalReference!
     type: Literal["distribution"] = "distribution"
+    comment: str | None = None
 
 
 class PatchDiff(pydantic.BaseModel):
