@@ -64,9 +64,12 @@ class Component(pydantic.BaseModel):
     properties: list[Property] = pydantic.Field(default_factory=list, validate_default=True)
     type: Literal["library", "file"] = "library"
     external_references: list[ExternalReference] | None = pydantic.Field(
-        serialization_alias="externalReferences", default=None
+        alias="externalReferences", default=None
     )
     pedigree: Pedigree | None = None
+
+    # Aliased fields may be populated by their name as given by the model attribute.
+    model_config = pydantic.ConfigDict(validate_by_name=True, extra="forbid")
 
     def key(self) -> str:
         """Uniquely identifies a package.

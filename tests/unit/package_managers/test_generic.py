@@ -268,7 +268,7 @@ def test_resolve_generic_lockfile_invalid(
             LOCKFILE_VALID,
             [
                 {
-                    "external_references": [
+                    "externalReferences": [
                         {"type": "distribution", "url": "https://example.com/artifact"}
                     ],
                     "name": "archive.zip",
@@ -277,7 +277,7 @@ def test_resolve_generic_lockfile_invalid(
                     "type": "file",
                 },
                 {
-                    "external_references": [
+                    "externalReferences": [
                         {
                             "type": "distribution",
                             "url": "https://example.com/more/complex/path/file.tar.gz?foo=bar#fragment",
@@ -295,7 +295,7 @@ def test_resolve_generic_lockfile_invalid(
             LOCKFILE_VALID_MAVEN,
             [
                 {
-                    "external_references": [
+                    "externalReferences": [
                         {
                             "type": "distribution",
                             "url": "https://repo.spring.io/release/org/springframework/boot/spring-boot-starter/3.1.5/spring-boot-starter-3.1.5.jar",
@@ -308,7 +308,7 @@ def test_resolve_generic_lockfile_invalid(
                     "version": "3.1.5",
                 },
                 {
-                    "external_references": [
+                    "externalReferences": [
                         {
                             "type": "distribution",
                             "url": "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/4.1.100.Final/netty-transport-native-epoll-4.1.100.Final-sources.jar",
@@ -342,7 +342,7 @@ def test_resolve_generic_lockfile_valid(
         f.write(lockfile_content)
 
     assert [
-        c.model_dump(exclude_none=True)
+        c.model_dump(by_alias=True, exclude_none=True)
         for c in _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
     ] == expected_components
     mock_checksums.assert_called()
