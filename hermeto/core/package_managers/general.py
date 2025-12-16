@@ -41,7 +41,8 @@ def download_binary_file(
     :param int chunk_size: Chunk size param for Response.iter_content()
     :raise FetchError: If download failed
     """
-    timeout = get_config().http.timeout
+    config = get_config()
+    timeout = (config.http.connect_timeout, config.http.read_timeout)
     try:
         resp = pkg_requests_session.get(
             url, stream=True, verify=not insecure, auth=auth, timeout=timeout
@@ -53,6 +54,16 @@ def download_binary_file(
     with open(download_path, "wb") as f:
         for chunk in resp.iter_content(chunk_size=chunk_size):
             f.write(chunk)
+
+
+def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
+    """Return the aiohttp timeout configuration."""
+    config = get_config()
+    return aiohttp.ClientTimeout(
+        total=None,
+        connect=config.http.connect_timeout,
+        sock_read=config.http.read_timeout,
+    )
 
 
 async def _async_download_binary_file(
@@ -74,7 +85,7 @@ async def _async_download_binary_file(
     :raise FetchError: If download failed
     """
     try:
-        timeout = aiohttp.ClientTimeout(total=get_config().http.timeout)
+        timeout = _get_aiohttp_timeout()
 
         log.debug(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
