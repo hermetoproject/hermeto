@@ -257,7 +257,7 @@ def test_binary_gem_dependencies_could_be_downloaded(
     mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
 
 
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.clone_git_dependency")
 def test_download_git_dependency_works(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -276,13 +276,14 @@ def test_download_git_dependency_works(
 
     mock_git_clone.assert_called_once_with(
         url=str(dep.url),
+        ref=dep.ref,
         to_path=dep_path,
-        env={"GIT_TERMINAL_PROMPT": "0"},
+        branch=dep.branch,
     )
     assert dep_path.exists()
 
 
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.Repo.clone_from")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.clone_git_dependency")
 def test_download_duplicate_git_dependency_is_skipped(
     mock_git_clone: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -302,8 +303,9 @@ def test_download_duplicate_git_dependency_is_skipped(
 
     mock_git_clone.assert_called_once_with(
         url=str(dep.url),
+        ref=dep.ref,
         to_path=dep_path,
-        env={"GIT_TERMINAL_PROMPT": "0"},
+        branch=dep.branch,
     )
     assert dep_path.exists()
 
