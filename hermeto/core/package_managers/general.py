@@ -117,6 +117,7 @@ async def async_download_files(
         exceptions={
             aiohttp.ClientConnectionError,
             aiohttp.ClientPayloadError,
+            asyncio.TimeoutError,
         },
     )
     retry_client = aiohttp_retry.RetryClient(
