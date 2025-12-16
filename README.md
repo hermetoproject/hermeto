@@ -139,7 +139,12 @@ Any settings specified will override the default values present in the
 - `gomod.environment_variables` default environment variables for gomod.
 - `gomod.proxy_url` sets the GOPROXY variable that Hermeto uses internally when
   downloading Go modules. See [Go environment variables][].
-- `http.timeout` timeout (seconds) for HTTP requests.
+- `http.connect_timeout` connection timeout (seconds) for HTTP requests
+  (default: 30).
+- `http.read_timeout` read timeout (seconds) for HTTP requests (default: 300).
+  Long-running downloads can take arbitrarily long as long as bytes keep
+  flowing.
+- `http.timeout` (deprecated) automatically migrated to `http.read_timeout`.
 - `runtime.concurrency_limit` max concurrent operations.
 - `runtime.subprocess_timeout` timeout (seconds) for subprocess commands.
 

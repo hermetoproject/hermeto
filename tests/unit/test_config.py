@@ -48,12 +48,19 @@ def test_normalize_config_structure(caplog: pytest.LogCaptureFixture) -> None:
     assert config.gomod.proxy_url == "https://custom.proxy"
     assert config.gomod.download_max_tries == 10
     assert config.gomod.environment_variables == {"GOPROXY": "off"}
-    assert config.http.timeout == 600
+    assert config.http.read_timeout == 600
     assert config.runtime.subprocess_timeout == 7200
     assert config.runtime.concurrency_limit == 10
     assert config.yarn.enabled is False
     assert config.pip.ignore_dependencies_crates is True
     assert "is deprecated" in caplog.text
+
+
+def test_migrate_http_timeout(caplog: pytest.LogCaptureFixture) -> None:
+    """Test that http.timeout is migrated to http.read_timeout."""
+    config = config_module.Config.model_validate({"http": {"timeout": 123}})
+    assert config.http.read_timeout == 123
+    assert "Config option 'http.timeout' is deprecated" in caplog.text
 
 
 def test_deprecated_field_removed_with_warning(caplog: pytest.LogCaptureFixture) -> None:
