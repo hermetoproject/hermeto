@@ -5,15 +5,16 @@ import re
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
-from git.exc import InvalidGitRepositoryError, NoSuchPathError
+from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
+from gitdb.exc import BadName  # type: ignore
 
 from hermeto import APP_NAME
-from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.errors import FetchError, GitOperationError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
     try:
         origin = repo.remote("origin")
     except ValueError:
-        raise UnsupportedFeature(
+        raise GitOperationError(
             f"{APP_NAME} cannot process repositories that don't have an 'origin' remote",
             solution=(
                 "Repositories cloned via git clone should always have one.\n"
@@ -68,7 +69,15 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
         )
 
     url = _canonicalize_origin_url(origin.url)
-    commit_id = repo.head.commit.hexsha
+
+    try:
+        commit_id = repo.head.commit.hexsha
+    except ValueError:
+        raise GitOperationError(
+            f"{APP_NAME} Cannot access HEAD commit in repository",
+            solution="The repository appears to have no commits.",
+        )
+
     return RepoID(url, commit_id)
 
 
@@ -117,7 +126,15 @@ def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[Repo, Path]:
     if not target_path.is_absolute():
         target_path = repo_root / target_path
 
-    current_repo = Repo(repo_root)
+    try:
+        current_repo = Repo(repo_root)
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        raise NotAGitRepo(
+            f"The provided path {repo_root} cannot be processed as a valid git repository.",
+            solution=(
+                "Please ensure that the path is correct and that it is a valid git repository."
+            ),
+        )
 
     while (submodule := _find_submodule_containing_path(current_repo, target_path)) is not None:
         current_repo = _get_submodule_repo(submodule)
@@ -147,33 +164,53 @@ def _canonicalize_origin_url(url: str) -> str:
         )
 
 
-def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
-    """Clone a git repository, check out the specified revision and create a compressed tarball.
+class GitCloner:
+    """Git repository cloner with SSH fallback and error handling."""
 
-    The repository content will be under the app/ directory in the tarball.
+    def clone(
+        self,
+        url: str,
+        to_path: Path,
+        ref: str,
+        branch: str | None = None,
+        filter: str | None = None,
+    ) -> Repo:
+        """Clone a git repository with common options and error handling.
 
-    :param url: the URL of the repository
-    :param ref: the revision to check out
-    :param to_path: create the tarball at this path
-    """
-    list_url = [url]
-    # Fallback to `https` if cloning source via ssh fails
-    if "ssh://" in url:
-        list_url.append(url.replace("ssh://", "https://"))
+        Args:
+            url: Git repository URL
+            to_path: Destination path for cloning
+            ref: Git reference to checkout
+            branch: Optional branch to checkout
+            filter: Git filter for partial clone (e.g., 'blob:none', 'tree:0', 'blob:limit=1m')
 
-    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
+        Returns:
+            Cloned git.Repo object
+
+        Raises:
+            GitOperationError: If any git-related failures
+        """
+
+        list_url = [url]
+        if "ssh://" in url:
+            list_url.append(url.replace("ssh://", "https://"))
+
+        # Don't allow git to prompt for a username if we don't have access
+        env = {"GIT_TERMINAL_PROMPT": "0"}
+        kwargs: dict[str, Any] = {"no_checkout": True}
+
+        if filter is not None:
+            kwargs["filter"] = filter
+
         for url in list_url:
-            log.debug("Cloning the Git repository from %s", url)
+            log.debug("Cloning git repository from %s", url)
             try:
-                repo = Repo.clone_from(
-                    url,
-                    temp_dir,
-                    no_checkout=True,
-                    filter="blob:none",
-                    # Don't allow git to prompt for a username if we don't have access
-                    env={"GIT_TERMINAL_PROMPT": "0"},
-                )
-            except Exception as ex:
+                repo = Repo.clone_from(url, to_path, env=env, **kwargs)
+
+                if branch is not None:
+                    repo.git.checkout(branch)
+
+            except GitCommandError as ex:
                 log.warning(
                     "Failed cloning the Git repository from %s, ref: %s, exception: %s, exception-msg: %s",
                     url,
@@ -183,29 +220,51 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
                 )
                 continue
 
-            _reset_git_head(repo, ref)
+            # Reset to specific commit
+            self._reset_git_head(repo, ref)
 
-            with tarfile.open(to_path, mode="w:gz") as archive:
-                archive.add(repo.working_dir, "app")
+            log.debug("Successfully cloned %s to %s", url, to_path)
+            return repo
 
-            return
+        raise GitOperationError("Failed cloning the Git repository")
 
-    raise FetchError("Failed cloning the Git repository")
+    def _reset_git_head(self, repo: Repo, ref: str) -> None:
+        """Reset git repository to specific commit reference."""
+        try:
+            repo.head.reference = repo.commit(ref)  # type: ignore # 'reference' is a weird property
+            repo.head.reset(index=True, working_tree=True)
+        except (BadName, ValueError) as ex:
+            log.exception(
+                "Failed on checking out the Git ref %s, exception: %s",
+                ref,
+                type(ex).__name__,
+            )
+            raise GitOperationError(
+                "Failed on checking out the Git repository. Please verify the supplied reference "
+                f'of "{ref}" is valid.'
+            )
 
 
-def _reset_git_head(repo: Repo, ref: str) -> None:
-    try:
-        repo.head.reference = repo.commit(ref)  # type: ignore # 'reference' is a weird property
-        repo.head.reset(index=True, working_tree=True)
-    except Exception as ex:
-        log.exception(
-            "Failed on checking out the Git ref %s, exception: %s",
-            ref,
-            type(ex).__name__,
-        )
-        # Not necessarily a FetchError, but the checkout *does* also fetch stuff
-        #   (because we clone with --filter=blob:none)
-        raise FetchError(
-            "Failed on checking out the Git repository. Please verify the supplied reference "
-            f'of "{ref}" is valid.'
-        )
+def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
+    """Clone a git repository, check out the specified revision and create a compressed tarball.
+
+    The repository content will be under the app/ directory in the tarball.
+
+    :param url: the URL of the repository
+    :param ref: the revision to check out
+    :param to_path: create the tarball at this path
+    """
+    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
+        try:
+            cloner = GitCloner()
+            repo = cloner.clone(url=url, to_path=Path(temp_dir), ref=ref, filter="blob:none")
+        except GitOperationError as ex:
+            log.exception(
+                "Failed cloning git repository from %s: %s",
+                url,
+                type(ex).__name__,
+            )
+            raise FetchError(f"Failed to clone git repository from {url}: {ex}")
+
+        with tarfile.open(to_path, mode="w:gz") as archive:
+            archive.add(repo.working_dir, "app")
