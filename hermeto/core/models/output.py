@@ -161,7 +161,9 @@ class RequestOutput(pydantic.BaseModel):
         Note that RequestOutput may contain duplicated components, we de-duplicate them here
         while merging their `properties`.
         """
-        return Sbom(components=merge_component_properties(self.components))
+        return Sbom(
+            annotations=self.annotations, components=merge_component_properties(self.components)
+        )
 
     def __add__(self, other: "RequestOutput") -> "RequestOutput":
         if not isinstance(other, self.__class__):
