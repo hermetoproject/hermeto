@@ -97,6 +97,8 @@ class HttpSettings(BaseModel, extra="forbid"):
     """HTTP-related settings."""
 
     timeout: int = 300
+    connect_timeout: int = 30
+    read_timeout: int = 300
 
 
 class RuntimeSettings(BaseModel, extra="forbid"):
