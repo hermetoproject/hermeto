@@ -42,10 +42,6 @@ from hermeto.interface.logging import EnforcingModeLoggerAdapter
 # NOTE: the 'extra' dict is unused right now, but it's a positional argument for the adapter class
 log = EnforcingModeLoggerAdapter(logging.getLogger(__name__), {"enforcing_mode": Mode.STRICT})
 
-
-GOMOD_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/gomod.md"
-GOMOD_INPUT_DOC = f"{GOMOD_DOC}#specifying-modules-to-process"
-VENDORING_DOC = f"{GOMOD_DOC}#vendoring"
 HERMETO_GO_INSTALL_DIR = Path("/usr/local/go")
 
 ModuleDict = dict[str, Any]
@@ -681,7 +677,6 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         raise PackageRejected(
             f"The go.mod file must be present for the Go module(s) at: {invalid_files_print}",
             solution="Please double-check that you have specified correct paths to your Go modules",
-            docs=GOMOD_INPUT_DOC,
         )
 
     components: list[Component] = []
@@ -1702,7 +1697,6 @@ def _vendor_deps(
                     "Please try running `go mod vendor` and committing the changes.\n"
                     "Note that you may need to `git add --force` ignored files in the vendor/ dir."
                 ),
-                docs=VENDORING_DOC,
             )
     return _parse_vendor(context_dir)
 

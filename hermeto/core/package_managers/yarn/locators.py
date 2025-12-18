@@ -177,7 +177,6 @@ def parse_locator(locator_str: str) -> Locator:
         if "commit" in parse_qs(parsed_reference.selector) or protocol == "exec":
             raise UnsupportedFeature(
                 f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: {locator_str}",
-                docs=None,  # TODO: docs needed
             )
         elif protocol == "npm":
             return NpmLocator(locator.scope, locator.name, version=parsed_reference.selector)

@@ -28,8 +28,6 @@ from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 
-PIP_NO_SDIST_DOC = "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#dependency-does-not-distribute-sources"
-
 
 @dataclass
 class DistributionPackageInfo:

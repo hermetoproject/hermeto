@@ -30,7 +30,7 @@ class PackageWithCorruptLockfileRejected(PackageRejected):
         reason = (
             f"{package_path} contains a Cargo.lock that does not match the corresponding Cargo.toml"
         )
-        super().__init__(reason, solution=self.default_solution, docs="")
+        super().__init__(reason, solution=self.default_solution)
 
     default_solution = (
         "Consider reaching out to maintainer of the dependency in question to address"
