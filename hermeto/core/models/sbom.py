@@ -86,18 +86,6 @@ class Component(pydantic.BaseModel):
 
         return properties
 
-    @classmethod
-    def from_package_dict(cls, package: dict[str, Any]) -> "Component":
-        """Create a Component from our package dictionary.
-
-        A package has extra fields which are unnecessary and can cause validation errors.
-        """
-        return cls(
-            name=package.get("name", ""),
-            version=package.get("version"),
-            purl=package.get("purl", ""),
-        )
-
 
 class Tool(pydantic.BaseModel):
     """A tool used to generate the SBOM content."""
@@ -408,39 +396,6 @@ class SPDXPackage(pydantic.BaseModel):
                 + f"{unique_purls_parts}"
             )
         return refs
-
-    @classmethod
-    def from_package_dict(cls, package: dict[str, Any]) -> "SPDXPackage":
-        """Create a SPDXPackage from our dictionary."""
-        external_refs = package.get("externalRefs", [])
-        annotations = [SPDXPackageAnnotation(**an) for an in package.get("annotations", [])]
-        if package.get("SPDXID") is None:
-            purls = sorted(
-                [
-                    ref["referenceLocator"]
-                    for ref in package["externalRefs"]
-                    if ref["referenceType"] == "purl"
-                ]
-            )
-            package_hash = cls._calculate_package_hash_from_dict(
-                {
-                    "name": package["name"],
-                    "version": package.get("versionInfo", None),
-                    "purls": purls,
-                }
-            )
-            SPDXID = (
-                f"SPDXRef-Package-{package['name']}-{package.get('versionInfo', '')}-{package_hash}"
-            )
-        else:
-            SPDXID = package["SPDXID"]
-        return cls(
-            SPDXID=SPDXID,
-            name=package["name"],
-            versionInfo=package.get("versionInfo", None),
-            externalRefs=external_refs,
-            annotations=annotations,
-        )
 
 
 class SPDXCreationInfo(pydantic.BaseModel):
