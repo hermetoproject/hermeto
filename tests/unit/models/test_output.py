@@ -5,7 +5,7 @@ from typing import Any
 import pydantic
 import pytest
 
-from hermeto.core.errors import BaseError
+from hermeto.core.errors import PackageRejected
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
 
 
@@ -202,5 +202,5 @@ class TestEnvironmentVariable:
         mappings = {e.name: e.value for e in envs}
 
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
-        with pytest.raises(BaseError, match=err_msg):
+        with pytest.raises(PackageRejected, match=err_msg):
             envs[0].resolve_value(mappings)

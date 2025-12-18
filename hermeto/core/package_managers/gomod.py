@@ -28,7 +28,13 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 from hermeto.core.config import get_config
-from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    FetchError,
+    LockfileNotFound,
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -678,11 +684,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     if invalid_gomod_files:
         invalid_files_print = "; ".join(str(file.parent) for file in invalid_gomod_files)
 
-        raise PackageRejected(
-            f"The go.mod file must be present for the Go module(s) at: {invalid_files_print}",
-            solution="Please double-check that you have specified correct paths to your Go modules",
-            docs=GOMOD_INPUT_DOC,
-        )
+        raise LockfileNotFound(lockfile_path=Path(invalid_files_print), lockfile_name="go.mod")
 
     components: list[Component] = []
 

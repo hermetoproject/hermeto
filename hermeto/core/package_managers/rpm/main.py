@@ -16,7 +16,7 @@ from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
-from hermeto.core.errors import PackageManagerError, PackageRejected
+from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.models.input import ExtraOptions, Request, RpmBinaryFilters, SSLOptions
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, Property
@@ -275,12 +275,9 @@ def _resolve_rpm_project(
 
     # Check the availability of the input lockfile.
     if not source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path.exists():
-        raise PackageRejected(
-            f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' missing, refusing to continue.",
-            solution=(
-                "Make sure your repository has RPM lockfile '{DEFAULT_LOCKFILE_NAME}' checked in "
-                "to the repository."
-            ),
+        raise LockfileNotFound(
+            lockfile_path=source_dir.subpath_from_root,
+            lockfile_name=DEFAULT_LOCKFILE_NAME,
         )
 
     lockfile_name = source_dir.join_within_root(DEFAULT_LOCKFILE_NAME)
@@ -290,9 +287,10 @@ def _resolve_rpm_project(
             yaml_content = yaml.safe_load(f)
         except yaml.YAMLError as e:
             log.error(str(e))
-            raise PackageRejected(
-                f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' yaml format is not correct.",
-                solution=("Check correct 'yaml' syntax in the lockfile."),
+            raise InvalidLockfileFormat(
+                lockfile_path=source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path,
+                err_details=str(e),
+                solution="Check correct 'yaml' syntax in the lockfile.",
             )
 
         log.debug("Validating lockfile.")
@@ -301,11 +299,9 @@ def _resolve_rpm_project(
         except ValidationError as e:
             loc = e.errors()[0]["loc"]
             msg = e.errors()[0]["msg"]
-            raise PackageManagerError(
-                f"RPM lockfile '{DEFAULT_LOCKFILE_NAME}' format is not valid: '{loc}: {msg}'",
-                solution=(
-                    "Check the correct format and whether any keys are missing in the lockfile."
-                ),
+            raise InvalidLockfileFormat(
+                lockfile_path=source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path,
+                err_details=f"{loc}: {msg}",
             )
 
         package_dir = output_dir.join_within_root(DEFAULT_PACKAGE_DIR)
