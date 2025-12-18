@@ -6,8 +6,10 @@ import pydantic
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.models.property_semantics import PropertyEnum
 from hermeto.core.models.sbom import (
     FOUND_BY_APP_PROPERTY,
+    Annotation,
     Component,
     Metadata,
     Property,
@@ -574,6 +576,32 @@ class TestSbom:
         # cause issues with the JSON encoder/decoder.
         sbom.components = merge_component_properties(sbom.components)
         assert cyclonedx_sbom == sbom
+
+    def test_generate_package_annotations(self, mock_spdx_now: str) -> None:
+        sbom = Sbom(
+            annotations=[
+                Annotation(
+                    subjects=["pkg:gomod/test-package@1.0.0"],
+                    annotator={"organization": {"name": "org"}},
+                    timestamp="2026-01-01T00:00:00Z",
+                    text="Hello, world!",
+                ),
+            ],
+            components=[
+                Component(
+                    name="test-package",
+                    purl="pkg:gomod/test-package@1.0.0",
+                    version="1.0.0",
+                    properties=[Property(name=PropertyEnum.PROP_FOUND_BY, value="hermeto")],
+                ),
+            ],
+        )
+
+        spdx_sbom = sbom.to_spdx("NOASSERTION")
+        pkg = next((pkg for pkg in spdx_sbom.packages if pkg.name == "test-package"))
+
+        assert pkg.annotations[0].comment == "Hello, world!"
+        assert pkg.annotations[1].comment == '{"name": "hermeto:found_by", "value": "hermeto"}'
 
 
 # Some partially constructed objects to streamline test cases definitions.

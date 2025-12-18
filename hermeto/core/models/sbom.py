@@ -1,10 +1,10 @@
-import datetime
 import hashlib
 import json
 import logging
 import re
 from collections import defaultdict
 from collections.abc import Iterable
+from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
@@ -20,6 +20,28 @@ from hermeto.core.models.property_semantics import Property, PropertyEnum, Prope
 from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
+
+
+def datetime_to_iso_8601(value: datetime) -> str:
+    """Serialize a datetime to a string in ISO 8601 standard."""
+    return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
+
+
+class Annotation(pydantic.BaseModel):
+    """
+    A comment, note, explanation, or similar textual content
+    which provides additional context to the object(s) being annotated.
+
+    https://cyclonedx.org/docs/1.6/json/#annotations
+    """
+
+    subjects: list[str]
+    annotator: dict[Literal["organization", "individual", "component", "service"], dict[str, str]]
+    timestamp: ISODatetime
+    text: str
 
 
 class ExternalReference(pydantic.BaseModel):
@@ -58,6 +80,7 @@ class Component(pydantic.BaseModel):
     https://cyclonedx.org/docs/1.6/json/#components
     """
 
+    bom_ref: str | None = pydantic.Field(alias="bom-ref", default=None)
     name: str
     purl: str
     version: str | None = None
@@ -77,6 +100,15 @@ class Component(pydantic.BaseModel):
         Used mainly for sorting and deduplication.
         """
         return self.purl
+
+    def update_bom_ref(self) -> None:
+        """
+        Update the `bom-ref` field of this component.
+
+        The `bom-ref` field is only needed for permissive mode use cases. Therefore, it is not
+        initialized by default and needs to be updated manually with this method.
+        """
+        self.bom_ref = self.purl
 
     @pydantic.field_validator("properties")
     @classmethod
@@ -112,13 +144,13 @@ class Metadata(pydantic.BaseModel):
     tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
 
 
-def spdx_now() -> str:
+def spdx_now() -> datetime:
     """Return a time stamp in SPDX-compliant format.
 
     See https://spdx.github.io/spdx-spec/v2.3/search.html?q=date
     for details.
     """
-    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(timezone.utc)
 
 
 def sanitize_spdxid(spdxid: str) -> str:
@@ -142,17 +174,35 @@ class Sbom(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(extra="forbid")
 
     bom_format: Literal["CycloneDX"] = pydantic.Field(alias="bomFormat", default="CycloneDX")
+    annotations: list[Annotation] = []
     components: list[Component] = []
     metadata: Metadata = Metadata()
     spec_version: str = pydantic.Field(alias="specVersion", default="1.6")
     version: int = 1
 
+    @pydantic.model_serializer(mode="wrap")
+    def serialize_model(self, handler: pydantic.SerializerFunctionWrapHandler) -> dict[str, object]:
+        """
+        Custom serializer that removes the `annotations` field if it is empty.
+
+        https://docs.pydantic.dev/latest/concepts/serialization/#model-serializers
+        """
+        serialized = handler(self)
+        if not self.annotations:
+            serialized.pop("annotations")
+
+        return serialized
+
     def __add__(self, other: Union["Sbom", "SPDXSbom"]) -> "Sbom":
         if isinstance(other, self.__class__):
             return Sbom(
+                # NOTE: We might consider deduplicating annotations based on the annotation text
+                # in the future. It is a very rare corner case, though, and it only matters when
+                # merging multiple CycloneDX SBOMs.
+                annotations=self.annotations + other.annotations,
                 components=merge_component_properties(
                     chain.from_iterable(s.components for s in [self, other])
-                )
+                ),
             )
         else:
             return self + other.to_cyclonedx()
@@ -197,12 +247,33 @@ class Sbom(pydantic.BaseModel):
                 relationships.append(pRel(relatedSpdxElement=package.SPDXID))
             return relationships
 
-        def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
-            packages, annottr, now = [], f"Tool: {APP_NAME}:jsonencoded", spdx_now()
-            args = dict(annotator=annottr, annotationDate=now, annotationType="OTHER")
-            pAnnotation = partial(SPDXPackageAnnotation, **args)
+        def generate_package_annotations(properties: list[Property]) -> list[SPDXPackageAnnotation]:
+            """
+            Convert CycloneDX top-level annotations and component properties to SPDX package annotations.
+            """
+            result = []
+            base_spdx_annotation = partial(
+                SPDXPackageAnnotation,
+                annotator=f"Tool: {APP_NAME}:jsonencoded",
+                annotationDate=spdx_now(),
+                annotationType="OTHER",
+            )
 
-            mkcomm = lambda p: json.dumps(dict(name=f"{p.name}", value=f"{p.value}"))
+            for annotation in self.annotations:
+                result.append(base_spdx_annotation(comment=annotation.text))
+
+            for property in properties:
+                result.append(
+                    base_spdx_annotation(
+                        comment=json.dumps(dict(name=f"{property.name}", value=f"{property.value}"))
+                    )
+                )
+
+            return result
+
+        def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
+            packages = []
+
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
             erefbase = dict(referenceCategory="PACKAGE-MANAGER", referenceType="purl")
             erefdict = lambda c: dict(referenceLocator=c.purl, **erefbase)
@@ -223,7 +294,7 @@ class Sbom(pydantic.BaseModel):
                         name=component.name,
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
-                        annotations=[pAnnotation(comment=mkcomm(p)) for p in component.properties],
+                        annotations=generate_package_annotations(component.properties),
                     )
                 )
             return packages
@@ -347,7 +418,7 @@ class SPDXPackageAnnotation(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(frozen=True)
 
     annotator: str
-    annotationDate: str
+    annotationDate: ISODatetime
     annotationType: Literal["OTHER", "REVIEW"]
     comment: str
 
@@ -451,7 +522,7 @@ class SPDXCreationInfo(pydantic.BaseModel):
     """
 
     creators: list[str] = []
-    created: str
+    created: ISODatetime
 
 
 class SPDXRelation(pydantic.BaseModel):
