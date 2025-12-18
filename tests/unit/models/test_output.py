@@ -96,6 +96,7 @@ class TestRequestOutput:
             (
                 {"components": [{"name": "mypkg", "purl": "pkg:generic/mypkg"}]},
                 RequestOutput(
+                    annotations=[],
                     components=[{"name": "mypkg", "purl": "pkg:generic/mypkg"}],
                     build_config=BuildConfig(),
                 ),
@@ -107,6 +108,7 @@ class TestRequestOutput:
                     "project_files": [{"abspath": "/first/path", "template": "foo"}],
                 },
                 RequestOutput(
+                    annotations=[],
                     components=[{"name": "mypkg", "purl": "pkg:generic/mypkg"}],
                     build_config=BuildConfig(
                         environment_variables=[EnvironmentVariable(name="a", value="y")],
