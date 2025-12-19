@@ -396,28 +396,93 @@ class TestSbom:
             ),
         ]
 
+    @pytest.mark.parametrize(
+        "sbom",
+        [
+            pytest.param(
+                Sbom(
+                    components=[
+                        {
+                            "name": "spdx-expression-parse",
+                            "version": "v1.0.0",
+                            "purl": "pkg:npm/spdx-expression-parse@1.0.0",
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.1.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.1.0",
+                        },
+                    ],
+                ),
+                id="base_case",
+            ),
+            pytest.param(
+                Sbom(
+                    components=[
+                        {
+                            "name": "spdx-expression-parse",
+                            "version": "v1.0.0",
+                            "purl": "pkg:npm/spdx-expression-parse@1.0.0",
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                            "external_references": [
+                                {"url": "https://www.fakeproxy.com", "type": "source-distribution"}
+                            ],
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.1.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.1.0",
+                        },
+                    ],
+                ),
+                id="one_external_reference",
+            ),
+            pytest.param(
+                Sbom(
+                    components=[
+                        {
+                            "name": "spdx-expression-parse",
+                            "version": "v1.0.0",
+                            "purl": "pkg:npm/spdx-expression-parse@1.0.0",
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                            "external_references": [
+                                {
+                                    "url": "https://www.fakeproxy1.com",
+                                    "type": "source-distribution",
+                                },
+                                {
+                                    "url": "https://www.fakeproxy2.com",
+                                    "type": "source-distribution",
+                                },
+                            ],
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.1.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.1.0",
+                        },
+                    ],
+                ),
+                id="two_external_references",
+            ),
+        ],
+    )
     def test_cyclonedx_sbom_can_be_converted_to_spdx_and_back_without_loosing_any_data(
-        self, mock_spdx_now: str
+        self, mock_spdx_now: str, sbom: Sbom
     ) -> None:
-        sbom = Sbom(
-            components=[
-                {
-                    "name": "spdx-expression-parse",
-                    "version": "v1.0.0",
-                    "purl": "pkg:npm/spdx-expression-parse@1.0.0",
-                },
-                {
-                    "name": "github.com/org/A",
-                    "version": "v1.0.0",
-                    "purl": "pkg:golang/github.com/org/A@v1.0.0",
-                },
-                {
-                    "name": "github.com/org/A",
-                    "version": "v1.1.0",
-                    "purl": "pkg:golang/github.com/org/A@v1.1.0",
-                },
-            ],
-        )
         sbom.components[0].properties.extend(
             [
                 Property(name="cdx:npm:package:bundled", value="true"),
@@ -456,6 +521,74 @@ class TestSbom:
 
         assert pkg.annotations[0].comment == "Hello, world!"
         assert pkg.annotations[1].comment == '{"name": "hermeto:found_by", "value": "hermeto"}'
+
+    @pytest.mark.parametrize(
+        "sbom, expected_package_source_info",
+        [
+            pytest.param(
+                Sbom(
+                    components=[
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                            "external_references": [
+                                {
+                                    "url": "https://www.fakeproxy1.com",
+                                    "type": "source-distribution",
+                                },
+                                {
+                                    "url": "https://www.fakeproxy2.com",
+                                    "type": "source-distribution",
+                                },
+                            ],
+                        },
+                    ],
+                ),
+                "https://www.fakeproxy1.com;https://www.fakeproxy2.com",
+                id="two_proxies",
+            ),
+            pytest.param(
+                Sbom(
+                    components=[
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                            "external_references": [
+                                {
+                                    "url": "https://www.fakeproxy.com",
+                                    "type": "source-distribution",
+                                },
+                            ],
+                        },
+                    ],
+                ),
+                "https://www.fakeproxy.com",
+                id="one_proxy",
+            ),
+        ],
+    )
+    def test_spdx_correctly_converts_cydx_external_references_for_proxies(
+        self,
+        mock_spdx_now: str,
+        sbom: Sbom,
+        expected_package_source_info: str,
+    ) -> None:
+        # NOTE: this test explicitly verifies an implementation detail. It is
+        # implicitly verified elsewhere, here it is just surfaced to make sure
+        # that it is not forgotten or broken.  It would make sense to get rid
+        # of this test once anything else depends on this functionality or once
+        # there is an appropriate integration test which utilises proxies.
+
+        spdx_sbom = sbom.to_spdx("NOASSERTION")
+
+        # mypy insists that it is impossible to check if something is a part of None
+        # however in this particular case it will never be None:
+        # TODO: remove this comment and the pragma below once SPDXID is correctly typed.
+        the_only_package = [p for p in spdx_sbom.packages if "DocumentRoot" not in p.SPDXID][0]  # type: ignore
+
+        assert the_only_package.sourceInfo == expected_package_source_info
 
 
 # Some partially constructed objects to streamline test cases definitions.
