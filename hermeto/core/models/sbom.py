@@ -44,6 +44,9 @@ class Annotation(pydantic.BaseModel):
     text: str
 
 
+SRCDIST = "source-distribution"
+
+
 class ExternalReference(pydantic.BaseModel):
     """An ExternalReference inside an SBOM component."""
 
@@ -54,7 +57,7 @@ class ExternalReference(pydantic.BaseModel):
     # ExternalReferences. This type of ExternalReference should be added
     # along with "distribution" ExternalReference.
     # NOTE: CycloneDX.ExternalReference != SPDX.ExternalReference!
-    type: Literal["distribution", "source-distribution"] = "distribution"
+    type: Literal["distribution", "source-distribution"] = "distribution"  # SRCDIST makes mypy sad
 
 
 class PatchDiff(pydantic.BaseModel):
@@ -267,6 +270,11 @@ class Sbom(pydantic.BaseModel):
             return result
 
         def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
+            def source_infos(component: Component) -> list[str]:
+                if component.external_references is None:
+                    return []
+                return sorted(er.url for er in component.external_references if er.type == SRCDIST)
+
             packages = []
 
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
@@ -281,6 +289,7 @@ class Sbom(pydantic.BaseModel):
                 else:
                     human_readable_id = component.name
 
+                source_info = ";".join(source_infos(component))
                 packages.append(
                     SPDXPackage(
                         SPDXID=sanitize_spdxid(
@@ -290,6 +299,7 @@ class Sbom(pydantic.BaseModel):
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
                         annotations=generate_package_annotations(component.properties),
+                        sourceInfo=source_info or None,
                     )
                 )
             return packages
@@ -685,8 +695,18 @@ class SPDXSbom(pydantic.BaseModel):
                 )
                 for an in package.annotations
             ]
+            # sourceInfo morphs into ExternalReference of type SRCDIST
+            if package.sourceInfo is not None:
+                actual_download_urls = package.sourceInfo.split(";")
+                exrefs = [ExternalReference(url=s, type=SRCDIST) for s in actual_download_urls]
+            else:
+                exrefs = None
             pComponent = partial(
-                Component, name=package.name, version=package.versionInfo, properties=properties
+                Component,
+                name=package.name,
+                version=package.versionInfo,
+                properties=properties,
+                external_references=exrefs,
             )
             purls = _extract_purls(package.externalRefs)
 
