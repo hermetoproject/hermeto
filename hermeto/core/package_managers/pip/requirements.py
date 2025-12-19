@@ -27,13 +27,6 @@ SDIST_FILE_EXTENSIONS = [".zip", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.Z", ".t
 WHEEL_FILE_EXTENSION = ".whl"
 ALL_FILE_EXTENSIONS = SDIST_FILE_EXTENSIONS + [WHEEL_FILE_EXTENSION]
 
-PIP_REQUIREMENTS_TXT_DOC = (
-    "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#requirementstxt"
-)
-PIP_EXTERNAL_DEPS_DOC = (
-    "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#external-dependencies"
-)
-
 
 class PipRequirementsFile:
     """Parse requirements from a pip requirements file."""
@@ -468,7 +461,6 @@ class PipRequirement:
                     f"({APP_NAME} needs the name to be explicitly declared)"
                 ),
                 solution="Please specify the name of the dependency: <name> @ <url>",
-                docs=PIP_EXTERNAL_DEPS_DOC,
             )
 
         requirement_parts = [package_name.strip(), "@", url.strip()]
@@ -608,7 +600,6 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                         "Please pin all packages as <name>==<version>\n"
                         "You may wish to use a tool such as pip-compile to pin automatically."
                     ),
-                    docs=PIP_REQUIREMENTS_TXT_DOC,
                 )
 
         # Fail if VCS requirement uses any VCS other than git or does not have a valid ref
@@ -627,7 +618,6 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     solution=(
                         "Please specify the full commit hash for git URLs or switch to https URLs."
                     ),
-                    docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
         # Fail if URL requirement does not specify exactly one hash (--hash or #cachito_hash)
@@ -645,7 +635,6 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                         "Please specify the expected hashes for all plain URLs using "
                         "--hash options (one --hash for each)"
                     ),
-                    docs=PIP_EXTERNAL_DEPS_DOC,
                 )
 
             url = urlparse.urlparse(req.url)
@@ -681,7 +670,6 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
             raise PackageRejected(
                 msg,
                 solution="Please specify the expected hashes for all dependencies",
-                docs=PIP_REQUIREMENTS_TXT_DOC,
             )
 
         for hash_spec in hashes:

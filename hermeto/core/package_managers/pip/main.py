@@ -25,7 +25,6 @@ from hermeto.core.package_managers.general import (
     extract_git_info,
 )
 from hermeto.core.package_managers.pip.package_distributions import (
-    PIP_NO_SDIST_DOC,
     DistributionPackageInfo,
     process_package_distributions,
 )
@@ -52,10 +51,6 @@ log = logging.getLogger(__name__)
 
 DEFAULT_BUILD_REQUIREMENTS_FILE = "requirements-build.txt"
 DEFAULT_REQUIREMENTS_FILE = "requirements.txt"
-
-PIP_METADATA_DOC = (
-    "https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md#project-metadata"
-)
 
 
 def fetch_pip_source(request: Request) -> RequestOutput:
@@ -196,7 +191,6 @@ def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
                 "Provide valid metadata in the package files or ensure"
                 "the git repository has an 'origin' remote with a valid URL."
             ),
-            docs=PIP_METADATA_DOC,
         )
 
     repo_name = Path(repo_id.parsed_origin_url.path).stem
@@ -735,7 +729,6 @@ def _check_metadata_in_sdist(sdist_path: Path) -> None:
                     "Consider editing your requirements file to download the package from git "
                     "or a direct download URL instead."
                 ),
-                docs=PIP_NO_SDIST_DOC,
             )
     except tarfile.ReadError as e:
         raise PackageRejected(
