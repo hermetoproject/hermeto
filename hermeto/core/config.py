@@ -15,7 +15,7 @@ from pydantic_settings import (
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
 
-# Ascending priority
+# Ascending priority: the closer config is to the tail the gigher priority it gets.
 CONFIG_FILE_PATHS = [
     f"~/.config/{APP_NAME.lower()}/config.yaml",
     f"{APP_NAME.lower()}.yaml",
