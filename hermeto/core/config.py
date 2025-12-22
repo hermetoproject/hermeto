@@ -107,6 +107,12 @@ class RuntimeSettings(BaseModel, extra="forbid"):
     concurrency_limit: int = 5
 
 
+class ProxySettings(BaseModel, extra="forbid"):
+    """All shared proxy-related settings are grouped here"""
+
+    fallback_to_sources: bool = False
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 

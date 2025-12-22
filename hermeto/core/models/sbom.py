@@ -697,6 +697,7 @@ class SPDXSbom(pydantic.BaseModel):
                 )
                 for an in package.annotations
             ]
+            # sourceInfo morphs into ExternalReference of type SRCDIST
             if package.sourceInfo is not None:
                 actual_download_urls = package.sourceInfo.split(";")
                 ers = [ExternalReference(url=s, type=SRCDIST) for s in actual_download_urls]
