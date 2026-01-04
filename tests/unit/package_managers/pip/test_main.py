@@ -1322,7 +1322,7 @@ def test_replace_external_requirements(
         ),
     ],
 )
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.HermetoRepo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
@@ -1414,7 +1414,7 @@ def test_fetch_pip_source(
 
     mocked_repo = mock.Mock()
     mocked_repo.remote.return_value.url = "https://github.com/my-org/my-repo"
-    mocked_repo.head.commit.hexsha = GIT_REF
+    mocked_repo.head_commit.hexsha = GIT_REF
     mock_git_repo.return_value = mocked_repo
 
     output = pip.fetch_pip_source(request)
@@ -1588,7 +1588,7 @@ def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: s
         ),
     ],
 )
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.HermetoRepo")
 def test_generate_purl_main_package(
     mock_git_repo: Any, subpath: Path, expected_purl: str, rooted_tmp_path: RootedPath
 ) -> None:
@@ -1596,7 +1596,7 @@ def test_generate_purl_main_package(
 
     mocked_repo = mock.Mock()
     mocked_repo.remote.return_value.url = "ssh://git@github.com/my-org/my-repo"
-    mocked_repo.head.commit.hexsha = GIT_REF
+    mocked_repo.head_commit.hexsha = GIT_REF
     mock_git_repo.return_value = mocked_repo
 
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
@@ -1604,7 +1604,7 @@ def test_generate_purl_main_package(
     assert purl == expected_purl
 
 
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.HermetoRepo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
