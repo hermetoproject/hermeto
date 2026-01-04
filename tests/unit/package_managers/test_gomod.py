@@ -1865,7 +1865,7 @@ def test_fetch_gomod_source(
         "https://github.com/cachito-testing/gomod-pandemonium.git/",
     ),
 )
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.GitRepo")
 def test_get_repository_name(mock_git_repo: Any, input_url: str) -> None:
     expected_url = "github.com/cachito-testing/gomod-pandemonium"
 

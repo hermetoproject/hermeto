@@ -1322,7 +1322,7 @@ def test_replace_external_requirements(
         ),
     ],
 )
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.GitRepo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
@@ -1588,7 +1588,7 @@ def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: s
         ),
     ],
 )
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.GitRepo")
 def test_generate_purl_main_package(
     mock_git_repo: Any, subpath: Path, expected_purl: str, rooted_tmp_path: RootedPath
 ) -> None:
@@ -1604,7 +1604,7 @@ def test_generate_purl_main_package(
     assert purl == expected_purl
 
 
-@mock.patch("hermeto.core.scm.Repo")
+@mock.patch("hermeto.core.scm.GitRepo")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
