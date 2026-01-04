@@ -4,19 +4,83 @@ import os
 import re
 import tarfile
 import tempfile
+from os import PathLike
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, Callable, NamedTuple
 from urllib.parse import ParseResult, SplitResult, urlparse, urlsplit
 
 import git
-from git.exc import InvalidGitRepositoryError, NoSuchPathError
+from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git.repo import Repo
+from gitdb.exc import BadName  # type: ignore
 
 from hermeto import APP_NAME
-from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
+from hermeto.core.errors import FetchError, GitOperationError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.type_aliases import StrPath
 
 log = logging.getLogger(__name__)
+
+
+class HermetoRepo(Repo):
+    """Git repository wrapper with unified error handling."""
+
+    def __init__(self, path: str | PathLike[str], *args: Any, **kwargs: Any) -> None:
+        """Initialize git repository with unified error handling."""
+        try:
+            super().__init__(path, *args, **kwargs)
+        except (InvalidGitRepositoryError, NoSuchPathError):
+            raise NotAGitRepo(
+                f"The provided path {path} cannot be processed as a valid git repository.",
+                solution=(
+                    "Please ensure that the path is correct and that it is a valid git repository."
+                ),
+            )
+
+    def _git_operation(self, operation_name: str, func: Callable[[], Any]) -> Any:
+        """Execute git operation with ValueError/TypeError/BadName exception handling."""
+        try:
+            return func()
+        except (ValueError, TypeError, BadName) as ex:
+            raise GitOperationError(f"Git failed during '{operation_name}': {ex}") from ex
+
+    @classmethod
+    def clone_from(  # type: ignore[override]
+        cls, url: str | PathLike[str], to_path: str | PathLike[str], **kwargs: Any
+    ) -> "HermetoRepo":
+        """Clone repository and return HermetoRepo with error handling."""
+        try:
+            Repo.clone_from(url, to_path, **kwargs)
+            return cls(to_path)
+        except GitCommandError as ex:
+            log.warning(
+                "Failed cloning git repository from %s, exception: %s, exception-msg: %s",
+                url,
+                type(ex).__name__,
+                str(ex),
+            )
+            raise GitOperationError(f"Failed to clone repository from {url}") from ex
+
+    @property
+    def head(self) -> Any:
+        """Get repository HEAD reference with error handling."""
+        return self._git_operation("HEAD access", lambda: super(HermetoRepo, self).head)
+
+    @property
+    def head_commit(self) -> Any:
+        """Get HEAD commit object with error handling."""
+        return self._git_operation("HEAD commit access", lambda: self.head.commit)
+
+    def commit(self, rev: str | None = None) -> Any:
+        """Get commit object by revision with error handling."""
+        return self._git_operation(
+            f"Commit access ({rev})", lambda: super(HermetoRepo, self).commit(rev)
+        )
+
+    def remote(self, name: str = "origin") -> Any:
+        """Get remote object by name with error handling."""
+        return self._git_operation(
+            f"Remote access ({name})", lambda: super(HermetoRepo, self).remote(name)
+        )
 
 
 class RepoID(NamedTuple):
@@ -46,19 +110,14 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
     """
     if isinstance(repo, (str, os.PathLike)):
-        try:
-            repo = Repo(repo, search_parent_directories=True)
-        except (InvalidGitRepositoryError, NoSuchPathError):
-            raise NotAGitRepo(
-                f"The provided path {repo} cannot be processed as a valid git repository.",
-                solution=(
-                    "Please ensure that the path is correct and that it is a valid git repository."
-                ),
-            )
+        repo = HermetoRepo(repo, search_parent_directories=True)
+    elif isinstance(repo, Repo) and not isinstance(repo, HermetoRepo):
+        # Wrap raw git.Repo objects in HermetoRepo to get head_commit property
+        repo = HermetoRepo(repo.working_dir)
 
     try:
         origin = repo.remote("origin")
-    except ValueError:
+    except GitOperationError:
         raise UnsupportedFeature(
             f"{APP_NAME} cannot process repositories that don't have an 'origin' remote",
             solution=(
@@ -68,7 +127,8 @@ def get_repo_id(repo: StrPath | Repo) -> RepoID:
         )
 
     url = _canonicalize_origin_url(origin.url)
-    commit_id = repo.head.commit.hexsha
+    commit_id = repo.head_commit.hexsha
+
     return RepoID(url, commit_id)
 
 
@@ -117,10 +177,11 @@ def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[Repo, Path]:
     if not target_path.is_absolute():
         target_path = repo_root / target_path
 
-    current_repo = Repo(repo_root)
+    current_repo = HermetoRepo(repo_root)
 
     while (submodule := _find_submodule_containing_path(current_repo, target_path)) is not None:
-        current_repo = _get_submodule_repo(submodule)
+        submodule_repo = _get_submodule_repo(submodule)
+        current_repo = HermetoRepo(submodule_repo.working_dir)
 
     relative_path = target_path.relative_to(current_repo.working_dir)
     return current_repo, relative_path
@@ -165,7 +226,7 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
         for url in list_url:
             log.debug("Cloning the Git repository from %s", url)
             try:
-                repo = Repo.clone_from(
+                repo = HermetoRepo.clone_from(
                     url,
                     temp_dir,
                     no_checkout=True,
@@ -173,7 +234,7 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
                     # Don't allow git to prompt for a username if we don't have access
                     env={"GIT_TERMINAL_PROMPT": "0"},
                 )
-            except Exception as ex:
+            except GitOperationError as ex:
                 log.warning(
                     "Failed cloning the Git repository from %s, ref: %s, exception: %s, exception-msg: %s",
                     url,
@@ -193,11 +254,11 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
     raise FetchError("Failed cloning the Git repository")
 
 
-def _reset_git_head(repo: Repo, ref: str) -> None:
+def _reset_git_head(repo: HermetoRepo, ref: str) -> None:
     try:
         repo.head.reference = repo.commit(ref)  # type: ignore # 'reference' is a weird property
         repo.head.reset(index=True, working_tree=True)
-    except Exception as ex:
+    except GitOperationError as ex:
         log.exception(
             "Failed on checking out the Git ref %s, exception: %s",
             ref,

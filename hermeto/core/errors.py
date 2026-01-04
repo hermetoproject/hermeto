@@ -167,3 +167,24 @@ class PackageManagerError(BaseError):
         The output of the failing command should provide more details, please check the logs.
         """
     ).strip()
+
+
+class GitOperationError(BaseError):
+    """The Application failed to perform a Git operation.
+
+    This encompasses all Git-related failures such as repository access, commit resolution,
+    cloning, and checkout operations. Provides consistent error handling across the application.
+    """
+
+    default_solution = textwrap.dedent(
+        f"""
+        The cause of the Git operation failure could be:
+        - repository is not a valid Git repository or is corrupted
+        - missing or invalid 'origin' remote configuration
+        - repository has no commits or invalid commit references
+        - network connectivity issues when accessing remote repositories
+        - insufficient permissions to access the repository or target directory
+        Please check your repository configuration and try again.
+        If the issue persists, please contact the {APP_NAME} maintainers.
+        """
+    ).strip()
