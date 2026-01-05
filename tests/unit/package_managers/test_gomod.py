@@ -2009,22 +2009,29 @@ def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) 
         ),
         pytest.param("1.21", "1.21.4", ["1.22.1"], "1.22.1", id="newer_minor"),
         pytest.param("1.22", "1.22.1", ["1.21.0", "1.20"], "1.21.0", id="fallback_to_1_21"),
-        pytest.param("1.22", "1.22.1", ["1.20", "1.19.2"], None, id="no_suitable"),
+        pytest.param("1.22", "1.22.1", ["1.20", "1.19.2"], "1.22.1", id="install_missing"),
     ],
 )
+@mock.patch("hermeto.core.package_managers.gomod.Go.from_missing_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod.Go._get_release")
 @mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
 def test_select_toolchain(
     mock_get_gomod_version: mock.Mock,
     mock_go_get_release: mock.Mock,
+    mock_from_missing_toolchain: mock.Mock,
     go_version: str | None,
     toolchain_version: str | None,
     installed_versions: list[str],
     expected_result: str | None,
     rooted_tmp_path: RootedPath,
 ) -> None:
+    toolchain_release_str = "go" if toolchain_version is None else f"go{toolchain_version}"
+
     mock_get_gomod_version.return_value = (go_version, toolchain_version)
-    mock_go_get_release.side_effect = [f"go{version_str}" for version_str in installed_versions]
+    mock_from_missing_toolchain.return_value = Go(f"/usr/bin/{toolchain_release_str}")
+
+    effects = [f"go{version_str}" for version_str in installed_versions] + [toolchain_release_str]
+    mock_go_get_release.side_effect = effects
 
     go_mod_file = rooted_tmp_path.join_within_root("go.mod")
     go_mod_file.path.touch()
