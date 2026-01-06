@@ -385,7 +385,12 @@ def fetch_deps_and_check_output(
     else:
         actual_repo_dir = test_repo_dir
         repo = Repo(actual_repo_dir)
-        repo.git.reset("--hard")
+        # Submodule could end up being in detached HEAD state which would
+        # result in a cascading failure for all tests that follow. This does
+        # not happen always and at the moment of writing it is not clear what
+        # exactly triggers such behavior. However ensuring that all submodules
+        # are hard-reset resolves the issue.
+        repo.git.reset("--hard", "--recurse-submodules")
         # remove untracked files and directories from the working tree
         # git will refuse to modify untracked nested git repositories unless a second -f is given
         repo.git.clean("-ffdx")
