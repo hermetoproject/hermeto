@@ -429,7 +429,7 @@ class SPDXPackage(pydantic.BaseModel):
     https://spdx.github.io/spdx-spec/v2.3/package-information/
     """
 
-    SPDXID: str | None = None
+    SPDXID: str
     name: str
     versionInfo: str | None = None
     externalRefs: list[SPDXPackageExternalRefType] = []

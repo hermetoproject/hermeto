@@ -87,7 +87,7 @@ class TestSPDXPackage:
         "input_data, expect_error",
         [
             (
-                {"versionInfo": "some-version"},
+                {"SPDXID": "Not-an-id", "versionInfo": "some-version"},
                 "1 validation error for SPDXPackage\nname\n  Field required",
             )
         ],
@@ -522,6 +522,7 @@ class TestSPDXSbom:
             documentNamespace="NOASSERTION",
             packages=[
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
                     "name": "github.com/org/B",
                     "versionInfo": "v1.0.0",
                     "downloadLocation": "NOASSERTION",
@@ -534,6 +535,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.1.0",
                     "downloadLocation": "NOASSERTION",
@@ -546,6 +548,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e92e3a95e71ca3b2ef7bd075547593856dec87255626aa3db90a05dcde1b05ec",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.1.0",
                     "downloadLocation": "NOASSERTION",
@@ -558,6 +561,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.0.0",
                     "downloadLocation": "NOASSERTION",
@@ -570,6 +574,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.0.0",
                     "downloadLocation": "NOASSERTION",
@@ -582,6 +587,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
                     "name": "github.com/org/B",
                     "versionInfo": "v1.0.0",
                     "downloadLocation": "NOASSERTION",
@@ -594,6 +600,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
                     "name": "fmt",
                     "versionInfo": None,
                     "downloadLocation": "NOASSERTION",
@@ -606,6 +613,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
                     "name": "bytes",
                     "versionInfo": None,
                     "downloadLocation": "NOASSERTION",
@@ -621,6 +629,7 @@ class TestSPDXSbom:
         )
         expected_packages = [
             SPDXPackage(
+                SPDXID="SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
                 name="bytes",
                 externalRefs=[
                     SPDXPackageExternalRefPackageManagerPURL(
@@ -631,6 +640,7 @@ class TestSPDXSbom:
                 ],
             ),
             SPDXPackage(
+                SPDXID="SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
                 name="fmt",
                 externalRefs=[
                     SPDXPackageExternalRefPackageManagerPURL(
@@ -641,6 +651,7 @@ class TestSPDXSbom:
                 ],
             ),
             SPDXPackage(
+                SPDXID="SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                 name="github.com/org/A",
                 versionInfo="v1.0.0",
                 externalRefs=[
@@ -652,6 +663,7 @@ class TestSPDXSbom:
                 ],
             ),
             SPDXPackage(
+                SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
                 name="github.com/org/A",
                 versionInfo="v1.1.0",
                 externalRefs=[
@@ -663,6 +675,7 @@ class TestSPDXSbom:
                 ],
             ),
             SPDXPackage(
+                SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e92e3a95e71ca3b2ef7bd075547593856dec87255626aa3db90a05dcde1b05ec",
                 name="github.com/org/A",
                 versionInfo="v1.1.0",
                 externalRefs=[
@@ -674,6 +687,7 @@ class TestSPDXSbom:
                 ],
             ),
             SPDXPackage(
+                SPDXID="SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
                 name="github.com/org/B",
                 versionInfo="v1.0.0",
                 externalRefs=[
@@ -732,6 +746,7 @@ class TestSPDXSbom:
             )
 
     def test_to_cyclonedx(self, mock_spdx_now: str) -> None:
+        # NOTE: the test as written also exercises packages deduplication in SPDXSbom.
         sbom = SPDXSbom(
             documentNamespace="NOASSERTION",
             creationInfo={
@@ -740,6 +755,7 @@ class TestSPDXSbom:
             },
             packages=[
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
                     "name": "github.com/org/B",
                     "versionInfo": "v1.0.0",
                     "externalRefs": [
@@ -751,6 +767,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.1.0",
                     "externalRefs": [
@@ -762,6 +779,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e92e3a95e71ca3b2ef7bd075547593856dec87255626aa3db90a05dcde1b05ec",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.1.0",
                     "externalRefs": [
@@ -773,6 +791,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.0.0",
                     "externalRefs": [
@@ -784,6 +803,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                     "name": "github.com/org/A",
                     "versionInfo": "v1.0.0",
                     "externalRefs": [
@@ -795,6 +815,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
                     "name": "github.com/org/B",
                     "versionInfo": "v1.0.0",
                     "externalRefs": [
@@ -806,6 +827,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
                     "name": "fmt",
                     "versionInfo": None,
                     "externalRefs": [
@@ -817,6 +839,7 @@ class TestSPDXSbom:
                     ],
                 },
                 {
+                    "SPDXID": "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
                     "name": "bytes",
                     "versionInfo": None,
                     "externalRefs": [
@@ -1177,6 +1200,7 @@ class TestSPDXSbom:
 def test_deduplicate_spdx_packages() -> None:
     packages = [
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
             name="github.com/org/A",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1188,6 +1212,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
             name="github.com/org/A",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1199,6 +1224,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
             name="github.com/org/A",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1215,6 +1241,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
             name="github.com/org/B",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1226,6 +1253,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
             name="github.com/org/B",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1239,6 +1267,7 @@ def test_deduplicate_spdx_packages() -> None:
     ]
     expected_packages = [
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
             name="github.com/org/A",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1250,6 +1279,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
             name="github.com/org/A",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1266,6 +1296,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
             name="github.com/org/B",
             versionInfo="v1.0.0",
             externalRefs=[
@@ -1277,6 +1308,7 @@ def test_deduplicate_spdx_packages() -> None:
             ],
         ),
         SPDXPackage(
+            SPDXID="SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
             name="github.com/org/B",
             versionInfo="v1.0.0",
             externalRefs=[
