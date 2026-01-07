@@ -40,6 +40,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/cachito-testing/cachi2-gomod/twentyone@v0.0.0?type=module",
@@ -64,6 +68,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:proxy",
+          "value": "https://proxy.golang.org,direct"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module",
