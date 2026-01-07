@@ -1021,6 +1021,8 @@ def _go_exec_env(**extra_vars: str) -> dict[str, str]:
     """Build the base environment for go command execution."""
     env = {
         "PATH": os.environ.get("PATH", ""),
+        "HOME": os.environ.get("HOME", Path.home().as_posix()),  # HOME= can be unset, hence Path
+        "NETRC": os.environ.get("NETRC", ""),
     }
     return env | extra_vars
 

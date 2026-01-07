@@ -2612,20 +2612,30 @@ class TestGoWork:
         assert mock_go.call_args[0][0] == ["work", "edit", "-json"]
 
 
+_ENV_VARS_BASE_INIT = {v: "/some/path" for v in ("PATH", "HOME", "NETRC")}
+
+
 @pytest.mark.parametrize(
     "env, extra_env, expected",
     [
-        pytest.param({"PATH": "/some/path"}, None, {"PATH": "/some/path"}, id="vars_inherited"),
-        pytest.param({}, None, {"PATH": ""}, id="vars_defaults"),
+        pytest.param(_ENV_VARS_BASE_INIT, None, _ENV_VARS_BASE_INIT, id="vars_inherited"),
         pytest.param(
-            {"PATH": "/some/path"},
+            {},
+            None,
+            {"PATH": "", "HOME": "/mocked/home", "NETRC": ""},
+            id="vars_defaults",
+        ),
+        pytest.param(
+            _ENV_VARS_BASE_INIT,
             {"GOPATH": "/tmp/go"},
-            {"PATH": "/some/path"} | {"GOPATH": "/tmp/go"},
+            _ENV_VARS_BASE_INIT | {"GOPATH": "/tmp/go"},
             id="with_extra_env",
         ),
     ],
 )
+@mock.patch("pathlib.Path.home", return_value=Path("/mocked/home"))
 def test_go_exec_env(
+    mock_home: mock.Mock,
     monkeypatch: pytest.MonkeyPatch,
     env: dict[str, str],
     extra_env: dict[str, str] | None,
