@@ -32,7 +32,7 @@ from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Annotation, Component, spdx_now
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -649,6 +649,29 @@ def _list_toolchain_files(dir_path: str, files: list[str]) -> list[str]:
     return [file for file in files if is_a_toolchain_path(Path(dir_path) / file)]
 
 
+def _update_sbom_annotations(components: list[Component], annotations: list[Annotation]) -> None:
+    """
+    Generate the bom-ref field for provided components because each annotation needs to have
+    a subjects list that references the affected components.
+
+    If the annotations list is empty, a new annotation is created. Otherwise, the existing annotation
+    is extended with more subjects. There is only one permissive mode use case for gomod at the moment.
+    """
+    subjects = [c.update_bom_ref().bom_ref for c in components]
+    if annotations:
+        # NOTE: mypy thinks that the subject argument contains None values
+        annotations[0].subjects.extend(subjects)  # type: ignore
+    else:
+        annotations.append(
+            Annotation(
+                subjects=subjects,
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text="hermeto:permissive-mode:gomod:vendor-directory-changed-after-vendoring",
+            )
+        )
+
+
 def fetch_gomod_source(request: Request) -> RequestOutput:
     """
     Resolve and fetch gomod dependencies for a given request.
@@ -680,6 +703,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         )
 
     components: list[Component] = []
+    annotations: list[Annotation] = []
 
     repo_name = _get_repository_name(request.source_dir)
     version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
@@ -712,6 +736,19 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
+            vendor_changed = _vendor_changed(main_module_dir, request.mode)
+            if vendor_changed and request.mode == Mode.STRICT:
+                raise PackageRejected(
+                    reason=(
+                        "The content of the vendor directory is not consistent with go.mod. "
+                        "Please check the logs for more details."
+                    ),
+                    solution=(
+                        "Please try running `go mod vendor` and committing the changes.\n"
+                        "Note that you may need to `git add --force` ignored files in the vendor/ dir."
+                    ),
+                )
+
             main_module = _create_main_module_from_parsed_data(
                 main_module_dir, repo_name, resolve_result.parsed_main_module
             )
@@ -730,8 +767,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
             packages = _create_packages_from_parsed_data(modules, resolve_result.parsed_packages)
 
-            components.extend(module.to_component() for module in modules)
-            components.extend(package.to_component() for package in packages)
+            module_components = [module.to_component() for module in modules]
+            package_components = [package.to_component() for package in packages]
+            subpath_components = module_components + package_components
+
+            if vendor_changed:
+                _update_sbom_annotations(subpath_components, annotations)
+
+            components.extend(subpath_components)
 
         tmp_download_cache_dir = Path(tmp_dir.name).joinpath("pkg/mod/cache/download")
         if tmp_download_cache_dir.exists():
@@ -755,12 +798,16 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     }
     env_vars_template.update(config.gomod.environment_variables)
 
+    if annotations:
+        # Update the bom-ref field for all components for consistency when permissive mode is used.
+        components = [c.update_bom_ref() for c in components]
+
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[
             EnvironmentVariable(name=key, value=value) for key, value in env_vars_template.items()
         ],
-        project_files=[],
+        annotations=annotations,
     )
 
 
@@ -1080,7 +1127,7 @@ def _resolve_gomod(
 
     # Vendor dependencies if the gomod-vendor flag is set
     if should_vendor:
-        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), request.mode, run_params)
+        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), run_params)
     else:
         log.info("Downloading the gomod dependencies")
         downloaded_modules = (
@@ -1666,7 +1713,6 @@ def _vendor_deps(
     go: Go,
     context_dir: RootedPath,
     has_workspace: bool,
-    enforcing_mode: Mode,
     run_params: dict[str, Any],
 ) -> Iterable[ParsedModule]:
     """
@@ -1683,21 +1729,8 @@ def _vendor_deps(
     :raise UnexpectedFormat: if application fails to parse vendor/modules.txt
     """
     log.info("Vendoring the gomod dependencies")
-
     cmdscope = "work" if has_workspace else "mod"
     go([cmdscope, "vendor"], run_params)
-    if _vendor_changed(context_dir, enforcing_mode):
-        if enforcing_mode == Mode.STRICT:
-            raise PackageRejected(
-                reason=(
-                    "The content of the vendor directory is not consistent with go.mod. "
-                    "Please check the logs for more details."
-                ),
-                solution=(
-                    "Please try running `go mod vendor` and committing the changes.\n"
-                    "Note that you may need to `git add --force` ignored files in the vendor/ dir."
-                ),
-            )
     return _parse_vendor(context_dir)
 
 

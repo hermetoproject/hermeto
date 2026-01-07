@@ -1431,45 +1431,18 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         _validate_local_replacements(modules, app_path)
 
 
-@pytest.mark.parametrize("enforcing_mode", [Mode.STRICT, Mode.PERMISSIVE])
 @pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
 @mock.patch("hermeto.core.package_managers.gomod.Go._run")
-@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
 def test_vendor_deps(
-    mock_vendor_changed: mock.Mock,
     mock_run_cmd: mock.Mock,
     go_vendor_cmd: str,
-    enforcing_mode: Mode,
     rooted_tmp_path: RootedPath,
 ) -> None:
     app_dir = rooted_tmp_path.join_within_root("some/module")
     run_params = {"cwd": app_dir}
-    mock_vendor_changed.return_value = False
-
-    # Test that vendor-changes == True in permissive mode also leads to a success path
-    # [ruff] - skip formatting because it would remove the parentheses making it less readable
-    mock_vendor_changed.return_value = (enforcing_mode != Mode.STRICT)  # fmt: skip
-
-    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", enforcing_mode, run_params)
+    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
 
     mock_run_cmd.assert_called_once_with([GO_CMD_PATH, go_vendor_cmd, "vendor"], **run_params)
-    mock_vendor_changed.assert_called_once_with(app_dir, enforcing_mode)
-
-
-@mock.patch("hermeto.core.package_managers.gomod.Go._run")
-@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
-def test_vendor_deps_fail(
-    mock_vendor_changed: mock.Mock,
-    mock_run_cmd: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    app_dir = rooted_tmp_path.join_within_root("some/module")
-    run_params = {"cwd": app_dir}
-    mock_vendor_changed.return_value = True
-
-    msg = "The content of the vendor directory is not consistent with go.mod."
-    with pytest.raises(PackageRejected, match=msg):
-        _vendor_deps(Go(), app_dir, False, Mode.STRICT, run_params)
 
 
 def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
@@ -1809,7 +1782,9 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver.from_repo_path")
 @mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
 def test_fetch_gomod_source(
+    mock_vendor_changed: mock.Mock,
     mock_get_go_work_path: mock.Mock,
     mock_select_toolchain: mock.Mock,
     mock_version_resolver: mock.Mock,
@@ -1839,6 +1814,7 @@ def test_fetch_gomod_source(
     mock_resolve_gomod.side_effect = resolve_gomod_mocked
     mock_find_missing_gomod_files.return_value = []
     mock_get_repository_name.return_value = "github.com/my-org/my-repo"
+    mock_vendor_changed.return_value = False
 
     mock_tmp_dir.name = "tmpdir"
     mock_tmp_dir.return_value.__enter__.return_value = mock_tmp_dir
