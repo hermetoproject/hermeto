@@ -101,7 +101,7 @@ class Component(pydantic.BaseModel):
         """
         return self.purl
 
-    def update_bom_ref(self) -> None:
+    def update_bom_ref(self) -> Self:
         """
         Update the `bom-ref` field of this component.
 
@@ -109,6 +109,7 @@ class Component(pydantic.BaseModel):
         initialized by default and needs to be updated manually with this method.
         """
         self.bom_ref = self.purl
+        return self
 
     @pydantic.field_validator("properties")
     @classmethod
