@@ -1017,6 +1017,14 @@ def _parse_packages(
     return iter(all_packages)
 
 
+def _go_exec_env(**extra_vars: str) -> dict[str, str]:
+    """Build the base environment for go command execution."""
+    env = {
+        "PATH": os.environ.get("PATH", ""),
+    }
+    return env | extra_vars
+
+
 def _resolve_gomod(
     app_dir: RootedPath,
     request: Request,
@@ -1052,22 +1060,21 @@ def _resolve_gomod(
     else:
         gomod_cache = f"{tmp_dir}/pkg/mod"
 
-    env = {
-        "GOPATH": tmp_dir,
+    go_vars: dict[str, str] = {
+        "GOPATH": str(tmp_dir),
         "GO111MODULE": "on",
-        "GOCACHE": tmp_dir,
-        "PATH": os.environ.get("PATH", ""),
+        "GOCACHE": str(tmp_dir),
         "GOMODCACHE": gomod_cache,
         "GOSUMDB": "sum.golang.org",
         "GOTOOLCHAIN": "auto",
     }
-
     if config.gomod.proxy_url:
-        env["GOPROXY"] = config.gomod.proxy_url
+        go_vars["GOPROXY"] = config.gomod.proxy_url
 
     if "cgo-disable" in request.flags:
-        env["CGO_ENABLED"] = "0"
+        go_vars["CGO_ENABLED"] = "0"
 
+    env = _go_exec_env(**go_vars)
     run_params = {"env": env, "cwd": app_dir}
 
     # Explicitly disable toolchain telemetry for go >= 1.23

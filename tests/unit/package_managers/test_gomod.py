@@ -40,6 +40,7 @@ from hermeto.core.package_managers.gomod import (
     _get_go_work_path,
     _get_gomod_version,
     _get_repository_name,
+    _go_exec_env,
     _go_list_deps,
     _list_installed_toolchains,
     _list_toolchain_files,
@@ -2609,3 +2610,28 @@ class TestGoWork:
 
         mock_go.assert_called_once()
         assert mock_go.call_args[0][0] == ["work", "edit", "-json"]
+
+
+@pytest.mark.parametrize(
+    "env, extra_env, expected",
+    [
+        pytest.param({"PATH": "/some/path"}, None, {"PATH": "/some/path"}, id="vars_inherited"),
+        pytest.param({}, None, {"PATH": ""}, id="vars_defaults"),
+        pytest.param(
+            {"PATH": "/some/path"},
+            {"GOPATH": "/tmp/go"},
+            {"PATH": "/some/path"} | {"GOPATH": "/tmp/go"},
+            id="with_extra_env",
+        ),
+    ],
+)
+def test_go_exec_env(
+    monkeypatch: pytest.MonkeyPatch,
+    env: dict[str, str],
+    extra_env: dict[str, str] | None,
+    expected: dict[str, str],
+) -> None:
+    monkeypatch.setattr(os, "environ", env)
+
+    actual = _go_exec_env() if extra_env is None else _go_exec_env(**extra_env)
+    assert actual == expected
