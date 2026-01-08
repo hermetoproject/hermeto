@@ -26,6 +26,21 @@ from hermeto.core.type_aliases import StrPath
 log = logging.getLogger(__name__)
 
 
+class GitCommandWrapper(git.Git):
+    """Git command wrapper that converts GitCommandError to GitError."""
+
+    def execute(self, command: Any, *args: Any, **kwargs: Any) -> Any:
+        """Execute git command with unified error handling."""
+        try:
+            return super().execute(command, *args, **kwargs)
+        except GitCommandError as ex:
+            raise GitError(
+                f"Git command failed: {ex}",
+                stderr=ex.stderr,
+                stdout=ex.stdout,
+            ) from ex
+
+
 class GitHEAD(git.HEAD):
     """HEAD reference wrapper with unified error handling."""
 
@@ -86,6 +101,8 @@ class GitHEAD(git.HEAD):
 
 class GitRepo(git.Repo):
     """Git repository wrapper with unified error handling."""
+
+    GitCommandWrapperType = GitCommandWrapper
 
     def __init__(self, path: str | PathLike[str], *args: Any, **kwargs: Any) -> None:
         """Initialize git repository with unified error handling."""

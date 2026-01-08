@@ -16,10 +16,10 @@ from typing import Any
 import jsonschema
 import requests
 import yaml
-from git import Repo
 
 from hermeto import APP_NAME
 from hermeto.core import resolver
+from hermeto.core.scm import GitRepo
 from hermeto.core.type_aliases import StrPath
 from hermeto.interface.cli import DEFAULT_OUTPUT
 from tests.integration.container_engine import get_container_engine
@@ -223,7 +223,7 @@ def _get_git_commit_from_tarball(tarball: Path) -> str:
         extract_path = str(tarball).replace(".tar.gz", "").replace(".tgz", "")
         _safe_extract(tarfile, extract_path)
 
-    repo = Repo(path=f"{extract_path}/app")
+    repo = GitRepo(path=f"{extract_path}/app")
     commit = f"gitcommit:{repo.commit().hexsha}"
 
     shutil.rmtree(extract_path)
@@ -339,7 +339,7 @@ def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
     repo_dir = tmp_path / f"{repo_name}_{safe_branch}"
 
     log.info(f"Cloning custom test repository from {repo_url} (branch: {branch})")
-    Repo.clone_from(
+    GitRepo.clone_from(
         url=repo_url,
         to_path=repo_dir,
         branch=branch,
@@ -384,7 +384,7 @@ def fetch_deps_and_check_output(
         )
     else:
         actual_repo_dir = test_repo_dir
-        repo = Repo(actual_repo_dir)
+        repo = GitRepo(actual_repo_dir)
         # Submodule could end up being in detached HEAD state which would
         # result in a cascading failure for all tests that follow. This does
         # not happen always and at the moment of writing it is not clear what
@@ -594,7 +594,7 @@ def _validate_expected_dep_file_contents(dep_contents_file: Path, output_dir: Pa
 
 
 def retrieve_changed_files_from_git() -> tuple[Path, ...]:
-    repo = Repo(".", search_parent_directories=True)
+    repo = GitRepo(".", search_parent_directories=True)
     # >>> type(repo.branches)
     # <class 'git.util.IterableList'>
     # Despite the fact stated above mypy does not believe one can use 'in' with

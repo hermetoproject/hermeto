@@ -58,6 +58,7 @@ from hermeto.core.package_managers.gomod import (
     fetch_gomod_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
+from hermeto.core.scm import GitRepo
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from tests.common_utils import GIT_REF, write_file_tree
 
@@ -1393,7 +1394,7 @@ def test_get_golang_version(
     module_name = f"github.com/mprahl/test-golang-pseudo-versions{module_suffix}"
 
     module_dir = RootedPath(golang_repo_path)
-    repo = git.Repo(golang_repo_path)
+    repo = GitRepo(golang_repo_path)
     repo.git.checkout(ref)
     version_resolver = ModuleVersionResolver(repo, repo.commit(ref))
 
@@ -1924,7 +1925,7 @@ def test_fetch_tags_fail(repo_remote_with_tag: tuple[RootedPath, RootedPath]) ->
     # The remote_repo itself has no remote configured, so will fail when fetching tags
     remote_repo_path, _ = repo_remote_with_tag
     error_msg = re.escape(
-        f"Failed to fetch the tags on the Git repository (ValueError) for {remote_repo_path}"
+        f"Failed to fetch the tags on the Git repository (GitRemoteNotFoundError) for {remote_repo_path}"
     )
     with pytest.raises(FetchError, match=error_msg):
         ModuleVersionResolver.from_repo_path(remote_repo_path)

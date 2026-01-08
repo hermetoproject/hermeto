@@ -28,13 +28,19 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 from hermeto.core.config import get_config
-from hermeto.core.errors import FetchError, PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    FetchError,
+    GitError,
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Annotation, Component, spdx_now
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_for_path, get_repo_id
+from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
 from hermeto.core.utils import GIT_PRISTINE_ENV, get_cache_dir, load_json_stream, run_cmd
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
@@ -1355,7 +1361,7 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
 class ModuleVersionResolver:
     """Resolves the versions of Go modules in a git repository."""
 
-    def __init__(self, repo: git.Repo, commit: git.objects.commit.Commit):
+    def __init__(self, repo: GitRepo, commit: git.objects.commit.Commit):
         """Initialize a ModuleVersionResolver for the provided Repo."""
         self._repo = repo
         self._commit = commit
@@ -1363,14 +1369,14 @@ class ModuleVersionResolver:
     @classmethod
     def from_repo_path(cls, repo_path: RootedPath) -> "Self":
         """Fetch tags from a git Repo and return a ModuleVersionResolver."""
-        repo = git.Repo(repo_path)
+        repo = GitRepo(repo_path)
         commit = repo.commit(repo.rev_parse("HEAD").hexsha)
         try:
             # Do not run 'git fetch --tags' because that fetches pretty much everything from the
             # remote. Save bandwidth and storage with an explicit refspec instead.
             # See man 1 git-fetch for the authoritative answer.
             repo.remote().fetch(refspec="+refs/tags/*:refs/tags/*", force=True)
-        except Exception as ex:
+        except GitError as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
                 f"for {repo.working_tree_dir}: "
@@ -1400,7 +1406,7 @@ class ModuleVersionResolver:
         :param all_reachable: True to get all tags on the current commit and all commits preceding
                               it. False to get the tags on the current commit only.
         :return: a list of tag names
-        :raises GitCommandError: if failed to fetch the tags on the Git repository
+        :raises GitError: if failed to fetch the tags on the Git repository
         """
         try:
             if all_reachable:
@@ -1428,7 +1434,7 @@ class ModuleVersionResolver:
                 as_process=False,
                 stdout_as_string=True,
             ).splitlines()
-        except git.GitCommandError:
+        except GitError:
             msg = f"Failed to get the tags associated with the reference {self._commit.hexsha}"
             log.error(msg)
             raise
