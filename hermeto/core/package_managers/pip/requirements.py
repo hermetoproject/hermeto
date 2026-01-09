@@ -13,7 +13,12 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
+from hermeto.core.errors import (
+    MissingChecksum,
+    PackageRejected,
+    UnexpectedFormat,
+    UnsupportedFeature,
+)
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -629,7 +634,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     f"URL requirement must specify exactly one hash, but specifies {n_hashes}: "
                     f"{req.download_line}."
                 )
-                raise PackageRejected(
+                raise MissingChecksum(
                     msg,
                     solution=(
                         "Please specify the expected hashes for all plain URLs using "
@@ -652,7 +657,8 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
 
     :param list[PipRequirement] requirements: All requirements from a file
     :param bool require_hashes: True if hashes are required for all requirements
-    :raise PackageRejected: If hashes are missing or have invalid format
+    :raise MissingChecksum: If hashes are missing
+    :raise PackageRejected: If hashes have invalid format
     """
     for req in requirements:
         if req.kind == "url":
@@ -667,7 +673,7 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
             # (other than a URL req with `cachito_hash``).
             # For URL # requirements, having a hash is required to pass *basic* validation.
             msg = f"Hash is required, dependency does not specify any: {req.download_line}"
-            raise PackageRejected(
+            raise MissingChecksum(
                 msg,
                 solution="Please specify the expected hashes for all dependencies",
             )

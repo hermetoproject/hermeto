@@ -1,8 +1,9 @@
 from hermeto.core.config import get_config
+from hermeto.core.errors import LockfileNotFound
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers.yarn.main import fetch_yarn_source as fetch_yarnberry_source
-from hermeto.core.package_managers.yarn_classic.main import MissingLockfile, NotV1Lockfile
+from hermeto.core.package_managers.yarn_classic.main import NotV1Lockfile
 from hermeto.core.package_managers.yarn_classic.main import (
     fetch_yarn_source as fetch_yarn_classic_source,
 )
@@ -18,7 +19,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         new_request = request.model_copy(update={"packages": [package]})
         try:
             fetched_packages.append(fetch_yarn_classic_source(new_request))
-        except (MissingLockfile, NotV1Lockfile) as e:
+        except (LockfileNotFound, NotV1Lockfile) as e:
             # It is assumed that if a package is not v1 then it is probably v2.
             if get_config().yarn.enabled:
                 fetched_packages.append(fetch_yarnberry_source(new_request))

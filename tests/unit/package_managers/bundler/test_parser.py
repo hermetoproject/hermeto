@@ -10,7 +10,7 @@ import pydantic
 import pytest
 from git.repo import Repo
 
-from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import LockfileNotFound, PackageManagerError, UnexpectedFormat
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -62,13 +62,10 @@ def sample_parser_output() -> dict[str, Any]:
 
 
 def test_parse_lockfile_without_bundler_files(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(LockfileNotFound) as exc_info:
         parse_lockfile(rooted_tmp_path)
 
-    assert (
-        "Gemfile and Gemfile.lock must be present in the package directory"
-        in exc_info.value.friendly_msg()
-    )
+    assert "Gemfile or Gemfile.lock' not found under" in exc_info.value.friendly_msg()
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
