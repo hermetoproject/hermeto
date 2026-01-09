@@ -11,6 +11,7 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected, UnexpectedFormat, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
@@ -587,7 +588,7 @@ class TestPurlifier:
         pkg_path = rooted_tmp_path.join_within_root(main_pkg_subpath)
         purl = _Purlifier(pkg_path).get_purl(*pkg_data, integrity=None)
         assert purl.to_string() == expect_purl
-        mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root)
+        mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root, mode=Mode.STRICT)
 
     @pytest.mark.parametrize(
         "resolved_url, integrity, expect_checksum_qualifier",
@@ -614,6 +615,20 @@ class TestPurlifier:
         purl = _Purlifier(RootedPath("/foo")).get_purl("foo", None, resolved_url, integrity)
         assert isinstance(purl.qualifiers, dict)
         assert purl.qualifiers.get("checksum") == expect_checksum_qualifier
+
+    @mock.patch("hermeto.core.package_managers.npm.get_repo_id")
+    def test_get_purl_for_file_package_without_vcs_url(
+        self, mock_get_repo_id: mock.Mock, rooted_tmp_path: RootedPath
+    ) -> None:
+        """Test _Purlifier.get_purl for file package without vcs_url (non-git source)."""
+        # Patch `get_repo_id` to return None, ensuring test doesn't depend on tmp path
+        mock_get_repo_id.return_value = None
+
+        purlifier = _Purlifier(rooted_tmp_path)
+        purl = purlifier.get_purl("my-package", "1.0.0", "file:packages/my-package", None)
+        purl_string = purl.to_string()
+        assert purl_string == "pkg:npm/my-package@1.0.0#packages/my-package"
+        assert "vcs_url=" not in purl_string
 
 
 @pytest.mark.parametrize(
@@ -1437,7 +1452,7 @@ def test_resolve_npm(
     update_package_json_files.assert_called()
 
     assert pkg_info == expected_output
-    mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root)
+    mock_get_repo_id.assert_called_once_with(rooted_tmp_path.root, mode=Mode.STRICT)
 
 
 def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) -> None:

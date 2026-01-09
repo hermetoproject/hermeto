@@ -15,7 +15,13 @@ from git import Repo
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
-from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
+from hermeto.core.models.input import (
+    CargoPackageInput,
+    Mode,
+    PackageInput,
+    PipBinaryFilters,
+    Request,
+)
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
@@ -1481,13 +1487,13 @@ def test_fetch_pip_source(
 
     if n_pip_packages >= 1:
         mock_resolve_pip.assert_any_call(
-            source_dir, output_dir, [Path("requirements.txt")], None, None
+            source_dir, output_dir, [Path("requirements.txt")], None, None, mode=Mode.STRICT
         )
         mock_replace_requirements.assert_any_call("/package_a/requirements.txt")
         mock_replace_requirements.assert_any_call("/package_a/requirements-build.txt")
     if n_pip_packages >= 2:
         mock_resolve_pip.assert_any_call(
-            source_dir.join_within_root("foo"), output_dir, None, [], None
+            source_dir.join_within_root("foo"), output_dir, None, [], None, mode=Mode.STRICT
         )
         mock_replace_requirements.assert_any_call("/package_b/requirements.txt")
 
@@ -1602,6 +1608,16 @@ def test_generate_purl_main_package(
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
 
     assert purl == expected_purl
+
+
+def test_generate_purl_main_package_without_vcs_url(rooted_tmp_path: RootedPath) -> None:
+    """Test _generate_purl_main_package without vcs_url (non-git source)."""
+    package = {"name": "my-package", "version": "2.0.0", "type": "pip"}
+
+    purl = pip._generate_purl_main_package(package, rooted_tmp_path, mode=Mode.PERMISSIVE)
+
+    assert purl == "pkg:pypi/my-package@2.0.0"
+    assert "vcs_url" not in purl
 
 
 @mock.patch("hermeto.core.scm.Repo")
