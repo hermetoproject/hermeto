@@ -42,7 +42,7 @@ class NpmComponentInfo(TypedDict):
 
     name: str
     purl: str
-    version: str
+    version: str | None
     dev: bool
     bundled: bool
     missing_hash_in_file: Path | None
@@ -86,13 +86,13 @@ class Package:
         self._package_dict["integrity"] = integrity
 
     @property
-    def version(self) -> str:
+    def version(self) -> str | None:
         """Get the package version.
 
         This will be a semver from the package.json file.
         https://docs.npmjs.com/cli/v7/configuring-npm/package-lock-json#packages
         """
-        return self._package_dict["version"]
+        return self._package_dict.get("version")
 
     @property
     def resolved_url(self) -> str | None:
