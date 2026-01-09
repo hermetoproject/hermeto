@@ -5,13 +5,12 @@ from typing import Annotated
 from urllib.parse import urljoin, urlparse
 
 import pydantic
-from git import Repo
 from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto.core.package_managers.general import download_binary_file
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import Repo, get_repo_id
 
 AcceptedUrl = Annotated[
     pydantic.HttpUrl,
