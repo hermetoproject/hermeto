@@ -32,7 +32,8 @@ from tests.common_utils import GIT_REF
 def test_download_binary_file(
     mock_get: Any, auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
 ) -> None:
-    timeout = get_config().http.timeout
+    config = get_config()
+    timeout = (config.http.connect_timeout, config.http.read_timeout)
     url = "http://example.org/example.tar.gz"
     content = b"file content"
 
@@ -179,7 +180,7 @@ async def test_async_download_binary_file(
     assert session.get.called
     assert session.get.call_args == mock.call(
         url,
-        timeout=aiohttp.ClientTimeout(total=300),
+        timeout=aiohttp.ClientTimeout(total=None, connect=30, sock_read=300),
         auth=None,
         raise_for_status=True,
         ssl=None,

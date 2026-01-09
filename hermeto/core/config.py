@@ -29,7 +29,7 @@ _FLAT_FIELD_MIGRATIONS = [
     ("ignore_pip_dependencies_crates", ("pip", "ignore_dependencies_crates")),
     ("goproxy_url", ("gomod", "proxy_url")),
     ("gomod_download_max_tries", ("gomod", "download_max_tries")),
-    ("requests_timeout", ("http", "timeout")),
+    ("requests_timeout", ("http", "read_timeout")),
     ("subprocess_timeout", ("runtime", "subprocess_timeout")),
     ("concurrency_limit", ("runtime", "concurrency_limit")),
 ]
@@ -96,7 +96,8 @@ class GomodSettings(BaseModel, extra="forbid"):
 class HttpSettings(BaseModel, extra="forbid"):
     """HTTP-related settings."""
 
-    timeout: int = 300
+    connect_timeout: int = 30
+    read_timeout: int = 300
 
 
 class RuntimeSettings(BaseModel, extra="forbid"):
@@ -142,6 +143,17 @@ class Config(BaseSettings):
         for old_key, (namespace, new_key) in _FLAT_FIELD_MIGRATIONS:
             if old_key in data:
                 _migrate_flat_to_namespace(data, old_key, data.pop(old_key), namespace, new_key)
+
+        # Migrate http.timeout -> http.read_timeout
+        http_data = data.get("http")
+        if isinstance(http_data, dict) and "timeout" in http_data:
+            _migrate_flat_to_namespace(
+                data,
+                "http.timeout",
+                http_data.pop("timeout"),
+                "http",
+                "read_timeout",
+            )
 
         # default_environment_variables.gomod -> gomod.environment_variables
         # (default_environment_variables only ever supported the gomod backend)
