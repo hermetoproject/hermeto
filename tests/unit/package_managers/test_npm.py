@@ -162,10 +162,23 @@ class TestPackage:
                 "file:///foo-1.0.0.tgz",
                 id="package",
             ),
+            pytest.param(
+                Package(
+                    "foo",
+                    "foo",
+                    {
+                        # version omitted for workspace/unpublished package
+                        "resolved": "file:foo",
+                    },
+                ),
+                None,
+                "file:///foo-1.0.0.tgz",
+                id="workspace_no_version",
+            ),
         ],
     )
     def test_set_resolved_url(
-        self, package: Package, expected_version: str, expected_resolved_url: str
+        self, package: Package, expected_version: str | None, expected_resolved_url: str
     ) -> None:
         package.resolved_url = "file:///foo-1.0.0.tgz"
         assert package.version == expected_version
