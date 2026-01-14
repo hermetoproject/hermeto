@@ -25,5 +25,7 @@
 
 ### Python Docstrings
 
-- Ensure that a new function parameter is documented
+- Suggest docstring updates only for public functions, methods, and classes
+- Do not suggest docstrings for private helper methods (prefixed with underscore)
+- Ensure that new parameters on public functions are documented
 - Focus on good stylistic and correct english grammar
