@@ -11,6 +11,7 @@ import pytest
 from git.repo import Repo
 
 from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
+from hermeto.core.models.input import BundlerBinaryFilters
 from hermeto.core.package_managers.bundler.gem_models import (
     GemDependency,
     GemPlatformSpecificDependency,
@@ -21,6 +22,7 @@ from hermeto.core.package_managers.bundler.parser import (
     GEMFILE,
     GEMFILE_LOCK,
     BundlerDependency,
+    GemsFilter,
     parse_lockfile,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -82,7 +84,7 @@ def test_parse_lockfile_os_error(
     with pytest.raises(PackageManagerError) as exc_info:
         parse_lockfile(rooted_tmp_path)
 
-    assert f"Failed to parse {empty_bundler_files[1]}" in exc_info.value.friendly_msg()
+    assert "Failed to parse Gemfile.lock" in exc_info.value.friendly_msg()
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
@@ -167,7 +169,7 @@ def test_parse_gemlock(
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "ruby",
+            "platforms": ["ruby"],
             **base_dep,
         },
     ]
@@ -176,6 +178,7 @@ def test_parse_gemlock(
     result = parse_lockfile(rooted_tmp_path)
 
     expected_deps = [
+        GemDependency(name="example", version="0.1.0", source="https://rubygems.org/"),
         GitDependency(
             name="example",
             version="0.1.0",
@@ -189,7 +192,6 @@ def test_parse_gemlock(
             root=str(rooted_tmp_path),
             subpath="vendor/pathgem",
         ),
-        GemDependency(name="example", version="0.1.0", source="https://rubygems.org/"),
     ]
 
     assert f"Package {rooted_tmp_path.path.name} is bundled with version 2.5.10" in caplog.messages
@@ -347,7 +349,7 @@ def test_purls(rooted_tmp_path_repo: RootedPath) -> None:
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
-def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to(
+def test_platform_specific_gems_with_binary_filters(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
     sample_parser_output: dict[str, Any],
@@ -359,13 +361,15 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "i8080_cpm",
+            "platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
-    result = parse_lockfile(rooted_tmp_path, allow_binary=True)
+    result = parse_lockfile(
+        rooted_tmp_path, binary_filters=BundlerBinaryFilters(platform="i8080_cpm")
+    )
 
     expected_deps = [
         GemPlatformSpecificDependency(
@@ -376,13 +380,14 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
         ),
     ]
 
-    assert some_message_contains_substring("Found a binary dependency", caplog.messages)
-    assert some_message_contains_substring("Will download binary dependency", caplog.messages)
+    assert some_message_contains_substring(
+        "Binary filtering enabled: downloading gems for allowed platforms", caplog.messages
+    )
     assert result == expected_deps
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
-def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
+def test_platform_specific_gems_without_binary_filters(
     mock_run_cmd: mock.MagicMock,
     empty_bundler_files: tuple[RootedPath, RootedPath],
     sample_parser_output: dict[str, Any],
@@ -394,17 +399,119 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
-            "platform": "i8080_cpm",
+            "platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
 
     mock_run_cmd.return_value = json.dumps(sample_parser_output)
-    result = parse_lockfile(rooted_tmp_path, allow_binary=False)
+    result = parse_lockfile(rooted_tmp_path, None)
 
-    expected_deps: list = []  # mypy demanded this annotation and is content with it.
+    expected_deps = [
+        GemDependency(
+            name="example",
+            version="0.1.0",
+            source="https://rubygems.org/",
+        ),
+    ]
 
-    assert some_message_contains_substring("Found a binary dependency", caplog.messages)
-    assert some_message_contains_substring("Skipping binary dependency", caplog.messages)
-
+    assert some_message_contains_substring(
+        "Binary filtering disabled: downloading all gems for pure 'ruby' platform",
+        caplog.messages,
+    )
     assert result == expected_deps
+
+
+class TestGemsFilter:
+    def test_init_with_all_filters(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages is None
+        assert gems_filter.platform is None
+
+    def test_init_with_specific_values(self) -> None:
+        filters = BundlerBinaryFilters(
+            packages="rails,rack",
+            platform="x86_64-linux,x86_64-darwin",
+        )
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages == {"rails", "rack"}
+        assert gems_filter.platform == {"x86_64-linux", "x86_64-darwin"}
+
+    def test_init_with_specific_values_and_all(self) -> None:
+        filters = BundlerBinaryFilters(
+            packages="rails,:all:,rack",
+            platform="x86_64-linux,:all:,x86_64-darwin",
+        )
+        gems_filter = GemsFilter(filters)
+
+        assert gems_filter.packages is None
+        assert gems_filter.platform is None
+
+    def test_apply_platform_filters_all_packages_all_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "x86_64-linux"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-darwin", "x86_64-linux"]
+
+    def test_apply_platform_filters_all_packages_specific_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages=":all:", platform="x86_64-linux,x86_64-darwin")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "i8080_cpm"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # the platform from the filter is a set that is applied to the gem platforms, so we need to
+        # sort the platforms to ignore the order
+        assert sorted(gems[0]["platforms"]) == sorted(["x86_64-linux", "x86_64-darwin"])
+        assert sorted(gems[1]["platforms"]) == sorted(["x86_64-linux", "x86_64-darwin"])
+
+    def test_apply_platform_filters_specific_packages_all_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages="rails,rack", platform=":all:")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin"]},
+            {"name": "nokogiri", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # rails and rack should prefer binary (remove ruby)
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-darwin"]
+        # nokogiri should be ruby-only since it's not in the packages list
+        assert gems[2]["platforms"] == ["ruby"]
+
+    def test_apply_platform_filters_specific_packages_specific_platforms(self) -> None:
+        filters = BundlerBinaryFilters(packages="rails,rack", platform="x86_64-linux")
+        gems_filter = GemsFilter(filters)
+
+        gems = [
+            {"name": "rails", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+            {"name": "rack", "platforms": ["ruby", "x86_64-darwin", "i8080_cpm"]},
+            {"name": "nokogiri", "platforms": ["ruby", "x86_64-linux", "arm64-darwin"]},
+        ]
+
+        gems_filter.apply_platform_filters(gems)
+
+        # rails and rack should use specific platform
+        assert gems[0]["platforms"] == ["x86_64-linux"]
+        assert gems[1]["platforms"] == ["x86_64-linux"]
+        # nokogiri should be ruby-only since it's not in the packages list
+        assert gems[2]["platforms"] == ["ruby"]
