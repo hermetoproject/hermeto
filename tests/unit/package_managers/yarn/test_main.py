@@ -8,6 +8,7 @@ from unittest import mock
 import pytest
 import semver
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageManagerError, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
@@ -467,6 +468,7 @@ def test_fetch_yarn_source(
         mock.call(
             project,
             input_request.output_dir,
+            mode=Mode.STRICT,
         )
         for project in mock_project
     ]

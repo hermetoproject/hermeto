@@ -6,6 +6,7 @@ from textwrap import dedent
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
@@ -19,7 +20,7 @@ from hermeto.core.package_managers.bundler.parser import (
     parse_lockfile,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import get_repo_id, get_vcs_qualifiers
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
             package_dir=path_within_root,
             output_dir=request.output_dir,
             allow_binary=package.binary is not None,
+            mode=request.mode,
         )
         components.extend(_comps)
         git_paths.extend(_git_paths)
@@ -65,19 +67,20 @@ def _resolve_bundler_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
     allow_binary: bool = False,
+    mode: Mode = Mode.STRICT,
 ) -> tuple[list[Component], list[tuple[DepName, FSDepName]]]:
     """Process a request for a single bundler package."""
     deps_dir = output_dir.join_within_root("deps", "bundler")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
-    dependencies = parse_lockfile(package_dir, allow_binary)
+    dependencies = parse_lockfile(package_dir, allow_binary, mode=mode)
 
-    name, version = _get_main_package_name_and_version(package_dir, dependencies)
-    vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+    name, version = _get_main_package_name_and_version(package_dir, dependencies, mode=mode)
+    qualifiers = get_vcs_qualifiers(package_dir.root, mode=mode)
     main_package_purl = PackageURL(
         type="gem",
         name=name,
         version=version,
-        qualifiers={"vcs_url": vcs_url},
+        qualifiers=qualifiers,
         subpath=str(package_dir.subpath_from_root),
     )
 
@@ -101,6 +104,7 @@ def _resolve_bundler_package(
 def _get_main_package_name_and_version(
     package_dir: RootedPath,
     dependencies: ParseResult,
+    mode: Mode = Mode.STRICT,
 ) -> tuple[str, str | None]:
     """
     Get main package name and version.
@@ -114,7 +118,19 @@ def _get_main_package_name_and_version(
 
     # fallback to origin remote
     try:
-        name = _get_repo_name_from_origin_remote(package_dir)
+        name = _get_repo_name_from_origin_remote(package_dir, mode=mode)
+        if name is None:
+            raise PackageRejected(
+                reason=(
+                    "Failed to infer package name from origin remote because the source is not a git repository "
+                    "and the Gemfile.lock does not specify a main package"
+                ),
+                solution=(
+                    f"Please specify package name and version in a way that {APP_NAME} understands,\n"
+                    f"or make sure that the directory {APP_NAME} is processing is a git repository with\n"
+                    f"an 'origin' remote, in which case {APP_NAME} will infer the package name from the remote URL."
+                ),
+            )
     # if the git repository does not have an origin remote
     except UnsupportedFeature:
         raise PackageRejected(
@@ -151,9 +167,14 @@ def _get_name_and_version_from_lockfile(dependencies: ParseResult) -> tuple[str,
     return None
 
 
-def _get_repo_name_from_origin_remote(package_dir: RootedPath) -> str:
+def _get_repo_name_from_origin_remote(
+    package_dir: RootedPath, mode: Mode = Mode.STRICT
+) -> str | None:
     """Extract repository name from git origin remote in the package directory."""
-    repo_path = get_repo_id(package_dir.root).parsed_origin_url.path
+    repo_id = get_repo_id(package_dir.root, mode=mode)
+    if repo_id is None:
+        return None
+    repo_path = repo_id.parsed_origin_url.path
     repo_name = Path(repo_path).stem
 
     resolved_path = Path(repo_name).joinpath(package_dir.subpath_from_root)

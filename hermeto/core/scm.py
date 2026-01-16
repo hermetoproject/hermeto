@@ -13,6 +13,7 @@ import git
 from git.exc import BadName, GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     GitError,
@@ -182,17 +183,44 @@ class RepoID(NamedTuple):
         return f"git+{self.origin_url}@{self.commit_id}"
 
 
-def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID:
+def get_vcs_qualifiers(
+    repo: StrPath | GitRepo | git.Repo,
+    mode: Mode = Mode.STRICT,
+) -> dict[str, str]:
+    """Build qualifiers dict with vcs_url if path is a git repository.
+
+    STRICT mode raises NotAGitRepo (from `get_repo_id`); PERMISSIVE
+    returns an empty dict.
+
+    Returns:
+        Dict with 'vcs_url' key if git repo found, empty dict otherwise.
+    """
+    if repo_id := get_repo_id(repo, mode=mode):
+        return {"vcs_url": repo_id.as_vcs_url_qualifier()}
+    return {}
+
+
+def get_repo_id(
+    repo: StrPath | GitRepo | git.Repo,
+    mode: Mode = Mode.STRICT,
+) -> RepoID | None:
     """Get the RepoID for a git.Repo object or a git directory.
 
     If the remote url is an scp-style [user@]host:path, convert it into ssh://[user@]host/path.
 
+    In permissive mode, returns None for non-git repositories instead of raising NotAGitRepo.
+
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
     """
-    if isinstance(repo, (str, os.PathLike)):
-        repo = GitRepo(repo, search_parent_directories=True)
-    elif isinstance(repo, git.Repo) and not isinstance(repo, GitRepo):
-        repo = GitRepo(repo.working_dir)
+    try:
+        if isinstance(repo, (str, os.PathLike)):
+            repo = GitRepo(repo, search_parent_directories=True)
+        elif isinstance(repo, git.Repo) and not isinstance(repo, GitRepo):
+            repo = GitRepo(repo.working_dir)
+    except NotAGitRepo:
+        if mode == Mode.PERMISSIVE:
+            return None
+        raise
 
     try:
         origin = repo.remote("origin")

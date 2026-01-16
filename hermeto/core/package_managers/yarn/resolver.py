@@ -23,6 +23,7 @@ from packageurl import PackageURL
 from semver import Version
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     PackageManagerError,
     PackageRejected,
@@ -43,7 +44,7 @@ from hermeto.core.package_managers.yarn.locators import (
 from hermeto.core.package_managers.yarn.project import Project
 from hermeto.core.package_managers.yarn.utils import extract_yarn_version_from_env, run_yarn_cmd
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_id
+from hermeto.core.scm import get_vcs_qualifiers
 
 if TYPE_CHECKING:
     # Import conditionally so that we don't have to introduce a runtime dependency on
@@ -176,7 +177,7 @@ def resolve_packages(source_dir: RootedPath) -> list[Package]:
 
 
 def create_components(
-    packages: list[Package], project: Project, output_dir: RootedPath
+    packages: list[Package], project: Project, output_dir: RootedPath, mode: Mode = Mode.STRICT
 ) -> list[Component]:
     """Create SBOM components for all the packages parsed from the 'yarn info' output."""
     package_mapping: dict[Locator, Package] = {}
@@ -190,7 +191,9 @@ def create_components(
         else:
             package_mapping[package.parsed_locator] = package
 
-    component_resolver = _ComponentResolver(package_mapping, patch_locators, project, output_dir)
+    component_resolver = _ComponentResolver(
+        package_mapping, patch_locators, project, output_dir, mode=mode
+    )
     return [component_resolver.get_component(package) for package in package_mapping.values()]
 
 
@@ -221,10 +224,12 @@ class _ComponentResolver:
         patch_locators: list[PatchLocator],
         project: Project,
         output_dir: RootedPath,
+        mode: Mode = Mode.STRICT,
     ) -> None:
         self._project = project
         self._output_dir = output_dir
         self._package_mapping = package_mapping
+        self._mode = mode
         self._pedigree_mapping = self._get_pedigree_mapping(patch_locators)
 
     def _get_pedigree_mapping(self, patch_locators: list[PatchLocator]) -> dict[Locator, Pedigree]:
@@ -284,8 +289,7 @@ class _ComponentResolver:
             pedigree=self._pedigree_mapping.get(package.parsed_locator),
         )
 
-    @staticmethod
-    def _generate_purl_for_package(package: _ResolvedPackage, project: Project) -> str:
+    def _generate_purl_for_package(self, package: _ResolvedPackage, project: Project) -> str:
         """Create a purl for a package based on its protocol.
 
         :param package: the resolved package to be used in the purl generation.
@@ -310,9 +314,7 @@ class _ComponentResolver:
             project_path = project.source_dir
             workspace_path = package.locator.relpath
 
-            repo = get_repo_id(project_path.root)
-
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            qualifiers.update(get_vcs_qualifiers(project_path.root, mode=self._mode))
             subpath = str(workspace_path)
 
         elif isinstance(package.locator, (FileLocator, LinkLocator, PortalLocator)):
@@ -322,8 +324,7 @@ class _ComponentResolver:
 
             normalized = project_path.join_within_root(workspace_path, package_path)
 
-            repo = get_repo_id(project_path.root)
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            qualifiers.update(get_vcs_qualifiers(project_path.root, mode=self._mode))
             subpath = str(normalized.subpath_from_root)
 
         elif isinstance(package.locator, PatchLocator):
@@ -479,8 +480,15 @@ class _ComponentResolver:
             normalized = pp_join(workspace_path, patch_path)
 
         subpath_from_root = str(normalized.subpath_from_root)
-        repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
-        return f"{repo_url}#{subpath_from_root}"
+
+        vcs_qualifiers = get_vcs_qualifiers(pp_root, mode=self._mode)
+        if vcs_url := vcs_qualifiers.get("vcs_url"):
+            retval = f"{vcs_url}#{subpath_from_root}"
+        else:
+            # Not a git repository or permissive mode - path only.
+            retval = f"#{subpath_from_root}"
+
+        return retval
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:
         """Return a PURL-style VCS URL qualifier with subpath for a builtin Patch."""
