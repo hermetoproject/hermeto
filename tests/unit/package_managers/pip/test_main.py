@@ -14,7 +14,7 @@ from git import Repo
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.sbom import Component, Property
@@ -1040,11 +1040,9 @@ def test_resolve_pip_invalid_req_file_path(
 ) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     invalid_path = Path("foo/bar.txt")
-    expected_error = (
-        f"The requirements file does not exist: {rooted_tmp_path.join_within_root(invalid_path)}"
-    )
+    expected_error = f"lockfile 'bar.txt' not found under '{rooted_tmp_path.path / 'foo'}'"
     requirement_files = [invalid_path]
-    with pytest.raises(PackageRejected, match=expected_error):
+    with pytest.raises(LockfileNotFound, match=expected_error):
         pip._resolve_pip(
             package_path=rooted_tmp_path,
             output_dir=rooted_tmp_path.join_within_root("output"),
@@ -1058,11 +1056,9 @@ def test_resolve_pip_invalid_bld_req_file_path(
 ) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     invalid_path = Path("foo/bar.txt")
-    expected_error = (
-        f"The requirements file does not exist: {rooted_tmp_path.join_within_root(invalid_path)}"
-    )
+    expected_error = f"lockfile 'bar.txt' not found under '{rooted_tmp_path.path / 'foo'}'"
     build_requirement_files = [invalid_path]
-    with pytest.raises(PackageRejected, match=expected_error):
+    with pytest.raises(LockfileNotFound, match=expected_error):
         pip._resolve_pip(
             package_path=rooted_tmp_path,
             output_dir=rooted_tmp_path.join_within_root("output"),
