@@ -646,6 +646,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 {
                     "name": "bar",
@@ -654,6 +655,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -670,6 +672,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": True,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -693,6 +696,7 @@ class TestPurlifier:
                     "bundled": True,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -716,6 +720,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": Path("path/to/foo/package-lock.json"),
+                    "external_refs": None,
                 },
             ],
             [
@@ -756,6 +761,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -765,6 +771,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "projectfiles": [
@@ -803,6 +810,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -812,6 +820,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "projectfiles": [
@@ -834,6 +843,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -843,6 +853,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "dependencies_to_download": {
@@ -968,6 +979,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -977,6 +989,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,  # correct since integrity is missing from dependencies but is included in packages section
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1038,6 +1051,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1047,6 +1061,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "baz",
@@ -1055,6 +1070,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1063,6 +1079,7 @@ def test_resolve_npm_validation(
                         "bundled": True,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1104,6 +1121,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1113,6 +1131,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1154,6 +1173,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1163,6 +1183,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1212,6 +1233,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1221,6 +1243,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1229,6 +1252,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1271,6 +1295,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1280,6 +1305,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1315,6 +1341,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1324,6 +1351,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1372,6 +1400,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1381,6 +1410,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     },
                     {
                         "name": "baz",
@@ -1389,6 +1419,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1397,6 +1428,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "eggs",
@@ -1405,6 +1437,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1638,7 +1671,7 @@ def test_get_npm_dependencies(
     mock_async_download_files: mock.Mock,
     rooted_tmp_path: RootedPath,
     deps_to_download: dict[str, dict[str, str | None]],
-    expected_download_subpaths: dict[str, str],
+    expected_download_subpaths: dict[str, RootedPath],
 ) -> None:
     def args_based_return_checksum(integrity: str) -> ChecksumInfo:
         if integrity == "sha512-YOLO1111==":
@@ -1763,7 +1796,11 @@ def test_update_package_lock_with_local_paths(
     expected_lockfile_data: dict[str, Any],
 ) -> None:
     for url, download_path in download_paths.items():
-        download_paths.update({url: rooted_tmp_path.join_within_root(download_path)})
+        download_paths.update(
+            {
+                url: rooted_tmp_path.join_within_root(download_path),
+            }
+        )
     package_lock = PackageLock(rooted_tmp_path, lockfile_data)
     _update_package_lock_with_local_paths(download_paths, package_lock)
     assert package_lock.lockfile_data == expected_lockfile_data

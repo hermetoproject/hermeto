@@ -11,6 +11,7 @@ from pydantic_settings import (
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
@@ -112,6 +113,22 @@ class RuntimeSettings(BaseModel, extra="forbid"):
     concurrency_limit: int = 5
 
 
+class NpmSettings(BaseModel, extra="forbid"):
+    """Npm settings."""
+
+    proxy_url: str | None = None
+    proxy_login: str | None = None
+    proxy_password: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_login_and_password_both_set(self) -> Self:
+        if self.proxy_login is not None and self.proxy_password is None:
+            raise ValueError("Proxy password must be set when proxy login is set")
+        if self.proxy_login is None and self.proxy_password is not None:
+            raise ValueError("Proxy login must be set when proxy password is set")
+        return self
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
@@ -126,6 +143,7 @@ class Config(BaseSettings):
 
     pip: PipSettings = PipSettings()
     yarn: YarnSettings = YarnSettings()
+    npm: NpmSettings = NpmSettings()
     gomod: GomodSettings = GomodSettings()
     http: HttpSettings = HttpSettings()
     runtime: RuntimeSettings = RuntimeSettings()
