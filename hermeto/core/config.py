@@ -118,6 +118,14 @@ class ProxySettings(BaseModel, extra="forbid"):
     fallback_to_sources: bool = False
 
 
+class NpmSettings(BaseModel, extra="forbid"):
+    """Npm settings."""
+
+    proxy_url: str | None = None
+    proxy_login: str | None = None
+    proxy_password: str | None = None
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
@@ -132,6 +140,7 @@ class Config(BaseSettings):
 
     pip: PipSettings = PipSettings()
     yarn: YarnSettings = YarnSettings()
+    npm: NpmSettings = NpmSettings()
     gomod: GomodSettings = GomodSettings()
     http: HttpSettings = HttpSettings()
     runtime: RuntimeSettings = RuntimeSettings()

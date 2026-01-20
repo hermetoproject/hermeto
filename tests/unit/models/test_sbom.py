@@ -583,10 +583,7 @@ class TestSbom:
 
         spdx_sbom = sbom.to_spdx("NOASSERTION")
 
-        # mypy insists that it is impossible to check if something is a part of None
-        # however in this particular case it will never be None:
-        # TODO: remove this comment and the pragma below once SPDXID is correctly typed.
-        the_only_package = [p for p in spdx_sbom.packages if "DocumentRoot" not in p.SPDXID][0]  # type: ignore
+        the_only_package = [p for p in spdx_sbom.packages if "DocumentRoot" not in p.SPDXID][0]
 
         assert the_only_package.sourceInfo == expected_package_source_info
 
