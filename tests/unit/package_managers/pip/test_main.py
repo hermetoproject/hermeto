@@ -250,7 +250,7 @@ def test_get_pip_metadata_from_remote_origin(
         with pytest.raises(PackageRejected) as exc_info:
             pip._get_pip_metadata(rooted_tmp_path_repo)
 
-        assert str(exc_info.value) == "Unable to infer package name from origin URL"
+        assert "Unable to infer package name" in str(exc_info.value)
 
 
 class TestDownload:
@@ -1583,6 +1583,47 @@ def test_generate_purl_main_package(
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
 
     assert purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    "subpath, expected_purl",
+    [
+        (
+            ".",
+            "pkg:pypi/foo@1.0.0",
+        ),
+        (
+            "path/to/package",
+            "pkg:pypi/foo@1.0.0#path/to/package",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+def test_generate_purl_main_package_without_vcs_url(
+    mock_handle_get_repo_id: mock.Mock,
+    subpath: Path,
+    expected_purl: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.return_value = None
+    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+
+    purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
+
+    assert purl == expected_purl
+
+
+@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+def test_infer_package_name_raises_without_git_repo(
+    mock_handle_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.return_value = None
+
+    with pytest.raises(PackageRejected) as exc_info:
+        pip._infer_package_name_from_origin_url(rooted_tmp_path)
+
+    assert "Unable to infer package name from origin URL" in str(exc_info.value)
 
 
 @mock.patch("hermeto.core.scm.GitRepo")

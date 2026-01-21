@@ -7,6 +7,7 @@ from git.repo import Repo
 from hermeto.core.errors import PackageRejected
 from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
+    _get_repo_name_from_origin_remote,
     _prepare_for_hermetic_build,
     _resolve_bundler_package,
 )
@@ -230,3 +231,14 @@ def test_prepare_for_hermetic_build_ignores_a_directory_in_place_of_config(
     result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
 
     assert result.template == expected_config_contents
+
+
+@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
+def test_get_repo_name_raises_without_git_repo(
+    mock_handle_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.return_value = None
+
+    with pytest.raises(PackageRejected, match="Unable to infer package name from origin URL"):
+        _get_repo_name_from_origin_remote(rooted_tmp_path)

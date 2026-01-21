@@ -72,12 +72,14 @@ def _resolve_bundler_package(
     dependencies = parse_lockfile(package_dir, binary_filters)
 
     name, version = _get_main_package_name_and_version(package_dir, dependencies)
-    vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+    repo_id = get_repo_id(package_dir.root)
+    vcs_url = repo_id.as_vcs_url_qualifier() if repo_id else None
+    qualifiers = {"vcs_url": vcs_url} if vcs_url else None
     main_package_purl = PackageURL(
         type="gem",
         name=name,
         version=version,
-        qualifiers={"vcs_url": vcs_url},
+        qualifiers=qualifiers,
         subpath=str(package_dir.subpath_from_root),
     )
 
@@ -153,9 +155,17 @@ def _get_name_and_version_from_lockfile(dependencies: ParseResult) -> tuple[str,
 
 def _get_repo_name_from_origin_remote(package_dir: RootedPath) -> str:
     """Extract repository name from git origin remote in the package directory."""
-    repo_path = get_repo_id(package_dir.root).parsed_origin_url.path
-    repo_name = Path(repo_path).stem
+    repo_id = get_repo_id(package_dir.root)
+    if repo_id is None:
+        raise PackageRejected(
+            reason="Unable to infer package name from origin URL",
+            solution=(
+                "Provide valid metadata in the package files or ensure"
+                "the package files are in a git repository whose 'origin' remote has a valid URL."
+            ),
+        )
 
+    repo_name = Path(repo_id.parsed_origin_url.path).stem
     resolved_path = Path(repo_name).joinpath(package_dir.subpath_from_root)
     return str(resolved_path)
 

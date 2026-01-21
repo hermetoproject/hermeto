@@ -20,7 +20,7 @@ from hermeto.core.errors import (
     PackageManagerError,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Flag, Mode, Request
+from hermeto.core.models.input import Flag, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
@@ -1609,7 +1609,7 @@ def test_vendor_changed(
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir, Mode.STRICT) == bool(expected_change)
+    assert _vendor_changed(app_dir) == bool(expected_change)
     if expected_change:
         assert expected_change.format(subpath=subpath) in caplog.text
 
