@@ -13,6 +13,8 @@ import git
 from git.exc import BadName, GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
 from hermeto import APP_NAME
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     GitError,
@@ -182,17 +184,43 @@ class RepoID(NamedTuple):
         return f"git+{self.origin_url}@{self.commit_id}"
 
 
-def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID:
+def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID | None:
     """Get the RepoID for a git.Repo object or a git directory.
 
     If the remote url is an scp-style [user@]host:path, convert it into ssh://[user@]host/path.
 
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
+
+    Primary usage patterns:
+
+        For retrieving e.g. `vcs_url`:
+
+            repo_id = get_repo_id(package_dir.root)
+            vcs_url = repo_id.as_vcs_url_qualifier() if repo_id else None
+            return {"vcs_url": vcs_url} if vcs_url else None
+
+        For retrieving e.g. `repo_name`:
+
+            repo_id = get_repo_id(package_dir.root)
+            if repo_id is not None:
+                repo_name = Path(repo_id.parsed_origin_url.path).stem
+                resolved_name = Path(repo_name).joinpath(package_dir.subpath_from_root)
+            # etc.
+
+    :raises NotAGitRepo: (caught from from GitRepo constructor) if not a git repo and mode is STRICT
+    :raises UnsupportedFeature: on catching GitRemoteNotFoundError from repo.remote()
+
     """
-    if isinstance(repo, (str, os.PathLike)):
-        repo = GitRepo(repo, search_parent_directories=True)
-    elif isinstance(repo, git.Repo) and not isinstance(repo, GitRepo):
-        repo = GitRepo(repo.working_dir)
+    try:
+        if isinstance(repo, (str, os.PathLike)):
+            repo = GitRepo(repo, search_parent_directories=True)
+        elif isinstance(repo, git.Repo) and not isinstance(repo, GitRepo):
+            repo = GitRepo(repo.working_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.STRICT:
+            raise
+        log.warning("Not a git repo, omitting repository info (permissive mode)")
+        return None
 
     try:
         origin = repo.remote("origin")

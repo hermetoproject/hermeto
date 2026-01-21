@@ -1100,3 +1100,36 @@ def test_get_pedigree_with_unsupported_locators(
 
     with pytest.raises(UnsupportedFeature):
         _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+def test_create_components_without_vcs_url(
+    mock_get_repo_id: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that workspace packages omit vcs_url when repo_id is None."""
+    mock_get_repo_id.return_value = None
+
+    project_dir = RootedPath(tmp_path / "project")
+
+    mocked_package = MockedPackage(
+        Package(
+            raw_locator="armaments@workspace:./book/armaments",
+            version=None,
+            checksum=None,
+            cache_path=None,
+        ),
+        is_hardlink=False,
+        packjson_path="book/armaments/package.json",
+        packjson_content=json.dumps({"name": "armaments", "version": "42.0.0"}),
+    )
+
+    output_dir = RootedPath(tmp_path / "output")
+    mocked_package = mocked_package.resolve_cache_path(output_dir)
+    mock_package_json(mocked_package, project_dir)
+
+    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+
+    assert len(components) == 1
+    # vcs_url should not be present when repo_id is None
+    assert components[0].purl == "pkg:npm/armaments@42.0.0#book/armaments"

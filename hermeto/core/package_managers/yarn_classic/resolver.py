@@ -65,6 +65,12 @@ class _UrlMixin:
 class _PathMixin:
     path: RootedPath
 
+    def _get_vcs_qualifiers(self) -> dict[str, str] | None:
+        """Return vcs_url qualifiers dict if repo ID is available, else None."""
+        repo_id = get_repo_id(self.path.root)
+        vcs_url = repo_id.as_vcs_url_qualifier() if repo_id else None
+        return {"vcs_url": vcs_url} if vcs_url else None
+
 
 @dataclass
 class RegistryPackage(_BasePackage, _UrlMixin):
@@ -131,13 +137,11 @@ class FilePackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         return PackageURL(
             type="npm",
             name=self.name,
             version=self.version,
-            qualifiers=qualifiers,
+            qualifiers=self._get_vcs_qualifiers(),
             subpath=str(self.path.subpath_from_root),
         ).to_string()
 
@@ -149,13 +153,11 @@ class WorkspacePackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         return PackageURL(
             type="npm",
             name=self.name,
             version=self.version,
-            qualifiers=qualifiers,
+            qualifiers=self._get_vcs_qualifiers(),
             subpath=str(self.path.subpath_from_root),
         ).to_string()
 
@@ -167,13 +169,11 @@ class LinkPackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         return PackageURL(
             type="npm",
             name=self.name,
             version=self.version,
-            qualifiers=qualifiers,
+            qualifiers=self._get_vcs_qualifiers(),
             subpath=str(self.path.subpath_from_root),
         ).to_string()
 

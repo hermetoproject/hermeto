@@ -129,8 +129,9 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
     type = "pypi"
     name = package["name"]
     version = package["version"]
-    url = get_repo_id(package_path.root).as_vcs_url_qualifier()
-    qualifiers = {"vcs_url": url}
+    repo_id = get_repo_id(package_path.root)
+    vcs_url = repo_id.as_vcs_url_qualifier() if repo_id else None
+    qualifiers = {"vcs_url": vcs_url} if vcs_url else None
     if package_path.subpath_from_root != Path("."):
         subpath = package_path.subpath_from_root.as_posix()
     else:
@@ -182,11 +183,20 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
 
 
 def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
+    reason_str = "Unable to infer package name from origin URL"
     try:
         repo_id = get_repo_id(package_dir.root)
+        if repo_id is None:
+            raise PackageRejected(
+                reason=reason_str,
+                solution=(
+                    "Provide valid metadata in the package files or ensure"
+                    "the package files are in a git repository whose 'origin' remote has a valid URL."
+                ),
+            )
     except UnsupportedFeature:
         raise PackageRejected(
-            reason="Unable to infer package name from origin URL",
+            reason=reason_str,
             solution=(
                 "Provide valid metadata in the package files or ensure"
                 "the git repository has an 'origin' remote with a valid URL."
