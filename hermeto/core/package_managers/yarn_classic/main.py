@@ -36,16 +36,6 @@ YARN_NETWORK_TIMEOUT_MILLISECONDS = 600000
 _yarn_classic_pattern = "yarn lockfile v1"  # See [yarn_classic_trait].
 
 
-class MissingLockfile(PackageRejected):
-    """Indicate that a lock file is missing."""
-
-    def __init__(self) -> None:
-        """Initialize a Missing Lockfile error."""
-        reason = "Yarn lockfile 'yarn.lock' missing, refusing to continue"
-        solution = "Make sure your repository has a Yarn lockfile (i.e. yarn.lock) checked in"
-        super().__init__(reason, solution=solution)
-
-
 class NotV1Lockfile(PackageRejected):
     """Indicate that a lockfile is of wrong tyrpoe."""
 
