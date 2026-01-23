@@ -1506,44 +1506,9 @@ def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
     modules_txt.path.parent.mkdir(parents=True)
     modules_txt.path.write_text(get_mocked_data(data_dir, "vendored/modules.txt"))
     expect_modules = {
-        ParsedModule(
-            path="github.com/Azure/go-ansiterm", version="v0.0.0-20210617225240-d185dfc1b5a1"
-        ),
-        ParsedModule(path="github.com/Masterminds/semver", version="v1.4.2"),
-        ParsedModule(path="github.com/Microsoft/go-winio", version="v0.6.0"),
-        ParsedModule(
-            path="github.com/cachito-testing/gomod-pandemonium/terminaltor",
-            version="v0.0.0",
-            replace=ParsedModule(path="./terminaltor"),
-        ),
-        ParsedModule(
-            path="github.com/cachito-testing/gomod-pandemonium/weird",
-            version="v0.0.0",
-            replace=ParsedModule(path="./weird"),
-        ),
-        ParsedModule(path="github.com/go-logr/logr", version="v1.2.3"),
-        ParsedModule(
-            path="github.com/go-task/slim-sprig", version="v0.0.0-20230315185526-52ccab3ef572"
-        ),
-        ParsedModule(path="github.com/google/go-cmp", version="v0.5.9"),
-        ParsedModule(path="github.com/google/pprof", version="v0.0.0-20210407192527-94a9f03dee38"),
-        ParsedModule(path="github.com/moby/term", version="v0.0.0-20221205130635-1aeaba878587"),
-        ParsedModule(path="github.com/onsi/ginkgo/v2", version="v2.9.2"),
-        ParsedModule(path="github.com/onsi/gomega", version="v1.27.4"),
-        ParsedModule(path="github.com/op/go-logging", version="v0.0.0-20160315200505-970db520ece7"),
-        ParsedModule(path="github.com/pkg/errors", version="v0.8.1"),
-        ParsedModule(
-            path="github.com/release-engineering/retrodep/v2",
-            version="v2.1.0",
-            replace=ParsedModule(path="github.com/cachito-testing/retrodep/v2", version="v2.1.1"),
-        ),
-        ParsedModule(path="golang.org/x/mod", version="v0.9.0"),
-        ParsedModule(path="golang.org/x/net", version="v0.8.0"),
-        ParsedModule(path="golang.org/x/sys", version="v0.6.0"),
-        ParsedModule(path="golang.org/x/text", version="v0.8.0"),
-        ParsedModule(path="golang.org/x/tools", version="v0.7.0"),
-        ParsedModule(path="gopkg.in/yaml.v2", version="v2.2.2"),
-        ParsedModule(path="gopkg.in/yaml.v3", version="v3.0.1"),
+        ParsedModule(path="golang.org/x/text", version="v0.0.0-20170915032832-14c0d48ead0c"),
+        ParsedModule(path="rsc.io/quote", version="v1.5.2"),
+        ParsedModule(path="rsc.io/sampler", version="v1.3.0"),
     }
     assert set(_parse_vendor(rooted_tmp_path)) == expect_modules
 

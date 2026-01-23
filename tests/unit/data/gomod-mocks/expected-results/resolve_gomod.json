@@ -1,144 +1,26 @@
 {
   "main_module": {
-    "path": "github.com/cachito-testing/gomod-pandemonium",
+    "path": "github.com/hermetoproject/integration-tests",
     "version": "v0.1.0",
     "main": true,
     "replace": null
   },
   "modules": [
     {
-      "path": "github.com/Masterminds/semver",
-      "version": "v1.4.2",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "golang.org/x/sys",
-      "version": "v0.6.0",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/moby/term",
-      "version": "v0.0.0-20221205130635-1aeaba878587",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
-      "version": "v0.0.0",
-      "main": false,
-      "replace": {
-        "path": "./terminaltor",
-        "version": null,
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "path": "github.com/op/go-logging",
-      "version": "v0.0.0-20160315200505-970db520ece7",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/pkg/errors",
-      "version": "v0.8.1",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "gopkg.in/yaml.v2",
-      "version": "v2.2.2",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/release-engineering/retrodep/v2",
-      "version": "v2.1.0",
-      "main": false,
-      "replace": {
-        "path": "github.com/cachito-testing/retrodep/v2",
-        "version": "v2.1.1",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "path": "golang.org/x/tools",
-      "version": "v0.7.0",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/go-logr/logr",
-      "version": "v1.2.3",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/google/go-cmp",
-      "version": "v0.5.9",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/onsi/ginkgo/v2",
-      "version": "v2.9.2",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "golang.org/x/net",
-      "version": "v0.8.0",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/onsi/gomega",
-      "version": "v1.27.4",
-      "main": false,
-      "replace": null
-    },
-    {
       "path": "golang.org/x/text",
-      "version": "v0.8.0",
+      "version": "v0.0.0-20170915032832-14c0d48ead0c",
       "main": false,
       "replace": null
     },
     {
-      "path": "gopkg.in/yaml.v3",
-      "version": "v3.0.1",
+      "path": "rsc.io/sampler",
+      "version": "v1.3.0",
       "main": false,
       "replace": null
     },
     {
-      "path": "github.com/Microsoft/go-winio",
-      "version": "v0.6.0",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/Azure/go-ansiterm",
-      "version": "v0.0.0-20210617225240-d185dfc1b5a1",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/go-task/slim-sprig",
-      "version": "v0.0.0-20230315185526-52ccab3ef572",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/google/pprof",
-      "version": "v0.0.0-20210407192527-94a9f03dee38",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "golang.org/x/mod",
-      "version": "v0.9.0",
+      "path": "rsc.io/quote",
+      "version": "v1.5.2",
       "main": false,
       "replace": null
     }
@@ -215,7 +97,12 @@
       "module": null
     },
     {
-      "import_path": "internal/runtime/exithook",
+      "import_path": "internal/runtime/math",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/strconv",
       "standard": true,
       "module": null
     },
@@ -225,17 +112,52 @@
       "module": null
     },
     {
+      "import_path": "internal/runtime/cgroup",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/exithook",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/gc",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/asan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/msan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/race",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/sys",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/maps",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "internal/stringslite",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "runtime/internal/math",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "runtime/internal/sys",
+      "import_path": "internal/trace/tracev2",
       "standard": true,
       "module": null
     },
@@ -255,17 +177,27 @@
       "module": null
     },
     {
-      "import_path": "cmp",
+      "import_path": "sync/atomic",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "internal/itoa",
+      "import_path": "internal/sync",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "internal/race",
+      "import_path": "internal/synctest",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "sync",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "io",
       "standard": true,
       "module": null
     },
@@ -280,7 +212,7 @@
       "module": null
     },
     {
-      "import_path": "math",
+      "import_path": "unicode",
       "standard": true,
       "module": null
     },
@@ -290,22 +222,27 @@
       "module": null
     },
     {
+      "import_path": "bytes",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "cmp",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/itoa",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "math",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "strconv",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "sync/atomic",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "sync",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "unicode",
       "standard": true,
       "module": null
     },
@@ -321,11 +258,6 @@
     },
     {
       "import_path": "internal/fmtsort",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "io",
       "standard": true,
       "module": null
     },
@@ -346,16 +278,6 @@
     },
     {
       "import_path": "internal/godebug",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/asan",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/msan",
       "standard": true,
       "module": null
     },
@@ -410,19 +332,19 @@
       "module": null
     },
     {
-      "import_path": "bytes",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/binary",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "sort",
       "standard": true,
       "module": null
+    },
+    {
+      "import_path": "golang.org/x/text/internal/tag",
+      "standard": false,
+      "module": {
+        "path": "golang.org/x/text",
+        "version": "v0.0.0-20170915032832-14c0d48ead0c",
+        "main": false,
+        "replace": null
+      }
     },
     {
       "import_path": "strings",
@@ -430,695 +352,40 @@
       "module": null
     },
     {
-      "import_path": "golang.org/x/sys/unix",
+      "import_path": "golang.org/x/text/language",
       "standard": false,
       "module": {
-        "path": "golang.org/x/sys",
-        "version": "v0.6.0",
+        "path": "golang.org/x/text",
+        "version": "v0.0.0-20170915032832-14c0d48ead0c",
         "main": false,
         "replace": null
       }
     },
     {
-      "import_path": "github.com/moby/term",
+      "import_path": "rsc.io/sampler",
       "standard": false,
       "module": {
-        "path": "github.com/moby/term",
-        "version": "v0.0.0-20221205130635-1aeaba878587",
+        "path": "rsc.io/sampler",
+        "version": "v1.3.0",
         "main": false,
         "replace": null
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+      "import_path": "rsc.io/quote",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
-        "version": "v0.0.0",
-        "main": false,
-        "replace": {
-          "path": "./terminaltor",
-          "version": null,
-          "main": false,
-          "replace": null
-        }
-      }
-    },
-    {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/where-was-i-built",
-      "standard": false,
-      "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium",
-        "version": null,
-        "main": true,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "bufio",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "hash",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/alias",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/subtle",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/cipher",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/boring/sig",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/boring",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/sha256",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/hex",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/base64",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "unicode/utf16",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/json",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/xml",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "regexp/syntax",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "regexp",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "github.com/Masterminds/semver",
-      "standard": false,
-      "module": {
-        "path": "github.com/Masterminds/semver",
-        "version": "v1.4.2",
+        "path": "rsc.io/quote",
+        "version": "v1.5.2",
         "main": false,
         "replace": null
       }
     },
     {
-      "import_path": "log/internal",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "log",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "context",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/net/dns/dnsmessage",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/nettrace",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/singleflight",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "math/rand/v2",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/concurrent",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/weak",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "unique",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/netip",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "runtime/cgo",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "log/syslog",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "path/filepath",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "github.com/op/go-logging",
+      "import_path": "github.com/hermetoproject/integration-tests",
       "standard": false,
       "module": {
-        "path": "github.com/op/go-logging",
-        "version": "v0.0.0-20160315200505-970db520ece7",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "github.com/pkg/errors",
-      "standard": false,
-      "module": {
-        "path": "github.com/pkg/errors",
-        "version": "v0.8.1",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "gopkg.in/yaml.v2",
-      "standard": false,
-      "module": {
-        "path": "gopkg.in/yaml.v2",
-        "version": "v2.2.2",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "github.com/release-engineering/retrodep/v2/retrodep/glide",
-      "standard": false,
-      "module": {
-        "path": "github.com/release-engineering/retrodep/v2",
-        "version": "v2.1.0",
-        "main": false,
-        "replace": {
-          "path": "github.com/cachito-testing/retrodep/v2",
-          "version": "v2.1.1",
-          "main": false,
-          "replace": null
-        }
-      }
-    },
-    {
-      "import_path": "go/token",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/scanner",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/ast",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/build/constraint",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/doc/comment",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/lazyregexp",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/doc",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/internal/typeparams",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/parser",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/buildcfg",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "os/exec",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/goroot",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/goversion",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/platform",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "go/build",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "golang.org/x/sys/execabs",
-      "standard": false,
-      "module": {
-        "path": "golang.org/x/sys",
-        "version": "v0.6.0",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "io/ioutil",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "compress/flate",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "hash/crc32",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "compress/gzip",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "container/list",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/randutil",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "math/rand",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "math/big",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/rand",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/aes",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/des",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/edwards25519/field",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/nistec/fiat",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "embed",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/nistec",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/ecdh",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/elliptic",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/bigmod",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/boring/bbig",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/sha512",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/asn1",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/cryptobyte/asn1",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/cryptobyte",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/ecdsa",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/edwards25519",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/ed25519",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/hmac",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/internal/alias",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/chacha20",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/internal/poly1305",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/sys/cpu",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/chacha20poly1305",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/hkdf",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/hpke",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/sha3",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/mlkem768",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/md5",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/rc4",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/rsa",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/sha1",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/dsa",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/x509/pkix",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "encoding/pem",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/url",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/x509",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/tls",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/text/transform",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/text/unicode/bidi",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/text/secure/bidirule",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/text/unicode/norm",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/net/idna",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/textproto",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/net/http/httpguts",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/net/http/httpproxy",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/net/http2/hpack",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "maps",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "mime",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "mime/quotedprintable",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "mime/multipart",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/http/httptrace",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/http/internal",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/http/internal/ascii",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "net/http",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "golang.org/x/tools/go/vcs",
-      "standard": false,
-      "module": {
-        "path": "golang.org/x/tools",
-        "version": "v0.7.0",
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "import_path": "github.com/release-engineering/retrodep/v2/retrodep",
-      "standard": false,
-      "module": {
-        "path": "github.com/release-engineering/retrodep/v2",
-        "version": "v2.1.0",
-        "main": false,
-        "replace": {
-          "path": "github.com/cachito-testing/retrodep/v2",
-          "version": "v2.1.1",
-          "main": false,
-          "replace": null
-        }
-      }
-    },
-    {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium",
-      "standard": false,
-      "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium",
+        "path": "github.com/hermetoproject/integration-tests",
         "version": null,
         "main": true,
         "replace": null
@@ -1127,124 +394,16 @@
   ],
   "modules_in_go_sum": [
     [
-      "github.com/Azure/go-ansiterm",
-      "v0.0.0-20210617225240-d185dfc1b5a1"
-    ],
-    [
-      "github.com/Masterminds/semver",
-      "v1.4.2"
-    ],
-    [
-      "github.com/Microsoft/go-winio",
-      "v0.6.0"
-    ],
-    [
-      "github.com/cachito-testing/retrodep/v2",
-      "v2.1.1"
-    ],
-    [
-      "github.com/creack/pty",
-      "v1.1.18"
-    ],
-    [
-      "github.com/davecgh/go-spew",
-      "v1.1.1"
-    ],
-    [
-      "github.com/go-logr/logr",
-      "v1.2.3"
-    ],
-    [
-      "github.com/go-task/slim-sprig",
-      "v0.0.0-20230315185526-52ccab3ef572"
-    ],
-    [
-      "github.com/golang/protobuf",
-      "v1.5.3"
-    ],
-    [
-      "github.com/google/go-cmp",
-      "v0.5.9"
-    ],
-    [
-      "github.com/google/pprof",
-      "v0.0.0-20210407192527-94a9f03dee38"
-    ],
-    [
-      "github.com/kr/pretty",
-      "v0.1.0"
-    ],
-    [
-      "github.com/kr/text",
-      "v0.1.0"
-    ],
-    [
-      "github.com/moby/term",
-      "v0.0.0-20221205130635-1aeaba878587"
-    ],
-    [
-      "github.com/onsi/ginkgo/v2",
-      "v2.9.2"
-    ],
-    [
-      "github.com/onsi/gomega",
-      "v1.27.4"
-    ],
-    [
-      "github.com/op/go-logging",
-      "v0.0.0-20160315200505-970db520ece7"
-    ],
-    [
-      "github.com/pkg/errors",
-      "v0.8.1"
-    ],
-    [
-      "github.com/pmezard/go-difflib",
-      "v1.0.0"
-    ],
-    [
-      "github.com/stretchr/testify",
-      "v1.6.1"
-    ],
-    [
-      "golang.org/x/mod",
-      "v0.9.0"
-    ],
-    [
-      "golang.org/x/net",
-      "v0.8.0"
-    ],
-    [
-      "golang.org/x/sync",
-      "v0.1.0"
-    ],
-    [
-      "golang.org/x/sys",
-      "v0.6.0"
-    ],
-    [
       "golang.org/x/text",
-      "v0.8.0"
+      "v0.0.0-20170915032832-14c0d48ead0c"
     ],
     [
-      "golang.org/x/tools",
-      "v0.7.0"
+      "rsc.io/quote",
+      "v1.5.2"
     ],
     [
-      "google.golang.org/protobuf",
-      "v1.28.0"
-    ],
-    [
-      "gopkg.in/check.v1",
-      "v1.0.0-20180628173108-788fd7840127"
-    ],
-    [
-      "gopkg.in/yaml.v2",
-      "v2.2.2"
-    ],
-    [
-      "gopkg.in/yaml.v3",
-      "v3.0.1"
+      "rsc.io/sampler",
+      "v1.3.0"
     ]
   ]
 }

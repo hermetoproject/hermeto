@@ -229,13 +229,13 @@
 	"GoModSum": "h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4="
 }
 {
-	"Path": "github.com/cachito-testing/retrodep/v2",
-	"Version": "v2.1.1",
-	"Info": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.zip",
-	"Dir": "{gomodcache_dir}/github.com/cachito-testing/retrodep/v2@v2.1.1",
-	"Sum": "h1:inziEuX1Zo/BJv1pgZ2tRPltfQVJaVpRmIlsomaKMb0=",
+	"Path": "github.com/release-engineering/retrodep/v2",
+	"Version": "v2.1.0",
+	"Info": "{gomodcache_dir}/cache/download/github.com/release-engineering/retrodep/v2/@v/v2.1.0.info",
+	"GoMod": "{gomodcache_dir}/cache/download/github.com/release-engineering/retrodep/v2/@v/v2.1.0.mod",
+	"Zip": "{gomodcache_dir}/cache/download/github.com/release-engineering/retrodep/v2/@v/v2.1.0.zip",
+	"Dir": "{gomodcache_dir}/github.com/release-engineering/retrodep/v2@v2.1.0",
+	"Sum": "h1:78WH08Z2X9jbHFmzSHcXPtIHzyhRP0br2Q4rBzCMtXk=",
 	"GoModSum": "h1:1ktnevkSAzwQww4E/ICy2dlIouSNdvozRVgq6Umkt/E="
 }
 {
