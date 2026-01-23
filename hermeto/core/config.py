@@ -103,6 +103,11 @@ class HttpSettings(BaseModel, extra="forbid"):
 class RuntimeSettings(BaseModel, extra="forbid"):
     """General runtime execution settings."""
 
+    # This is how an environment variable name should look like:
+    #   HERMETO_RUNTIME__CONCURRENCY_LIMIT
+    # Note single underscore after application name, then name of the section
+    # as it appears in Config class definition, then double underscore and
+    # field name after that.
     subprocess_timeout: int = 3600
     concurrency_limit: int = 5
 
