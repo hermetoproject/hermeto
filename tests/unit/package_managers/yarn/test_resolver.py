@@ -79,6 +79,17 @@ YARN_INFO_OUTPUTS = [
         },
     },
     {
+        "value": "ccto-wo-deps@patch:ccto-wo-deps@https%3A//github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+        "children": {
+            "Version": "1.0.0",
+            "Cache": {
+                "Checksum": "8/0b368057b2a14b3dee06b46bb461df65b143709e9fda4c5dd792357b0dbebbc6ae756b33c0ac89d20dea13ada05eed54c6668a277680f4ecfe588be658174658",
+                "Path": "{repo_dir}/.yarn/cache/ccto-wo-deps-patch-855821225b-0b368057b2.zip",
+                "Size": 1128,
+            },
+        },
+    },
+    {
         "value": "fsevents@patch:fsevents@npm%3A2.3.2#./my-patches/fsevents.patch::version=2.3.2&hash=cf0bf0&locator=berryscary%40workspace%3A.",
         "children": {
             "Version": "2.3.2",
@@ -151,6 +162,12 @@ EXPECT_PACKAGES = [
         version="2.0.0",
         checksum="b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d",
         cache_path="{repo_dir}/.yarn/cache/c2-wo-deps-2-https-4261b189d8-b194fd1f4a.zip",
+    ),
+    Package(
+        raw_locator="ccto-wo-deps@patch:ccto-wo-deps@https%3A//github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+        version="1.0.0",
+        checksum="0b368057b2a14b3dee06b46bb461df65b143709e9fda4c5dd792357b0dbebbc6ae756b33c0ac89d20dea13ada05eed54c6668a277680f4ecfe588be658174658",
+        cache_path="{repo_dir}/.yarn/cache/ccto-wo-deps-patch-855821225b-0b368057b2.zip",
     ),
     Package(
         raw_locator="fsevents@patch:fsevents@npm%3A2.3.2#./my-patches/fsevents.patch::version=2.3.2&hash=cf0bf0&locator=berryscary%40workspace%3A.",
