@@ -23,6 +23,7 @@ from hermeto.core.models.sbom import (
     SPDXRelation,
     SPDXSbom,
     Tool,
+    filter_exp_package_types,
     merge_component_properties,
 )
 
@@ -82,6 +83,55 @@ class TestComponent:
             Component(name="foo", purl="pkg:generic/foo", properties=input_properties).properties
             == expected_properties
         )
+
+
+class TestExperimentalFeatures:
+    @mock.patch("hermeto.core.models.sbom.get_args")
+    @pytest.mark.parametrize(
+        "package_manager_types, expected_experimental_types",
+        [
+            pytest.param(("bundler", "npm", "cargo"), set(), id="no_experimental_pm_types"),
+            pytest.param(
+                ("bundler", "x-foo", "npm", "x-bar", "cargo", "x-baz"),
+                {"foo", "bar", "baz"},
+                id="experimental_pm_types",
+            ),
+        ],
+    )
+    def test_filter_experimental_package_types_extraction(
+        self,
+        mock_get_args: mock.MagicMock,
+        package_manager_types: tuple[str, ...],
+        expected_experimental_types: set[str],
+    ) -> None:
+        mock_get_args.return_value = package_manager_types
+        filter_exp_package_types.cache_clear()
+        assert filter_exp_package_types() == expected_experimental_types
+
+    @pytest.mark.parametrize(
+        "package_manager_type, component_purl, expected_annotation_text",
+        [
+            ("foo", "pkg:foo/test@1.0.0", "hermeto:found_by:experimental_package_manager:foo"),
+            ("bar", "pkg:bar/test@1.0.0", "hermeto:found_by:experimental_package_manager:bar"),
+        ],
+    )
+    @mock.patch("hermeto.core.models.sbom.filter_exp_package_types")
+    def test_annotation_generated_for_experimental_pm_components(
+        self,
+        mock_filter: mock.MagicMock,
+        package_manager_type: str,
+        component_purl: str,
+        expected_annotation_text: str,
+    ) -> None:
+        mock_filter.return_value = {package_manager_type}
+
+        sbom = Sbom(components=[Component(name="test", purl=component_purl)])
+
+        assert len(sbom.annotations) == 1
+        assert sbom.annotations[0].text == expected_annotation_text
+
+        component = sbom.components[0]
+        assert sbom.annotations[0].subjects == [component.bom_ref]
 
 
 class TestSPDXPackage:

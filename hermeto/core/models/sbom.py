@@ -1,3 +1,4 @@
+import functools
 import hashlib
 import json
 import logging
@@ -8,7 +9,7 @@ from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal, Union, get_args
 from urllib.parse import urlparse
 
 import pydantic
@@ -16,6 +17,7 @@ from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.models.input import PackageManagerType
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
@@ -84,6 +86,14 @@ class Pedigree(pydantic.BaseModel):
 
 
 FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}")
+
+
+@functools.lru_cache
+def filter_exp_package_types() -> set[str]:
+    """Extract experimental PURL types from PackageManagerType."""
+    package_types = get_args(PackageManagerType)
+
+    return {pt.removeprefix("x-") for pt in package_types if pt.startswith("x-")}
 
 
 class Component(pydantic.BaseModel):
@@ -214,6 +224,35 @@ class Sbom(pydantic.BaseModel):
     def _unique_components(cls, components: list[Component]) -> list[Component]:
         """Sort and de-duplicate components."""
         return merge_component_properties(components)
+
+    @pydantic.model_validator(mode="after")
+    def _add_experimental_annotations(self) -> Self:
+        """Add document-level annotations for components produced by experimental package manager."""
+        subjects_by_experimental_pm = defaultdict(list)
+
+        for c in self.components:
+            try:
+                purl = PackageURL.from_string(c.purl)
+                if purl.type in filter_exp_package_types():
+                    subjects_by_experimental_pm[purl.type].append(c.update_bom_ref().bom_ref)
+            except ValueError as ex:
+                log.debug(
+                    "Failed to parse PURL during annotation creation: %s, exception: %s",
+                    c.purl,
+                    str(ex),
+                )
+                continue
+
+        for pm_type, bom_refs in subjects_by_experimental_pm.items():
+            annotation = Annotation(
+                subjects=bom_refs,
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text=f"{APP_NAME}:found_by:experimental_package_manager:{pm_type}",
+            )
+            self.annotations.append(annotation)
+
+        return self
 
     def to_cyclonedx(self) -> Self:
         """Return self, self is already the right type of Sbom."""
