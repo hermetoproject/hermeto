@@ -9,6 +9,7 @@ from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.package_distributions import (
     WheelsFilter,
     _parse_py_version,
+    _process_prefer_binary_mode,
     _sdist_preference,
     process_package_distributions,
 )
@@ -69,6 +70,81 @@ def test_sdist_sorting() -> None:
 
     sdists.sort(key=_sdist_preference)
     assert sdists == expect_order
+
+
+class TestProcessPreferBinaryMode:
+    """Tests for _process_prefer_binary_mode function."""
+
+    def test_returns_wheels_plus_best_sdist(self) -> None:
+        """Prefer-binary mode returns wheels and the best sdist together."""
+        wheel1 = mock_distribution_package_info(
+            name="pkg-1.0.0-cp312-cp312-manylinux_x86_64.whl",
+            version="1.0.0",
+            package_type="wheel",
+        )
+        wheel2 = mock_distribution_package_info(
+            name="pkg-1.0.0-py3-none-any.whl",
+            version="1.0.0",
+            package_type="wheel",
+        )
+        sdist_tar = mock_distribution_package_info(
+            name="pkg-1.0.0.tar.gz",
+            version="1.0.0",
+            package_type="sdist",
+        )
+        sdist_zip = mock_distribution_package_info(
+            name="pkg-1.0.0.zip",
+            version="1.0.0",
+            package_type="sdist",
+        )
+
+        result = _process_prefer_binary_mode(
+            sdists=[sdist_zip, sdist_tar],
+            wheels=[wheel1, wheel2],
+            name="pkg",
+            version="1.0.0",
+        )
+
+        assert len(result) == 3
+        assert result[0] == wheel1
+        assert result[1] == wheel2
+        assert result[2] == sdist_tar  # .tar.gz preferred over .zip
+
+    def test_returns_only_wheels_when_no_sdist(
+        self,
+    ) -> None:
+        """Wheel-only packages (no sdist on PyPI) return only wheels with debug log."""
+        wheel = mock_distribution_package_info(
+            name="pkg-1.0.0-py3-none-any.whl",
+            version="1.0.0",
+            package_type="wheel",
+        )
+
+        result = _process_prefer_binary_mode(
+            sdists=[],
+            wheels=[wheel],
+            name="pkg",
+            version="1.0.0",
+        )
+
+        assert result == [wheel]
+
+    def test_falls_back_to_sdist_when_no_wheels(self) -> None:
+        """No matching wheels falls back to sdist-only."""
+        sdist = mock_distribution_package_info(
+            name="pkg-1.0.0.tar.gz",
+            version="1.0.0",
+            package_type="sdist",
+        )
+
+        result = _process_prefer_binary_mode(
+            sdists=[sdist],
+            wheels=[],
+            name="pkg",
+            version="1.0.0",
+        )
+
+        assert result == [sdist]
 
 
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")

@@ -272,7 +272,23 @@ def _process_prefer_binary_mode(
     name: str,
     version: str,
 ) -> list[DistributionPackageInfo]:
-    return wheels if wheels else _process_no_binary_mode(sdists, name, version)
+    """Return wheels if available, otherwise fall back to sdist.
+
+    NOTE: Hotfix 2026-01-28 The current implementation *always* returns sdists
+    if found (Closes #1205). This violates "Platform Filtering for Binary
+    Artifacts" to wit
+
+    > In this mode, it will also prefetch a corresponding source distribution
+    > **if there is no binary available** to serve as a fallback.
+    """
+    if not wheels:
+        return _process_no_binary_mode(sdists, name, version)
+
+    if not sdists:
+        log.debug("No sdist available for %s==%s, returning only wheels", name, version)
+        return wheels
+
+    return wheels + [_find_the_best_sdist(sdists)]
 
 
 def _process_only_binary_mode(
