@@ -1096,8 +1096,8 @@ def test_resolve_pip(
 @pytest.mark.parametrize(
     "component_kind, url",
     (
-        ["vcs", f"git+https://github.com/cachito/mypkg.git@{'f' * 40}?egg=mypkg"],
-        ["url", "https://files.cachito.rocks/mypkg.tar.gz"],
+        ["vcs", f"git+https://github.com/hermeto/mypkg.git@{'f' * 40}?egg=mypkg"],
+        ["url", "https://files.hermeto.rocks/mypkg.tar.gz"],
     ),
 )
 def test_get_external_requirement_filepath(component_kind: str, url: str) -> None:

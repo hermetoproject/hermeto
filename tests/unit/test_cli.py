@@ -1055,12 +1055,12 @@ class TestMergeSboms:
         [
             [
                 "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
             ],
             [
                 "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
             ],
         ],
     )
@@ -1077,15 +1077,15 @@ class TestMergeSboms:
             pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod.bom.json",
                 ],
                 id="merge_our_own_cyclonedx",
             ),
             pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
                 ],
                 id="merge_our_own_cyclonedx_more",
             ),

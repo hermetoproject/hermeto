@@ -1064,10 +1064,10 @@ def test_create_packages_from_parsed_data() -> None:
             real_path="github.com/stretchr/testify",
         ),
         Module(
-            name="github.com/cachito-testing/retrodep/v2",
+            name="github.com/release-engineering/retrodep/v2",
             version="v2.0.0",
             original_name="github.com/containerbuildsystem/retrodep/v2",
-            real_path="github.com/cachito-testing/retrodep/v2",
+            real_path="github.com/release-engineering/retrodep/v2",
         ),
     ]
 
@@ -1124,10 +1124,10 @@ def test_create_packages_from_parsed_data() -> None:
         Package(
             relative_path="",
             module=Module(
-                name="github.com/cachito-testing/retrodep/v2",
+                name="github.com/release-engineering/retrodep/v2",
                 version="v2.0.0",
                 original_name="github.com/containerbuildsystem/retrodep/v2",
-                real_path="github.com/cachito-testing/retrodep/v2",
+                real_path="github.com/release-engineering/retrodep/v2",
             ),
         ),
         Package(
@@ -1880,18 +1880,18 @@ def test_fetch_gomod_source(
 @pytest.mark.parametrize(
     "input_url",
     (
-        "ssh://github.com/cachito-testing/gomod-pandemonium",
-        "ssh://username@github.com/cachito-testing/gomod-pandemonium",
-        "github.com:cachito-testing/gomod-pandemonium.git",
-        "username@github.com:cachito-testing/gomod-pandemonium.git/",
-        "https://github.com/cachito-testing/gomod-pandemonium",
-        "https://github.com/cachito-testing/gomod-pandemonium.git",
-        "https://github.com/cachito-testing/gomod-pandemonium.git/",
+        "ssh://github.com/hermetoproject/integration-tests",
+        "ssh://username@github.com/hermetoproject/integration-tests",
+        "github.com:hermetoproject/integration-tests.git",
+        "username@github.com:hermetoproject/integration-tests.git/",
+        "https://github.com/hermetoproject/integration-tests",
+        "https://github.com/hermetoproject/integration-tests.git",
+        "https://github.com/hermetoproject/integration-tests.git/",
     ),
 )
 @mock.patch("hermeto.core.scm.GitRepo")
 def test_get_repository_name(mock_git_repo: Any, input_url: str) -> None:
-    expected_url = "github.com/cachito-testing/gomod-pandemonium"
+    expected_url = "github.com/hermetoproject/integration-tests"
 
     mocked_repo = mock.Mock()
     mocked_repo.remote.return_value.url = input_url

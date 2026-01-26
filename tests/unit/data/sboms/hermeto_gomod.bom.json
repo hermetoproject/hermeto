@@ -35,9 +35,9 @@
       "type": "library"
     },
     {
-      "name": "github.com/akhmanova/cachito-gomod-test",
-      "purl": "pkg:golang/github.com/cachito-testing/cachito-gomod-test@v0.0.0-20200825151551-1827221d787c?type=module",
-      "version": "v0.0.0-20200825151551-1827221d787c",
+      "name": "github.com/hermetoproject/integration-tests/tree/gomod/without-deps",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/tree/gomod/without-deps@v0.0.0-20200925115855-a888f7261b9a?type=module",
+      "version": "v0.0.0-20200925115855-a888f7261b9a",
       "properties": [
         {
           "name": "hermeto:found_by",
@@ -47,9 +47,9 @@
       "type": "library"
     },
     {
-      "name": "github.com/akhmanova/cachito-gomod-test",
-      "purl": "pkg:golang/github.com/cachito-testing/cachito-gomod-test@v0.0.0-20200825151551-1827221d787c?type=package",
-      "version": "v0.0.0-20200825151551-1827221d787c",
+      "name": "github.com/hermetoproject/integration-tests/tree/gomod/without-deps",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/tree/gomod/without-deps@v0.0.0-20200925115855-a888f7261b9a?type=package",
+      "version": "v0.0.0-20200925115855-a888f7261b9a",
       "properties": [
         {
           "name": "hermeto:found_by",
