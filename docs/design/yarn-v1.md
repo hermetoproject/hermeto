@@ -34,7 +34,7 @@ already being used to install Yarn in the Hermeto Yarn v2+ implementation, so a 
 
 Corepack installs the latest known-good Yarn v1.x release by default if no other version is specified explicitly. It seems reasonable to always
 use the latest 1.x release for the prefetch, since 1.x is no longer under active development and we never previously allowed users to specify a specific
-Yarn version to process their request in Cachito. We could add more flexibility with a later enhancement if needed.
+Yarn version to process their request. We could add more flexibility with a later enhancement if needed.
 
 Corepack could be configured to ignore user project configuration and use the global Yarn 1.x default by specifying the following
 [environment variable](https://github.com/nodejs/corepack#environment-variables):
@@ -69,19 +69,17 @@ Yarn projects using the [Plug'n'Play (PnP)](https://classic.yarnpkg.com/lang/en/
 Any additional configuration settings in the repository via [.yarnrc](https://classic.yarnpkg.com/en/docs/yarnrc) or .npmrc
 files should be ignored (at least initially) for the prefetch by specifying [`--no-default-rc`](https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/cli/index.js#L73) for the yarn install command.
 
-We never previously honored user-defined settings with Cachito, but this can be investigated and implemented in Hermeto in a follow-up. At minimum, the
+We do not currently honor user-defined settings, but this can be investigated and implemented in Hermeto in a follow-up. At minimum, the
 limitation should be documented.
 
 ### SBOM Generation
 The Yarn 1.x CLI doesn't provide enough information to generate an SBOM, so the yarn.lock and package.json files will need to
-be parsed in order to gather the necessary data. The code used to process these files will need to be
-[imported from or inspired by Cachito](https://github.com/containerbuildsystem/cachito/blob/63b8ec0ea615d114ccfa0d08dc0bec49e60e6a75/cachito/workers/pkg_managers/yarn.py)
-and refactored/improved.
+be parsed in order to gather the necessary data. The code used to process these files will need to be refactored/improved.
 
 #### Key Points
- - The yarn.lock file can be parsed with [pyarn](https://github.com/containerbuildsystem/pyarn) like in cachito
- - Workspaces will need to be [processed separately](https://github.com/containerbuildsystem/cachito/blob/63b8ec0ea615d114ccfa0d08dc0bec49e60e6a75/cachito/workers/pkg_managers/yarn.py#L95) from package.json since they do not appear in the yarn.lock file
- - Dev dependencies can be [determined similiarly](https://github.com/containerbuildsystem/cachito/blob/63b8ec0ea615d114ccfa0d08dc0bec49e60e6a75/cachito/workers/pkg_managers/yarn.py#L140) to cachito
+ - The yarn.lock file can be parsed with [pyarn](https://github.com/containerbuildsystem/pyarn)
+ - Workspaces will need to be processed separately from package.json since they do not appear in the yarn.lock file
+ - Dev dependencies can be determined by checking if a dependency is listed in the `devDependencies` of any `package.json` file, or if it is a transitive dependency of a dev dependency
  - We will need to ensure that there are no collisions in the names of the archive files being added to the offline mirror
 
 #### PURL Examples
@@ -179,4 +177,3 @@ The user build can be configured to use the offline mirror by configuring the fo
  - Allowing user-specified settings during the prefetch via .yarnrc/.npmrc
 
 ## References
-Some of the implementation details in this design are inspired by and/or will be ported from the [Yarn 1.x implementation in Cachito](https://github.com/containerbuildsystem/cachito/blob/63b8ec0ea615d114ccfa0d08dc0bec49e60e6a75/cachito/workers/pkg_managers/yarn.py).

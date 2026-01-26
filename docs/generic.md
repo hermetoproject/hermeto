@@ -142,67 +142,35 @@ See the [Example](#example) below for a complete walkthrough of Hermeto usage.
 ### Example
 
 Generic fetcher is a package manager that can fetch arbitrary files. Let's build
-a sample container image that would be inconvenient to build hermetically
+a [basic generic project][] that would be inconvenient to build hermetically
 otherwise. This image will provide [OWASP Dependency check][] tool, which is available
-to install from GitHub releases page. Get the repo if you want to try for
-yourself
+to install from GitHub releases page.
+
+Get the repo if you want to try for yourself:
 
 ```shell
-git clone -b sample-app https://github.com/cachito-testing/cachi2-generic.git
+git clone https://github.com/hermetoproject/doc-examples.git --branch=generic-basic && cd doc-examples
 ```
 
 #### Pre-fetch dependencies
 
-In order to retrieve the archive with the tool, either a `artifacts.lock.yaml`
-needs to be in the repository, or a lockfile path needs to be supplied in the
-JSON input (either an absolute path or a path relative to the package `path`).
-You can find
-a sample lockfile below. It is identical to the one found in the
-[sample repository][].
-A lockfile for the generic fetcher must contain a `metadata` header and a list
-of artifacts, where each artifact is represented as a pair of URL and a checksum
-string in the format of `"algorithm:checksum"`. Optionally, you can also specify
-an output `filename` for the artifact. If not specified, it will be derived from
-the url.
+As mentioned above in
+[Specifying artifacts to fetch](#specifying-artifacts-to-fetch),
+Hermeto pre-fetches using the `fetch-deps` command.
 
-```yaml
----
-metadata:
-  version: "1.0"
-artifacts:
-  - download_url: "https://github.com/jeremylong/DependencyCheck/releases/download/v11.1.0/dependency-check-11.1.0-release.zip"
-    checksum: "sha256:c5b5b9e592682b700e17c28f489fe50644ef54370edeb2c53d18b70824de1e22"
-    filename: "dependency-check.zip"
-```
-
-As with other examples, the command to fetch dependencies is very similar. The
-default path is assumed to be `.`.
+Sources can be fetched with
 
 ```shell
-hermeto fetch-deps --source ./hermeto-generic --output ./hermeto-output generic
+hermeto fetch-deps generic
 ```
+
+The shorthand `generic` defaults `path` to `.`. You can pass a full JSON
+object if you need a custom source directory or lockfile path instead.
 
 #### Build the application image
 
-We'll use the `ibmjava:11-jdk` as base image because it already has java
-pre-installed. During the build, the downloaded release will be extracted and
-modified to have execute rights.
-
-```dockerfile
-FROM ibmjava:11-jdk
-
-WORKDIR /tmp
-
-
-# use jar to unzip file in order to avoid having to install more dependencies
-RUN jar -xvf hermeto-output/deps/generic/dependency-check.zip
-
-RUN chmod +x dependency-check/bin/dependency-check.sh
-
-ENTRYPOINT ["/tmp/dependency-check/bin/dependency-check.sh", "--version"]
-```
-
-We can then build the image as before while mounting the required Hermeto data.
+The repo already contains a `Containerfile` for this example. Build it while
+mounting the pre-fetched Hermeto output:
 
 ```shell
 podman build . \
@@ -211,6 +179,6 @@ podman build . \
   --tag sample-generic-app
 ```
 
+[basic generic project]: https://github.com/hermetoproject/doc-examples/tree/generic-basic
 [maven repository artifacts]: https://maven.apache.org/repositories/artifacts.html
 [OWASP Dependency check]: https://github.com/dependency-check/DependencyCheck
-[sample repository]: https://github.com/cachito-testing/cachi2-generic/tree/sample-app

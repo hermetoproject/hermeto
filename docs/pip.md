@@ -780,10 +780,8 @@ Let's build a [basic pip project][].
 Get the repo if you want to try for yourself
 
 ```shell
-git clone https://github.com/hermetoproject/doc-examples.git --branch=pip-basic
+git clone https://github.com/hermetoproject/doc-examples.git --branch=pip-basic && cd doc-examples
 ```
-
-then `cd` into the `doc-examples` directory.
 
 #### Pre-fetch dependencies
 
