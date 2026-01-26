@@ -24,6 +24,7 @@ from hermeto.core.models.sbom import (
     SPDXRelation,
     SPDXSbom,
     Tool,
+    create_backend_annotation,
     merge_component_properties,
 )
 
@@ -572,6 +573,18 @@ class TestSbom:
         # bar should NOT have the annotation (its bom-ref is NOT in subjects)
         bar_annotation_comments = [a.comment for a in bar_pkg.annotations]
         assert "hermeto:backend:npm" not in bar_annotation_comments
+
+    def test_create_backend_annotation_experimental(self, mock_spdx_now: str) -> None:
+        """Experimental backends (x- prefix) should produce a distinct annotation text."""
+        components = [Component(name="test", purl="pkg:foo/test@1.0.0", version="1.0.0")]
+        annotation = create_backend_annotation(components, "x-foo")
+        sbom = Sbom(annotations=[annotation], components=components)
+
+        spdx_sbom = sbom.to_spdx("NOASSERTION")
+        pkg = next(p for p in spdx_sbom.packages if p.name == "test")
+        annotation_comments = [a.comment for a in pkg.annotations]
+
+        assert f"{APP_NAME}:backend:experimental:x-foo" in annotation_comments
 
     @pytest.mark.parametrize(
         "sbom, expected_package_source_info",

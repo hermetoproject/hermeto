@@ -158,15 +158,21 @@ def create_backend_annotation(
 ) -> Annotation | None:
     """Create an annotation that tags components with the backend that fetched them.
 
+    Experimental backends (those with an x- prefix) use a distinct label in the annotation text.
+
     Returns None if there are no components to annotate.
     """
     if not components:
         return None
+    if backend_name.startswith("x-"):
+        text = f"{APP_NAME}:backend:experimental:{backend_name}"
+    else:
+        text = f"{APP_NAME}:backend:{backend_name}"
     return Annotation(
         subjects={c.bom_ref for c in components},
         annotator={"organization": {"name": "red hat"}},
         timestamp=spdx_now(),
-        text=f"{APP_NAME}:backend:{backend_name}",
+        text=text,
     )
 
 
