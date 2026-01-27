@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
@@ -31,6 +31,32 @@ DEFAULT_INTEGRATION_TESTS_REPO = "https://github.com/hermetoproject/integration-
 
 log = logging.getLogger(__name__)
 container_engine = get_container_engine()
+
+
+def _resolve_hermeto_env(
+    run_defaults: Mapping[str, str] | None = None,
+    test_overrides: Mapping[str, str] | None = None,
+    call_overrides: Mapping[str, str] | None = None,
+    unset_hermeto_env: Collection[str] | None = None,
+) -> dict[str, str]:
+    """Resolve effective Hermeto env for one test invocation."""
+    resolved = {
+        **(run_defaults or {}),
+        **(test_overrides or {}),
+        **(call_overrides or {}),
+    }
+    for key in unset_hermeto_env or ():
+        resolved.pop(key, None)
+    return resolved
+
+
+def _env_to_engine_flags(env: Mapping[str, str] | None) -> list[str]:
+    """Convert env var dict to container engine ``-e`` flags."""
+    if env is None:
+        return []
+
+    return [flag for name, value in env.items() for flag in ("-e", f"{name}={value}")]
+
 
 # use the '|' style for multiline strings
 # https://github.com/yaml/pyyaml/issues/240
@@ -58,6 +84,8 @@ class TestParameters:
     global_flags: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     repo_url: str | None = None
+    hermeto_env: dict[str, str] = field(default_factory=dict)
+    unset_hermeto_env: set[str] = field(default_factory=set)
 
 
 class ContainerImage:
@@ -342,6 +370,7 @@ def fetch_deps_and_check_output(
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
     entrypoint: str | None = None,
     podman_flags: list[str] | None = None,
+    hermeto_env_overrides: dict[str, str] | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> Path:
     """
@@ -356,6 +385,7 @@ def fetch_deps_and_check_output(
     :param mounts: Additional volumes to be mounted to the image
     :param entrypoint: Entrypoint to be used for the image
     :param podman_flags: Additional flags to be passed to podman
+    :param hermeto_env_overrides: Highest-precedence env var overrides for this call
     :param fetch_output_dirname: Name of the directory where the fetch output is stored
     :return: Path to the repository directory used (for passing to build_image_and_check_cmd)
     """
@@ -396,12 +426,20 @@ def fetch_deps_and_check_output(
 
     cmd.append(json.dumps(test_params.packages))
 
+    merged_env = _resolve_hermeto_env(
+        test_overrides=test_params.hermeto_env,
+        call_overrides=hermeto_env_overrides,
+        unset_hermeto_env=test_params.unset_hermeto_env,
+    )
+    if merged_env:
+        log.info("Injecting Hermeto env vars: %s", merged_env)
+
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
         [*mounts, (actual_repo_dir, actual_repo_dir)],
         entrypoint=entrypoint,
-        podman_flags=podman_flags,
+        podman_flags=(podman_flags or []) + _env_to_engine_flags(merged_env),
     )
     assert exit_code == test_params.expected_exit_code, (
         f"Fetching deps ended with unexpected exitcode: {exit_code} != "
