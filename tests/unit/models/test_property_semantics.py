@@ -150,6 +150,39 @@ from hermeto.core.models.sbom import Component, merge_component_properties
             ],
             id="merge_pip_sdist_and_wheel",
         ),
+        pytest.param(
+            [
+                Component(
+                    name="bar",
+                    version="1.0.0",
+                    purl="pkg:foo/bar@1.0.0",
+                    properties=[
+                        Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}"),
+                        Property(name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value="foo"),
+                    ],
+                ),
+                Component(
+                    name="bar",
+                    version="1.0.0",
+                    purl="pkg:foo/bar@1.0.0",
+                    properties=[
+                        Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}"),
+                    ],
+                ),
+            ],
+            [
+                Component(
+                    name="bar",
+                    version="1.0.0",
+                    purl="pkg:foo/bar@1.0.0",
+                    properties=[
+                        Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}"),
+                        Property(name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value="foo"),
+                    ],
+                ),
+            ],
+            id="merge_experimental_components",
+        ),
     ],
 )
 def test_merge_component_properties(
@@ -187,15 +220,21 @@ class TestPropertySet:
                 PropertySet(pip_package_binary=True),
             ),
             (
+                [Property(name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value="foo")],
+                PropertySet(found_by_experimental="foo"),
+            ),
+            (
                 [
                     Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}"),
                     Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum"),
                     Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="foo/go.sum"),
                     Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED, value="true"),
                     Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT, value="true"),
+                    Property(name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value="foo"),
                 ],
                 PropertySet(
                     found_by=f"{APP_NAME}",
+                    found_by_experimental="foo",
                     missing_hash_in_file=frozenset(["go.sum", "foo/go.sum"]),
                     npm_bundled=True,
                     npm_development=True,
