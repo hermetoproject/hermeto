@@ -310,9 +310,9 @@ class _ComponentResolver:
             project_path = project.source_dir
             workspace_path = package.locator.relpath
 
-            repo = get_repo_id(project_path.root)
-
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            repo_id = get_repo_id(project_path.root)
+            if repo_id is not None:
+                qualifiers["vcs_url"] = repo_id.as_vcs_url_qualifier()
             subpath = str(workspace_path)
 
         elif isinstance(package.locator, (FileLocator, LinkLocator, PortalLocator)):
@@ -322,8 +322,9 @@ class _ComponentResolver:
 
             normalized = project_path.join_within_root(workspace_path, package_path)
 
-            repo = get_repo_id(project_path.root)
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            repo_id = get_repo_id(project_path.root)
+            if repo_id:
+                qualifiers["vcs_url"] = repo_id.as_vcs_url_qualifier()
             subpath = str(normalized.subpath_from_root)
 
         elif isinstance(package.locator, PatchLocator):
@@ -479,7 +480,13 @@ class _ComponentResolver:
             normalized = pp_join(workspace_path, patch_path)
 
         subpath_from_root = str(normalized.subpath_from_root)
-        repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
+        repo_id = get_repo_id(pp_root)
+        if repo_id is None:
+            raise UnsupportedFeature(
+                "Patches require git repository context",
+                solution="Process from a git repository or avoid using patches in permissive mode",
+            )
+        repo_url = repo_id.as_vcs_url_qualifier()
         return f"{repo_url}#{subpath_from_root}"
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:

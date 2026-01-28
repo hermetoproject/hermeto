@@ -12,8 +12,10 @@ from urllib.parse import urlparse, urlunparse
 import tomlkit
 from packageurl import PackageURL
 
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -139,7 +141,6 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
             cmd=cmd,
             params={"cwd": package_dir, "env": env},
             package_dir=package_dir,
-            mode=request.mode,
         )
 
     return _swap_sources_directory_for_subsitution_slot(config_template)
@@ -223,8 +224,9 @@ def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
 
 
 def _run_cmd_watching_out_for_lock_mismatch(
-    cmd: list, params: dict, package_dir: RootedPath, mode: Mode
+    cmd: list, params: dict, package_dir: RootedPath
 ) -> str:
+    mode = get_config().mode
     warn_about_imminent_update_to_cargo_lock = (
         f"A mismatch between Cargo.lock and Cargo.toml was detected in {package_dir}. "
         "Because of permissive mode Hermeto will now regenerate Cargo.lock "
@@ -289,10 +291,13 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
     main_package_name, main_package_version = _resolve_main_package(package_dir)
 
     try:
-        vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+        repo_id = get_repo_id(package_dir.root)
     except NotAGitRepo:
-        # Could become invalid when directories are swapped for nested package managers
-        vcs_url = None
+        # When cargo is invoked from pip for extracted sdists, the source directory is
+        # inside the output directory and will never be a git repo. This is expected
+        # behavior for nested package managers processing unpacked tarballs.
+        repo_id = None
+    vcs_url = repo_id.as_vcs_url_qualifier() if repo_id else None
 
     components = []
 

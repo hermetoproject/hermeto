@@ -2,14 +2,21 @@ import filecmp
 import sys
 import tarfile
 from pathlib import Path
+from unittest import mock
 from urllib.parse import urlsplit
 
 import git
 import pytest
 from git.repo import Repo
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
+from hermeto.core.scm import (
+    RepoID,
+    clone_as_tarball,
+    get_repo_for_path,
+    get_repo_id,
+)
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -49,6 +56,7 @@ class TestRepoID:
 
         if isinstance(expect_result, str):
             repo_id = get_repo_id(golang_repo_path)
+            assert repo_id is not None
             assert repo_id.origin_url == expect_result
             assert repo_id.parsed_origin_url == urlsplit(expect_result)
             assert repo_id.commit_id == expect_commit_id
@@ -63,15 +71,47 @@ class TestRepoID:
         ):
             get_repo_id(golang_repo_path)
 
-    def test_get_repo_id_invalid_path(self, tmp_path: Path) -> None:
+    def test_get_repo_id_invalid_path_strict_mode_raises_an_exception(self, tmp_path: Path) -> None:
         with pytest.raises(NotAGitRepo):
             get_repo_id(tmp_path)
+
+    @mock.patch("hermeto.core.scm.get_config")
+    def test_get_repo_id_invalid_path_permissive_mode_does_not_raise(
+        self, mock_get_config: mock.Mock, tmp_path: Path
+    ) -> None:
+        # tmp_path is not a git repo, but permissive mode should return None
+        mock_get_config.return_value.mode = Mode.PERMISSIVE
+        result = get_repo_id(tmp_path)
+        assert result is None
 
     def test_as_vcs_url_qualifier(self) -> None:
         origin_url = "ssh://git@github.com/foo/bar.git"
         commit_id = "abcdef1234"
         expect_vcs_url = "git+ssh://git@github.com/foo/bar.git@abcdef1234"
         assert RepoID(origin_url, commit_id).as_vcs_url_qualifier() == expect_vcs_url
+
+
+class TestGetVcsQualifiers:
+    def test_returns_vcs_url_for_git_repo(self, golang_repo_path: Path) -> None:
+        Repo(golang_repo_path).create_remote("origin", "https://github.com/org/repo.git")
+
+        result = get_repo_id(golang_repo_path)
+
+        assert result is not None
+        assert result.origin_url == "https://github.com/org/repo.git"
+
+    def test_raises_for_non_git_path_strict_mode(self, tmp_path: Path) -> None:
+        with pytest.raises(NotAGitRepo):
+            get_repo_id(tmp_path)
+
+    @mock.patch("hermeto.core.scm.get_config")
+    def test_returns_none_for_non_git_path_permissive_mode(
+        self, mock_get_config: mock.Mock, tmp_path: Path
+    ) -> None:
+        mock_get_config.return_value.mode = Mode.PERMISSIVE
+        result = get_repo_id(tmp_path)
+
+        assert result is None
 
 
 def test_clone_as_tarball(golang_repo_path: Path, tmp_path: Path) -> None:
