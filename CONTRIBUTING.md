@@ -282,6 +282,40 @@ re-generate the set of dependencies, run the following in the repository and com
 nox -s pip-compile
 ```
 
+### Troubleshooting
+
+Below are common issues that you may encounter while developing your contribution to Hermeto.
+
+#### Unable to compile `createrepo-c` wheel
+
+In some circumstances your system may try to compile the `createrepo-c` Python wheel from source
+code. Unfortunately this requires several C-headers to be present on your system, which can be
+challenging to chase down.
+
+This situation can usually be resolved in one of two ways:
+
+1. Check if a new version of the `createrepo-c` wheel has been published. If yes, then update the
+   dependency per instructions above.
+2. Otherwise add the required C dependencies to your system. Below are the package names used by
+   Fedora with the necessary dependencies. Note that package names may not be the same on other
+   Linux distributions:
+   - `bzip2-devel` (provides `bzip2` C headers)
+   - `cmake`
+   - `gcc` (C compiler)
+   - `glib2-devel`
+   - `libmodulemd-devel`
+   - `libzstd-devel`
+   - `ninja-build` (build tool)
+   - `python3-devel` (Python development headers)
+   - `rpm-devel`
+   - `sqlite-devel`
+
+On Fedora systems, these can be installed using `dnf`:
+
+```shell
+sudo dnf install -y bzip2-devel cmake gcc glib2-devel libmodulemd-devel libzstd-devel ninja-build python3-devel rpm-devel sqlite-devel
+```
+
 ## Releasing
 
 To release a new version of Hermeto, simply create a [GitHub release](https://github.com/hermetoproject/hermeto/releases).
