@@ -447,9 +447,15 @@ Hermeto supports three binary fetching strategies, analogous to pip's
 
 2. **Prefer binaries**
    - Configuration: `binary` field specified with `packages` filter set to `:all:`
-   - Behavior: Hermeto will attempt to prefetch compatible binaries for all
-     dependencies where possible. If no matching binary is available, it will
-     fall back to prefetching sdists instead.
+   - Behavior
+       - Hermeto will attempt to prefetch compatible binaries for all
+         dependencies where possible
+       - If no matching binary is available, it will attempt to prefetch
+         sdists instead
+       - When binaries *are* available, Hermeto will attempt to also prefetch an
+         sdist for each package - this is specifically meant to cover the case
+         where a specific arch (of more than one specified) *doesn't* have a
+         wheel, and the whole build would likely fail otherwise
 
 3. **Only binaries for specific packages**
    - Configuration: `binary` field specified with `packages` filter set to specific
