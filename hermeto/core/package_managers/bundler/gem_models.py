@@ -182,12 +182,18 @@ class PathDependency(_GemMetadata):
     @cached_property
     def purl(self) -> str:
         """Get PURL for this dependency."""
-        vcs_url = get_repo_id(self.root.path).as_vcs_url_qualifier()
+        try:
+            qualifiers = get_vcs_qualifiers(self.root.path)
+        except NotAGitRepo:
+            if get_config().mode == Mode.STRICT:
+                raise
+            qualifiers = None
+
         purl = PackageURL(
             type="gem",
             name=self.name,
             version=self.version,
-            qualifiers={"vcs_url": vcs_url},
+            qualifiers=qualifiers,
             subpath=self.subpath,
         )
         return purl.to_string()
