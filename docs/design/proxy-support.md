@@ -78,24 +78,6 @@ Basing on the information provided above it is recommended to use
 [PackageSourceInfo][] for SPDX and [externalReferences][] for CycloneDX.
 
 
-### Fallback option
-
-It might be desired to try and retrieve packages from the original source if
-proxy fails for any reason. In other words, with fall-back enabled Hermeto
-would try a proxy first, and if the proxy is non-responsive it would then try
-fetching the sources as usual, as if no proxy settings were present. With
-fall-back disabled Hermeto would fail a fetch if a proxy is not responding. To
-achieve that the following option is proposed for addition to Hermeto config:
-
-```
-    fall-back-to-standard-source = False
-```
-
-It will be called `HERMETO_FALL_BACK_TO_STANDARD_SOURCE` in the environment.
-The default value is proposed to be set to False. Fall-back should not happen
-if there was an authorization error because it would mask it otherwise.
-
-
 ## Implementation
 
 All configuration is proposed to be done via environment variables and
