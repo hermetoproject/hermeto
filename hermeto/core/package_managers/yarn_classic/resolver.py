@@ -71,11 +71,12 @@ class _PathMixin:
     def _get_vcs_qualifiers(self) -> dict[str, str] | None:
         """Return vcs_url qualifiers dict if repo ID is available, else None."""
         try:
-            return get_vcs_qualifiers(self.path.root)
+            qualifiers = get_vcs_qualifiers(self.path.root)
         except NotAGitRepo:
             if get_config().mode == Mode.STRICT:
                 raise
-            return None
+            qualifiers = None
+        return qualifiers
 
 
 @dataclass
