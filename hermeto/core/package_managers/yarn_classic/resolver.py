@@ -70,11 +70,13 @@ class _PathMixin:
     def _get_vcs_qualifiers(self) -> dict[str, str] | None:
         """Return vcs_url qualifiers dict if repo ID is available, else None."""
         try:
-            return get_vcs_qualifiers(self.path.root)
+            qualifiers = get_vcs_qualifiers(self.path.root)
         except NotAGitRepo:
             if get_config().mode == Mode.STRICT:
                 raise
-            return None
+            qualifiers = None
+        return qualifiers
+
 
 @dataclass
 class RegistryPackage(_BasePackage, _UrlMixin):
@@ -141,8 +143,7 @@ class FilePackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
+        qualifiers = self._get_vcs_qualifiers()
         return PackageURL(
             type="npm",
             name=self.name,
@@ -159,8 +160,7 @@ class WorkspacePackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
+        qualifiers = self._get_vcs_qualifiers()
         return PackageURL(
             type="npm",
             name=self.name,
@@ -177,8 +177,7 @@ class LinkPackage(_BasePackage, _PathMixin):
     @property
     def purl(self) -> str:
         """Return package URL."""
-        repo_id = get_repo_id(self.path.root)
-        qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
+        qualifiers = self._get_vcs_qualifiers()
         return PackageURL(
             type="npm",
             name=self.name,
