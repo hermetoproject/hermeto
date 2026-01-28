@@ -491,9 +491,13 @@ class _ComponentResolver:
 
         subpath_from_root = str(normalized.subpath_from_root)
         try:
-            repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
+            repo_id = get_repo_id(pp_root)
         except NotAGitRepo:
-            raise UnsupportedFeature("Patches require git context to resolve VCS URLs")
+            raise UnsupportedFeature(
+                "Patches *require* git repository context (regardless of mode)",
+                solution="Process from a git repository or avoid using patches in permissive mode",
+            )
+        repo_url = repo_id.as_vcs_url_qualifier()
         return f"{repo_url}#{subpath_from_root}"
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:
