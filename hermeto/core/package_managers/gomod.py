@@ -24,6 +24,7 @@ from pydantic.alias_generators import to_pascal
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -33,11 +34,12 @@ from hermeto.core.errors import (
     FetchError,
     GitError,
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
@@ -813,11 +815,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath, repo_name: str | None, parsed_main_module: ParsedModule
 ) -> Module:
     resolved_subpath = main_module_dir.subpath_from_root
 
-    if str(resolved_subpath) == ".":
+    if repo_name is None:
+        # PERMISSIVE mode without git repo - use the module path as resolved_path
+        resolved_path = parsed_main_module.path
+    elif str(resolved_subpath) == ".":
         resolved_path = repo_name
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
@@ -834,12 +839,18 @@ def _create_main_module_from_parsed_data(
     )
 
 
-def _get_repository_name(source_dir: RootedPath) -> str:
+def _get_repository_name(source_dir: RootedPath) -> str | None:
     """Return the name resolved from the Git origin URL.
 
     The name is a treated form of the URL, after stripping the scheme, user and .git extension.
     """
-    url = get_repo_id(source_dir).parsed_origin_url
+    try:
+        repo_id = get_repo_id(source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.STRICT:
+            raise
+        return None
+    url = repo_id.parsed_origin_url
     return f"{url.hostname}{url.path.rstrip('/').removesuffix('.git')}"
 
 
