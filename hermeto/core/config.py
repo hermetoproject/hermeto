@@ -15,7 +15,7 @@ from pydantic_settings import (
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
 
-# Ascending priority
+# Ascending priority: the closer config is to the tail the gigher priority it gets.
 CONFIG_FILE_PATHS = [
     f"~/.config/{APP_NAME.lower()}/config.yaml",
     f"{APP_NAME.lower()}.yaml",
@@ -103,8 +103,27 @@ class HttpSettings(BaseModel, extra="forbid"):
 class RuntimeSettings(BaseModel, extra="forbid"):
     """General runtime execution settings."""
 
+    # This is how an environment variable name should look like:
+    #   HERMETO_RUNTIME__CONCURRENCY_LIMIT
+    # Note single underscore after application name, then name of the section
+    # as it appears in Config class definition, then double underscore and
+    # field name after that.
     subprocess_timeout: int = 3600
     concurrency_limit: int = 5
+
+
+class ProxySettings(BaseModel, extra="forbid"):
+    """All shared proxy-related settings are grouped here"""
+
+    fallback_to_sources: bool = False
+
+
+class NpmSettings(BaseModel, extra="forbid"):
+    """Npm settings."""
+
+    proxy_url: str | None = None
+    proxy_login: str | None = None
+    proxy_password: str | None = None
 
 
 class Config(BaseSettings):
@@ -121,6 +140,7 @@ class Config(BaseSettings):
 
     pip: PipSettings = PipSettings()
     yarn: YarnSettings = YarnSettings()
+    npm: NpmSettings = NpmSettings()
     gomod: GomodSettings = GomodSettings()
     http: HttpSettings = HttpSettings()
     runtime: RuntimeSettings = RuntimeSettings()

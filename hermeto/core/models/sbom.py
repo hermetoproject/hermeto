@@ -44,11 +44,22 @@ class Annotation(pydantic.BaseModel):
     text: str
 
 
+SRCDIST = "source-distribution"
+
+
 class ExternalReference(pydantic.BaseModel):
     """An ExternalReference inside an SBOM component."""
 
     url: str
-    type: Literal["distribution"] = "distribution"
+    # "source-distribution" URLs are to be used to indicate actual download
+    # location for a component. This is necessary when a package was downloaded
+    # through a proxy. Multiple proxies must all be specified as separate
+    # ExternalReferences. This type of ExternalReference should be added
+    # along with "distribution" ExternalReference.
+    # NOTE: CycloneDX.ExternalReference != SPDX.ExternalReference!
+    # mypy complains about the usage of SRCDIST here, so a manual expansion is
+    # used instead to make it happy.
+    type: Literal["distribution", "source-distribution"] = "distribution"
 
 
 class PatchDiff(pydantic.BaseModel):
@@ -261,6 +272,11 @@ class Sbom(pydantic.BaseModel):
             return result
 
         def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
+            def source_infos(component: Component) -> list[str]:
+                if component.external_references is None:
+                    return []
+                return [er.url for er in component.external_references if er.type == SRCDIST]
+
             packages = []
 
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
@@ -275,6 +291,7 @@ class Sbom(pydantic.BaseModel):
                 else:
                     human_readable_id = component.name
 
+                source_info = ";".join(source_infos(component))
                 packages.append(
                     SPDXPackage(
                         SPDXID=sanitize_spdxid(
@@ -284,6 +301,7 @@ class Sbom(pydantic.BaseModel):
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
                         annotations=generate_package_annotations(component.properties),
+                        sourceInfo=source_info or None,
                     )
                 )
             return packages
@@ -436,6 +454,10 @@ class SPDXPackage(pydantic.BaseModel):
     externalRefs: list[SPDXPackageExternalRefType] = []
     annotations: list[SPDXPackageAnnotation] = []
     downloadLocation: str = "NOASSERTION"
+    # sourceInfo should be present if proxy URL were set for a package
+    # manager. If more than one URL were provided then individual URLs
+    # should be separated with semicolons.
+    sourceInfo: str | None = None
 
     def __lt__(self, other: "SPDXPackage") -> bool:
         return (self.SPDXID or "") < (other.SPDXID or "")
@@ -448,6 +470,13 @@ class SPDXPackage(pydantic.BaseModel):
             + hash(self.downloadLocation)
             + sum(hash(e) for e in self.externalRefs)
             + sum(hash(a) for a in self.annotations)
+            # NOTE: in a rare case when several proxies exist and a package
+            # ends up being downloaded twice in two different environments each
+            # containing the same set of proxy URLs, there is a small chance
+            # that it will be downloaded from different locations. In that case
+            # we will not have any means to differentiate between these two
+            # packages since the entire set of URLs is used for computing a hash.
+            + hash(self.sourceInfo)
         )
 
     @staticmethod
@@ -668,8 +697,18 @@ class SPDXSbom(pydantic.BaseModel):
                 )
                 for an in package.annotations
             ]
+            # sourceInfo morphs into ExternalReference of type SRCDIST
+            if package.sourceInfo is not None:
+                actual_download_urls = package.sourceInfo.split(";")
+                ers = [ExternalReference(url=s, type=SRCDIST) for s in actual_download_urls]
+            else:
+                ers = None
             pComponent = partial(
-                Component, name=package.name, version=package.versionInfo, properties=properties
+                Component,
+                name=package.name,
+                version=package.versionInfo,
+                properties=properties,
+                external_references=ers,
             )
             purls = _extract_purls(package.externalRefs)
 
