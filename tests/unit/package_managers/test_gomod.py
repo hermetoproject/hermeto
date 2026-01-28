@@ -14,13 +14,15 @@ import git
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Flag, Mode, Request
+from hermeto.core.models.input import Flag, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
@@ -37,6 +39,7 @@ from hermeto.core.package_managers.gomod import (
     ParsedPackage,
     ResolvedGoModule,
     StandardPackage,
+    _create_main_module_from_parsed_data,
     _create_modules_from_parsed_data,
     _create_packages_from_parsed_data,
     _deduplicate_resolved_modules,
@@ -63,7 +66,7 @@ from hermeto.core.package_managers.gomod import (
     fetch_gomod_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.scm import GitRepo
+from hermeto.core.scm import GitRepo, RepoID
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
@@ -1887,6 +1890,75 @@ def test_get_repository_name(mock_git_repo: Any, input_url: str) -> None:
     resolved_url = _get_repository_name(RootedPath("/my-folder/cloned-repo"))
 
     assert resolved_url == expected_url
+
+
+@mock.patch("hermeto.core.package_managers.gomod.get_repo_id")
+@mock.patch("hermeto.core.package_managers.gomod.get_config")
+def test_get_repository_name_permissive_mode(
+    mock_get_config: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that _get_repository_name returns None in PERMISSIVE mode when not a git repo."""
+    mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    result = _get_repository_name(rooted_tmp_path)
+
+    assert result is None
+
+
+@mock.patch("hermeto.core.package_managers.gomod.get_repo_id")
+@mock.patch("hermeto.core.package_managers.gomod.get_config")
+def test_get_repository_name_strict_mode_raises_without_git_repo(
+    mock_get_config: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that _get_repository_name re-raises NotAGitRepo in STRICT mode."""
+    mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.STRICT
+
+    with pytest.raises(NotAGitRepo):
+        _get_repository_name(rooted_tmp_path)
+
+
+@mock.patch("hermeto.core.package_managers.gomod.get_repo_id")
+@mock.patch("hermeto.core.package_managers.gomod.get_config")
+def test_get_repository_name_permissive_mode_with_git_repo(
+    mock_get_config: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    rooted_tmp_path_repo: RootedPath,
+) -> None:
+    """Test that _get_repository_name returns repo name in PERMISSIVE mode when git repo is available."""
+    repo = git.Repo(rooted_tmp_path_repo)
+    repo.create_remote("origin", "https://github.com/org/repo.git")
+
+    repo_id = RepoID("https://github.com/org/repo.git", repo.head.commit.hexsha)
+    mock_get_repo_id.return_value = repo_id
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    result = _get_repository_name(rooted_tmp_path_repo)
+
+    assert result == "github.com/org/repo"
+
+
+def test_create_main_module_from_parsed_data_repo_name_none(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """PERMISSIVE mode without a git repo: resolved_path falls back to the module path."""
+    parsed_main_module = ParsedModule(path="example.com/org/myapp", version="v1.2.3")
+    main_module_dir = rooted_tmp_path  # subpath_from_root == "."
+
+    module = _create_main_module_from_parsed_data(
+        main_module_dir=main_module_dir,
+        repo_name=None,
+        parsed_main_module=parsed_main_module,
+    )
+
+    assert module.real_path == "example.com/org/myapp"
+    assert module.name == "example.com/org/myapp"
+    assert module.version == "v1.2.3"
 
 
 @pytest.fixture
