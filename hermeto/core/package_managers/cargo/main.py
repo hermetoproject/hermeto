@@ -13,8 +13,10 @@ import tomlkit
 import tomlkit.exceptions
 from packageurl import PackageURL
 
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -123,7 +125,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
         config_template = _fetch_dependencies(package_dir, request)
         project_files.append(_use_vendored_sources(package_dir, config_template))
-        components.extend(_generate_sbom_components(package_dir))
+        components.extend(_generate_sbom_components(package_dir, request))
 
     return RequestOutput.from_obj_list(components, environment_variables, project_files)
 
@@ -351,7 +353,7 @@ def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
     return result
 
 
-def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
+def _generate_sbom_components(package_dir: RootedPath, request: Request) -> list[Component]:
     """Generate SBOM components from Cargo.lock and for the main package."""
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
 
@@ -359,11 +361,21 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
     local_packages = _find_local_packages(package_dir)
     main_package_name, main_package_version = _resolve_main_package(package_dir)
 
+    # When cargo is invoked from pip for extracted sdists, the source directory is
+    # swapped to point at the output directory. Check if source_dir is inside output_dir
+    # to detect this scenario, where we can't expect a git repository.
+    source_is_inside_output = request.source_dir.path.is_relative_to(request.output_dir.path)
+
+    # Missing git repo is tolerated in two independent cases:
+    # 1. PERMISSIVE mode: validation is relaxed
+    # 2. Nested PM (pip->cargo for sdists): source_dir is inside output_dir,
+    #    so missing git is expected even in STRICT mode
+    vcs_url = None
     try:
         vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     except NotAGitRepo:
-        # Could become invalid when directories are swapped for nested package managers
-        vcs_url = None
+        if get_config().mode == Mode.STRICT and not source_is_inside_output:
+            raise
 
     components = []
 
