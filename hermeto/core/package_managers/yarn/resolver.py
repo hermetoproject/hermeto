@@ -335,7 +335,7 @@ class _ComponentResolver:
             try:
                 qualifiers.update(get_vcs_qualifiers(project_path.root))
             except NotAGitRepo:
-                if get_config().mode == Mode.STRICT:
+                if get_config().mode != Mode.PERMISSIVE:
                     raise
             subpath = str(workspace_path)
 
@@ -349,7 +349,7 @@ class _ComponentResolver:
             try:
                 qualifiers.update(get_vcs_qualifiers(project_path.root))
             except NotAGitRepo:
-                if get_config().mode == Mode.STRICT:
+                if get_config().mode != Mode.PERMISSIVE:
                     raise
             subpath = str(normalized.subpath_from_root)
 
@@ -507,7 +507,7 @@ class _ComponentResolver:
 
         subpath_from_root = str(normalized.subpath_from_root)
         try:
-            repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
+            repo_id = get_repo_id(pp_root)
         except NotAGitRepo:
             raise PackageRejected(
                 "Patches *require* git repository context (regardless of mode)",

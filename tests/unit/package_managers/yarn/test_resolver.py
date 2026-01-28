@@ -1098,7 +1098,7 @@ def test_pedigree_mapping_flattens_nested_patches(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 @mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
 def test_get_pedigree_with_unsupported_locators(
     mock_get_yarn_version: mock.Mock,
@@ -1117,7 +1117,7 @@ def test_get_pedigree_with_unsupported_locators(
 
 
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_config")
-@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 def test_create_components_permissive_mode_without_vcs_url(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -1153,7 +1153,7 @@ def test_create_components_permissive_mode_without_vcs_url(
 
 
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_config")
-@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 def test_create_components_strict_mode_raises_without_git_repo(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
