@@ -23,7 +23,10 @@ from packageurl import PackageURL
 from semver import Version
 
 from hermeto import APP_NAME
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnsupportedFeature,
@@ -311,9 +314,11 @@ class _ComponentResolver:
             project_path = project.source_dir
             workspace_path = package.locator.relpath
 
-            repo = get_repo_id(project_path.root)
-
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            try:
+                qualifiers.update(get_vcs_qualifiers(project_path.root))
+            except (NotAGitRepo, UnsupportedFeature):
+                if get_config().mode == Mode.STRICT:
+                    raise
             subpath = str(workspace_path)
 
         elif isinstance(package.locator, (FileLocator, LinkLocator, PortalLocator)):
@@ -323,8 +328,11 @@ class _ComponentResolver:
 
             normalized = project_path.join_within_root(workspace_path, package_path)
 
-            repo = get_repo_id(project_path.root)
-            qualifiers["vcs_url"] = repo.as_vcs_url_qualifier()
+            try:
+                qualifiers.update(get_vcs_qualifiers(project_path.root))
+            except (NotAGitRepo, UnsupportedFeature):
+                if get_config().mode == Mode.STRICT:
+                    raise
             subpath = str(normalized.subpath_from_root)
 
         elif isinstance(package.locator, PatchLocator):
@@ -480,7 +488,14 @@ class _ComponentResolver:
             normalized = pp_join(workspace_path, patch_path)
 
         subpath_from_root = str(normalized.subpath_from_root)
-        repo_url = get_repo_id(pp_root).as_vcs_url_qualifier()
+        try:
+            repo_id = get_repo_id(pp_root)
+        except NotAGitRepo:
+            raise UnsupportedFeature(
+                "Patches *require* git repository context (regardless of mode)",
+                solution="Process from a git repository or avoid using patches in permissive mode",
+            )
+        repo_url = repo_id.as_vcs_url_qualifier()
         return f"{repo_url}#{subpath_from_root}"
 
     def _get_builtin_patch_url(self, patch: str, yarn_version: Version) -> str:

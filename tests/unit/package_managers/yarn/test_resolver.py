@@ -10,7 +10,8 @@ import pytest
 from semver import Version
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     Locator,
@@ -1115,7 +1116,7 @@ def test_get_pedigree_with_unsupported_locators(
 
 
 @mock.patch("hermeto.core.package_managers.yarn.resolver.get_config")
-@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
 def test_create_components_without_vcs_url(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -1148,3 +1149,72 @@ def test_create_components_without_vcs_url(
     assert len(components) == 1
     # vcs_url should not be present when repo_id is None
     assert components[0].purl == "pkg:npm/armaments@42.0.0#book/armaments"
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+def test_create_components_permissive_mode_with_vcs_url(
+    mock_get_repo_id_general: mock.Mock,
+    mock_get_repo_id_resolver: mock.Mock,
+    mock_get_config: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that workspace packages include vcs_url in PERMISSIVE mode when git repo is available."""
+    mock_get_repo_id_general.return_value = MOCK_REPO_ID
+    mock_get_repo_id_resolver.return_value = MOCK_REPO_ID
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    project_dir = RootedPath(tmp_path / "project")
+
+    mocked_package = MockedPackage(
+        Package(
+            raw_locator="armaments@workspace:./book/armaments",
+            version=None,
+            checksum=None,
+            cache_path=None,
+        ),
+        is_hardlink=False,
+        packjson_path="book/armaments/package.json",
+        packjson_content=json.dumps({"name": "armaments", "version": "42.0.0"}),
+    )
+
+    output_dir = RootedPath(tmp_path / "output")
+    mocked_package = mocked_package.resolve_cache_path(output_dir)
+    mock_package_json(mocked_package, project_dir)
+
+    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+
+    assert len(components) == 1
+    # vcs_url should be present when get_repo_id succeeds, even in PERMISSIVE mode
+    assert (
+        components[0].purl == f"pkg:npm/armaments@42.0.0?vcs_url={MOCK_REPO_VCS_URL}#book/armaments"
+    )
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.get_repo_id")
+@mock.patch("hermeto.core.package_managers.yarn.resolver.extract_yarn_version_from_env")
+def test_path_patch_raises_without_git_even_in_permissive_mode(
+    mock_get_yarn_version: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Patches require git context regardless of mode."""
+    mock_get_yarn_version.return_value = Version(3, 0, 0)
+    mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    source_dir_path = rooted_tmp_path.path / "source"
+    source_dir_path.mkdir()
+    source_dir = rooted_tmp_path.re_root("source")
+
+    patch_path = Path("~/my-patches/fsevents.patch")
+    package = NpmLocator(None, "fsevents", "1.0.0")
+    patch_locator = PatchLocator(package, [patch_path], None)
+
+    mock_proj = mock.Mock(source_dir=source_dir)
+
+    with pytest.raises(UnsupportedFeature, match="Patches.*require.*git"):
+        _ComponentResolver({}, [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
