@@ -19,8 +19,8 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import PackageManagerError
-from hermeto.core.models.input import Mode
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import get_cache_dir, run_cmd
 from hermeto.interface.logging import EnforcingModeLoggerAdapter

@@ -17,6 +17,7 @@ import semver
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -26,11 +27,12 @@ from hermeto.core.errors import (
     FetchError,
     GitError,
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
@@ -435,7 +437,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     annotations: list[Annotation] = []
 
     repo_name = _get_repository_name(request.source_dir)
-    version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    try:
+        version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            version_resolver = ModuleVersionResolver.from_non_git_source()
+        else:
+            raise
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
@@ -465,8 +473,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir, request.mode)
-            if vendor_changed and request.mode == Mode.STRICT:
+            try:
+                vendor_changed = _vendor_changed(main_module_dir)
+            except NotAGitRepo:
+                if get_config().mode == Mode.PERMISSIVE:
+                    vendor_changed = False
+                else:
+                    raise
+            if vendor_changed and get_config().mode != Mode.PERMISSIVE:
                 raise PackageRejected(
                     reason=(
                         "The content of the vendor directory is not consistent with go.mod. "
@@ -539,11 +553,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath, repo_name: str | None, parsed_main_module: ParsedModule
 ) -> Module:
     resolved_subpath = main_module_dir.subpath_from_root
 
-    if str(resolved_subpath) == ".":
+    if repo_name is None:
+        # PERMISSIVE mode without git repo - use the module path as resolved_path
+        resolved_path = parsed_main_module.path
+    elif str(resolved_subpath) == ".":
         resolved_path = repo_name
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
@@ -560,12 +577,18 @@ def _create_main_module_from_parsed_data(
     )
 
 
-def _get_repository_name(source_dir: RootedPath) -> str:
+def _get_repository_name(source_dir: RootedPath) -> str | None:
     """Return the name resolved from the Git origin URL.
 
     The name is a treated form of the URL, after stripping the scheme, user and .git extension.
     """
-    url = get_repo_id(source_dir).parsed_origin_url
+    try:
+        repo_id = get_repo_id(source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            return None
+        raise
+    url = repo_id.parsed_origin_url
     return f"{url.hostname}{url.path.rstrip('/').removesuffix('.git')}"
 
 
@@ -949,6 +972,8 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
 class ModuleVersionResolver:
     """Resolves the versions of Go modules in a git repository."""
 
+    _DUMMY_PSEUDO_VERSION = "v0.0.0-19700101000000-000000000000"
+
     def __init__(self, repo: GitRepo, commit: git.objects.commit.Commit):
         """Initialize a ModuleVersionResolver for the provided Repo."""
         self._repo = repo
@@ -972,6 +997,14 @@ class ModuleVersionResolver:
             )
 
         return cls(repo, commit)
+
+    @classmethod
+    def from_non_git_source(cls) -> "Self":
+        """Return a resolver for non-git sources that produces a dummy pseudo-version."""
+        resolver = cls.__new__(cls)
+        resolver._repo = None  # type: ignore[assignment]
+        resolver._commit = None  # type: ignore[assignment]
+        return resolver
 
     @cached_property
     def _commit_tags(self) -> list[str]:
@@ -1044,6 +1077,9 @@ class ModuleVersionResolver:
         :param app_dir: the path to the module directory
         :return: a version as `go list` would provide
         """
+        if self._repo is None or self._commit is None:
+            return self._DUMMY_PSEUDO_VERSION
+
         # If the module is version v2 or higher, the major version of the module is included as /vN at
         # the end of the module path. If the module is version v0 or v1, the major version is omitted
         # from the module path.
@@ -1337,12 +1373,13 @@ def _vendor_deps(
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
+def _vendor_changed(context_dir: RootedPath) -> bool:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
     """
     repo_root = context_dir.root
+    enforcing_mode = get_config().mode
 
     # Get the correct repo context (main or submodule)
     repo, context_relative_path = get_repo_for_path(repo_root, context_dir.path)
