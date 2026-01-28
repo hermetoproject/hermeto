@@ -9,6 +9,9 @@ import pydantic
 from packageurl import PackageURL
 from typing_extensions import Self
 
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo
 from hermeto.core.package_managers.general import download_binary_file, get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
@@ -180,11 +183,18 @@ class PathDependency(_GemMetadata):
     @cached_property
     def purl(self) -> str:
         """Get PURL for this dependency."""
+        try:
+            qualifiers = get_vcs_qualifiers(self.root.path)
+        except NotAGitRepo:
+            if get_config().mode == Mode.STRICT:
+                raise
+            qualifiers = None
+
         purl = PackageURL(
             type="gem",
             name=self.name,
             version=self.version,
-            qualifiers=get_vcs_qualifiers(self.root.path),
+            qualifiers=qualifiers,
             subpath=self.subpath,
         )
         return purl.to_string()
