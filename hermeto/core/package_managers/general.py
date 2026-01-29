@@ -17,6 +17,7 @@ from hermeto.core.http_requests import (
     SAFE_REQUEST_METHODS,
     get_requests_session,
 )
+from hermeto.core.scm import get_repo_id
 from hermeto.core.type_aliases import StrPath
 
 pkg_requests_session = get_requests_session(retry_options={"allowed_methods": SAFE_REQUEST_METHODS})
@@ -164,6 +165,19 @@ async def async_download_files(
             )
 
         await asyncio.gather(*tasks)
+
+
+def get_vcs_qualifiers(path_root: StrPath) -> dict[str, str]:
+    """Return vcs_url qualifiers dict for the git repository at path_root.
+
+    :param path_root: Root path of the git repository
+    :return: Dictionary containing vcs_url qualifier
+    :raises NotAGitRepo: if path_root is not a git repository
+    :raises UnsupportedFeature: if repository has no 'origin' remote
+    """
+    repo_id = get_repo_id(path_root)
+    vcs_url = repo_id.as_vcs_url_qualifier()
+    return {"vcs_url": vcs_url}
 
 
 def extract_git_info(vcs_url: str) -> dict[str, Any]:
