@@ -44,6 +44,10 @@ class Annotation(pydantic.BaseModel):
     text: str
 
 
+PROXY_REF_TYPE = "distribution"
+PROXY_COMMENT = "proxy URL"
+
+
 class ExternalReference(pydantic.BaseModel):
     """An ExternalReference inside an SBOM component."""
 
@@ -270,6 +274,12 @@ class Sbom(pydantic.BaseModel):
             return result
 
         def libs_to_packages(libraries: list[Component]) -> list[SPDXPackage]:
+            def source_infos(component: Component) -> list[str]:
+                if component.external_references is None:
+                    return []
+                is_proxy = lambda ref: ref.type == PROXY_REF_TYPE and ref.comment == PROXY_COMMENT
+                return sorted(ref.url for ref in component.external_references if is_proxy(ref))
+
             packages = []
 
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
@@ -284,6 +294,7 @@ class Sbom(pydantic.BaseModel):
                 else:
                     human_readable_id = component.name
 
+                source_info = ";".join(source_infos(component))
                 packages.append(
                     SPDXPackage(
                         SPDXID=sanitize_spdxid(
@@ -293,6 +304,7 @@ class Sbom(pydantic.BaseModel):
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
                         annotations=generate_package_annotations(component.properties),
+                        sourceInfo=source_info or None,
                     )
                 )
             return packages
@@ -674,6 +686,7 @@ class SPDXSbom(pydantic.BaseModel):
     def to_cyclonedx(self) -> Sbom:
         """Convert a SPDX SBOM to a CycloneDX SBOM."""
         components = []
+        eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
         for package in self.packages:
             properties = [
                 (
@@ -683,8 +696,19 @@ class SPDXSbom(pydantic.BaseModel):
                 )
                 for an in package.annotations
             ]
+            # sourceInfo morphs into ExternalReference of type PROXY_REF_TYPE
+            # with PROXY_COMMENT comment
+            if package.sourceInfo is not None:
+                actual_download_urls = package.sourceInfo.split(";")
+                exrefs = [ExternalReference(url=url, **eref_rest) for url in actual_download_urls]
+            else:
+                exrefs = None
             pComponent = partial(
-                Component, name=package.name, version=package.versionInfo, properties=properties
+                Component,
+                name=package.name,
+                version=package.versionInfo,
+                properties=properties,
+                external_references=exrefs,
             )
             purls = _extract_purls(package.externalRefs)
 
