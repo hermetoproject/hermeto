@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     GitError,
@@ -36,7 +37,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Annotation, Component, spdx_now
@@ -743,8 +744,8 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir, request.mode)
-            if vendor_changed and request.mode == Mode.STRICT:
+            vendor_changed = _vendor_changed(main_module_dir)
+            if vendor_changed and get_config().mode == Mode.STRICT:
                 raise PackageRejected(
                     reason=(
                         "The content of the vendor directory is not consistent with go.mod. "
@@ -819,14 +820,16 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath, repo_name: str | None, parsed_main_module: ParsedModule
 ) -> Module:
     resolved_subpath = main_module_dir.subpath_from_root
 
+    # Use repo_name if available, otherwise fall back to module path (permissive mode)
+    base_path = repo_name if repo_name else parsed_main_module.path
     if str(resolved_subpath) == ".":
-        resolved_path = repo_name
+        resolved_path = base_path
     else:
-        resolved_path = f"{repo_name}/{resolved_subpath}"
+        resolved_path = f"{base_path}/{resolved_subpath}"
 
     if not parsed_main_module.version:
         # Should not happen, since the version is always resolved from the Git repo
@@ -840,12 +843,16 @@ def _create_main_module_from_parsed_data(
     )
 
 
-def _get_repository_name(source_dir: RootedPath) -> str:
+def _get_repository_name(source_dir: RootedPath) -> str | None:
     """Return the name resolved from the Git origin URL.
 
     The name is a treated form of the URL, after stripping the scheme, user and .git extension.
+    Returns None in permissive mode for non-git repos.
     """
-    url = get_repo_id(source_dir).parsed_origin_url
+    repo_id = get_repo_id(source_dir)
+    if repo_id is None:
+        return None
+    url = repo_id.parsed_origin_url
     return f"{url.hostname}{url.path.rstrip('/').removesuffix('.git')}"
 
 
@@ -1750,7 +1757,7 @@ def _vendor_deps(
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
+def _vendor_changed(context_dir: RootedPath) -> bool:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
@@ -1775,7 +1782,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s changed after vendoring:\n%s",
                 modules_txt,
                 modules_txt_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=get_config().mode,
             )
             return True
 
@@ -1786,7 +1793,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s directory changed after vendoring:\n%s",
                 vendor,
                 vendor_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=get_config().mode,
             )
             return True
     finally:

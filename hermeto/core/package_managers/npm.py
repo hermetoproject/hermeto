@@ -324,7 +324,7 @@ class _Purlifier:
         self._pkg_path = pkg_path
 
     @functools.cached_property
-    def _repo_id(self) -> RepoID:
+    def _repo_id(self) -> RepoID | None:
         return get_repo_id(self._pkg_path.root)
 
     def get_purl(
@@ -356,7 +356,8 @@ class _Purlifier:
             repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
-            qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
+            if self._repo_id is not None:
+                qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
             path = urlparse(resolved_url).path
             subpath_from_root = self._pkg_path.join_within_root(path).subpath_from_root
             if subpath_from_root != Path():
