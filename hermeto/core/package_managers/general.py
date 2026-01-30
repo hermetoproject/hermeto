@@ -91,7 +91,11 @@ async def _async_download_binary_file(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
         )
         async with session.get(
-            url, timeout=timeout, auth=auth, raise_for_status=True, ssl=ssl_context
+            url,
+            timeout=timeout,
+            auth=auth,
+            raise_for_status=True,
+            ssl=ssl_context,
         ) as resp:
             with open(download_path, "wb") as f:
                 while True:
@@ -114,6 +118,7 @@ async def async_download_files(
     files_to_download: dict[str, StrPath],
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
+    auth: aiohttp.BasicAuth | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
@@ -158,7 +163,11 @@ async def async_download_files(
             tasks.add(
                 asyncio.create_task(
                     _async_download_binary_file(
-                        session, url, download_path, ssl_context=ssl_context
+                        session,
+                        url,
+                        download_path,
+                        ssl_context=ssl_context,
+                        auth=auth,
                     )
                 )
             )
