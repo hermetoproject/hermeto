@@ -182,6 +182,11 @@ This section helps the community evaluate the maturity of the package manager. E
 managers use the `x-` prefix in their package manager name. This section should be completed prior
 to the community declaring the package manager "fully supported."
 
+**Note**: Components produced by experimental package managers (those with `x-` prefix) will have
+the `hermeto:found_by:experimental_package_manager` property added to generated SBOMs, with the
+property value being the experimental package manager name (without the `x-` prefix). For example,
+if using package manager `x-foo`, components will have this property set to `foo`.
+
 ### Current Limitations
 
 Document known limitations of the current implementation:

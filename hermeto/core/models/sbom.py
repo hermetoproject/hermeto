@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal, Union, get_args
 from urllib.parse import urlparse
 
 import pydantic
@@ -16,6 +16,7 @@ from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.models.input import PackageManagerType
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
@@ -73,6 +74,13 @@ class Pedigree(pydantic.BaseModel):
 FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}")
 
 
+def filter_exp_package_types() -> set[str]:
+    """Extract experimental PURL types from PackageManagerType."""
+    package_types = get_args(PackageManagerType)
+
+    return {pt.removeprefix("x-") for pt in package_types if pt.startswith("x-")}
+
+
 class Component(pydantic.BaseModel):
     """A software component such as a dependency or a package.
 
@@ -118,6 +126,23 @@ class Component(pydantic.BaseModel):
             properties.append(FOUND_BY_APP_PROPERTY)
 
         return properties
+
+    @pydantic.model_validator(mode="after")
+    def _add_experimental_property(self) -> Self:
+        try:
+            purl = PackageURL.from_string(self.purl)
+        except ValueError as ex:
+            log.warning("Failed to parse PURL: %s, exception: %s", self.purl, str(ex))
+            return self
+
+        if purl.type in filter_exp_package_types():
+            experimental_property = Property(
+                name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value=purl.type
+            )
+            if experimental_property not in self.properties:
+                self.properties.append(experimental_property)
+
+        return self
 
 
 class Tool(pydantic.BaseModel):
