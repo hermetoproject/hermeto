@@ -24,6 +24,11 @@ updates:
       - dependency-name: "library/node"
         update-types:
           - "version-update:semver-major"
+      # We must handle major.minor Rust releases manually since they might introduce changes breaking tests
+      - dependency-name: "library/rust"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
 
   - package-ecosystem: "pip"
     directory: "/"
