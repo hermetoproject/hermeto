@@ -15,8 +15,9 @@ import tomlkit.exceptions
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation, spdx_now
 from hermeto.core.rooted_path import RootedPath

@@ -23,6 +23,7 @@ from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
     extract_git_info,
+    get_vcs_qualifiers,
 )
 from hermeto.core.package_managers.pip.package_distributions import (
     DistributionPackageInfo,
@@ -130,8 +131,6 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
     type = "pypi"
     name = package["name"]
     version = package["version"]
-    url = get_repo_id(package_path.root).as_vcs_url_qualifier()
-    qualifiers = {"vcs_url": url}
     if package_path.subpath_from_root != Path("."):
         subpath = package_path.subpath_from_root.as_posix()
     else:
@@ -141,7 +140,7 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
         type=type,
         name=name,
         version=version,
-        qualifiers=qualifiers,
+        qualifiers=get_vcs_qualifiers(package_path.root),
         subpath=subpath,
     )
 

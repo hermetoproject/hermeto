@@ -9,9 +9,9 @@ import pydantic
 from packageurl import PackageURL
 from typing_extensions import Self
 
-from hermeto.core.package_managers.general import download_binary_file
+from hermeto.core.package_managers.general import download_binary_file, get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.scm import GitRepo, get_repo_id
+from hermeto.core.scm import GitRepo
 
 AcceptedUrl = Annotated[
     pydantic.HttpUrl,
@@ -180,12 +180,11 @@ class PathDependency(_GemMetadata):
     @cached_property
     def purl(self) -> str:
         """Get PURL for this dependency."""
-        vcs_url = get_repo_id(self.root.path).as_vcs_url_qualifier()
         purl = PackageURL(
             type="gem",
             name=self.name,
             version=self.version,
-            qualifiers={"vcs_url": vcs_url},
+            qualifiers=get_vcs_qualifiers(self.root.path),
             subpath=self.subpath,
         )
         return purl.to_string()
