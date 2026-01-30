@@ -478,3 +478,48 @@ def test_missing_name_field(rooted_tmp_path: RootedPath) -> None:
     tarball_path = mock_tarball(path=rooted_tmp_path, package_json_content={"key": "foo"})
     with pytest.raises(ValueError, match="No 'name' field found"):
         _read_name_from_tarball(tarball_path)
+
+
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.general.get_repo_id")
+def test_package_purl_without_vcs_url(
+    mock_handle_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that file/workspace/link packages omit vcs_url when not in a git repo."""
+    from hermeto.core.constants import Mode
+    from hermeto.core.errors import NotAGitRepo
+
+    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    yarn_classic_packages: list[tuple[YarnClassicPackage, str]] = [
+        (
+            FilePackage(
+                name="file-pkg",
+                version="5.0.0",
+                path=rooted_tmp_path.join_within_root("path/to/package"),
+            ),
+            "pkg:npm/file-pkg@5.0.0#path/to/package",
+        ),
+        (
+            WorkspacePackage(
+                name="workspace-pkg",
+                version="6.0.0",
+                path=rooted_tmp_path.join_within_root("workspace/package"),
+            ),
+            "pkg:npm/workspace-pkg@6.0.0#workspace/package",
+        ),
+        (
+            LinkPackage(
+                name="link-pkg",
+                version="7.0.0",
+                path=rooted_tmp_path.join_within_root("link/to/package"),
+            ),
+            "pkg:npm/link-pkg@7.0.0#link/to/package",
+        ),
+    ]
+
+    for package, expected_purl in yarn_classic_packages:
+        assert package.purl == expected_purl

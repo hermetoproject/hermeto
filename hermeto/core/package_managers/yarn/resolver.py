@@ -29,6 +29,7 @@ from hermeto.core.errors import (
     UnsupportedFeature,
 )
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
+from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
     HttpsLocator,

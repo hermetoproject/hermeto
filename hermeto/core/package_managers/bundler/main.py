@@ -18,6 +18,7 @@ from hermeto.core.package_managers.bundler.parser import (
     PathDependency,
     parse_lockfile,
 )
+from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 

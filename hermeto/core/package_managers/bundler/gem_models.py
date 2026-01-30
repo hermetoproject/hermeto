@@ -8,9 +8,12 @@ import pydantic
 from packageurl import PackageURL
 from typing_extensions import Self
 
-from hermeto.core.package_managers.general import download_binary_file
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo
+from hermeto.core.package_managers.general import download_binary_file, get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
-from hermeto.core.scm import GitRepo, get_repo_id
+from hermeto.core.scm import GitRepo
 
 AcceptedUrl = Annotated[
     pydantic.HttpUrl,
