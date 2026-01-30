@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi10@sha256:9bd3aebdfdf6eebb6a18541d838cac9e9a35d2f807aa8e36d9518978cc86371f AS ubi
+FROM registry.access.redhat.com/ubi10@sha256:64b34b13c0dda61ed9b977bde8068eb0d350f4afb75142715e83be68373e4848 AS ubi
 FROM mirror.gcr.io/library/golang:1.25.5-alpine AS golang
 FROM mirror.gcr.io/library/node:24.12-bookworm-slim AS node
 FROM mirror.gcr.io/library/rust:1.92.0-slim-bookworm AS rust
