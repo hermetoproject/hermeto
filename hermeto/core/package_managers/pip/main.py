@@ -23,6 +23,7 @@ from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
     extract_git_info,
+    get_vcs_qualifiers,
 )
 from hermeto.core.package_managers.pip.package_distributions import (
     DistributionPackageInfo,

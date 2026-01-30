@@ -13,7 +13,10 @@ from pyarn.lockfile import Package as PYarnPackage
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
 from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
 from hermeto.core.package_managers.yarn_classic.utils import (
@@ -26,7 +29,6 @@ from hermeto.core.package_managers.yarn_classic.workspaces import (
     extract_workspace_metadata,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import get_repo_id
 
 # https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/resolvers/exotics/git-resolver.js#L15-L17
 GIT_HOSTS = frozenset(("github.com", "gitlab.com", "bitbucket.com", "bitbucket.org"))
@@ -65,6 +67,14 @@ class _UrlMixin:
 class _PathMixin:
     path: RootedPath
 
+    def _get_vcs_qualifiers(self) -> dict[str, str] | None:
+        """Return vcs_url qualifiers dict if repo ID is available, else None."""
+        try:
+            return get_vcs_qualifiers(self.path.root)
+        except NotAGitRepo:
+            if get_config().mode == Mode.STRICT:
+                raise
+            return None
 
 @dataclass
 class RegistryPackage(_BasePackage, _UrlMixin):
