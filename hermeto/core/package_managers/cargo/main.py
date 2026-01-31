@@ -10,9 +10,10 @@ from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
+import tomlkit.exceptions
 from packageurl import PackageURL
 
-from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
+from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
@@ -60,6 +61,19 @@ class CargoPackage:
             commit_id = parsed_url.fragment
             base_url = urlunparse(parsed_url._replace(query="", fragment=""))
             qualifiers["vcs_url"] = f"{base_url}@{commit_id}"
+        elif self.source is not None and self.source.startswith("registry+"):
+            # Handle alternative registries
+            # Format: registry+<URL> where URL can be:
+            # - A git repository URL: https://my-registry.com/git/index
+            # - A sparse registry URL: sparse+https://my-registry.com/index/
+            registry_url = self.source.replace("registry+", "", 1)
+
+            # Check if this is an alternative registry (not crates.io)
+            # The crates.io index URL is: https://github.com/rust-lang/crates.io-index
+            if "github.com/rust-lang/crates.io-index" not in registry_url:
+                # For alternative registries, add repository_url qualifier
+                # Note: The URL might have sparse+ prefix which should be preserved
+                qualifiers["repository_url"] = registry_url
 
         return PackageURL(type="cargo", name=self.name, version=self.version, qualifiers=qualifiers)
 
@@ -130,7 +144,7 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
     #                    cargo operations however is crucial when it is invoked from pip.
     cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
-    with _hidden_cargo_config_file(package_dir):
+    with _sanitized_cargo_config_file(package_dir):
         # Prevent Cargo from invoking rustc
         env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
@@ -183,14 +197,19 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
 
 
 @contextmanager
-def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
-    """Hide the cargo config file if it exists.
+def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
+    """Replace cargo config with a sanitized version containing only registry information.
 
-    The file may contain various settings that could result in potential attack vectors.
-    Therefore, it is better to "hide" it before running the `cargo vendor` command.
+    The original config file may contain various settings that could result in potential
+    attack vectors. This function extracts only the safe registry configurations and
+    creates a temporary sanitized config file with just those settings, allowing Cargo
+    to fetch from alternative registries while preventing insecure settings.
+
+    The index URL can be either a git repository URL or a sparse registry URL
+    (with sparse+ prefix).
     """
     # There is a slim chance to find an old project with .cargo/config
-    # instead of .cargo/config.toml. If found it has to be hidden too since it still
+    # instead of .cargo/config.toml. If found it has to be handled too since it still
     # takes precedence over the now standard .cargo/config.toml
     # (https://doc.rust-lang.org/cargo/reference/config.html).
     # Note, that ordering matters here, since .cargo/config could be a symlink
@@ -198,17 +217,57 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
     # of Cargo. Unlinking a symlink first is safe.
     all_possible_config_names = (".cargo/config", ".cargo/config.toml")
     configs_contents = []
+    registries: dict[str, str] = {}
 
     for cfgname in all_possible_config_names:
         config = package_dir.join_within_root(cfgname)
         data = config.path.read_text() if config.path.exists() else None
         configs_contents.append((config, data))
+
+        # Extract registry information from the config
+        if data is not None and not registries:
+            try:
+                config_data = tomlkit.parse(data).value
+                # Extract registries section
+                # https://doc.rust-lang.org/cargo/reference/registries.html#using-an-alternate-registry
+                if "registries" in config_data:
+                    for registry_name, registry_config in config_data["registries"].items():
+                        if isinstance(registry_config, dict) and "index" in registry_config:
+                            registries[registry_name] = registry_config["index"]
+            except (tomlkit.exceptions.TOMLKitError, AttributeError, TypeError) as e:
+                raise UnexpectedFormat(
+                    f"{config.path} containing invalid data, cannot read registries: {e}"
+                )
+
+        # Replace original config with sanitized version
         if data is not None:
             config.path.unlink()
+
+    # Create sanitized config with only registry information if we found any
+    sanitized_config_path = None
+    if registries:
+        # Use .cargo/config.toml as the standard location
+        sanitized_config_path = package_dir.join_within_root(".cargo/config.toml")
+        sanitized_config_path.path.parent.mkdir(parents=True, exist_ok=True)
+
+        sanitized_config = tomlkit.document()
+        sanitized_registries = tomlkit.table()
+        for registry_name, index_url in registries.items():
+            registry_table = tomlkit.table()
+            registry_table["index"] = index_url
+            sanitized_registries[registry_name] = registry_table
+        sanitized_config["registries"] = sanitized_registries
+
+        sanitized_config_path.path.write_text(tomlkit.dumps(sanitized_config))
 
     try:
         yield
     finally:
+        # Remove sanitized config if we created one
+        if sanitized_config_path and sanitized_config_path.path.exists():
+            sanitized_config_path.path.unlink()
+
+        # Restore original configs
         for config, data in configs_contents:
             if data is not None:
                 config.path.write_text(data)
