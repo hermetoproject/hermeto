@@ -10,9 +10,10 @@ from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
+import tomlkit.exceptions
 from packageurl import PackageURL
 
-from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
+from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.rooted_path import RootedPath
@@ -55,11 +56,19 @@ class CargoPackage:
         if self.checksum is not None:
             qualifiers["checksum"] = self.checksum
 
-        if self.source is not None and self.source.startswith("git+"):
-            parsed_url = urlparse(self.source)
-            commit_id = parsed_url.fragment
-            base_url = urlunparse(parsed_url._replace(query="", fragment=""))
-            qualifiers["vcs_url"] = f"{base_url}@{commit_id}"
+        if self.source is not None:
+            if self.source.startswith("git+"):
+                parsed_url = urlparse(self.source)
+                commit_id = parsed_url.fragment
+                base_url = urlunparse(parsed_url._replace(query="", fragment=""))
+                qualifiers["vcs_url"] = f"{base_url}@{commit_id}"
+            elif self.source.startswith("registry+"):
+                # Extract registry URL from source (format: "registry+https://...")
+                registry_url = self.source.removeprefix("registry+")
+                if "crates.io" not in registry_url:
+                    qualifiers["repository_url"] = registry_url
+            else:
+                raise UnexpectedFormat(f"Unable to construct package URL from '{self.source}'.")
 
         return PackageURL(type="cargo", name=self.name, version=self.version, qualifiers=qualifiers)
 
@@ -130,7 +139,7 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
     #                    cargo operations however is crucial when it is invoked from pip.
     cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
     log.info("Fetching cargo dependencies at %s", package_dir)
-    with _hidden_cargo_config_file(package_dir):
+    with _sanitized_cargo_config_file(package_dir):
         # Prevent Cargo from invoking rustc
         env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
@@ -183,11 +192,12 @@ def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
 
 
 @contextmanager
-def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
-    """Hide the cargo config file if it exists.
+def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
+    """Replace Cargo config file to keep only alternate registry settings.
 
-    The file may contain various settings that could result in potential attack vectors.
-    Therefore, it is better to "hide" it before running the `cargo vendor` command.
+    The context manager swaps the original config file with one containing only the settings necessary
+    to use alternate registries during prefetch session, or hide it completely if it has no registries,
+    then restores original config file after prefetch complete.
     """
     # There is a slim chance to find an old project with .cargo/config
     # instead of .cargo/config.toml. If found it has to be hidden too since it still
@@ -198,20 +208,74 @@ def _hidden_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, 
     # of Cargo. Unlinking a symlink first is safe.
     all_possible_config_names = (".cargo/config", ".cargo/config.toml")
     configs_contents = []
+    processed_paths = set()
 
     for cfgname in all_possible_config_names:
         config = package_dir.join_within_root(cfgname)
-        data = config.path.read_text() if config.path.exists() else None
-        configs_contents.append((config, data))
-        if data is not None:
-            config.path.unlink()
+        if config.path.exists():
+            data = config.path.read_text()
+            sanitized = _sanitize_cargo_config(data)
 
+            if sanitized:
+                absolute_path = (
+                    config.path.readlink().absolute()
+                    if config.path.is_symlink()
+                    else config.path.absolute()
+                )
+                if absolute_path in processed_paths:
+                    continue
+                processed_paths.add(absolute_path)
+                configs_contents.append((config, data))
+                config.path.write_text(sanitized)
+            else:
+                configs_contents.append((config, data))
+                config.path.unlink()
     try:
         yield
     finally:
         for config, data in configs_contents:
             if data is not None:
                 config.path.write_text(data)
+
+
+def _sanitize_cargo_config(config_content: str) -> str:
+    """Extract only the [registries] section from Cargo config, keeping only safe fields.
+
+    Preserves only: index, token, credential-provider fields for each registry.
+    Returns sanitized TOML with only registries and their safe fields, or empty string if none exist.
+    """
+    if not config_content.strip():
+        return ""
+
+    try:
+        parsed = tomlkit.parse(config_content)
+        registries = parsed.get("registries")
+    except (tomlkit.exceptions.TOMLKitError, AttributeError):
+        raise UnexpectedFormat("Cargo config file contains invalid data and cannot be parsed")
+
+    allowed_fields = {"index", "token", "credential-provider"}
+    filtered_registries = tomlkit.table()
+    sanitized = tomlkit.document()
+
+    if registries is None:
+        return ""
+
+    for registry_name, registry_config in registries.items():
+        if not isinstance(registry_config, dict):
+            continue
+        filtered_fields = {
+            field: registry_config[field].strip()
+            for field in registry_config
+            if field in allowed_fields
+        }
+        if filtered_fields:
+            filtered_registries[registry_name] = filtered_fields
+
+    if filtered_registries:
+        sanitized["registries"] = filtered_registries
+        return tomlkit.dumps(sanitized)
+
+    return ""
 
 
 @contextmanager
