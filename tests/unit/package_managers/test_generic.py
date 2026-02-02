@@ -262,7 +262,10 @@ def test_resolve_generic_lockfile_invalid(
                         {"type": "distribution", "url": "https://example.com/artifact"}
                     ],
                     "name": "archive.zip",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+                    "properties": [
+                        {"name": f"{APP_NAME}:package_manager", "value": "generic"},
+                        {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"},
+                    ],
                     "purl": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
                     "type": "file",
                 },
@@ -274,7 +277,10 @@ def test_resolve_generic_lockfile_invalid(
                         }
                     ],
                     "name": "file.tar.gz",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+                    "properties": [
+                        {"name": f"{APP_NAME}:package_manager", "value": "generic"},
+                        {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"},
+                    ],
                     "purl": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
                     "type": "file",
                 },
@@ -292,7 +298,10 @@ def test_resolve_generic_lockfile_invalid(
                         }
                     ],
                     "name": "spring-boot-starter",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+                    "properties": [
+                        {"name": f"{APP_NAME}:package_manager", "value": "generic"},
+                        {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"},
+                    ],
                     "purl": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
                     "type": "library",
                     "version": "3.1.5",
@@ -305,7 +314,10 @@ def test_resolve_generic_lockfile_invalid(
                         }
                     ],
                     "name": "netty-transport-native-epoll",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+                    "properties": [
+                        {"name": f"{APP_NAME}:package_manager", "value": "generic"},
+                        {"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"},
+                    ],
                     "purl": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
                     "type": "library",
                     "version": "4.1.100.Final",

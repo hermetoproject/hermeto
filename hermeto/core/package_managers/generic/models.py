@@ -19,6 +19,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageManagerError
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, ExternalReference
 from hermeto.core.rooted_path import RootedPath
 
@@ -120,6 +121,7 @@ class LockfileArtifactUrl(LockfileArtifactBase):
             ).to_string(),
             type="file",
             external_references=[ExternalReference(url=url, type="distribution")],
+            properties=PropertySet(package_managers=frozenset(["generic"])).to_properties(),
         )
         return component
 
@@ -213,6 +215,7 @@ class LockfileArtifactMaven(LockfileArtifactBase):
             ).to_string(),
             type="library",
             external_references=[ExternalReference(url=self.download_url, type="distribution")],
+            properties=PropertySet(package_managers=frozenset(["generic"])).to_properties(),
         )
 
 

@@ -14,6 +14,7 @@ from hermeto.core.errors import (
     LockfileNotFound,
 )
 from hermeto.core.models.input import ExtraOptions, RpmBinaryFilters, RpmPackageInput, SSLOptions
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
 from hermeto.core.package_managers.rpm.main import (
@@ -452,56 +453,59 @@ DOWNLOAD_URL = f"https://example.com/{RPM_FILE}"
             {},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&checksum={checksum}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_repoid_and_url",
         ),
         pytest.param(
             {"vendor": "Fedora Project"},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/fedora/{name}@{version}-{release}?arch={arch}&checksum={checksum}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_namespace",
         ),
         pytest.param(
             {"vendor": "RPM Fusion"},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/rpm_fusion/{name}@{version}-{release}?arch={arch}&checksum={checksum}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_normalized_namespace",
         ),
         pytest.param(
             {"epoch": "2"},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&checksum={checksum}&epoch={epoch}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_epoch",
         ),
         pytest.param(
             {"arch": "noarch"},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&checksum={checksum}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_noarch",
         ),
         pytest.param(
             {},
             {"repoid": "foorepo", "url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/{name}@{version}-{release}?arch=src&checksum={checksum}&repository_id={repoid}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="with_src_rpm",
         ),
         pytest.param(
             {},
             {"url": DOWNLOAD_URL, "checksum": "sha256:21bb2a09"},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&checksum={checksum}&download_url={url}",
-            [],
+            PropertySet(package_managers=frozenset(["rpm"])).to_properties(),
             id="no_repoid",
         ),
         pytest.param(
             {},
             {"repoid": "foorepo", "url": DOWNLOAD_URL},
             "pkg:rpm/{name}@{version}-{release}?arch={arch}&repository_id={repoid}",
-            [Property(name=f"{APP_NAME}:missing_hash:in_file", value="rpms.lock.yaml")],
+            PropertySet(
+                missing_hash_in_file=frozenset(["rpms.lock.yaml"]),
+                package_managers=frozenset(["rpm"]),
+            ).to_properties(),
             id="no_checksum",
         ),
     ],

@@ -163,7 +163,10 @@ class Module(NamedTuple):
             name=self.name,
             version=self.version,
             purl=self.purl,
-            properties=PropertySet(missing_hash_in_file=missing_hash_in_file).to_properties(),
+            properties=PropertySet(
+                missing_hash_in_file=missing_hash_in_file,
+                package_managers=frozenset(["gomod"]),
+            ).to_properties(),
         )
 
 
@@ -206,7 +209,12 @@ class Package(NamedTuple):
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
-        return Component(name=self.name, version=self.module.version, purl=self.purl)
+        return Component(
+            name=self.name,
+            version=self.module.version,
+            purl=self.purl,
+            properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
+        )
 
 
 class StandardPackage(NamedTuple):
@@ -225,7 +233,11 @@ class StandardPackage(NamedTuple):
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
-        return Component(name=self.name, purl=self.purl)
+        return Component(
+            name=self.name,
+            purl=self.purl,
+            properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
+        )
 
 
 class GoVersion(version.Version):

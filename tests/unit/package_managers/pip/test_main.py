@@ -23,7 +23,8 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
 from hermeto.core.models.output import ProjectFile
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.rooted_path import RootedPath
@@ -1409,15 +1410,17 @@ def test_fetch_pip_source(
         Component(
             name="bar",
             purl="pkg:pypi/bar?checksum=sha256:aaaaaaaaaa&download_url=https://x.org/bar.zip",
+            properties=PropertySet(package_managers=frozenset(["pip"])).to_properties(),
         ),
         Component(
             name="baz",
             version="0.0.5",
             purl="pkg:pypi/baz@0.0.5",
-            properties=[
-                Property(name=f"{APP_NAME}:pip:package:binary", value="true"),
-                Property(name=f"{APP_NAME}:pip:package:build-dependency", value="true"),
-            ],
+            properties=PropertySet(
+                pip_package_binary=True,
+                pip_build_dependency=True,
+                package_managers=frozenset(["pip"]),
+            ).to_properties(),
         ),
     ]
 
@@ -1431,16 +1434,18 @@ def test_fetch_pip_source(
             name="ham",
             version="3.2",
             purl=f"pkg:pypi/ham@3.2?repository_url={CUSTOM_PYPI_ENDPOINT}",
-            properties=[
-                Property(name=f"{APP_NAME}:missing_hash:in_file", value="requirements.txt")
-            ],
+            properties=PropertySet(
+                missing_hash_in_file=frozenset(["requirements.txt"]),
+                package_managers=frozenset(["pip"]),
+            ).to_properties(),
         ),
         Component(
             name="eggs",
             purl="pkg:pypi/eggs?checksum=sha256:aaaaaaaaaa&download_url=https://x.org/eggs.zip",
-            properties=[
-                Property(name=f"{APP_NAME}:missing_hash:in_file", value="requirements.txt")
-            ],
+            properties=PropertySet(
+                missing_hash_in_file=frozenset(["requirements.txt"]),
+                package_managers=frozenset(["pip"]),
+            ).to_properties(),
         ),
     ]
 

@@ -15,6 +15,7 @@ from packageurl import PackageURL
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
@@ -65,7 +66,12 @@ class CargoPackage:
 
     def to_component(self) -> Component:
         """Convert CargoPackage into SBOM component."""
-        return Component(name=self.name, version=self.version, purl=self.purl.to_string())
+        return Component(
+            name=self.name,
+            version=self.version,
+            purl=self.purl.to_string(),
+            properties=PropertySet(package_managers=frozenset(["cargo"])).to_properties(),
+        )
 
 
 @dataclass
@@ -98,7 +104,12 @@ class LocalCargoPackage:
 
     def to_component(self) -> Component:
         """Convert LocalCargoPackage into SBOM component."""
-        return Component(name=self.name, version=self.version, purl=self.purl.to_string())
+        return Component(
+            name=self.name,
+            version=self.version,
+            purl=self.purl.to_string(),
+            properties=PropertySet(package_managers=frozenset(["cargo"])).to_properties(),
+        )
 
 
 def fetch_cargo_source(request: Request) -> RequestOutput:

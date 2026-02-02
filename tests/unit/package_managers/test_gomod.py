@@ -22,7 +22,8 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component, Property, PropertyEnum
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.gomod import (
     Go,
     GoVersion,
@@ -980,6 +981,7 @@ def test_module_to_component() -> None:
         name="github.com/another-org/nice-repo",
         version="v0.0.1",
         purl="pkg:golang/github.com/another-org/nice-repo@v0.0.1?type=module",
+        properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
     )
 
     component = Module(
@@ -1115,6 +1117,7 @@ def test_create_packages_from_parsed_data() -> None:
                 name="github.com/my-org/some-repo",
                 version="v0.0.3",
                 purl="pkg:golang/github.com/my-org/some-repo@v0.0.3?type=package",
+                properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
             ),
         ),
         # package is from a replaced module
@@ -1132,6 +1135,7 @@ def test_create_packages_from_parsed_data() -> None:
                 name="github.com/another-org/nice-repo/this-pkg",
                 version="v0.0.1",
                 purl="pkg:golang/github.com/another-org/nice-repo/this-pkg@v0.0.1?type=package",
+                properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
             ),
         ),
         # main module is from a forked repo
@@ -1149,6 +1153,7 @@ def test_create_packages_from_parsed_data() -> None:
                 name="github.com/my-org/nice-repo/this-pkg",
                 version="v0.0.2",
                 purl="pkg:golang/github.com/another-org/forked-repo/this-pkg@v0.0.2?type=package",
+                properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
             ),
         ),
     ),
@@ -1689,29 +1694,34 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum")
-                    ],
+                    properties=PropertySet(
+                        missing_hash_in_file=frozenset(["go.sum"]),
+                        package_managers=frozenset(["gomod"]),
+                    ).to_properties(),
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
                 Component(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package",
                     version="v1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
                 Component(
                     name="golang.org/x/net/http",
                     purl="pkg:golang/golang.org/x/net/http@v0.0.0-20190311183353-d8887717615a?type=package",
                     version="v0.0.0-20190311183353-d8887717615a",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
             ],
         ),
@@ -1751,24 +1761,28 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
                 Component(
                     name="github.com/my-org/my-repo/path",
                     purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module",
                     version="v1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum")
-                    ],
+                    properties=PropertySet(
+                        missing_hash_in_file=frozenset(["path/go.sum"]),
+                        package_managers=frozenset(["gomod"]),
+                    ).to_properties(),
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    properties=PropertySet(package_managers=frozenset(["gomod"])).to_properties(),
                 ),
             ],
         ),

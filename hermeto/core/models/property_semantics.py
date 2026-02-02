@@ -19,6 +19,7 @@ class PropertyEnum(str, Enum):
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
     PROP_FOUND_BY = f"{APP_NAME}:found_by"
     PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
+    PROP_PACKAGE_MANAGER = f"{APP_NAME}:package_manager"
     PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
     PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
     PROP_RPM_MODULARITY_LABEL = f"{APP_NAME}:rpm_modularity_label"
@@ -44,6 +45,7 @@ class PropertySet:
     missing_hash_in_file: frozenset[str] = field(default_factory=frozenset)
     npm_bundled: bool = False
     npm_development: bool = False
+    package_managers: frozenset[str] = field(default_factory=frozenset)
     pip_build_dependency: bool = False
     pip_package_binary: bool = False
     rpm_modularity_label: str | None = None
@@ -57,6 +59,7 @@ class PropertySet:
         missing_hash_in_file = []
         npm_bundled = False
         npm_development = False
+        package_managers: list[str] = []
         pip_build_dependency = False
         pip_package_binary = False
         rpm_modularity_label = None
@@ -73,6 +76,8 @@ class PropertySet:
                 found_by = prop.value
             elif prop.name == PropertyEnum.PROP_MISSING_HASH_IN_FILE:
                 missing_hash_in_file.append(prop.value)
+            elif prop.name == PropertyEnum.PROP_PACKAGE_MANAGER:
+                package_managers.append(prop.value)
             elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BINARY:
                 pip_package_binary = True
             elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY:
@@ -90,6 +95,7 @@ class PropertySet:
             frozenset(missing_hash_in_file),
             npm_bundled,
             npm_development,
+            frozenset(package_managers),
             pip_build_dependency,
             pip_package_binary,
             rpm_modularity_label,
@@ -111,6 +117,8 @@ class PropertySet:
             props.append(Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED, value="true"))
         if self.npm_development:
             props.append(Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT, value="true"))
+        for pm in self.package_managers:
+            props.append(Property(name=PropertyEnum.PROP_PACKAGE_MANAGER, value=pm))
         if self.pip_build_dependency:
             props.append(
                 Property(name=PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY, value="true")
@@ -137,6 +145,7 @@ class PropertySet:
             missing_hash_in_file=self.missing_hash_in_file | other.missing_hash_in_file,
             npm_bundled=self.npm_bundled and other.npm_bundled,
             npm_development=self.npm_development and other.npm_development,
+            package_managers=self.package_managers | other.package_managers,
             pip_build_dependency=self.pip_build_dependency and other.pip_build_dependency,
             pip_package_binary=self.pip_package_binary or other.pip_package_binary,
             rpm_modularity_label=self.rpm_modularity_label or other.rpm_modularity_label,

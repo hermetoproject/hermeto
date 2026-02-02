@@ -9,7 +9,6 @@ from unittest import mock
 import pytest
 from packageurl import PackageURL
 
-from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import (
     LockfileNotFound,
@@ -19,7 +18,8 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.npm import (
     NormalizedUrl,
     NpmComponentInfo,
@@ -657,8 +657,18 @@ class TestPurlifier:
                 },
             ],
             [
-                Component(name="foo", version="1.0.0", purl="pkg:npm/foo@1.0.0"),
-                Component(name="bar", version="1.0.0", purl="pkg:npm/bar@1.0.0"),
+                Component(
+                    name="foo",
+                    version="1.0.0",
+                    purl="pkg:npm/foo@1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                ),
+                Component(
+                    name="bar",
+                    version="1.0.0",
+                    purl="pkg:npm/bar@1.0.0",
+                    properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                ),
             ],
         ),
         (
@@ -677,10 +687,10 @@ class TestPurlifier:
                     name="foo",
                     version="1.0.0",
                     purl="pkg:npm/foo@1.0.0",
-                    properties=[
-                        Property(name="cdx:npm:package:development", value="true"),
-                        Property(name=f"{APP_NAME}:found_by", value=f"{APP_NAME}"),
-                    ],
+                    properties=PropertySet(
+                        npm_development=True,
+                        package_managers=frozenset(["npm"]),
+                    ).to_properties(),
                 ),
             ],
         ),
@@ -700,10 +710,10 @@ class TestPurlifier:
                     name="foo",
                     version="1.0.0",
                     purl="pkg:npm/foo@1.0.0",
-                    properties=[
-                        Property(name="cdx:npm:package:bundled", value="true"),
-                        Property(name=f"{APP_NAME}:found_by", value=f"{APP_NAME}"),
-                    ],
+                    properties=PropertySet(
+                        npm_bundled=True,
+                        package_managers=frozenset(["npm"]),
+                    ).to_properties(),
                 ),
             ],
         ),
@@ -723,12 +733,10 @@ class TestPurlifier:
                     name="foo",
                     version="1.0.0",
                     purl="pkg:npm/foo@1.0.0",
-                    properties=[
-                        Property(
-                            name=f"{APP_NAME}:missing_hash:in_file",
-                            value="path/to/foo/package-lock.json",
-                        ),
-                    ],
+                    properties=PropertySet(
+                        missing_hash_in_file=frozenset(["path/to/foo/package-lock.json"]),
+                        package_managers=frozenset(["npm"]),
+                    ).to_properties(),
                 ),
             ],
         ),
@@ -782,8 +790,18 @@ def test_generate_component_list(
             ],
             {
                 "components": [
-                    Component(name="foo", version="1.0.0", purl="pkg:npm/foo@1.0.0"),
-                    Component(name="bar", version="2.0.0", purl="pkg:npm/bar@2.0.0"),
+                    Component(
+                        name="foo",
+                        version="1.0.0",
+                        purl="pkg:npm/foo@1.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
+                    Component(
+                        name="bar",
+                        version="2.0.0",
+                        purl="pkg:npm/bar@2.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
                 ],
                 "environment_variables": [],
                 "project_files": [
@@ -863,10 +881,30 @@ def test_generate_component_list(
             ],
             {
                 "components": [
-                    Component(name="foo", version="1.0.0", purl="pkg:npm/foo@1.0.0"),
-                    Component(name="bar", version="2.0.0", purl="pkg:npm/bar@2.0.0"),
-                    Component(name="spam", version="3.0.0", purl="pkg:npm/spam@3.0.0"),
-                    Component(name="eggs", version="4.0.0", purl="pkg:npm/eggs@4.0.0"),
+                    Component(
+                        name="foo",
+                        version="1.0.0",
+                        purl="pkg:npm/foo@1.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
+                    Component(
+                        name="bar",
+                        version="2.0.0",
+                        purl="pkg:npm/bar@2.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
+                    Component(
+                        name="spam",
+                        version="3.0.0",
+                        purl="pkg:npm/spam@3.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
+                    Component(
+                        name="eggs",
+                        version="4.0.0",
+                        purl="pkg:npm/eggs@4.0.0",
+                        properties=PropertySet(package_managers=frozenset(["npm"])).to_properties(),
+                    ),
                 ],
                 "environment_variables": [],
                 "project_files": [

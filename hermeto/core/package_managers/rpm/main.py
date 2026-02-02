@@ -23,6 +23,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import ExtraOptions, Request, RpmBinaryFilters, SSLOptions
 from hermeto.core.models.output import RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.rpm.binary_filters import RPMArchitectureFilter
@@ -160,19 +161,19 @@ class Package:
 
     def to_component(self, lockfile_path: Path) -> Component:
         """Create an SBOM component for this package."""
-        properties = []
+        missing_hash_in_file: frozenset[str] = frozenset()
         if not self.checksum:
-            properties = [
-                Property(name=f"{APP_NAME}:missing_hash:in_file", value=str(lockfile_path))
-            ]
-
-        if self.modularity_label:
-            properties.append(
-                Property(name=f"{APP_NAME}:rpm_modularity_label", value=str(self.modularity_label))
-            )
+            missing_hash_in_file = frozenset([str(lockfile_path)])
 
         return Component(
-            name=self.name, version=self.version, purl=self.purl, properties=properties
+            name=self.name,
+            version=self.version,
+            purl=self.purl,
+            properties=PropertySet(
+                missing_hash_in_file=missing_hash_in_file,
+                rpm_modularity_label=self.modularity_label,
+                package_managers=frozenset(["rpm"]),
+            ).to_properties(),
         )
 
 

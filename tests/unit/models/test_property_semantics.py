@@ -188,6 +188,13 @@ class TestPropertySet:
             ),
             (
                 [
+                    Property(name=PropertyEnum.PROP_PACKAGE_MANAGER, value="npm"),
+                    Property(name=PropertyEnum.PROP_PACKAGE_MANAGER, value="yarn"),
+                ],
+                PropertySet(package_managers=frozenset(["npm", "yarn"])),
+            ),
+            (
+                [
                     Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}"),
                     Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum"),
                     Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="foo/go.sum"),
@@ -256,6 +263,11 @@ class TestPropertySet:
                 PropertySet(),
                 PropertySet(pip_package_binary=True),
                 PropertySet(pip_package_binary=True),
+            ),
+            (
+                PropertySet(package_managers=frozenset(["npm"])),
+                PropertySet(package_managers=frozenset(["yarn"])),
+                PropertySet(package_managers=frozenset(["npm", "yarn"])),
             ),
         ],
     )

@@ -28,6 +28,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnsupportedFeature,
 )
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
@@ -282,6 +283,7 @@ class _ComponentResolver:
             version=resolved_package.version,
             purl=purl,
             pedigree=self._pedigree_mapping.get(package.parsed_locator),
+            properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
         )
 
     @staticmethod

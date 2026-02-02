@@ -661,6 +661,7 @@ def _generate_component_list(component_infos: list[NpmComponentInfo]) -> list[Co
                 npm_bundled=component_info["bundled"],
                 npm_development=component_info["dev"],
                 missing_hash_in_file=missing_hash,
+                package_managers=frozenset(["npm"]),
             ).to_properties(),
         )
 

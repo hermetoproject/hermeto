@@ -81,7 +81,10 @@ def _create_sbom_components(packages: Iterable[YarnClassicPackage]) -> list[Comp
     """Create SBOM components from the given yarn packages."""
     result = []
     for package in packages:
-        properties = PropertySet(npm_development=package.dev).to_properties()
+        properties = PropertySet(
+            npm_development=package.dev,
+            package_managers=frozenset(["yarn-classic"]),
+        ).to_properties()
         result.append(
             Component(
                 name=package.name,

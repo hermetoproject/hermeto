@@ -105,6 +105,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
                         missing_hash_in_file=missing_hash_in_file,
                         pip_package_binary=pip_package_binary,
                         pip_build_dependency=pip_build_dependency,
+                        package_managers=frozenset(["pip"]),
                     ).to_properties(),
                 )
             )
