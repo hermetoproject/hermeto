@@ -81,11 +81,9 @@ class ContainerImage:
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: str | None = None,
         entrypoint: str | None = None,
-        podman_flags: list[str] | None = None,
+        podman_flags: Sequence[str] | None = None,
     ) -> tuple[str, int]:
-        if podman_flags is None:
-            podman_flags = []
-
+        podman_flags = [] if podman_flags is None else list(podman_flags)
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
 
         for src, dest in mounts:
@@ -109,7 +107,7 @@ class HermetoImage(ContainerImage):
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: str | None = "host",
         entrypoint: str | None = None,
-        podman_flags: list[str] | None = None,
+        podman_flags: Sequence[str] | None = None,
     ) -> tuple[str, int]:
         netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
