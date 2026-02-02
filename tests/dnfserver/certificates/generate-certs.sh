@@ -4,7 +4,9 @@ tempssldir=$(mktemp -d)
 
 # generate CA cert
 openssl ecparam -genkey -name prime256v1 -out CA.key
-openssl req -new -x509 -key CA.key -days 36500 -out CA.crt -subj "/CN=CA"
+openssl req -new -x509 -key CA.key -days 36500 -out CA.crt -subj "/CN=CA" \
+    -addext "keyUsage=critical,keyCertSign,cRLSign" \
+    -addext "basicConstraints=critical,CA:TRUE"
 
 # generate client/server key, certificate signing request and certificate
 for entity in client server; do
@@ -23,6 +25,8 @@ for entity in client server; do
         -CAkey CA.key \
         -out "${entity}.crt" \
         -subj "/CN=${CN}" \
-        -addext "subjectAltName=${SAN}"
+        -addext "subjectAltName=${SAN}" \
+        -addext "basicConstraints=critical,CA:FALSE" \
+        -addext "keyUsage=critical,digitalSignature,keyEncipherment"
 done
 rm -rf "${tempssldir}"
