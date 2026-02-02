@@ -46,8 +46,8 @@ class PropertySet:
     npm_development: bool = False
     pip_build_dependency: bool = False
     pip_package_binary: bool = False
-    rpm_modularity_label: str = ""
-    rpm_summary: str = ""
+    rpm_modularity_label: str | None = None
+    rpm_summary: str | None = None
 
     @classmethod
     def from_properties(cls, props: Iterable[Property]) -> "Self":
@@ -59,8 +59,8 @@ class PropertySet:
         npm_development = False
         pip_build_dependency = False
         pip_package_binary = False
-        rpm_modularity_label = ""
-        rpm_summary = ""
+        rpm_modularity_label = None
+        rpm_summary = None
 
         for prop in props:
             if prop.name == PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY:
