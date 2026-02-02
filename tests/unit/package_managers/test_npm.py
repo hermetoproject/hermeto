@@ -11,7 +11,9 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.config import NpmSettings
 from hermeto.core.errors import (
+    InvalidInput,
     LockfileNotFound,
     PackageRejected,
     UnexpectedFormat,
@@ -646,6 +648,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 {
                     "name": "bar",
@@ -654,6 +657,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -670,6 +674,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": True,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -693,6 +698,7 @@ class TestPurlifier:
                     "bundled": True,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
             ],
             [
@@ -716,6 +722,7 @@ class TestPurlifier:
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": Path("path/to/foo/package-lock.json"),
+                    "external_refs": None,
                 },
             ],
             [
@@ -756,6 +763,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -765,6 +773,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "projectfiles": [
@@ -803,6 +812,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -812,6 +822,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "projectfiles": [
@@ -834,6 +845,7 @@ def test_generate_component_list(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     "dependencies": [
                         {
@@ -843,6 +855,7 @@ def test_generate_component_list(
                             "bundled": False,
                             "dev": False,
                             "missing_hash_in_file": None,
+                            "external_refs": None,
                         }
                     ],
                     "dependencies_to_download": {
@@ -968,6 +981,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -977,6 +991,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,  # correct since integrity is missing from dependencies but is included in packages section
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1038,6 +1053,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1047,6 +1063,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "baz",
@@ -1055,6 +1072,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1063,6 +1081,7 @@ def test_resolve_npm_validation(
                         "bundled": True,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1104,6 +1123,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1113,6 +1133,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1154,6 +1175,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1163,6 +1185,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1212,6 +1235,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1221,6 +1245,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1229,6 +1254,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1271,6 +1297,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1280,6 +1307,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1315,6 +1343,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1324,6 +1353,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     }
                 ],
                 "projectfiles": [
@@ -1372,6 +1402,7 @@ def test_resolve_npm_validation(
                     "bundled": False,
                     "dev": False,
                     "missing_hash_in_file": None,
+                    "external_refs": None,
                 },
                 "dependencies": [
                     {
@@ -1381,6 +1412,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     },
                     {
                         "name": "baz",
@@ -1389,6 +1421,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "spam",
@@ -1397,6 +1430,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": None,
+                        "external_refs": None,
                     },
                     {
                         "name": "eggs",
@@ -1405,6 +1439,7 @@ def test_resolve_npm_validation(
                         "bundled": False,
                         "dev": False,
                         "missing_hash_in_file": Path("package-lock.json"),
+                        "external_refs": None,
                     },
                 ],
                 "projectfiles": [
@@ -1638,7 +1673,7 @@ def test_get_npm_dependencies(
     mock_async_download_files: mock.Mock,
     rooted_tmp_path: RootedPath,
     deps_to_download: dict[str, dict[str, str | None]],
-    expected_download_subpaths: dict[str, str],
+    expected_download_subpaths: dict[str, RootedPath],
 ) -> None:
     def args_based_return_checksum(integrity: str) -> ChecksumInfo:
         if integrity == "sha512-YOLO1111==":
@@ -1763,7 +1798,11 @@ def test_update_package_lock_with_local_paths(
     expected_lockfile_data: dict[str, Any],
 ) -> None:
     for url, download_path in download_paths.items():
-        download_paths.update({url: rooted_tmp_path.join_within_root(download_path)})
+        download_paths.update(
+            {
+                url: rooted_tmp_path.join_within_root(download_path),
+            }
+        )
     package_lock = PackageLock(rooted_tmp_path, lockfile_data)
     _update_package_lock_with_local_paths(download_paths, package_lock)
     assert package_lock.lockfile_data == expected_lockfile_data
@@ -1838,3 +1877,211 @@ def test_update_package_json_files(
     package_json_projectfiles = _update_package_json_files(workspaces, rooted_tmp_path)
     for projectfile in package_json_projectfiles:
         assert json.loads(projectfile.template) == expected_file_data
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        pytest.param("https://foo:bar@example.com", id="full_credentials_are_present"),
+        pytest.param("https://:bar@example.com", id="password_is_present"),
+        pytest.param("https://foo:@example.com", id="login_is_present"),
+    ],
+)
+def test_npm_settings_rejects_proxy_urls_containing_credentials(
+    proxy_url: str,
+) -> None:
+    with pytest.raises(InvalidInput):
+        NpmSettings(proxy_url=proxy_url)
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        pytest.param("https://example.com", id="proxy_url_missing_trailing_slash"),
+        pytest.param("https://example.com/", id="proxy_url_having_slash"),
+        pytest.param("https://example.com/some/path", id="proxy_url_missing_slash_in_path"),
+        pytest.param("https://example.com/some/path/", id="proxy_url_having_slash_in_path"),
+    ],
+)
+def test_npm_settings_correctly_handles_trailing_slash_in_proxy_urls(
+    proxy_url: str,
+) -> None:
+    parsed_url = str(NpmSettings(proxy_url=proxy_url).proxy_url)
+    number_of_trailing_slashes = len(parsed_url) - len(parsed_url.rstrip("/"))
+    msg = f"Got unexpected numner of trailing slashes: {number_of_trailing_slashes} instead of 1"
+    assert number_of_trailing_slashes == 1, msg
+
+
+@pytest.mark.parametrize(
+    "deps_to_download",
+    [
+        pytest.param(
+            {
+                "https://github.com/cachito-testing/ms-1.0.0.tgz": {
+                    "name": "ms",
+                    "version": "1.0.0",
+                    "integrity": "completely-fake",
+                },
+                "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": {
+                    "version": "2.0.0",
+                    "name": "cachi2-without-deps-second",
+                },
+                "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": {
+                    "integrity": "completely-fake",
+                    "name": "is-positive",
+                },
+                "git+ssh://git@gitlab.foo.bar.com/osbs/cachito-tests.git#c300503": {
+                    "integrity": "completely-fake",
+                    "name": "gitlab-hermeto-npm-without-deps-second",
+                },
+            },
+            id="multiple_vsc_systems_simultaneously",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.npm.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.must_match_any_checksum")
+@mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
+@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.get_config")
+def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
+    mocked_config: mock.Mock,
+    mock_clone_as_tarball: mock.Mock,
+    mock_from_sri: mock.Mock,
+    mock_must_match_any_checksum: mock.Mock,
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    deps_to_download: dict[str, dict[str, str | None]],
+) -> None:
+    mock_config = mock.Mock()
+    mock_config.npm.proxy_url = "https://fakeproxy.com"
+    # ruff would assume this is a hardcoded password otherwise
+    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_login = "fake-proxy-login"
+    mocked_config.return_value = mock_config
+    mock_from_sri.return_value = ("fake-algorithm", "fake-digest")
+
+    _get_npm_dependencies(rooted_tmp_path, deps_to_download)
+
+    for call in mock_async_download_files.mock_calls:
+        assert call.kwargs["auth"] is None, "Found credentials where they should not be!"
+
+
+@pytest.mark.parametrize(
+    "deps_to_download",
+    [
+        pytest.param(
+            {
+                "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": {
+                    "name": "@types/react-dom",
+                    "version": "18.0.11",
+                    "integrity": "completely-fake",
+                },
+            },
+            id="single_registry_dependency",
+        ),
+        pytest.param(
+            {
+                "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": {
+                    "name": "@types/react-dom",
+                    "version": "18.0.11",
+                    "integrity": "completely-fake",
+                },
+                "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": {
+                    "name": "abbrev",
+                    "version": "2.0.0",
+                    "integrity": "completely-fake",
+                },
+            },
+            id="multiple_registry_dependencies",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.npm.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.must_match_any_checksum")
+@mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
+@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.get_config")
+def test_npm_proxy_credentials_propagate_to_registry_hosts(
+    mocked_config: mock.Mock,
+    mock_clone_as_tarball: mock.Mock,
+    mock_from_sri: mock.Mock,
+    mock_must_match_any_checksum: mock.Mock,
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    deps_to_download: dict[str, dict[str, str | None]],
+) -> None:
+    mock_config = mock.Mock()
+    mock_config.npm.proxy_url = "https://fakeproxy.com"
+    # ruff would assume this is a hardcoded password otherwise
+    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_login = "fake-proxy-login"
+    mocked_config.return_value = mock_config
+    mock_from_sri.return_value = ("fake-algorithm", "fake-digest")
+
+    _get_npm_dependencies(rooted_tmp_path, deps_to_download)
+
+    msg = "Not found credentials where they should be!"
+    for call in mock_async_download_files.mock_calls:
+        assert call.kwargs["auth"] is not None, msg
+
+
+@pytest.mark.parametrize(
+    "deps_to_download",
+    [
+        pytest.param(
+            {
+                "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": {
+                    "name": "@types/react-dom",
+                    "version": "18.0.11",
+                    "integrity": "completely-fake",
+                },
+            },
+            id="single_registry_dependency",
+        ),
+        pytest.param(
+            {
+                "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": {
+                    "name": "@types/react-dom",
+                    "version": "18.0.11",
+                    "integrity": "completely-fake",
+                },
+                "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": {
+                    "name": "abbrev",
+                    "version": "2.0.0",
+                    "integrity": "completely-fake",
+                },
+            },
+            id="multiple_registry_dependencies",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.npm.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.must_match_any_checksum")
+@mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
+@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.get_config")
+def test_npm_proxy_url_gets_substituted_for_registry_hosts(
+    mocked_config: mock.Mock,
+    mock_clone_as_tarball: mock.Mock,
+    mock_from_sri: mock.Mock,
+    mock_must_match_any_checksum: mock.Mock,
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    deps_to_download: dict[str, dict[str, str | None]],
+) -> None:
+    proxy_url = "https://fakeproxy.com"
+    mock_config = mock.Mock()
+    mock_config.npm.proxy_url = proxy_url
+    # ruff would assume this is a hardcoded password otherwise
+    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_login = "fake-proxy-login"
+    mocked_config.return_value = mock_config
+    mock_from_sri.return_value = ("fake-algorithm", "fake-digest")
+
+    _get_npm_dependencies(rooted_tmp_path, deps_to_download)
+
+    msg = "Proxy URL was not substituted!"
+    for call in mock_async_download_files.mock_calls:
+        location = next(iter(call.kwargs["files_to_download"].keys()))
+        assert location.startswith(proxy_url), msg
