@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40isaacs/cliui@8.0.2",
@@ -19,6 +23,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40npmcli/fs@3.1.0",
@@ -31,6 +39,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40pkgjs/parseargs@0.11.0",
@@ -43,6 +55,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40tootallnate/once@2.0.0",
@@ -55,6 +71,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40types/node@20.4.5",
@@ -67,6 +87,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40types/proxy-from-env@1.0.1",
@@ -79,6 +103,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40types/yargs-parser@21.0.0",
@@ -91,6 +119,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/%40types/yargs@17.0.24",
@@ -103,6 +135,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/abbrev@1.1.1",
@@ -115,6 +151,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/agent-base@6.0.2",
@@ -127,6 +167,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/agentkeepalive@4.3.0",
@@ -139,6 +183,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/aggregate-error@3.1.0",
@@ -151,6 +199,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-regex@3.0.1",
@@ -163,6 +215,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-regex@5.0.1",
@@ -175,6 +231,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-regex@6.0.1",
@@ -187,6 +247,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/ansi-regex",
@@ -199,6 +263,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-styles@4.3.0",
@@ -211,6 +279,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ansi-styles@6.2.1",
@@ -223,6 +295,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/aproba@2.0.0",
@@ -235,6 +311,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/are-we-there-yet@3.0.1",
@@ -247,6 +327,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/balanced-match@1.0.2",
@@ -259,6 +343,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46",
@@ -270,6 +358,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?checksum=sha512:b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d&download_url=https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
@@ -282,6 +374,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/brace-expansion@1.1.11",
@@ -294,6 +390,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/brace-expansion@2.0.1",
@@ -306,6 +406,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/cacache@17.1.3",
@@ -328,6 +432,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/cachito-npm-without-deps@1.0.0?checksum=sha512:e9928fe2a3cdb1a2b0689766fc7826d011a1e8f3e730276d496332989a140e5155ae26533b3fc819b8ed83181a3442416e7d730ba5af737248d9a0871e5f8bb4&download_url=https://github.com/cachito-testing/cachito-npm-without-deps/archive/2f0ce1d7b1f8b35572d919428b965285a69583f6.tar.gz",
@@ -340,6 +448,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/chalk@5.3.0",
@@ -352,6 +464,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/chownr@2.0.0",
@@ -364,6 +480,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/clean-stack@2.2.0",
@@ -376,6 +496,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/cliui@8.0.1",
@@ -388,6 +512,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/color-convert@2.0.1",
@@ -400,6 +528,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/color-name@1.1.4",
@@ -412,6 +544,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/color-support@1.1.3",
@@ -424,6 +560,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/concat-map@0.0.1",
@@ -436,6 +576,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/console-control-strings@1.1.0",
@@ -448,6 +592,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/cross-spawn@7.0.3",
@@ -460,6 +608,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/debug@4.3.4",
@@ -472,6 +624,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/delegates@1.0.0",
@@ -484,6 +640,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/depd@2.0.0",
@@ -496,6 +656,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/eastasianwidth@0.2.0",
@@ -508,6 +672,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/emoji-regex@10.2.1?checksum=sha512:1a63c8eb8f70c65e95dbc2f26d8f6b3f1ede1f7501224ed1d4f3325f7841b0d19ba21cd3d88baf05727056e8be1ea2fbd09d43bfd9437bb5c2f2ea025d42d967&download_url=https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz",
@@ -520,6 +688,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/emoji-regex@8.0.0",
@@ -532,6 +704,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/emoji-regex@9.2.2",
@@ -544,6 +720,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/encoding@0.1.13",
@@ -556,6 +736,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/env-paths@2.2.1",
@@ -568,6 +752,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/err-code@2.0.3",
@@ -580,6 +768,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/escalade@3.1.1",
@@ -592,6 +784,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/exponential-backoff@3.1.1",
@@ -604,6 +800,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/fecha@4.2.3",
@@ -616,6 +816,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/foreground-child@3.1.1",
@@ -628,6 +832,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/fs-minipass@2.1.0",
@@ -640,6 +848,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/fs-minipass@3.0.2",
@@ -652,6 +864,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/fs.realpath@1.0.0",
@@ -680,6 +896,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/fsevents@2.3.2",
@@ -692,6 +912,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/gauge@4.0.4",
@@ -704,6 +928,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/get-caller-file@2.0.5",
@@ -716,6 +944,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/glob@10.3.3",
@@ -728,6 +960,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/glob@7.2.3",
@@ -740,6 +976,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/graceful-fs@4.2.11",
@@ -752,6 +992,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/has-flag@4.0.0",
@@ -764,6 +1008,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/has-unicode@2.0.1",
@@ -776,6 +1024,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#book-of-armaments",
@@ -787,6 +1039,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/http-cache-semantics@4.1.1",
@@ -799,6 +1055,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/http-proxy-agent@5.0.0",
@@ -811,6 +1071,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/https-proxy-agent@5.0.1",
@@ -823,6 +1087,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/humanize-ms@1.2.1",
@@ -835,6 +1103,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/iconv-lite@0.6.3",
@@ -847,6 +1119,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/imurmurhash@0.1.4",
@@ -859,6 +1135,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/indent-string@4.0.0",
@@ -871,6 +1151,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/inflight@1.0.6",
@@ -883,6 +1167,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/inherits@2.0.4",
@@ -895,6 +1183,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ip@2.0.0",
@@ -907,6 +1199,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/is-fullwidth-code-point@3.0.0",
@@ -919,6 +1215,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/is-lambda@1.0.1",
@@ -931,6 +1231,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/is-positive@3.0.0?checksum=sha512:9471d064690e6859044ecc450c1cd7643ac844b444511860f0945068ff0c3b49aaef6d86fa6fd39f1a814b1c0bcf15fd9ce03b0b6db690156fe613f2c99cf025&download_url=https://github.com/kevva/is-positive/archive/refs/tags/3.0.0.tar.gz",
@@ -943,6 +1247,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/is-positive@3.1.0?checksum=sha512:fd565d71ec5e6e6b14b12cbe46d87eefb18ae58b34b32c5e5e54096c6eb93f3b134b948ffb9c75ea717157f2e015143c6c59efaca6da74b61b8c95002fc6cedc&download_url=https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz",
@@ -955,6 +1263,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/isexe@2.0.0",
@@ -967,6 +1279,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/jackspeak@2.2.2",
@@ -995,6 +1311,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/left-pad@1.3.0",
@@ -1007,6 +1327,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/lru-cache@10.0.0",
@@ -1019,6 +1343,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/lru-cache@6.0.0",
@@ -1031,6 +1359,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/lru-cache@7.18.3",
@@ -1043,6 +1375,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/make-fetch-happen@11.1.1",
@@ -1055,6 +1391,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minimatch@3.1.2",
@@ -1067,6 +1407,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minimatch@9.0.3",
@@ -1079,6 +1423,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minimist@0.2.4?checksum=sha512:b71cf4df4b03db6dbeb4c298b69f86ffc98c144ef4870faf94e455aea89b740fe75006429699394a16b969de907da473b12be6a261ae7538ee96d68b489e34d7&download_url=https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz",
@@ -1091,6 +1439,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass-collect@1.0.2",
@@ -1103,6 +1455,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass-fetch@3.0.3",
@@ -1115,6 +1471,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass-flush@1.0.5",
@@ -1127,6 +1487,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass-pipeline@1.2.4",
@@ -1139,6 +1503,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass-sized@1.0.3",
@@ -1151,6 +1519,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass@3.3.6",
@@ -1163,6 +1535,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass@5.0.0",
@@ -1175,6 +1551,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minipass@7.0.2",
@@ -1187,6 +1567,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/minizlib@2.1.2",
@@ -1199,6 +1583,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/mkdirp@1.0.4",
@@ -1211,6 +1599,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ms@2.1.2",
@@ -1223,6 +1615,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ms@2.1.3",
@@ -1235,6 +1631,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/nan@2.17.0",
@@ -1247,6 +1647,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/negotiator@0.6.3",
@@ -1259,6 +1663,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/node-gyp@9.4.0",
@@ -1271,6 +1679,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/nopt@6.0.0",
@@ -1283,6 +1695,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/npmlog@6.0.2",
@@ -1295,6 +1711,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/old-man-from-scene-24",
@@ -1306,6 +1726,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/once@1.4.0",
@@ -1318,6 +1742,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/once",
@@ -1330,6 +1758,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/p-map@4.0.0",
@@ -1342,6 +1774,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/path-is-absolute@1.0.1",
@@ -1354,6 +1790,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/path-key@3.1.1",
@@ -1366,6 +1806,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/path-scurry@1.10.1",
@@ -1378,6 +1822,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/promise-retry@2.0.1",
@@ -1390,6 +1838,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/proxy-from-env@1.1.0",
@@ -1402,6 +1854,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/readable-stream@3.6.2",
@@ -1414,6 +1870,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/require-directory@2.1.1",
@@ -1426,6 +1886,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/retry@0.12.0",
@@ -1438,6 +1902,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/rimraf@3.0.2",
@@ -1450,6 +1918,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/safe-buffer@5.2.1",
@@ -1462,6 +1934,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/safer-buffer@2.1.2",
@@ -1474,6 +1950,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/semver@7.5.4",
@@ -1486,6 +1966,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/set-blocking@2.0.0",
@@ -1498,6 +1982,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/shebang-command@2.0.0",
@@ -1510,6 +1998,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/shebang-regex@3.0.0",
@@ -1522,6 +2014,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/signal-exit@3.0.7",
@@ -1534,6 +2030,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/signal-exit@4.1.0",
@@ -1546,6 +2046,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/smart-buffer@4.2.0",
@@ -1558,6 +2062,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/socks-proxy-agent@7.0.0",
@@ -1570,6 +2078,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/socks@2.7.1",
@@ -1582,6 +2094,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/ssri@10.0.4",
@@ -1594,6 +2110,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/string-width@4.2.3",
@@ -1606,6 +2126,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/string-width@5.1.2",
@@ -1618,6 +2142,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/string_decoder@1.3.0",
@@ -1630,6 +2158,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/strip-ansi-4.0.0.tgz",
@@ -1642,6 +2174,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/strip-ansi@6.0.1",
@@ -1654,6 +2190,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/strip-ansi@7.1.0",
@@ -1666,6 +2206,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/supports-color@7.2.0",
@@ -1678,6 +2222,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#external-packages/supports-hyperlinks",
@@ -1690,6 +2238,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/tar@6.1.15",
@@ -1702,6 +2254,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4070515793108df42547d3320c7ea4cd6b6e505c46#packages/the-answer",
@@ -1713,6 +2269,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/tree-sitter-json@0.20.0",
@@ -1735,6 +2295,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/typescript@5.1.6",
@@ -1747,6 +2311,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/unique-filename@3.0.0",
@@ -1759,6 +2327,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/unique-slug@4.0.0",
@@ -1771,6 +2343,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/util-deprecate@1.0.2",
@@ -1783,6 +2359,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/which@2.0.2",
@@ -1795,6 +2375,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/wide-align@1.1.5",
@@ -1807,6 +2391,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/wrap-ansi@7.0.0",
@@ -1819,6 +2407,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/wrap-ansi@8.1.0",
@@ -1831,6 +2423,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/wrappy@1.0.2",
@@ -1843,6 +2439,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/y18n@5.0.8",
@@ -1855,6 +2455,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/yallist@4.0.0",
@@ -1867,6 +2471,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/yargs-parser@21.1.1",
@@ -1879,6 +2487,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "yarn"
         }
       ],
       "purl": "pkg:npm/yargs@17.7.2",

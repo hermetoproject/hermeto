@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/cryptos@2.0.9",
@@ -19,6 +23,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/pyicu@2.12",

@@ -11,6 +11,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "rpms.lock.yaml"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos",

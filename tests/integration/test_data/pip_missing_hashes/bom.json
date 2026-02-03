@@ -11,6 +11,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "requirements.txt"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/certifi@2025.7.14",
@@ -27,6 +31,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "requirements.txt"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/charset-normalizer@3.4.2",
@@ -43,6 +51,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "requirements.txt"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/idna@3.10",
@@ -59,6 +71,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "requirements.txt"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/requests@2.32.4",
@@ -87,6 +103,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "requirements.txt"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/urllib3@2.5.0",

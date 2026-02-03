@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/black@21.11b0",
@@ -31,6 +35,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/terminado@0.13.0",
@@ -43,6 +51,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/urllib3@2.0.1",

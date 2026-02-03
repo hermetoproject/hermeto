@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=module",
@@ -19,6 +23,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=package",
