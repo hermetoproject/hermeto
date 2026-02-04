@@ -30,6 +30,9 @@ nox.options.reuse_venv = "always"
 # use venv as the default virtual environment backend
 nox.options.default_venv_backend = "venv"
 
+# do not download missing Python interpreter
+nox.options.download_python = "never"
+
 
 def install_requirements(session: Session) -> None:
     """Install requirements for all sessions."""
