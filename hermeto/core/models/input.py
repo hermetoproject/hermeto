@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import enum
 import logging
 import re
 from collections.abc import Callable
@@ -10,6 +9,7 @@ import pydantic
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
@@ -118,16 +118,6 @@ PackageManagerType = Literal[
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
 ]
-
-
-class Mode(str, enum.Enum):
-    """Represents a global CLI option to relax input expectations and requirements checks."""
-
-    STRICT = "strict"
-    PERMISSIVE = "permissive"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class _PackageInputBase(pydantic.BaseModel, extra="forbid"):
