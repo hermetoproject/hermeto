@@ -370,13 +370,13 @@ class WheelsFilter(BinaryPackageFilter):
 
 def _parse_py_version(interpreter: str) -> int:
     """
-    >>> self._parse_py_version("cp312")
+    >>> _parse_py_version("cp312")
     312
-    >>> self._parse_py_version("pp312")
+    >>> _parse_py_version("pp312")
     312
-    >>> self._parse_py_version("py3")
+    >>> _parse_py_version("py3")
     3
-    >>> self._parse_py_version("py2.py3")
+    >>> _parse_py_version("py2.py3")
     3
     """
     parts = interpreter.split(".")

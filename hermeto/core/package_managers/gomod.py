@@ -57,14 +57,14 @@ ModuleDict = dict[str, Any]
 class _ParsedModel(pydantic.BaseModel):
     """Attributes automatically get PascalCase aliases to make parsing Golang JSON easier.
 
-    >>> class SomeModel(_GolangModel):
-            some_attribute: str
+    >>> class SomeModel(_ParsedModel):
+    ...     some_attribute: str
 
     >>> SomeModel.model_validate({"SomeAttribute": "hello"})
-    SomeModel(some_attribute="hello")
+    SomeModel(some_attribute='hello')
 
     >>> SomeModel(some_attribute="hello")
-    SomeModel(some_attribute="hello")
+    SomeModel(some_attribute='hello')
     """
 
     model_config = pydantic.ConfigDict(
@@ -240,11 +240,11 @@ class GoVersion(version.Version):
     (1, 21, 4)
 
     >>> v = GoVersion("1.21")
-    >>> str(v.to_language_version)
+    >>> str(v.to_language_version())
     '1.21'
 
     >>> v = GoVersion("go1.22.1")
-    >>> str(v.to_language_version)
+    >>> str(v.to_language_version())
     '1.22'
 
     >>> GoVersion("1.21") < GoVersion("1.22")

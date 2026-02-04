@@ -16,14 +16,19 @@ class RootedPath(os.PathLike[str]):
     Get a subpath, guaranteeing that it really is a subpath:
 
     >>> rooted_path = RootedPath("/some/directory")
-    >>> rooted_path.join_within_root("..")                  # ERROR PathOutsideRoot
-    >>> rooted_path.join_within_root("/abspath")            # ERROR PathOutsideRoot
-    >>> rooted_path.join_within_root("symlink-to-parent")   # ERROR PathOutsideRoot
+    >>> rooted_path.join_within_root("..")
+    Traceback (most recent call last):
+    ...
+    hermeto.core.errors.PathOutsideRoot: ...
 
-    Access the underlying Path object:
+    >>> rooted_path.join_within_root("/abspath")
+    Traceback (most recent call last):
+    ...
+    hermeto.core.errors.PathOutsideRoot: ...
 
     >>> rooted_path = RootedPath("/some/directory")
-    >>> rooted_path.join_within_root("vendor", "modules.txt").path.read_text()
+    >>> rooted_path.join_within_root("vendor", "modules.txt").path
+    PosixPath('/some/directory/vendor/modules.txt')
 
     The join_within_root method remembers the original root. See the join_within_root
     and re_root docstrings for more details.
@@ -83,7 +88,10 @@ class RootedPath(os.PathLike[str]):
         """Safely join other path components and make the result the new root.
 
         >>> rooted_path = RootedPath("/some/directory")
-        >>> rooted_path.re_root("subpath").join_within_root("..")   # ERROR
+        >>> rooted_path.re_root("subpath").join_within_root("..")
+        Traceback (most recent call last):
+        ...
+        hermeto.core.errors.PathOutsideRoot: ...
 
         :raises PathOutsideRoot: if the resulting path is not a subpath of the root
         """
@@ -101,7 +109,8 @@ class RootedPath(os.PathLike[str]):
         """Safely join other path components but remember the original root.
 
         >>> rooted_path = RootedPath("/some/directory")
-        >>> rooted_path.join_within_root("subpath").join_within_root("..")  # OK
+        >>> rooted_path.join_within_root("subpath").join_within_root("..")
+        <RootedPath root='/some/directory' subpath='.'>
 
         :raises PathOutsideRoot: if the resulting path is not a subpath of the root
         """
