@@ -91,7 +91,7 @@ def unit_tests(session: Session) -> None:
     session.install(".")
     # disable color output in GitHub Actions
     env = {"TERM": "dumb"} if os.getenv("CI") == "true" else None
-    cmd = "pytest --log-level=DEBUG -W ignore::DeprecationWarning tests/unit"
+    cmd = "pytest --log-level=DEBUG --doctest-modules -W ignore::DeprecationWarning hermeto tests/unit"
 
     if not session.posargs:
         # enable coverage when no pytest positional arguments are passed through
