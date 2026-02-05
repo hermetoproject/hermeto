@@ -9,7 +9,7 @@ from . import utils
 log = logging.getLogger(__name__)
 
 
-def test_help(hermeto_image: utils.ContainerImage, tmp_path: Path) -> None:
+def test_help(hermeto_image: utils.HermetoImage, tmp_path: Path) -> None:
     """
     Simple test to verify if there's only the expected naming in our help.
 
@@ -51,7 +51,7 @@ def test_e2e_cargo(
     test_params: utils.TestParameters,
     check_cmd: list[str],
     expected_cmd_output: str,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
