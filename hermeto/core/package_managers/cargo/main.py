@@ -241,9 +241,16 @@ def _run_cmd_watching_out_for_lock_mismatch(
         # readily available: cargo returns a generic 101 code on this failure and on multiple
         # others, thus the only way to check for this specific type of failure is to process
         # stderr. Two parts of a string are used to decrease the likelihood of false positives.
-        lock_corruption_marker1 = "failed to sync"
-        lock_corruption_marker2 = "needs to be updated but --locked was passed"
-        if lock_corruption_marker1 in e.stderr and lock_corruption_marker2 in e.stderr:
+        generic_vendor_error = "failed to sync"
+        # Since Cargo version 1.93.0, the error message for an unsynchronized lockfile has changed.
+        specific_vendor_error_variants = (
+            "needs to be updated but --locked was passed",
+            "because --locked was passed to prevent this",
+        )
+
+        if generic_vendor_error in e.stderr and any(
+            error in e.stderr for error in specific_vendor_error_variants
+        ):
             if mode == Mode.PERMISSIVE:
                 log.warning(warn_about_imminent_update_to_cargo_lock)
                 with _temporary_cwd(package_dir.path):

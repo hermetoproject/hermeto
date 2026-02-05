@@ -1613,7 +1613,7 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
     mock_run_cmd.side_effect = subprocess.CalledProcessError(
         cmd="test",
         returncode=101,
-        stderr="... failed to sync ... needs to be updated but --locked was passed ...",
+        stderr="... failed to sync ... because --locked was passed to prevent this ...",
     )
     mock_verify_lockfile_present.return_value = None
 
