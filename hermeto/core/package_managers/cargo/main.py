@@ -138,7 +138,7 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
         config_template = _run_cmd_watching_out_for_lock_mismatch(
             cmd=cmd,
             params={"cwd": package_dir, "env": env},
-            package_dir=package_dir,
+            package_dir=package_dir.path,
             mode=request.mode,
         )
 
@@ -223,13 +223,13 @@ def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
 
 
 def _run_cmd_watching_out_for_lock_mismatch(
-    cmd: list, params: dict, package_dir: RootedPath, mode: Mode
+    cmd: list, params: dict, package_dir: Path, mode: Mode
 ) -> str:
     warn_about_imminent_update_to_cargo_lock = (
         f"A mismatch between Cargo.lock and Cargo.toml was detected in {package_dir}. "
         "Because of permissive mode Hermeto will now regenerate Cargo.lock "
         "to match expectation and will try to process the package again. This "
-        f"is a violation of reproducibility and must be addressed by {package_dir.path.name} "
+        f"is a violation of reproducibility and must be addressed by {package_dir.name} "
         "maintainers."
     )
     update_cargo_lock_cmd = ["cargo", "generate-lockfile"]
@@ -253,7 +253,7 @@ def _run_cmd_watching_out_for_lock_mismatch(
         ):
             if mode == Mode.PERMISSIVE:
                 log.warning(warn_about_imminent_update_to_cargo_lock)
-                with _temporary_cwd(package_dir.path):
+                with _temporary_cwd(package_dir):
                     # Extract env from params if present to pass to cargo generate-lockfile
                     env = params.get("env", {})
                     update_cmd_params = {"env": env} if env else {}
@@ -262,7 +262,7 @@ def _run_cmd_watching_out_for_lock_mismatch(
                 # No more attempts to salvage the situation will be made.
                 return run_cmd(cmd=cmd, params=params)
             else:
-                raise PackageWithCorruptLockfileRejected(f"{package_dir.path}")
+                raise PackageWithCorruptLockfileRejected(str(package_dir))
         else:
             raise
 
