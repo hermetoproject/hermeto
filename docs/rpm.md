@@ -333,7 +333,8 @@ start with creating the Containerfile/Dockerfile for the sample app (needed for
 the lockfile generator tool):
 
 ```dockerfile
-FROM registry.access.redhat.com/ubi9:latest   # Note the base image
+# Note the base image
+FROM registry.access.redhat.com/ubi9:latest
 RUN dnf -y install httpd-tools
 CMD ["ab", "-V"]
 ```
@@ -396,6 +397,7 @@ We're now ready to build the application image using network isolation:
 ```shell
 podman build . \
   --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
+  --volume "$(realpath ./hermeto-output/deps/rpm/x86_64/repos.d)":/etc/yum.repos.d \
   --network none \
   --tag my-ab
 ```
