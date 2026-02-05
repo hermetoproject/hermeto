@@ -89,7 +89,7 @@ log = logging.getLogger(__name__)
 )
 def test_yarn_packages(
     test_params: utils.TestParameters,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -142,7 +142,7 @@ def test_e2e_yarn(
     test_params: utils.TestParameters,
     check_cmd: list[str],
     expected_cmd_output: str,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,

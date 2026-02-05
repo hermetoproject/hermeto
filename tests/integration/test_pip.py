@@ -117,6 +117,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "pip", "binary": {}},),
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
+                netrc_content="machine 127.0.0.1 login cachi2-user password cachi2-pass",
             ),
             id="pip_custom_index",
             marks=pytest.mark.skipif(
@@ -163,7 +164,7 @@ log = logging.getLogger(__name__)
 )
 def test_pip_packages(
     test_params: utils.TestParameters,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -248,7 +249,7 @@ def test_e2e_pip(
     test_params: utils.TestParameters,
     check_cmd: list[str],
     expected_cmd_output: str,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,

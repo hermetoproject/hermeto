@@ -46,12 +46,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="SSL port for local DNF server (env: HERMETO_TEST_DNFSERVER_SSL_PORT)",
     )
     group.addoption(
-        "--hermeto-netrc-content",
-        action="store",
-        default=os.getenv("HERMETO_TEST_NETRC_CONTENT", ""),
-        help=".netrc content for private PyPI etc. (env: HERMETO_TEST_NETRC_CONTENT)",
-    )
-    group.addoption(
         "--hermeto-generate-test-data",
         action="store_true",
         default=os.getenv("HERMETO_TEST_GENERATE_DATA") == "1",

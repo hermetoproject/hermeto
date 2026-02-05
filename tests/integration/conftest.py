@@ -24,7 +24,6 @@ _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_PYPISERVER_PORT", "--hermeto-pypiserver-port"),
     ("HERMETO_TEST_LOCAL_DNF_SERVER", "--hermeto-local-dnf-server"),
     ("HERMETO_TEST_DNFSERVER_SSL_PORT", "--hermeto-dnfserver-ssl-port"),
-    ("HERMETO_TEST_NETRC_CONTENT", "--hermeto-netrc-content"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
 ]

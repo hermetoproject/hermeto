@@ -86,6 +86,7 @@ class TestParameters:
     repo_url: str | None = None
     hermeto_env: dict[str, str] = field(default_factory=dict)
     unset_hermeto_env: set[str] = field(default_factory=set)
+    netrc_content: str | None = None
 
 
 class ContainerImage:
@@ -136,8 +137,8 @@ class HermetoImage(ContainerImage):
         net: str | None = "host",
         entrypoint: str | None = None,
         podman_flags: Sequence[str] | None = None,
+        netrc_content: str | None = None,
     ) -> tuple[str, int]:
-        netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
             with tempfile.TemporaryDirectory() as netrc_tmpdir:
                 netrc_path = Path(netrc_tmpdir, ".netrc")
@@ -366,7 +367,7 @@ def fetch_deps_and_check_output(
     test_params: TestParameters,
     test_repo_dir: Path,
     test_data_dir: Path,
-    hermeto_image: ContainerImage,
+    hermeto_image: HermetoImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
     entrypoint: str | None = None,
     podman_flags: list[str] | None = None,
@@ -440,6 +441,7 @@ def fetch_deps_and_check_output(
         [*mounts, (actual_repo_dir, actual_repo_dir)],
         entrypoint=entrypoint,
         podman_flags=(podman_flags or []) + _env_to_engine_flags(merged_env),
+        netrc_content=test_params.netrc_content,
     )
     assert exit_code == test_params.expected_exit_code, (
         f"Fetching deps ended with unexpected exitcode: {exit_code} != "
@@ -499,7 +501,7 @@ def build_image_and_check_cmd(
     test_case: str,
     check_cmd: list,
     expected_cmd_output: str,
-    hermeto_image: ContainerImage,
+    hermeto_image: HermetoImage,
     hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
