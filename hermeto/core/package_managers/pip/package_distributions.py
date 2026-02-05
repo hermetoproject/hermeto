@@ -148,8 +148,10 @@ def _get_project_packages_from(
             raise FetchError(f"PyPI query failed: {e}") from e
 
     return filter(
-        lambda p: p.version is not None
-        and canonicalize_version(p.version) == canonicalize_version(version),
+        lambda p: (
+            p.version is not None
+            and canonicalize_version(p.version) == canonicalize_version(version)
+        ),
         project_page.packages,
     )
 

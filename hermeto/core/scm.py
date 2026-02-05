@@ -64,7 +64,7 @@ class GitHEAD(git.HEAD):
         except ValueError as ex:
             raise GitInvalidRevisionError(f"Failed to set HEAD commit: {ex}") from ex
 
-    @property
+    @property  # type: ignore[override]
     def reference(self) -> git.SymbolicReference:
         """Get the reference we point to with error handling."""
         try:
