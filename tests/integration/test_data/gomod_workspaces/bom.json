@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/bufio?type=package",
@@ -18,6 +22,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/bytes?type=package",
@@ -29,6 +37,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/cmp?type=package",
@@ -40,6 +52,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/compress/flate?type=package",
@@ -51,6 +67,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/compress/gzip?type=package",
@@ -62,6 +82,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/container/list?type=package",
@@ -73,6 +97,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/context?type=package",
@@ -84,6 +112,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/aes?type=package",
@@ -95,6 +127,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/cipher?type=package",
@@ -106,6 +142,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/des?type=package",
@@ -117,6 +157,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/dsa?type=package",
@@ -128,6 +172,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/ecdh?type=package",
@@ -139,6 +187,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/ecdsa?type=package",
@@ -150,6 +202,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/ed25519?type=package",
@@ -161,6 +217,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/elliptic?type=package",
@@ -172,6 +232,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/fips140?type=package",
@@ -183,6 +247,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/hkdf?type=package",
@@ -194,6 +262,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/hmac?type=package",
@@ -205,6 +277,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/boring/bbig?type=package",
@@ -216,6 +292,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/boring/sig?type=package",
@@ -227,6 +307,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/boring?type=package",
@@ -238,6 +322,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/entropy?type=package",
@@ -249,6 +337,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/aes/gcm?type=package",
@@ -260,6 +352,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/aes?type=package",
@@ -271,6 +367,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/alias?type=package",
@@ -282,6 +382,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/bigmod?type=package",
@@ -293,6 +397,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/check?type=package",
@@ -304,6 +412,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/drbg?type=package",
@@ -315,6 +427,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/ecdh?type=package",
@@ -326,6 +442,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/ecdsa?type=package",
@@ -337,6 +457,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/ed25519?type=package",
@@ -348,6 +472,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/edwards25519/field?type=package",
@@ -359,6 +487,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/edwards25519?type=package",
@@ -370,6 +502,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/hkdf?type=package",
@@ -381,6 +517,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/hmac?type=package",
@@ -392,6 +532,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/mlkem?type=package",
@@ -403,6 +547,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/nistec/fiat?type=package",
@@ -414,6 +562,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/nistec?type=package",
@@ -425,6 +577,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/rsa?type=package",
@@ -436,6 +592,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/sha256?type=package",
@@ -447,6 +607,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/sha3?type=package",
@@ -458,6 +622,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/sha512?type=package",
@@ -469,6 +637,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/subtle?type=package",
@@ -480,6 +652,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/tls12?type=package",
@@ -491,6 +667,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140/tls13?type=package",
@@ -502,6 +682,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140?type=package",
@@ -513,6 +697,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140cache?type=package",
@@ -524,6 +712,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140deps/byteorder?type=package",
@@ -535,6 +727,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140deps/cpu?type=package",
@@ -546,6 +742,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140deps/godebug?type=package",
@@ -557,6 +757,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140hash?type=package",
@@ -568,6 +772,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/fips140only?type=package",
@@ -579,6 +787,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/hpke?type=package",
@@ -590,6 +802,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/impl?type=package",
@@ -601,6 +817,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/randutil?type=package",
@@ -612,6 +832,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/internal/sysrand?type=package",
@@ -623,6 +847,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/md5?type=package",
@@ -634,6 +862,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/rand?type=package",
@@ -645,6 +877,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/rc4?type=package",
@@ -656,6 +892,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/rsa?type=package",
@@ -667,6 +907,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/sha1?type=package",
@@ -678,6 +922,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/sha256?type=package",
@@ -689,6 +937,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/sha3?type=package",
@@ -700,6 +952,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/sha512?type=package",
@@ -711,6 +967,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/subtle?type=package",
@@ -722,6 +982,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/tls/internal/fips140tls?type=package",
@@ -733,6 +997,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/tls?type=package",
@@ -744,6 +1012,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/x509/pkix?type=package",
@@ -755,6 +1027,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto/x509?type=package",
@@ -766,6 +1042,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/crypto?type=package",
@@ -777,6 +1057,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/asn1?type=package",
@@ -788,6 +1072,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/base64?type=package",
@@ -799,6 +1087,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/binary?type=package",
@@ -810,6 +1102,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/hex?type=package",
@@ -821,6 +1117,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/json?type=package",
@@ -832,6 +1132,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/pem?type=package",
@@ -843,6 +1147,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding/xml?type=package",
@@ -854,6 +1162,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/encoding?type=package",
@@ -865,6 +1177,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/errors?type=package",
@@ -876,6 +1192,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/fmt?type=package",
@@ -891,6 +1211,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "workspace_modules/go.work.sum"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/davecgh/go-spew@v1.1.1?type=module",
@@ -903,6 +1227,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=module",
@@ -915,6 +1243,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=package",
@@ -927,6 +1259,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo/middleware@v4.0.0-20240626205759-b97aca303b29?type=package",
@@ -939,6 +1275,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=module",
@@ -951,6 +1291,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=package",
@@ -963,6 +1307,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=module",
@@ -975,6 +1323,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=package",
@@ -987,6 +1339,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=module",
@@ -999,6 +1355,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=package",
@@ -1011,6 +1371,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/labstack/gommon/bytes@v0.4.2?type=package",
@@ -1023,6 +1387,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/labstack/gommon/color@v0.4.2?type=package",
@@ -1035,6 +1403,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/labstack/gommon/log@v0.4.2?type=package",
@@ -1047,6 +1419,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/labstack/gommon@v0.4.2?type=module",
@@ -1059,6 +1435,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/mattn/go-colorable@v0.1.13?type=module",
@@ -1071,6 +1451,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/mattn/go-colorable@v0.1.13?type=package",
@@ -1083,6 +1467,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/mattn/go-isatty@v0.0.20?type=module",
@@ -1095,6 +1483,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/mattn/go-isatty@v0.0.20?type=package",
@@ -1107,6 +1499,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/pmezard/go-difflib@v1.0.0?type=module",
@@ -1119,6 +1515,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/stretchr/objx@v0.5.0?type=module",
@@ -1131,6 +1531,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/stretchr/testify@v1.8.4?type=module",
@@ -1143,6 +1547,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/valyala/bytebufferpool@v1.0.0?type=module",
@@ -1155,6 +1563,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/valyala/bytebufferpool@v1.0.0?type=package",
@@ -1167,6 +1579,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/valyala/fasttemplate@v1.2.2?type=module",
@@ -1179,6 +1595,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/github.com/valyala/fasttemplate@v1.2.2?type=package",
@@ -1191,6 +1611,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/crypto/acme/autocert@v0.17.0?type=package",
@@ -1203,6 +1627,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/crypto/acme@v0.17.0?type=package",
@@ -1215,6 +1643,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/crypto@v0.17.0?type=module",
@@ -1227,6 +1659,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/example/hello/reverse@v0.0.0-20231013143937-1d6d2400d402?type=package",
@@ -1239,6 +1675,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/example/hello@v0.0.0-20231013143937-1d6d2400d402?type=module",
@@ -1251,6 +1691,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/mod@v0.8.0?type=module",
@@ -1263,6 +1707,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net/http/httpguts@v0.19.0?type=package",
@@ -1275,6 +1723,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net/http2/h2c@v0.19.0?type=package",
@@ -1287,6 +1739,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net/http2/hpack@v0.19.0?type=package",
@@ -1299,6 +1755,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net/http2@v0.19.0?type=package",
@@ -1311,6 +1771,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net/idna@v0.19.0?type=package",
@@ -1323,6 +1787,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/net@v0.19.0?type=module",
@@ -1335,6 +1803,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/sys/unix@v0.15.0?type=package",
@@ -1347,6 +1819,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/sys@v0.15.0?type=module",
@@ -1359,6 +1835,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/term@v0.15.0?type=module",
@@ -1371,6 +1851,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text/secure/bidirule@v0.14.0?type=package",
@@ -1383,6 +1867,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text/transform@v0.14.0?type=package",
@@ -1395,6 +1883,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text/unicode/bidi@v0.14.0?type=package",
@@ -1407,6 +1899,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text/unicode/norm@v0.14.0?type=package",
@@ -1419,6 +1915,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text@v0.14.0?type=module",
@@ -1431,6 +1931,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/time/rate@v0.5.0?type=package",
@@ -1443,6 +1947,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/time@v0.5.0?type=module",
@@ -1455,6 +1963,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/golang.org/x/tools@v0.6.0?type=module",
@@ -1467,6 +1979,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405?type=module",
@@ -1483,6 +1999,10 @@
         {
           "name": "hermeto:missing_hash:in_file",
           "value": "workspace_modules/go.work.sum"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/gopkg.in/yaml.v3@v3.0.1?type=module",
@@ -1495,6 +2015,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/hash/crc32?type=package",
@@ -1506,6 +2030,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/hash?type=package",
@@ -1517,6 +2045,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/html/template?type=package",
@@ -1528,6 +2060,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/html?type=package",
@@ -1539,6 +2075,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/abi?type=package",
@@ -1550,6 +2090,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/asan?type=package",
@@ -1561,6 +2105,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/bisect?type=package",
@@ -1572,6 +2120,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/bytealg?type=package",
@@ -1583,6 +2135,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/byteorder?type=package",
@@ -1594,6 +2150,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/chacha8rand?type=package",
@@ -1605,6 +2165,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/coverage/rtcov?type=package",
@@ -1616,6 +2180,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/cpu?type=package",
@@ -1627,6 +2195,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/filepathlite?type=package",
@@ -1638,6 +2210,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/fmtsort?type=package",
@@ -1649,6 +2225,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/goarch?type=package",
@@ -1660,6 +2240,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/godebug?type=package",
@@ -1671,6 +2255,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/godebugs?type=package",
@@ -1682,6 +2270,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/goexperiment?type=package",
@@ -1693,6 +2285,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/goos?type=package",
@@ -1704,6 +2300,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/itoa?type=package",
@@ -1715,6 +2315,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/msan?type=package",
@@ -1726,6 +2330,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/nettrace?type=package",
@@ -1737,6 +2345,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/oserror?type=package",
@@ -1748,6 +2360,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/poll?type=package",
@@ -1759,6 +2375,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/profilerecord?type=package",
@@ -1770,6 +2390,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/race?type=package",
@@ -1781,6 +2405,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/reflectlite?type=package",
@@ -1792,6 +2420,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/atomic?type=package",
@@ -1803,6 +2435,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/cgroup?type=package",
@@ -1814,6 +2450,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/exithook?type=package",
@@ -1825,6 +2465,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/gc?type=package",
@@ -1836,6 +2480,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/maps?type=package",
@@ -1847,6 +2495,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/math?type=package",
@@ -1858,6 +2510,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/strconv?type=package",
@@ -1869,6 +2525,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/sys?type=package",
@@ -1880,6 +2540,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/runtime/syscall?type=package",
@@ -1891,6 +2555,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/saferio?type=package",
@@ -1902,6 +2570,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/singleflight?type=package",
@@ -1913,6 +2585,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/stringslite?type=package",
@@ -1924,6 +2600,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/sync?type=package",
@@ -1935,6 +2615,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/synctest?type=package",
@@ -1946,6 +2630,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/syscall/execenv?type=package",
@@ -1957,6 +2645,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/syscall/unix?type=package",
@@ -1968,6 +2660,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/testlog?type=package",
@@ -1979,6 +2675,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/trace/tracev2?type=package",
@@ -1990,6 +2690,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/internal/unsafeheader?type=package",
@@ -2001,6 +2705,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/io/fs?type=package",
@@ -2012,6 +2720,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/io?type=package",
@@ -2023,6 +2735,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/iter?type=package",
@@ -2034,6 +2750,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/log/internal?type=package",
@@ -2045,6 +2765,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/log?type=package",
@@ -2056,6 +2780,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/maps?type=package",
@@ -2067,6 +2795,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/math/big?type=package",
@@ -2078,6 +2810,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/math/bits?type=package",
@@ -2089,6 +2825,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/math/rand/v2?type=package",
@@ -2100,6 +2840,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/math/rand?type=package",
@@ -2111,6 +2855,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/math?type=package",
@@ -2122,6 +2870,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/mime/multipart?type=package",
@@ -2133,6 +2885,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/mime/quotedprintable?type=package",
@@ -2144,6 +2900,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/mime?type=package",
@@ -2155,6 +2915,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http/httptrace?type=package",
@@ -2166,6 +2930,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http/httputil?type=package",
@@ -2177,6 +2945,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http/internal/ascii?type=package",
@@ -2188,6 +2960,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http/internal/httpcommon?type=package",
@@ -2199,6 +2975,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http/internal?type=package",
@@ -2210,6 +2990,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/http?type=package",
@@ -2221,6 +3005,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/netip?type=package",
@@ -2232,6 +3020,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/textproto?type=package",
@@ -2243,6 +3035,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net/url?type=package",
@@ -2254,6 +3050,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/net?type=package",
@@ -2265,6 +3065,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/os?type=package",
@@ -2276,6 +3080,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/path/filepath?type=package",
@@ -2287,6 +3095,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/path?type=package",
@@ -2298,6 +3110,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/reflect?type=package",
@@ -2309,6 +3125,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/regexp/syntax?type=package",
@@ -2320,6 +3140,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/regexp?type=package",
@@ -2331,6 +3155,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/runtime/debug?type=package",
@@ -2342,6 +3170,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/runtime?type=package",
@@ -2353,6 +3185,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/slices?type=package",
@@ -2364,6 +3200,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/sort?type=package",
@@ -2375,6 +3215,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/strconv?type=package",
@@ -2386,6 +3230,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/strings?type=package",
@@ -2397,6 +3245,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/sync/atomic?type=package",
@@ -2408,6 +3260,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/sync?type=package",
@@ -2419,6 +3275,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/syscall?type=package",
@@ -2430,6 +3290,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/text/template/parse?type=package",
@@ -2441,6 +3305,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/text/template?type=package",
@@ -2452,6 +3320,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/time?type=package",
@@ -2463,6 +3335,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/unicode/utf16?type=package",
@@ -2474,6 +3350,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/unicode/utf8?type=package",
@@ -2485,6 +3365,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/unicode?type=package",
@@ -2496,6 +3380,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/unique?type=package",
@@ -2507,6 +3395,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/unsafe?type=package",
@@ -2518,6 +3410,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/chacha20?type=package",
@@ -2529,6 +3425,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/chacha20poly1305?type=package",
@@ -2540,6 +3440,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/cryptobyte/asn1?type=package",
@@ -2551,6 +3455,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/cryptobyte?type=package",
@@ -2562,6 +3470,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/internal/alias?type=package",
@@ -2573,6 +3485,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/crypto/internal/poly1305?type=package",
@@ -2584,6 +3500,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/dns/dnsmessage?type=package",
@@ -2595,6 +3515,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/http/httpguts?type=package",
@@ -2606,6 +3530,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/http/httpproxy?type=package",
@@ -2617,6 +3545,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/http2/hpack?type=package",
@@ -2628,6 +3560,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/idna?type=package",
@@ -2639,6 +3575,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/sys/cpu?type=package",
@@ -2650,6 +3590,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/text/secure/bidirule?type=package",
@@ -2661,6 +3605,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/text/transform?type=package",
@@ -2672,6 +3620,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/text/unicode/bidi?type=package",
@@ -2683,6 +3635,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/text/unicode/norm?type=package",
@@ -2694,6 +3650,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "gomod"
         }
       ],
       "purl": "pkg:golang/weak?type=package",

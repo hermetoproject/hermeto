@@ -9,6 +9,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
+        },
+        {
           "name": "hermeto:rpm_summary",
           "value": "A tool to maintain symbolic links determining default commands"
         }
@@ -23,6 +27,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&checksum=sha256:36f90791ba4dc3b160ec9129dbc141b9705081b88aee20a1f1cb883e22d0a584&repository_id=baseos",
@@ -41,6 +49,10 @@
           "value": "this-project/rpms.lock.yaml"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
+        },
+        {
           "name": "hermeto:rpm_summary",
           "value": "CentOS Stream package repositories"
         }
@@ -57,6 +69,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
+        },
+        {
           "name": "hermeto:rpm_summary",
           "value": "Common error description library"
         }
@@ -71,6 +87,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/centos/libcom_err@1.46.5-8.el9?arch=x86_64&checksum=sha256:ef43794f39d49b69e12506722e432a497e7f96038e26cab2c34476aad4b3d413&repository_id=baseos",

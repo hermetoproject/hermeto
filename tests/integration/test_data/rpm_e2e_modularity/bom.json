@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr-util-bdb@1.6.1-9.el8?arch=x86_64&checksum=sha256:106ed56188f62702d967d3148b05ef2f0e43fceee7b2bc3d44dd53be20a300b5&repository_id=ubi-8-appstream-rpms",
@@ -19,6 +23,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr-util-openssl@1.6.1-9.el8?arch=x86_64&checksum=sha256:bb636fb6d64af9e9a9b3f432dd587d60946c987b31758c59a20a0d7872099c14&repository_id=ubi-8-appstream-rpms",
@@ -31,6 +39,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr-util@1.6.1-9.el8?arch=src&checksum=sha256:3a7dec001ee63a28de3f1609a4b3da03ec9c8eda3f6802fe491cf456be267e82&repository_id=ubi-8-appstream-source",
@@ -43,6 +55,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr-util@1.6.1-9.el8?arch=x86_64&checksum=sha256:153b5f51d3e71191b5ccd483298911aeb9a0794cc9d8f13ae22cac8c5b3643e3&repository_id=ubi-8-appstream-rpms",
@@ -55,6 +71,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr@1.6.3-12.el8?arch=src&checksum=sha256:31c1ce68fb74c6426ac6270f0f255199daffc9000897343efcdff0a41e914f9d&repository_id=ubi-8-appstream-source",
@@ -67,6 +87,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         }
       ],
       "purl": "pkg:rpm/redhat/apr@1.6.3-12.el8?arch=x86_64&checksum=sha256:4be7cfbb58aeec0db66ac9d2e996de662499bac99a2788f934f87d6998ba073e&repository_id=ubi-8-appstream-rpms",
@@ -79,6 +103,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         },
         {
           "name": "hermeto:rpm_modularity_label",
@@ -95,6 +123,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "rpm"
         },
         {
           "name": "hermeto:rpm_modularity_label",

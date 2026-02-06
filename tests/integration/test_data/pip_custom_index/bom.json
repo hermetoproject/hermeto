@@ -20,6 +20,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }

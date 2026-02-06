@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "npm"
         }
       ],
       "purl": "pkg:npm/cachito-npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3",
@@ -23,6 +27,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "npm"
         }
       ],
       "purl": "pkg:npm/cachito-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6",
@@ -35,6 +43,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "npm"
         }
       ],
       "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3#foo",
@@ -47,6 +59,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "npm"
         }
       ],
       "purl": "pkg:npm/is-positive@1.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%401187a61f2e18cf7c11c23d61a1bd52b9fa6a5fdf",
@@ -59,6 +75,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "npm"
         }
       ],
       "purl": "pkg:npm/is-positive@2.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%4075dd3a181375162eda014984f2decc663199b09e",

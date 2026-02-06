@@ -19,6 +19,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/httpx?checksum=sha256:14903e7fd80ad0df4a30f387a10270249685e600ad9c20dda3c139db061516e4&download_url=https://github.com/encode/httpx/archive/refs/tags/0.28.0.zip",

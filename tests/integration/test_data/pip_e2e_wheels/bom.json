@@ -9,6 +9,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -23,6 +27,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         },
         {
           "name": "hermeto:pip:package:binary",
@@ -41,6 +49,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -57,6 +69,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -71,6 +87,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         },
         {
           "name": "hermeto:pip:package:binary",
@@ -101,6 +121,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -115,6 +139,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         },
         {
           "name": "hermeto:pip:package:binary",
@@ -133,6 +161,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -147,6 +179,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         },
         {
           "name": "hermeto:pip:package:binary",
@@ -165,6 +201,10 @@
           "value": "hermeto"
         },
         {
+          "name": "hermeto:package_manager",
+          "value": "pip"
+        },
+        {
           "name": "hermeto:pip:package:binary",
           "value": "true"
         }
@@ -179,6 +219,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         },
         {
           "name": "hermeto:pip:package:binary",

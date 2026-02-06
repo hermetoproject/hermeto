@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/aiowsgi@0.7",
@@ -31,6 +35,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/gitdb@4.0.12",
@@ -43,6 +51,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/gitpython?checksum=sha256:30101221a869968d4fe2a010ee9ca1134c22272089d9e9fee2040a68541443c6&download_url=https://github.com/gitpython-developers/GitPython/archive/refs/tags/3.1.44.tar.gz",
@@ -54,6 +66,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/smmap@5.0.2",
@@ -66,6 +82,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/waitress@3.0.0",
@@ -78,6 +98,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "pip"
         }
       ],
       "purl": "pkg:pypi/webob@1.8.7",

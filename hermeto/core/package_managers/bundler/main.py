@@ -81,14 +81,22 @@ def _resolve_bundler_package(
         subpath=str(package_dir.subpath_from_root),
     )
 
-    components = [Component(name=name, version=version, purl=main_package_purl.to_string())]
+    components = [
+        Component(
+            name=name,
+            version=version,
+            purl=main_package_purl.to_string(),
+            properties=PropertySet(package_managers=frozenset(["bundler"])).to_properties(),
+        )
+    ]
     git_paths = []
     for dep in dependencies:
         dep.download_to(deps_dir)
-        if isinstance(dep, GemPlatformSpecificDependency):
-            properties = PropertySet(bundler_package_binary=True).to_properties()
-        else:
-            properties = []
+        is_binary = isinstance(dep, GemPlatformSpecificDependency)
+        properties = PropertySet(
+            bundler_package_binary=is_binary,
+            package_managers=frozenset(["bundler"]),
+        ).to_properties()
         if isinstance(dep, GitDependency):
             git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12]))
 

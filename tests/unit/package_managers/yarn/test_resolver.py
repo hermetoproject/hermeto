@@ -11,6 +11,7 @@ from semver import Version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     Locator,
@@ -331,6 +332,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="@isaacs/cliui",
                 version="8.0.2",
                 purl=f"pkg:npm/{quote('@isaacs')}/cliui@8.0.2",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [],
             id="scoped_npm_package",
@@ -350,6 +352,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="abbrev",
                 version="1.1.1",
                 purl="pkg:npm/abbrev@1.1.1",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [],
             id="unscoped_npm_package",
@@ -371,6 +374,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="armaments",
                 version="42.0.0",
                 purl=f"pkg:npm/armaments@42.0.0?vcs_url={MOCK_REPO_VCS_URL}#book/armaments",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 "armaments@workspace:./book/armaments: reading package version from book/armaments/package.json"
@@ -397,6 +401,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="@antioch/holy-hand-grenade",
                 version="1.2.5-threesir",
                 purl=f"pkg:npm/{quote('@antioch')}/holy-hand-grenade@1.2.5-threesir?vcs_url={MOCK_REPO_VCS_URL}#book/armaments/holy-hand-grenade",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 (
@@ -426,6 +431,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="@antioch/holy-hand-grenade",
                 version="1.2.5-threesir",
                 purl=f"pkg:npm/{quote('@antioch')}/holy-hand-grenade@1.2.5-threesir?vcs_url={MOCK_REPO_VCS_URL}#book/armaments/holy-hand-grenade",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 (
@@ -450,6 +456,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="antioch",
                 version=None,
                 purl=f"pkg:npm/antioch?vcs_url={MOCK_REPO_VCS_URL}#book/armaments/holy-hand-grenade",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [],
             id="link_package",
@@ -471,6 +478,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="strip-ansi",
                 version="4.0.0",
                 purl=f"pkg:npm/strip-ansi@4.0.0?vcs_url={MOCK_REPO_VCS_URL}#external-packages/strip-ansi-4.0.0.tgz",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 (
@@ -498,6 +506,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                 name="strip-ansi",
                 version="4.0.0",
                 purl=f"pkg:npm/strip-ansi@4.0.0?vcs_url={MOCK_REPO_VCS_URL}#external-packages/strip-ansi-4.0.0.tgz",
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 (
@@ -528,6 +537,7 @@ def mock_project(project_dir: RootedPath) -> Project:
                     "?checksum=sha512:b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d"
                     "&download_url=https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
                 ),
+                properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             ),
             [
                 (
@@ -621,6 +631,7 @@ def test_create_components_patched_packages(
             name="fsevents",
             version="2.3.2",
             purl="pkg:npm/fsevents@2.3.2",
+            properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             pedigree=Pedigree(
                 patches=[
                     Patch(
@@ -690,6 +701,7 @@ def test_create_components_patched_packages_with_multiple_paths(
             name="fsevents",
             version="2.3.2",
             purl="pkg:npm/fsevents@2.3.2",
+            properties=PropertySet(package_managers=frozenset(["yarn"])).to_properties(),
             pedigree=Pedigree(
                 patches=[
                     Patch(

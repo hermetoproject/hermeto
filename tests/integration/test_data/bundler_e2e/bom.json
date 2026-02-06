@@ -7,6 +7,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actioncable@6.1.7",
@@ -19,6 +23,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actionmailbox@6.1.7",
@@ -31,6 +39,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actionmailer@6.1.7",
@@ -43,6 +55,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actionpack@6.1.7",
@@ -55,6 +71,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actiontext@6.1.7",
@@ -67,6 +87,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/actionview@6.1.7",
@@ -79,6 +103,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/activejob@6.1.7",
@@ -91,6 +119,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/activemodel@6.1.7",
@@ -103,6 +135,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/activerecord@6.1.7",
@@ -115,6 +151,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/activestorage@6.1.7",
@@ -127,6 +167,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/activesupport@6.1.7",
@@ -139,6 +183,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/addressable@2.8.7",
@@ -151,6 +199,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/builder@3.3.0",
@@ -163,6 +215,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/concurrent-ruby@1.3.4",
@@ -175,6 +231,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/crass@1.0.6",
@@ -187,6 +247,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/date@3.3.4",
@@ -199,6 +263,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/erubi@1.13.0",
@@ -211,6 +279,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/globalid@1.2.1",
@@ -223,6 +295,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/i18n@1.14.6",
@@ -235,6 +311,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/json-schema@3.0.0?vcs_url=git%2Bhttps://github.com/3scale/json-schema%4026487618a68443e94d623bb585cb464b07d36702",
@@ -247,6 +327,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/loofah@2.22.0",
@@ -259,6 +343,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/mail@2.8.1",
@@ -271,6 +359,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/marcel@1.0.4",
@@ -283,6 +375,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/method_source@1.1.0",
@@ -295,6 +391,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/mini_mime@1.1.5",
@@ -307,6 +407,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/minitest@5.25.1",
@@ -319,6 +423,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/mygem@0.0.1",
@@ -331,6 +439,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/net-imap@0.4.16",
@@ -343,6 +455,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/net-pop@0.1.2",
@@ -355,6 +471,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/net-protocol@0.2.2",
@@ -367,6 +487,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/net-smtp@0.5.0",
@@ -379,6 +503,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/nio4r@2.7.3",
@@ -395,6 +523,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/nokogiri@1.16.7",
@@ -407,6 +539,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/public_suffix@6.0.1",
@@ -419,6 +555,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7#quux",
@@ -431,6 +571,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/racc@1.8.1",
@@ -443,6 +587,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rack-test@2.1.0",
@@ -455,6 +603,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rack@2.2.9",
@@ -467,6 +619,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rails-dom-testing@2.2.0",
@@ -479,6 +635,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rails-html-sanitizer@1.6.0",
@@ -491,6 +651,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rails@6.1.7",
@@ -503,6 +667,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/railties@6.1.7",
@@ -515,6 +683,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/rake@13.2.1",
@@ -527,6 +699,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/sprockets-rails@3.5.2",
@@ -539,6 +715,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/sprockets@4.2.1",
@@ -551,6 +731,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/thor@1.3.2",
@@ -563,6 +747,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/timeout@0.4.1",
@@ -575,6 +763,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7",
@@ -587,6 +779,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/tzinfo@2.0.6",
@@ -599,6 +795,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/websocket-driver@0.7.6",
@@ -611,6 +811,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/websocket-extensions@0.1.5",
@@ -623,6 +827,10 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        },
+        {
+          "name": "hermeto:package_manager",
+          "value": "bundler"
         }
       ],
       "purl": "pkg:gem/zeitwerk@2.6.18",
