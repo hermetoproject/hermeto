@@ -4,7 +4,6 @@ import fnmatch
 import functools
 import json
 import logging
-import os.path
 from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict
 from urllib.parse import urlparse
@@ -481,8 +480,8 @@ def _clone_repo_pack_archive(
     )
 
     # Create missing directories
-    directory = os.path.dirname(download_path)
-    os.makedirs(directory, exist_ok=True)
+    directory = Path(download_path).parent
+    directory.mkdir(parents=True, exist_ok=True)
     clone_as_tarball(info["url"], info["ref"], download_path.path)
 
     return download_path
@@ -534,8 +533,8 @@ def _get_npm_dependencies(
                 )
 
                 # Create missing directories
-                directory = os.path.dirname(download_paths[url])
-                os.makedirs(directory, exist_ok=True)
+                directory = Path(download_paths[url]).parent
+                directory.mkdir(parents=True, exist_ok=True)
 
             files_to_download[url] = {
                 "download_path": download_paths[url],
