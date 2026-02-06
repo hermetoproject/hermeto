@@ -150,7 +150,7 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
             cmd=cmd,
             params={"cwd": package_dir, "env": env},
             package_dir=package_dir.path,
-            mode=request.mode,
+            mode=get_config().mode,
         )
 
     return _swap_sources_directory_for_subsitution_slot(config_template)
