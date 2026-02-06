@@ -12,11 +12,12 @@ from typing import Any
 import pydantic
 import typer
 
-import hermeto.core.config as config
+import hermeto.core.config as _config
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
-from hermeto.core.models.input import Flag, Mode, PackageInput, Request, parse_user_input
+from hermeto.core.models.input import Flag, PackageInput, Request, parse_user_input
 from hermeto.core.models.output import BuildConfig
 from hermeto.core.models.sbom import Sbom, SPDXSbom, spdx_now
 from hermeto.core.resolver import inject_files_post, resolve_packages, supported_package_managers
@@ -186,7 +187,14 @@ def main(  # noqa: D103 docstring becomes part of --help message
 ) -> None:
     setup_logging(log_level)
     if config_file:
-        config.set_config(config_file)
+        config = _config.set_config(config_file)
+    else:
+        config = _config.get_config()
+    # Direct field assignment is validated by Pydantic - no set_mode() needed.
+    # Because Mode is imported into Config from elsewhere (constants.py), *and*
+    # it's an Enum, it behaves differently from something like e.g.
+    # hermeto/core/config.py::RuntimeSettings
+    config.mode = mode
 
 
 def _if_json_then_validate(value: str) -> str:
@@ -225,7 +233,6 @@ class _Input(pydantic.BaseModel, extra="forbid"):
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
 def fetch_deps(  # noqa: D103; docstring becomes part of --help message
-    ctx: typer.Context,
     raw_input: str = typer.Argument(
         ...,
         help="Specify JSON input or path to JSON input file to process. See usage examples.",
@@ -328,7 +335,6 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
 
     input = parse_user_input(_Input.model_validate, normalize_input())
 
-    mode = ctx.parent.params.get("mode")  # type: ignore[union-attr]
     request = parse_user_input(
         Request.model_validate,
         {
@@ -336,7 +342,6 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
             "output_dir": output,
             "packages": input.packages,
             "flags": combine_option_and_json_flags(input.flags),
-            "mode": mode,
         },
     )
 

@@ -13,14 +13,16 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 
 from hermeto.core.config import get_config
-from hermeto.core.errors import FetchError
+from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
     _async_download_binary_file,
     async_download_files,
     download_binary_file,
+    get_vcs_qualifiers,
     pkg_requests_session,
 )
+from hermeto.core.scm import RepoID
 from hermeto.core.type_aliases import StrPath
 from tests.common_utils import GIT_REF
 
@@ -267,3 +269,36 @@ async def test_async_download_files_exception(
 
     assert f"Unsuccessful download: {url}" in caplog.text
     assert str(exc_info.value) == f"exception_name: Exception, details: {exception_message}"
+
+
+class TestGetVcsQualifiers:
+    """Tests for the get_vcs_qualifiers helper function."""
+
+    @mock.patch("hermeto.core.package_managers.general.get_repo_id")
+    def test_returns_vcs_url_dict(self, mock_get_repo_id: mock.Mock, tmp_path: Path) -> None:
+        """Test that valid git repo returns proper qualifiers dict."""
+        mock_repo_id = RepoID(origin_url="https://github.com/org/repo", commit_id=GIT_REF)
+        mock_get_repo_id.return_value = mock_repo_id
+
+        result = get_vcs_qualifiers(tmp_path)
+
+        assert result == {"vcs_url": f"git+https://github.com/org/repo@{GIT_REF}"}
+        mock_get_repo_id.assert_called_once_with(tmp_path)
+
+    @mock.patch("hermeto.core.package_managers.general.get_repo_id")
+    def test_raises_not_a_git_repo(self, mock_get_repo_id: mock.Mock, tmp_path: Path) -> None:
+        """Test that NotAGitRepo is raised for non-git directories."""
+        mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+
+        with pytest.raises(NotAGitRepo):
+            get_vcs_qualifiers(tmp_path)
+
+    @mock.patch("hermeto.core.package_managers.general.get_repo_id")
+    def test_raises_unsupported_feature(self, mock_get_repo_id: mock.Mock, tmp_path: Path) -> None:
+        """Test that UnsupportedFeature is raised for repos without origin remote."""
+        mock_get_repo_id.side_effect = UnsupportedFeature(
+            "Cannot process repos without origin", solution="Add origin remote"
+        )
+
+        with pytest.raises(UnsupportedFeature):
+            get_vcs_qualifiers(tmp_path)
