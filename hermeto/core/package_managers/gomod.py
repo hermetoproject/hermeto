@@ -741,8 +741,8 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir, request.mode)
-            if vendor_changed and request.mode == Mode.STRICT:
+            vendor_changed = _vendor_changed(main_module_dir)
+            if vendor_changed and get_config().mode == Mode.STRICT:
                 raise PackageRejected(
                     reason=(
                         "The content of the vendor directory is not consistent with go.mod. "
@@ -1755,12 +1755,13 @@ def _vendor_deps(
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
+def _vendor_changed(context_dir: RootedPath) -> bool:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
     """
     repo_root = context_dir.root
+    mode = get_config().mode
 
     # Get the correct repo context (main or submodule)
     repo, context_relative_path = get_repo_for_path(repo_root, context_dir.path)
@@ -1780,7 +1781,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s changed after vendoring:\n%s",
                 modules_txt,
                 modules_txt_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=mode,
             )
             return True
 
@@ -1791,7 +1792,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s directory changed after vendoring:\n%s",
                 vendor,
                 vendor_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=mode,
             )
             return True
     finally:

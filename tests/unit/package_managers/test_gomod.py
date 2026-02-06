@@ -1612,7 +1612,7 @@ def test_vendor_changed(
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir, Mode.STRICT) == bool(expected_change)
+    assert _vendor_changed(app_dir) == bool(expected_change)
     if expected_change:
         assert expected_change.format(subpath=subpath) in caplog.text
 

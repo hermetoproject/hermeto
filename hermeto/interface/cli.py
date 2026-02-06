@@ -248,7 +248,6 @@ def list_backends() -> None:
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
 def fetch_deps(  # noqa: D103; docstring becomes part of --help message
-    ctx: typer.Context,
     raw_input: str = typer.Argument(
         ...,
         help="Specify JSON input or path to JSON input file to process. See usage examples.",
@@ -351,7 +350,6 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
 
     input = parse_user_input(_Input.model_validate, normalize_input())
 
-    mode = ctx.parent.params.get("mode")  # type: ignore[union-attr]
     request = parse_user_input(
         Request.model_validate,
         {
@@ -359,7 +357,6 @@ def fetch_deps(  # noqa: D103; docstring becomes part of --help message
             "output_dir": output,
             "packages": input.packages,
             "flags": combine_option_and_json_flags(input.flags),
-            "mode": mode,
         },
     )
 

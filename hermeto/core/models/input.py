@@ -9,7 +9,6 @@ import pydantic
 from typing_extensions import Self
 
 from hermeto import APP_NAME
-from hermeto.core.constants import Mode
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
@@ -420,7 +419,6 @@ class Request(pydantic.BaseModel):
     output_dir: RootedPath
     packages: list[PackageInput]
     flags: frozenset[Flag] = frozenset()
-    mode: Mode = Mode.STRICT
 
     @pydantic.field_validator("packages")
     @classmethod
