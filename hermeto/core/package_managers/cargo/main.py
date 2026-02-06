@@ -138,7 +138,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        _verify_lockfile_is_present(package_dir, request.mode)
+        _verify_lockfile_is_present(package_dir)
 
         vendor_result = _fetch_dependencies(package_dir, request)
         # cargo allows to specify configuration per-package
@@ -233,8 +233,9 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     return name, version
 
 
-def _verify_lockfile_is_present(package_dir: RootedPath, mode: Mode) -> None:
+def _verify_lockfile_is_present(package_dir: RootedPath) -> None:
     """Verify that the Cargo.lock file is present in the package directory."""
+    mode = get_config().mode
     lockfile = package_dir.path / "Cargo.lock"
     if lockfile.exists():
         return
