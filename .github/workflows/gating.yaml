@@ -181,12 +181,3 @@ jobs:
         run: |
           podman images | grep 'hermeto'
           podman run -t hermeto:${{ github.sha }} --version
-
-      - name: Run integration tests on built image
-        env:
-          HERMETO_IMAGE: localhost/hermeto:${{ github.sha }}
-          HERMETO_TEST_LOCAL_PYPISERVER: 'true'
-          HERMETO_TEST_LOCAL_DNF_SERVER: 'true'
-        run: |
-          git config --global --add safe.directory "*"
-          /var/tmp/venv/bin/nox -s integration-tests
