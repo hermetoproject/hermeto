@@ -24,7 +24,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
 }
 
 
-# This is *only* used to provide a list for `hermeto --version`
+# This is *only* used to provide a list for `hermeto --package-managers`
 supported_package_managers = list(_package_managers)
 
 

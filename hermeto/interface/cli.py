@@ -148,7 +148,15 @@ def version_callback(value: bool) -> None:
     if not value:
         return
 
-    print(f"{APP_NAME}", importlib.metadata.version("hermeto"))
+    print(importlib.metadata.version("hermeto"))
+    raise typer.Exit()
+
+
+def package_managers_callback(value: bool) -> None:
+    """If --package-managers was used, print the supported package managers and exit."""
+    if not value:
+        return
+
     print("Supported package managers:", ", ".join(supported_package_managers))
     raise typer.Exit()
 
@@ -162,6 +170,13 @@ def main(  # noqa: D103 docstring becomes part of --help message
         callback=version_callback,
         is_eager=True,
         help="Show version and exit.",
+    ),
+    package_managers: bool = typer.Option(  # noqa: ARG001
+        False,
+        "--package-managers",
+        callback=package_managers_callback,
+        is_eager=True,
+        help="Show supported package managers and exit.",
     ),
     config_file: Path = typer.Option(
         None,
