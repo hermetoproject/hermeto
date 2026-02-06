@@ -2287,6 +2287,30 @@ def test_ignore_toolchain_files(dir_path: str, files: list[str], expected: list[
 
 
 class TestGo:
+    # Override the module-level autouse fixture — no test in this class needs it
+    @pytest.fixture(autouse=True)
+    def mock_go_release(self) -> Iterator[None]:
+        yield
+
+    @pytest.mark.parametrize(
+        "goversion_output, expected",
+        [
+            pytest.param("go1.21.0\n", "go1.21.0", id="vanilla"),
+            pytest.param("go1.25.7 X:nodwarf5\n", "go1.25.7", id="extra_build_flags"),
+            pytest.param("go1.21.0-asdf\n", "go1.21.0-asdf", id="vendor_suffix"),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    def test_get_release(
+        self,
+        mock_run: mock.Mock,
+        goversion_output: str,
+        expected: str,
+    ) -> None:
+        mock_run.return_value = goversion_output
+        go = Go()
+        assert go._get_release() == expected
+
     @pytest.mark.parametrize(
         "params",
         [

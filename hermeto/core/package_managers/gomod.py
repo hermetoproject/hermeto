@@ -239,6 +239,10 @@ class GoVersion(version.Version):
     >>> v.major, v.minor, v.micro
     (1, 21, 4)
 
+    >>> v = GoVersion("go1.25.7-asdf-xyz")
+    >>> v.major, v.minor, v.micro
+    (1, 25, 7)
+
     >>> v = GoVersion("1.21")
     >>> str(v.to_language_version())
     '1.21'
@@ -252,6 +256,8 @@ class GoVersion(version.Version):
     >>> GoVersion("1.21.4") > GoVersion("1.21.0")
     True
     >>> GoVersion("go1.21") == GoVersion("1.21")
+    True
+    >>> GoVersion("go1.21-asdf") == GoVersion("1.21")
     True
     """
 
@@ -267,10 +273,12 @@ class GoVersion(version.Version):
     def __init__(self, version_str: str) -> None:
         """Initialize the GoVersion instance.
 
-        :param version_str: version string in the form of X.Y(.Z)?
+        :param version_str: version string in the form of X.Y(.Z)?(-[a-zA-Z0-9-]+)?
                             Note we also accept standard Go release strings prefixed with 'go'
         """
         ver = version_str if not version_str.startswith("go") else version_str[2:]
+        # Strip vendor-specific suffixes introduced by a dash, e.g. "1.21.0-asdf"
+        ver = ver.split("-", 1)[0]
         super().__init__(ver)
 
     @classmethod
@@ -406,27 +414,11 @@ class Go:
         return GoVersion(self._get_release())
 
     def _get_release(self) -> str:
-        output = self(["version"], params={"env": {"GOTOOLCHAIN": "local"}})
-        log.debug(f"Go release: {output}")
-        release_pattern = f"go{version.VERSION_PATTERN}"
+        output = self(["env", "GOVERSION"], params={"env": {"GOTOOLCHAIN": "local"}})
+        log.debug(f"Go release: {output.strip()}")
 
-        # packaging.version requires passing the re.VERBOSE|re.IGNORECASE flags [1]
-        # [1] https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
-        if match := re.search(release_pattern, output, re.VERBOSE | re.IGNORECASE):
-            release = match.group(0)
-        else:
-            # This should not happen, otherwise we must figure out a more reliable way of
-            # extracting Go version.
-            # Ideally we'd want to rely only on doing 'go env GOVERSION' which doesn't require any
-            # further post-processing, but GOVERSION variable was introduced in Go 1.16 and so
-            # 'go version' has been around for longer, then again, it's CLI output bound to
-            # change.
-            raise PackageManagerError(
-                f"Could not extract Go toolchain version from Go's output: '{output}'",
-                solution=f"This is a fatal error, please open a bug report against {APP_NAME}",
-            )
-
-        return release
+        # Non-vanilla Go builds may report extra data in the version string, e.g. "go1.25.7 X:nodwarf5"
+        return output.split()[0]
 
     @staticmethod
     def _retry(cmd: list[str], **kwargs: Any) -> str:
