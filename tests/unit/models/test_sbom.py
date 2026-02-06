@@ -23,6 +23,7 @@ from hermeto.core.models.sbom import (
     SPDXRelation,
     SPDXSbom,
     Tool,
+    filter_exp_package_types,
     merge_component_properties,
 )
 
@@ -82,6 +83,50 @@ class TestComponent:
             Component(name="foo", purl="pkg:generic/foo", properties=input_properties).properties
             == expected_properties
         )
+
+
+class TestExperimentalFeatures:
+    @mock.patch("hermeto.core.models.sbom.get_args")
+    @pytest.mark.parametrize(
+        "package_manager_types, expected_experimental_types",
+        [
+            pytest.param(("bundler", "npm", "cargo"), set(), id="no_experimental_pm_types"),
+            pytest.param(
+                ("bundler", "x-foo", "npm", "x-bar", "cargo", "x-baz"),
+                {"foo", "bar", "baz"},
+                id="experimental_pm_types",
+            ),
+        ],
+    )
+    def test_filter_experimental_package_types_extraction(
+        self,
+        mock_get_args: mock.MagicMock,
+        package_manager_types: tuple[str, ...],
+        expected_experimental_types: set[str],
+    ) -> None:
+        mock_get_args.return_value = package_manager_types
+
+        assert filter_exp_package_types() == expected_experimental_types
+
+    @mock.patch("hermeto.core.models.sbom.filter_exp_package_types", return_value={"foo"})
+    def test_component_produced_by_an_experimental_pm_has_experimental_property(
+        self, _mock_filter_exp_package_types: mock.MagicMock
+    ) -> None:
+        component = Component(name="test-component", purl="pkg:foo/test@1.0.0")
+
+        expected_property = Property(name=PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL, value="foo")
+        assert expected_property in component.properties
+
+    @mock.patch("hermeto.core.models.sbom.filter_exp_package_types", return_value={"foo"})
+    def test_component_produced_by_fully_supported_pm_does_not_have_experimental_property(
+        self, _mock_filter_exp_package_types: mock.MagicMock
+    ) -> None:
+        comp = Component(name="test-component", purl="pkg:npm/test@1.0.0")
+
+        has_experimental_property = any(
+            prop.name == PropertyEnum.PROP_FOUND_BY_EXPERIMENTAL for prop in comp.properties
+        )
+        assert not has_experimental_property
 
 
 class TestSPDXPackage:
