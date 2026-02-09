@@ -11,18 +11,44 @@ import pytest
 import requests
 from git import Repo
 
-from tests.integration.utils import TEST_SERVER_LOCALHOST
+from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
 
 from . import utils
 
 log = logging.getLogger(__name__)
+
+_ENV_VAR_CLI_MAP = [
+    ("HERMETO_TEST_INTEGRATION_TESTS_REPO", "--integration-tests-repo"),
+    ("HERMETO_TEST_IMAGE", "--hermeto-image"),
+    ("HERMETO_TEST_LOCAL_PYPISERVER", "--local-pypiserver"),
+    ("PYPISERVER_PORT", "--pypiserver-port"),
+    ("HERMETO_TEST_LOCAL_DNF_SERVER", "--local-dnf-server"),
+    ("DNFSERVER_SSL_PORT", "--dnfserver-ssl-port"),
+    ("HERMETO_TEST_NETRC_CONTENT", "--netrc-content"),
+    ("HERMETO_GENERATE_TEST_DATA", "--generate-test-data"),
+    ("HERMETO_RUN_ALL_INTEGRATION_TESTS", "--run-all-integration"),
+    ("HERMETO_TEST_CONTAINER_ENGINE", "--container-engine"),
+]
+
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Sync CLI option values to env so existing os.getenv() code sees them."""
+    def env_value(cli_opt: str) -> str:
+        value = config.getoption(cli_opt)
+        if isinstance(value, bool):
+            return "1" if value else "0"
+        return value
+
+    for env_var, cli_opt in _ENV_VAR_CLI_MAP:
+        os.environ[env_var] = env_value(cli_opt)
 
 
 @pytest.fixture(scope="session")
 def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        "https://github.com/hermetoproject/integration-tests.git",
+        DEFAULT_INTEGRATION_TESTS_REPO,
     )
     # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
     repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
