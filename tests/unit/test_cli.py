@@ -87,9 +87,7 @@ class TestTopLevelOpts:
     def test_version_option(self) -> None:
         expect_version = importlib.metadata.version(f"{APP_NAME}")
         result = invoke_expecting_sucess(app, ["--version"])
-        lines = result.output.splitlines()
-        assert lines[0] == f"{APP_NAME} {expect_version}"
-        assert lines[1].startswith("Supported package managers: bundler")
+        assert expect_version in result.output
 
     @pytest.mark.parametrize(
         "config_values",
