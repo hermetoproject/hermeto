@@ -19,7 +19,13 @@ from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.input import Flag, Mode, PackageInput, Request, parse_user_input
 from hermeto.core.models.output import BuildConfig
 from hermeto.core.models.sbom import Sbom, SPDXSbom, spdx_now
-from hermeto.core.resolver import inject_files_post, resolve_packages
+from hermeto.core.resolver import (
+    get_all_backends,
+    get_experimental_backends,
+    get_supported_backends,
+    inject_files_post,
+    resolve_packages,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.interface.logging import LogLevel, setup_logging
 
@@ -219,6 +225,40 @@ def _looks_like_input_file(value: str) -> bool:
 class _Input(pydantic.BaseModel, extra="forbid"):
     packages: list[PackageInput]
     flags: list[Flag] = list()
+
+
+@app.command()
+@handle_errors
+def list_backends(
+    list_all: bool = typer.Option(
+        False,
+        "-a",
+        "--all",
+        help="List all backends (supported and experimental).",
+    ),
+    list_experimental: bool = typer.Option(
+        False,
+        "-x",
+        "--experimental",
+        help="List backends that are experimental (x-*): technical preview, not for production; no stability or support guarantees.",
+    ),
+) -> None:
+    """List supported backends."""
+    backends = None
+    match list_all, list_experimental:
+        case True, False:
+            backends = get_all_backends(True)
+        case False, True:
+            backends = get_experimental_backends(True)
+        case False, False:
+            backends = get_supported_backends()
+        case _:
+            raise InvalidInput(
+                "Please pick only one option.",
+                solution="Select either --all or --experimental, not both.",
+            )
+
+    print(", ".join(backends))
 
 
 @app.command(help=FETCH_DEPS_HELP)
