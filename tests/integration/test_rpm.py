@@ -101,8 +101,8 @@ from . import utils
             ),
             id="rpm_dnf_tls_client_auth",
             marks=pytest.mark.skipif(
-                os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true",
-                reason="HERMETO_TEST_LOCAL_DNF_SERVER!=true",
+                os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "1",
+                reason="HERMETO_TEST_LOCAL_DNF_SERVER!=1",
             ),
         ),
         pytest.param(
@@ -204,7 +204,7 @@ def test_repo_files(
     # update test data if needed
     expected_repo_file_path = test_data_dir.joinpath(test_case, "hermeto.repo")
 
-    if os.getenv("HERMETO_GENERATE_TEST_DATA") == "true":
+    if os.getenv("HERMETO_GENERATE_TEST_DATA") == "1":
         expected_repo_file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(expected_repo_file_path, "w") as file:
             file.write(repo_file_content)

@@ -71,7 +71,7 @@ def local_pypiserver() -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "1"
     ):
         yield
         return
@@ -123,7 +123,7 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "1"
     ):
         yield
         return
