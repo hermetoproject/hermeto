@@ -24,16 +24,16 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ["HERMETO_TEST_LOCAL_PYPISERVER"] = (
         "1" if config.getoption("--local-pypiserver") else "0"
     )
-    os.environ["PYPISERVER_PORT"] = config.getoption("--pypiserver-port")
+    os.environ["HERMETO_TEST_PYPISERVER_PORT"] = config.getoption("--pypiserver-port")
     os.environ["HERMETO_TEST_LOCAL_DNF_SERVER"] = (
         "1" if config.getoption("--local-dnf-server") else "0"
     )
-    os.environ["DNFSERVER_SSL_PORT"] = config.getoption("--dnfserver-ssl-port")
+    os.environ["HERMETO_TEST_DNFSERVER_SSL_PORT"] = config.getoption("--dnfserver-ssl-port")
     os.environ["HERMETO_TEST_NETRC_CONTENT"] = config.getoption("--netrc-content")
-    os.environ["HERMETO_GENERATE_TEST_DATA"] = (
+    os.environ["HERMETO_TEST_GENERATE_DATA"] = (
         "1" if config.getoption("--generate-test-data") else "0"
     )
-    os.environ["HERMETO_RUN_ALL_INTEGRATION_TESTS"] = (
+    os.environ["HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS"] = (
         "1" if config.getoption("--run-all-integration") else "0"
     )
     os.environ["HERMETO_TEST_CONTAINER_ENGINE"] = config.getoption("--container-engine").lower()
@@ -70,7 +70,7 @@ def top_level_test_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def hermeto_image() -> utils.HermetoImage:
-    if not (image_ref := os.environ.get("HERMETO_IMAGE")):
+    if not (image_ref := os.environ.get("HERMETO_TEST_IMAGE")):
         image_ref = "localhost/hermeto:latest"
         log.info("Building local hermeto:latest image")
         # <arbitrary_path>/hermeto/tests/integration/conftest.py
@@ -104,7 +104,7 @@ def local_pypiserver() -> Iterator[None]:
         proc = context.enter_context(subprocess.Popen([pypiserver_dir / "start.sh"]))
         context.callback(proc.terminate)
 
-        pypiserver_port = os.getenv("PYPISERVER_PORT", "8080")
+        pypiserver_port = os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080")
         for _ in range(60):
             time.sleep(1)
             try:
@@ -156,7 +156,7 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
         proc = context.enter_context(subprocess.Popen([dnfserver_dir / "start.sh"]))
         context.callback(proc.terminate)
 
-        ssl_port = os.getenv("DNFSERVER_SSL_PORT", "8443")
+        ssl_port = os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443")
         for _ in range(60):
             time.sleep(1)
             try:

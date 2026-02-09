@@ -259,11 +259,11 @@ nox -s all-integration-tests
 Note: while developing, you can run the PyPI server with `tests/pypiserver/start.sh &`
 and DNF server with `tests/dnfserver/start.sh &` to speed up the tests.
 
-To run integration-tests with custom image, specify the HERMETO\_IMAGE environment variable. Examples:
+To run integration-tests with custom image, specify the HERMETO\_TEST\_IMAGE environment variable. Examples:
 
 ```shell
-HERMETO_IMAGE=ghcr.io/hermetoproject/hermeto:{tag} nox -s integration-tests
-HERMETO_IMAGE=localhost/hermeto:latest nox -s  integration-tests
+HERMETO_TEST_IMAGE=ghcr.io/hermetoproject/hermeto:{tag} nox -s integration-tests
+HERMETO_TEST_IMAGE=localhost/hermeto:latest nox -s  integration-tests
 ```
 
 ### Adding new dependencies to the project

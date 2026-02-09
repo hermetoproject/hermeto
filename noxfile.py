@@ -124,7 +124,7 @@ def all_integration_tests(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "HERMETO_RUN_ALL_INTEGRATION_TESTS": "1",
+            "HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS": "1",
             "HERMETO_TEST_LOCAL_PYPISERVER": "1",
             "HERMETO_TEST_LOCAL_DNF_SERVER": "1",
         },
@@ -137,8 +137,8 @@ def generate_test_data(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "HERMETO_RUN_ALL_INTEGRATION_TESTS": "1",
-            "HERMETO_GENERATE_TEST_DATA": "1",
+            "HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS": "1",
+            "HERMETO_TEST_GENERATE_DATA": "1",
         },
     )
 

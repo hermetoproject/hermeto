@@ -18,8 +18,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption(
         "--hermeto-image",
         action="store",
-        default=os.getenv("HERMETO_IMAGE", ""),
-        help="Hermeto container image reference; build local image if not set (env: HERMETO_IMAGE)",
+        default=os.getenv("HERMETO_TEST_IMAGE", ""),
+        help="Hermeto container image reference; build local image if not set (env: HERMETO_TEST_IMAGE)",
     )
     group.addoption(
         "--local-pypiserver",
@@ -30,8 +30,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption(
         "--pypiserver-port",
         action="store",
-        default=os.getenv("PYPISERVER_PORT", "8080"),
-        help="Port for local pypiserver (env: PYPISERVER_PORT)",
+        default=os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080"),
+        help="Port for local pypiserver (env: HERMETO_TEST_PYPISERVER_PORT)",
     )
     group.addoption(
         "--local-dnf-server",
@@ -42,8 +42,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption(
         "--dnfserver-ssl-port",
         action="store",
-        default=os.getenv("DNFSERVER_SSL_PORT", "8443"),
-        help="SSL port for local DNF server (env: DNFSERVER_SSL_PORT)",
+        default=os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443"),
+        help="SSL port for local DNF server (env: HERMETO_TEST_DNFSERVER_SSL_PORT)",
     )
     group.addoption(
         "--netrc-content",
@@ -54,14 +54,14 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption(
         "--generate-test-data",
         action="store_true",
-        default=os.getenv("HERMETO_GENERATE_TEST_DATA") == "1",
-        help="Regenerate expected test data files (env: HERMETO_GENERATE_TEST_DATA=1)",
+        default=os.getenv("HERMETO_TEST_GENERATE_DATA") == "1",
+        help="Regenerate expected test data files (env: HERMETO_TEST_GENERATE_DATA=1)",
     )
     group.addoption(
         "--run-all-integration",
         action="store_true",
-        default=os.getenv("HERMETO_RUN_ALL_INTEGRATION_TESTS") == "1",
-        help="Run all integration tests, disable skip-by-changed-files (env: HERMETO_RUN_ALL_INTEGRATION_TESTS=1)",
+        default=os.getenv("HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS") == "1",
+        help="Run all integration tests, disable skip-by-changed-files (env: HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS=1)",
     )
     group.addoption(
         "--container-engine",
