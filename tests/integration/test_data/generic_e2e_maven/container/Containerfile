@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/eclipse-temurin:11-jre-jammy
+FROM mirror.gcr.io/eclipse-temurin:25-jre-alpine
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi

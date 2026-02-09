@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:40
+FROM mirror.gcr.io/alpine:3
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
