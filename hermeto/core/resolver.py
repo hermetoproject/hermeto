@@ -24,8 +24,21 @@ _package_managers: dict[PackageManagerType, Handler] = {
 }
 
 
-# This is *only* used to provide a list for `hermeto --version`
-supported_package_managers = list(_package_managers)
+def get_all_backends(remove_prefix: bool = True) -> list[PackageManagerType | str]:
+    """List all backends sorted alphabetically by name"""
+    if remove_prefix:
+        return sorted(x.lstrip("x-") for x in _package_managers)
+    return sorted(_package_managers)
+
+
+def get_supported_backends() -> list[PackageManagerType | str]:
+    """List all supported backends sorted alphabetically by name."""
+    return sorted(x for x in _package_managers if not x.startswith("x-"))
+
+
+def get_experimental_backends(remove_prefix: bool = False) -> list[PackageManagerType | str]:
+    """List all experimental backends sorted alphabetically by name."""
+    return sorted(x[2:] if remove_prefix else x for x in _package_managers if x.startswith("x-"))
 
 
 def resolve_packages(request: Request) -> RequestOutput:
