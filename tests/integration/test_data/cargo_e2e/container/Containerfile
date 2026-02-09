@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/rust:1.88-slim
+FROM mirror.gcr.io/rust:1.93-alpine
 
 # Test disabled network access
 RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi

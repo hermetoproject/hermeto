@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/golang:1.18.1
+FROM mirror.gcr.io/golang:1.18.10-alpine
 
 # Test disabled network access
 RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
