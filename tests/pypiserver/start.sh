@@ -45,7 +45,7 @@ setup() {
     ls -lA "$WORKDIR/auth"
     tar cf - -C "$WORKDIR/auth" . | podman volume import cachi2-pypiserver-auth -
 
-    echo -e "\n--- Starting pypiserver on http://127.0.0.1:${PYPISERVER_PORT:-8080} ---\n"
+    echo -e "\n--- Starting pypiserver on http://127.0.0.1:${HERMETO_TEST_PYPISERVER_PORT:-8080} ---\n"
 }
 
 setup >&2
@@ -53,7 +53,7 @@ setup >&2
 podman run --rm --replace --name cachi2-pypiserver \
     -v cachi2-pypiserver-packages:/data/packages \
     -v cachi2-pypiserver-auth:/data/auth \
-    -p "${PYPISERVER_PORT:-$DEFAULT_PORT}":8080 \
+    -p "${HERMETO_TEST_PYPISERVER_PORT:-$DEFAULT_PORT}":8080 \
     "${PYPISERVER_IMAGE:-$DEFAULT_IMAGE}" \
         run \
         --passwords /data/auth/.htpasswd \
