@@ -20,6 +20,8 @@
 - Detect and flag code duplication, dead code, and code redundancy
 - Maintain a consistent code structure across the whole code base
 - Make sure if unit tests are added they cover both positive and negative scenarios
+- Make sure if unit tests are added they don't perform string matching against
+  the output
 - Prefer test parametrization over standalone unit tests for different test variants
   of the same function if it decreases code duplication
 
