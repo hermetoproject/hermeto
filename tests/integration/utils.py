@@ -27,6 +27,8 @@ from tests.integration.container_engine import get_container_engine
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
 
+DEFAULT_INTEGRATION_TESTS_REPO = "https://github.com/hermetoproject/integration-tests.git"
+
 # Individual files could be added to the set as well.
 PATHS_TO_CODE = frozenset(
     (

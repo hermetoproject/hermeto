@@ -10,18 +10,40 @@ import pytest
 import requests
 from git import Repo
 
-from tests.integration.utils import TEST_SERVER_LOCALHOST
+from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
 
 from . import utils
 
 log = logging.getLogger(__name__)
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    """Sync CLI option values to env so existing os.getenv() code sees them."""
+    os.environ["HERMETO_TEST_INTEGRATION_TESTS_REPO"] = config.getoption("--integration-tests-repo")
+    os.environ["HERMETO_TEST_IMAGE"] = config.getoption("--hermeto-image")
+    os.environ["HERMETO_TEST_LOCAL_PYPISERVER"] = (
+        "1" if config.getoption("--local-pypiserver") else "0"
+    )
+    os.environ["PYPISERVER_PORT"] = config.getoption("--pypiserver-port")
+    os.environ["HERMETO_TEST_LOCAL_DNF_SERVER"] = (
+        "1" if config.getoption("--local-dnf-server") else "0"
+    )
+    os.environ["DNFSERVER_SSL_PORT"] = config.getoption("--dnfserver-ssl-port")
+    os.environ["HERMETO_TEST_NETRC_CONTENT"] = config.getoption("--netrc-content")
+    os.environ["HERMETO_GENERATE_TEST_DATA"] = (
+        "1" if config.getoption("--generate-test-data") else "0"
+    )
+    os.environ["HERMETO_RUN_ALL_INTEGRATION_TESTS"] = (
+        "1" if config.getoption("--run-all-integration") else "0"
+    )
+    os.environ["HERMETO_TEST_CONTAINER_ENGINE"] = config.getoption("--container-engine").lower()
+
+
 @pytest.fixture(scope="session")
 def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        "https://github.com/hermetoproject/integration-tests.git",
+        DEFAULT_INTEGRATION_TESTS_REPO,
     )
     # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
     repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
