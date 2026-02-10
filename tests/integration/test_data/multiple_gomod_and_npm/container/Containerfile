@@ -5,7 +5,7 @@ FROM node
 COPY --from=golang /usr/local/go /usr/local/go
 
 # Test disabled network access
-RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 
 # Link go to standard PATH location
 RUN ln -s /usr/local/go/bin/go /usr/local/bin/go
