@@ -2,7 +2,7 @@
 FROM registry.access.redhat.com/ubi9/ubi@sha256:c2bc4ee4ec4f200af9d78fd1307b7ff39f5db2c27166e52fb37650dee68a5ffd
 
 # Test disabled network access
-RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 
 # These packages must be prefetched during the previous phase.
 # Refer to the test for further details.

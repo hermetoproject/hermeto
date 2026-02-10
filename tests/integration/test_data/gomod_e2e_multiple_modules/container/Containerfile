@@ -1,7 +1,7 @@
 FROM mirror.gcr.io/golang:1.18.10-alpine
 
 # Test disabled network access
-RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 
 WORKDIR /src
 RUN . /tmp/hermeto.env && \
