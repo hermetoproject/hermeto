@@ -1,8 +1,27 @@
-*
+# Python cache
+__pycache__/
+*.pyc
 
-!.git/
-!.git_archival.txt
-!hermeto/
-!pyproject.toml
-!requirements.txt
-!MANIFEST.in
+# Environments
+venv/
+.venv/
+.env
+*.env
+
+# Distribution / packaging
+*.egg-info/
+build/
+dist/
+site/
+
+# Test and tool caches
+.nox/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+
+# Project outputs
+dest/
+hermeto-output/
+cachi2-output/
