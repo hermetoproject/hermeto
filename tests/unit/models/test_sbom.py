@@ -519,6 +519,7 @@ class TestSbom:
                     name="test-package",
                     purl="pkg:gomod/test-package@1.0.0",
                     version="1.0.0",
+                    bom_ref="pkg:gomod/test-package@1.0.0",
                     properties=[Property(name=PropertyEnum.PROP_FOUND_BY, value="hermeto")],
                 ),
             ],
@@ -529,6 +530,47 @@ class TestSbom:
 
         assert pkg.annotations[0].comment == "Hello, world!"
         assert pkg.annotations[1].comment == '{"name": "hermeto:found_by", "value": "hermeto"}'
+
+    def test_spdx_annotation_subjects_filtering(self, mock_spdx_now: str) -> None:
+        """Annotations should only be applied to SPDX packages whose bom-ref is in subjects."""
+        sbom = Sbom(
+            annotations=[
+                Annotation(
+                    subjects=["pkg:npm/foo@1.0.0"],
+                    annotator={"organization": {"name": "red hat"}},
+                    timestamp="2026-01-01T00:00:00Z",
+                    text="hermeto:package_manager:npm",
+                ),
+            ],
+            components=[
+                Component(
+                    name="foo",
+                    purl="pkg:npm/foo@1.0.0",
+                    version="1.0.0",
+                    bom_ref="pkg:npm/foo@1.0.0",
+                ),
+                Component(
+                    name="bar",
+                    purl="pkg:golang/bar@2.0.0",
+                    version="2.0.0",
+                    bom_ref="pkg:golang/bar@2.0.0",
+                ),
+            ],
+        )
+
+        spdx_sbom = sbom.to_spdx("NOASSERTION")
+        non_root_packages = [p for p in spdx_sbom.packages if "DocumentRoot" not in p.SPDXID]
+
+        foo_pkg = next(p for p in non_root_packages if p.name == "foo")
+        bar_pkg = next(p for p in non_root_packages if p.name == "bar")
+
+        # foo should have the annotation (its bom-ref is in subjects)
+        annotation_comments = [a.comment for a in foo_pkg.annotations]
+        assert "hermeto:package_manager:npm" in annotation_comments
+
+        # bar should NOT have the annotation (its bom-ref is NOT in subjects)
+        bar_annotation_comments = [a.comment for a in bar_pkg.annotations]
+        assert "hermeto:package_manager:npm" not in bar_annotation_comments
 
     @pytest.mark.parametrize(
         "sbom, expected_package_source_info",
