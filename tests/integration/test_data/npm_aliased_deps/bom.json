@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:npm/fecha@4.2.0?vcs_url=git%2Bssh://git%40github.com/taylorhakes/fecha.git%4091680e4db1415fea33eac878cfd889c80a7b55c7",
       "name": "fecha",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "4.2.0"
     },
     {
+      "bom-ref": "pkg:npm/fecha@4.2.2",
       "name": "fecha",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "4.2.2"
     },
     {
+      "bom-ref": "pkg:npm/fecha@4.2.3",
       "name": "fecha",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4048c5f156b43b8727b10bf464c00847b09e2f25f6",
       "name": "npm-with-aliased-deps",
       "properties": [
         {

@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:npm/%40types/prop-types@15.7.5",
       "name": "@types/prop-types",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "15.7.5"
     },
     {
+      "bom-ref": "pkg:npm/%40types/react-dom@18.2.6",
       "name": "@types/react-dom",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "18.2.6"
     },
     {
+      "bom-ref": "pkg:npm/%40types/react@18.2.14",
       "name": "@types/react",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "18.2.14"
     },
     {
+      "bom-ref": "pkg:npm/%40types/scheduler@0.16.3",
       "name": "@types/scheduler",
       "properties": [
         {
@@ -50,6 +54,7 @@
       "version": "0.16.3"
     },
     {
+      "bom-ref": "pkg:npm/accepts@1.3.8",
       "name": "accepts",
       "properties": [
         {
@@ -62,6 +67,7 @@
       "version": "1.3.8"
     },
     {
+      "bom-ref": "pkg:npm/array-flatten@1.1.1",
       "name": "array-flatten",
       "properties": [
         {
@@ -74,6 +80,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/body-parser@1.20.1",
       "name": "body-parser",
       "properties": [
         {
@@ -86,6 +93,7 @@
       "version": "1.20.1"
     },
     {
+      "bom-ref": "pkg:npm/bytes@3.1.2",
       "name": "bytes",
       "properties": [
         {
@@ -98,6 +106,7 @@
       "version": "3.1.2"
     },
     {
+      "bom-ref": "pkg:npm/call-bind@1.0.2",
       "name": "call-bind",
       "properties": [
         {
@@ -110,6 +119,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/content-disposition@0.5.4",
       "name": "content-disposition",
       "properties": [
         {
@@ -122,6 +132,7 @@
       "version": "0.5.4"
     },
     {
+      "bom-ref": "pkg:npm/content-type@1.0.5",
       "name": "content-type",
       "properties": [
         {
@@ -134,6 +145,7 @@
       "version": "1.0.5"
     },
     {
+      "bom-ref": "pkg:npm/cookie-signature@1.0.6",
       "name": "cookie-signature",
       "properties": [
         {
@@ -146,6 +158,7 @@
       "version": "1.0.6"
     },
     {
+      "bom-ref": "pkg:npm/cookie@0.5.0",
       "name": "cookie",
       "properties": [
         {
@@ -158,6 +171,7 @@
       "version": "0.5.0"
     },
     {
+      "bom-ref": "pkg:npm/csstype@3.1.2",
       "name": "csstype",
       "properties": [
         {
@@ -170,6 +184,7 @@
       "version": "3.1.2"
     },
     {
+      "bom-ref": "pkg:npm/debug@2.6.9",
       "name": "debug",
       "properties": [
         {
@@ -182,6 +197,7 @@
       "version": "2.6.9"
     },
     {
+      "bom-ref": "pkg:npm/debug@4.3.4",
       "name": "debug",
       "properties": [
         {
@@ -194,6 +210,7 @@
       "version": "4.3.4"
     },
     {
+      "bom-ref": "pkg:npm/depd@2.0.0",
       "name": "depd",
       "properties": [
         {
@@ -206,6 +223,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/destroy@1.2.0",
       "name": "destroy",
       "properties": [
         {
@@ -218,6 +236,7 @@
       "version": "1.2.0"
     },
     {
+      "bom-ref": "pkg:npm/ee-first@1.1.1",
       "name": "ee-first",
       "properties": [
         {
@@ -230,6 +249,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/encodeurl@1.0.2",
       "name": "encodeurl",
       "properties": [
         {
@@ -242,6 +262,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/escape-html@1.0.3",
       "name": "escape-html",
       "properties": [
         {
@@ -254,6 +275,7 @@
       "version": "1.0.3"
     },
     {
+      "bom-ref": "pkg:npm/etag@1.8.1",
       "name": "etag",
       "properties": [
         {
@@ -266,6 +288,7 @@
       "version": "1.8.1"
     },
     {
+      "bom-ref": "pkg:npm/express@4.18.2",
       "name": "express",
       "properties": [
         {
@@ -278,6 +301,7 @@
       "version": "4.18.2"
     },
     {
+      "bom-ref": "pkg:npm/finalhandler@1.2.0",
       "name": "finalhandler",
       "properties": [
         {
@@ -290,6 +314,7 @@
       "version": "1.2.0"
     },
     {
+      "bom-ref": "pkg:npm/forwarded@0.2.0",
       "name": "forwarded",
       "properties": [
         {
@@ -302,6 +327,7 @@
       "version": "0.2.0"
     },
     {
+      "bom-ref": "pkg:npm/fresh@0.5.2",
       "name": "fresh",
       "properties": [
         {
@@ -314,6 +340,7 @@
       "version": "0.5.2"
     },
     {
+      "bom-ref": "pkg:npm/function-bind@1.1.1",
       "name": "function-bind",
       "properties": [
         {
@@ -326,6 +353,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/get-intrinsic@1.2.1",
       "name": "get-intrinsic",
       "properties": [
         {
@@ -338,6 +366,7 @@
       "version": "1.2.1"
     },
     {
+      "bom-ref": "pkg:npm/has-proto@1.0.1",
       "name": "has-proto",
       "properties": [
         {
@@ -350,6 +379,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/has-symbols@1.0.3",
       "name": "has-symbols",
       "properties": [
         {
@@ -362,6 +392,7 @@
       "version": "1.0.3"
     },
     {
+      "bom-ref": "pkg:npm/has@1.0.3",
       "name": "has",
       "properties": [
         {
@@ -374,6 +405,7 @@
       "version": "1.0.3"
     },
     {
+      "bom-ref": "pkg:npm/http-errors@2.0.0",
       "name": "http-errors",
       "properties": [
         {
@@ -386,6 +418,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/iconv-lite@0.4.24",
       "name": "iconv-lite",
       "properties": [
         {
@@ -398,6 +431,7 @@
       "version": "0.4.24"
     },
     {
+      "bom-ref": "pkg:npm/inherits@2.0.4",
       "name": "inherits",
       "properties": [
         {
@@ -410,6 +444,7 @@
       "version": "2.0.4"
     },
     {
+      "bom-ref": "pkg:npm/ipaddr.js@1.9.1",
       "name": "ipaddr.js",
       "properties": [
         {
@@ -422,6 +457,7 @@
       "version": "1.9.1"
     },
     {
+      "bom-ref": "pkg:npm/media-typer@0.3.0",
       "name": "media-typer",
       "properties": [
         {
@@ -434,6 +470,7 @@
       "version": "0.3.0"
     },
     {
+      "bom-ref": "pkg:npm/merge-descriptors@1.0.1",
       "name": "merge-descriptors",
       "properties": [
         {
@@ -446,6 +483,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/methods@1.1.2",
       "name": "methods",
       "properties": [
         {
@@ -458,6 +496,7 @@
       "version": "1.1.2"
     },
     {
+      "bom-ref": "pkg:npm/mime-db@1.52.0",
       "name": "mime-db",
       "properties": [
         {
@@ -470,6 +509,7 @@
       "version": "1.52.0"
     },
     {
+      "bom-ref": "pkg:npm/mime-types@2.1.35",
       "name": "mime-types",
       "properties": [
         {
@@ -482,6 +522,7 @@
       "version": "2.1.35"
     },
     {
+      "bom-ref": "pkg:npm/mime@1.6.0",
       "name": "mime",
       "properties": [
         {
@@ -494,6 +535,7 @@
       "version": "1.6.0"
     },
     {
+      "bom-ref": "pkg:npm/ms@2.0.0",
       "name": "ms",
       "properties": [
         {
@@ -506,6 +548,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/ms@2.1.2",
       "name": "ms",
       "properties": [
         {
@@ -518,6 +561,7 @@
       "version": "2.1.2"
     },
     {
+      "bom-ref": "pkg:npm/ms@2.1.3",
       "name": "ms",
       "properties": [
         {
@@ -530,6 +574,7 @@
       "version": "2.1.3"
     },
     {
+      "bom-ref": "pkg:npm/negotiator@0.6.3",
       "name": "negotiator",
       "properties": [
         {
@@ -542,6 +587,7 @@
       "version": "0.6.3"
     },
     {
+      "bom-ref": "pkg:npm/npm-cachi2-yarn-registry-test@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f830b62780e75357c38abb7e1102871b51bfbcfe",
       "name": "npm-cachi2-yarn-registry-test",
       "properties": [
         {
@@ -554,6 +600,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/object-inspect@1.12.3",
       "name": "object-inspect",
       "properties": [
         {
@@ -566,6 +613,7 @@
       "version": "1.12.3"
     },
     {
+      "bom-ref": "pkg:npm/on-finished@2.4.1",
       "name": "on-finished",
       "properties": [
         {
@@ -578,6 +626,7 @@
       "version": "2.4.1"
     },
     {
+      "bom-ref": "pkg:npm/parseurl@1.3.3",
       "name": "parseurl",
       "properties": [
         {
@@ -590,6 +639,7 @@
       "version": "1.3.3"
     },
     {
+      "bom-ref": "pkg:npm/path-to-regexp@0.1.7",
       "name": "path-to-regexp",
       "properties": [
         {
@@ -602,6 +652,7 @@
       "version": "0.1.7"
     },
     {
+      "bom-ref": "pkg:npm/proxy-addr@2.0.7",
       "name": "proxy-addr",
       "properties": [
         {
@@ -614,6 +665,7 @@
       "version": "2.0.7"
     },
     {
+      "bom-ref": "pkg:npm/qs@6.11.0",
       "name": "qs",
       "properties": [
         {
@@ -626,6 +678,7 @@
       "version": "6.11.0"
     },
     {
+      "bom-ref": "pkg:npm/range-parser@1.2.1",
       "name": "range-parser",
       "properties": [
         {
@@ -638,6 +691,7 @@
       "version": "1.2.1"
     },
     {
+      "bom-ref": "pkg:npm/raw-body@2.5.1",
       "name": "raw-body",
       "properties": [
         {
@@ -650,6 +704,7 @@
       "version": "2.5.1"
     },
     {
+      "bom-ref": "pkg:npm/safe-buffer@5.2.1",
       "name": "safe-buffer",
       "properties": [
         {
@@ -662,6 +717,7 @@
       "version": "5.2.1"
     },
     {
+      "bom-ref": "pkg:npm/safer-buffer@2.1.2",
       "name": "safer-buffer",
       "properties": [
         {
@@ -674,6 +730,7 @@
       "version": "2.1.2"
     },
     {
+      "bom-ref": "pkg:npm/sax@0.1.1",
       "name": "sax",
       "properties": [
         {
@@ -686,6 +743,7 @@
       "version": "0.1.1"
     },
     {
+      "bom-ref": "pkg:npm/send@0.18.0",
       "name": "send",
       "properties": [
         {
@@ -698,6 +756,7 @@
       "version": "0.18.0"
     },
     {
+      "bom-ref": "pkg:npm/serve-static@1.15.0",
       "name": "serve-static",
       "properties": [
         {
@@ -710,6 +769,7 @@
       "version": "1.15.0"
     },
     {
+      "bom-ref": "pkg:npm/setprototypeof@1.2.0",
       "name": "setprototypeof",
       "properties": [
         {
@@ -722,6 +782,7 @@
       "version": "1.2.0"
     },
     {
+      "bom-ref": "pkg:npm/side-channel@1.0.4",
       "name": "side-channel",
       "properties": [
         {
@@ -734,6 +795,7 @@
       "version": "1.0.4"
     },
     {
+      "bom-ref": "pkg:npm/statuses@2.0.1",
       "name": "statuses",
       "properties": [
         {
@@ -746,6 +808,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/toidentifier@1.0.1",
       "name": "toidentifier",
       "properties": [
         {
@@ -758,6 +821,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/type-is@1.6.18",
       "name": "type-is",
       "properties": [
         {
@@ -770,6 +834,7 @@
       "version": "1.6.18"
     },
     {
+      "bom-ref": "pkg:npm/unpipe@1.0.0",
       "name": "unpipe",
       "properties": [
         {
@@ -782,6 +847,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/utils-merge@1.0.1",
       "name": "utils-merge",
       "properties": [
         {
@@ -794,6 +860,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/vary@1.1.2",
       "name": "vary",
       "properties": [
         {

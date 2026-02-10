@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:npm/%40colors/colors@1.6.0?checksum=sha512:22bf803a26eaceb22c2fa6a3b77473dcbb2407b3a23151ea96d666b296d6fd326e4d5bb238c8ab56a0248df63a2484a22c783236a89c002f00c871c6ccd77f74&repository_url=https://registry.yarnpkg.com",
       "name": "@colors/colors",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "1.6.0"
     },
     {
+      "bom-ref": "pkg:npm/ansi-align@3.0.1?checksum=sha512:20e7f0c0117989ccce8e9fd6798e18c728ea005310a19b9f750583775f52104c5b54b357aafa73489fcced96b8fec08f990d3e191aaea00edb19c20d7317b0eb&repository_url=https://registry.yarnpkg.com",
       "name": "ansi-align",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@3.0.1?checksum=sha512:f8ef4972df307fefa55f1c4573885cf0bb23692ab41c5cf32fb715b30f2944320f763283da64f8cad0d994bb92059e1c2ca6455c8acc18eec36d00ad30924c2b&repository_url=https://registry.yarnpkg.com",
       "name": "ansi-regex",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@5.0.1?checksum=sha512:aae2505e54d25062f62c7f52517a3c570b18e2ca1a9e1828e8b3529bce04d4b05c13cb373b4c29762473c91f73fd9649325316bf7eea38e6fda5d26531410a15&repository_url=https://registry.yarnpkg.com",
       "name": "ansi-regex",
       "properties": [
         {
@@ -50,6 +54,7 @@
       "version": "5.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-styles@4.3.0?checksum=sha512:cdb07dac22404f5adb8e25436f686a2851cd60bc60b64f0d511c59dc86700f717a36dc5b5d94029e74a2d4b931f880e885d3e5169db6db05402c885e64941212&repository_url=https://registry.yarnpkg.com",
       "name": "ansi-styles",
       "properties": [
         {
@@ -62,6 +67,7 @@
       "version": "4.3.0"
     },
     {
+      "bom-ref": "pkg:npm/assertion-error@2.0.1?checksum=sha512:2338bc45071f7ea09e3558058a02a58b5b2c92521ba479c261ce809275c662807a82b26ac9e6f2ee3bf5d895108264c09c80e76dc935bb192c4f87733773d604&repository_url=https://registry.yarnpkg.com",
       "name": "assertion-error",
       "properties": [
         {
@@ -78,6 +84,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/boxen@5.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/boxen-5.1.2.tgz",
       "name": "boxen",
       "properties": [
         {
@@ -90,6 +97,7 @@
       "version": "5.1.2"
     },
     {
+      "bom-ref": "pkg:npm/camelcase@5.3.1?checksum=sha512:2f6f124c1d7bd27c164badd48ed944384ddd95d400a5a257664388d6e3057f37f7ad1b8f7a01da1deb3279ef98c50f96e92bd10d057a52b74e751891d79df026&repository_url=https://registry.yarnpkg.com",
       "name": "camelcase",
       "properties": [
         {
@@ -102,6 +110,7 @@
       "version": "5.3.1"
     },
     {
+      "bom-ref": "pkg:npm/camelcase@6.3.0?checksum=sha512:1a6cba161625098eee3849595126f1a365020c7f28c0493df7a8246eba6c806b6b24b33727b8c6c65f4873b430c23e22bce13901665644c79c0dd17b86a1a314&repository_url=https://registry.yarnpkg.com",
       "name": "camelcase",
       "properties": [
         {
@@ -114,6 +123,7 @@
       "version": "6.3.0"
     },
     {
+      "bom-ref": "pkg:npm/camelcase@8.0.0?download_url=https://github.com/sindresorhus/camelcase/archive/2f1e273fc50281098d99627fef0853aa431139b5.tar.gz%232843ebd77073532e04e3382af6f2b92ae4e696f6",
       "name": "camelcase",
       "properties": [
         {
@@ -126,6 +136,7 @@
       "version": "8.0.0"
     },
     {
+      "bom-ref": "pkg:npm/chai@5.1.1?checksum=sha512:a53d5980ff2b3cda9482279568463eaf242be90e075cd83c122f549cb52b8cde0803b76f402e4907efe4c5570f3431f205c73fdba0973e46cdceadeac2b38428&repository_url=https://registry.yarnpkg.com",
       "name": "chai",
       "properties": [
         {
@@ -142,6 +153,7 @@
       "version": "5.1.1"
     },
     {
+      "bom-ref": "pkg:npm/chalk@4.1.2?checksum=sha512:a0a9db845c91217a54b9ecfc881326c846b89db8f820e432ba173fc32f6463bfd654f73020ef5503aebc3eef1190eefed06efa48b44e7b2c3d0a9434eb58b898&repository_url=https://registry.yarnpkg.com",
       "name": "chalk",
       "properties": [
         {
@@ -154,6 +166,7 @@
       "version": "4.1.2"
     },
     {
+      "bom-ref": "pkg:npm/chalk@5.3.0?checksum=sha512:74b8ad1bbf5df8657535bfd561c083162bc978ad618ae92df508d13553ac52d4f2d6b475609b26a46193677a89a2cfaec3b5a6585e3053005df63c63a1c142db&repository_url=https://registry.yarnpkg.com",
       "name": "chalk",
       "properties": [
         {
@@ -166,6 +179,7 @@
       "version": "5.3.0"
     },
     {
+      "bom-ref": "pkg:npm/check-error@2.1.1?checksum=sha512:38095bf93ed5e0ea7d3b07648e682e611aa771d971e498a87f038052499317e8cd747c334da4ece2c4401a9ccb177a0ecf9c40c831ab3e07880c54260ce4e227&repository_url=https://registry.yarnpkg.com",
       "name": "check-error",
       "properties": [
         {
@@ -182,6 +196,7 @@
       "version": "2.1.1"
     },
     {
+      "bom-ref": "pkg:npm/cli-boxes@2.2.1?checksum=sha512:cb872831cca581209d5629e388306e47c3c20b66cb8f2193c0498f6fd34747f41a354e8450e5dc4d8fece958c6303e8435211a790607098d063464b98df3303f&repository_url=https://registry.yarnpkg.com",
       "name": "cli-boxes",
       "properties": [
         {
@@ -194,6 +209,7 @@
       "version": "2.2.1"
     },
     {
+      "bom-ref": "pkg:npm/cliui@6.0.0?checksum=sha512:b7ac1b82da025ef033b2ded0817c4962a3edd2eb047db81075fb443db2cbfdcbefe873c4e5582fa82b80203474360539d9db3aac5c2aae06a434bac712309bad&repository_url=https://registry.yarnpkg.com",
       "name": "cliui",
       "properties": [
         {
@@ -206,6 +222,7 @@
       "version": "6.0.0"
     },
     {
+      "bom-ref": "pkg:npm/color-convert@2.0.1?checksum=sha512:4511023ec8fb8aeff16f9a0a61cb051d2a6914d9ec8ffe763954d129be333f9a275f0545df3566993a0d70e7c60be0910e97cafd4e7ce1f320dfc64709a12529&repository_url=https://registry.yarnpkg.com",
       "name": "color-convert",
       "properties": [
         {
@@ -218,6 +235,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/color-name@1.1.4?checksum=sha512:74ecbedc0b96ddadb035b64722e319a537208c6b8b53fb812ffb9b71917d3976c3a3c7dfe0ef32569e417f479f4bcb84a18a39ab8171edd63d3a04065e002c40&repository_url=https://registry.yarnpkg.com",
       "name": "color-name",
       "properties": [
         {
@@ -230,6 +248,7 @@
       "version": "1.1.4"
     },
     {
+      "bom-ref": "pkg:npm/cowsay@1.6.0?checksum=sha512:f02e07d6376b80dbac4d0af762ee120a6f992ac0250c56e96b4292d19de29bcb9e6a0fbda4639fdc2ae2a2bbaf99e696fc0e68aa0f4bd1aafaa9e7ed021d378f&repository_url=https://registry.yarnpkg.com",
       "name": "cowsay",
       "properties": [
         {
@@ -242,6 +261,7 @@
       "version": "1.6.0"
     },
     {
+      "bom-ref": "pkg:npm/decamelize@1.2.0?checksum=sha512:cf64be5bd5fbde10145248be37ef596b694196e9fcf738a03b21abb1ac7e29443ac0a5b86685a91180641a1423c008e30c2916c6163454a12193cc3363b17970&repository_url=https://registry.yarnpkg.com",
       "name": "decamelize",
       "properties": [
         {
@@ -254,6 +274,7 @@
       "version": "1.2.0"
     },
     {
+      "bom-ref": "pkg:npm/deep-eql@5.0.2?checksum=sha512:87993fe54e74209245a737cbea73bd8da6ae99f8cefdfd8d8cafe8601d838f39b8a7d2fedd3f6a5a966a6768406cb3eeb98abdc2b534f164320532f919b3e4e5&repository_url=https://registry.yarnpkg.com",
       "name": "deep-eql",
       "properties": [
         {
@@ -270,6 +291,7 @@
       "version": "5.0.2"
     },
     {
+      "bom-ref": "pkg:npm/emoji-regex@8.0.0?checksum=sha512:3128d8cdc58d380d1ec001e9cf4331a5816fc20eb28f2d4d1b7c6d7a8ab3eb8e150a8fd13e09ebd7f186b7e89cde2253cd0f04bb74dd335e126b09d5526184e8&repository_url=https://registry.yarnpkg.com",
       "name": "emoji-regex",
       "properties": [
         {
@@ -282,6 +304,7 @@
       "version": "8.0.0"
     },
     {
+      "bom-ref": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/taylorhakes/fecha.git%402aa169dea2746dca03187abbfcceecf9002f9dd4",
       "name": "fecha",
       "properties": [
         {
@@ -294,6 +317,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/find-up@4.1.0?checksum=sha512:3e93b001d43f6255d0daf8fc6b787c222a43b98462df071e550406616c4d20d71cab8d009f0ec196c11708c6edd59b7e38b03a16af6cb88a48583d0eb2721297&repository_url=https://registry.yarnpkg.com",
       "name": "find-up",
       "properties": [
         {
@@ -306,6 +330,7 @@
       "version": "4.1.0"
     },
     {
+      "bom-ref": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#packages/foo",
       "name": "foo",
       "properties": [
         {
@@ -318,6 +343,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/get-caller-file@2.0.5?checksum=sha512:0f214fdc133fdd81d340e0942ffc343991d1d25a4a786af1a2d70759ca8d11d9e5b6a1705d57e110143de1e228df801f429a34ac6922e1cc8889fb58d3a87616&repository_url=https://registry.yarnpkg.com",
       "name": "get-caller-file",
       "properties": [
         {
@@ -330,6 +356,7 @@
       "version": "2.0.5"
     },
     {
+      "bom-ref": "pkg:npm/get-func-name@2.0.2?checksum=sha512:f2f5cebee135ebb0ad21cdcec88b5ca3b37f76946d05b60eb0fb170b3ed7fcf3279468d88d21ae64980cd58ee699ec3b04a7fd06abcb5f6b67395cb504152cc5&repository_url=https://registry.yarnpkg.com",
       "name": "get-func-name",
       "properties": [
         {
@@ -346,6 +373,7 @@
       "version": "2.0.2"
     },
     {
+      "bom-ref": "pkg:npm/get-stdin@8.0.0?checksum=sha512:b18db6680eb1721033a6b8f2aa648442fe146c003344dd0bd9d401d0d94de5a7134caf43a27ea78687377806d49e966208034031f77ffb8d2455d29f17282886&repository_url=https://registry.yarnpkg.com",
       "name": "get-stdin",
       "properties": [
         {
@@ -358,6 +386,7 @@
       "version": "8.0.0"
     },
     {
+      "bom-ref": "pkg:npm/has-flag@4.0.0?checksum=sha512:1329094ff4352a34d672da698080207d23b4b4a56e6548e180caf5ee4a93ba6325e807efdc421295e53ba99533a170c54c01d30c2e0d3a81bf67153712f94c3d&repository_url=https://registry.yarnpkg.com",
       "name": "has-flag",
       "properties": [
         {
@@ -370,6 +399,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-fullwidth-code-point@2.0.0?checksum=sha512:547b2400a60cf117d2157c1e7b9b7971b3793d97aad56ae1eaa7796e4ca25c87fa51070deb0fc0d1e5ccf6beadf1df8660e87ea3a6618849dbf3c2cdfd8f26db&repository_url=https://registry.yarnpkg.com",
       "name": "is-fullwidth-code-point",
       "properties": [
         {
@@ -382,6 +412,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-fullwidth-code-point@3.0.0?checksum=sha512:cf29a6e7ebbeb02b125b20fda8d69e8d5dc316f84229c94a762cd868952e1c0f3744b8dbee74ae1a775d0871afd2193e298ec130096c59e2b851e83a115e9742&repository_url=https://registry.yarnpkg.com",
       "name": "is-fullwidth-code-point",
       "properties": [
         {
@@ -394,6 +425,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-number@0.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/is-number",
       "name": "is-number",
       "properties": [
         {
@@ -406,6 +438,7 @@
       "version": "0.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-positive@3.1.0?checksum=sha512:f0d0f58f7cbdfc73fde133af1b3afaf7f1606e45f6aee3a57612c4b135b070955fa38a118f07a6266271b7b44990a607f2dcfbbd804ff4970a418f022ee27dd1&repository_url=https://registry.yarnpkg.com",
       "name": "is-positive",
       "properties": [
         {
@@ -418,6 +451,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/leftpad@0.0.1?checksum=sha512:90102ec41409949f392c373e4a71925fa816267251f5093895b8179b3fea3df08e0a278293b060a0ddd8bf3a0daf90548eac500ce4316b0249bd75dde9cfba32&repository_url=https://registry.yarnpkg.com",
       "name": "leftpad",
       "properties": [
         {
@@ -430,6 +464,7 @@
       "version": "0.0.1"
     },
     {
+      "bom-ref": "pkg:npm/locate-path@5.0.0?checksum=sha512:b7b870f6923e5afbb03495f0939cd51e9ca122ace0daa4e592524e7f4995c4649b7b7169d9589e65c76e3588da2c3a32ea9f6e1a94041961bced6a4c2a536af2&repository_url=https://registry.yarnpkg.com",
       "name": "locate-path",
       "properties": [
         {
@@ -442,6 +477,7 @@
       "version": "5.0.0"
     },
     {
+      "bom-ref": "pkg:npm/loupe@3.1.1?checksum=sha512:79d36effc0f930a55f1951518457fc680c624cce96ba67f3e57b1a6ad4b1943df0e11d5dfd610a513c9d09d3c66e5f4aed01bf09adc69c3576b08288a5745073&repository_url=https://registry.yarnpkg.com",
       "name": "loupe",
       "properties": [
         {
@@ -458,6 +494,7 @@
       "version": "3.1.1"
     },
     {
+      "bom-ref": "pkg:npm/p-limit@2.3.0?checksum=sha512:ffff3c985592271f25c42cf07400014c92f6332581d76f9e218ecc0cbd92a8b98091e294f6ac51bd6b92c938e6dc5526a4110cb857dc90022a11a546503c5beb&repository_url=https://registry.yarnpkg.com",
       "name": "p-limit",
       "properties": [
         {
@@ -470,6 +507,7 @@
       "version": "2.3.0"
     },
     {
+      "bom-ref": "pkg:npm/p-locate@4.1.0?checksum=sha512:47bf5967fd30031286bb7a18325cfc8f2fe46e1b0dad2ed2299ecfc441c1809e7e1769ad156d9f2b670eb4187570762442c6f3155ec8f84a1129ee98b74a0aec&repository_url=https://registry.yarnpkg.com",
       "name": "p-locate",
       "properties": [
         {
@@ -482,6 +520,7 @@
       "version": "4.1.0"
     },
     {
+      "bom-ref": "pkg:npm/p-try@2.2.0?checksum=sha512:4789cf0154c053407d0f7e7f1a4dee25fffb5d86d0732a2148a76f03121148d821165e1eef5855a069c1350cfd716697c4ed88d742930bede331dbefa0ac3a75&repository_url=https://registry.yarnpkg.com",
       "name": "p-try",
       "properties": [
         {
@@ -494,6 +533,7 @@
       "version": "2.2.0"
     },
     {
+      "bom-ref": "pkg:npm/path-exists@4.0.0?checksum=sha512:6a4f50cb943b8d86f65b071ecb9169be0d8aa0073f64884b48b392066466ca03ec1b091556dd1f65ad2aaed333fa6ead2530077d943c167981e0c1b82d6cbbff&repository_url=https://registry.yarnpkg.com",
       "name": "path-exists",
       "properties": [
         {
@@ -506,6 +546,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/pathval@2.0.0?checksum=sha512:bc4ec9291c844b4f4a8ae9dab97ee777643dfcbee5868938b263fd4594c3783e0c56cef60e9daa345573dfd373e5ad055445b404947a0b40d8aeaeae9e8ce264&repository_url=https://registry.yarnpkg.com",
       "name": "pathval",
       "properties": [
         {
@@ -522,6 +563,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/require-directory@2.1.1?checksum=sha512:7c6c4423bfb0b06f71aef763b2b9662f6d8e3134e21d1c0032ba2211e320abc833a0b0bf3d0afb46c4434932d483f6d9019b45f9354890773aff84482abba2f9&repository_url=https://registry.yarnpkg.com",
       "name": "require-directory",
       "properties": [
         {
@@ -534,6 +576,7 @@
       "version": "2.1.1"
     },
     {
+      "bom-ref": "pkg:npm/require-main-filename@2.0.0?checksum=sha512:34a37990c0f294aba577160b4947eb6e8e53bb387885dfb613c34f3d7d36999b67d55b911104e861efd9765272f89dee0a97da886174e5eec1f16d225db4079a&repository_url=https://registry.yarnpkg.com",
       "name": "require-main-filename",
       "properties": [
         {
@@ -546,6 +589,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/set-blocking@2.0.0?checksum=sha512:2a22814bc0275861322f3a1f15f9af2b0a5d3f3aa2cb5e8bbd07cadf2bff7d51fb063d77ff097725247527eadf81113dabbc5424ae2abe04bcada48e78b51e87&repository_url=https://registry.yarnpkg.com",
       "name": "set-blocking",
       "properties": [
         {
@@ -558,6 +602,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/string-width@2.1.1?checksum=sha512:9cea87e7d75e0aaf52447971ab5030f39267b78c3a2af2caa9656293aa00f599255cb3483a5aa0e05db2ad3d4c55a4e302abd5c1d7de67bc3b682bc90fbba093&repository_url=https://registry.yarnpkg.com",
       "name": "string-width",
       "properties": [
         {
@@ -570,6 +615,7 @@
       "version": "2.1.1"
     },
     {
+      "bom-ref": "pkg:npm/string-width@4.2.3?checksum=sha512:c0ac90450a63274b08a7ad84ad265d1ac8cc256b1aa79a1136284786ee86ec954effd8c807a5327af2feb57b8eaab9e0f23fdcc4a4d6c96530bd24eb8a2673fe&repository_url=https://registry.yarnpkg.com",
       "name": "string-width",
       "properties": [
         {
@@ -582,6 +628,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@4.0.0?checksum=sha512:e17689db341d0b344e6438af1152033e47109fc2cc1526bc923f06c5bfcb9f0ceff40f1572d359fa57e2bc2fec5778af5bc1252531115d9a0f051ad92a434aa3&repository_url=https://registry.yarnpkg.com",
       "name": "strip-ansi",
       "properties": [
         {
@@ -594,6 +641,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@6.0.1?checksum=sha512:637f153d21dcaa416b0a916743dbee4979aabaebf9a1738aa46793e9a1abaf7a3719cf409556ba2417d448e0a76f1186645fbfd28a08ecaacfb944b3b54754e4&repository_url=https://registry.yarnpkg.com",
       "name": "strip-ansi",
       "properties": [
         {
@@ -606,6 +654,7 @@
       "version": "6.0.1"
     },
     {
+      "bom-ref": "pkg:npm/strip-final-newline@2.0.0?checksum=sha512:06ba6f7cd004ddd72fabb965df156e9b38ca8d9439b48d6c11420aaf752892cd17525e394addc595ab55a9e7fda6b9388d10f3856e96660fb76e4f77cbaa4b8c&repository_url=https://registry.yarnpkg.com",
       "name": "strip-final-newline",
       "properties": [
         {
@@ -618,6 +667,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/supports-color@7.2.0?checksum=sha512:aa9080bd197db2db8e1ef78ab27ec79dc251befe74d6a21a70acd094effe2f0c5cf7ed2adb02f2bf80dfbedf34fc33e7da9a8e06c25d0e2a205c647df8ebf047&repository_url=https://registry.yarnpkg.com",
       "name": "supports-color",
       "properties": [
         {
@@ -630,6 +680,7 @@
       "version": "7.2.0"
     },
     {
+      "bom-ref": "pkg:npm/type-fest@0.20.2?checksum=sha512:35ef9e138af4fe25a7a40c43f39db3dc0f8dd01b7944dfff36327045dd95147126af2c317f9bec66587847a962c65e81fb0cfff1dfa669348090dd452242372d&repository_url=https://registry.yarnpkg.com",
       "name": "type-fest",
       "properties": [
         {
@@ -642,6 +693,7 @@
       "version": "0.20.2"
     },
     {
+      "bom-ref": "pkg:npm/uuid@10.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d#external-packages/uuid-10.0.0.tgz",
       "name": "uuid",
       "properties": [
         {
@@ -654,6 +706,7 @@
       "version": "10.0.0"
     },
     {
+      "bom-ref": "pkg:npm/which-module@2.0.1?checksum=sha512:881759e7b443be7391f4018184c2f6bc565fee1f2f9818e1a1a66a3832411561d5b4a90398ab876a2ddcc793e054cad7e580cda76ec0a1f61b03072d492faf85&repository_url=https://registry.yarnpkg.com",
       "name": "which-module",
       "properties": [
         {
@@ -666,6 +719,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/widest-line@3.1.0?checksum=sha512:36c9a85da96c5950cc1aea71679474f246bd7e56638e22ef1d501660e2ad88a33cba3b595abf5c45f7da93eb92138f3e39bf0e6da957a70c9e522c830fa40582&repository_url=https://registry.yarnpkg.com",
       "name": "widest-line",
       "properties": [
         {
@@ -678,6 +732,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/wrap-ansi@6.2.0?checksum=sha512:afa94f7011b1657948732984bbb227c43321756d0a0f1a4b82814b720b9ab3109a27f48e219c0835ab4af4a63fb5ff99ae5cb038a5345038f70135d405fc495c&repository_url=https://registry.yarnpkg.com",
       "name": "wrap-ansi",
       "properties": [
         {
@@ -690,6 +745,7 @@
       "version": "6.2.0"
     },
     {
+      "bom-ref": "pkg:npm/wrap-ansi@7.0.0?checksum=sha512:6151888f691a98b493c70e8db198e80717d2c2c9f4c9c75eb26738a7e436d5ce733ee675a65f8d7f155dc4fb5d1ef98d54e43a5d2606e0052dcadfc58bb0f5e9&repository_url=https://registry.yarnpkg.com",
       "name": "wrap-ansi",
       "properties": [
         {
@@ -702,6 +758,7 @@
       "version": "7.0.0"
     },
     {
+      "bom-ref": "pkg:npm/y18n@4.0.3?checksum=sha512:24a86a4cec12aea340d4d639952ced2751ab06252874b326219b8b88368c449fa2b4577e001544f170633af2162fead2a8d0c2ef82c24859a56ff538519e2125&repository_url=https://registry.yarnpkg.com",
       "name": "y18n",
       "properties": [
         {
@@ -714,6 +771,7 @@
       "version": "4.0.3"
     },
     {
+      "bom-ref": "pkg:npm/yargs-parser@18.1.3?checksum=sha512:a39d23d09793a32ff82ba39971a4265ba9725d72a1abb72c4445dc0f0936a2614f244c1434e56d24abe60ebf442357c025953265c445ee4c460569915ee76b09&repository_url=https://registry.yarnpkg.com",
       "name": "yargs-parser",
       "properties": [
         {
@@ -726,6 +784,7 @@
       "version": "18.1.3"
     },
     {
+      "bom-ref": "pkg:npm/yargs@15.4.1?checksum=sha512:69e3dbc4399c616fbe3daa81b09f8761417009dbf82d5bdd9e1072efc139ecf228afcfce56f84cac00c51440e1f031c3151bff3bd8b794f86c10d8ceed05f4f8&repository_url=https://registry.yarnpkg.com",
       "name": "yargs",
       "properties": [
         {
@@ -738,6 +797,7 @@
       "version": "15.4.1"
     },
     {
+      "bom-ref": "pkg:npm/yarn-test-project@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404fe0919c4b2fb9a0f6fb98999ceaeb732f4b1d9d",
       "name": "yarn-test-project",
       "properties": [
         {

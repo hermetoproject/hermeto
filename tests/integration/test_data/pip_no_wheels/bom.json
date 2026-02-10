@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/cryptos@2.0.9",
       "name": "cryptos",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "2.0.9"
     },
     {
+      "bom-ref": "pkg:pypi/pyicu@2.12",
       "name": "pyicu",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "2.12"
     },
     {
+      "bom-ref": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403697d63affaec82985f1d9b4035d5305e58c91d6",
       "name": "wheels-of-fortune",
       "properties": [
         {

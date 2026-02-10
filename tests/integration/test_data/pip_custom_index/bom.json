@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4055376bc13904c2f450aac6ee89969d539c8d9f05",
       "name": "integration-tests",
       "properties": [
         {
@@ -13,6 +14,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:pypi/requests@2.32.3?repository_url=http://127.0.0.1:8080/simple/",
       "name": "requests",
       "properties": [
         {

@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/cachito-pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403fe2fc3cb8ffa36317cacbd9d356e35e17af2824",
       "name": "cachito-pip-empty",
       "properties": [
         {

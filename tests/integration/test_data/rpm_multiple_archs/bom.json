@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=aarch64&checksum=sha256:5a0d1794946ea191519eed8ebf3c56ebdd6fe31d9d7ef8a466366332b0265063&repository_id=appstream",
       "name": "gpm-libs",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "1.20.7"
     },
     {
+      "bom-ref": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=x86_64&checksum=sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd&repository_id=appstream",
       "name": "gpm-libs",
       "properties": [
         {

@@ -94,7 +94,7 @@ class Component(pydantic.BaseModel):
     https://cyclonedx.org/docs/1.6/json/#components
     """
 
-    bom_ref: str | None = pydantic.Field(alias="bom-ref", default=None)
+    bom_ref: str = pydantic.Field(alias="bom-ref", default="")
     name: str
     purl: str
     version: str | None = None
@@ -108,22 +108,18 @@ class Component(pydantic.BaseModel):
     # Aliased fields may be populated by their name as given by the model attribute.
     model_config = pydantic.ConfigDict(validate_by_name=True, extra="forbid")
 
+    @pydantic.model_validator(mode="after")
+    def _set_bom_ref_from_purl(self) -> Self:
+        """Set bom-ref to match the component's purl."""
+        self.bom_ref = self.purl
+        return self
+
     def key(self) -> str:
         """Uniquely identifies a package.
 
         Used mainly for sorting and deduplication.
         """
         return self.purl
-
-    def update_bom_ref(self) -> Self:
-        """
-        Update the `bom-ref` field of this component.
-
-        The `bom-ref` field is only needed for permissive mode use cases. Therefore, it is not
-        initialized by default and needs to be updated manually with this method.
-        """
-        self.bom_ref = self.purl
-        return self
 
     @pydantic.field_validator("properties")
     @classmethod
@@ -265,7 +261,7 @@ class Sbom(pydantic.BaseModel):
             )
 
             for annotation in self.annotations:
-                if bom_ref is not None and bom_ref in annotation.subjects:
+                if bom_ref in annotation.subjects:
                     result.append(base_spdx_annotation(comment=annotation.text))
 
             for property in properties:
