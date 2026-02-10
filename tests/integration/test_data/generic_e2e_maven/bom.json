@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:maven/org.apache.ant/ant-launcher@1.10.14?checksum=sha256:f0909725a7a24e393888f3fbb558347abf506ce2f7ebc581ff26331b94d951a5&repository_url=https://repo1.maven.org/maven2&type=jar",
       "externalReferences": [
         {
           "type": "distribution",
@@ -20,6 +21,7 @@
       "version": "1.10.14"
     },
     {
+      "bom-ref": "pkg:maven/org.apache.ant/ant@1.10.14?checksum=sha256:4cbbd9243de4c1042d61d9a15db4c43c90ff93b16d78b39481da1c956c8e9671&repository_url=https://repo1.maven.org/maven2&type=jar",
       "externalReferences": [
         {
           "type": "distribution",

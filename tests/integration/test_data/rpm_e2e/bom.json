@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:rpm/centos/gpm-libs@1.20.7-29.el9?arch=x86_64&checksum=sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd&repository_id=appstream",
       "name": "gpm-libs",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "1.20.7"
     },
     {
+      "bom-ref": "pkg:rpm/centos/vim-common@8.2.2637-22.el9?arch=x86_64&checksum=sha256:fe58dadda94c42e502c1064387102134464948d2e1cd4bb4f93731cfa91d2b8e&epoch=2&repository_id=appstream",
       "name": "vim-common",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "8.2.2637"
     },
     {
+      "bom-ref": "pkg:rpm/centos/vim-enhanced@8.2.2637-22.el9?arch=x86_64&checksum=sha256:ada993fa54366659f4118677cdb76eb30093ac71d86fe94c56ef87305be9bddc&epoch=2&repository_id=appstream",
       "name": "vim-enhanced",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "8.2.2637"
     },
     {
+      "bom-ref": "pkg:rpm/centos/vim-filesystem@8.2.2637-22.el9?arch=noarch&checksum=sha256:b767597168aad6a36fe82578422eba27bfca5ffb01c501a9df9e532e68c853ff&epoch=2&repository_id=baseos",
       "name": "vim-filesystem",
       "properties": [
         {
@@ -50,6 +54,7 @@
       "version": "8.2.2637"
     },
     {
+      "bom-ref": "pkg:rpm/centos/which@2.21-30.el9?arch=x86_64&checksum=sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b&repository_id=baseos",
       "name": "which",
       "properties": [
         {

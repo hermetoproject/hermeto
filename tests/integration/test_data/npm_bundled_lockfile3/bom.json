@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:npm/ansi-regex@2.0.0",
       "name": "ansi-regex",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/builtin-modules@1.1.1",
       "name": "builtin-modules",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/bundle-dependencies@1.0.2",
       "name": "bundle-dependencies",
       "properties": [
         {
@@ -42,6 +45,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/camelcase@2.1.0",
       "name": "camelcase",
       "properties": [
         {
@@ -62,6 +66,7 @@
       "version": "2.1.0"
     },
     {
+      "bom-ref": "pkg:npm/cliui@3.1.0",
       "name": "cliui",
       "properties": [
         {
@@ -82,6 +87,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/code-point-at@1.0.0",
       "name": "code-point-at",
       "properties": [
         {
@@ -102,6 +108,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/decamelize@1.1.2",
       "name": "decamelize",
       "properties": [
         {
@@ -122,6 +129,7 @@
       "version": "1.1.2"
     },
     {
+      "bom-ref": "pkg:npm/error-ex@1.3.0",
       "name": "error-ex",
       "properties": [
         {
@@ -142,6 +150,7 @@
       "version": "1.3.0"
     },
     {
+      "bom-ref": "pkg:npm/escape-string-regexp@1.0.5",
       "name": "escape-string-regexp",
       "properties": [
         {
@@ -162,6 +171,7 @@
       "version": "1.0.5"
     },
     {
+      "bom-ref": "pkg:npm/fecha@4.2.3",
       "name": "fecha",
       "properties": [
         {
@@ -174,6 +184,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/find-up@1.1.0",
       "name": "find-up",
       "properties": [
         {
@@ -194,6 +205,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/graceful-fs@4.1.3",
       "name": "graceful-fs",
       "properties": [
         {
@@ -214,6 +226,7 @@
       "version": "4.1.3"
     },
     {
+      "bom-ref": "pkg:npm/hosted-git-info@2.1.4",
       "name": "hosted-git-info",
       "properties": [
         {
@@ -234,6 +247,7 @@
       "version": "2.1.4"
     },
     {
+      "bom-ref": "pkg:npm/invert-kv@1.0.0",
       "name": "invert-kv",
       "properties": [
         {
@@ -254,6 +268,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-arrayish@0.2.1",
       "name": "is-arrayish",
       "properties": [
         {
@@ -274,6 +289,7 @@
       "version": "0.2.1"
     },
     {
+      "bom-ref": "pkg:npm/is-builtin-module@1.0.0",
       "name": "is-builtin-module",
       "properties": [
         {
@@ -294,6 +310,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-fullwidth-code-point@1.0.0",
       "name": "is-fullwidth-code-point",
       "properties": [
         {
@@ -314,6 +331,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-utf8@0.2.1",
       "name": "is-utf8",
       "properties": [
         {
@@ -334,6 +352,7 @@
       "version": "0.2.1"
     },
     {
+      "bom-ref": "pkg:npm/lcid@1.0.0",
       "name": "lcid",
       "properties": [
         {
@@ -354,6 +373,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/load-json-file@1.1.0",
       "name": "load-json-file",
       "properties": [
         {
@@ -374,6 +394,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/lodash.assign@4.0.3",
       "name": "lodash.assign",
       "properties": [
         {
@@ -394,6 +415,7 @@
       "version": "4.0.3"
     },
     {
+      "bom-ref": "pkg:npm/lodash.keys@4.0.3",
       "name": "lodash.keys",
       "properties": [
         {
@@ -414,6 +436,7 @@
       "version": "4.0.3"
     },
     {
+      "bom-ref": "pkg:npm/lodash.rest@4.0.1",
       "name": "lodash.rest",
       "properties": [
         {
@@ -434,6 +457,7 @@
       "version": "4.0.1"
     },
     {
+      "bom-ref": "pkg:npm/normalize-package-data@2.3.5",
       "name": "normalize-package-data",
       "properties": [
         {
@@ -454,6 +478,7 @@
       "version": "2.3.5"
     },
     {
+      "bom-ref": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40de68ac6aa88a81272660b6d0f6d44ce157207799",
       "name": "npm-cachi2-bundled",
       "properties": [
         {
@@ -466,6 +491,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/number-is-nan@1.0.0",
       "name": "number-is-nan",
       "properties": [
         {
@@ -486,6 +512,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/object-assign@4.0.1",
       "name": "object-assign",
       "properties": [
         {
@@ -506,6 +533,7 @@
       "version": "4.0.1"
     },
     {
+      "bom-ref": "pkg:npm/os-locale@1.4.0",
       "name": "os-locale",
       "properties": [
         {
@@ -526,6 +554,7 @@
       "version": "1.4.0"
     },
     {
+      "bom-ref": "pkg:npm/parse-json@2.2.0",
       "name": "parse-json",
       "properties": [
         {
@@ -546,6 +575,7 @@
       "version": "2.2.0"
     },
     {
+      "bom-ref": "pkg:npm/path-exists@2.1.0",
       "name": "path-exists",
       "properties": [
         {
@@ -566,6 +596,7 @@
       "version": "2.1.0"
     },
     {
+      "bom-ref": "pkg:npm/path-type@1.1.0",
       "name": "path-type",
       "properties": [
         {
@@ -586,6 +617,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/pify@2.3.0",
       "name": "pify",
       "properties": [
         {
@@ -606,6 +638,7 @@
       "version": "2.3.0"
     },
     {
+      "bom-ref": "pkg:npm/pinkie-promise@2.0.0",
       "name": "pinkie-promise",
       "properties": [
         {
@@ -626,6 +659,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/pinkie@2.0.4",
       "name": "pinkie",
       "properties": [
         {
@@ -646,6 +680,7 @@
       "version": "2.0.4"
     },
     {
+      "bom-ref": "pkg:npm/pkg-conf@1.1.1",
       "name": "pkg-conf",
       "properties": [
         {
@@ -666,6 +701,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/read-pkg-up@1.0.1",
       "name": "read-pkg-up",
       "properties": [
         {
@@ -686,6 +722,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/read-pkg@1.1.0",
       "name": "read-pkg",
       "properties": [
         {
@@ -706,6 +743,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/require-main-filename@1.0.1",
       "name": "require-main-filename",
       "properties": [
         {
@@ -726,6 +764,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/semver@5.1.0",
       "name": "semver",
       "properties": [
         {
@@ -746,6 +785,7 @@
       "version": "5.1.0"
     },
     {
+      "bom-ref": "pkg:npm/spdx-correct@1.0.2",
       "name": "spdx-correct",
       "properties": [
         {
@@ -766,6 +806,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/spdx-exceptions@1.0.4",
       "name": "spdx-exceptions",
       "properties": [
         {
@@ -786,6 +827,7 @@
       "version": "1.0.4"
     },
     {
+      "bom-ref": "pkg:npm/spdx-expression-parse@1.0.2",
       "name": "spdx-expression-parse",
       "properties": [
         {
@@ -806,6 +848,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/spdx-license-ids@1.2.0",
       "name": "spdx-license-ids",
       "properties": [
         {
@@ -826,6 +869,7 @@
       "version": "1.2.0"
     },
     {
+      "bom-ref": "pkg:npm/string-width@1.0.1",
       "name": "string-width",
       "properties": [
         {
@@ -846,6 +890,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@3.0.1",
       "name": "strip-ansi",
       "properties": [
         {
@@ -866,6 +911,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/strip-bom@2.0.0",
       "name": "strip-bom",
       "properties": [
         {
@@ -886,6 +932,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/symbol@0.2.1",
       "name": "symbol",
       "properties": [
         {
@@ -906,6 +953,7 @@
       "version": "0.2.1"
     },
     {
+      "bom-ref": "pkg:npm/validate-npm-package-license@3.0.1",
       "name": "validate-npm-package-license",
       "properties": [
         {
@@ -926,6 +974,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/window-size@0.2.0",
       "name": "window-size",
       "properties": [
         {
@@ -946,6 +995,7 @@
       "version": "0.2.0"
     },
     {
+      "bom-ref": "pkg:npm/wrap-ansi@1.0.0",
       "name": "wrap-ansi",
       "properties": [
         {
@@ -966,6 +1016,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/y18n@3.2.0",
       "name": "y18n",
       "properties": [
         {
@@ -986,6 +1037,7 @@
       "version": "3.2.0"
     },
     {
+      "bom-ref": "pkg:npm/yargs-parser@2.1.0",
       "name": "yargs-parser",
       "properties": [
         {
@@ -1006,6 +1058,7 @@
       "version": "2.1.0"
     },
     {
+      "bom-ref": "pkg:npm/yargs@4.1.0",
       "name": "yargs",
       "properties": [
         {

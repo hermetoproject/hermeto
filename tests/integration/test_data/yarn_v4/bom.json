@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:npm/%40isaacs/cliui@8.0.2",
       "name": "@isaacs/cliui",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "8.0.2"
     },
     {
+      "bom-ref": "pkg:npm/%40npmcli/fs@3.1.0",
       "name": "@npmcli/fs",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/%40pkgjs/parseargs@0.11.0",
       "name": "@pkgjs/parseargs",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "0.11.0"
     },
     {
+      "bom-ref": "pkg:npm/%40tootallnate/once@2.0.0",
       "name": "@tootallnate/once",
       "properties": [
         {
@@ -50,6 +54,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/%40types/node@20.4.5",
       "name": "@types/node",
       "properties": [
         {
@@ -62,6 +67,7 @@
       "version": "20.4.5"
     },
     {
+      "bom-ref": "pkg:npm/%40types/proxy-from-env@1.0.1",
       "name": "@types/proxy-from-env",
       "properties": [
         {
@@ -74,6 +80,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/%40types/yargs-parser@21.0.0",
       "name": "@types/yargs-parser",
       "properties": [
         {
@@ -86,6 +93,7 @@
       "version": "21.0.0"
     },
     {
+      "bom-ref": "pkg:npm/%40types/yargs@17.0.24",
       "name": "@types/yargs",
       "properties": [
         {
@@ -98,6 +106,7 @@
       "version": "17.0.24"
     },
     {
+      "bom-ref": "pkg:npm/abbrev@1.1.1",
       "name": "abbrev",
       "properties": [
         {
@@ -110,6 +119,7 @@
       "version": "1.1.1"
     },
     {
+      "bom-ref": "pkg:npm/agent-base@6.0.2",
       "name": "agent-base",
       "properties": [
         {
@@ -122,6 +132,7 @@
       "version": "6.0.2"
     },
     {
+      "bom-ref": "pkg:npm/agentkeepalive@4.3.0",
       "name": "agentkeepalive",
       "properties": [
         {
@@ -134,6 +145,7 @@
       "version": "4.3.0"
     },
     {
+      "bom-ref": "pkg:npm/aggregate-error@3.1.0",
       "name": "aggregate-error",
       "properties": [
         {
@@ -146,6 +158,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@3.0.1",
       "name": "ansi-regex",
       "properties": [
         {
@@ -158,6 +171,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@5.0.1",
       "name": "ansi-regex",
       "properties": [
         {
@@ -170,6 +184,7 @@
       "version": "5.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@6.0.1",
       "name": "ansi-regex",
       "properties": [
         {
@@ -182,6 +197,7 @@
       "version": "6.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#external-packages/ansi-regex",
       "name": "ansi-regex",
       "properties": [
         {
@@ -194,6 +210,7 @@
       "version": "6.0.1"
     },
     {
+      "bom-ref": "pkg:npm/ansi-styles@4.3.0",
       "name": "ansi-styles",
       "properties": [
         {
@@ -206,6 +223,7 @@
       "version": "4.3.0"
     },
     {
+      "bom-ref": "pkg:npm/ansi-styles@6.2.1",
       "name": "ansi-styles",
       "properties": [
         {
@@ -218,6 +236,7 @@
       "version": "6.2.1"
     },
     {
+      "bom-ref": "pkg:npm/aproba@2.0.0",
       "name": "aproba",
       "properties": [
         {
@@ -230,6 +249,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/are-we-there-yet@3.0.1",
       "name": "are-we-there-yet",
       "properties": [
         {
@@ -242,6 +262,7 @@
       "version": "3.0.1"
     },
     {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
       "name": "balanced-match",
       "properties": [
         {
@@ -254,6 +275,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f",
       "name": "berryscary",
       "properties": [
         {
@@ -265,6 +287,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?checksum=sha512:b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d&download_url=https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
       "name": "bitbucket-cachi2-npm-without-deps-second",
       "properties": [
         {
@@ -277,6 +300,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/brace-expansion@1.1.11",
       "name": "brace-expansion",
       "properties": [
         {
@@ -289,6 +313,7 @@
       "version": "1.1.11"
     },
     {
+      "bom-ref": "pkg:npm/brace-expansion@2.0.1",
       "name": "brace-expansion",
       "properties": [
         {
@@ -301,6 +326,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/cacache@17.1.3",
       "name": "cacache",
       "properties": [
         {
@@ -313,6 +339,7 @@
       "version": "17.1.3"
     },
     {
+      "bom-ref": "pkg:npm/cachito-npm-without-deps@1.0.0?checksum=sha512:e9928fe2a3cdb1a2b0689766fc7826d011a1e8f3e730276d496332989a140e5155ae26533b3fc819b8ed83181a3442416e7d730ba5af737248d9a0871e5f8bb4&download_url=https://github.com/cachito-testing/cachito-npm-without-deps/archive/2f0ce1d7b1f8b35572d919428b965285a69583f6.tar.gz",
       "name": "cachito-npm-without-deps",
       "pedigree": {
         "patches": [
@@ -335,6 +362,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/chalk@5.3.0",
       "name": "chalk",
       "properties": [
         {
@@ -347,6 +375,7 @@
       "version": "5.3.0"
     },
     {
+      "bom-ref": "pkg:npm/chownr@2.0.0",
       "name": "chownr",
       "properties": [
         {
@@ -359,6 +388,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/clean-stack@2.2.0",
       "name": "clean-stack",
       "properties": [
         {
@@ -371,6 +401,7 @@
       "version": "2.2.0"
     },
     {
+      "bom-ref": "pkg:npm/cliui@8.0.1",
       "name": "cliui",
       "properties": [
         {
@@ -383,6 +414,7 @@
       "version": "8.0.1"
     },
     {
+      "bom-ref": "pkg:npm/color-convert@2.0.1",
       "name": "color-convert",
       "properties": [
         {
@@ -395,6 +427,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/color-name@1.1.4",
       "name": "color-name",
       "properties": [
         {
@@ -407,6 +440,7 @@
       "version": "1.1.4"
     },
     {
+      "bom-ref": "pkg:npm/color-support@1.1.3",
       "name": "color-support",
       "properties": [
         {
@@ -419,6 +453,7 @@
       "version": "1.1.3"
     },
     {
+      "bom-ref": "pkg:npm/concat-map@0.0.1",
       "name": "concat-map",
       "properties": [
         {
@@ -431,6 +466,7 @@
       "version": "0.0.1"
     },
     {
+      "bom-ref": "pkg:npm/console-control-strings@1.1.0",
       "name": "console-control-strings",
       "properties": [
         {
@@ -443,6 +479,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/cross-spawn@7.0.3",
       "name": "cross-spawn",
       "properties": [
         {
@@ -455,6 +492,7 @@
       "version": "7.0.3"
     },
     {
+      "bom-ref": "pkg:npm/debug@4.3.4",
       "name": "debug",
       "properties": [
         {
@@ -467,6 +505,7 @@
       "version": "4.3.4"
     },
     {
+      "bom-ref": "pkg:npm/delegates@1.0.0",
       "name": "delegates",
       "properties": [
         {
@@ -479,6 +518,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/depd@2.0.0",
       "name": "depd",
       "properties": [
         {
@@ -491,6 +531,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/eastasianwidth@0.2.0",
       "name": "eastasianwidth",
       "properties": [
         {
@@ -503,6 +544,7 @@
       "version": "0.2.0"
     },
     {
+      "bom-ref": "pkg:npm/emoji-regex@10.2.1?checksum=sha512:548d68d771a570f02cccad17b8f5f9cbed65314a48f140173f2c0d2f0fe78c3efc8661b7baefb87b11feb1fb354b0ee5e84c9a97f52d6f9f43721e35a7714c95&download_url=https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz",
       "name": "emoji-regex",
       "properties": [
         {
@@ -515,6 +557,7 @@
       "version": "10.2.1"
     },
     {
+      "bom-ref": "pkg:npm/emoji-regex@8.0.0",
       "name": "emoji-regex",
       "properties": [
         {
@@ -527,6 +570,7 @@
       "version": "8.0.0"
     },
     {
+      "bom-ref": "pkg:npm/emoji-regex@9.2.2",
       "name": "emoji-regex",
       "properties": [
         {
@@ -539,6 +583,7 @@
       "version": "9.2.2"
     },
     {
+      "bom-ref": "pkg:npm/encoding@0.1.13",
       "name": "encoding",
       "properties": [
         {
@@ -551,6 +596,7 @@
       "version": "0.1.13"
     },
     {
+      "bom-ref": "pkg:npm/env-paths@2.2.1",
       "name": "env-paths",
       "properties": [
         {
@@ -563,6 +609,7 @@
       "version": "2.2.1"
     },
     {
+      "bom-ref": "pkg:npm/err-code@2.0.3",
       "name": "err-code",
       "properties": [
         {
@@ -575,6 +622,7 @@
       "version": "2.0.3"
     },
     {
+      "bom-ref": "pkg:npm/escalade@3.1.1",
       "name": "escalade",
       "properties": [
         {
@@ -587,6 +635,7 @@
       "version": "3.1.1"
     },
     {
+      "bom-ref": "pkg:npm/exponential-backoff@3.1.1",
       "name": "exponential-backoff",
       "properties": [
         {
@@ -599,6 +648,7 @@
       "version": "3.1.1"
     },
     {
+      "bom-ref": "pkg:npm/fecha@4.2.3",
       "name": "fecha",
       "properties": [
         {
@@ -611,6 +661,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/foreground-child@3.1.1",
       "name": "foreground-child",
       "properties": [
         {
@@ -623,6 +674,7 @@
       "version": "3.1.1"
     },
     {
+      "bom-ref": "pkg:npm/fs-minipass@2.1.0",
       "name": "fs-minipass",
       "properties": [
         {
@@ -635,6 +687,7 @@
       "version": "2.1.0"
     },
     {
+      "bom-ref": "pkg:npm/fs-minipass@3.0.2",
       "name": "fs-minipass",
       "properties": [
         {
@@ -647,6 +700,7 @@
       "version": "3.0.2"
     },
     {
+      "bom-ref": "pkg:npm/fs.realpath@1.0.0",
       "name": "fs.realpath",
       "properties": [
         {
@@ -659,6 +713,7 @@
       "version": "1.0.0"
     },
     {
+      "bom-ref": "pkg:npm/fsevents@2.3.2",
       "name": "fsevents",
       "pedigree": {
         "patches": [
@@ -687,6 +742,7 @@
       "version": "2.3.2"
     },
     {
+      "bom-ref": "pkg:npm/gauge@4.0.4",
       "name": "gauge",
       "properties": [
         {
@@ -699,6 +755,7 @@
       "version": "4.0.4"
     },
     {
+      "bom-ref": "pkg:npm/get-caller-file@2.0.5",
       "name": "get-caller-file",
       "properties": [
         {
@@ -711,6 +768,7 @@
       "version": "2.0.5"
     },
     {
+      "bom-ref": "pkg:npm/glob@10.3.3",
       "name": "glob",
       "properties": [
         {
@@ -723,6 +781,7 @@
       "version": "10.3.3"
     },
     {
+      "bom-ref": "pkg:npm/glob@7.2.3",
       "name": "glob",
       "properties": [
         {
@@ -735,6 +794,7 @@
       "version": "7.2.3"
     },
     {
+      "bom-ref": "pkg:npm/graceful-fs@4.2.11",
       "name": "graceful-fs",
       "properties": [
         {
@@ -747,6 +807,7 @@
       "version": "4.2.11"
     },
     {
+      "bom-ref": "pkg:npm/has-flag@4.0.0",
       "name": "has-flag",
       "properties": [
         {
@@ -759,6 +820,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/has-unicode@2.0.1",
       "name": "has-unicode",
       "properties": [
         {
@@ -771,6 +833,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#book-of-armaments",
       "name": "holy-hand-grenade",
       "properties": [
         {
@@ -782,6 +845,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:npm/http-cache-semantics@4.1.1",
       "name": "http-cache-semantics",
       "properties": [
         {
@@ -794,6 +858,7 @@
       "version": "4.1.1"
     },
     {
+      "bom-ref": "pkg:npm/http-proxy-agent@5.0.0",
       "name": "http-proxy-agent",
       "properties": [
         {
@@ -806,6 +871,7 @@
       "version": "5.0.0"
     },
     {
+      "bom-ref": "pkg:npm/https-proxy-agent@5.0.1",
       "name": "https-proxy-agent",
       "properties": [
         {
@@ -818,6 +884,7 @@
       "version": "5.0.1"
     },
     {
+      "bom-ref": "pkg:npm/humanize-ms@1.2.1",
       "name": "humanize-ms",
       "properties": [
         {
@@ -830,6 +897,7 @@
       "version": "1.2.1"
     },
     {
+      "bom-ref": "pkg:npm/iconv-lite@0.6.3",
       "name": "iconv-lite",
       "properties": [
         {
@@ -842,6 +910,7 @@
       "version": "0.6.3"
     },
     {
+      "bom-ref": "pkg:npm/imurmurhash@0.1.4",
       "name": "imurmurhash",
       "properties": [
         {
@@ -854,6 +923,7 @@
       "version": "0.1.4"
     },
     {
+      "bom-ref": "pkg:npm/indent-string@4.0.0",
       "name": "indent-string",
       "properties": [
         {
@@ -866,6 +936,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/inflight@1.0.6",
       "name": "inflight",
       "properties": [
         {
@@ -878,6 +949,7 @@
       "version": "1.0.6"
     },
     {
+      "bom-ref": "pkg:npm/inherits@2.0.4",
       "name": "inherits",
       "properties": [
         {
@@ -890,6 +962,7 @@
       "version": "2.0.4"
     },
     {
+      "bom-ref": "pkg:npm/ip@2.0.0",
       "name": "ip",
       "properties": [
         {
@@ -902,6 +975,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-fullwidth-code-point@3.0.0",
       "name": "is-fullwidth-code-point",
       "properties": [
         {
@@ -914,6 +988,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-lambda@1.0.1",
       "name": "is-lambda",
       "properties": [
         {
@@ -926,6 +1001,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/is-positive@3.0.0?checksum=sha512:43a2a08914e02ecfba921df434dbce26b96464692c495c3e158b5db66fdf62e17a7166062506405ec8a0904ba5225739927a23ed66101c19ecc751c5d24c0dd4&download_url=https://github.com/kevva/is-positive/archive/refs/tags/3.0.0.tar.gz",
       "name": "is-positive",
       "properties": [
         {
@@ -938,6 +1014,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/is-positive@3.1.0?checksum=sha512:78a99626f4d3c408fbd7e3f560866ba2eeddc3f6987ac03db3446c0f1e8343920dc6f4381f9eedc1e595b2164e05d2995e5e703eee3ac60625e8e03e2d997144&download_url=https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz",
       "name": "is-positive",
       "properties": [
         {
@@ -950,6 +1027,7 @@
       "version": "3.1.0"
     },
     {
+      "bom-ref": "pkg:npm/isexe@2.0.0",
       "name": "isexe",
       "properties": [
         {
@@ -962,6 +1040,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/jackspeak@2.2.2",
       "name": "jackspeak",
       "properties": [
         {
@@ -974,6 +1053,7 @@
       "version": "2.2.2"
     },
     {
+      "bom-ref": "pkg:npm/left-pad@1.3.0",
       "name": "left-pad",
       "pedigree": {
         "patches": [
@@ -1002,6 +1082,7 @@
       "version": "1.3.0"
     },
     {
+      "bom-ref": "pkg:npm/lru-cache@10.0.0",
       "name": "lru-cache",
       "properties": [
         {
@@ -1014,6 +1095,7 @@
       "version": "10.0.0"
     },
     {
+      "bom-ref": "pkg:npm/lru-cache@6.0.0",
       "name": "lru-cache",
       "properties": [
         {
@@ -1026,6 +1108,7 @@
       "version": "6.0.0"
     },
     {
+      "bom-ref": "pkg:npm/lru-cache@7.18.3",
       "name": "lru-cache",
       "properties": [
         {
@@ -1038,6 +1121,7 @@
       "version": "7.18.3"
     },
     {
+      "bom-ref": "pkg:npm/make-fetch-happen@11.1.1",
       "name": "make-fetch-happen",
       "properties": [
         {
@@ -1050,6 +1134,7 @@
       "version": "11.1.1"
     },
     {
+      "bom-ref": "pkg:npm/minimatch@3.1.2",
       "name": "minimatch",
       "properties": [
         {
@@ -1062,6 +1147,7 @@
       "version": "3.1.2"
     },
     {
+      "bom-ref": "pkg:npm/minimatch@9.0.3",
       "name": "minimatch",
       "properties": [
         {
@@ -1074,6 +1160,7 @@
       "version": "9.0.3"
     },
     {
+      "bom-ref": "pkg:npm/minimist@0.2.4?checksum=sha512:bd68d01a58bfbdede630bf9d3a6b877ec6759dd9ae7c5b62c81bccd18bcb9f8f898f3d18e5cc73bf8f135e475c1dc2e896cba447031b2c6fa3db035b0be89701&download_url=https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz",
       "name": "minimist",
       "properties": [
         {
@@ -1086,6 +1173,7 @@
       "version": "0.2.4"
     },
     {
+      "bom-ref": "pkg:npm/minipass-collect@1.0.2",
       "name": "minipass-collect",
       "properties": [
         {
@@ -1098,6 +1186,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/minipass-fetch@3.0.3",
       "name": "minipass-fetch",
       "properties": [
         {
@@ -1110,6 +1199,7 @@
       "version": "3.0.3"
     },
     {
+      "bom-ref": "pkg:npm/minipass-flush@1.0.5",
       "name": "minipass-flush",
       "properties": [
         {
@@ -1122,6 +1212,7 @@
       "version": "1.0.5"
     },
     {
+      "bom-ref": "pkg:npm/minipass-pipeline@1.2.4",
       "name": "minipass-pipeline",
       "properties": [
         {
@@ -1134,6 +1225,7 @@
       "version": "1.2.4"
     },
     {
+      "bom-ref": "pkg:npm/minipass-sized@1.0.3",
       "name": "minipass-sized",
       "properties": [
         {
@@ -1146,6 +1238,7 @@
       "version": "1.0.3"
     },
     {
+      "bom-ref": "pkg:npm/minipass@3.3.6",
       "name": "minipass",
       "properties": [
         {
@@ -1158,6 +1251,7 @@
       "version": "3.3.6"
     },
     {
+      "bom-ref": "pkg:npm/minipass@5.0.0",
       "name": "minipass",
       "properties": [
         {
@@ -1170,6 +1264,7 @@
       "version": "5.0.0"
     },
     {
+      "bom-ref": "pkg:npm/minipass@7.0.2",
       "name": "minipass",
       "properties": [
         {
@@ -1182,6 +1277,7 @@
       "version": "7.0.2"
     },
     {
+      "bom-ref": "pkg:npm/minizlib@2.1.2",
       "name": "minizlib",
       "properties": [
         {
@@ -1194,6 +1290,7 @@
       "version": "2.1.2"
     },
     {
+      "bom-ref": "pkg:npm/mkdirp@1.0.4",
       "name": "mkdirp",
       "properties": [
         {
@@ -1206,6 +1303,7 @@
       "version": "1.0.4"
     },
     {
+      "bom-ref": "pkg:npm/ms@2.1.2",
       "name": "ms",
       "properties": [
         {
@@ -1218,6 +1316,7 @@
       "version": "2.1.2"
     },
     {
+      "bom-ref": "pkg:npm/ms@2.1.3",
       "name": "ms",
       "properties": [
         {
@@ -1230,6 +1329,7 @@
       "version": "2.1.3"
     },
     {
+      "bom-ref": "pkg:npm/nan@2.17.0",
       "name": "nan",
       "properties": [
         {
@@ -1242,6 +1342,7 @@
       "version": "2.17.0"
     },
     {
+      "bom-ref": "pkg:npm/negotiator@0.6.3",
       "name": "negotiator",
       "properties": [
         {
@@ -1254,6 +1355,7 @@
       "version": "0.6.3"
     },
     {
+      "bom-ref": "pkg:npm/node-gyp@9.4.0",
       "name": "node-gyp",
       "properties": [
         {
@@ -1266,6 +1368,7 @@
       "version": "9.4.0"
     },
     {
+      "bom-ref": "pkg:npm/nopt@6.0.0",
       "name": "nopt",
       "properties": [
         {
@@ -1278,6 +1381,7 @@
       "version": "6.0.0"
     },
     {
+      "bom-ref": "pkg:npm/npmlog@6.0.2",
       "name": "npmlog",
       "properties": [
         {
@@ -1290,6 +1394,7 @@
       "version": "6.0.2"
     },
     {
+      "bom-ref": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#packages/old-man-from-scene-24",
       "name": "old-man-from-scene-24",
       "properties": [
         {
@@ -1301,6 +1406,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:npm/once@1.4.0",
       "name": "once",
       "properties": [
         {
@@ -1313,6 +1419,7 @@
       "version": "1.4.0"
     },
     {
+      "bom-ref": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#external-packages/once",
       "name": "once",
       "properties": [
         {
@@ -1325,6 +1432,7 @@
       "version": "1.4.0"
     },
     {
+      "bom-ref": "pkg:npm/p-map@4.0.0",
       "name": "p-map",
       "properties": [
         {
@@ -1337,6 +1445,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/path-is-absolute@1.0.1",
       "name": "path-is-absolute",
       "properties": [
         {
@@ -1349,6 +1458,7 @@
       "version": "1.0.1"
     },
     {
+      "bom-ref": "pkg:npm/path-key@3.1.1",
       "name": "path-key",
       "properties": [
         {
@@ -1361,6 +1471,7 @@
       "version": "3.1.1"
     },
     {
+      "bom-ref": "pkg:npm/path-scurry@1.10.1",
       "name": "path-scurry",
       "properties": [
         {
@@ -1373,6 +1484,7 @@
       "version": "1.10.1"
     },
     {
+      "bom-ref": "pkg:npm/promise-retry@2.0.1",
       "name": "promise-retry",
       "properties": [
         {
@@ -1385,6 +1497,7 @@
       "version": "2.0.1"
     },
     {
+      "bom-ref": "pkg:npm/proxy-from-env@1.1.0",
       "name": "proxy-from-env",
       "properties": [
         {
@@ -1397,6 +1510,7 @@
       "version": "1.1.0"
     },
     {
+      "bom-ref": "pkg:npm/readable-stream@3.6.2",
       "name": "readable-stream",
       "properties": [
         {
@@ -1409,6 +1523,7 @@
       "version": "3.6.2"
     },
     {
+      "bom-ref": "pkg:npm/require-directory@2.1.1",
       "name": "require-directory",
       "properties": [
         {
@@ -1421,6 +1536,7 @@
       "version": "2.1.1"
     },
     {
+      "bom-ref": "pkg:npm/retry@0.12.0",
       "name": "retry",
       "properties": [
         {
@@ -1433,6 +1549,7 @@
       "version": "0.12.0"
     },
     {
+      "bom-ref": "pkg:npm/rimraf@3.0.2",
       "name": "rimraf",
       "properties": [
         {
@@ -1445,6 +1562,7 @@
       "version": "3.0.2"
     },
     {
+      "bom-ref": "pkg:npm/safe-buffer@5.2.1",
       "name": "safe-buffer",
       "properties": [
         {
@@ -1457,6 +1575,7 @@
       "version": "5.2.1"
     },
     {
+      "bom-ref": "pkg:npm/safer-buffer@2.1.2",
       "name": "safer-buffer",
       "properties": [
         {
@@ -1469,6 +1588,7 @@
       "version": "2.1.2"
     },
     {
+      "bom-ref": "pkg:npm/semver@7.5.4",
       "name": "semver",
       "properties": [
         {
@@ -1481,6 +1601,7 @@
       "version": "7.5.4"
     },
     {
+      "bom-ref": "pkg:npm/set-blocking@2.0.0",
       "name": "set-blocking",
       "properties": [
         {
@@ -1493,6 +1614,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/shebang-command@2.0.0",
       "name": "shebang-command",
       "properties": [
         {
@@ -1505,6 +1627,7 @@
       "version": "2.0.0"
     },
     {
+      "bom-ref": "pkg:npm/shebang-regex@3.0.0",
       "name": "shebang-regex",
       "properties": [
         {
@@ -1517,6 +1640,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/signal-exit@3.0.7",
       "name": "signal-exit",
       "properties": [
         {
@@ -1529,6 +1653,7 @@
       "version": "3.0.7"
     },
     {
+      "bom-ref": "pkg:npm/signal-exit@4.1.0",
       "name": "signal-exit",
       "properties": [
         {
@@ -1541,6 +1666,7 @@
       "version": "4.1.0"
     },
     {
+      "bom-ref": "pkg:npm/smart-buffer@4.2.0",
       "name": "smart-buffer",
       "properties": [
         {
@@ -1553,6 +1679,7 @@
       "version": "4.2.0"
     },
     {
+      "bom-ref": "pkg:npm/socks-proxy-agent@7.0.0",
       "name": "socks-proxy-agent",
       "properties": [
         {
@@ -1565,6 +1692,7 @@
       "version": "7.0.0"
     },
     {
+      "bom-ref": "pkg:npm/socks@2.7.1",
       "name": "socks",
       "properties": [
         {
@@ -1577,6 +1705,7 @@
       "version": "2.7.1"
     },
     {
+      "bom-ref": "pkg:npm/ssri@10.0.4",
       "name": "ssri",
       "properties": [
         {
@@ -1589,6 +1718,7 @@
       "version": "10.0.4"
     },
     {
+      "bom-ref": "pkg:npm/string-width@4.2.3",
       "name": "string-width",
       "properties": [
         {
@@ -1601,6 +1731,7 @@
       "version": "4.2.3"
     },
     {
+      "bom-ref": "pkg:npm/string-width@5.1.2",
       "name": "string-width",
       "properties": [
         {
@@ -1613,6 +1744,7 @@
       "version": "5.1.2"
     },
     {
+      "bom-ref": "pkg:npm/string_decoder@1.3.0",
       "name": "string_decoder",
       "properties": [
         {
@@ -1625,6 +1757,7 @@
       "version": "1.3.0"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#external-packages/strip-ansi-4.0.0.tgz",
       "name": "strip-ansi",
       "properties": [
         {
@@ -1637,6 +1770,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@6.0.1",
       "name": "strip-ansi",
       "properties": [
         {
@@ -1649,6 +1783,7 @@
       "version": "6.0.1"
     },
     {
+      "bom-ref": "pkg:npm/strip-ansi@7.1.0",
       "name": "strip-ansi",
       "properties": [
         {
@@ -1661,6 +1796,7 @@
       "version": "7.1.0"
     },
     {
+      "bom-ref": "pkg:npm/supports-color@7.2.0",
       "name": "supports-color",
       "properties": [
         {
@@ -1673,6 +1809,7 @@
       "version": "7.2.0"
     },
     {
+      "bom-ref": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#external-packages/supports-hyperlinks",
       "name": "supports-hyperlinks",
       "properties": [
         {
@@ -1685,6 +1822,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/tar@6.1.15",
       "name": "tar",
       "properties": [
         {
@@ -1697,6 +1835,7 @@
       "version": "6.1.15"
     },
     {
+      "bom-ref": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4053a2bfe8d5ee7ed9c2f752fe75831a881d54895f#packages/the-answer",
       "name": "the-answer",
       "properties": [
         {
@@ -1708,6 +1847,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:npm/tree-sitter-json@0.20.0",
       "name": "tree-sitter-json",
       "properties": [
         {
@@ -1720,6 +1860,7 @@
       "version": "0.20.0"
     },
     {
+      "bom-ref": "pkg:npm/typescript@5.1.6",
       "name": "typescript",
       "pedigree": {
         "patches": [
@@ -1742,6 +1883,7 @@
       "version": "5.1.6"
     },
     {
+      "bom-ref": "pkg:npm/unique-filename@3.0.0",
       "name": "unique-filename",
       "properties": [
         {
@@ -1754,6 +1896,7 @@
       "version": "3.0.0"
     },
     {
+      "bom-ref": "pkg:npm/unique-slug@4.0.0",
       "name": "unique-slug",
       "properties": [
         {
@@ -1766,6 +1909,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/util-deprecate@1.0.2",
       "name": "util-deprecate",
       "properties": [
         {
@@ -1778,6 +1922,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/which@2.0.2",
       "name": "which",
       "properties": [
         {
@@ -1790,6 +1935,7 @@
       "version": "2.0.2"
     },
     {
+      "bom-ref": "pkg:npm/wide-align@1.1.5",
       "name": "wide-align",
       "properties": [
         {
@@ -1802,6 +1948,7 @@
       "version": "1.1.5"
     },
     {
+      "bom-ref": "pkg:npm/wrap-ansi@7.0.0",
       "name": "wrap-ansi",
       "properties": [
         {
@@ -1814,6 +1961,7 @@
       "version": "7.0.0"
     },
     {
+      "bom-ref": "pkg:npm/wrap-ansi@8.1.0",
       "name": "wrap-ansi",
       "properties": [
         {
@@ -1826,6 +1974,7 @@
       "version": "8.1.0"
     },
     {
+      "bom-ref": "pkg:npm/wrappy@1.0.2",
       "name": "wrappy",
       "properties": [
         {
@@ -1838,6 +1987,7 @@
       "version": "1.0.2"
     },
     {
+      "bom-ref": "pkg:npm/y18n@5.0.8",
       "name": "y18n",
       "properties": [
         {
@@ -1850,6 +2000,7 @@
       "version": "5.0.8"
     },
     {
+      "bom-ref": "pkg:npm/yallist@4.0.0",
       "name": "yallist",
       "properties": [
         {
@@ -1862,6 +2013,7 @@
       "version": "4.0.0"
     },
     {
+      "bom-ref": "pkg:npm/yargs-parser@21.1.1",
       "name": "yargs-parser",
       "properties": [
         {
@@ -1874,6 +2026,7 @@
       "version": "21.1.1"
     },
     {
+      "bom-ref": "pkg:npm/yargs@17.7.2",
       "name": "yargs",
       "properties": [
         {

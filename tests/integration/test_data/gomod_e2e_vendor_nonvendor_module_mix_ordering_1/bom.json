@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:golang/bytes?type=package",
       "name": "bytes",
       "properties": [
         {
@@ -13,6 +14,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/cmp?type=package",
       "name": "cmp",
       "properties": [
         {
@@ -24,6 +26,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/context?type=package",
       "name": "context",
       "properties": [
         {
@@ -35,6 +38,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/cipher?type=package",
       "name": "crypto/cipher",
       "properties": [
         {
@@ -46,6 +50,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/boring/sig?type=package",
       "name": "crypto/internal/boring/sig",
       "properties": [
         {
@@ -57,6 +62,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/boring?type=package",
       "name": "crypto/internal/boring",
       "properties": [
         {
@@ -68,6 +74,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/entropy?type=package",
       "name": "crypto/internal/entropy",
       "properties": [
         {
@@ -79,6 +86,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/aes/gcm?type=package",
       "name": "crypto/internal/fips140/aes/gcm",
       "properties": [
         {
@@ -90,6 +98,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/aes?type=package",
       "name": "crypto/internal/fips140/aes",
       "properties": [
         {
@@ -101,6 +110,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/alias?type=package",
       "name": "crypto/internal/fips140/alias",
       "properties": [
         {
@@ -112,6 +122,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/check?type=package",
       "name": "crypto/internal/fips140/check",
       "properties": [
         {
@@ -123,6 +134,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/drbg?type=package",
       "name": "crypto/internal/fips140/drbg",
       "properties": [
         {
@@ -134,6 +146,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/hmac?type=package",
       "name": "crypto/internal/fips140/hmac",
       "properties": [
         {
@@ -145,6 +158,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/sha256?type=package",
       "name": "crypto/internal/fips140/sha256",
       "properties": [
         {
@@ -156,6 +170,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/sha3?type=package",
       "name": "crypto/internal/fips140/sha3",
       "properties": [
         {
@@ -167,6 +182,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/sha512?type=package",
       "name": "crypto/internal/fips140/sha512",
       "properties": [
         {
@@ -178,6 +194,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/subtle?type=package",
       "name": "crypto/internal/fips140/subtle",
       "properties": [
         {
@@ -189,6 +206,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140?type=package",
       "name": "crypto/internal/fips140",
       "properties": [
         {
@@ -200,6 +218,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140deps/byteorder?type=package",
       "name": "crypto/internal/fips140deps/byteorder",
       "properties": [
         {
@@ -211,6 +230,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140deps/cpu?type=package",
       "name": "crypto/internal/fips140deps/cpu",
       "properties": [
         {
@@ -222,6 +242,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140deps/godebug?type=package",
       "name": "crypto/internal/fips140deps/godebug",
       "properties": [
         {
@@ -233,6 +254,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140only?type=package",
       "name": "crypto/internal/fips140only",
       "properties": [
         {
@@ -244,6 +266,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/impl?type=package",
       "name": "crypto/internal/impl",
       "properties": [
         {
@@ -255,6 +278,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/randutil?type=package",
       "name": "crypto/internal/randutil",
       "properties": [
         {
@@ -266,6 +290,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/sysrand?type=package",
       "name": "crypto/internal/sysrand",
       "properties": [
         {
@@ -277,6 +302,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/md5?type=package",
       "name": "crypto/md5",
       "properties": [
         {
@@ -288,6 +314,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/rand?type=package",
       "name": "crypto/rand",
       "properties": [
         {
@@ -299,6 +326,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/sha1?type=package",
       "name": "crypto/sha1",
       "properties": [
         {
@@ -310,6 +338,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/subtle?type=package",
       "name": "crypto/subtle",
       "properties": [
         {
@@ -321,6 +350,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto?type=package",
       "name": "crypto",
       "properties": [
         {
@@ -332,6 +362,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/database/sql/driver?type=package",
       "name": "database/sql/driver",
       "properties": [
         {
@@ -343,6 +374,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/base64?type=package",
       "name": "encoding/base64",
       "properties": [
         {
@@ -354,6 +386,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/binary?type=package",
       "name": "encoding/binary",
       "properties": [
         {
@@ -365,6 +398,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/hex?type=package",
       "name": "encoding/hex",
       "properties": [
         {
@@ -376,6 +410,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/json?type=package",
       "name": "encoding/json",
       "properties": [
         {
@@ -387,6 +422,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding?type=package",
       "name": "encoding",
       "properties": [
         {
@@ -398,6 +434,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/errors?type=package",
       "name": "errors",
       "properties": [
         {
@@ -409,6 +446,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/fmt?type=package",
       "name": "fmt",
       "properties": [
         {
@@ -420,6 +458,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/github.com/google/uuid@v1.6.0?type=module",
       "name": "github.com/google/uuid",
       "properties": [
         {
@@ -432,6 +471,7 @@
       "version": "v1.6.0"
     },
     {
+      "bom-ref": "pkg:golang/github.com/google/uuid@v1.6.0?type=package",
       "name": "github.com/google/uuid",
       "properties": [
         {
@@ -444,6 +484,7 @@
       "version": "v1.6.0"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/non-vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
       "properties": [
         {
@@ -456,6 +497,7 @@
       "version": "v0.0.0-20251031153824-281b55caebf2"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/non-vendored-module@v0.0.0-20251031153824-281b55caebf2?type=package",
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
       "properties": [
         {
@@ -468,6 +510,7 @@
       "version": "v0.0.0-20251031153824-281b55caebf2"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/vendored-module/utils@v0.0.0-20251031153824-281b55caebf2?type=package",
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module/utils",
       "properties": [
         {
@@ -480,6 +523,7 @@
       "version": "v0.0.0-20251031153824-281b55caebf2"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
       "properties": [
         {
@@ -492,6 +536,7 @@
       "version": "v0.0.0-20251031153824-281b55caebf2"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/vendored-module@v0.0.0-20251031153824-281b55caebf2?type=package",
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
       "properties": [
         {
@@ -504,6 +549,7 @@
       "version": "v0.0.0-20251031153824-281b55caebf2"
     },
     {
+      "bom-ref": "pkg:golang/hash?type=package",
       "name": "hash",
       "properties": [
         {
@@ -515,6 +561,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/abi?type=package",
       "name": "internal/abi",
       "properties": [
         {
@@ -526,6 +573,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/asan?type=package",
       "name": "internal/asan",
       "properties": [
         {
@@ -537,6 +585,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/bisect?type=package",
       "name": "internal/bisect",
       "properties": [
         {
@@ -548,6 +597,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/bytealg?type=package",
       "name": "internal/bytealg",
       "properties": [
         {
@@ -559,6 +609,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/byteorder?type=package",
       "name": "internal/byteorder",
       "properties": [
         {
@@ -570,6 +621,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/chacha8rand?type=package",
       "name": "internal/chacha8rand",
       "properties": [
         {
@@ -581,6 +633,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/coverage/rtcov?type=package",
       "name": "internal/coverage/rtcov",
       "properties": [
         {
@@ -592,6 +645,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/cpu?type=package",
       "name": "internal/cpu",
       "properties": [
         {
@@ -603,6 +657,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/filepathlite?type=package",
       "name": "internal/filepathlite",
       "properties": [
         {
@@ -614,6 +669,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/fmtsort?type=package",
       "name": "internal/fmtsort",
       "properties": [
         {
@@ -625,6 +681,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/goarch?type=package",
       "name": "internal/goarch",
       "properties": [
         {
@@ -636,6 +693,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/godebug?type=package",
       "name": "internal/godebug",
       "properties": [
         {
@@ -647,6 +705,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/godebugs?type=package",
       "name": "internal/godebugs",
       "properties": [
         {
@@ -658,6 +717,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/goexperiment?type=package",
       "name": "internal/goexperiment",
       "properties": [
         {
@@ -669,6 +729,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/goos?type=package",
       "name": "internal/goos",
       "properties": [
         {
@@ -680,6 +741,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/itoa?type=package",
       "name": "internal/itoa",
       "properties": [
         {
@@ -691,6 +753,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/msan?type=package",
       "name": "internal/msan",
       "properties": [
         {
@@ -702,6 +765,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/nettrace?type=package",
       "name": "internal/nettrace",
       "properties": [
         {
@@ -713,6 +777,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/oserror?type=package",
       "name": "internal/oserror",
       "properties": [
         {
@@ -724,6 +789,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/poll?type=package",
       "name": "internal/poll",
       "properties": [
         {
@@ -735,6 +801,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/profilerecord?type=package",
       "name": "internal/profilerecord",
       "properties": [
         {
@@ -746,6 +813,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/race?type=package",
       "name": "internal/race",
       "properties": [
         {
@@ -757,6 +825,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/reflectlite?type=package",
       "name": "internal/reflectlite",
       "properties": [
         {
@@ -768,6 +837,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/atomic?type=package",
       "name": "internal/runtime/atomic",
       "properties": [
         {
@@ -779,6 +849,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/cgroup?type=package",
       "name": "internal/runtime/cgroup",
       "properties": [
         {
@@ -790,6 +861,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/exithook?type=package",
       "name": "internal/runtime/exithook",
       "properties": [
         {
@@ -801,6 +873,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/gc?type=package",
       "name": "internal/runtime/gc",
       "properties": [
         {
@@ -812,6 +885,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/maps?type=package",
       "name": "internal/runtime/maps",
       "properties": [
         {
@@ -823,6 +897,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/math?type=package",
       "name": "internal/runtime/math",
       "properties": [
         {
@@ -834,6 +909,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/strconv?type=package",
       "name": "internal/runtime/strconv",
       "properties": [
         {
@@ -845,6 +921,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/sys?type=package",
       "name": "internal/runtime/sys",
       "properties": [
         {
@@ -856,6 +933,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/syscall?type=package",
       "name": "internal/runtime/syscall",
       "properties": [
         {
@@ -867,6 +945,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/singleflight?type=package",
       "name": "internal/singleflight",
       "properties": [
         {
@@ -878,6 +957,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/stringslite?type=package",
       "name": "internal/stringslite",
       "properties": [
         {
@@ -889,6 +969,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/sync?type=package",
       "name": "internal/sync",
       "properties": [
         {
@@ -900,6 +981,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/synctest?type=package",
       "name": "internal/synctest",
       "properties": [
         {
@@ -911,6 +993,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/syscall/execenv?type=package",
       "name": "internal/syscall/execenv",
       "properties": [
         {
@@ -922,6 +1005,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/syscall/unix?type=package",
       "name": "internal/syscall/unix",
       "properties": [
         {
@@ -933,6 +1017,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/testlog?type=package",
       "name": "internal/testlog",
       "properties": [
         {
@@ -944,6 +1029,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/trace/tracev2?type=package",
       "name": "internal/trace/tracev2",
       "properties": [
         {
@@ -955,6 +1041,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/unsafeheader?type=package",
       "name": "internal/unsafeheader",
       "properties": [
         {
@@ -966,6 +1053,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/io/fs?type=package",
       "name": "io/fs",
       "properties": [
         {
@@ -977,6 +1065,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/io?type=package",
       "name": "io",
       "properties": [
         {
@@ -988,6 +1077,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/iter?type=package",
       "name": "iter",
       "properties": [
         {
@@ -999,6 +1089,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/math/big?type=package",
       "name": "math/big",
       "properties": [
         {
@@ -1010,6 +1101,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/math/bits?type=package",
       "name": "math/bits",
       "properties": [
         {
@@ -1021,6 +1113,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/math/rand/v2?type=package",
       "name": "math/rand/v2",
       "properties": [
         {
@@ -1032,6 +1125,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/math/rand?type=package",
       "name": "math/rand",
       "properties": [
         {
@@ -1043,6 +1137,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/math?type=package",
       "name": "math",
       "properties": [
         {
@@ -1054,6 +1149,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/net/netip?type=package",
       "name": "net/netip",
       "properties": [
         {
@@ -1065,6 +1161,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/net?type=package",
       "name": "net",
       "properties": [
         {
@@ -1076,6 +1173,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/os?type=package",
       "name": "os",
       "properties": [
         {
@@ -1087,6 +1185,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/path?type=package",
       "name": "path",
       "properties": [
         {
@@ -1098,6 +1197,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/reflect?type=package",
       "name": "reflect",
       "properties": [
         {
@@ -1109,6 +1209,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/runtime?type=package",
       "name": "runtime",
       "properties": [
         {
@@ -1120,6 +1221,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/slices?type=package",
       "name": "slices",
       "properties": [
         {
@@ -1131,6 +1233,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/strconv?type=package",
       "name": "strconv",
       "properties": [
         {
@@ -1142,6 +1245,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/strings?type=package",
       "name": "strings",
       "properties": [
         {
@@ -1153,6 +1257,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/sync/atomic?type=package",
       "name": "sync/atomic",
       "properties": [
         {
@@ -1164,6 +1269,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/sync?type=package",
       "name": "sync",
       "properties": [
         {
@@ -1175,6 +1281,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/syscall?type=package",
       "name": "syscall",
       "properties": [
         {
@@ -1186,6 +1293,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/time?type=package",
       "name": "time",
       "properties": [
         {
@@ -1197,6 +1305,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/unicode/utf16?type=package",
       "name": "unicode/utf16",
       "properties": [
         {
@@ -1208,6 +1317,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/unicode/utf8?type=package",
       "name": "unicode/utf8",
       "properties": [
         {
@@ -1219,6 +1329,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/unicode?type=package",
       "name": "unicode",
       "properties": [
         {
@@ -1230,6 +1341,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/unique?type=package",
       "name": "unique",
       "properties": [
         {
@@ -1241,6 +1353,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/unsafe?type=package",
       "name": "unsafe",
       "properties": [
         {
@@ -1252,6 +1365,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/vendor/golang.org/x/net/dns/dnsmessage?type=package",
       "name": "vendor/golang.org/x/net/dns/dnsmessage",
       "properties": [
         {
@@ -1263,6 +1377,7 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/weak?type=package",
       "name": "weak",
       "properties": [
         {

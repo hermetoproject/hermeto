@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/click@8.2.1",
       "name": "click",
       "properties": [
         {
@@ -14,6 +15,7 @@
       "version": "8.2.1"
     },
     {
+      "bom-ref": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404b259f11e0bbe5bdaf3cb397e6565a10c8d8fa7c#first",
       "name": "first",
       "properties": [
         {
@@ -26,6 +28,7 @@
       "version": "0.1.0"
     },
     {
+      "bom-ref": "pkg:pypi/packaging@25.0",
       "name": "packaging",
       "properties": [
         {
@@ -38,6 +41,7 @@
       "version": "25.0"
     },
     {
+      "bom-ref": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%404b259f11e0bbe5bdaf3cb397e6565a10c8d8fa7c#second",
       "name": "second",
       "properties": [
         {

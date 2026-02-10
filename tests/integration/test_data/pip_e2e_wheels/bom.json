@@ -2,6 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/absl-py@2.1.0",
       "name": "absl-py",
       "properties": [
         {
@@ -18,6 +19,7 @@
       "version": "2.1.0"
     },
     {
+      "bom-ref": "pkg:pypi/grpcio@1.64.0",
       "name": "grpcio",
       "properties": [
         {
@@ -34,6 +36,7 @@
       "version": "1.64.0"
     },
     {
+      "bom-ref": "pkg:pypi/markdown@3.6",
       "name": "markdown",
       "properties": [
         {
@@ -50,6 +53,7 @@
       "version": "3.6"
     },
     {
+      "bom-ref": "pkg:pypi/markupsafe@2.1.5",
       "name": "markupsafe",
       "properties": [
         {
@@ -66,6 +70,7 @@
       "version": "2.1.5"
     },
     {
+      "bom-ref": "pkg:pypi/numpy@1.26.4",
       "name": "numpy",
       "properties": [
         {
@@ -82,6 +87,7 @@
       "version": "1.26.4"
     },
     {
+      "bom-ref": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40eee59273542ee7d412fb359d471386b645cf166e",
       "name": "package",
       "properties": [
         {
@@ -94,6 +100,7 @@
       "version": "0.1.0"
     },
     {
+      "bom-ref": "pkg:pypi/protobuf@4.25.3",
       "name": "protobuf",
       "properties": [
         {
@@ -110,6 +117,7 @@
       "version": "4.25.3"
     },
     {
+      "bom-ref": "pkg:pypi/setuptools@70.0.0",
       "name": "setuptools",
       "properties": [
         {
@@ -126,6 +134,7 @@
       "version": "70.0.0"
     },
     {
+      "bom-ref": "pkg:pypi/six@1.16.0",
       "name": "six",
       "properties": [
         {
@@ -142,6 +151,7 @@
       "version": "1.16.0"
     },
     {
+      "bom-ref": "pkg:pypi/tensorboard-data-server@0.7.2",
       "name": "tensorboard-data-server",
       "properties": [
         {
@@ -158,6 +168,7 @@
       "version": "0.7.2"
     },
     {
+      "bom-ref": "pkg:pypi/tensorboard@2.16.2",
       "name": "tensorboard",
       "properties": [
         {
@@ -174,6 +185,7 @@
       "version": "2.16.2"
     },
     {
+      "bom-ref": "pkg:pypi/werkzeug@3.0.3",
       "name": "werkzeug",
       "properties": [
         {
