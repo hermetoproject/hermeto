@@ -667,7 +667,7 @@ def _update_sbom_annotations(components: list[Component], annotations: list[Anno
     subjects = [c.update_bom_ref().bom_ref for c in components]
     if annotations:
         # NOTE: mypy thinks that the subject argument contains None values
-        annotations[0].subjects.extend(subjects)  # type: ignore
+        annotations[0].subjects.update(subjects)  # type: ignore
     else:
         annotations.append(
             Annotation(

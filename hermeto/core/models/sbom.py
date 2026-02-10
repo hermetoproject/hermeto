@@ -28,6 +28,7 @@ def datetime_to_iso_8601(value: datetime) -> str:
 
 
 ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
+SortedSet = Annotated[set[str], pydantic.PlainSerializer(sorted, return_type=list[str])]
 
 
 class Annotation(pydantic.BaseModel):
@@ -38,7 +39,7 @@ class Annotation(pydantic.BaseModel):
     https://cyclonedx.org/docs/1.6/json/#annotations
     """
 
-    subjects: list[str]
+    subjects: SortedSet
     annotator: dict[Literal["organization", "individual", "component", "service"], dict[str, str]]
     timestamp: ISODatetime
     text: str
@@ -249,7 +250,9 @@ class Sbom(pydantic.BaseModel):
                 relationships.append(pRel(relatedSpdxElement=package.SPDXID))
             return relationships
 
-        def generate_package_annotations(properties: list[Property]) -> list[SPDXPackageAnnotation]:
+        def generate_package_annotations(
+            properties: list[Property], bom_ref: str | None = None
+        ) -> list[SPDXPackageAnnotation]:
             """
             Convert CycloneDX top-level annotations and component properties to SPDX package annotations.
             """
@@ -262,7 +265,8 @@ class Sbom(pydantic.BaseModel):
             )
 
             for annotation in self.annotations:
-                result.append(base_spdx_annotation(comment=annotation.text))
+                if bom_ref is not None and bom_ref in annotation.subjects:
+                    result.append(base_spdx_annotation(comment=annotation.text))
 
             for property in properties:
                 result.append(
@@ -303,7 +307,9 @@ class Sbom(pydantic.BaseModel):
                         name=component.name,
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
-                        annotations=generate_package_annotations(component.properties),
+                        annotations=generate_package_annotations(
+                            properties=component.properties, bom_ref=component.bom_ref
+                        ),
                         sourceInfo=source_info or None,
                     )
                 )
