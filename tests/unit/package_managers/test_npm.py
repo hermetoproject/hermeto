@@ -20,7 +20,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.npm import (
     NormalizedUrl,
     NpmComponentInfo,
@@ -890,21 +890,31 @@ def test_generate_component_list(
         ),
     ],
 )
+@mock.patch("hermeto.core.package_managers.npm.create_backend_annotation")
 @mock.patch("hermeto.core.package_managers.npm._resolve_npm")
 def test_fetch_npm_source(
     mock_resolve_npm: mock.Mock,
+    mock_create_annotation: mock.Mock,
     npm_request: Request,
     npm_input_packages: dict[str, str],
     resolved_packages: list[ResolvedNpmPackage],
     request_output: dict[str, list[Any]],
 ) -> None:
     """Test fetch_npm_source with different Request inputs."""
+    mock_annotation = Annotation(
+        subjects=set(),
+        annotator={"organization": {"name": "red hat"}},
+        timestamp="2026-01-01T00:00:00Z",
+        text="hermeto:backend:npm",
+    )
+    mock_create_annotation.return_value = mock_annotation
     mock_resolve_npm.side_effect = resolved_packages
     output = fetch_npm_source(npm_request)
     expected_output = RequestOutput.from_obj_list(
         components=request_output["components"],
         environment_variables=request_output["environment_variables"],
         project_files=request_output["project_files"],
+        annotations=[mock_annotation],
     )
 
     assert output == expected_output

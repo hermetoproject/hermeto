@@ -1,4 +1,70 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/ansi-regex@2.0.0",
+        "pkg:npm/builtin-modules@1.1.1",
+        "pkg:npm/bundle-dependencies@1.0.2",
+        "pkg:npm/camelcase@2.1.0",
+        "pkg:npm/cliui@3.1.0",
+        "pkg:npm/code-point-at@1.0.0",
+        "pkg:npm/decamelize@1.1.2",
+        "pkg:npm/error-ex@1.3.0",
+        "pkg:npm/escape-string-regexp@1.0.5",
+        "pkg:npm/fecha@4.2.3",
+        "pkg:npm/find-up@1.1.0",
+        "pkg:npm/graceful-fs@4.1.3",
+        "pkg:npm/hosted-git-info@2.1.4",
+        "pkg:npm/invert-kv@1.0.0",
+        "pkg:npm/is-arrayish@0.2.1",
+        "pkg:npm/is-builtin-module@1.0.0",
+        "pkg:npm/is-fullwidth-code-point@1.0.0",
+        "pkg:npm/is-utf8@0.2.1",
+        "pkg:npm/lcid@1.0.0",
+        "pkg:npm/load-json-file@1.1.0",
+        "pkg:npm/lodash.assign@4.0.3",
+        "pkg:npm/lodash.keys@4.0.3",
+        "pkg:npm/lodash.rest@4.0.1",
+        "pkg:npm/normalize-package-data@2.3.5",
+        "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40de68ac6aa88a81272660b6d0f6d44ce157207799",
+        "pkg:npm/number-is-nan@1.0.0",
+        "pkg:npm/object-assign@4.0.1",
+        "pkg:npm/os-locale@1.4.0",
+        "pkg:npm/parse-json@2.2.0",
+        "pkg:npm/path-exists@2.1.0",
+        "pkg:npm/path-type@1.1.0",
+        "pkg:npm/pify@2.3.0",
+        "pkg:npm/pinkie-promise@2.0.0",
+        "pkg:npm/pinkie@2.0.4",
+        "pkg:npm/pkg-conf@1.1.1",
+        "pkg:npm/read-pkg-up@1.0.1",
+        "pkg:npm/read-pkg@1.1.0",
+        "pkg:npm/require-main-filename@1.0.1",
+        "pkg:npm/semver@5.1.0",
+        "pkg:npm/spdx-correct@1.0.2",
+        "pkg:npm/spdx-exceptions@1.0.4",
+        "pkg:npm/spdx-expression-parse@1.0.2",
+        "pkg:npm/spdx-license-ids@1.2.0",
+        "pkg:npm/string-width@1.0.1",
+        "pkg:npm/strip-ansi@3.0.1",
+        "pkg:npm/strip-bom@2.0.0",
+        "pkg:npm/symbol@0.2.1",
+        "pkg:npm/validate-npm-package-license@3.0.1",
+        "pkg:npm/window-size@0.2.0",
+        "pkg:npm/wrap-ansi@1.0.0",
+        "pkg:npm/y18n@3.2.0",
+        "pkg:npm/yargs-parser@2.1.0",
+        "pkg:npm/yargs@4.1.0"
+      ],
+      "text": "hermeto:backend:npm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

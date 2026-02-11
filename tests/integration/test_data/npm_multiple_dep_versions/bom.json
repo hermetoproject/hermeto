@@ -1,4 +1,22 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/cachito-npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3",
+        "pkg:npm/cachito-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6",
+        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3#foo",
+        "pkg:npm/is-positive@1.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%401187a61f2e18cf7c11c23d61a1bd52b9fa6a5fdf",
+        "pkg:npm/is-positive@2.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%4075dd3a181375162eda014984f2decc663199b09e"
+      ],
+      "text": "hermeto:backend:npm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

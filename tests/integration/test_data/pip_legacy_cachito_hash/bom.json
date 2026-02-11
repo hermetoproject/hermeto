@@ -1,4 +1,19 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4087043422355b825916f4d5ae9122cc9f33520b27",
+        "pkg:pypi/httpx?checksum=sha256:14903e7fd80ad0df4a30f387a10270249685e600ad9c20dda3c139db061516e4&download_url=https://github.com/encode/httpx/archive/refs/tags/0.28.0.zip"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

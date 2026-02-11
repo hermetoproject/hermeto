@@ -1,4 +1,29 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/absl-py@2.1.0",
+        "pkg:pypi/grpcio@1.64.0",
+        "pkg:pypi/markdown@3.6",
+        "pkg:pypi/markupsafe@2.1.5",
+        "pkg:pypi/numpy@1.26.4",
+        "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40eee59273542ee7d412fb359d471386b645cf166e",
+        "pkg:pypi/protobuf@4.25.3",
+        "pkg:pypi/setuptools@70.0.0",
+        "pkg:pypi/six@1.16.0",
+        "pkg:pypi/tensorboard-data-server@0.7.2",
+        "pkg:pypi/tensorboard@2.16.2",
+        "pkg:pypi/werkzeug@3.0.3"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

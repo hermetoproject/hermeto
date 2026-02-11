@@ -16,6 +16,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.sbom import Annotation
 from hermeto.core.package_managers.yarn.main import (
     _check_lockfile,
     _check_zero_installs,
@@ -441,15 +442,24 @@ def test_generate_environment_variables(yarn_env_variables: list[EnvironmentVari
     ),
     indirect=["input_request"],
 )
+@mock.patch("hermeto.core.package_managers.yarn.main.create_backend_annotation")
 @mock.patch("hermeto.core.package_managers.yarn.main._resolve_yarn_project")
 @mock.patch("hermeto.core.package_managers.yarn.project.Project.from_source_dir")
 def test_fetch_yarn_source(
     mock_project_from_source_dir: mock.Mock,
     mock_resolve_yarn: mock.Mock,
+    mock_create_annotation: mock.Mock,
     package_components: list[Component],
     input_request: Request,
     yarn_env_variables: list[EnvironmentVariable],
 ) -> None:
+    mock_annotation = Annotation(
+        subjects=set(),
+        annotator={"organization": {"name": "red hat"}},
+        timestamp="2026-01-01T00:00:00Z",
+        text="hermeto:backend:yarn",
+    )
+    mock_create_annotation.return_value = mock_annotation
     mock_project = [mock.Mock() for _ in input_request.packages]
     mock_project_from_source_dir.side_effect = mock_project
     mock_resolve_yarn.side_effect = package_components
@@ -474,6 +484,7 @@ def test_fetch_yarn_source(
     mock_resolve_yarn.assert_has_calls(calls)
 
     expected_output = RequestOutput(
+        annotations=[mock_annotation],
         components=list(itertools.chain.from_iterable(package_components)),
         build_config=BuildConfig(environment_variables=yarn_env_variables),
     )

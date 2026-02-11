@@ -2,6 +2,7 @@
 import subprocess
 from collections.abc import Collection
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Literal
@@ -23,7 +24,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import CargoPackageInput, PackageInput, PipBinaryFilters, Request
 from hermeto.core.models.output import ProjectFile
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.rooted_path import RootedPath
@@ -1299,6 +1300,7 @@ def test_replace_external_requirements(
     ],
 )
 @mock.patch("hermeto.core.scm.GitRepo")
+@mock.patch("hermeto.core.models.sbom.spdx_now")
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
@@ -1306,6 +1308,7 @@ def test_fetch_pip_source(
     mock_filter_cargo_packages: mock.Mock,
     mock_resolve_pip: mock.Mock,
     mock_replace_requirements: mock.Mock,
+    mock_spdx_now: mock.Mock,
     mock_git_repo: mock.Mock,
     packages: list[PackageInput],
     n_pip_packages: int,
@@ -1384,6 +1387,8 @@ def test_fetch_pip_source(
         abspath=Path("/package_b/requirements.txt"),
         template="eggs @ file://${output_dir}/deps/pip/...",
     )
+    annotation_timestamp = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    mock_spdx_now.return_value = annotation_timestamp
 
     mock_resolve_pip.side_effect = [resolved_a, resolved_b]
     mock_replace_requirements.side_effect = [replaced_file_a, None, replaced_file_b]
@@ -1451,6 +1456,17 @@ def test_fetch_pip_source(
     assert output.components == expect_packages
     assert output.build_config.project_files == expect_files
     assert len(output.build_config.environment_variables) == 2
+    expected_annotations = []
+    if n_pip_packages > 0:
+        expected_annotations.append(
+            Annotation(
+                subjects={component.bom_ref for component in expect_packages},
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=annotation_timestamp,
+                text="hermeto:backend:pip",
+            )
+        )
+    assert output.annotations == expected_annotations
 
     if n_pip_packages == 1:
         mock_resolve_pip.assert_any_call(

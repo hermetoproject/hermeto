@@ -1,4 +1,22 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:rpm/centos/alternatives@1.24-2.el9?arch=x86_64&checksum=sha256:1e9effe6f59312207b55f87eaded01e8f238622ad14018ffd33ef49e9ce8d4c6&repository_id=baseos",
+        "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&checksum=sha256:36f90791ba4dc3b160ec9129dbc141b9705081b88aee20a1f1cb883e22d0a584&repository_id=baseos",
+        "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos",
+        "pkg:rpm/centos/libcom_err@1.46.5-4.el9?arch=x86_64&checksum=sha256:5f9f13137f356f0122caa962dcc0839948584b804f62282a28fcfb1c3d6af549&repository_id=baseos",
+        "pkg:rpm/centos/libcom_err@1.46.5-8.el9?arch=x86_64&checksum=sha256:ef43794f39d49b69e12506722e432a497e7f96038e26cab2c34476aad4b3d413&repository_id=baseos"
+      ],
+      "text": "hermeto:backend:rpm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

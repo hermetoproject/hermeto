@@ -1,4 +1,28 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/aiowsgi@0.8",
+        "pkg:pypi/certifi@2023.7.22",
+        "pkg:pypi/charset-normalizer@3.2.0",
+        "pkg:pypi/idna@3.4",
+        "pkg:pypi/integration-tests-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc#subpath1/subpath2",
+        "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40ece153b4e3eb1f64b3cd8e73b0de7fa8991c3afc",
+        "pkg:pypi/requests@2.31.0",
+        "pkg:pypi/six@1.16.0",
+        "pkg:pypi/urllib3@2.0.4",
+        "pkg:pypi/waitress@2.1.2",
+        "pkg:pypi/webob@1.8.7"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

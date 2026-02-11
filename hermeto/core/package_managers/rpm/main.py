@@ -23,7 +23,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import ExtraOptions, Request, RpmBinaryFilters, SSLOptions
 from hermeto.core.models.output import RequestOutput
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.sbom import Component, Property, create_backend_annotation
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.rpm.binary_filters import RPMArchitectureFilter
 from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
@@ -255,11 +255,15 @@ def fetch_rpm_source(request: Request) -> RequestOutput:
             "the last one seen will take effect"
         )
 
+    annotations = []
+    if backend_annotation := create_backend_annotation(components, "rpm"):
+        annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[],
         project_files=[],
         options={"rpm": options} if options else None,
+        annotations=annotations,
     )
 
 

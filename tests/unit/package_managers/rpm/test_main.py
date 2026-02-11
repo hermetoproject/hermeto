@@ -14,7 +14,7 @@ from hermeto.core.errors import (
     LockfileNotFound,
 )
 from hermeto.core.models.input import ExtraOptions, RpmBinaryFilters, RpmPackageInput, SSLOptions
-from hermeto.core.models.sbom import Component, Property
+from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
 from hermeto.core.package_managers.rpm.main import (
     DEFAULT_PACKAGE_DIR,
@@ -92,11 +92,13 @@ arches:
         ),
     ],
 )
+@mock.patch("hermeto.core.package_managers.rpm.main.create_backend_annotation")
 @mock.patch("hermeto.core.package_managers.rpm.main.RequestOutput.from_obj_list")
 @mock.patch("hermeto.core.package_managers.rpm.main._resolve_rpm_project")
 def test_fetch_rpm_source(
     mock_resolve_rpm_project: mock.Mock,
     mock_from_obj_list: mock.Mock,
+    mock_create_annotation: mock.Mock,
     model_input: mock.Mock | RpmPackageInput | list[RpmPackageInput],
     result_options: dict[str, dict[str, Any]] | None,
     caplog: pytest.LogCaptureFixture,
@@ -110,6 +112,13 @@ def test_fetch_rpm_source(
 
     mock_components = [mock.Mock()]
     mock_resolve_rpm_project.return_value = mock_components
+    mock_annotation = Annotation(
+        subjects=set(),
+        annotator={"organization": {"name": "red hat"}},
+        timestamp="2026-01-01T00:00:00Z",
+        text="hermeto:backend:rpm",
+    )
+    mock_create_annotation.return_value = mock_annotation
     mock_request = mock.Mock()
     mock_request.rpm_packages = model_input if isinstance(model_input, list) else [model_input]
     fetch_rpm_source(mock_request)
@@ -121,11 +130,13 @@ def test_fetch_rpm_source(
             assert "Multiple sets of DNF options detected on the input:" in caplog.text
 
     mock_resolve_rpm_project.assert_called()
+    mock_create_annotation.assert_called_with(mock_components, "rpm")
     mock_from_obj_list.assert_called_with(
         components=mock_components,
         environment_variables=[],
         project_files=[],
         options=result_options,
+        annotations=[mock_annotation],
     )
 
 

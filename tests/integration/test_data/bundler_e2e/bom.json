@@ -1,4 +1,69 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:gem/actioncable@6.1.7",
+        "pkg:gem/actionmailbox@6.1.7",
+        "pkg:gem/actionmailer@6.1.7",
+        "pkg:gem/actionpack@6.1.7",
+        "pkg:gem/actiontext@6.1.7",
+        "pkg:gem/actionview@6.1.7",
+        "pkg:gem/activejob@6.1.7",
+        "pkg:gem/activemodel@6.1.7",
+        "pkg:gem/activerecord@6.1.7",
+        "pkg:gem/activestorage@6.1.7",
+        "pkg:gem/activesupport@6.1.7",
+        "pkg:gem/addressable@2.8.7",
+        "pkg:gem/builder@3.3.0",
+        "pkg:gem/concurrent-ruby@1.3.4",
+        "pkg:gem/crass@1.0.6",
+        "pkg:gem/date@3.3.4",
+        "pkg:gem/erubi@1.13.0",
+        "pkg:gem/globalid@1.2.1",
+        "pkg:gem/i18n@1.14.6",
+        "pkg:gem/json-schema@3.0.0?vcs_url=git%2Bhttps://github.com/3scale/json-schema%4026487618a68443e94d623bb585cb464b07d36702",
+        "pkg:gem/loofah@2.22.0",
+        "pkg:gem/mail@2.8.1",
+        "pkg:gem/marcel@1.0.4",
+        "pkg:gem/method_source@1.1.0",
+        "pkg:gem/mini_mime@1.1.5",
+        "pkg:gem/minitest@5.25.1",
+        "pkg:gem/mygem@0.0.1",
+        "pkg:gem/net-imap@0.4.16",
+        "pkg:gem/net-pop@0.1.2",
+        "pkg:gem/net-protocol@0.2.2",
+        "pkg:gem/net-smtp@0.5.0",
+        "pkg:gem/nio4r@2.7.3",
+        "pkg:gem/nokogiri@1.16.7",
+        "pkg:gem/public_suffix@6.0.1",
+        "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7#quux",
+        "pkg:gem/racc@1.8.1",
+        "pkg:gem/rack-test@2.1.0",
+        "pkg:gem/rack@2.2.9",
+        "pkg:gem/rails-dom-testing@2.2.0",
+        "pkg:gem/rails-html-sanitizer@1.6.0",
+        "pkg:gem/rails@6.1.7",
+        "pkg:gem/railties@6.1.7",
+        "pkg:gem/rake@13.2.1",
+        "pkg:gem/sprockets-rails@3.5.2",
+        "pkg:gem/sprockets@4.2.1",
+        "pkg:gem/thor@1.3.2",
+        "pkg:gem/timeout@0.4.1",
+        "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f2d2d64600559d801b44170113a93d754052e9f7",
+        "pkg:gem/tzinfo@2.0.6",
+        "pkg:gem/websocket-driver@0.7.6",
+        "pkg:gem/websocket-extensions@0.1.5",
+        "pkg:gem/zeitwerk@2.6.18"
+      ],
+      "text": "hermeto:backend:bundler",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

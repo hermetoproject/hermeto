@@ -6,6 +6,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.sbom import create_backend_annotation
 from hermeto.core.package_managers.yarn.project import (
     Plugin,
     Project,
@@ -34,8 +35,14 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
 
         components.extend(_resolve_yarn_project(project, request.output_dir))
 
+    annotations = []
+    if backend_annotation := create_backend_annotation(components, "yarn"):
+        annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
-        components, _generate_environment_variables(), project_files=[]
+        components=components,
+        environment_variables=_generate_environment_variables(),
+        project_files=[],
+        annotations=annotations,
     )
 
 

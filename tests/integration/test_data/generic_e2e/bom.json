@@ -1,4 +1,19 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
+        "pkg:generic/v1.0.0.zip?checksum=sha256:4fbcaa2a8d17c1f8042578627c122361ab18b7973311e7e9c598696732902f87&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v1.0.0.zip"
+      ],
+      "text": "hermeto:backend:generic",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

@@ -1,4 +1,18 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos"
+      ],
+      "text": "hermeto:backend:rpm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

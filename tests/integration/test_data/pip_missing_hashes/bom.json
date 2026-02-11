@@ -1,4 +1,23 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/certifi@2025.7.14",
+        "pkg:pypi/charset-normalizer@3.4.2",
+        "pkg:pypi/idna@3.10",
+        "pkg:pypi/requests@2.32.4",
+        "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a352f3839db326423bd73bd2c54d248db021e00e",
+        "pkg:pypi/urllib3@2.5.0"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

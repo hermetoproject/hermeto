@@ -539,7 +539,7 @@ class TestSbom:
                     subjects=["pkg:npm/foo@1.0.0"],
                     annotator={"organization": {"name": "red hat"}},
                     timestamp="2026-01-01T00:00:00Z",
-                    text="hermeto:package_manager:npm",
+                    text="hermeto:backend:npm",
                 ),
             ],
             components=[
@@ -566,11 +566,11 @@ class TestSbom:
 
         # foo should have the annotation (its bom-ref is in subjects)
         annotation_comments = [a.comment for a in foo_pkg.annotations]
-        assert "hermeto:package_manager:npm" in annotation_comments
+        assert "hermeto:backend:npm" in annotation_comments
 
         # bar should NOT have the annotation (its bom-ref is NOT in subjects)
         bar_annotation_comments = [a.comment for a in bar_pkg.annotations]
-        assert "hermeto:package_manager:npm" not in bar_annotation_comments
+        assert "hermeto:backend:npm" not in bar_annotation_comments
 
     @pytest.mark.parametrize(
         "sbom, expected_package_source_info",

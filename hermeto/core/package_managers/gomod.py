@@ -39,7 +39,12 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Annotation, Component, spdx_now
+from hermeto.core.models.sbom import (
+    Annotation,
+    Component,
+    create_backend_annotation,
+    spdx_now,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -803,6 +808,8 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     }
     env_vars_template.update(config.gomod.environment_variables)
 
+    if backend_annotation := create_backend_annotation(components, "gomod"):
+        annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[

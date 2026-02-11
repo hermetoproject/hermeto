@@ -1,4 +1,20 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:cargo/data-encoding@2.7.0?checksum=0e60eed09d8c01d3cee5b7d30acb059b76614c918fa0f992e0dd6eeb10daad6f",
+        "pkg:cargo/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4009c8cf923df4bb74ceac204e8d8be5732d90e740",
+        "pkg:cargo/uuid@1.12.1?vcs_url=git%2Bhttps://github.com/uuid-rs/uuid%4070831d21b373a06149885e8aec18c9084ac918c3"
+      ],
+      "text": "hermeto:backend:cargo",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

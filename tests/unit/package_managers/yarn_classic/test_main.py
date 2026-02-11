@@ -11,7 +11,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import PackageManagerError
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Annotation, Component
 from hermeto.core.package_managers.yarn_classic.main import (
     MIRROR_DIR,
     YARN_NETWORK_TIMEOUT_MILLISECONDS,
@@ -105,6 +105,7 @@ def test_generate_build_environment_variables(
     ),
     indirect=["input_request"],
 )
+@mock.patch("hermeto.core.package_managers.yarn_classic.main.create_backend_annotation")
 @mock.patch("hermeto.core.package_managers.yarn_classic.main._verify_repository")
 @mock.patch("hermeto.core.package_managers.yarn_classic.main._resolve_yarn_project")
 @mock.patch("hermeto.core.package_managers.yarn_classic.main.Project.from_source_dir")
@@ -112,10 +113,19 @@ def test_fetch_yarn_source(
     mock_create_project: mock.Mock,
     mock_resolve_yarn: mock.Mock,
     mock_verify_repository: mock.Mock,
+    mock_create_annotation: mock.Mock,
     input_request: Request,
     package_components: list[Component],
     yarn_classic_env_variables: list[EnvironmentVariable],
 ) -> None:
+    mock_annotation = Annotation(
+        subjects=set(),
+        annotator={"organization": {"name": "red hat"}},
+        timestamp="2026-01-01T00:00:00Z",
+        text="hermeto:backend:yarn-classic",
+    )
+    mock_create_annotation.return_value = mock_annotation
+
     package_dirs = [
         input_request.source_dir.join_within_root(p.path) for p in input_request.packages
     ]
@@ -131,6 +141,7 @@ def test_fetch_yarn_source(
     mock_verify_repository.assert_has_calls([mock.call(p) for p in projects])
 
     expected_output = RequestOutput(
+        annotations=[mock_annotation],
         components=list(itertools.chain.from_iterable(package_components)),
         build_config=BuildConfig(environment_variables=yarn_classic_env_variables),
     )

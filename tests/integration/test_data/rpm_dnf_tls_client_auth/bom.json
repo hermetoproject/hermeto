@@ -1,4 +1,18 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:rpm/redhat/redhat-release@9.4-0.5.el9?arch=x86_64&checksum=sha256:6fd4c0937fb4ec4b4c487fbd915af35bdba1133255f5e7c2e13b6c320086ea53&repository_id=test-repo"
+      ],
+      "text": "hermeto:backend:rpm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

@@ -22,7 +22,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component, Property, PropertyEnum
+from hermeto.core.models.sbom import Annotation, Component, Property, PropertyEnum
 from hermeto.core.package_managers.gomod import (
     Go,
     GoVersion,
@@ -1783,7 +1783,9 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
 @mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
+@mock.patch("hermeto.core.package_managers.gomod.create_backend_annotation")
 def test_fetch_gomod_source(
+    mock_create_annotation: mock.Mock,
     mock_vendor_changed: mock.Mock,
     mock_get_go_work_path: mock.Mock,
     mock_select_toolchain: mock.Mock,
@@ -1810,6 +1812,14 @@ def test_fetch_gomod_source(
         return packages_output_by_path[
             app_dir.path.relative_to(gomod_request.source_dir).as_posix()
         ]
+
+    mock_gomod_annotation = Annotation(
+        subjects=set(),
+        annotator={"organization": {"name": "red hat"}},
+        timestamp="2026-01-01T00:00:00Z",
+        text="hermeto:backend:gomod",
+    )
+    mock_create_annotation.return_value = mock_gomod_annotation
 
     mock_resolve_gomod.side_effect = resolve_gomod_mocked
     mock_find_missing_gomod_files.return_value = []
@@ -1845,6 +1855,7 @@ def test_fetch_gomod_source(
         expected_output = RequestOutput.empty()
     else:
         expected_output = RequestOutput(
+            annotations=[mock_gomod_annotation],
             components=expect_components,
             build_config=BuildConfig(environment_variables=env_variables),
         )

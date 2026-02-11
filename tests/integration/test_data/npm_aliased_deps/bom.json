@@ -1,4 +1,21 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/fecha@4.2.0?vcs_url=git%2Bssh://git%40github.com/taylorhakes/fecha.git%4091680e4db1415fea33eac878cfd889c80a7b55c7",
+        "pkg:npm/fecha@4.2.2",
+        "pkg:npm/fecha@4.2.3",
+        "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4048c5f156b43b8727b10bf464c00847b09e2f25f6"
+      ],
+      "text": "hermeto:backend:npm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

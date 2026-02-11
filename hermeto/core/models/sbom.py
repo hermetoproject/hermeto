@@ -152,6 +152,23 @@ def spdx_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def create_backend_annotation(
+    components: list["Component"], backend_name: str
+) -> Annotation | None:
+    """Create an annotation that tags components with the backend that fetched them.
+
+    Returns None if there are no components to annotate.
+    """
+    if not components:
+        return None
+    return Annotation(
+        subjects={c.bom_ref for c in components},
+        annotator={"organization": {"name": "red hat"}},
+        timestamp=spdx_now(),
+        text=f"{APP_NAME}:backend:{backend_name}",
+    )
+
+
 def sanitize_spdxid(spdxid: str) -> str:
     """Sanitize an SPDXID.
 

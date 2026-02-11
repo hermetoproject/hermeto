@@ -1,4 +1,30 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/ansi-regex@6.0.1",
+        "pkg:npm/ansi-styles@6.2.1",
+        "pkg:npm/balanced-match@2.0.0",
+        "pkg:npm/chalk@5.3.0?vcs_url=git%2Bssh://git%40github.com/chalk/chalk.git%40f399cd0ff69841e88cca89d43a49f1cc9ba2efd5",
+        "pkg:npm/emoji-regex@10.2.1",
+        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4077018bf73295ef1248d24479da897d960576f933#foo",
+        "pkg:npm/graceful-fs@4.2.11",
+        "pkg:npm/is-interactive@2.0.0?vcs_url=git%2Bssh://git%40github.com/sindresorhus/is-interactive.git%408bf082e07e144a196a27b9cbddde2db11223806b",
+        "pkg:npm/jsonfile@6.1.0",
+        "pkg:npm/minimist@1.2.8?checksum=sha512:375b4478a7a1ac2b4b70ceca1ec00f4cfb47a35b4e288a956ade508bba4020ce1bacfb86ec3ee0c332644f9c43aab068512e4139bcb0c6ba53a736894df43af7&download_url=https://github.com/minimistjs/minimist/archive/refs/tags/v1.2.8.tar.gz",
+        "pkg:npm/ms@2.1.3?checksum=sha512:372daa086c6f3afe8cefef52e04b50eddb95d4510ae4bad074f32870344bcf488242cc0e2dd9b38b955fbeaf40f252fbc9e3950bb37b29767ec5b8504d7041c8&download_url=https://github.com/vercel/ms/archive/refs/tags/2.1.3.tar.gz",
+        "pkg:npm/npm-dev-optional-peer-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4077018bf73295ef1248d24479da897d960576f933",
+        "pkg:npm/universalify@2.0.0"
+      ],
+      "text": "hermeto:backend:npm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {

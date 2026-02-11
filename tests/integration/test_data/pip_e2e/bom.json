@@ -1,4 +1,27 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/certifi@2022.12.7",
+        "pkg:pypi/charset-normalizer@3.0.1",
+        "pkg:pypi/dockerfile-parse?checksum=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d&download_url=https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz",
+        "pkg:pypi/flit-core@3.8.0",
+        "pkg:pypi/idna@3.4",
+        "pkg:pypi/requests@2.28.2",
+        "pkg:pypi/setuptools@67.1.0",
+        "pkg:pypi/test-package-cachi2@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%401ecda839ba9ca55070d75c86c26a1bb07d777bba",
+        "pkg:pypi/urllib3@1.26.14",
+        "pkg:pypi/wheel@0.38.4"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {
