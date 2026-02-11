@@ -1235,8 +1235,8 @@ class TestSPDXSbom:
                         SPDXPackage(
                             **{
                                 "name": "bytes",
-                                "SPDXID": "SPDXRef-Package-bytes-159a73f12ce40d92d01ba213c0ec5b442a301c842533acb3487aed9454ae17e7",
-                                "versionInfo": "",
+                                "SPDXID": "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
+                                "versionInfo": None,
                                 "externalRefs": [_gen_ref("pkg:golang/bytes")],
                                 "annotations": [STOCK_ANNOTATION],
                             }
@@ -1244,8 +1244,8 @@ class TestSPDXSbom:
                         SPDXPackage(
                             **{
                                 "name": "fmt",
-                                "SPDXID": "SPDXRef-Package-fmt-7e4d2ed76d4ea914ece19cdfb657d52dfe5c22193e31c8141497806571490439",
-                                "versionInfo": "",
+                                "SPDXID": "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
+                                "versionInfo": None,
                                 "externalRefs": [_gen_ref("pkg:golang/fmt")],
                                 "annotations": [STOCK_ANNOTATION],
                             }
@@ -1300,10 +1300,10 @@ class TestSPDXSbom:
                     "relationships": [
                         DEFAULT_ROOT_RELATION,
                         _root_contains(
-                            "SPDXRef-Package-bytes-159a73f12ce40d92d01ba213c0ec5b442a301c842533acb3487aed9454ae17e7"
+                            "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4"
                         ),
                         _root_contains(
-                            "SPDXRef-Package-fmt-7e4d2ed76d4ea914ece19cdfb657d52dfe5c22193e31c8141497806571490439"
+                            "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d"
                         ),
                         _root_contains(
                             "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f"
