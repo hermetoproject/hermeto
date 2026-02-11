@@ -487,3 +487,37 @@ class TestFetchModel:
         ref_file = tmp_path / "hub" / "models--gpt2" / "refs" / "main"
         assert ref_file.exists()
         assert ref_file.read_text() == "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+    def test_fetch_model_with_include_patterns(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
+        """Test model fetching with include patterns."""
+        from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+        snapshot_path = tmp_path / "hub" / "models--microsoft--deberta-v3-base" / "snapshots" / "559062ad13d311b87b2c455e67dcd5f1c8f65111"
+        snapshot_path.mkdir(parents=True)
+        mock_snapshot.return_value = str(snapshot_path)
+
+        model_entry = HuggingFaceModel(
+            repository="microsoft/deberta-v3-base",
+            revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
+            type="model",
+            include_patterns=["*.safetensors", "config.json"],
+        )
+
+        cache_root = tmp_path / "cache"
+        cache_root.mkdir()
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        component = _fetch_model(model_entry, cache_root, datasets_cache)
+
+        # Verify include_patterns was passed to snapshot_download
+        mock_snapshot.assert_called_once_with(
+            repo_id="microsoft/deberta-v3-base",
+            revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
+            repo_type="model",
+            cache_dir=cache_root,
+            allow_patterns=["*.safetensors", "config.json"],
+        )
+
+        assert component.name == "microsoft/deberta-v3-base"
