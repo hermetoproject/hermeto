@@ -4,14 +4,16 @@ import fnmatch
 import functools
 import json
 import logging
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict
 from urllib.parse import urlparse
 
+import aiohttp
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
-from hermeto.core.config import get_config
+from hermeto.core.config import ProxyUrl, get_config
 from hermeto.core.errors import (
     LockfileNotFound,
     MissingChecksum,
@@ -22,7 +24,7 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE, Component, ExternalReference
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
@@ -50,6 +52,7 @@ class NpmComponentInfo(TypedDict):
     version: str | None
     dev: bool
     bundled: bool
+    external_refs: list[ExternalReference] | None
     missing_hash_in_file: Path | None
 
 
@@ -263,11 +266,14 @@ class PackageLock:
             "dev": False,
             "bundled": False,
             "missing_hash_in_file": None,
+            "external_refs": None,
         }
 
     def get_sbom_components(self) -> list[NpmComponentInfo]:
         """Return a list of dicts with sbom component data."""
         packages = self._packages
+        proxy_common = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+        proxy_url = get_config().npm.proxy_url
 
         def to_component(package: Package) -> NpmComponentInfo:
             purl = self._purlifier.get_purl(
@@ -275,6 +281,7 @@ class PackageLock:
             ).to_string()
 
             missing_hash_in_file = None
+            external_refs = None
             if package.resolved_url:  # dependency is not bundled
                 resolved_url = _normalize_resolved_url(package.resolved_url)
                 dep_type = _classify_resolved_url(resolved_url)
@@ -282,6 +289,8 @@ class PackageLock:
                 if not package.integrity:
                     if dep_type in ("registry", "https"):
                         missing_hash_in_file = Path(self._lockfile_path.subpath_from_root)
+                if dep_type == "registry" and proxy_url is not None:
+                    external_refs = [ExternalReference(url=str(proxy_url), **proxy_common)]
 
             component: NpmComponentInfo = {
                 "name": package.name,
@@ -290,6 +299,7 @@ class PackageLock:
                 "dev": package.dev,
                 "bundled": package.bundled,
                 "missing_hash_in_file": missing_hash_in_file,
+                "external_refs": external_refs,
             }
 
             return component
@@ -487,6 +497,28 @@ def _clone_repo_pack_archive(
     return download_path
 
 
+def _patch_url_to_point_to_a_proxy(url: NormalizedUrl, proxy_url: ProxyUrl) -> NormalizedUrl:
+    # Convert 'https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz'
+    # to '<proxyaddress>/accepts/-/accepts-1.3.8.tgz'.
+    s_proxy_url = str(proxy_url)  # mypy becomes really upset when "proxy_url" gets reused here
+    s_proxy_url = s_proxy_url if s_proxy_url[-1] == "/" else s_proxy_url + "/"
+    url_path = urlparse(url).path[1:]  # Don't need the leading / anymore
+    return NormalizedUrl(s_proxy_url + url_path)
+
+
+async def _async_download_tar(files_to_download_list: list[dict[str, dict[str, Any]]]) -> None:
+    ftdl = [e for e in files_to_download_list if e]
+    if not ftdl:
+        return
+    # NOTE: when present proxy auth is the same for all packages accessible
+    # through a proxy.
+    auth = lambda ftd: next(iter(ftd.values()))["proxy_auth"]
+    ftd = lambda ftd: {it["fetch_url"]: it["download_path"] for it in ftd.values()}
+    adf = partial(async_download_files, concurrency_limit=get_config().runtime.concurrency_limit)
+
+    await asyncio.gather(*[adf(files_to_download=ftd(f), auth=auth(f)) for f in ftdl])
+
+
 def _get_npm_dependencies(
     download_dir: RootedPath, deps_to_download: dict[str, dict[str, str | None]]
 ) -> dict[NormalizedUrl, RootedPath]:
@@ -502,9 +534,13 @@ def _get_npm_dependencies(
     """
     files_to_download: dict[str, dict[str, Any]] = {}
     download_paths = {}
+    config = get_config()
+
     for url, info in deps_to_download.items():
         url = _normalize_resolved_url(url)
+        fetch_url = url
         dep_type = _classify_resolved_url(url)
+        proxy_auth = None
 
         if dep_type == "file":
             continue
@@ -516,6 +552,13 @@ def _get_npm_dependencies(
                     "/", "-"
                 )
                 download_paths[url] = download_dir.join_within_root(archive_name)
+                if config.npm.proxy_url is not None:
+                    fetch_url = _patch_url_to_point_to_a_proxy(url, config.npm.proxy_url)
+                    if config.npm.proxy_login and config.npm.proxy_password:
+                        proxy_auth = aiohttp.BasicAuth(
+                            config.npm.proxy_login,
+                            config.npm.proxy_password,
+                        )
             else:  # dep_type == "https"
                 if info["integrity"]:
                     algorithm, digest = ChecksumInfo.from_sri(info["integrity"])
@@ -537,17 +580,17 @@ def _get_npm_dependencies(
                 directory.mkdir(parents=True, exist_ok=True)
 
             files_to_download[url] = {
+                "fetch_url": fetch_url,
                 "download_path": download_paths[url],
                 "integrity": info["integrity"],
+                "proxy_auth": proxy_auth,
             }
 
-    # Asynchronously download tar files
-    asyncio.run(
-        async_download_files(
-            {url: item["download_path"] for (url, item) in files_to_download.items()},
-            get_config().runtime.concurrency_limit,
-        )
-    )
+    files_with_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is not None}
+    files_without_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is None}
+
+    asyncio.run(_async_download_tar([files_with_auth, files_without_auth]))
+
     # Check integrity of downloaded packages
     for url, item in files_to_download.items():
         if item["integrity"]:
@@ -661,6 +704,7 @@ def _generate_component_list(component_infos: list[NpmComponentInfo]) -> list[Co
                 npm_development=component_info["dev"],
                 missing_hash_in_file=missing_hash,
             ).to_properties(),
+            external_references=component_info["external_refs"],
         )
 
     return [to_component(component_info) for component_info in component_infos]
