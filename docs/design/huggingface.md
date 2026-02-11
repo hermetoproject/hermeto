@@ -34,7 +34,7 @@ Hermeto's Hugging Face support is a step toward integrating AI artifacts into tr
 
 Hermetic build systems struggle with ML applications because models are typically downloaded arbitrarily from scripts created by data scientists who manage the ML portions of the application, lacking the consistency and repeatability of typical software dependency management.
 
-The work in hermeto here exploits an opportunity presented by the near-ubiquitos Hugging Face python sdk, called [transformers](https://huggingface.co/docs/transformers/en/index). That library supports a `HF_HUB_OFFLINE=1` environment variable, which instructs Hugging Face libraries to operate entirely from local cache without network access. If we can **prefetch** all required models and datasets before the hermetic build, we can achieve the same level of reproducibility and security for ML applications that we have for traditional software.
+The work in hermeto here exploits an opportunity presented by the near-ubiquitous Hugging Face python sdk, called [transformers](https://huggingface.co/docs/transformers/en/index). That library supports a `HF_HUB_OFFLINE=1` environment variable, which instructs Hugging Face libraries to operate entirely from local cache without network access. If we can **prefetch** all required models and datasets before the hermetic build, we can achieve the same level of reproducibility and security for ML applications that we have for traditional software.
 
 ### Problem Statement
 
