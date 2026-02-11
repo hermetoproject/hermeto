@@ -16,6 +16,7 @@ from packageurl import PackageURL
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.sbom import create_package_manager_annotation
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
@@ -125,7 +126,13 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
         project_files.append(_use_vendored_sources(package_dir, config_template))
         components.extend(_generate_sbom_components(package_dir))
 
-    return RequestOutput.from_obj_list(components, environment_variables, project_files)
+    pm_annotation = create_package_manager_annotation(components, "cargo")
+    return RequestOutput.from_obj_list(
+        components,
+        environment_variables,
+        project_files,
+        annotations=[pm_annotation] if pm_annotation else [],
+    )
 
 
 def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, Any]:

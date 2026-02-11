@@ -28,6 +28,7 @@ def datetime_to_iso_8601(value: datetime) -> str:
 
 
 ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
+SortedSet = Annotated[set[str], pydantic.PlainSerializer(sorted, return_type=list[str])]
 
 
 class Annotation(pydantic.BaseModel):
@@ -38,7 +39,7 @@ class Annotation(pydantic.BaseModel):
     https://cyclonedx.org/docs/1.6/json/#annotations
     """
 
-    subjects: list[str]
+    subjects: SortedSet
     annotator: dict[Literal["organization", "individual", "component", "service"], dict[str, str]]
     timestamp: ISODatetime
     text: str
@@ -93,7 +94,7 @@ class Component(pydantic.BaseModel):
     https://cyclonedx.org/docs/1.6/json/#components
     """
 
-    bom_ref: str | None = pydantic.Field(alias="bom-ref", default=None)
+    bom_ref: str = pydantic.Field(alias="bom-ref", default="")
     name: str
     purl: str
     version: str | None = None
@@ -107,22 +108,18 @@ class Component(pydantic.BaseModel):
     # Aliased fields may be populated by their name as given by the model attribute.
     model_config = pydantic.ConfigDict(validate_by_name=True, extra="forbid")
 
+    @pydantic.model_validator(mode="after")
+    def _set_bom_ref_from_purl(self) -> Self:
+        """Set bom-ref to match the component's purl."""
+        self.bom_ref = self.purl
+        return self
+
     def key(self) -> str:
         """Uniquely identifies a package.
 
         Used mainly for sorting and deduplication.
         """
         return self.purl
-
-    def update_bom_ref(self) -> Self:
-        """
-        Update the `bom-ref` field of this component.
-
-        The `bom-ref` field is only needed for permissive mode use cases. Therefore, it is not
-        initialized by default and needs to be updated manually with this method.
-        """
-        self.bom_ref = self.purl
-        return self
 
     @pydantic.field_validator("properties")
     @classmethod
@@ -153,6 +150,23 @@ def spdx_now() -> datetime:
     for details.
     """
     return datetime.now(timezone.utc)
+
+
+def create_package_manager_annotation(
+    components: list["Component"], pm_name: str
+) -> Annotation | None:
+    """Create an annotation that tags components with the package manager that fetched them.
+
+    Returns None if there are no components to annotate.
+    """
+    if not components:
+        return None
+    return Annotation(
+        subjects={c.bom_ref for c in components},
+        annotator={"organization": {"name": "red hat"}},
+        timestamp=spdx_now(),
+        text=f"{APP_NAME}:package_manager:{pm_name}",
+    )
 
 
 def sanitize_spdxid(spdxid: str) -> str:
@@ -249,7 +263,9 @@ class Sbom(pydantic.BaseModel):
                 relationships.append(pRel(relatedSpdxElement=package.SPDXID))
             return relationships
 
-        def generate_package_annotations(properties: list[Property]) -> list[SPDXPackageAnnotation]:
+        def generate_package_annotations(
+            properties: list[Property], bom_ref: str | None = None
+        ) -> list[SPDXPackageAnnotation]:
             """
             Convert CycloneDX top-level annotations and component properties to SPDX package annotations.
             """
@@ -262,7 +278,8 @@ class Sbom(pydantic.BaseModel):
             )
 
             for annotation in self.annotations:
-                result.append(base_spdx_annotation(comment=annotation.text))
+                if bom_ref is not None and bom_ref in annotation.subjects:
+                    result.append(base_spdx_annotation(comment=annotation.text))
 
             for property in properties:
                 result.append(
@@ -303,7 +320,9 @@ class Sbom(pydantic.BaseModel):
                         name=component.name,
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
-                        annotations=generate_package_annotations(component.properties),
+                        annotations=generate_package_annotations(
+                            properties=component.properties, bom_ref=component.bom_ref
+                        ),
                         sourceInfo=source_info or None,
                     )
                 )

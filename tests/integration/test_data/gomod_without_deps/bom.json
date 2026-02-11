@@ -1,7 +1,23 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=package"
+      ],
+      "text": "hermeto:package_manager:gomod",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=module",
       "name": "github.com/cachito-testing/cachito-gomod-without-deps",
       "properties": [
         {
@@ -14,6 +30,7 @@
       "version": "v0.0.0-20200925115855-a888f7261b9a"
     },
     {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20200925115855-a888f7261b9a?type=package",
       "name": "github.com/cachito-testing/cachito-gomod-without-deps",
       "properties": [
         {

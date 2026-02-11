@@ -39,7 +39,12 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Annotation, Component, spdx_now
+from hermeto.core.models.sbom import (
+    Annotation,
+    Component,
+    create_package_manager_annotation,
+    spdx_now,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -658,16 +663,14 @@ def _list_toolchain_files(dir_path: str, files: list[str]) -> list[str]:
 
 def _update_sbom_annotations(components: list[Component], annotations: list[Annotation]) -> None:
     """
-    Generate the bom-ref field for provided components because each annotation needs to have
-    a subjects list that references the affected components.
+    Update SBOM annotations with subjects from the provided components.
 
     If the annotations list is empty, a new annotation is created. Otherwise, the existing annotation
     is extended with more subjects. There is only one permissive mode use case for gomod at the moment.
     """
-    subjects = [c.update_bom_ref().bom_ref for c in components]
+    subjects = {c.bom_ref for c in components}
     if annotations:
-        # NOTE: mypy thinks that the subject argument contains None values
-        annotations[0].subjects.extend(subjects)  # type: ignore
+        annotations[0].subjects.update(subjects)
     else:
         annotations.append(
             Annotation(
@@ -805,10 +808,8 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     }
     env_vars_template.update(config.gomod.environment_variables)
 
-    if annotations:
-        # Update the bom-ref field for all components for consistency when permissive mode is used.
-        components = [c.update_bom_ref() for c in components]
-
+    if pm_annotation := create_package_manager_annotation(components, "gomod"):
+        annotations.append(pm_annotation)
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=[

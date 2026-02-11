@@ -258,6 +258,7 @@ def test_resolve_generic_lockfile_invalid(
             LOCKFILE_VALID,
             [
                 {
+                    "bom-ref": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
                     "externalReferences": [
                         {"type": "distribution", "url": "https://example.com/artifact"}
                     ],
@@ -267,6 +268,7 @@ def test_resolve_generic_lockfile_invalid(
                     "type": "file",
                 },
                 {
+                    "bom-ref": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
                     "externalReferences": [
                         {
                             "type": "distribution",
@@ -285,6 +287,7 @@ def test_resolve_generic_lockfile_invalid(
             LOCKFILE_VALID_MAVEN,
             [
                 {
+                    "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
                     "externalReferences": [
                         {
                             "type": "distribution",
@@ -298,6 +301,7 @@ def test_resolve_generic_lockfile_invalid(
                     "version": "3.1.5",
                 },
                 {
+                    "bom-ref": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
                     "externalReferences": [
                         {
                             "type": "distribution",

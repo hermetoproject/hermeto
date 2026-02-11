@@ -9,6 +9,7 @@ from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRe
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import create_package_manager_annotation
 from hermeto.core.package_managers.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
@@ -60,8 +61,12 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         _ensure_mirror_dir_exists(request.output_dir)
         components.extend(_resolve_yarn_project(project, request.output_dir))
 
+    pm_annotation = create_package_manager_annotation(components, "yarn-classic")
     return RequestOutput.from_obj_list(
-        components, _generate_build_environment_variables(), project_files=[]
+        components,
+        _generate_build_environment_variables(),
+        project_files=[],
+        annotations=[pm_annotation] if pm_annotation else [],
     )
 
 

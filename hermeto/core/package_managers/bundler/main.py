@@ -10,7 +10,7 @@ from hermeto.core.errors import PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import BundlerBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Component, create_package_manager_annotation
 from hermeto.core.package_managers.bundler.parser import (
     GemPlatformSpecificDependency,
     GitDependency,
@@ -48,10 +48,12 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
         _prepare_for_hermetic_build(request.source_dir, request.output_dir, git_paths)
     )
 
+    pm_annotation = create_package_manager_annotation(components, "bundler")
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=environment_variables,
         project_files=project_files,
+        annotations=[pm_annotation] if pm_annotation else [],
     )
 
 

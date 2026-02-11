@@ -1,7 +1,25 @@
 {
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/black@21.11b0",
+        "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405f4d168cd573712e56914c326d5f7eff488d7f32",
+        "pkg:pypi/terminado@0.13.0",
+        "pkg:pypi/urllib3@2.0.1"
+      ],
+      "text": "hermeto:package_manager:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
   "bomFormat": "CycloneDX",
   "components": [
     {
+      "bom-ref": "pkg:pypi/black@21.11b0",
       "name": "black",
       "properties": [
         {
@@ -14,6 +32,7 @@
       "version": "21.11b0"
     },
     {
+      "bom-ref": "pkg:pypi/foo@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405f4d168cd573712e56914c326d5f7eff488d7f32",
       "name": "foo",
       "properties": [
         {
@@ -26,6 +45,7 @@
       "version": "0.1.0"
     },
     {
+      "bom-ref": "pkg:pypi/terminado@0.13.0",
       "name": "terminado",
       "properties": [
         {
@@ -38,6 +58,7 @@
       "version": "0.13.0"
     },
     {
+      "bom-ref": "pkg:pypi/urllib3@2.0.1",
       "name": "urllib3",
       "properties": [
         {
