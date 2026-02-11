@@ -441,3 +441,49 @@ class TestFetchHuggingfaceSource:
 
         with pytest.raises(PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"):
             fetch_huggingface_source(mock_request)
+
+
+class TestFetchModel:
+    """Tests for the _fetch_model function."""
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+    def test_fetch_model_success(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
+        """Test successful model fetching."""
+        from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+        # Setup mock to return a snapshot path
+        snapshot_path = tmp_path / "hub" / "models--gpt2" / "snapshots" / "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
+        snapshot_path.mkdir(parents=True)
+        mock_snapshot.return_value = str(snapshot_path)
+
+        model_entry = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            type="model",
+        )
+
+        cache_root = tmp_path / "cache"
+        cache_root.mkdir()
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        component = _fetch_model(model_entry, cache_root, datasets_cache)
+
+        # Verify snapshot_download was called correctly
+        mock_snapshot.assert_called_once_with(
+            repo_id="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            repo_type="model",
+            cache_dir=cache_root,
+            allow_patterns=None,
+        )
+
+        # Verify component is created
+        assert component.name == "gpt2"
+        assert component.version == "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
+        assert "pkg:huggingface/gpt2" in component.purl
+
+        # Verify ref was created
+        ref_file = tmp_path / "hub" / "models--gpt2" / "refs" / "main"
+        assert ref_file.exists()
+        assert ref_file.read_text() == "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
