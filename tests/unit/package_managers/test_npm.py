@@ -11,8 +11,10 @@ from packageurl import PackageURL
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     LockfileNotFound,
+    NotAGitRepo,
     PackageRejected,
     UnexpectedFormat,
     UnsupportedFeature,
@@ -632,6 +634,90 @@ class TestPurlifier:
         purl = _Purlifier(RootedPath("/foo")).get_purl("foo", None, resolved_url, integrity)
         assert isinstance(purl.qualifiers, dict)
         assert purl.qualifiers.get("checksum") == expect_checksum_qualifier
+
+    @pytest.mark.parametrize(
+        "main_pkg_subpath, pkg_data, expect_purl",
+        [
+            (
+                ".",
+                ("main-pkg", None, "file:."),
+                "pkg:npm/main-pkg",
+            ),
+            (
+                "subpath",
+                ("main-pkg", None, "file:."),
+                "pkg:npm/main-pkg#subpath",
+            ),
+            (
+                ".",
+                ("main-pkg", "1.0.0", "file:."),
+                "pkg:npm/main-pkg@1.0.0",
+            ),
+            (
+                "subpath",
+                ("file-dep", "1.0.0", "file:packages/foo"),
+                "pkg:npm/file-dep@1.0.0#subpath/packages/foo",
+            ),
+        ],
+    )
+    def test_get_purl_for_file_package_without_vcs_url(
+        self,
+        main_pkg_subpath: str,
+        pkg_data: tuple[str, str | None, str],
+        expect_purl: PackageURL,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        with (
+            mock.patch("hermeto.core.package_managers.npm.get_repo_id") as mock_get_repo_id,
+            mock.patch("hermeto.core.package_managers.npm.get_config") as mock_get_config,
+        ):
+            mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+            mock_get_config.return_value.mode = Mode.PERMISSIVE
+            pkg_path = rooted_tmp_path.join_within_root(main_pkg_subpath)
+            purl = _Purlifier(pkg_path).get_purl(*pkg_data, integrity=None)
+            assert purl.to_string() == expect_purl
+            # vcs_url should not be present when get_repo_id raises NotAGitRepo
+            assert "vcs_url" not in purl.qualifiers
+
+    @pytest.mark.parametrize(
+        "main_pkg_subpath, pkg_data, expect_purl",
+        [
+            (
+                ".",
+                ("main-pkg", None, "file:."),
+                f"pkg:npm/main-pkg?vcs_url={MOCK_REPO_VCS_URL}",
+            ),
+            (
+                "subpath",
+                ("main-pkg", None, "file:."),
+                f"pkg:npm/main-pkg?vcs_url={MOCK_REPO_VCS_URL}#subpath",
+            ),
+            (
+                ".",
+                ("file-dep", "1.0.0", "file:packages/foo"),
+                f"pkg:npm/file-dep@1.0.0?vcs_url={MOCK_REPO_VCS_URL}#packages/foo",
+            ),
+        ],
+    )
+    def test_get_purl_for_file_package_permissive_mode_with_vcs_url(
+        self,
+        main_pkg_subpath: str,
+        pkg_data: tuple[str, str | None, str],
+        expect_purl: PackageURL,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        with (
+            mock.patch("hermeto.core.package_managers.npm.get_repo_id") as mock_get_repo_id,
+            mock.patch("hermeto.core.package_managers.npm.get_config") as mock_get_config,
+        ):
+            mock_get_repo_id.return_value = MOCK_REPO_ID
+            mock_get_config.return_value.mode = Mode.PERMISSIVE
+            pkg_path = rooted_tmp_path.join_within_root(main_pkg_subpath)
+            purl = _Purlifier(pkg_path).get_purl(*pkg_data, integrity=None)
+            assert purl.to_string() == expect_purl
+            # vcs_url should be present when get_repo_id succeeds, even in PERMISSIVE mode
+            assert purl.qualifiers is not None
+            assert "vcs_url" in purl.qualifiers
 
 
 @pytest.mark.parametrize(

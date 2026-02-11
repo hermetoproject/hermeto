@@ -478,3 +478,99 @@ def test_missing_name_field(rooted_tmp_path: RootedPath) -> None:
     tarball_path = mock_tarball(path=rooted_tmp_path, package_json_content={"key": "foo"})
     with pytest.raises(ValueError, match="No 'name' field found"):
         _read_name_from_tarball(tarball_path)
+
+
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.get_vcs_qualifiers")
+def test_package_purl_without_vcs_url(
+    mock_get_vcs_qualifiers: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Test that file/workspace/link packages omit vcs_url when not in a git repo."""
+    from hermeto.core.constants import Mode
+    from hermeto.core.errors import NotAGitRepo
+
+    mock_get_vcs_qualifiers.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    yarn_classic_packages: list[tuple[YarnClassicPackage, str]] = [
+        (
+            FilePackage(
+                name="file-pkg",
+                version="5.0.0",
+                path=rooted_tmp_path.join_within_root("path/to/package"),
+            ),
+            "pkg:npm/file-pkg@5.0.0#path/to/package",
+        ),
+        (
+            WorkspacePackage(
+                name="workspace-pkg",
+                version="6.0.0",
+                path=rooted_tmp_path.join_within_root("workspace/package"),
+            ),
+            "pkg:npm/workspace-pkg@6.0.0#workspace/package",
+        ),
+        (
+            LinkPackage(
+                name="link-pkg",
+                version="7.0.0",
+                path=rooted_tmp_path.join_within_root("link/to/package"),
+            ),
+            "pkg:npm/link-pkg@7.0.0#link/to/package",
+        ),
+    ]
+
+    for package, expected_purl in yarn_classic_packages:
+        assert package.purl == expected_purl
+
+
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.get_vcs_qualifiers")
+def test_package_purl_permissive_mode_with_vcs_url(
+    mock_get_vcs_qualifiers: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path_repo: RootedPath,
+) -> None:
+    """Test that file/workspace/link packages include vcs_url in PERMISSIVE mode when git repo is available."""
+    from hermeto.core.constants import Mode
+
+    repo = git.Repo(rooted_tmp_path_repo)
+    repo.create_remote("origin", "https://github.com/org/repo.git")
+
+    example_repo_id = get_repo_id(repo)
+    example_vcs_url = example_repo_id.as_vcs_url_qualifier()
+    purl_vcs_url = quote(example_vcs_url, safe=":/")
+
+    mock_get_vcs_qualifiers.return_value = {"vcs_url": example_vcs_url}
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    yarn_classic_packages: list[tuple[YarnClassicPackage, str]] = [
+        (
+            FilePackage(
+                name="file-pkg",
+                version="5.0.0",
+                path=rooted_tmp_path_repo.join_within_root("path/to/package"),
+            ),
+            f"pkg:npm/file-pkg@5.0.0?vcs_url={purl_vcs_url}#path/to/package",
+        ),
+        (
+            WorkspacePackage(
+                name="workspace-pkg",
+                version="6.0.0",
+                path=rooted_tmp_path_repo.join_within_root("workspace/package"),
+            ),
+            f"pkg:npm/workspace-pkg@6.0.0?vcs_url={purl_vcs_url}#workspace/package",
+        ),
+        (
+            LinkPackage(
+                name="link-pkg",
+                version="7.0.0",
+                path=rooted_tmp_path_repo.join_within_root("link/to/package"),
+            ),
+            f"pkg:npm/link-pkg@7.0.0?vcs_url={purl_vcs_url}#link/to/package",
+        ),
+    ]
+
+    for package, expected_purl in yarn_classic_packages:
+        assert package.purl == expected_purl

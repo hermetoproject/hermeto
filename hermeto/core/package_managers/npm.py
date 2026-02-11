@@ -12,9 +12,11 @@ from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     LockfileNotFound,
     MissingChecksum,
+    NotAGitRepo,
     PackageRejected,
     UnexpectedFormat,
     UnsupportedFeature,
@@ -323,8 +325,13 @@ class _Purlifier:
         self._pkg_path = pkg_path
 
     @functools.cached_property
-    def _repo_id(self) -> RepoID:
-        return get_repo_id(self._pkg_path.root)
+    def _repo_id(self) -> RepoID | None:
+        try:
+            return get_repo_id(self._pkg_path.root)
+        except NotAGitRepo:
+            if get_config().mode == Mode.STRICT:
+                raise
+            return None
 
     def get_purl(
         self,
@@ -355,7 +362,8 @@ class _Purlifier:
             repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
-            qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
+            if self._repo_id:
+                qualifiers = {"vcs_url": self._repo_id.as_vcs_url_qualifier()}
             path = urlparse(resolved_url).path
             subpath_from_root = self._pkg_path.join_within_root(path).subpath_from_root
             if subpath_from_root != Path():
