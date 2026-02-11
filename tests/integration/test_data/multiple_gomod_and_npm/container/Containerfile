@@ -1,10 +1,14 @@
-FROM registry.access.redhat.com/ubi9/ubi@sha256:304b50df1ea4db9706d8a30f4bbf26f582936ebc80c7e075c72ff2af99292a54
+FROM mirror.gcr.io/golang:1.25-alpine as golang
+FROM mirror.gcr.io/node:24-alpine as node
+
+FROM node
+COPY --from=golang /usr/local/go /usr/local/go
 
 # Test disabled network access
-RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 
-# Install dependencies from RPM lockfile
-RUN dnf -y install golang npm
+# Link go to standard PATH location
+RUN ln -s /usr/local/go/bin/go /usr/local/bin/go
 
 WORKDIR /src/gomod-package
 RUN . /tmp/hermeto.env && go build
