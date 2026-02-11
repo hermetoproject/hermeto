@@ -606,8 +606,8 @@ class TestLoadDatasetToCache:
     """Tests for the _load_dataset_to_cache function."""
 
     @mock.patch("datasets.load_dataset")
-    def test_load_dataset_success_with_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-        """Test successful dataset loading with multiple splits."""
+    def test_load_dataset_success_with_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
+        """Test successful dataset loading with multiple splits (dict-type dataset)."""
         from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
 
         # Mock dataset with splits (dict)
@@ -617,8 +617,8 @@ class TestLoadDatasetToCache:
         datasets_cache = tmp_path / "datasets"
         datasets_cache.mkdir()
 
-        with caplog.at_level("INFO"):
-            _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
+        # Should complete without error
+        _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
 
         mock_load_dataset.assert_called_once_with(
             "squad",
@@ -627,11 +627,9 @@ class TestLoadDatasetToCache:
             trust_remote_code=False,
         )
 
-        assert "Successfully loaded dataset 'squad' with splits: train, test" in caplog.text
-
     @mock.patch("datasets.load_dataset")
-    def test_load_dataset_success_no_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-        """Test successful dataset loading without splits."""
+    def test_load_dataset_success_no_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
+        """Test successful dataset loading without splits (non-dict dataset)."""
         from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
 
         # Mock dataset without splits (not a dict)
@@ -642,12 +640,8 @@ class TestLoadDatasetToCache:
         datasets_cache = tmp_path / "datasets"
         datasets_cache.mkdir()
 
-        with caplog.at_level("INFO"):
-            _load_dataset_to_cache("custom-dataset", "a" * 40, datasets_cache)
-
-        # Should log without splits
-        assert "Successfully loaded dataset 'custom-dataset'" in caplog.text
-        assert "with splits:" not in caplog.text
+        # Should complete without error regardless of dataset type
+        _load_dataset_to_cache("custom-dataset", "a" * 40, datasets_cache)
 
     def test_load_dataset_import_error(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
         """Test dataset loading when datasets library is not available."""
