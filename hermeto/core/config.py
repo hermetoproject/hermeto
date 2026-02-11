@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import yaml
-from pydantic import BaseModel, ValidationError, model_validator
+from pydantic import AfterValidator, BaseModel, HttpUrl, ValidationError, model_validator
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
@@ -11,6 +11,7 @@ from pydantic_settings import (
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
@@ -110,6 +111,52 @@ class RuntimeSettings(BaseModel, extra="forbid"):
     # field name after that.
     subprocess_timeout: int = 3600
     concurrency_limit: int = 5
+
+
+def _proxy_url_must_not_contain_credentials(url: HttpUrl | None) -> HttpUrl | None:
+    if url is None:
+        return None
+    if url.username or url.password:
+        raise ValueError(
+            "User-provided proxy URL appears to contain embedded credentials. "
+            "Please ensure that proxy URL does not contain credentials "
+            "supplied as protocol://<login>:<password>@address. Please use "
+            "appropriate environment variables or configuration file entries for that. "
+            "Please refer to documentation for further information on how to set up "
+            "proxy access.",
+        )
+    return url
+
+
+ProxyUrl = Annotated[
+    HttpUrl | None,
+    AfterValidator(_proxy_url_must_not_contain_credentials),
+]
+
+
+class ProxyMixin(BaseModel):
+    """Proxy URL and authorization mixin.
+
+    This class models artifactory proxies rather than traditional Squid-like proxies.
+    """
+
+    proxy_url: ProxyUrl = None
+    proxy_login: str | None = None
+    proxy_password: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_login_and_password_both_set(self) -> Self:
+        if self.proxy_login is not None and self.proxy_password is None:
+            raise InvalidInput("Proxy password must be set when proxy login is set")
+        if self.proxy_login is None and self.proxy_password is not None:
+            raise InvalidInput("Proxy login must be set when proxy password is set")
+        return self
+
+    @model_validator(mode="after")
+    def _validate_proxy_url_is_set_when_proxy_credentials_are_set(self) -> Self:
+        if self.proxy_login is not None and self.proxy_url is None:
+            raise InvalidInput("Proxy URL must be set when proxy credentials are set")
+        return self
 
 
 class Config(BaseSettings):
