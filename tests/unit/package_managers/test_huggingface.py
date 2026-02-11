@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from huggingface_hub.utils import HfHubHTTPError
 from pydantic import ValidationError
 
 from hermeto.core.errors import PackageRejected
@@ -521,3 +522,28 @@ class TestFetchModel:
         )
 
         assert component.name == "microsoft/deberta-v3-base"
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+    def test_fetch_model_404_error(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
+        """Test model fetching with 404 error."""
+        from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+        # Create a mock 404 response
+        mock_response = mock.Mock()
+        mock_response.status_code = 404
+        http_error = HfHubHTTPError("Not found", response=mock_response)
+        mock_snapshot.side_effect = http_error
+
+        model_entry = HuggingFaceModel(
+            repository="nonexistent/model",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            type="model",
+        )
+
+        cache_root = tmp_path / "cache"
+        cache_root.mkdir()
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        with pytest.raises(PackageRejected, match="Repository 'nonexistent/model' not found"):
+            _fetch_model(model_entry, cache_root, datasets_cache)
