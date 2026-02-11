@@ -547,3 +547,167 @@ class TestFetchModel:
 
         with pytest.raises(PackageRejected, match="Repository 'nonexistent/model' not found"):
             _fetch_model(model_entry, cache_root, datasets_cache)
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+    def test_fetch_model_generic_error(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
+        """Test model fetching with generic error."""
+        from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+        mock_snapshot.side_effect = RuntimeError("Network error")
+
+        model_entry = HuggingFaceModel(
+            repository="gpt2",
+            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+            type="model",
+        )
+
+        cache_root = tmp_path / "cache"
+        cache_root.mkdir()
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        with pytest.raises(PackageRejected, match="Failed to fetch repository 'gpt2'"):
+            _fetch_model(model_entry, cache_root, datasets_cache)
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main._load_dataset_to_cache")
+    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+    def test_fetch_dataset_calls_load(self, mock_snapshot: mock.Mock, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
+        """Test that fetching a dataset calls _load_dataset_to_cache."""
+        from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+        snapshot_path = tmp_path / "hub" / "datasets--squad" / "snapshots" / "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b"
+        snapshot_path.mkdir(parents=True)
+        mock_snapshot.return_value = str(snapshot_path)
+
+        model_entry = HuggingFaceModel(
+            repository="squad",
+            revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
+            type="dataset",
+        )
+
+        cache_root = tmp_path / "cache"
+        cache_root.mkdir()
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        component = _fetch_model(model_entry, cache_root, datasets_cache)
+
+        # Verify dataset loading was called
+        mock_load_dataset.assert_called_once_with(
+            "squad",
+            "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
+            datasets_cache,
+        )
+
+        assert component.name == "squad"
+
+
+class TestLoadDatasetToCache:
+    """Tests for the _load_dataset_to_cache function."""
+
+    @mock.patch("datasets.load_dataset")
+    def test_load_dataset_success_with_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """Test successful dataset loading with multiple splits."""
+        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+
+        # Mock dataset with splits (dict)
+        mock_dataset = {"train": mock.Mock(), "test": mock.Mock()}
+        mock_load_dataset.return_value = mock_dataset
+
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        with caplog.at_level("INFO"):
+            _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
+
+        mock_load_dataset.assert_called_once_with(
+            "squad",
+            revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
+            cache_dir=datasets_cache,
+            trust_remote_code=False,
+        )
+
+        assert "Successfully loaded dataset 'squad' with splits: train, test" in caplog.text
+
+    @mock.patch("datasets.load_dataset")
+    def test_load_dataset_success_no_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """Test successful dataset loading without splits."""
+        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+
+        # Mock dataset without splits (not a dict)
+        mock_dataset = mock.Mock()
+        mock_dataset.__class__ = type("Dataset", (), {})  # Not a dict
+        mock_load_dataset.return_value = mock_dataset
+
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        with caplog.at_level("INFO"):
+            _load_dataset_to_cache("custom-dataset", "a" * 40, datasets_cache)
+
+        # Should log without splits
+        assert "Successfully loaded dataset 'custom-dataset'" in caplog.text
+        assert "with splits:" not in caplog.text
+
+    def test_load_dataset_import_error(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """Test dataset loading when datasets library is not available."""
+        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        # Mock the import to fail
+        with mock.patch.dict("sys.modules", {"datasets": None}):
+            with caplog.at_level("WARNING"):
+                _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
+
+        assert "datasets library not available" in caplog.text
+        assert "pip install datasets" in caplog.text
+
+    @mock.patch("datasets.load_dataset")
+    def test_load_dataset_loading_error(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """Test dataset loading when load_dataset raises an error."""
+        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+
+        mock_load_dataset.side_effect = RuntimeError("Failed to load dataset")
+
+        datasets_cache = tmp_path / "datasets"
+        datasets_cache.mkdir()
+
+        with caplog.at_level("WARNING"):
+            _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
+
+        assert "Failed to load dataset 'squad'" in caplog.text
+        assert "may not work in offline mode" in caplog.text
+
+
+class TestResolveHuggingfaceLockfile:
+    """Integration tests for _resolve_huggingface_lockfile."""
+
+    @mock.patch("hermeto.core.package_managers.huggingface.main._fetch_model")
+    def test_resolve_lockfile_integration(self, mock_fetch: mock.Mock, tmp_path: Path) -> None:
+        """Test full lockfile resolution flow."""
+        from hermeto.core.package_managers.huggingface.main import _resolve_huggingface_lockfile
+
+        # Create lockfile
+        lockfile_path = tmp_path / "huggingface.lock.yaml"
+        lockfile_path.write_text(LOCKFILE_VALID)
+
+        # Mock component returns
+        mock_component1 = mock.Mock()
+        mock_component2 = mock.Mock()
+        mock_fetch.side_effect = [mock_component1, mock_component2]
+
+        output_dir = RootedPath(tmp_path / "output")
+
+        components = _resolve_huggingface_lockfile(lockfile_path, output_dir)
+
+        # Verify directories were created
+        assert (output_dir.path / "deps" / "huggingface" / "hub").exists()
+        assert (output_dir.path / "deps" / "huggingface" / "datasets").exists()
+
+        # Verify _fetch_model was called for each model
+        assert mock_fetch.call_count == 2
+
+        # Verify components returned
+        assert components == [mock_component1, mock_component2]
