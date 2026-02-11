@@ -11,7 +11,7 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Component, create_package_manager_annotation
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.generic.models import GenericLockfileV1
 from hermeto.core.rooted_path import RootedPath
@@ -35,7 +35,10 @@ def fetch_generic_source(request: Request) -> RequestOutput:
             package.lockfile,
         )
         components.extend(_resolve_generic_lockfile(lockfile_path, request.output_dir))
-    return RequestOutput.from_obj_list(components=components)
+    pm_annotation = create_package_manager_annotation(components, "generic")
+    return RequestOutput.from_obj_list(
+        components=components, annotations=[pm_annotation] if pm_annotation else []
+    )
 
 
 def _resolve_lockfile_path(

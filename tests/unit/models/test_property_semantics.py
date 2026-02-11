@@ -2,7 +2,11 @@ import pytest
 
 from hermeto import APP_NAME
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
-from hermeto.core.models.sbom import Component, merge_component_properties
+from hermeto.core.models.sbom import (
+    Component,
+    create_package_manager_annotation,
+    merge_component_properties,
+)
 
 
 @pytest.mark.parametrize(
@@ -263,3 +267,20 @@ class TestPropertySet:
         self, set_a: PropertySet, set_b: PropertySet, expect_merged: PropertySet
     ) -> None:
         assert set_a.merge(set_b) == expect_merged
+
+
+class TestCreatePackageManagerAnnotation:
+    def test_annotation_with_deduplicated_subjects(self) -> None:
+        components = [
+            Component(name="foo", purl="pkg:npm/foo@1.0.0", version="1.0.0"),
+            Component(name="bar", purl="pkg:npm/bar@2.0.0", version="2.0.0"),
+            Component(name="foo", purl="pkg:npm/foo@1.0.0", version="1.0.0"),
+        ]
+        annotation = create_package_manager_annotation(components, "npm")
+        assert annotation is not None
+        assert annotation.text == f"{APP_NAME}:package_manager:npm"
+        assert annotation.subjects == {"pkg:npm/foo@1.0.0", "pkg:npm/bar@2.0.0"}
+        assert annotation.annotator == {"organization": {"name": "red hat"}}
+
+    def test_empty_components_returns_none(self) -> None:
+        assert create_package_manager_annotation([], "pip") is None

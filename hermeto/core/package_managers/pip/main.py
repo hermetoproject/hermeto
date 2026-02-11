@@ -18,7 +18,7 @@ from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFe
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Component, create_package_manager_annotation
 from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
@@ -114,10 +114,12 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         # each package can have Rust dependencies
         packages_containing_rust_code += info["packages_containing_rust_code"]
 
+    pm_annotation = create_package_manager_annotation(components, "pip")
     pip_packages = RequestOutput.from_obj_list(
         components=components,
         environment_variables=environment_variables,
         project_files=project_files,
+        annotations=[pm_annotation] if pm_annotation else [],
     )
 
     cargo_packages = find_and_fetch_rust_dependencies(request, packages_containing_rust_code)

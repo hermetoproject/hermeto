@@ -22,7 +22,7 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Component, create_package_manager_annotation
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
@@ -688,10 +688,13 @@ def fetch_npm_source(request: Request) -> RequestOutput:
         for projectfile in info["projectfiles"]:
             project_files.append(projectfile)
 
+    components = _generate_component_list(component_info)
+    pm_annotation = create_package_manager_annotation(components, "npm")
     return RequestOutput.from_obj_list(
-        components=_generate_component_list(component_info),
+        components=components,
         environment_variables=[],
         project_files=project_files,
+        annotations=[pm_annotation] if pm_annotation else [],
     )
 
 
