@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 import yaml
+from datasets import load_dataset
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import HfHubHTTPError
 from pydantic import ValidationError
@@ -214,15 +215,6 @@ def _load_dataset_to_cache(repo_id: str, revision: str, datasets_cache: Path) ->
     :param revision: Git commit hash
     :param datasets_cache: Root directory for datasets cache
     """
-    try:
-        from datasets import load_dataset
-    except ImportError:
-        log.warning(
-            f"datasets library not available - skipping Arrow cache population for '{repo_id}'. "
-            f"Install with: pip install datasets"
-        )
-        return
-
     try:
         # Load the dataset - this will create Arrow cache files
         log.debug(f"Loading dataset '{repo_id}' at revision {revision}")

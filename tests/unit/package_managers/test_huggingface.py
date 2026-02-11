@@ -605,7 +605,7 @@ class TestFetchModel:
 class TestLoadDatasetToCache:
     """Tests for the _load_dataset_to_cache function."""
 
-    @mock.patch("datasets.load_dataset")
+    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
     def test_load_dataset_success_with_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
         """Test successful dataset loading with multiple splits (dict-type dataset)."""
         from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
@@ -627,7 +627,7 @@ class TestLoadDatasetToCache:
             trust_remote_code=False,
         )
 
-    @mock.patch("datasets.load_dataset")
+    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
     def test_load_dataset_success_no_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
         """Test successful dataset loading without splits (non-dict dataset)."""
         from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
@@ -643,22 +643,7 @@ class TestLoadDatasetToCache:
         # Should complete without error regardless of dataset type
         _load_dataset_to_cache("custom-dataset", "a" * 40, datasets_cache)
 
-    def test_load_dataset_import_error(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-        """Test dataset loading when datasets library is not available."""
-        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
-
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        # Mock the import to fail
-        with mock.patch.dict("sys.modules", {"datasets": None}):
-            with caplog.at_level("WARNING"):
-                _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
-
-        assert "datasets library not available" in caplog.text
-        assert "pip install datasets" in caplog.text
-
-    @mock.patch("datasets.load_dataset")
+    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
     def test_load_dataset_loading_error(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
         """Test dataset loading when load_dataset raises an error."""
         from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
