@@ -422,3 +422,22 @@ class TestFetchHuggingfaceSource:
 
         with pytest.raises(PackageRejected, match="does not exist"):
             fetch_huggingface_source(mock_request)
+
+    @mock.patch.dict("os.environ", {"HF_HUB_OFFLINE": "1"})
+    def test_fetch_with_offline_mode_raises_error(self, tmp_path: Path) -> None:
+        """Test that HF_HUB_OFFLINE=1 is rejected."""
+        lockfile_path = tmp_path / "huggingface.lock.yaml"
+        lockfile_path.write_text(LOCKFILE_VALID)
+
+        mock_request = mock.Mock()
+        mock_package = HuggingfacePackageInput.model_construct(
+            type="x-huggingface",
+            path=Path("."),
+            lockfile=None,
+        )
+        mock_request.huggingface_packages = [mock_package]
+        mock_request.source_dir = RootedPath(tmp_path)
+        mock_request.output_dir = RootedPath(tmp_path / "output")
+
+        with pytest.raises(PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"):
+            fetch_huggingface_source(mock_request)
