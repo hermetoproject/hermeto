@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import FetchError
+
 from . import utils
 
 
@@ -15,7 +17,7 @@ from . import utils
                 packages=({"path": ".", "type": "generic"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=FetchError,
                 expected_output="Unsuccessful download",
             ),
             id="generic_file_not_reachable",
@@ -52,7 +54,6 @@ def test_generic_fetcher(
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
                 check_deps_checksums=True,
-                expected_exit_code=0,
             ),
             ["ls", "/deps"],
             ["archive.zip\nv1.0.0.zip\n"],
@@ -64,7 +65,6 @@ def test_generic_fetcher(
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
                 check_deps_checksums=True,
-                expected_exit_code=0,
             ),
             [],
             ["Apache Ant(TM) version 1.10.14"],
