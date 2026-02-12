@@ -49,6 +49,9 @@ test = [
   "pytest-cov",
   "pytest-env",
 ]
+hack = [
+  "ruamel.yaml",
+]
 [project.scripts]
 cachi2 = "hermeto.interface.cli:app"
 hermeto = "hermeto.interface.cli:app"
@@ -123,6 +126,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "noxfile"
 disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "ruamel.*"
+ignore_missing_imports = true
 
 [tool.coverage.report]
 skip_covered = true
