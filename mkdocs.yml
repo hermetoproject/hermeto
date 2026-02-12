@@ -35,6 +35,7 @@ theme:
 nav:
   - Home: index.md
   - Usage: usage.md
+  - Exit codes: exit-codes.md
   - Package managers:
       - bundler: bundler.md
       - cargo: cargo.md
