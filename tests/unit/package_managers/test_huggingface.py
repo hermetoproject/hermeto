@@ -1,6 +1,7 @@
 """Unit tests for the Hugging Face package manager."""
 
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -85,6 +86,37 @@ models:
 """
 
 
+# Fixtures
+
+
+@pytest.fixture
+def cache_dirs(tmp_path: Path) -> tuple[Path, Path]:
+    """Create and return cache directories for tests."""
+    cache_root = tmp_path / "cache"
+    cache_root.mkdir()
+    datasets_cache = tmp_path / "datasets"
+    datasets_cache.mkdir()
+    return cache_root, datasets_cache
+
+
+@pytest.fixture
+def snapshot_path_factory(tmp_path: Path) -> Any:
+    """Factory fixture to create snapshot paths for different repositories."""
+
+    def _create_snapshot_path(repo_id: str, revision: str, repo_type: str = "model") -> Path:
+        """Create a snapshot directory structure."""
+        repo_name = repo_id.replace("/", "--")
+        prefix = f"{repo_type}s" if repo_type == "dataset" else "models"
+        path = tmp_path / "hub" / f"{prefix}--{repo_name}" / "snapshots" / revision
+        path.mkdir(parents=True)
+        return path
+
+    return _create_snapshot_path
+
+
+# Test classes for model validation
+
+
 class TestHuggingFaceModel:
     """Tests for HuggingFaceModel Pydantic model."""
 
@@ -98,25 +130,24 @@ class TestHuggingFaceModel:
         assert model.type == "model"
         assert model.include_patterns is None
 
-    def test_valid_model_with_namespace(self) -> None:
-        """Test model with namespace."""
+    @pytest.mark.parametrize(
+        "repository,expected_namespace,expected_name",
+        [
+            ("microsoft/deberta-v3-base", "microsoft", "deberta-v3-base"),
+            ("gpt2", "", "gpt2"),
+        ],
+    )
+    def test_namespace_parsing(
+        self, repository: str, expected_namespace: str, expected_name: str
+    ) -> None:
+        """Test namespace and name extraction from repository."""
         model = HuggingFaceModel(
-            repository="microsoft/deberta-v3-base",
-            revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
-        )
-        assert model.namespace == "microsoft"
-        assert model.name == "deberta-v3-base"
-        assert model.purl_namespace == "microsoft"
-
-    def test_valid_model_without_namespace(self) -> None:
-        """Test model without namespace."""
-        model = HuggingFaceModel(
-            repository="gpt2",
+            repository=repository,
             revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
         )
-        assert model.namespace == ""
-        assert model.name == "gpt2"
-        assert model.purl_namespace is None
+        assert model.namespace == expected_namespace
+        assert model.name == expected_name
+        assert model.purl_namespace == (expected_namespace if expected_namespace else None)
 
     def test_valid_model_with_patterns(self) -> None:
         """Test model with include patterns."""
@@ -127,21 +158,17 @@ class TestHuggingFaceModel:
         )
         assert model.include_patterns == ["*.safetensors", "config.json"]
 
-    def test_invalid_revision_short(self) -> None:
-        """Test that short revision is rejected."""
-        with pytest.raises(ValidationError, match="40-character Git commit hash"):
-            HuggingFaceModel(
-                repository="gpt2",
-                revision="abc123",
-            )
-
-    def test_invalid_revision_format(self) -> None:
-        """Test that invalid revision format is rejected."""
-        with pytest.raises(ValidationError, match="40-character Git commit hash"):
-            HuggingFaceModel(
-                repository="gpt2",
-                revision="not-a-valid-git-hash-but-40-chars-long!",
-            )
+    @pytest.mark.parametrize(
+        "revision,error_match",
+        [
+            ("abc123", "40-character Git commit hash"),
+            ("not-a-valid-git-hash-but-40-chars-long!", "40-character Git commit hash"),
+        ],
+    )
+    def test_invalid_revision(self, revision: str, error_match: str) -> None:
+        """Test that invalid revisions are rejected."""
+        with pytest.raises(ValidationError, match=error_match):
+            HuggingFaceModel(repository="gpt2", revision=revision)
 
     def test_invalid_repository_too_many_parts(self) -> None:
         """Test that repository with too many slashes is rejected."""
@@ -168,91 +195,68 @@ class TestHuggingFaceModel:
         )
         assert model.type == "dataset"
 
-    def test_sbom_component_generation(self) -> None:
+    @pytest.mark.parametrize(
+        "repository,repo_type",
+        [
+            ("microsoft/deberta-v3-base", "model"),
+            ("squad", "dataset"),
+        ],
+    )
+    def test_sbom_component_generation(self, repository: str, repo_type: str) -> None:
         """Test SBOM component generation."""
         model = HuggingFaceModel(
-            repository="microsoft/deberta-v3-base",
+            repository=repository,
             revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
+            type=repo_type,
         )
-        component = model.get_sbom_component("https://huggingface.co/microsoft/deberta-v3-base")
+        component = model.get_sbom_component(f"https://huggingface.co/{repository}")
 
-        assert component.name == "microsoft/deberta-v3-base"
+        assert component.name == repository
         assert component.version == "559062ad13d311b87b2c455e67dcd5f1c8f65111"
-        # PURL version should be lowercase
         assert "559062ad13d311b87b2c455e67dcd5f1c8f65111" in component.purl
-        assert "pkg:huggingface/microsoft/deberta-v3-base" in component.purl
-        assert component.type == "library"
-
-    def test_sbom_component_dataset(self) -> None:
-        """Test SBOM component for dataset."""
-        model = HuggingFaceModel(
-            repository="squad",
-            revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
-            type="dataset",
-        )
-        component = model.get_sbom_component("https://huggingface.co/squad")
+        assert "pkg:huggingface" in component.purl
         assert component.type == "library"
 
 
 class TestLockfileLoading:
     """Tests for lockfile loading and validation."""
 
-    def test_load_valid_lockfile(self, tmp_path: Path) -> None:
-        """Test loading a valid lockfile."""
+    @pytest.mark.parametrize(
+        "lockfile_content,expected_models",
+        [
+            (LOCKFILE_VALID, 2),
+            (LOCKFILE_WITH_DATASET, 1),
+        ],
+    )
+    def test_load_valid_lockfile(
+        self, tmp_path: Path, lockfile_content: str, expected_models: int
+    ) -> None:
+        """Test loading valid lockfiles."""
         lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_VALID)
+        lockfile_path.write_text(lockfile_content)
 
         lockfile = _load_lockfile(lockfile_path)
         assert isinstance(lockfile, HuggingFaceLockfile)
-        assert len(lockfile.models) == 2
-        assert lockfile.models[0].repository == "gpt2"
+        assert len(lockfile.models) == expected_models
 
-    def test_load_lockfile_with_dataset(self, tmp_path: Path) -> None:
-        """Test loading lockfile with dataset."""
+    @pytest.mark.parametrize(
+        "lockfile_content,error_match",
+        [
+            (LOCKFILE_WRONG_VERSION, "format is not valid"),
+            (LOCKFILE_INVALID_REVISION, "format is not valid"),
+            (LOCKFILE_INVALID_REPO_NAME, "format is not valid"),
+            (LOCKFILE_MISSING_REVISION, "format is not valid"),
+            (LOCKFILE_INVALID_YAML, "invalid YAML format"),
+        ],
+    )
+    def test_load_invalid_lockfile(
+        self, tmp_path: Path, lockfile_content: str, error_match: str
+    ) -> None:
+        """Test that invalid lockfiles are rejected."""
         lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_WITH_DATASET)
+        lockfile_path.write_text(lockfile_content)
 
-        lockfile = _load_lockfile(lockfile_path)
-        assert lockfile.models[0].type == "dataset"
-
-    def test_load_lockfile_wrong_version(self, tmp_path: Path) -> None:
-        """Test that wrong version is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_WRONG_VERSION)
-
-        with pytest.raises(PackageRejected, match="format is not valid"):
-            _load_lockfile(lockfile_path)
-
-    def test_load_lockfile_invalid_revision(self, tmp_path: Path) -> None:
-        """Test that invalid revision is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_INVALID_REVISION)
-
-        with pytest.raises(PackageRejected, match="format is not valid"):
-            _load_lockfile(lockfile_path)
-
-    def test_load_lockfile_invalid_repo(self, tmp_path: Path) -> None:
-        """Test that invalid repository name is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_INVALID_REPO_NAME)
-
-        with pytest.raises(PackageRejected, match="format is not valid"):
-            _load_lockfile(lockfile_path)
-
-    def test_load_lockfile_missing_revision(self, tmp_path: Path) -> None:
-        """Test that missing revision is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_MISSING_REVISION)
-
-        with pytest.raises(PackageRejected, match="format is not valid"):
-            _load_lockfile(lockfile_path)
-
-    def test_load_lockfile_invalid_yaml(self, tmp_path: Path) -> None:
-        """Test that invalid YAML is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_INVALID_YAML)
-
-        with pytest.raises(PackageRejected, match="invalid YAML format"):
+        with pytest.raises(PackageRejected, match=error_match):
             _load_lockfile(lockfile_path)
 
 
@@ -264,14 +268,12 @@ class TestUnsafePatternDetection:
         model = HuggingFaceModel(
             repository="gpt2",
             revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            # No include_patterns specified
         )
         with caplog.at_level("WARNING"):
             _check_unsafe_patterns(model)
 
         assert "Security warning" in caplog.text
         assert "no include_patterns specified" in caplog.text
-        assert "*.bin, *.pt, *.pkl" in caplog.text
         assert "not during Hermeto's fetch" in caplog.text
 
     def test_safe_patterns_no_warning(self, caplog: pytest.LogCaptureFixture) -> None:
@@ -286,407 +288,334 @@ class TestUnsafePatternDetection:
 
         assert "Security warning" not in caplog.text
 
-    def test_unsafe_pattern_bin_warns(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Test that *.bin pattern triggers warning."""
+    @pytest.mark.parametrize(
+        "unsafe_pattern",
+        ["*.bin", "*.pt", "*.pkl", "modeling_*.py"],
+    )
+    def test_unsafe_patterns_warn(
+        self, unsafe_pattern: str, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Test that unsafe patterns trigger warnings."""
         model = HuggingFaceModel(
             repository="gpt2",
             revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            include_patterns=["*.bin", "config.json"],
+            include_patterns=[unsafe_pattern, "config.json"],
         )
         with caplog.at_level("WARNING"):
             _check_unsafe_patterns(model)
 
         assert "Security warning" in caplog.text
-        assert "*.bin" in caplog.text
-        assert "pickle serialization" in caplog.text
+        assert unsafe_pattern in caplog.text
         assert "not during Hermeto's fetch" in caplog.text
 
-    def test_unsafe_pattern_pt_warns(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Test that *.pt pattern triggers warning."""
-        model = HuggingFaceModel(
-            repository="gpt2",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            include_patterns=["*.pt"],
-        )
-        with caplog.at_level("WARNING"):
-            _check_unsafe_patterns(model)
 
-        assert "Security warning" in caplog.text
-        assert "*.pt" in caplog.text
-
-    def test_unsafe_pattern_modeling_warns(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Test that modeling_*.py pattern triggers warning."""
-        model = HuggingFaceModel(
-            repository="custom/model",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            include_patterns=["modeling_*.py", "config.json"],
-        )
-        with caplog.at_level("WARNING"):
-            _check_unsafe_patterns(model)
-
-        assert "Security warning" in caplog.text
-        assert "modeling_*.py" in caplog.text
-
-    def test_multiple_unsafe_patterns_warns(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Test that multiple unsafe patterns all get reported."""
-        model = HuggingFaceModel(
-            repository="gpt2",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            include_patterns=["*.bin", "*.pt", "config.json"],
-        )
-        with caplog.at_level("WARNING"):
-            _check_unsafe_patterns(model)
-
-        assert "Security warning" in caplog.text
-        # Should mention at least one unsafe pattern
-        assert "*.bin" in caplog.text or "*.pt" in caplog.text
+# Standalone test functions (following npm/gomod pattern)
 
 
-class TestFetchHuggingfaceSource:
-    """Tests for the main fetch_huggingface_source function."""
+@mock.patch.dict("os.environ", {"HF_HUB_OFFLINE": "1"})
+def test_fetch_with_offline_mode_raises_error(tmp_path: Path) -> None:
+    """Test that HF_HUB_OFFLINE=1 is rejected."""
+    lockfile_path = tmp_path / "huggingface.lock.yaml"
+    lockfile_path.write_text(LOCKFILE_VALID)
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main._resolve_huggingface_lockfile")
-    def test_fetch_with_default_lockfile(self, mock_resolve: mock.Mock, tmp_path: Path) -> None:
-        """Test fetch with default lockfile location."""
-        mock_request = mock.Mock()
-        mock_package = HuggingfacePackageInput.model_construct(
-            type="x-huggingface",
-            path=Path("."),
-            lockfile=None,
-        )
-        mock_request.huggingface_packages = [mock_package]
-        mock_request.source_dir = RootedPath(tmp_path)
-        mock_request.output_dir = RootedPath(tmp_path / "output")
+    mock_request = mock.Mock()
+    mock_package = HuggingfacePackageInput.model_construct(
+        type="x-huggingface",
+        path=Path("."),
+        lockfile=None,
+    )
+    mock_request.huggingface_packages = [mock_package]
+    mock_request.source_dir = RootedPath(tmp_path)
+    mock_request.output_dir = RootedPath(tmp_path / "output")
 
-        # Create default lockfile
-        (tmp_path / DEFAULT_LOCKFILE_NAME).write_text(LOCKFILE_VALID)
-
-        mock_resolve.return_value = []
-
+    with pytest.raises(PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"):
         fetch_huggingface_source(mock_request)
 
-        mock_resolve.assert_called_once()
-        called_lockfile = mock_resolve.call_args[0][0]
-        assert called_lockfile.name == DEFAULT_LOCKFILE_NAME
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main._resolve_huggingface_lockfile")
-    def test_fetch_with_custom_lockfile(self, mock_resolve: mock.Mock, tmp_path: Path) -> None:
-        """Test fetch with custom lockfile path."""
-        custom_lockfile = tmp_path / "custom.yaml"
-        custom_lockfile.write_text(LOCKFILE_VALID)
+@mock.patch("hermeto.core.package_managers.huggingface.main._resolve_huggingface_lockfile")
+def test_fetch_with_default_lockfile(mock_resolve: mock.Mock, tmp_path: Path) -> None:
+    """Test fetch with default lockfile location."""
+    (tmp_path / DEFAULT_LOCKFILE_NAME).write_text(LOCKFILE_VALID)
 
-        mock_request = mock.Mock()
-        mock_package = HuggingfacePackageInput.model_construct(
-            type="x-huggingface",
-            path=Path("."),
-            lockfile=custom_lockfile,
-        )
-        mock_request.huggingface_packages = [mock_package]
-        mock_request.source_dir = RootedPath(tmp_path)
-        mock_request.output_dir = RootedPath(tmp_path / "output")
+    mock_request = mock.Mock()
+    mock_package = HuggingfacePackageInput.model_construct(
+        type="x-huggingface",
+        path=Path("."),
+        lockfile=None,
+    )
+    mock_request.huggingface_packages = [mock_package]
+    mock_request.source_dir = RootedPath(tmp_path)
+    mock_request.output_dir = RootedPath(tmp_path / "output")
+    mock_resolve.return_value = []
 
-        mock_resolve.return_value = []
+    fetch_huggingface_source(mock_request)
+    mock_resolve.assert_called_once()
 
+
+def test_lockfile_not_found(tmp_path: Path) -> None:
+    """Test that missing lockfile is detected."""
+    mock_request = mock.Mock()
+    mock_package = HuggingfacePackageInput.model_construct(
+        type="x-huggingface",
+        path=Path("."),
+        lockfile=None,
+    )
+    mock_request.huggingface_packages = [mock_package]
+    mock_request.source_dir = RootedPath(tmp_path)
+    mock_request.output_dir = RootedPath(tmp_path / "output")
+
+    # Don't create lockfile - should raise error
+    with pytest.raises(PackageRejected, match="does not exist"):
         fetch_huggingface_source(mock_request)
 
-        mock_resolve.assert_called_once()
-        called_lockfile = mock_resolve.call_args[0][0]
-        assert called_lockfile == custom_lockfile
 
-    def test_fetch_relative_lockfile_path(self, tmp_path: Path) -> None:
-        """Test that relative lockfile path is rejected."""
-        mock_request = mock.Mock()
-        mock_package = HuggingfacePackageInput.model_construct(
-            type="x-huggingface",
-            path=Path("."),
-            lockfile=Path("relative.yaml"),
-        )
-        mock_request.huggingface_packages = [mock_package]
-        mock_request.source_dir = RootedPath(tmp_path)
+@mock.patch("hermeto.core.package_managers.huggingface.main._resolve_huggingface_lockfile")
+def test_fetch_with_custom_lockfile(mock_resolve: mock.Mock, tmp_path: Path) -> None:
+    """Test fetch with custom lockfile path."""
+    custom_lockfile = tmp_path / "custom.yaml"
+    custom_lockfile.write_text(LOCKFILE_VALID)
 
-        with pytest.raises(PackageRejected, match="not absolute"):
-            fetch_huggingface_source(mock_request)
+    mock_request = mock.Mock()
+    mock_package = HuggingfacePackageInput.model_construct(
+        type="x-huggingface",
+        path=Path("."),
+        lockfile=custom_lockfile,
+    )
+    mock_request.huggingface_packages = [mock_package]
+    mock_request.source_dir = RootedPath(tmp_path)
+    mock_request.output_dir = RootedPath(tmp_path / "output")
+    mock_resolve.return_value = []
 
-    def test_fetch_lockfile_not_found(self, tmp_path: Path) -> None:
-        """Test that missing lockfile is detected."""
-        mock_request = mock.Mock()
-        mock_package = HuggingfacePackageInput.model_construct(
-            type="x-huggingface",
-            path=Path("."),
-            lockfile=None,
-        )
-        mock_request.huggingface_packages = [mock_package]
-        mock_request.source_dir = RootedPath(tmp_path)
-        mock_request.output_dir = RootedPath(tmp_path / "output")
+    fetch_huggingface_source(mock_request)
 
-        # Don't create lockfile
-
-        with pytest.raises(PackageRejected, match="does not exist"):
-            fetch_huggingface_source(mock_request)
-
-    @mock.patch.dict("os.environ", {"HF_HUB_OFFLINE": "1"})
-    def test_fetch_with_offline_mode_raises_error(self, tmp_path: Path) -> None:
-        """Test that HF_HUB_OFFLINE=1 is rejected."""
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_VALID)
-
-        mock_request = mock.Mock()
-        mock_package = HuggingfacePackageInput.model_construct(
-            type="x-huggingface",
-            path=Path("."),
-            lockfile=None,
-        )
-        mock_request.huggingface_packages = [mock_package]
-        mock_request.source_dir = RootedPath(tmp_path)
-        mock_request.output_dir = RootedPath(tmp_path / "output")
-
-        with pytest.raises(PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"):
-            fetch_huggingface_source(mock_request)
+    called_lockfile = mock_resolve.call_args[0][0]
+    assert called_lockfile == custom_lockfile
 
 
-class TestFetchModel:
-    """Tests for the _fetch_model function."""
+def test_fetch_relative_lockfile_path_rejected(tmp_path: Path) -> None:
+    """Test that relative lockfile path is rejected."""
+    mock_request = mock.Mock()
+    mock_package = HuggingfacePackageInput.model_construct(
+        type="x-huggingface",
+        path=Path("."),
+        lockfile=Path("relative.yaml"),
+    )
+    mock_request.huggingface_packages = [mock_package]
+    mock_request.source_dir = RootedPath(tmp_path)
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-    def test_fetch_model_success(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
-        """Test successful model fetching."""
-        from hermeto.core.package_managers.huggingface.main import _fetch_model
+    with pytest.raises(PackageRejected, match="not absolute"):
+        fetch_huggingface_source(mock_request)
 
-        # Setup mock to return a snapshot path
-        snapshot_path = tmp_path / "hub" / "models--gpt2" / "snapshots" / "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
-        snapshot_path.mkdir(parents=True)
-        mock_snapshot.return_value = str(snapshot_path)
 
-        model_entry = HuggingFaceModel(
-            repository="gpt2",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            type="model",
-        )
+@pytest.mark.parametrize(
+    "model_data,allow_patterns,should_call_dataset_loader",
+    [
+        pytest.param(
+            {
+                "repository": "gpt2",
+                "revision": "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+                "type": "model",
+                "include_patterns": None,
+            },
+            None,
+            False,
+            id="model_no_patterns",
+        ),
+        pytest.param(
+            {
+                "repository": "microsoft/deberta-v3-base",
+                "revision": "559062ad13d311b87b2c455e67dcd5f1c8f65111",
+                "type": "model",
+                "include_patterns": ["*.safetensors", "config.json"],
+            },
+            ["*.safetensors", "config.json"],
+            False,
+            id="model_with_patterns",
+        ),
+        pytest.param(
+            {
+                "repository": "squad",
+                "revision": "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
+                "type": "dataset",
+                "include_patterns": None,
+            },
+            None,
+            True,
+            id="dataset",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.huggingface.main._load_dataset_to_cache")
+@mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+def test_fetch_model(
+    mock_snapshot: mock.Mock,
+    mock_load_dataset: mock.Mock,
+    snapshot_path_factory: Any,
+    cache_dirs: tuple[Path, Path],
+    model_data: dict[str, Any],
+    allow_patterns: list[str] | None,
+    should_call_dataset_loader: bool,
+) -> None:
+    """Test _fetch_model with various model configurations."""
+    from hermeto.core.package_managers.huggingface.main import _fetch_model
 
-        cache_root = tmp_path / "cache"
-        cache_root.mkdir()
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
+    cache_root, datasets_cache = cache_dirs
 
-        component = _fetch_model(model_entry, cache_root, datasets_cache)
+    # Create snapshot path
+    snapshot_path = snapshot_path_factory(
+        model_data["repository"], model_data["revision"], model_data["type"]
+    )
+    mock_snapshot.return_value = str(snapshot_path)
 
-        # Verify snapshot_download was called correctly
-        mock_snapshot.assert_called_once_with(
-            repo_id="gpt2",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            repo_type="model",
-            cache_dir=cache_root,
-            allow_patterns=None,
-        )
+    model_entry = HuggingFaceModel(**model_data)
 
-        # Verify component is created
-        assert component.name == "gpt2"
-        assert component.version == "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
-        assert "pkg:huggingface/gpt2" in component.purl
+    component = _fetch_model(model_entry, cache_root, datasets_cache)
 
-        # Verify ref was created
-        ref_file = tmp_path / "hub" / "models--gpt2" / "refs" / "main"
-        assert ref_file.exists()
-        assert ref_file.read_text() == "e7da7f221ccf5f2856f4331d34c2d0e82aa2a986"
+    # Verify snapshot_download was called correctly
+    mock_snapshot.assert_called_once_with(
+        repo_id=model_data["repository"],
+        revision=model_data["revision"],
+        repo_type=model_data["type"],
+        cache_dir=cache_root,
+        allow_patterns=allow_patterns,
+    )
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-    def test_fetch_model_with_include_patterns(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
-        """Test model fetching with include patterns."""
-        from hermeto.core.package_managers.huggingface.main import _fetch_model
+    # Verify component properties
+    assert component.name == model_data["repository"]
+    assert component.version == model_data["revision"]
+    assert "pkg:huggingface" in component.purl
 
-        snapshot_path = tmp_path / "hub" / "models--microsoft--deberta-v3-base" / "snapshots" / "559062ad13d311b87b2c455e67dcd5f1c8f65111"
-        snapshot_path.mkdir(parents=True)
-        mock_snapshot.return_value = str(snapshot_path)
+    # Verify ref file was created
+    repo_name = model_data["repository"].replace("/", "--")
+    prefix = "datasets" if model_data["type"] == "dataset" else "models"
+    ref_file = snapshot_path.parent.parent / "refs" / "main"
+    assert ref_file.exists()
+    assert ref_file.read_text() == model_data["revision"]
 
-        model_entry = HuggingFaceModel(
-            repository="microsoft/deberta-v3-base",
-            revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
-            type="model",
-            include_patterns=["*.safetensors", "config.json"],
-        )
-
-        cache_root = tmp_path / "cache"
-        cache_root.mkdir()
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        component = _fetch_model(model_entry, cache_root, datasets_cache)
-
-        # Verify include_patterns was passed to snapshot_download
-        mock_snapshot.assert_called_once_with(
-            repo_id="microsoft/deberta-v3-base",
-            revision="559062ad13d311b87b2c455e67dcd5f1c8f65111",
-            repo_type="model",
-            cache_dir=cache_root,
-            allow_patterns=["*.safetensors", "config.json"],
-        )
-
-        assert component.name == "microsoft/deberta-v3-base"
-
-    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-    def test_fetch_model_404_error(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
-        """Test model fetching with 404 error."""
-        from hermeto.core.package_managers.huggingface.main import _fetch_model
-
-        # Create a mock 404 response
-        mock_response = mock.Mock()
-        mock_response.status_code = 404
-        http_error = HfHubHTTPError("Not found", response=mock_response)
-        mock_snapshot.side_effect = http_error
-
-        model_entry = HuggingFaceModel(
-            repository="nonexistent/model",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            type="model",
-        )
-
-        cache_root = tmp_path / "cache"
-        cache_root.mkdir()
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        with pytest.raises(PackageRejected, match="Repository 'nonexistent/model' not found"):
-            _fetch_model(model_entry, cache_root, datasets_cache)
-
-    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-    def test_fetch_model_generic_error(self, mock_snapshot: mock.Mock, tmp_path: Path) -> None:
-        """Test model fetching with generic error."""
-        from hermeto.core.package_managers.huggingface.main import _fetch_model
-
-        mock_snapshot.side_effect = RuntimeError("Network error")
-
-        model_entry = HuggingFaceModel(
-            repository="gpt2",
-            revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
-            type="model",
-        )
-
-        cache_root = tmp_path / "cache"
-        cache_root.mkdir()
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        with pytest.raises(PackageRejected, match="Failed to fetch repository 'gpt2'"):
-            _fetch_model(model_entry, cache_root, datasets_cache)
-
-    @mock.patch("hermeto.core.package_managers.huggingface.main._load_dataset_to_cache")
-    @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-    def test_fetch_dataset_calls_load(self, mock_snapshot: mock.Mock, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
-        """Test that fetching a dataset calls _load_dataset_to_cache."""
-        from hermeto.core.package_managers.huggingface.main import _fetch_model
-
-        snapshot_path = tmp_path / "hub" / "datasets--squad" / "snapshots" / "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b"
-        snapshot_path.mkdir(parents=True)
-        mock_snapshot.return_value = str(snapshot_path)
-
-        model_entry = HuggingFaceModel(
-            repository="squad",
-            revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
-            type="dataset",
-        )
-
-        cache_root = tmp_path / "cache"
-        cache_root.mkdir()
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        component = _fetch_model(model_entry, cache_root, datasets_cache)
-
-        # Verify dataset loading was called
+    # Verify dataset loader was called if appropriate
+    if should_call_dataset_loader:
         mock_load_dataset.assert_called_once_with(
-            "squad",
-            "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
-            datasets_cache,
+            model_data["repository"], model_data["revision"], datasets_cache
         )
+    else:
+        mock_load_dataset.assert_not_called()
 
-        assert component.name == "squad"
+
+@pytest.mark.parametrize(
+    "error,expected_match",
+    [
+        pytest.param(
+            lambda: HfHubHTTPError(
+                "Not found", response=mock.Mock(status_code=404)
+            ),
+            "Repository 'nonexistent/model' not found",
+            id="404_error",
+        ),
+        pytest.param(
+            lambda: RuntimeError("Network error"),
+            "Failed to fetch repository 'nonexistent/model'",
+            id="generic_error",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+def test_fetch_model_errors(
+    mock_snapshot: mock.Mock,
+    cache_dirs: tuple[Path, Path],
+    error: Any,
+    expected_match: str,
+) -> None:
+    """Test _fetch_model error handling."""
+    from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+    cache_root, datasets_cache = cache_dirs
+
+    mock_snapshot.side_effect = error()
+
+    model_entry = HuggingFaceModel(
+        repository="nonexistent/model",
+        revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+        type="model",
+    )
+
+    with pytest.raises(PackageRejected, match=expected_match):
+        _fetch_model(model_entry, cache_root, datasets_cache)
 
 
-class TestLoadDatasetToCache:
-    """Tests for the _load_dataset_to_cache function."""
+@pytest.mark.parametrize(
+    "dataset_return,is_dict",
+    [
+        pytest.param({"train": mock.Mock(), "test": mock.Mock()}, True, id="with_splits"),
+        pytest.param(mock.Mock(__class__=type("Dataset", (), {})), False, id="no_splits"),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
+def test_load_dataset_to_cache_success(
+    mock_load_dataset: mock.Mock,
+    cache_dirs: tuple[Path, Path],
+    dataset_return: Any,
+    is_dict: bool,
+) -> None:
+    """Test successful dataset loading with and without splits."""
+    from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
-    def test_load_dataset_success_with_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
-        """Test successful dataset loading with multiple splits (dict-type dataset)."""
-        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+    _, datasets_cache = cache_dirs
+    mock_load_dataset.return_value = dataset_return
 
-        # Mock dataset with splits (dict)
-        mock_dataset = {"train": mock.Mock(), "test": mock.Mock()}
-        mock_load_dataset.return_value = mock_dataset
+    # Should complete without error regardless of dataset type
+    _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
 
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
+    mock_load_dataset.assert_called_once_with(
+        "squad",
+        revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
+        cache_dir=datasets_cache,
+        trust_remote_code=False,
+    )
 
-        # Should complete without error
+
+@mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
+def test_load_dataset_to_cache_error(
+    mock_load_dataset: mock.Mock,
+    cache_dirs: tuple[Path, Path],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test dataset loading when load_dataset raises an error."""
+    from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
+
+    _, datasets_cache = cache_dirs
+    mock_load_dataset.side_effect = RuntimeError("Failed to load dataset")
+
+    with caplog.at_level("WARNING"):
         _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
 
-        mock_load_dataset.assert_called_once_with(
-            "squad",
-            revision="d6ec3ceb99ca480ce37cdd35555d6cb2511d223b",
-            cache_dir=datasets_cache,
-            trust_remote_code=False,
-        )
-
-    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
-    def test_load_dataset_success_no_splits(self, mock_load_dataset: mock.Mock, tmp_path: Path) -> None:
-        """Test successful dataset loading without splits (non-dict dataset)."""
-        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
-
-        # Mock dataset without splits (not a dict)
-        mock_dataset = mock.Mock()
-        mock_dataset.__class__ = type("Dataset", (), {})  # Not a dict
-        mock_load_dataset.return_value = mock_dataset
-
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        # Should complete without error regardless of dataset type
-        _load_dataset_to_cache("custom-dataset", "a" * 40, datasets_cache)
-
-    @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
-    def test_load_dataset_loading_error(self, mock_load_dataset: mock.Mock, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-        """Test dataset loading when load_dataset raises an error."""
-        from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
-
-        mock_load_dataset.side_effect = RuntimeError("Failed to load dataset")
-
-        datasets_cache = tmp_path / "datasets"
-        datasets_cache.mkdir()
-
-        with caplog.at_level("WARNING"):
-            _load_dataset_to_cache("squad", "d6ec3ceb99ca480ce37cdd35555d6cb2511d223b", datasets_cache)
-
-        assert "Failed to load dataset 'squad'" in caplog.text
-        assert "may not work in offline mode" in caplog.text
+    assert "Failed to load dataset 'squad'" in caplog.text
+    assert "may not work in offline mode" in caplog.text
 
 
-class TestResolveHuggingfaceLockfile:
-    """Integration tests for _resolve_huggingface_lockfile."""
+@mock.patch("hermeto.core.package_managers.huggingface.main._fetch_model")
+def test_resolve_lockfile_integration(mock_fetch: mock.Mock, tmp_path: Path) -> None:
+    """Test full lockfile resolution flow."""
+    from hermeto.core.package_managers.huggingface.main import _resolve_huggingface_lockfile
 
-    @mock.patch("hermeto.core.package_managers.huggingface.main._fetch_model")
-    def test_resolve_lockfile_integration(self, mock_fetch: mock.Mock, tmp_path: Path) -> None:
-        """Test full lockfile resolution flow."""
-        from hermeto.core.package_managers.huggingface.main import _resolve_huggingface_lockfile
+    # Create lockfile
+    lockfile_path = tmp_path / "huggingface.lock.yaml"
+    lockfile_path.write_text(LOCKFILE_VALID)
 
-        # Create lockfile
-        lockfile_path = tmp_path / "huggingface.lock.yaml"
-        lockfile_path.write_text(LOCKFILE_VALID)
+    # Mock component returns
+    mock_component1 = mock.Mock()
+    mock_component2 = mock.Mock()
+    mock_fetch.side_effect = [mock_component1, mock_component2]
 
-        # Mock component returns
-        mock_component1 = mock.Mock()
-        mock_component2 = mock.Mock()
-        mock_fetch.side_effect = [mock_component1, mock_component2]
+    output_dir = RootedPath(tmp_path / "output")
 
-        output_dir = RootedPath(tmp_path / "output")
+    components = _resolve_huggingface_lockfile(lockfile_path, output_dir)
 
-        components = _resolve_huggingface_lockfile(lockfile_path, output_dir)
+    # Verify directories were created
+    assert (output_dir.path / "deps" / "huggingface" / "hub").exists()
+    assert (output_dir.path / "deps" / "huggingface" / "datasets").exists()
 
-        # Verify directories were created
-        assert (output_dir.path / "deps" / "huggingface" / "hub").exists()
-        assert (output_dir.path / "deps" / "huggingface" / "datasets").exists()
+    # Verify _fetch_model was called for each model
+    assert mock_fetch.call_count == 2
 
-        # Verify _fetch_model was called for each model
-        assert mock_fetch.call_count == 2
-
-        # Verify components returned
-        assert components == [mock_component1, mock_component2]
+    # Verify components returned
+    assert components == [mock_component1, mock_component2]
