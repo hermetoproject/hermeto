@@ -6,11 +6,47 @@ from hermeto import APP_NAME
 
 _argument_not_specified = "__argument_not_specified__"
 
+_exit_codes: dict[str, int] = {
+    "BaseError": 1,
+    "UsageError": 2,
+    "PathOutsideRoot": 3,
+    "InvalidInput": 4,
+    "PackageRejected": 5,
+    "NotAGitRepo": 6,
+    "UnexpectedFormat": 7,
+    "UnsupportedFeature": 8,
+    "ExecutableNotFound": 9,
+    "ChecksumVerificationFailed": 10,
+    "InvalidChecksum": 11,
+    "MissingChecksum": 12,
+    "LockfileNotFound": 13,
+    "InvalidLockfileFormat": 14,
+    "FetchError": 15,
+    "PackageManagerError": 16,
+    "GitError": 17,
+    "GitRemoteNotFoundError": 18,
+    "GitInvalidRevisionError": 19,
+    "PackageWithCorruptLockfileRejected": 20,  # hermeto/core/package_managers/cargo/main.py::PackageWithCorruptLockfileRejected
+    "UnsatisfiableArchitectureFilter": 21,  # hermeto/core/package_managers/rpm/binary_filters.py::UnsatisfiableArchitectureFilter
+    "NotV1Lockfile": 22,  # hermeto/core/package_managers/yarn_classic/main.py::NotV1Lockfile
+}
+if len(_exit_codes) != len(set(_exit_codes.values())):
+    raise ValueError("Duplicate exit codes found")
+
+
+def get_error_name_from_code(code: int) -> str | None:
+    """Return the error class name for the given exit code.
+
+    :param code: Exit code (e.g. from a process or from BaseError.exit_code).
+    :return: The corresponding error class name, or None if the code is not registered.
+    """
+    return next((k for k, v in _exit_codes.items() if v == code), None)
+
 
 class BaseError(Exception):
     """Root of the error hierarchy. Don't raise this directly, use more specific error types."""
 
-    is_invalid_usage: ClassVar[bool] = False
+    exit_code: ClassVar[int] = 1
     default_solution: ClassVar[str | None] = None
 
     def __init__(
@@ -30,6 +66,13 @@ class BaseError(Exception):
         else:
             self.solution = solution
 
+    def __init_subclass__(cls) -> None:
+        class_name = cls.__name__
+        if class_name not in _exit_codes:
+            raise ValueError(f"No exit code found for {class_name}")
+        cls.exit_code = _exit_codes[class_name]
+        super().__init_subclass__()
+
     def friendly_msg(self) -> str:
         """Return the user-friendly representation of this error."""
         msg = str(self)
@@ -41,11 +84,9 @@ class BaseError(Exception):
 class UsageError(BaseError):
     """Generic error for "Hermeto was used incorrectly." Prefer more specific errors."""
 
-    is_invalid_usage: ClassVar[bool] = True
-
 
 class PathOutsideRoot(UsageError):
-    """Afer joining a subpath, the result is outside the root of a rooted path."""
+    """After joining a subpath, the result is outside the root of a rooted path."""
 
     def __init__(
         self,

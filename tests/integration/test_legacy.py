@@ -37,8 +37,6 @@ def test_help(hermeto_image: utils.ContainerImage, tmp_path: Path) -> None:
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             [],  # No additional commands are run to verify the build
             [],
