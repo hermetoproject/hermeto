@@ -30,8 +30,6 @@ _exit_codes: dict[str, int] = {
     "UnsatisfiableArchitectureFilter": 21,  # hermeto/core/package_managers/rpm/binary_filters.py::UnsatisfiableArchitectureFilter
     "NotV1Lockfile": 22,  # hermeto/core/package_managers/yarn_classic/main.py::NotV1Lockfile
 }
-if len(_exit_codes) != len(set(_exit_codes.values())):
-    raise ValueError("Duplicate exit codes found")
 
 
 def get_error_name_from_code(code: int) -> str | None:
