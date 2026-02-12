@@ -6,7 +6,9 @@ config:
   MD009:
     br_spaces: 0  # Non-breaking spaces are forbidden
     strict: true  # Strict no-trailing spaces
-  MD013: {code_blocks: false}  # Ignore line-length for code blocks
+  MD013: # Ignore line-length for code blocks and tables
+    code_blocks: false
+    tables: false
   MD026: {punctuation: ".,;:。，；："}  # Allow "!"
   MD027: {list_items: false}  # Only a single space after blockquote symbol (">")
   # Please do not use "em" and "strong" *outside of* <details> or <summary> blocks
