@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import PackageManagerError
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -17,7 +19,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
                 expected_output="Processing the request using yarn@1.22.",
             ),
             id="yarn_classic_corepack_ignored",
@@ -28,7 +29,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
                 expected_output="Processing the request using yarn@1.22.",
             ),
             id="yarn_classic_yarn_path_ignored",
@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=PackageManagerError,
                 expected_output='Integrity check failed for "@colors/colors"',
             ),
             id="yarn_classic_invalid_checksum",
@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=PackageManagerError,
                 expected_output="Your lockfile needs to be updated, but yarn was run with `--frozen-lockfile`.",
             ),
             id="yarn_classic_updating_frozen_lockfile_fails",
@@ -61,8 +61,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="yarn_classic_lifecycle_scripts",
         ),
@@ -72,7 +70,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=PackageManagerError,
                 expected_output="Tarball collision in the offline mirror",
             ),
             id="yarn_classic_offline_mirror_collision",
@@ -107,8 +105,6 @@ def test_yarn_classic_packages(
             utils.TestParameters(
                 branch="yarn-classic/e2e",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],
             "Hello world!",
@@ -121,8 +117,6 @@ def test_yarn_classic_packages(
                     {"path": "first-pkg", "type": "yarn"},
                     {"path": "second-pkg", "type": "yarn"},
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],
             "Hello from first package!",

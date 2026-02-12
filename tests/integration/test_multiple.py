@@ -18,8 +18,6 @@ from . import utils
                     {"type": "rpm"},
                 ),
                 flags=[],
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             [],
             [],
