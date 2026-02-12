@@ -57,14 +57,11 @@ def fetch_pip_source(request: Request) -> RequestOutput:
     """Resolve and fetch pip dependencies for the given request."""
     components: list[Component] = []
     project_files: list[ProjectFile] = []
-    environment_variables: list[EnvironmentVariable] = []
+    environment_variables: list[EnvironmentVariable] = [
+        EnvironmentVariable(name="PIP_FIND_LINKS", value="${output_dir}/deps/pip"),
+        EnvironmentVariable(name="PIP_NO_INDEX", value="true"),
+    ]
     packages_containing_rust_code = []
-
-    if request.pip_packages:
-        environment_variables = [
-            EnvironmentVariable(name="PIP_FIND_LINKS", value="${output_dir}/deps/pip"),
-            EnvironmentVariable(name="PIP_NO_INDEX", value="true"),
-        ]
 
     for package in request.pip_packages:
         package_path = request.source_dir.join_within_root(package.path)
@@ -281,7 +278,7 @@ def _process_req(
     if dpi:
         if dpi.req_file_checksums:
             download_info["missing_req_file_checksum"] = False
-        if dpi.has_checksums_to_match:
+        if dpi.checksums_to_match:
             _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match)
         if dpi.package_type == "sdist":
             _check_metadata_in_sdist(dpi.path)

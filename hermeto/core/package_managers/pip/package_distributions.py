@@ -85,15 +85,6 @@ class DistributionPackageInfo:
         )
 
     @property
-    def has_checksums_to_match(self) -> bool:
-        """Determine if we have checksums to match against.
-
-        This decides whether or not we
-        call `hermeto.core.checksum.must_match_any_checksum()`
-        """
-        return len(self.checksums_to_match) > 0
-
-    @property
     def download_info(self) -> dict[str, Any]:
         """Only necessary attributes to process download information."""
         return {
