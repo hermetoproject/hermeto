@@ -1,7 +1,7 @@
 """Unit tests for the Hugging Face package manager."""
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 from unittest import mock
 
 import pytest
@@ -100,7 +100,7 @@ def cache_dirs(tmp_path: Path) -> tuple[Path, Path]:
 
 
 @pytest.fixture
-def snapshot_path_factory(tmp_path: Path) -> Any:
+def snapshot_path_factory(tmp_path: Path) -> Callable[[str, str, str], Path]:
     """Factory fixture to create snapshot paths for different repositories."""
 
     def _create_snapshot_path(repo_id: str, revision: str, repo_type: str = "model") -> Path:
@@ -450,9 +450,9 @@ def test_fetch_relative_lockfile_path_rejected(tmp_path: Path) -> None:
 def test_fetch_model(
     mock_snapshot: mock.Mock,
     mock_load_dataset: mock.Mock,
-    snapshot_path_factory: Any,
+    snapshot_path_factory: Callable[[str, str, str], Path],
     cache_dirs: tuple[Path, Path],
-    model_data: dict[str, Any],
+    model_data: dict[str, str | list[str] | None],
     allow_patterns: list[str] | None,
     should_call_dataset_loader: bool,
 ) -> None:
@@ -501,36 +501,21 @@ def test_fetch_model(
         mock_load_dataset.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    "error,expected_match",
-    [
-        pytest.param(
-            lambda: HfHubHTTPError(
-                "Not found", response=mock.Mock(status_code=404)
-            ),
-            "Repository 'nonexistent/model' not found",
-            id="404_error",
-        ),
-        pytest.param(
-            lambda: RuntimeError("Network error"),
-            "Failed to fetch repository 'nonexistent/model'",
-            id="generic_error",
-        ),
-    ],
-)
 @mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
-def test_fetch_model_errors(
+def test_fetch_model_404_error(
     mock_snapshot: mock.Mock,
     cache_dirs: tuple[Path, Path],
-    error: Any,
-    expected_match: str,
 ) -> None:
-    """Test _fetch_model error handling."""
+    """Test _fetch_model with 404 error."""
     from hermeto.core.package_managers.huggingface.main import _fetch_model
 
     cache_root, datasets_cache = cache_dirs
 
-    mock_snapshot.side_effect = error()
+    # Create mock 404 response
+    mock_response = mock.Mock()
+    mock_response.status_code = 404
+    http_error = HfHubHTTPError("Not found", response=mock_response)
+    mock_snapshot.side_effect = http_error
 
     model_entry = HuggingFaceModel(
         repository="nonexistent/model",
@@ -538,23 +523,44 @@ def test_fetch_model_errors(
         type="model",
     )
 
-    with pytest.raises(PackageRejected, match=expected_match):
+    with pytest.raises(PackageRejected, match="Repository 'nonexistent/model' not found"):
+        _fetch_model(model_entry, cache_root, datasets_cache)
+
+
+@mock.patch("hermeto.core.package_managers.huggingface.main.snapshot_download")
+def test_fetch_model_generic_error(
+    mock_snapshot: mock.Mock,
+    cache_dirs: tuple[Path, Path],
+) -> None:
+    """Test _fetch_model with generic error."""
+    from hermeto.core.package_managers.huggingface.main import _fetch_model
+
+    cache_root, datasets_cache = cache_dirs
+
+    mock_snapshot.side_effect = RuntimeError("Network error")
+
+    model_entry = HuggingFaceModel(
+        repository="nonexistent/model",
+        revision="e7da7f221ccf5f2856f4331d34c2d0e82aa2a986",
+        type="model",
+    )
+
+    with pytest.raises(PackageRejected, match="Failed to fetch repository 'nonexistent/model'"):
         _fetch_model(model_entry, cache_root, datasets_cache)
 
 
 @pytest.mark.parametrize(
-    "dataset_return,is_dict",
+    "dataset_return",
     [
-        pytest.param({"train": mock.Mock(), "test": mock.Mock()}, True, id="with_splits"),
-        pytest.param(mock.Mock(__class__=type("Dataset", (), {})), False, id="no_splits"),
+        pytest.param({"train": mock.Mock(), "test": mock.Mock()}, id="with_splits"),
+        pytest.param(mock.Mock(__class__=type("Dataset", (), {})), id="no_splits"),
     ],
 )
 @mock.patch("hermeto.core.package_managers.huggingface.main.load_dataset")
 def test_load_dataset_to_cache_success(
     mock_load_dataset: mock.Mock,
     cache_dirs: tuple[Path, Path],
-    dataset_return: Any,
-    is_dict: bool,
+    dataset_return: mock.Mock | dict[str, mock.Mock],
 ) -> None:
     """Test successful dataset loading with and without splits."""
     from hermeto.core.package_managers.huggingface.main import _load_dataset_to_cache
