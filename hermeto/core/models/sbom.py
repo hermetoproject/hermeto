@@ -288,7 +288,9 @@ class Sbom(pydantic.BaseModel):
                 relationships.append(pRel(relatedSpdxElement=package.SPDXID))
             return relationships
 
-        def generate_package_annotations(properties: list[Property]) -> list[SPDXPackageAnnotation]:
+        def generate_package_annotations(
+            properties: list[Property], bom_ref: str | None = None
+        ) -> list[SPDXPackageAnnotation]:
             """
             Convert CycloneDX top-level annotations and component properties to SPDX package annotations.
             """
@@ -301,7 +303,8 @@ class Sbom(pydantic.BaseModel):
             )
 
             for annotation in self.annotations:
-                result.append(base_spdx_annotation(comment=annotation.text))
+                if bom_ref and bom_ref in annotation.subjects:
+                    result.append(base_spdx_annotation(comment=annotation.text))
 
             for property in properties:
                 result.append(
@@ -342,7 +345,10 @@ class Sbom(pydantic.BaseModel):
                         name=component.name,
                         versionInfo=component.version,
                         externalRefs=[erefdict(component)],
-                        annotations=generate_package_annotations(component.properties),
+                        annotations=generate_package_annotations(
+                            component.properties,
+                            component.bom_ref if component.bom_ref else component.purl,
+                        ),
                         sourceInfo=source_info or None,
                     )
                 )
