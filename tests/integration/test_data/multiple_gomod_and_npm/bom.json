@@ -121,7 +121,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/gomod-package@v0.0.0-20250515150126-8c76c8dc8c61?type=module",
       "type": "library",
-      "version": "v0.0.0-20250515150126-8c76c8dc8c61"
+      "version": "v0.0.0-20250515150126-8c76c8dc8c61",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "example.com/greetings",
@@ -145,7 +152,14 @@
       ],
       "purl": "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=module",
       "type": "library",
-      "version": "v1.9.3"
+      "version": "v1.9.3",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/sirupsen/logrus",
@@ -169,7 +183,14 @@
       ],
       "purl": "pkg:golang/github.com/stretchr/testify@v1.10.0?type=module",
       "type": "library",
-      "version": "v1.10.0"
+      "version": "v1.10.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "golang.org/x/sys/unix",
@@ -193,7 +214,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/sys@v0.32.0?type=module",
       "type": "library",
-      "version": "v0.32.0"
+      "version": "v0.32.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "internal/abi",

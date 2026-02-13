@@ -145,7 +145,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210805132343-9989e210ac29?type=module",
       "type": "library",
-      "version": "v0.0.0-20210805132343-9989e210ac29"
+      "version": "v0.0.0-20210805132343-9989e210ac29",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210805132343-9989e210ac29?type=package",
@@ -197,7 +204,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
       "type": "library",
-      "version": "v0.0.0-20170915032832-14c0d48ead0c"
+      "version": "v0.0.0-20170915032832-14c0d48ead0c",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/internal/abi?type=package",
@@ -774,7 +788,14 @@
       ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.2?type=module",
       "type": "library",
-      "version": "v1.5.2"
+      "version": "v1.5.2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/rsc.io/quote@v1.5.2?type=package",
@@ -800,7 +821,14 @@
       ],
       "purl": "pkg:golang/rsc.io/sampler@v1.3.0?type=module",
       "type": "library",
-      "version": "v1.3.0"
+      "version": "v1.3.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/rsc.io/sampler@v1.3.0?type=package",

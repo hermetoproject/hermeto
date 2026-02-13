@@ -55,7 +55,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20201001160613-4c65d49cae6b?type=module",
       "type": "library",
-      "version": "v0.0.0-20201001160613-4c65d49cae6b"
+      "version": "v0.0.0-20201001160613-4c65d49cae6b",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/cachito-testing/cachito-gomod-with-deps",
@@ -99,6 +106,13 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
         }
       ],
       "purl": "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -630,6 +644,13 @@
           "value": "hermeto"
         }
       ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ],
       "purl": "pkg:golang/rsc.io/quote@v1.5.2?type=module",
       "type": "library",
       "version": "v1.5.2"
@@ -652,6 +673,13 @@
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
         }
       ],
       "purl": "pkg:golang/rsc.io/sampler@v1.3.0?type=module",

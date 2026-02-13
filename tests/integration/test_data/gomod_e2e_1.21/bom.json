@@ -902,7 +902,14 @@
       ],
       "purl": "pkg:golang/github.com/Masterminds/semver@v1.4.2?type=module",
       "type": "library",
-      "version": "v1.4.2"
+      "version": "v1.4.2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/Masterminds/semver",
@@ -950,7 +957,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20240308152237-d0c316edef82?type=module",
       "type": "library",
-      "version": "v2.0.0-20240308152237-d0c316edef82"
+      "version": "v2.0.0-20240308152237-d0c316edef82",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/release-engineering/retrodep/v2",
@@ -974,7 +988,14 @@
       ],
       "purl": "pkg:golang/github.com/kr/pretty@v0.1.0?type=module",
       "type": "library",
-      "version": "v0.1.0"
+      "version": "v0.1.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/op/go-logging",
@@ -986,7 +1007,14 @@
       ],
       "purl": "pkg:golang/github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7?type=module",
       "type": "library",
-      "version": "v0.0.0-20160315200505-970db520ece7"
+      "version": "v0.0.0-20160315200505-970db520ece7",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/op/go-logging",
@@ -1010,7 +1038,14 @@
       ],
       "purl": "pkg:golang/github.com/pkg/errors@v0.8.1?type=module",
       "type": "library",
-      "version": "v0.8.1"
+      "version": "v0.8.1",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/pkg/errors",
@@ -1134,7 +1169,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/tools@v0.0.0-20190325161752-5a8dccf5b48a?type=module",
       "type": "library",
-      "version": "v0.0.0-20190325161752-5a8dccf5b48a"
+      "version": "v0.0.0-20190325161752-5a8dccf5b48a",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "gopkg.in/check.v1",
@@ -1146,7 +1188,14 @@
       ],
       "purl": "pkg:golang/gopkg.in/check.v1@v1.0.0-20180628173108-788fd7840127?type=module",
       "type": "library",
-      "version": "v1.0.0-20180628173108-788fd7840127"
+      "version": "v1.0.0-20180628173108-788fd7840127",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "gopkg.in/yaml.v2",
@@ -1158,7 +1207,14 @@
       ],
       "purl": "pkg:golang/gopkg.in/yaml.v2@v2.2.2?type=module",
       "type": "library",
-      "version": "v2.2.2"
+      "version": "v2.2.2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "gopkg.in/yaml.v2",
