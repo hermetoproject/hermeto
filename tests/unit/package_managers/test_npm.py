@@ -1526,7 +1526,7 @@ def test_update_vcs_url_with_full_hostname(vcs: str, expected: str) -> None:
     assert _update_vcs_url_with_full_hostname(vcs) == expected
 
 
-@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.js_utils.clone_as_tarball")
 def test_clone_repo_pack_archive(
     mock_clone_as_tarball: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -1630,7 +1630,7 @@ def test_should_replace_dependency(dependency_version: str, expected_result: boo
 @mock.patch("hermeto.core.package_managers.npm.async_download_files")
 @mock.patch("hermeto.core.package_managers.npm.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.npm.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.js_utils.clone_as_tarball")
 def test_get_npm_dependencies(
     mock_clone_as_tarball: mock.Mock,
     mock_from_sri: mock.Mock,
