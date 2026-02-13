@@ -136,6 +136,7 @@ exclude_lines = [
 ]
 
 [tool.pytest.ini_options]
+addopts = "--doctest-modules"
 log_cli_level = "DEBUG"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
