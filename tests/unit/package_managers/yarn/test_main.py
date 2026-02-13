@@ -1,4 +1,5 @@
 import itertools
+import json
 import re
 from enum import Enum
 from itertools import zip_longest
@@ -7,6 +8,7 @@ from unittest import mock
 
 import pytest
 import semver
+import yaml
 
 from hermeto.core.errors import (
     LockfileNotFound,
@@ -15,19 +17,30 @@ from hermeto.core.errors import (
     UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.output import (
+    BuildConfig,
+    Component,
+    EnvironmentVariable,
+    ProjectFile,
+    RequestOutput,
+)
 from hermeto.core.package_managers.yarn.main import (
+    GitDep,
+    _build_clone_url,
+    _build_vcs_url,
     _check_lockfile,
     _check_zero_installs,
+    _clone_and_resolve_git_deps,
     _configure_yarn_version,
     _fetch_dependencies,
     _generate_environment_variables,
+    _parse_lockfile_git_deps,
     _set_yarnrc_configuration,
     _verify_corepack_yarn_version,
     _verify_yarnrc_paths,
     fetch_yarn_source,
 )
-from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
+from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, Project, YarnRc
 from hermeto.core.package_managers.yarn.utils import VersionsRange
 from hermeto.core.rooted_path import RootedPath
 
@@ -452,7 +465,8 @@ def test_fetch_yarn_source(
 ) -> None:
     mock_project = [mock.Mock() for _ in input_request.packages]
     mock_project_from_source_dir.side_effect = mock_project
-    mock_resolve_yarn.side_effect = package_components
+    # _resolve_yarn_project now returns (components, project_files)
+    mock_resolve_yarn.side_effect = [(comps, []) for comps in package_components]
 
     output = fetch_yarn_source(input_request)
 
@@ -478,3 +492,216 @@ def test_fetch_yarn_source(
         build_config=BuildConfig(environment_variables=yarn_env_variables),
     )
     assert output == expected_output
+
+
+@pytest.mark.parametrize(
+    "input_request",
+    [pytest.param([{"type": "yarn", "path": "."}], id="single_package_with_project_files")],
+    indirect=["input_request"],
+)
+@mock.patch("hermeto.core.package_managers.yarn.main._resolve_yarn_project")
+@mock.patch("hermeto.core.package_managers.yarn.project.Project.from_source_dir")
+def test_fetch_yarn_source_with_project_files(
+    mock_project_from_source_dir: mock.Mock,
+    mock_resolve_yarn: mock.Mock,
+    input_request: Request,
+    yarn_env_variables: list[EnvironmentVariable],
+) -> None:
+    mock_project = mock.Mock()
+    mock_project_from_source_dir.return_value = mock_project
+
+    pf = ProjectFile(abspath="/fake/package.json", template='{"resolutions": {}}')
+    components = [Component(name="foo", purl="pkg:npm/foo@1.0.0", version="1.0.0")]
+    mock_resolve_yarn.return_value = (components, [pf])
+
+    output = fetch_yarn_source(input_request)
+
+    assert pf in output.build_config.project_files
+    assert output.components == components
+
+
+# --- Tests for git dependency support ---
+
+
+def _make_project_with_lockfile(
+    tmp_path: Path, lockfile_data: dict, package_json_data: dict | None = None
+) -> Project:
+    source_dir = RootedPath(tmp_path)
+    lockfile_path = tmp_path / "yarn.lock"
+    with lockfile_path.open("w") as f:
+        yaml.safe_dump(lockfile_data, f)
+
+    pj_data = package_json_data or {"name": "test-project", "version": "1.0.0"}
+    pj_path = tmp_path / "package.json"
+    with pj_path.open("w") as f:
+        json.dump(pj_data, f)
+
+    yarnrc_path = source_dir.join_within_root(".yarnrc.yml")
+    yarn_rc = YarnRc(yarnrc_path, {})
+    package_json = PackageJson.from_file(source_dir.join_within_root("package.json"))
+    return Project(source_dir=source_dir, yarn_rc=yarn_rc, package_json=package_json)
+
+
+# A comprehensive lockfile that exercises multiple code paths in one test:
+# HTTPS git dep, SSH git dep, scoped git dep, npm dep (skipped), __metadata (skipped).
+MIXED_LOCKFILE = {
+    "__metadata": {"version": 8, "cacheKey": "10c0"},
+    "lodash@npm:4.17.21": {
+        "version": "4.17.21",
+        "resolution": "lodash@npm:4.17.21",
+    },
+    "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97": {
+        "version": "1.0.0",
+        "resolution": "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97",
+    },
+    "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7": {
+        "version": "1.0.0",
+        "resolution": "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7",
+    },
+    "@databricks/json-bigint@https://github.com/databricks/json-bigint.git#commit=a1defaf9": {
+        "version": "0.2.3",
+        "resolution": "@databricks/json-bigint@https://github.com/databricks/json-bigint.git#commit=a1defaf9",
+    },
+}
+
+
+class TestParseLockfileGitDeps:
+    def test_parses_mixed_lockfile(self, tmp_path: Path) -> None:
+        project = _make_project_with_lockfile(tmp_path, MIXED_LOCKFILE)
+        result = _parse_lockfile_git_deps(project)
+
+        # Should find 3 git deps (HTTPS, SSH, scoped) and skip __metadata + npm
+        assert len(result) == 3
+
+        by_name = {d["name"]: d for d in result}
+
+        # HTTPS git dep
+        assert by_name["c2-wo-deps"]["clone_url"] == (
+            "https://bitbucket.org/cachi-testing/cachi2-without-deps.git"
+        )
+        assert by_name["c2-wo-deps"]["ref"] == "9e164b97"
+
+        # SSH (SCP-style) git dep
+        assert by_name["ccto-wo-deps"]["clone_url"] == (
+            "git@github.com:cachito-testing/cachito-npm-without-deps.git"
+        )
+        assert by_name["ccto-wo-deps"]["ref"] == "2f0ce1d7"
+
+        # Scoped git dep
+        assert by_name["@databricks/json-bigint"]["clone_url"] == (
+            "https://github.com/databricks/json-bigint.git"
+        )
+        assert by_name["@databricks/json-bigint"]["ref"] == "a1defaf9"
+
+    def test_empty_lockfile(self, tmp_path: Path) -> None:
+        project = _make_project_with_lockfile(tmp_path, {})
+        assert _parse_lockfile_git_deps(project) == []
+
+    def test_skips_patched_and_workspace_git_deps(self, tmp_path: Path) -> None:
+        lockfile = {
+            "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.": {
+                "version": "1.0.0",
+                "resolution": "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+            },
+            "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0": {
+                "version": "1.0.0",
+                "resolution": "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
+            },
+        }
+        project = _make_project_with_lockfile(tmp_path, lockfile)
+
+        # Patched and workspace git deps are skipped (not extracted);
+        # they'll be reported as unsupported later by resolve_packages.
+        assert _parse_lockfile_git_deps(project) == []
+
+
+def test_build_clone_url() -> None:
+    assert _build_clone_url("https", "//github.com/owner/repo.git") == (
+        "https://github.com/owner/repo.git"
+    )
+    assert _build_clone_url("git@github.com", "cachito-testing/repo.git") == (
+        "git@github.com:cachito-testing/repo.git"
+    )
+    # git+ prefix is stripped so clone_as_tarball's ssh→https fallback works
+    assert _build_clone_url("git+ssh", "//git@github.com/owner/repo.git") == (
+        "ssh://git@github.com/owner/repo.git"
+    )
+    assert _build_clone_url("git+https", "//github.com/owner/repo.git") == (
+        "https://github.com/owner/repo.git"
+    )
+    with pytest.raises(PackageRejected, match="Cannot build clone URL"):
+        _build_clone_url(None, "//github.com/owner/repo.git")
+
+
+def test_build_vcs_url() -> None:
+    dep: GitDep = {"name": "foo", "clone_url": "https://github.com/owner/foo.git", "ref": "abc123"}
+    assert _build_vcs_url(dep) == "git+https://github.com/owner/foo.git@abc123"
+
+    dep = {"name": "bar", "clone_url": "git@github.com:owner/bar.git", "ref": "def456"}
+    assert _build_vcs_url(dep) == "git+git@github.com:owner/bar.git@def456"
+
+
+class TestCloneAndResolveGitDeps:
+    @mock.patch("hermeto.core.package_managers.js_utils.clone_as_tarball")
+    def test_clones_writes_relative_resolutions_and_dedupes(
+        self, mock_clone: mock.Mock, tmp_path: Path
+    ) -> None:
+        project = _make_project_with_lockfile(tmp_path, {})
+        output_dir = RootedPath(tmp_path / "output")
+        output_dir.path.mkdir()
+
+        git_deps: list[GitDep] = [
+            {
+                "name": "my-dep",
+                "clone_url": "https://github.com/owner/my-dep.git",
+                "ref": "abc123",
+            },
+            # Same source as my-dep: should be deduped (clone called once)
+            {
+                "name": "my-dep-alias",
+                "clone_url": "https://github.com/owner/my-dep.git",
+                "ref": "abc123",
+            },
+        ]
+
+        project_files = _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+        # clone_as_tarball called only once for the deduped source
+        mock_clone.assert_called_once()
+        assert "my-dep-external-gitcommit-abc123.tgz" in str(mock_clone.call_args[0][2])
+
+        # Verify package.json resolutions were written
+        pj = json.loads((tmp_path / "package.json").read_text())
+        for name in ("my-dep", "my-dep-alias"):
+            assert name in pj["resolutions"]
+            assert pj["resolutions"][name].startswith("file:")
+
+        # Verify ProjectFile template uses ${output_dir}
+        assert len(project_files) == 1
+        pf_template = json.loads(project_files[0].template)
+        assert "${output_dir}" in pf_template["resolutions"]["my-dep"]
+        assert "${output_dir}" in pf_template["resolutions"]["my-dep-alias"]
+
+    def test_rejects_name_collision(self, tmp_path: Path) -> None:
+        project = _make_project_with_lockfile(tmp_path, {})
+        output_dir = RootedPath(tmp_path / "output")
+        output_dir.path.mkdir()
+
+        git_deps: list[GitDep] = [
+            {"name": "my-dep", "clone_url": "https://github.com/owner/repo-a.git", "ref": "aaa"},
+            {"name": "my-dep", "clone_url": "https://github.com/owner/repo-b.git", "ref": "bbb"},
+        ]
+
+        with pytest.raises(PackageRejected, match="Multiple git dependencies share the name"):
+            _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+
+class TestSetYarnrcConfigurationGitDeps:
+    def test_immutable_installs_always_true(self, tmp_path: Path) -> None:
+        project = _make_project_with_lockfile(tmp_path, {})
+        output_dir = RootedPath(tmp_path / "output")
+        output_dir.path.mkdir()
+        version = semver.Version.parse("4.0.0")
+
+        _set_yarnrc_configuration(project, output_dir, version)
+        assert project.yarn_rc["enableImmutableInstalls"] is True

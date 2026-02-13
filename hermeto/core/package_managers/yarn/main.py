@@ -1,11 +1,33 @@
+import copy
+import json
 import logging
+from pathlib import Path
+from typing import Any, TypedDict
+from urllib.parse import parse_qs
 
 import semver
+import yaml
 
 from hermeto import APP_NAME
-from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
+from hermeto.core.errors import (
+    LockfileNotFound,
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.output import (
+    Component,
+    EnvironmentVariable,
+    ProjectFile,
+    RequestOutput,
+)
+from hermeto.core.package_managers.js_utils import clone_repo_pack_archive
+
+# The public parse_locator rejects git locators; we need the lower-level
+# parser to inspect them for git dependency detection.
+from hermeto.core.package_managers.yarn.locators import _parse_locator
 from hermeto.core.package_managers.yarn.project import (
     Plugin,
     Project,
@@ -24,18 +46,29 @@ from hermeto.core.rooted_path import RootedPath
 log = logging.getLogger(__name__)
 
 
+class GitDep(TypedDict):
+    """A git dependency extracted from yarn.lock."""
+
+    name: str
+    clone_url: str
+    ref: str
+
+
 def fetch_yarn_source(request: Request) -> RequestOutput:
     """Process all the yarn source directories in a request."""
-    components = []
+    components: list[Component] = []
+    project_files: list[ProjectFile] = []
 
     for package in request.yarn_packages:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        components.extend(_resolve_yarn_project(project, request.output_dir))
+        pkg_components, pkg_project_files = _resolve_yarn_project(project, request.output_dir)
+        components.extend(pkg_components)
+        project_files.extend(pkg_project_files)
 
     return RequestOutput.from_obj_list(
-        components, _generate_environment_variables(), project_files=[]
+        components, _generate_environment_variables(), project_files=project_files
     )
 
 
@@ -92,11 +125,14 @@ def _verify_repository(project: Project) -> None:
     _check_lockfile(project)
 
 
-def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Component]:
+def _resolve_yarn_project(
+    project: Project, output_dir: RootedPath
+) -> tuple[list[Component], list[ProjectFile]]:
     """Process a request for a single yarn source directory.
 
     :param project: the directory to be processed.
     :param output_dir: the directory where the prefetched dependencies will be placed.
+    :return: a tuple of (components, project_files)
     :raises PackageManagerError: if fetching dependencies fails
     """
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
@@ -104,11 +140,32 @@ def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Comp
     version = _configure_yarn_version(project)
     _verify_repository(project)
 
-    _set_yarnrc_configuration(project, output_dir, version)
-    packages = resolve_packages(project.source_dir)
-    _fetch_dependencies(project.source_dir)
+    git_deps = _parse_lockfile_git_deps(project)
 
-    return create_components(packages, project, output_dir)
+    if git_deps:
+        project_files = _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+        # Immutable installs must be off so yarn can update the lockfile
+        # to reference the local tarballs we wrote to package.json.
+        _set_yarnrc_configuration(project, output_dir, version)
+        project.yarn_rc["enableImmutableInstalls"] = False
+        project.yarn_rc.write()
+        try:
+            _fetch_dependencies(project.source_dir)
+        finally:
+            project.yarn_rc["enableImmutableInstalls"] = True
+            project.yarn_rc.write()
+
+        project_files.append(_build_lockfile_project_file(project, output_dir))
+
+        packages = resolve_packages(project.source_dir)
+        git_purl_map = {d["name"]: _build_vcs_url(d) for d in git_deps}
+        return create_components(packages, project, output_dir, git_purl_map), project_files
+    else:
+        _set_yarnrc_configuration(project, output_dir, version)
+        packages = resolve_packages(project.source_dir)
+        _fetch_dependencies(project.source_dir)
+        return create_components(packages, project, output_dir), []
 
 
 def _configure_yarn_version(project: Project) -> semver.Version:
@@ -254,3 +311,170 @@ def _verify_corepack_yarn_version(expected_version: semver.Version, source_dir: 
         )
 
     log.info("Processing the request using yarn@%s", installed_yarn_version)
+
+
+def _parse_lockfile_git_deps(project: Project) -> list[GitDep]:
+    """Scan yarn.lock for git-resolved dependencies.
+
+    Unsupported variants (patched git deps, workspace+commit) are silently
+    skipped here and will be reported later by resolve_packages.
+
+    :param project: the Project whose yarn.lock will be scanned.
+    :return: list of GitDep dicts with keys: name, clone_url, ref.
+    """
+    lockfile_filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
+    lockfile_path = project.source_dir.join_within_root(lockfile_filename).path
+
+    with lockfile_path.open("r") as f:
+        lockfile_data: dict[str, Any] = yaml.safe_load(f) or {}
+
+    git_deps: list[GitDep] = []
+
+    for key, entry in lockfile_data.items():
+        if key == "__metadata":
+            continue
+
+        resolution = entry.get("resolution") if isinstance(entry, dict) else None
+        if not resolution:
+            continue
+
+        try:
+            parsed = _parse_locator(resolution)
+        except (UnexpectedFormat, UnsupportedFeature):
+            continue
+
+        ref = parsed.parsed_reference
+        protocol = ref.protocol.removesuffix(":") if ref.protocol else None
+
+        # Skip patched git deps and workspace+commit git deps; these unsupported
+        # variants will be reported later by resolve_packages/parse_locator.
+        if protocol == "patch":
+            continue
+
+        selector_qs = parse_qs(ref.selector)
+        if "commit" not in selector_qs:
+            continue
+        if "workspace" in selector_qs:
+            continue
+
+        commit = selector_qs["commit"][0]
+        clone_url = _build_clone_url(protocol, ref.source)
+
+        name = parsed.name
+        if parsed.scope:
+            name = f"@{parsed.scope}/{name}"
+
+        git_deps.append(GitDep(name=name, clone_url=clone_url, ref=commit))
+
+    return git_deps
+
+
+def _build_clone_url(protocol: str | None, source: str | None) -> str:
+    """Build a clone-friendly URL from a Berry git locator's protocol and source.
+
+    Given protocol="https" and source="//host/path.git", returns "https://host/path.git".
+    For SCP-style locators like protocol="git@host", source="ns/repo.git", returns
+    "git@host:ns/repo.git".
+
+    The ``git+`` prefix (e.g. ``git+ssh``, ``git+https``) is stripped so the result
+    is a URL that git can clone directly and that clone_as_tarball can apply its
+    ssh-to-https fallback to correctly.
+    """
+    if not protocol or not source:
+        raise PackageRejected(
+            f"Cannot build clone URL from protocol={protocol!r}, source={source!r}",
+            solution="Ensure the git dependency in yarn.lock has a valid URL.",
+        )
+
+    # Strip git+ prefix (e.g. git+ssh -> ssh, git+https -> https) so the URL
+    # is directly usable by git clone and the ssh→https fallback in clone_as_tarball.
+    protocol = protocol.removeprefix("git+")
+
+    return f"{protocol}:{source}"
+
+
+def _build_vcs_url(dep: GitDep) -> str:
+    """Build a canonical vcs_url qualifier for PURL generation."""
+    return f"git+{dep['clone_url']}@{dep['ref']}"
+
+
+def _clone_and_resolve_git_deps(
+    project: Project,
+    git_deps: list[GitDep],
+    output_dir: RootedPath,
+) -> list[ProjectFile]:
+    """Clone git deps, write resolutions to package.json, and return ProjectFiles.
+
+    :param project: the Project whose package.json will be modified
+    :param git_deps: list of GitDep dicts
+    :param output_dir: base output directory
+    :return: list of ProjectFile objects for package.json (with template paths)
+    :raises PackageRejected: if two git deps share the same name but different sources
+    """
+    seen_names: dict[str, tuple[str, str]] = {}
+    for dep in git_deps:
+        key = (dep["clone_url"], dep["ref"])
+        if dep["name"] in seen_names and seen_names[dep["name"]] != key:
+            raise PackageRejected(
+                f"Multiple git dependencies share the name '{dep['name']}' but resolve to "
+                f"different sources. This cannot be expressed in a single yarn resolution.",
+                solution=(
+                    "Ensure all git dependencies with the same package name point to the same "
+                    "repository and commit."
+                ),
+            )
+        seen_names[dep["name"]] = key
+
+    yarn_deps_dir = output_dir.join_within_root("deps", "yarn")
+    tarball_info: dict[str, tuple[RootedPath, Path]] = {}
+    cloned_sources: dict[tuple[str, str], RootedPath] = {}
+
+    for dep in git_deps:
+        source_key = (dep["clone_url"], dep["ref"])
+
+        if source_key not in cloned_sources:
+            tarball_rooted = clone_repo_pack_archive(dep["clone_url"], dep["ref"], yarn_deps_dir)
+            cloned_sources[source_key] = tarball_rooted
+        else:
+            tarball_rooted = cloned_sources[source_key]
+
+        rel_to_output = tarball_rooted.path.relative_to(output_dir.path)
+        tarball_info[dep["name"]] = (tarball_rooted, rel_to_output)
+
+    resolutions = project.package_json.data.get("resolutions", {})
+    for name, (tarball_rooted, _) in tarball_info.items():
+        resolutions[name] = f"file:{tarball_rooted.path}"
+    project.package_json["resolutions"] = resolutions
+    project.package_json.write()
+
+    template_data = copy.deepcopy(project.package_json.data)
+    for name, (_, rel_to_output) in tarball_info.items():
+        template_data["resolutions"][name] = f"file:${{output_dir}}/{rel_to_output}"
+
+    package_json_path = project.source_dir.join_within_root("package.json").path
+    project_files = [
+        ProjectFile(
+            abspath=package_json_path.resolve(),
+            template=json.dumps(template_data, indent=2) + "\n",
+        )
+    ]
+
+    return project_files
+
+
+def _build_lockfile_project_file(project: Project, output_dir: RootedPath) -> ProjectFile:
+    """Read the updated yarn.lock and build a ProjectFile with templated paths.
+
+    Replaces any occurrence of the output directory path with ${output_dir}.
+    """
+    lockfile_filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
+    lockfile_path = project.source_dir.join_within_root(lockfile_filename).path
+    lockfile_content = lockfile_path.read_text()
+
+    output_dir_str = str(output_dir.path)
+    lockfile_content = lockfile_content.replace(output_dir_str, "${output_dir}")
+
+    return ProjectFile(
+        abspath=lockfile_path.resolve(),
+        template=lockfile_content,
+    )
