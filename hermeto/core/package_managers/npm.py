@@ -24,8 +24,9 @@ from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.js_utils import clone_repo_pack_archive
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
+from hermeto.core.scm import RepoID, get_repo_id
 
 DEPENDENCY_TYPES = (
     "dependencies",
@@ -439,7 +440,7 @@ def _extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
     namespace_repo = url.path.strip("/").removesuffix(".git")
 
     # Everything up to the last '/' is namespace, the rest is repo
-    namespace, _, repo = namespace_repo.partition("/")
+    namespace, _, repo = namespace_repo.rpartition("/")
 
     vcs_url_info = {
         "url": clean_url,
@@ -467,24 +468,12 @@ def _clone_repo_pack_archive(
     """
     Clone a repository and pack its content as tar.
 
-    :param url: URL for file download
+    :param vcs: VCS URL (e.g. git+ssh://host/ns/repo.git#ref)
     :param download_dir: Output folder where dependencies will be downloaded
     :raise FetchError: If download failed
     """
     info = _extract_git_info_npm(vcs)
-    download_path = download_dir.join_within_root(
-        info["host"],  # host
-        info["namespace"],
-        info["repo"],
-        f"{info['repo']}-external-gitcommit-{info['ref']}.tgz",
-    )
-
-    # Create missing directories
-    directory = Path(download_path).parent
-    directory.mkdir(parents=True, exist_ok=True)
-    clone_as_tarball(info["url"], info["ref"], download_path.path)
-
-    return download_path
+    return clone_repo_pack_archive(info["url"], info["ref"], download_dir)
 
 
 def _get_npm_dependencies(
