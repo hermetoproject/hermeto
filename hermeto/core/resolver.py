@@ -6,7 +6,17 @@ from typing import Any
 from hermeto import APP_NAME
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
-from hermeto.core.package_managers import bundler, cargo, generic, gomod, metayarn, npm, pip, rpm
+from hermeto.core.package_managers import (
+    bundler,
+    cargo,
+    generic,
+    gomod,
+    maven,
+    metayarn,
+    npm,
+    pip,
+    rpm,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import copy_directory
 
@@ -19,6 +29,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "yarn": metayarn.fetch_yarn_source,
+    "x-maven": maven.fetch_maven_source,
     "generic": generic.fetch_generic_source,
     "rpm": rpm.fetch_rpm_source,
 }
