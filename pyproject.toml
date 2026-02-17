@@ -48,6 +48,7 @@ test = [
   "pytest-asyncio",
   "pytest-cov",
   "pytest-env",
+  "pytest-xdist",
 ]
 [project.scripts]
 cachi2 = "hermeto.interface.cli:app"
