@@ -182,6 +182,12 @@ This section helps the community evaluate the maturity of the package manager. E
 managers use the `x-` prefix in their package manager name. This section should be completed prior
 to the community declaring the package manager "fully supported."
 
+**Note**: Components produced by experimental package managers (those with `x-` prefix) are
+identified through document-level annotations in generated SBOMs. Each experimental package manager
+creates a separate annotation listing the components it produced, with text such as
+`hermeto:found_by:experimental_package_manager:foo` and subjects containing the relevant bom-ref 
+values.
+
 ### Current Limitations
 
 Document known limitations of the current implementation:
