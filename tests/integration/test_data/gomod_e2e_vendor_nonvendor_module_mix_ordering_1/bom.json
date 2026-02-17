@@ -429,7 +429,14 @@
       ],
       "purl": "pkg:golang/github.com/google/uuid@v1.6.0?type=module",
       "type": "library",
-      "version": "v1.6.0"
+      "version": "v1.6.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/google/uuid",
@@ -453,7 +460,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/non-vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
       "type": "library",
-      "version": "v0.0.0-20251031153824-281b55caebf2"
+      "version": "v0.0.0-20251031153824-281b55caebf2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
@@ -489,7 +503,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/vendored-module@v0.0.0-20251031153824-281b55caebf2?type=module",
       "type": "library",
-      "version": "v0.0.0-20251031153824-281b55caebf2"
+      "version": "v0.0.0-20251031153824-281b55caebf2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",

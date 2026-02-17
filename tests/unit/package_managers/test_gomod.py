@@ -22,7 +22,14 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component, Property, PropertyEnum
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    Component,
+    ExternalReference,
+    Property,
+    PropertyEnum,
+)
 from hermeto.core.package_managers.gomod import (
     Go,
     GoVersion,
@@ -839,6 +846,7 @@ def test_create_modules_from_parsed_data(
             version="v0.0.0-20190311183353-d8887717615a",
             original_name="golang.org/a/standard-module",
             real_path="golang.org/a/standard-module",
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/another-org/useful-module",
@@ -846,18 +854,21 @@ def test_create_modules_from_parsed_data(
             original_name="github.com/a-neat-org/useful-module",
             real_path="github.com/another-org/useful-module",
             missing_hash_in_file=Path("target-module/go.sum"),
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/some-org/this-other-module",
             version="v1.5.0",
             original_name="github.com/some-org/this-other-module",
             real_path="github.com/my-org/my-repo/target-module/local-path",
+            proxy="https://proxy.golang.org,direct",
         ),
         Module(
             name="github.com/some-org/yet-another-module",
             version="v1.5.0",
             original_name="github.com/some-org/yet-another-module",
             real_path="github.com/my-org/my-repo/sibling-path",
+            proxy="https://proxy.golang.org,direct",
         ),
     ]
 
@@ -872,6 +883,7 @@ def test_create_modules_from_parsed_data(
             original_name="github.com/a-neat-org/useful-module",
             real_path="github.com/another-org/useful-module",
             missing_hash_in_file=Path("workspace_dir/go.work.sum"),
+            proxy="https://proxy.golang.org,direct",
         )
 
     modules = _create_modules_from_parsed_data(
@@ -1689,19 +1701,40 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
                     properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum")
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum"),
+                    ],
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
                     ],
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="github.com/my-org/my-repo",
@@ -1751,24 +1784,52 @@ def test_missing_gomod_file(
                     name="github.com/my-org/my-repo",
                     purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="github.com/my-org/my-repo/path",
                     purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module",
                     version="v1.0.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
                 Component(
                     name="golang.org/x/net",
                     purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
                     version="v0.0.0-20190311183353-d8887717615a",
                     properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum")
+                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum"),
+                    ],
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
                     ],
                 ),
                 Component(
                     name="golang.org/x/tools",
                     purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
                     version="v0.7.0",
+                    external_references=[
+                        ExternalReference(
+                            url="https://proxy.golang.org",
+                            type=PROXY_REF_TYPE,
+                            comment=PROXY_COMMENT,
+                        )
+                    ],
                 ),
             ],
         ),
@@ -2620,3 +2681,104 @@ def test_go_exec_env(
 
     actual = _go_exec_env() if extra_env is None else _go_exec_env(**extra_env)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_fields",
+    [
+        pytest.param(
+            {
+                "Vcs": "git",
+                "Url": "github.com/my-org/some-repo",
+                "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "Ref": "refs/tags/v1.11.0",
+            },
+            {
+                "vcs": "git",
+                "url": "github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_origin",
+        ),
+    ],
+)
+def test_parsed_origin_from_json(input_json: dict, expected_fields: dict) -> None:
+    """Test ParsedOrigin parsing from JSON with PascalCase field mapping."""
+    from hermeto.core.package_managers.gomod import ParsedOrigin
+
+    origin = ParsedOrigin.model_validate(input_json)
+
+    assert origin.vcs == expected_fields["vcs"]
+    assert origin.url == expected_fields["url"]
+    assert origin.hash == expected_fields["hash"]
+    assert origin.tag_sum == expected_fields["tag_sum"]
+    assert origin.ref == expected_fields["ref"]
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_origin",
+    [
+        pytest.param(
+            {
+                "Path": "github.com/my-org/some-repo",
+                "Version": "v1.11.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": {
+                    "Vcs": "git",
+                    "Url": "https://github.com/my-org/some-repo",
+                    "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                    "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                    "Ref": "refs/tags/v1.11.0",
+                },
+            },
+            {
+                "vcs": "git",
+                "url": "https://github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_with_origin",
+        ),
+        pytest.param(
+            {
+                "Path": "example.org/some/package",
+                "Version": "v1.0.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": None,
+            },
+            None,
+            id="module_without_origin",
+        ),
+        pytest.param(
+            {"Path": "example.org/local/package", "Version": None, "Main": True, "Replace": None},
+            None,
+            id="module_missing_origin_field",
+        ),
+    ],
+)
+def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | None) -> None:
+    """Test ParsedModule parsing with optional Origin field."""
+    from hermeto.core.package_managers.gomod import ParsedModule
+
+    module = ParsedModule.model_validate(input_json)
+
+    assert module.path == input_json["Path"]
+    assert module.version == input_json.get("Version")
+    assert module.main == input_json.get("Main", False)
+    assert module.replace == input_json.get("Replace")
+
+    if expected_origin is None:
+        assert module.origin is None
+    else:
+        assert module.origin is not None
+        assert module.origin.vcs == expected_origin["vcs"]
+        assert module.origin.url == expected_origin["url"]
+        assert module.origin.hash == expected_origin["hash"]
+        assert module.origin.tag_sum == expected_origin["tag_sum"]
+        assert module.origin.ref == expected_origin["ref"]

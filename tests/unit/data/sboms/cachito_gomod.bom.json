@@ -44,7 +44,14 @@
           "value": "hermeto"
         }
       ],
-      "type": "library"
+      "type": "library",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "github.com/akhmanova/cachito-gomod-test",
@@ -92,7 +99,14 @@
           "value": "hermeto"
         }
       ],
-      "type": "library"
+      "type": "library",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "internal/abi",
@@ -379,7 +393,14 @@
           "value": "hermeto"
         }
       ],
-      "type": "library"
+      "type": "library",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "rsc.io/quote",
@@ -403,7 +424,14 @@
           "value": "hermeto"
         }
       ],
-      "type": "library"
+      "type": "library",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "name": "rsc.io/sampler",
