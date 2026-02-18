@@ -7,7 +7,7 @@ DEFAULT_HTTP_PORT=8081
 TEST_RPM="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/r/redhat-release-9.4-0.5.el9.x86_64.rpm"
 
 HTTP_PORT=${DNFSERVER_HTTP_PORT:-$DEFAULT_HTTP_PORT}
-SSL_PORT=${DNFSERVER_SSL_PORT:-$DEFAULT_SSL_PORT}
+SSL_PORT=${HERMETO_TEST_DNFSERVER_SSL_PORT:-$DEFAULT_SSL_PORT}
 DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 cleanup() {

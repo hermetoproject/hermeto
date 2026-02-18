@@ -184,9 +184,9 @@ jobs:
 
       - name: Run integration tests on built image
         env:
-          HERMETO_IMAGE: localhost/hermeto:${{ github.sha }}
-          HERMETO_TEST_LOCAL_PYPISERVER: 'true'
-          HERMETO_TEST_LOCAL_DNF_SERVER: 'true'
+          HERMETO_TEST_IMAGE: localhost/hermeto:${{ github.sha }}
+          HERMETO_TEST_LOCAL_PYPISERVER: '1'
+          HERMETO_TEST_LOCAL_DNF_SERVER: '1'
         run: |
           git config --global --add safe.directory "*"
           /var/tmp/venv/bin/nox -s integration-tests
