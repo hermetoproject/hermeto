@@ -14,10 +14,12 @@ from git import Repo
 
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     InvalidChecksum,
     LockfileNotFound,
     MissingChecksum,
+    NotAGitRepo,
     PackageRejected,
     UnsupportedFeature,
 )
@@ -1575,6 +1577,87 @@ def test_generate_purl_main_package(
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
 
     assert purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    "subpath, expected_purl",
+    [
+        (
+            ".",
+            "pkg:pypi/foo@1.0.0",
+        ),
+        (
+            "path/to/package",
+            "pkg:pypi/foo@1.0.0#path/to/package",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.pip.main.get_config")
+@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+def test_generate_purl_main_package_without_vcs_url(
+    mock_handle_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    subpath: Path,
+    expected_purl: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+
+    purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
+
+    assert purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    "subpath, expected_purl",
+    [
+        (
+            ".",
+            f"pkg:pypi/foo@1.0.0?vcs_url=git%2Bssh://git%40github.com/my-org/my-repo%40{'f' * 40}",
+        ),
+        (
+            "path/to/package",
+            f"pkg:pypi/foo@1.0.0?vcs_url=git%2Bssh://git%40github.com/my-org/my-repo%40{'f' * 40}#path/to/package",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.pip.main.get_config")
+@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+@mock.patch("hermeto.core.scm.GitRepo")
+def test_generate_purl_main_package_permissive_mode_with_vcs_url(
+    mock_git_repo: mock.Mock,
+    mock_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    subpath: Path,
+    expected_purl: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mocked_repo = mock.Mock()
+    mocked_repo.remote.return_value.url = "ssh://git@github.com/my-org/my-repo"
+    mocked_repo.head.commit.hexsha = GIT_REF
+    mock_git_repo.return_value = mocked_repo
+
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+
+    purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
+
+    assert purl == expected_purl
+
+
+@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+def test_infer_package_name_raises_without_git_repo(
+    mock_handle_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+
+    with pytest.raises(PackageRejected) as exc_info:
+        pip._infer_package_name_from_origin_url(rooted_tmp_path)
+
+    assert "Unable to infer package name from origin URL" in str(exc_info.value)
 
 
 @mock.patch("hermeto.core.scm.GitRepo")

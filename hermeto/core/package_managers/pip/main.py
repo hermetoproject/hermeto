@@ -14,7 +14,8 @@ from packaging.utils import canonicalize_name
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
-from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFeature
+from hermeto.core.constants import Mode
+from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -23,6 +24,7 @@ from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
     extract_git_info,
+    get_vcs_qualifiers,
 )
 from hermeto.core.package_managers.pip.package_distributions import (
     DistributionPackageInfo,
@@ -126,8 +128,13 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
     type = "pypi"
     name = package["name"]
     version = package["version"]
-    url = get_repo_id(package_path.root).as_vcs_url_qualifier()
-    qualifiers = {"vcs_url": url}
+    try:
+        qualifiers = get_vcs_qualifiers(package_path.root)
+    except NotAGitRepo:
+        if get_config().mode == Mode.STRICT:
+            raise
+        qualifiers = None
+
     if package_path.subpath_from_root != Path("."):
         subpath = package_path.subpath_from_root.as_posix()
     else:
@@ -181,11 +188,19 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
 def _infer_package_name_from_origin_url(package_dir: RootedPath) -> str:
     try:
         repo_id = get_repo_id(package_dir.root)
+    except NotAGitRepo:
+        raise PackageRejected(
+            reason="Unable to infer package name from origin URL",
+            solution=(
+                "Provide valid metadata in the package files or ensure "
+                "the package files are in a git repository whose 'origin' remote has a valid URL."
+            ),
+        )
     except UnsupportedFeature:
         raise PackageRejected(
             reason="Unable to infer package name from origin URL",
             solution=(
-                "Provide valid metadata in the package files or ensure"
+                "Provide valid metadata in the package files or ensure "
                 "the git repository has an 'origin' remote with a valid URL."
             ),
         )

@@ -12,7 +12,6 @@ from hermeto.core.models.input import (
     BundlerBinaryFilters,
     BundlerPackageInput,
     GomodPackageInput,
-    Mode,
     NpmPackageInput,
     PackageInput,
     PipBinaryFilters,
@@ -411,7 +410,6 @@ class TestRequest:
                 },
             ],
             "flags": frozenset(),
-            "mode": Mode.STRICT,
         }
         assert isinstance(request.source_dir, RootedPath)
         assert isinstance(request.output_dir, RootedPath)

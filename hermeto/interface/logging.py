@@ -3,7 +3,7 @@ import logging
 from collections.abc import Iterable
 from typing import Any
 
-from hermeto.core.models.input import Mode
+from hermeto.core.constants import Mode
 
 LOG_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
