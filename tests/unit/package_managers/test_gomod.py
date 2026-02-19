@@ -65,7 +65,7 @@ from hermeto.core.package_managers.gomod import (
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
-from tests.common_utils import GIT_REF, write_file_tree
+from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -2174,6 +2174,15 @@ def test_parse_packages(
             {"usr": {"bin": {"go": ""}, "local": {"bin": {"go": ""}}}},
             2,
             id="deduplicate_paths",
+        ),
+        pytest.param(
+            "/opt/go/bin:/usr/go/bin",
+            {
+                "opt": {"go": {"bin": {"go": ""}}},
+                "usr": {"go": {"bin": {"go": Symlink("../../../opt/go/bin/go")}}},
+            },
+            1,
+            id="filter_symlinked_path",
         ),
     ],
 )

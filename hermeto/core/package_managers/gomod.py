@@ -1807,18 +1807,16 @@ def _list_installed_toolchains() -> set[Go]:
     for path in (HERMETO_GO_INSTALL_DIR, get_cache_dir()):
         paths |= {p.resolve().parent for p in Path(path).rglob("bin/go")}
 
-    for path in paths:
-        bin_path = Path(path, "go")
-        if not bin_path.exists():
-            continue
-
+    # filter out symlinked paths
+    go_binary_paths = set([Path(p, "go").resolve() for p in paths if Path(p, "go").exists()])
+    for bin_path in go_binary_paths:
         try:
-            log.debug("Probing %s toolchain...", path)
+            log.debug("Probing %s toolchain...", bin_path)
             ret.add(Go(binary=bin_path.as_posix()))
         except Exception as e:
             # Logging toolchain probing failures due to [1].
             # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
-            log.debug("Toolchain %s failed probing: %s, skipping...", path, e)
+            log.debug("Toolchain %s failed probing: %s, skipping...", bin_path, e)
 
     log.debug(
         "Found installed Go releases: %s\n", "\n".join(["\t- " + str(go.binary) for go in ret])
