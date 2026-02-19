@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
@@ -22,6 +22,15 @@ from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
+
+
+class CargoVendorResult(NamedTuple):
+    """
+    Important information after running cargo vendor command.
+    """
+
+    config_template: str
+    lockfile_was_regenerated: bool
 
 
 class PackageWithCorruptLockfileRejected(PackageRejected):
@@ -120,9 +129,13 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
         _verify_lockfile_is_present_or_fail(package_dir)
+
+        vendor_result = _fetch_dependencies(package_dir, request)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        config_template = _fetch_dependencies(package_dir, request)
+        config_template = _swap_sources_directory_for_subsitution_slot(
+            vendor_result.config_template
+        )
         project_files.append(_use_vendored_sources(package_dir, config_template))
         components.extend(_generate_sbom_components(package_dir))
 
@@ -137,7 +150,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
     )
 
 
-def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, Any]:
+def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendorResult:
     """Fetch cargo dependencies and return a config template for hermetic build."""
     vendor_dir = request.output_dir.join_within_root("deps/cargo")
     # --locked           Assert that `Cargo.lock` will remain unchanged.
@@ -153,14 +166,12 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> dict[str, 
         env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
         # https://doc.rust-lang.org/cargo/commands/cargo-vendor.html#description
-        config_template = _run_cmd_watching_out_for_lock_mismatch(
+        return _run_cmd_watching_out_for_lock_mismatch(
             cmd=cmd,
             params={"cwd": package_dir, "env": env},
             package_dir=package_dir.path,
             mode=request.mode,
         )
-
-    return _swap_sources_directory_for_subsitution_slot(config_template)
 
 
 def _parse_toml_project_file(path: Path) -> dict[str, Any]:
@@ -297,7 +308,7 @@ def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
 
 def _run_cmd_watching_out_for_lock_mismatch(
     cmd: list, params: dict, package_dir: Path, mode: Mode
-) -> str:
+) -> CargoVendorResult:
     warn_about_imminent_update_to_cargo_lock = (
         f"A mismatch between Cargo.lock and Cargo.toml was detected in {package_dir}. "
         "Because of permissive mode Hermeto will now regenerate Cargo.lock "
@@ -307,7 +318,8 @@ def _run_cmd_watching_out_for_lock_mismatch(
     )
     update_cargo_lock_cmd = ["cargo", "generate-lockfile"]
     try:
-        return run_cmd(cmd=cmd, params=params, suppress_errors=(mode == Mode.PERMISSIVE))
+        stdout = run_cmd(cmd=cmd, params=params, suppress_errors=(mode == Mode.PERMISSIVE))
+        return CargoVendorResult(config_template=stdout, lockfile_was_regenerated=False)
     except subprocess.CalledProcessError as e:
         # Search for a very specific failure state to better report it.
         # This is not a robust solution in any way, however it seems to be the only one
@@ -333,7 +345,8 @@ def _run_cmd_watching_out_for_lock_mismatch(
                     run_cmd(cmd=update_cargo_lock_cmd, params=update_cmd_params)
                 # If it fails here then something else is horribly broken.
                 # No more attempts to salvage the situation will be made.
-                return run_cmd(cmd=cmd, params=params)
+                stdout = run_cmd(cmd=cmd, params=params)
+                return CargoVendorResult(config_template=stdout, lockfile_was_regenerated=True)
             else:
                 raise PackageWithCorruptLockfileRejected(str(package_dir))
         else:
