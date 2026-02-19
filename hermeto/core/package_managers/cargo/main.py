@@ -13,10 +13,11 @@ import tomlkit
 import tomlkit.exceptions
 from packageurl import PackageURL
 
+from hermeto import APP_NAME
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.models.input import Mode, Request
-from hermeto.core.models.output import Component, EnvironmentVariable, ProjectFile, RequestOutput
-from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
+from hermeto.core.models.sbom import create_backend_annotation, spdx_now
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
@@ -123,8 +124,8 @@ class LocalCargoPackage:
 def fetch_cargo_source(request: Request) -> RequestOutput:
     """Fetch the source code for all cargo packages specified in a request."""
     components: list[Component] = []
-    environment_variables: list[EnvironmentVariable] = []
     project_files: list[ProjectFile] = []
+    annotations: list[Annotation] = []
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
@@ -137,17 +138,41 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
             vendor_result.config_template
         )
         project_files.append(_use_vendored_sources(package_dir, config_template))
-        components.extend(_generate_sbom_components(package_dir))
+        package_components = _generate_sbom_components(package_dir)
 
-    annotations = []
+        if vendor_result.lockfile_was_regenerated:
+            _update_permissive_mode_annotation(annotations, package_components)
+
+        components.extend(package_components)
+
     if backend_annotation := create_backend_annotation(components, "cargo"):
         annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
         components=components,
-        environment_variables=environment_variables,
         project_files=project_files,
         annotations=annotations,
     )
+
+
+def _update_permissive_mode_annotation(
+    annotations: list[Annotation],
+    components: list[Component],
+) -> None:
+    """Update permissive mode SBOM annotation with subjects from the provided components."""
+    annotation_text = f"{APP_NAME}:permissive-mode:cargo:generated-lockfile"
+    subjects = {c.bom_ref for c in components}
+    if annotations:
+        existing = next(a for a in annotations if a.text == annotation_text)
+        existing.subjects.update(subjects)
+    else:
+        annotations.append(
+            Annotation(
+                subjects=subjects,
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text=annotation_text,
+            )
+        )
 
 
 def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendorResult:
