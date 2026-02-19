@@ -1,0 +1,23 @@
+environment_variables:
+- name: CARGO_HOME
+  value: ${output_dir}/.cargo
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/../test_pip_packages_pip_rust_ext0/hermeto-output/.cargo/config.toml
+  template: |2
+
+    [source.crates-io]
+    replace-with = "local"
+
+    [source.local]
+    directory = "${output_dir}/deps/cargo"
+- abspath: ${test_case_tmp_path}/../test_pip_packages_pip_rust_ext0/hermeto-output/deps/pip/jiter-0.9.0/jiter-0.9.0/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"

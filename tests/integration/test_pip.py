@@ -137,7 +137,6 @@ log = logging.getLogger(__name__)
                 branch="pip/rust_extension_lock_and_config_mismatch",
                 packages=({"path": ".", "type": "pip"},),
                 global_flags=["--mode", "permissive"],
-                check_output=False,
                 check_deps_checksums=False,
                 expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
