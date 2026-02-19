@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """
 This module provides classes for parsing and extracting metadata from Python project files.
 

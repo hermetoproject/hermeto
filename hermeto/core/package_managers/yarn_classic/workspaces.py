@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections.abc import Generator, Iterable
 from itertools import chain

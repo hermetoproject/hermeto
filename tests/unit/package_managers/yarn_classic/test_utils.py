@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from unittest import mock
 
 from hermeto.core.package_managers.yarn_classic.project import PackageJson

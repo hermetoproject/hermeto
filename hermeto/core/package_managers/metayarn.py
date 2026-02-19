@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from hermeto.core.config import get_config
 from hermeto.core.errors import LockfileNotFound
 from hermeto.core.models.input import Request

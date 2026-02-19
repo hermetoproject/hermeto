@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import re
 from abc import ABC, abstractmethod
 from collections import Counter

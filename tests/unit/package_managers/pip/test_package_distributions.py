@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from unittest import mock
 
 import pypi_simple
