@@ -6,7 +6,7 @@ environment_variables:
 - name: PIP_NO_INDEX
   value: 'true'
 project_files:
-- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/.cargo/config.toml
+- abspath: ${test_case_tmp_path}/../../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/.cargo/config.toml
   template: |2
 
     [source.crates-io]
@@ -14,14 +14,14 @@ project_files:
 
     [source.local]
     directory = "${output_dir}/deps/cargo"
-- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/cryptography-94ce632f0cb9162cdc282c35b2c9f203e805106673a05a3d193332e4c2f9d905/cryptography-44.0.2/.cargo/config.toml
+- abspath: ${test_case_tmp_path}/../../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/cryptography-94ce632f0cb9162cdc282c35b2c9f203e805106673a05a3d193332e4c2f9d905/cryptography-44.0.2/.cargo/config.toml
   template: |
     [source.crates-io]
     replace-with = "vendored-sources"
 
     [source.vendored-sources]
     directory = "${output_dir}/deps/cargo"
-- abspath: ${test_case_tmp_path}/../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/maturin-1.8.3/maturin-1.8.3/.cargo/config.toml
+- abspath: ${test_case_tmp_path}/../../test_e2e_pip_pip_e2e_rust_exte0/hermeto-output/deps/pip/maturin-1.8.3/maturin-1.8.3/.cargo/config.toml
   template: |
     [source.crates-io]
     replace-with = "vendored-sources"

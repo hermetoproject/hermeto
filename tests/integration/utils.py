@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -379,26 +380,24 @@ def fetch_deps_and_check_output(
     # Use custom repository if specified, otherwise use the default session-scoped one
     # To maintain backwards compatibility, we keep the original behavior of cloning default repo at start of whole test
     if test_params.repo_url is not None:
-        actual_repo_dir = _clone_custom_test_repo(
+        root_repo_dir, actual_repo_dir = _clone_custom_test_repo(
             tmp_path, test_params.repo_url, test_params.branch
         )
     else:
-        actual_repo_dir = test_repo_dir
-        repo = GitRepo(actual_repo_dir)
+        root_repo_dir = test_repo_dir
+        actual_repo_dir = root_repo_dir / test_case
+        #repo = GitRepo(actual_repo_dir)
         # Submodule could end up being in detached HEAD state which would
         # result in a cascading failure for all tests that follow. This does
         # not happen always and at the moment of writing it is not clear what
         # exactly triggers such behavior. However ensuring that all submodules
         # are hard-reset resolves the issue.
-        repo.git.reset("--hard", "--recurse-submodules")
+        #repo.git.reset("--hard", "--recurse-submodules")
         # remove untracked files and directories from the working tree
         # git will refuse to modify untracked nested git repositories unless a second -f is given
-        repo.git.clean("-ffdx")
-        # --recurse-submodules is to prevent checkout failures when submodule structure changes
-        # between branches
-        repo.git.checkout(test_params.branch, "--recurse-submodules")
+        #repo.git.clean("-ffdx")
         # Ensure submodules are properly initialized and synchronized
-        repo.submodule_update(init=True, force_reset=True, recursive=True)
+        #repo.submodule_update(init=True, force_reset=True, recursive=True)
 
     output_dir = tmp_path.joinpath(fetch_output_dirname)
     cmd = [
@@ -416,7 +415,7 @@ def fetch_deps_and_check_output(
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
-        [*mounts, (actual_repo_dir, actual_repo_dir)],
+        [*mounts, (root_repo_dir, root_repo_dir)],
         entrypoint=entrypoint,
         podman_flags=podman_flags,
     )
@@ -563,6 +562,9 @@ def _replace_tmp_path_with_placeholder(
         # Pathlib cannot be used since walk_up argument to relative_to
         # is available only in Python 3.12 or later.
         relative_path = os.path.relpath(item["abspath"], test_repo_dir)
+        # Since test can now be run on both master and worker threads, we need
+        # to remove the worker ID from the path.
+        relative_path = re.sub(r"popen-gw\d+[\\/]", "", relative_path)
         item["abspath"] = "${test_case_tmp_path}/" + str(relative_path)
 
 

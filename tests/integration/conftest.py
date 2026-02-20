@@ -5,28 +5,32 @@ import time
 from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
+from threading import Lock
 
 import pytest
 import requests
 from git import Repo
 
+from hermeto.core.scm import GitRepo
 from tests.integration.utils import TEST_SERVER_LOCALHOST
 
 from . import utils
 
 log = logging.getLogger(__name__)
+lock = Lock()
 
 
 @pytest.fixture(scope="session")
-def test_repo_dir(worker_id: str, tmp_path_factory: pytest.TempPathFactory) -> Path:
-    test_repo_url = os.environ.get(
-        "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        "https://github.com/hermetoproject/integration-tests.git",
-    )
-    # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
-    repo_dir = tmp_path_factory.mktemp(f"integration-tests-{worker_id}", False)
-    Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
+def test_repo_dir(temp_base_path: Path) -> Path:
+    repo_dir = temp_base_path / "integration-tests"
     return repo_dir
+
+
+@pytest.fixture(scope="session")
+def temp_base_path(worker_id: str, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
+    worker_base = tmp_path_factory.getbasetemp()
+    return worker_base if worker_id == "master" else worker_base.parent
 
 
 @pytest.fixture(scope="session")
@@ -178,6 +182,32 @@ def pytest_collection_modifyitems(
     for item in items:
         if utils.tested_object_name(item.path) in tests_to_skip:
             item.add_marker(skip_mark)
+
+    worktrees_data: dict[str, str] = {
+        callspec.id: callspec.params["test_params"].branch
+        for item in session.items
+        if (callspec := getattr(item, "callspec", None))
+        and "test_params" in callspec.params
+        and skip_mark not in item.own_markers
+    }
+
+    test_repo_url = os.getenv(
+        "HERMETO_TEST_INTEGRATION_TESTS_REPO",
+        "https://github.com/hermetoproject/integration-tests.git",
+    )
+
+    base = session.config._tmp_path_factory.getbasetemp()
+    if os.getenv("PYTEST_XDIST_WORKER_COUNT", "0") != "0":
+        base = base.parent
+    repo_dir = base / "integration-tests"
+
+    with lock:
+        if not repo_dir.exists():
+            repo = Repo.clone_from(url=test_repo_url, to_path=repo_dir)
+            for name, branch in worktrees_data.items():
+                repo.git.worktree("add", "--track", "-b", name, name, f"origin/{branch}")
+                worktree = GitRepo(repo_dir / name)
+                worktree.submodule_update(init=True, force_reset=True, recursive=True)
 
 
 def pytest_configure(config: pytest.Config) -> None:
