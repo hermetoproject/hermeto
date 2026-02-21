@@ -1,0 +1,1596 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../pip/">
+      
+      
+        <link rel="next" href="../yarn_classic/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>rpm - Hermeto</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rpm" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Hermeto" class="md-header__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hermeto
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              rpm
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Hermeto" class="md-nav__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hermeto
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package managers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Package managers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bundler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cargo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cargo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    generic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gomod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gomod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../npm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    npm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpm-lockfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM lockfile
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RPM lockfile">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpm-lockfile-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM lockfile format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-example-lockfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real world example lockfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specifying packages to process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-json-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input JSON options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input JSON options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssltls-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL/TLS configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dnf-repository-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNF repository configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-complete-input-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A complete input example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changes-made-by-the-inject-files-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes made by the inject-files command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updated-project-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updated project example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject project files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn_classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpm-lockfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM lockfile
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RPM lockfile">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpm-lockfile-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM lockfile format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-example-lockfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real world example lockfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specifying packages to process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-json-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input JSON options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input JSON options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssltls-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL/TLS configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dnf-repository-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNF repository configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-complete-input-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A complete input example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changes-made-by-the-inject-files-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes made by the inject-files command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updated-project-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updated project example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject project files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/rpm.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/rpm.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="rpm"><a href="https://rpm.org/about.html">RPM</a><a class="headerlink" href="#rpm" title="Permanent link">&para;</a></h1>
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#rpm-lockfile">RPM lockfile</a><ul>
+<li><a href="#rpm-lockfile-format">RPM lockfile format</a></li>
+<li><a href="#real-world-example-lockfile">Real world example lockfile</a></li>
+</ul>
+</li>
+<li><a href="#specifying-packages-to-process">Specifying packages to process</a></li>
+<li><a href="#input-json-options">Input JSON options</a><ul>
+<li><a href="#basic-options">Basic options</a></li>
+<li><a href="#ssltls-configuration">SSL/TLS configuration</a></li>
+<li><a href="#dnf-repository-configuration">DNF repository configuration</a></li>
+<li><a href="#a-complete-input-example">A complete input example</a></li>
+</ul>
+</li>
+<li><a href="#using-fetched-dependencies">Using fetched dependencies</a></li>
+<li><a href="#changes-made-by-the-inject-files-command">Changes made by the inject-files command</a></li>
+<li><a href="#updated-project-example">Updated project example</a></li>
+<li><a href="#example">Full example walkthrough</a></li>
+</ul>
+<p><img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /> <strong>This backend is best-effort only and apart from bug fixes we may be
+reluctant to introduce new functionality (unless trivially added), especially
+one that would require architectural OR <code>rpms.lock.yaml</code> schema changes simply
+because there's a native
+<a href="https://github.com/rpm-software-management/libpkgmanifest">DNF solution</a> in the
+making which we expect will fully replace and hence deprecate this backend.</strong>
+<img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /></p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>To use Hermeto with RPM packages, ensure you have the following tools installed:</p>
+<ul>
+<li><code>rpm</code> - for querying package metadata</li>
+<li><code>createrepo_c</code> - for generating repository metadata during the inject-files
+   step</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># On Fedora/RHEL/CentOS</span>
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>rpm-build<span class="w"> </span>createrepo_c
+
+<span class="c1"># On Debian/Ubuntu</span>
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>rpm<span class="w"> </span>createrepo-c
+</code></pre></div>
+<h3 id="rpm-lockfile">RPM lockfile<a class="headerlink" href="#rpm-lockfile" title="Permanent link">&para;</a></h3>
+<p>For the RPM backend in Hermeto to function properly one needs a <code>rpms.lock.yaml</code>
+file (i.e. a "lockfile") which is a fully resolved dependency tree of all RPM
+packages that need to be downloaded in order to build and run the project. This
+file can be generated using the <a href="https://github.com/konflux-ci/rpm-lockfile-prototype">rpm-lockfile-prototype</a> tool. Please follow
+the instructions available on the project's GitHub page for detailed usage
+information.</p>
+<h4 id="rpm-lockfile-format">RPM lockfile format<a class="headerlink" href="#rpm-lockfile-format" title="Permanent link">&para;</a></h4>
+<p>The <code>rpms.lock.yaml</code> file follows a specific YAML schema outlined below that
+shows required and optional fields:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Root level - all fields are required</span>
+<span class="nt">lockfileVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">                    </span><span class="c1"># Required: currently must be 1</span>
+<span class="nt">lockfileVendor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;redhat&quot;</span><span class="w">              </span><span class="c1"># Required: currently only &quot;redhat&quot; is allowed</span>
+<span class="nt">arches</span><span class="p">:</span><span class="w">                               </span><span class="c1"># Required: list of architecture objects</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                    </span><span class="c1"># Required: architecture name (e.g., x86_64, aarch64)</span>
+
+<span class="w">    </span><span class="c1"># **At least one of &#39;packages&#39; or &#39;source&#39; list must be present and non-empty**</span>
+<span class="w">    </span><span class="nt">packages</span><span class="p">:</span><span class="w">                         </span><span class="c1"># Optional: list of binary RPM packages</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the package</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
+<span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
+
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w">                           </span><span class="c1"># Optional: list of source RPM packages</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the source package</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
+<span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
+
+<span class="w">    </span><span class="c1"># Modular metadata are needed when installing from RHEL-8 module &quot;streams&quot;</span>
+<span class="w">    </span><span class="nt">module_metadata</span><span class="p">:</span><span class="w">                  </span><span class="c1"># Optional: list of module metadata files</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the metadata file</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Required: repository ID (**mandatory for module metadata**)</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: file checksum</span>
+<span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
+</code></pre></div>
+<p><strong>Notes on the schema:</strong></p>
+<ul>
+<li><code>repoid</code> corresponds to the repository ID as found in <code>.repo</code> files, if
+   missing in the lockfile a random one will be generated following the
+  <code>hermeto-UUID[6](-source)?</code> pattern</li>
+<li><code>checksum</code> format should be <code>algorithm:digest</code> (e.g., <code>sha256:abc123...</code>)</li>
+<li><code>size</code> represents file size in bytes</li>
+<li>extra fields may be present in the lockfile (see the example below) that may
+  be put in there by the generator tool but nothing on top of the schema above
+  is processed or read by Hermeto</li>
+</ul>
+<h4 id="real-world-example-lockfile">Real world example lockfile<a class="headerlink" href="#real-world-example-lockfile" title="Permanent link">&para;</a></h4>
+<details>
+  <summary>rpms.lock.yaml</summary>
+
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">lockfileVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">lockfileVendor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redhat</span>
+<span class="nt">arches</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+<span class="w">  </span><span class="nt">packages</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/a/apr-1.7.0-12.el9_3.x86_64.rpm</span>
+<span class="w">     </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr</span>
+<span class="w">     </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-rpms</span>
+<span class="w">     </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sha256:7a8d216d45355f7b656777fcb874a0803d5e97a3e7575b8b58dc7bf608919459</span>
+<span class="w">     </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">129032</span>
+<span class="w">     </span><span class="nt">evr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.7.0-12.el9_3</span><span class="w">                         </span><span class="c1"># extra field</span>
+<span class="w">     </span><span class="nt">sourcerpm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr-1.7.0-12.el9_3.src.rpm</span><span class="w">       </span><span class="c1"># extra field</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/a/apr-util-1.6.1-23.el9.x86_64.rpm</span>
+<span class="w">     </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-rpms</span>
+<span class="w">     </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">99555</span>
+<span class="w">     </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sha256:fdafa0c878091c68d7e4ff66bdffa2d3a39904351128b55caafc896175651718</span>
+<span class="w">     </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr-util</span>
+<span class="w">     </span><span class="nt">evr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.6.1-23.el9</span>
+<span class="w">     </span><span class="nt">sourcerpm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr-util-1.6.1-23.el9.src.rpm</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/a/apr-util-bdb-1.6.1-23.el9.x86_64.rpm</span>
+<span class="w">     </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-rpms</span>
+<span class="w">     </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">14447</span>
+<span class="w">     </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sha256:d996f1e3b3375cd48b9910f31965e0e8c0df99b553dcac8c4368ac6ed5177623</span>
+<span class="w">     </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr-util-bdb</span>
+<span class="w">     </span><span class="nt">evr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.6.1-23.el9</span>
+<span class="w">     </span><span class="nt">sourcerpm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr-util-1.6.1-23.el9.src.rpm</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/h/httpd-tools-2.4.62-4.el9.x86_64.rpm</span>
+<span class="w">     </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-rpms</span>
+<span class="w">     </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">87953</span>
+<span class="w">     </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sha256:ca56b898a477472c5de44cc2eaf40f0bdebe54508c131fdf63775851f932eed4</span>
+<span class="w">     </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">httpd-tools</span>
+<span class="w">     </span><span class="nt">evr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.4.62-4.el9</span>
+<span class="w">     </span><span class="nt">sourcerpm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">httpd-2.4.62-4.el9.src.rpm</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/a/apr-1.7.0-12.el9_3.src.rpm</span>
+<span class="w">      </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-source</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apr</span>
+<span class="w">      </span><span class="nt">evr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.7.0-12.el9_3</span>
+<span class="w">      </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">905784</span>
+<span class="w">  </span><span class="nt">module_metadata</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</code></pre></div>
+
+</details>
+
+<h2 id="specifying-packages-to-process">Specifying packages to process<a class="headerlink" href="#specifying-packages-to-process" title="Permanent link">&para;</a></h2>
+<p>Hermeto expects to find an <code>rpms.lock.yaml</code> file for each RPM project on the
+input. The file must be located in the root directory of the given project
+(which can be a subdirectory from the repository root).</p>
+<p>Hermeto can be then run as follows:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+</code></pre></div>
+<p>where 'JSON input' is:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="c1">// &quot;rpm&quot; tells Hermeto to process RPM packages</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// path to the directory containing rpms.lock.yaml (relative to the --source directory)</span>
+<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>or more simply by just invoking <code>hermeto fetch-deps rpm</code>.</p>
+<h3 id="input-json-options">Input JSON options<a class="headerlink" href="#input-json-options" title="Permanent link">&para;</a></h3>
+<p>The RPM package manager supports several optional configuration parameters in
+the JSON input:</p>
+<h4 id="basic-options">Basic options<a class="headerlink" href="#basic-options" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;include_summary_in_sbom&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w">    </span><span class="c1">// Include package&#39;s `Summary` RPM tag in the SBOM output</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="ssltls-configuration">SSL/TLS configuration<a class="headerlink" href="#ssltls-configuration" title="Permanent link">&para;</a></h4>
+<p>For downloading packages from repositories requiring TLS authentication (e.g.
+Red Hat's CDN for entitled contents):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;ssl&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;client_cert&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/client.crt&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1">// Path to client certificate file</span>
+<span class="w">      </span><span class="s2">&quot;client_key&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/client.key&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1">// Path to client private key file</span>
+<span class="w">      </span><span class="s2">&quot;ca_bundle&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/ca-bundle.crt&quot;</span><span class="p">,</span><span class="w">   </span><span class="c1">// Path to CA certificate bundle</span>
+<span class="w">      </span><span class="s2">&quot;ssl_verify&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w">                       </span><span class="c1">// Enable/disable TLS server certificate and hostname</span>
+<span class="w">                                               </span><span class="c1">// verification, DON&#39;T disable unless testing!</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="dnf-repository-configuration">DNF repository configuration<a class="headerlink" href="#dnf-repository-configuration" title="Permanent link">&para;</a></h4>
+<p>You can specify additional DNF repository configuration options (see <code>dnf.conf</code>
+man page) that will be set for a particular repository in the generated
+<code>hermeto.repo</code> files:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;dnf&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                            </span><span class="c1">// These need to be set **per-repository**</span>
+<span class="w">      </span><span class="s2">&quot;my-repo-id&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                   </span><span class="c1">// Repository ID from the lockfile</span>
+<span class="w">        </span><span class="s2">&quot;gpgcheck&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0&quot;</span><span class="p">,</span><span class="w">                </span><span class="c1">// Disable GPG signature checking</span>
+<span class="w">        </span><span class="s2">&quot;enabled&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="w">                 </span><span class="c1">// Enable the repository</span>
+<span class="w">        </span><span class="s2">&quot;priority&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;10&quot;</span><span class="p">,</span><span class="w">               </span><span class="c1">// Set repository priority</span>
+<span class="w">        </span><span class="s2">&quot;sslverify&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;false&quot;</span><span class="w">            </span><span class="c1">// Disable TLS verification for this repo</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="a-complete-input-example">A complete input example<a class="headerlink" href="#a-complete-input-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;include_summary_in_sbom&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;ssl&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;client_cert&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/etc/pki/client.crt&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">&quot;client_key&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/etc/pki/client.key&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">&quot;ssl_verify&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">&quot;dnf&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;rhel-8-appstream&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s2">&quot;gpgcheck&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;priority&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;10&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="using-fetched-dependencies">Using fetched dependencies<a class="headerlink" href="#using-fetched-dependencies" title="Permanent link">&para;</a></h2>
+<p>See the <a href="#example">Example</a> for a complete walkthrough of Hermeto usage.</p>
+<p>Hermeto downloads the RPM packages and source RPMs into the <code>deps/rpm/</code> subpath
+of the output directory. The structure is organized by architecture and
+repository ID:</p>
+<div class="highlight"><pre><span></span><code>hermeto-output/deps/rpm/
+├── x86_64/
+│   ├── ubi-9-appstream-rpms/
+│   │   ├── httpd-tools-2.4.62-4.el9.x86_64.rpm
+│   │   ├── apr-1.7.0-12.el9_3.x86_64.rpm
+│   │   ├── ...
+│   │   └── repos.d/
+│   │       └── hermeto.repo
+│   └── hermeto-e5ad4c/
+│       └── repo-unaffiliated-package-1.0.0-1.x86_64.rpm
+└── aarch64/
+    └── ubi-9-appstream-rpms/
+        ├── httpd-tools-2.4.62-4.el9.x86_64.rpm
+        ├── ...
+        └── repos.d/
+            └── hermeto.repo
+</code></pre></div>
+<h3 id="changes-made-by-the-inject-files-command">Changes made by the inject-files command<a class="headerlink" href="#changes-made-by-the-inject-files-command" title="Permanent link">&para;</a></h3>
+<p>The <code>inject-files</code> command performs two important operations for RPM packages:</p>
+<ol>
+<li>
+<p><strong>Repository metadata generation</strong>: Uses <code>createrepo_c</code> to generate
+   repository metadata (repodata) for each repository directory containing RPM
+   packages.</p>
+</li>
+<li>
+<p><strong>Repository configuration files</strong>: Creates <code>hermeto.repo</code> files in each
+   architecture's <code>repos.d/</code> directory. These files configure DNF/YUM to use the
+   local packages during installation.</p>
+</li>
+</ol>
+<p>The generated <code>hermeto.repo</code> files contain repository definitions like:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[ubi-9-appstream-rpms]</span>
+<span class="na">name</span><span class="o">=</span><span class="s">Red Hat Universal Base Image 9 (RPMs) - AppStream</span>
+<span class="na">baseurl</span><span class="o">=</span><span class="s">file:///tmp/hermeto-output/deps/rpm/x86_64/ubi-9-appstream-rpms</span>
+<span class="na">gpgcheck</span><span class="o">=</span><span class="s">1</span>
+
+<span class="k">[hermeto-e5ad4c]</span>
+<span class="na">name</span><span class="o">=</span><span class="s">Packages unaffiliated with an official repository</span>
+<span class="na">baseurl</span><span class="o">=</span><span class="s">file:///tmp/hermeto-output/deps/rpm/x86_64/hermeto-e5ad4c</span>
+<span class="na">gpgcheck</span><span class="o">=</span><span class="s">1</span>
+</code></pre></div>
+<h3 id="updated-project-example">Updated project example<a class="headerlink" href="#updated-project-example" title="Permanent link">&para;</a></h3>
+<p>After running <code>inject-files</code>, your project directory structure will remain
+unchanged since RPM packages don't require modification of source files.
+However, the output directory will contain the generated repository metadata:</p>
+<div class="highlight"><pre><span></span><code>hermeto-output/deps/rpm/x86_64/ubi-9-appstream-rpms/
+├── httpd-tools-2.4.62-4.el9.x86_64.rpm
+├── ...
+├── repodata/
+│   ├── repomd.xml
+│   ├── primary.xml.gz
+│   ├── filelists.xml.gz
+│   └── other.xml.gz
+└── repos.d/
+    └── hermeto.repo
+</code></pre></div>
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<p>Let's demonstrate Hermeto usage with a sample RPM-based app - ApacheBench. Let's
+start with creating the Containerfile/Dockerfile for the sample app (needed for
+the lockfile generator tool):</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Note the base image</span>
+<span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9:latest</span>
+<span class="k">RUN</span><span class="w"> </span>dnf<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>httpd-tools
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;ab&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-V&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>We'll assume you have a <code>rpms.lock.yaml</code> file generated by the
+<a href="https://github.com/konflux-ci/rpm-lockfile-prototype">rpm-lockfile-prototype</a> tool based on the following <code>rpms.in.yaml</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">contentOrigin</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">repos</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-9-appstream-rpms</span>
+<span class="w">      </span><span class="nt">baseurl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/appstream/os</span>
+<span class="nt">packages</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">httpd-tools</span>
+<span class="w">    </span><span class="nt">arches</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+<span class="nt">installWeakDeps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<h3 id="pre-fetch-dependencies">Pre-fetch dependencies<a class="headerlink" href="#pre-fetch-dependencies" title="Permanent link">&para;</a></h3>
+<p>First, we'll pre-fetch the RPM dependencies specified in the <code>rpms.lock.yaml</code>
+file:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./&lt;your<span class="w"> </span>app<span class="w"> </span>directory&gt;<span class="w"> </span>rpm
+</code></pre></div>
+<p>This command will:</p>
+<ul>
+<li>Parse the <code>rpms.lock.yaml</code> file</li>
+<li>Download all specified RPM packages and source RPMs</li>
+<li>Verify checksums and file sizes</li>
+<li>Generate an SBOM with package information</li>
+</ul>
+<h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
+<p><strong>Note</strong>: The RPM package manager does not require any environment variables, so
+the <code>generate-env</code> command is not needed for RPM projects. This step can be
+skipped.</p>
+<h3 id="inject-project-files">Inject project files<a class="headerlink" href="#inject-project-files" title="Permanent link">&para;</a></h3>
+<p>Generate repository metadata and configuration files:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>inject-files<span class="w"> </span>./hermeto-output<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
+</code></pre></div>
+<p>This command will:</p>
+<ul>
+<li>Create repository metadata using <code>createrepo_c</code></li>
+<li>Generate <code>hermeto.repo</code> files for DNF/YUM configuration</li>
+<li>Prepare the package cache for offline installation</li>
+</ul>
+<h3 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h3>
+<p>We're now ready to build the application image using network isolation:</p>
+<div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output/deps/rpm/x86_64/repos.d<span class="k">)</span><span class="s2">&quot;</span>:/etc/yum.repos.d<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tag<span class="w"> </span>my-ab
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.action.edit", "content.action.view", "content.code.copy", "content.tooltips", "navigation.sections", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

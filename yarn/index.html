@@ -1,0 +1,1419 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../yarn_classic/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>yarn berry - Hermeto</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#yarn" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Hermeto" class="md-header__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hermeto
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              yarn berry
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Hermeto" class="md-nav__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hermeto
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package managers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Package managers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bundler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cargo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cargo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    generic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gomod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gomod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../npm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    npm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn_classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hermetos-yarn-support-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hermeto's Yarn support scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hermeto&#39;s Yarn support scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-yarn-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Yarn versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-yarn-protocolslocators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Yarn protocols/locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-yarnrcyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with .yarnrc.yml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-yarn-zero-installs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with Yarn Zero-Installs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specifying packages to process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#controlling-yarns-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling Yarn's behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downloading-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downloading dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-your-project-using-the-pre-fetched-yarn-dependency-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building your project using the pre-fetched Yarn dependency cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject project files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hermetos-yarn-support-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hermeto's Yarn support scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hermeto&#39;s Yarn support scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-yarn-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Yarn versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-yarn-protocolslocators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Yarn protocols/locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-yarnrcyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with .yarnrc.yml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-yarn-zero-installs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with Yarn Zero-Installs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dealing-with-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dealing with plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specifying packages to process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#controlling-yarns-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling Yarn's behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downloading-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downloading dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-your-project-using-the-pre-fetched-yarn-dependency-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building your project using the pre-fetched Yarn dependency cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject project files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/yarn.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/yarn.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="yarn"><a href="https://yarnpkg.com">yarn</a><a class="headerlink" href="#yarn" title="Permanent link">&para;</a></h1>
+<ul>
+<li><a href="#hermetos-yarn-support-scope">Hermeto's Yarn support scope</a></li>
+<li><a href="#supported-yarn-versions">Supported Yarn versions</a></li>
+<li><a href="#supported-yarn-protocolslocators">Supported Yarn protocols/locators</a></li>
+<li><a href="#dealing-with-yarnrcyml">Dealing with .yarnrc.yml</a></li>
+<li><a href="#dealing-with-yarn-zero-installs">Dealing with Yarn Zero-Installs</a></li>
+<li><a href="#dealing-with-plugins">Dealing with plugins</a></li>
+<li><a href="#specifying-packages-to-process">Specifying packages to process</a></li>
+<li><a href="#controlling-yarns-behavior">Controlling Yarn's behavior</a></li>
+<li><a href="#downloading-dependencies">Downloading dependencies</a></li>
+<li><a href="#known-pitfalls">Known pitfalls</a></li>
+<li><a href="#using-fetched-dependencies">Using fetched dependencies</a></li>
+<li><a href="#building-your-project-using-the-pre-fetched-yarn-dependency-cache">Building your project using the pre-fetched Yarn dependency cache</a></li>
+<li><a href="#example">Full example walkthrough</a></li>
+</ul>
+<h2 id="hermetos-yarn-support-scope">Hermeto's Yarn support scope<a class="headerlink" href="#hermetos-yarn-support-scope" title="Permanent link">&para;</a></h2>
+<h3 id="supported-yarn-versions">Supported Yarn versions<a class="headerlink" href="#supported-yarn-versions" title="Permanent link">&para;</a></h3>
+<p>Hermeto currently supports Yarn versions 1, 3 and 4. Version 1 is referred to as
+"Yarn Classic" and is covered in Hermeto's <a href="https://hermetoproject.github.io/hermeto/yarn_classic">Yarn Classic</a> doc. <strong>This</strong>
+document describes Yarn v3 and v4 support.</p>
+<h3 id="supported-yarn-protocolslocators">Supported Yarn protocols/locators<a class="headerlink" href="#supported-yarn-protocolslocators" title="Permanent link">&para;</a></h3>
+<p>Hermeto currently supports all standard <a href="https://yarnpkg.com/protocols">Yarn protocols</a> except for</p>
+<ul>
+<li><a href="https://yarnpkg.com/protocol/exec">Exec protocol</a></li>
+<li><a href="https://yarnpkg.com/protocol/git">Git/GitHub protocol</a></li>
+</ul>
+<p>Due to the nature of how the two protocols above work, mainly related to
+potentially executing arbitrary code, adding support for them with future
+releases of Hermeto is unlikely. For further details on Yarn protocols and their
+practical <code>package.json</code> examples, please head to the official Yarn
+documentation on protocols linked earlier in this section.</p>
+<h3 id="dealing-with-yarnrcyml">Dealing with .yarnrc.yml<a class="headerlink" href="#dealing-with-yarnrcyml" title="Permanent link">&para;</a></h3>
+<p>Hermeto parses the project's <code>.yarnrc.yml</code> file and analyzes configuration
+settings. Before hermeto proceeds with the actual dependency fetching, it
+verifies whether all <a href="https://yarnpkg.com/configuration/yarnrc">configuration settings</a> that set a path to a resource
+don't point outside of the source repository, so in order to avoid any issues
+reported by Hermeto in this regard make sure all your project resource
+references are bound by the repository. Part of the analysis of the repository's
+<code>.yarnrc.yml</code> file is detection of plugin usage which is further explained in
+<a href="#dealing-with-plugins">Dealing with plugins</a>.</p>
+<h3 id="dealing-with-yarn-zero-installs">Dealing with Yarn Zero-Installs<a class="headerlink" href="#dealing-with-yarn-zero-installs" title="Permanent link">&para;</a></h3>
+<p>Yarn's <a href="https://yarnpkg.com/features/caching#zero-installs">PnP Zero-Installs</a> are unsupported due to the potentially
+<a href="https://yarnpkg.com/advanced/lexicon#unplugged-package">unplugged dependencies</a> checked into the repository which simply make it
+impossible for the Yarn cache to be checked for integrity using Yarn's standard
+tooling (i.e. <code>yarn install --check-cache</code>).</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>The same applies to dealing with the <code>node_modules</code> top level directory which,
+if checked into the repository, can also serve the Zero-Install purpose. If
+you need further information on which dependency linking mode is used, have a
+look at the <a href="https://yarnpkg.com/configuration/yarnrc#nodeLinker">nodeLinker</a> and on the <a href="https://yarnpkg.com/features/pnp">PnP</a> approach in general.</p>
+</blockquote>
+<p>Also note that we may reconsider our initial decision when it comes to
+Zero-Installs provided the input repository doesn't rely on any dependencies
+which may include install scripts leading to their unpacking in a form of
+<code>.yarn/unplugged</code> entries.</p>
+<h3 id="dealing-with-plugins">Dealing with plugins<a class="headerlink" href="#dealing-with-plugins" title="Permanent link">&para;</a></h3>
+<p>Due to the nature of plugins (which can potentially execute arbitrary code, by
+e.g. adding new protocol resolvers), <strong>all</strong> plugins except for the official
+ones (see "Default Plugins" in the <a href="https://yarnpkg.com/api">Yarn API docs</a>) are disabled during the
+dependency prefetch stage to ensure no other changes apart from downloading
+dependencies took action.</p>
+<p>For Yarn v3, even the official plugins are disabled, with the exception of
+<a href="https://v3.yarnpkg.com/features/plugins#official-plugins">exec</a>.</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>hermeto doesn't taint your project files, so any plugins you set will be
+enabled normally in your build environment, the only problem that can arise is
+if any of your specified plugins adds a new protocol which hermeto doesn't
+know about in which case the dependency pre-fetch stage will fail with an
+error.</p>
+</blockquote>
+<h2 id="specifying-packages-to-process">Specifying packages to process<a class="headerlink" href="#specifying-packages-to-process" title="Permanent link">&para;</a></h2>
+<p>A package is a file or directory that is described by a <a href="https://yarnpkg.com/configuration/manifest">package.json</a> file
+(also called a manifest).</p>
+<p>Hermeto can be run as follows</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+</code></pre></div>
+<p>where 'JSON input' is</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="c1">// &quot;yarn&quot; tells Hermeto to process Yarn packages</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;yarn&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
+<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>or more simply by just invoking <code>hermeto fetch-deps yarn</code>.</p>
+<p>For complete example of how to pre-fetch dependencies, see
+<a href="#pre-fetch-dependencies">Example: Pre-fetch dependencies</a>.</p>
+<h3 id="controlling-yarns-behavior">Controlling Yarn's behavior<a class="headerlink" href="#controlling-yarns-behavior" title="Permanent link">&para;</a></h3>
+<p>Hermeto instructs Yarn to download dependencies explicitly declared in
+<code>package.json</code>. The dependencies are then further managed in a <code>yarn.lock</code> file
+that Yarn CLI manages automatically and creates it if missing. However,
+<strong>Hermeto will refuse to process your repository if the file is missing</strong>, so be
+sure to check that file into the repository. Also make sure that the file is up
+to date for which you can use <a href="https://yarnpkg.com/getting-started/usage/#installing-all-the-dependencies">yarn install</a>.</p>
+<h3 id="downloading-dependencies">Downloading dependencies<a class="headerlink" href="#downloading-dependencies" title="Permanent link">&para;</a></h3>
+<p>If Yarn is configured to operate in the <a href="https://yarnpkg.com/features/pnp">PnP</a> mode (the default in Yarn v3 or
+v4) Yarn will store all dependencies as <a href="https://yarnpkg.com/features/pnp/#packages-are-stored-inside-zip-archives-how-can-i-access-their-files">ZIP archives</a>.</p>
+<p>Once the source repository analysis and verification described in the earlier
+sections of this document has been completed, then it's essentially just a
+matter of hermeto internally invoking <code>yarn install --mode=skip-build</code> to fetch
+all dependencies (including transitive dependencies).</p>
+<h3 id="known-pitfalls">Known pitfalls<a class="headerlink" href="#known-pitfalls" title="Permanent link">&para;</a></h3>
+<p>If your repository isn't in a pristine state (i.e. you tried to run <code>yarn
+install</code> previously on your own without Hermeto) what may happen is that Hermeto
+will assume the repository makes use of
+<a href="#dealing-with-yarn-zero-installs">Zero-Installs</a>. The workaround here is
+simple, just run <code>yarn cache clean</code> and hermeto will then process your
+repository as normal.</p>
+<h2 id="using-fetched-dependencies">Using fetched dependencies<a class="headerlink" href="#using-fetched-dependencies" title="Permanent link">&para;</a></h2>
+<p>See the <a href="#example">Example</a> for a complete walkthrough of Hermeto usage.</p>
+<p>Hermeto downloads the Yarn dependencies into the <code>deps/yarn/</code> subpath of the
+output directory (see the snippet below).</p>
+<div class="highlight"><pre><span></span><code>hermeto-output/deps/yarn
+└── cache
+    ├── abbrev-npm-1.1.1-3659247eab-8.zip
+    ├── agent-base-npm-6.0.2-428f325a93-8.zip
+    ├── agentkeepalive-npm-4.3.0-ac3d8e6807-8.zip
+    ├── aggregate-error-npm-3.1.0-415a406f4e-8.zip
+    ├── ansi-regex-npm-3.0.1-01f44078a3-8.zip
+...
+</code></pre></div>
+<h3 id="building-your-project-using-the-pre-fetched-yarn-dependency-cache">Building your project using the pre-fetched Yarn dependency cache<a class="headerlink" href="#building-your-project-using-the-pre-fetched-yarn-dependency-cache" title="Permanent link">&para;</a></h3>
+<p>In order to use the hermeto pre-fetched Yarn dependency cache obtained from the
+previous step several environment variables need to be set in your build
+environment. See
+<a href="#generate-environment-variables">Example: Generate environment variables</a>
+for more details on how these can be generated by hermeto automatically in a
+form of a environment file that can sourced as part of your container build
+recipe. Here's a snippet of the most important variables hermeto needs to be set
+in the build environment along with explanation</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Point Yarn to our pre-populated global cache</span>
+<span class="nv">YARN_GLOBAL_FOLDER</span><span class="o">=</span>&lt;hermeto_output_dir&gt;/deps/yarn
+
+<span class="c1"># Yarn must not rely solely on the global cache (the pre-fetched one) because</span>
+<span class="c1"># it&#39;ll likely only be available (i.e. mounted) during the (container) build</span>
+<span class="c1"># time, but not runtime. We specifically want Yarn to copy those dependencies</span>
+<span class="c1"># from the global cache to the project&#39;s local cache</span>
+<span class="nv">YARN_ENABLE_GLOBAL_CACHE</span><span class="o">=</span><span class="nb">false</span>
+
+<span class="c1"># Must be set to true, otherwise Yarn will not make use of the pre-populated</span>
+<span class="c1"># global cache we&#39;re pointing it at with YARN_GLOBAL_FOLDER at build time.</span>
+<span class="nv">YARN_ENABLE_MIRROR</span><span class="o">=</span><span class="nb">true</span>
+
+<span class="c1"># Must be false otherwise &#39;yarn install&#39; will fail to populate the project&#39;s</span>
+<span class="c1"># local cache (pointed to by the &#39;cacheFolder&#39; setting) from the global cache</span>
+<span class="c1"># (the pre-fetched one).</span>
+<span class="nv">YARN_ENABLE_IMMUTABLE_CACHE</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<p>For the Yarn example let's use the same sample Node.js <a href="https://github.com/cachito-testing/sample-nodejs-app/tree/yarn">project</a>, but
+this time modified to use Yarn as the package manager. Get the repo if you want
+to try for yourself</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>yarn<span class="w"> </span>https://github.com/cachito-testing/sample-nodejs-app.git
+</code></pre></div>
+<h4 id="pre-fetch-dependencies">Pre-fetch dependencies<a class="headerlink" href="#pre-fetch-dependencies" title="Permanent link">&para;</a></h4>
+<p>The steps for pre-fetching the dependencies are very similar to the previous
+examples, this time using the Yarn package manager. Like with the previous
+examples the default path for the package we assume is <code>.</code>.</p>
+<p>See <a href="./">the Yarn documentation</a> for more details about running Hermeto for
+pre-fetching yarn dependencies.</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./sample-yarn-app<span class="w"> </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="s1">&#39;{&quot;type&quot;: &quot;yarn&quot;}&#39;</span>
+</code></pre></div>
+<p>OR more simply (without the need of a JSON formatted argument) just</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./sample-yarn-app<span class="w"> </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span>yarn
+</code></pre></div>
+<h4 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h4>
+<p>There are a few environment variables we'll have to set for Yarn during the
+hermetic build, so we need to generate an environment file.</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>hermeto<span class="w"> </span>generate-env<span class="w"> </span>./hermeto-output<span class="w"> </span>-o<span class="w"> </span>./hermeto.env<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
+$<span class="w"> </span>cat<span class="w"> </span>./hermeto.env
+<span class="nb">export</span><span class="w"> </span><span class="nv">YARN_ENABLE_GLOBAL_CACHE</span><span class="o">=</span><span class="nb">false</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">YARN_ENABLE_IMMUTABLE_CACHE</span><span class="o">=</span><span class="nb">false</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">YARN_ENABLE_MIRROR</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">YARN_GLOBAL_FOLDER</span><span class="o">=</span>/tmp/hermeto-output/deps/yarn
+</code></pre></div>
+<h4 id="inject-project-files">Inject project files<a class="headerlink" href="#inject-project-files" title="Permanent link">&para;</a></h4>
+<p>Like the <code>gomod</code> package manager Yarn does not <em>currently</em> need to modify any
+content in the source directory for the cached dependencies to be used in a
+hermetic build, however that might change in the future.</p>
+<h4 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h4>
+<p>Yarn is installed using a Node.js tool called
+<a href="https://nodejs.org/api/corepack.html#corepack">Corepack</a> which has been shipped
+by Node.js by default since v16.9.0 and v14.19.0. Therefore, we'll use the
+<code>node:18</code> base image in our example which definitely has Corepack and we can
+start using Yarn right away.</p>
+<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">node:18</span>
+
+<span class="k">COPY</span><span class="w"> </span>sample-yarn-app/<span class="w"> </span>/src/sample-yarn-app
+<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/src/sample-yarn-app</span>
+
+<span class="c"># Run yarn install command and list installed packages</span>
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>yarn<span class="w"> </span>install
+
+<span class="k">EXPOSE</span><span class="w"> </span><span class="s">9000</span>
+
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;yarn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>We can then build the image as before while mounting the required Hermeto data!</p>
+<div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tag<span class="w"> </span>sample-nodejs-app
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.action.edit", "content.action.view", "content.code.copy", "content.tooltips", "navigation.sections", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

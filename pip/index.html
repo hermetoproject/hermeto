@@ -1,0 +1,2428 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../npm/">
+      
+      
+        <link rel="next" href="../rpm/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>pip - Hermeto</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pip" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Hermeto" class="md-header__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hermeto
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pip
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Hermeto" class="md-nav__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hermeto
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package managers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Package managers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bundler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cargo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cargo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    generic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gomod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gomod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../npm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    npm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirementstxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        requirements.txt
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="requirements.txt">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#https-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        https urls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git urls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-index-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --index-url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-require-hashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --require-hashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-trusted-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --trusted-host
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-requirement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-requirement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --hash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyprojecttoml-pep-621-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pyproject.toml PEP 621 metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setupcfg-declarative-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup.cfg declarative config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setuppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution formats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Distribution formats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-with-wheels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building with wheels
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Building with wheels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building from source
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Building from source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements-buildtxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        requirements-build.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using external dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#working-with-rust-based-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Working with Rust-based dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#miscellaneous-errors-while-building-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Miscellaneous errors while building from source
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#need-to-install-newer-pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Need to install newer pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-to-compile-a-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing to compile a dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-does-not-distribute-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency does not distribute sources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn_classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-packages-to-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifying packages to process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirementstxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        requirements.txt
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="requirements.txt">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#https-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        https urls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git urls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-index-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --index-url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-require-hashes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --require-hashes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-trusted-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --trusted-host
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-requirement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-requirement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --hash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyprojecttoml-pep-621-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pyproject.toml PEP 621 metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setupcfg-declarative-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup.cfg declarative config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setuppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution formats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Distribution formats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-with-wheels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building with wheels
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Building with wheels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building from source
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Building from source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements-buildtxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        requirements-build.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-fetched-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using fetched dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using fetched dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using external dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#working-with-rust-based-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Working with Rust-based dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#miscellaneous-errors-while-building-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Miscellaneous errors while building from source
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#need-to-install-newer-pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Need to install newer pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-to-compile-a-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing to compile a dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-does-not-distribute-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency does not distribute sources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-fetch-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-fetch dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-application-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the application image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/pip.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/pip.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="pip"><a href="https://pip.pypa.io/en/stable">pip</a><a class="headerlink" href="#pip" title="Permanent link">&para;</a></h1>
+<ul>
+<li><a href="#specifying-packages-to-process">Specifying packages to process</a></li>
+<li><a href="#requirementstxt">requirements.txt</a></li>
+<li><a href="#project-metadata">Project metadata</a></li>
+<li><a href="#distribution-formats">Distribution formats</a></li>
+<li><a href="#using-fetched-dependencies">Using fetched dependencies</a></li>
+<li><a href="#working-with-rust-based-dependencies">Working with Rust-based dependencies</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#example">Full example walkthrough</a></li>
+</ul>
+<h2 id="specifying-packages-to-process">Specifying packages to process<a class="headerlink" href="#specifying-packages-to-process" title="Permanent link">&para;</a></h2>
+<p>The "pip packages" that Hermeto can process are root directories of Python
+projects. They should have</p>
+<ul>
+<li>
+<p>One or more requirements files (unless the project has no dependencies)</p>
+</li>
+<li>
+<p>See <a href="#requirementstxt">what Hermeto requires</a></p>
+</li>
+<li>
+<p>A file defining the project metadata</p>
+</li>
+<li>
+<p>See <a href="#project-metadata">what Hermeto supports</a></p>
+</li>
+</ul>
+<p>Then Hermeto can be run as follows</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+</code></pre></div>
+<p>where 'JSON input' is</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
+<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
+<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// specify requirements files (relative to the package path)</span>
+<span class="w">  </span><span class="c1">// defaults to [&quot;requirements.txt&quot;] or [] if the file does not exist</span>
+<span class="w">  </span><span class="s2">&quot;requirements_files&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;requirements.txt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;requirements-extra.txt&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="c1">// specify *build* requirements files</span>
+<span class="w">  </span><span class="c1">// defaults to [&quot;requirements-build.txt&quot;] or [] if the file does not exist</span>
+<span class="w">  </span><span class="s2">&quot;requirements_build_files&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;requirements-build.txt&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="c1">// binary filter object to prefetch specific wheels</span>
+<span class="w">  </span><span class="c1">// defaults to None - only sdists are prefetched by default</span>
+<span class="w">  </span><span class="s2">&quot;binary&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;packages&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;tensorflow&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;arch&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;x86_64&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;os&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;py_version&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">312</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>or more simply by just invoking <code>hermeto fetch-deps pip</code>.</p>
+<p><em>For more information on using build requirements and binary filter object, see
+<a href="#distribution-formats">Distribution Formats</a> section.</em></p>
+<p>The main argument accepts alternative forms of input, see
+<a href="#pre-fetch-dependencies">Example: Pre-fetch dependencies</a>.</p>
+<h2 id="requirementstxt">requirements.txt<a class="headerlink" href="#requirementstxt" title="Permanent link">&para;</a></h2>
+<p>Hermeto downloads dependencies explicitly declared in lockfiles. For pip, the
+closest thing to a lockfile would be a "fully resolved" requirements.txt - must
+contain all the transitive dependencies, must pin them to exact versions.</p>
+<p>A good way to generate requirements.txt is via <a href="https://pip-tools.readthedocs.io/en/stable/">pip-compile</a>. Note that
+pip-compile supports reading dependencies directly from project files (e.g.
+pyproject.toml, setup.cfg, setup.py) or from "requirements.in" input files.</p>
+<details>
+  <summary>Example: pyproject.toml</summary>
+
+<div class="highlight"><pre><span></span><code><span class="k">[project]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;requests&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz&quot;</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>pip-compile<span class="w"> </span>pyproject.toml<span class="w"> </span>--generate-hashes
+</code></pre></div>
+
+</details>
+
+<details>
+  <summary>Example: requirements.in</summary>
+
+<div class="highlight"><pre><span></span><code># requirements.in
+requests
+dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>pip-compile<span class="w"> </span>requirements.in<span class="w"> </span>--generate-hashes
+</code></pre></div>
+
+</details>
+
+<details>
+  <summary>Result: requirements.txt</summary>
+
+<div class="highlight"><pre><span></span><code>#
+# This file is autogenerated by pip-compile with Python 3.10
+# by the following command:
+#
+#    pip-compile --generate-hashes pyproject.toml
+#
+certifi==2022.12.7 \
+    --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3 \
+    --hash=sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18
+    # via requests
+charset-normalizer==3.0.1 \
+    --hash=sha256:00d3ffdaafe92a5dc603cb9bd5111aaa36dfa187c8285c543be562e61b755f6b \
+    --hash=sha256:024e606be3ed92216e2b6952ed859d86b4cfa52cd5bc5f050e7dc28f9b43ec42 \
+    --hash=sha256:0298eafff88c99982a4cf66ba2efa1128e4ddaca0b05eec4c456bbc7db691d8d \
+    --hash=sha256:02a51034802cbf38db3f89c66fb5d2ec57e6fe7ef2f4a44d070a593c3688667b \
+    --hash=sha256:083c8d17153ecb403e5e1eb76a7ef4babfc2c48d58899c98fcaa04833e7a2f9a \
+    --hash=sha256:0a11e971ed097d24c534c037d298ad32c6ce81a45736d31e0ff0ad37ab437d59 \
+    --hash=sha256:0bf2dae5291758b6f84cf923bfaa285632816007db0330002fa1de38bfcb7154 \
+    --hash=sha256:0c0a590235ccd933d9892c627dec5bc7511ce6ad6c1011fdf5b11363022746c1 \
+    --hash=sha256:0f438ae3532723fb6ead77e7c604be7c8374094ef4ee2c5e03a3a17f1fca256c \
+    --hash=sha256:109487860ef6a328f3eec66f2bf78b0b72400280d8f8ea05f69c51644ba6521a \
+    --hash=sha256:11b53acf2411c3b09e6af37e4b9005cba376c872503c8f28218c7243582df45d \
+    --hash=sha256:12db3b2c533c23ab812c2b25934f60383361f8a376ae272665f8e48b88e8e1c6 \
+    --hash=sha256:14e76c0f23218b8f46c4d87018ca2e441535aed3632ca134b10239dfb6dadd6b \
+    --hash=sha256:16a8663d6e281208d78806dbe14ee9903715361cf81f6d4309944e4d1e59ac5b \
+    --hash=sha256:292d5e8ba896bbfd6334b096e34bffb56161c81408d6d036a7dfa6929cff8783 \
+    --hash=sha256:2c03cc56021a4bd59be889c2b9257dae13bf55041a3372d3295416f86b295fb5 \
+    --hash=sha256:2e396d70bc4ef5325b72b593a72c8979999aa52fb8bcf03f701c1b03e1166918 \
+    --hash=sha256:2edb64ee7bf1ed524a1da60cdcd2e1f6e2b4f66ef7c077680739f1641f62f555 \
+    --hash=sha256:31a9ddf4718d10ae04d9b18801bd776693487cbb57d74cc3458a7673f6f34639 \
+    --hash=sha256:356541bf4381fa35856dafa6a965916e54bed415ad8a24ee6de6e37deccf2786 \
+    --hash=sha256:358a7c4cb8ba9b46c453b1dd8d9e431452d5249072e4f56cfda3149f6ab1405e \
+    --hash=sha256:37f8febc8ec50c14f3ec9637505f28e58d4f66752207ea177c1d67df25da5aed \
+    --hash=sha256:39049da0ffb96c8cbb65cbf5c5f3ca3168990adf3551bd1dee10c48fce8ae820 \
+    --hash=sha256:39cf9ed17fe3b1bc81f33c9ceb6ce67683ee7526e65fde1447c772afc54a1bb8 \
+    --hash=sha256:3ae1de54a77dc0d6d5fcf623290af4266412a7c4be0b1ff7444394f03f5c54e3 \
+    --hash=sha256:3b590df687e3c5ee0deef9fc8c547d81986d9a1b56073d82de008744452d6541 \
+    --hash=sha256:3e45867f1f2ab0711d60c6c71746ac53537f1684baa699f4f668d4c6f6ce8e14 \
+    --hash=sha256:3fc1c4a2ffd64890aebdb3f97e1278b0cc72579a08ca4de8cd2c04799a3a22be \
+    --hash=sha256:4457ea6774b5611f4bed5eaa5df55f70abde42364d498c5134b7ef4c6958e20e \
+    --hash=sha256:44ba614de5361b3e5278e1241fda3dc1838deed864b50a10d7ce92983797fa76 \
+    --hash=sha256:4a8fcf28c05c1f6d7e177a9a46a1c52798bfe2ad80681d275b10dcf317deaf0b \
+    --hash=sha256:4b0d02d7102dd0f997580b51edc4cebcf2ab6397a7edf89f1c73b586c614272c \
+    --hash=sha256:502218f52498a36d6bf5ea77081844017bf7982cdbe521ad85e64cabee1b608b \
+    --hash=sha256:503e65837c71b875ecdd733877d852adbc465bd82c768a067badd953bf1bc5a3 \
+    --hash=sha256:5995f0164fa7df59db4746112fec3f49c461dd6b31b841873443bdb077c13cfc \
+    --hash=sha256:59e5686dd847347e55dffcc191a96622f016bc0ad89105e24c14e0d6305acbc6 \
+    --hash=sha256:601f36512f9e28f029d9481bdaf8e89e5148ac5d89cffd3b05cd533eeb423b59 \
+    --hash=sha256:608862a7bf6957f2333fc54ab4399e405baad0163dc9f8d99cb236816db169d4 \
+    --hash=sha256:62595ab75873d50d57323a91dd03e6966eb79c41fa834b7a1661ed043b2d404d \
+    --hash=sha256:70990b9c51340e4044cfc394a81f614f3f90d41397104d226f21e66de668730d \
+    --hash=sha256:71140351489970dfe5e60fc621ada3e0f41104a5eddaca47a7acb3c1b851d6d3 \
+    --hash=sha256:72966d1b297c741541ca8cf1223ff262a6febe52481af742036a0b296e35fa5a \
+    --hash=sha256:74292fc76c905c0ef095fe11e188a32ebd03bc38f3f3e9bcb85e4e6db177b7ea \
+    --hash=sha256:761e8904c07ad053d285670f36dd94e1b6ab7f16ce62b9805c475b7aa1cffde6 \
+    --hash=sha256:772b87914ff1152b92a197ef4ea40efe27a378606c39446ded52c8f80f79702e \
+    --hash=sha256:79909e27e8e4fcc9db4addea88aa63f6423ebb171db091fb4373e3312cb6d603 \
+    --hash=sha256:7e189e2e1d3ed2f4aebabd2d5b0f931e883676e51c7624826e0a4e5fe8a0bf24 \
+    --hash=sha256:7eb33a30d75562222b64f569c642ff3dc6689e09adda43a082208397f016c39a \
+    --hash=sha256:81d6741ab457d14fdedc215516665050f3822d3e56508921cc7239f8c8e66a58 \
+    --hash=sha256:8499ca8f4502af841f68135133d8258f7b32a53a1d594aa98cc52013fff55678 \
+    --hash=sha256:84c3990934bae40ea69a82034912ffe5a62c60bbf6ec5bc9691419641d7d5c9a \
+    --hash=sha256:87701167f2a5c930b403e9756fab1d31d4d4da52856143b609e30a1ce7160f3c \
+    --hash=sha256:88600c72ef7587fe1708fd242b385b6ed4b8904976d5da0893e31df8b3480cb6 \
+    --hash=sha256:8ac7b6a045b814cf0c47f3623d21ebd88b3e8cf216a14790b455ea7ff0135d18 \
+    --hash=sha256:8b8af03d2e37866d023ad0ddea594edefc31e827fee64f8de5611a1dbc373174 \
+    --hash=sha256:8c7fe7afa480e3e82eed58e0ca89f751cd14d767638e2550c77a92a9e749c317 \
+    --hash=sha256:8eade758719add78ec36dc13201483f8e9b5d940329285edcd5f70c0a9edbd7f \
+    --hash=sha256:911d8a40b2bef5b8bbae2e36a0b103f142ac53557ab421dc16ac4aafee6f53dc \
+    --hash=sha256:93ad6d87ac18e2a90b0fe89df7c65263b9a99a0eb98f0a3d2e079f12a0735837 \
+    --hash=sha256:95dea361dd73757c6f1c0a1480ac499952c16ac83f7f5f4f84f0658a01b8ef41 \
+    --hash=sha256:9ab77acb98eba3fd2a85cd160851816bfce6871d944d885febf012713f06659c \
+    --hash=sha256:9cb3032517f1627cc012dbc80a8ec976ae76d93ea2b5feaa9d2a5b8882597579 \
+    --hash=sha256:9cf4e8ad252f7c38dd1f676b46514f92dc0ebeb0db5552f5f403509705e24753 \
+    --hash=sha256:9d9153257a3f70d5f69edf2325357251ed20f772b12e593f3b3377b5f78e7ef8 \
+    --hash=sha256:a152f5f33d64a6be73f1d30c9cc82dfc73cec6477ec268e7c6e4c7d23c2d2291 \
+    --hash=sha256:a16418ecf1329f71df119e8a65f3aa68004a3f9383821edcb20f0702934d8087 \
+    --hash=sha256:a60332922359f920193b1d4826953c507a877b523b2395ad7bc716ddd386d866 \
+    --hash=sha256:a8d0fc946c784ff7f7c3742310cc8a57c5c6dc31631269876a88b809dbeff3d3 \
+    --hash=sha256:ab5de034a886f616a5668aa5d098af2b5385ed70142090e2a31bcbd0af0fdb3d \
+    --hash=sha256:c22d3fe05ce11d3671297dc8973267daa0f938b93ec716e12e0f6dee81591dc1 \
+    --hash=sha256:c2ac1b08635a8cd4e0cbeaf6f5e922085908d48eb05d44c5ae9eabab148512ca \
+    --hash=sha256:c512accbd6ff0270939b9ac214b84fb5ada5f0409c44298361b2f5e13f9aed9e \
+    --hash=sha256:c75ffc45f25324e68ab238cb4b5c0a38cd1c3d7f1fb1f72b5541de469e2247db \
+    --hash=sha256:c95a03c79bbe30eec3ec2b7f076074f4281526724c8685a42872974ef4d36b72 \
+    --hash=sha256:cadaeaba78750d58d3cc6ac4d1fd867da6fc73c88156b7a3212a3cd4819d679d \
+    --hash=sha256:cd6056167405314a4dc3c173943f11249fa0f1b204f8b51ed4bde1a9cd1834dc \
+    --hash=sha256:db72b07027db150f468fbada4d85b3b2729a3db39178abf5c543b784c1254539 \
+    --hash=sha256:df2c707231459e8a4028eabcd3cfc827befd635b3ef72eada84ab13b52e1574d \
+    --hash=sha256:e62164b50f84e20601c1ff8eb55620d2ad25fb81b59e3cd776a1902527a788af \
+    --hash=sha256:e696f0dd336161fca9adbb846875d40752e6eba585843c768935ba5c9960722b \
+    --hash=sha256:eaa379fcd227ca235d04152ca6704c7cb55564116f8bc52545ff357628e10602 \
+    --hash=sha256:ebea339af930f8ca5d7a699b921106c6e29c617fe9606fa7baa043c1cdae326f \
+    --hash=sha256:f4c39b0e3eac288fedc2b43055cfc2ca7a60362d0e5e87a637beac5d801ef478 \
+    --hash=sha256:f5057856d21e7586765171eac8b9fc3f7d44ef39425f85dbcccb13b3ebea806c \
+    --hash=sha256:f6f45710b4459401609ebebdbcfb34515da4fc2aa886f95107f556ac69a9147e \
+    --hash=sha256:f97e83fa6c25693c7a35de154681fcc257c1c41b38beb0304b9c4d2d9e164479 \
+    --hash=sha256:f9d0c5c045a3ca9bedfc35dca8526798eb91a07aa7a2c0fee134c6c6f321cbd7 \
+    --hash=sha256:ff6f3db31555657f3163b15a6b7c6938d08df7adbfc9dd13d9d19edad678f1e8
+    # via requests
+dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz \
+    --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
+    # via my-package (pyproject.toml)
+idna==3.4 \
+    --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
+    --hash=sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2
+    # via requests
+requests==2.28.2 \
+    --hash=sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa \
+    --hash=sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf
+    # via my-package (pyproject.toml)
+urllib3==1.26.14 \
+    --hash=sha256:076907bf8fd355cde77728471316625a4d2f7e713c125f51953bb5b3eecf4f72 \
+    --hash=sha256:75edcdc2f7d85b137124a6c3c9fc3933cdeaa12ecb9a6a959f22797a0feca7e1
+    # via requests
+</code></pre></div>
+
+</details>
+
+<h3 id="hashes"><a href="https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode">Hashes</a><a class="headerlink" href="#hashes" title="Permanent link">&para;</a></h3>
+<p>Using hashes is <strong>strongly</strong> recommended.</p>
+<p>If using pip-compile, use the <code>--generate-hashes</code> option.</p>
+<h3 id="external-dependencies">External dependencies<a class="headerlink" href="#external-dependencies" title="Permanent link">&para;</a></h3>
+<p>For dependencies coming from somewhere other than PyPI, Hermeto supports a
+subset of the <a href="https://peps.python.org/pep-0440/#direct-references">PEP 440</a> direct references.</p>
+<h4 id="https-urls">https urls<a class="headerlink" href="#https-urls" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz \
+    --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d
+</code></pre></div>
+<p>For https dependencies, Hermeto requires <em>exactly one</em> <code>--hash</code> option as
+protection from remote tampering.</p>
+<p>Note that if at least one dependency in your requirements file uses <code>--hash</code>,
+pip requires hashes for all dependencies. Use <code>pip-compile --generate-hashes</code> to
+generate compliant requirements files.</p>
+<p><em>Hermeto does not support PEP 440 hashes in the url fragment, only <code>--hash</code>
+options.</em></p>
+<h4 id="git-urls">git urls<a class="headerlink" href="#git-urls" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>dockerfile-parse @ git+https://github.com/containerbuildsystem/dockerfile-parse@b6230230987950cfb16d8858c6f9a9642f4d0952
+</code></pre></div>
+<p>Git dependencies are incompatible with pip's hash checking. Please use an HTTPS
+URL instead, if possible</p>
+<div class="highlight"><pre><span></span><code><span class="gd">- dockerfile-parse @ git+https://github.com/containerbuildsystem/dockerfile-parse@b6230230987950cfb16d8858c6f9a9642f4d0952</span>
+<span class="gi">+ dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz \</span>
+<span class="gi">+     --hash=sha256:36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d</span>
+</code></pre></div>
+<p>If you do need to use a git url, Hermeto requires that it specifies a full
+commit hash.</p>
+<p><em>Hermeto does not support PEP 440 commit hashes in the url fragment (the <code>#</code>
+part), only directly after <code>@</code>.</em></p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>It's impossible to craft a requirements.txt file that would download
+dependencies from both https urls and git urls. Hermeto requires hashes for
+https. Using one --hash makes pip require hashes for everything. Pip does not
+support hashes for git dependencies. Please use https urls instead.</p>
+</blockquote>
+<h3 id="supported-options">Supported options<a class="headerlink" href="#supported-options" title="Permanent link">&para;</a></h3>
+<p>Requirements files support some <code>pip install</code> options - refer to the
+<a href="https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options">Pip docs</a>.</p>
+<p>Hermeto supports a small subset of them, ignores those that are not relevant for
+prefetching, and raises an error for those that <em>are</em> relevant but aren't
+supported.</p>
+<h4 id="global">Global<a class="headerlink" href="#global" title="Permanent link">&para;</a></h4>
+<h5 id="-index-url"><a href="https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url"><code>--index-url</code></a><a class="headerlink" href="#-index-url" title="Permanent link">&para;</a></h5>
+<p><em>Supported since v0.8.0.</em></p>
+<p>Make Hermeto download packages from the specified Python Package Index server.</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>Applies to all the packages (and only the packages) from the file which
+contains the <code>--index-url</code> option. If file A contains <code>--index-url</code> and file B
+does not, Hermeto will download the packages declared in B from the default
+index server (<code>https://pypi.org/simple</code>).</p>
+</blockquote>
+<p><img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /> <strong>Do not include credentials in the index url.</strong> If needed, provide
+authentication via
+<a href="https://pip.pypa.io/en/stable/topics/authentication/#netrc-support">a <strong>.netrc</strong> file</a>.</p>
+<h5 id="-require-hashes"><a href="https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes"><code>--require-hashes</code></a><a class="headerlink" href="#-require-hashes" title="Permanent link">&para;</a></h5>
+<p>Enables hash-checking mode. Typically redundant, since the presence of any
+<code>--hash</code> option enables hash-checking mode as well.</p>
+<h5 id="-trusted-host"><a href="https://pip.pypa.io/en/stable/cli/pip/#trusted-host"><code>--trusted-host</code></a><a class="headerlink" href="#-trusted-host" title="Permanent link">&para;</a></h5>
+<p>Disables HTTPS validation for a host. Don't use this for production builds.</p>
+<h4 id="per-requirement">Per-requirement<a class="headerlink" href="#per-requirement" title="Permanent link">&para;</a></h4>
+<h5 id="-hash"><code>--hash</code><a class="headerlink" href="#-hash" title="Permanent link">&para;</a></h5>
+<p>Specifies the expected hashes for package archives. See also the
+<a href="#hashes">hashes</a> section.</p>
+<h2 id="project-metadata">Project metadata<a class="headerlink" href="#project-metadata" title="Permanent link">&para;</a></h2>
+<p>Hermeto looks for the name and version of your project in the following project
+files</p>
+<ul>
+<li><a href="#pyprojecttoml-pep-621-metadata">pyproject.toml</a></li>
+<li><a href="#setupcfg-declarative-config">setup.cfg</a></li>
+<li><a href="#setuppy">setup.py</a></li>
+</ul>
+<p>If Hermeto fails to resolve the project name, it will generate a name based on
+the git repository origin url (and package subpath if the package is not in the
+repository root). If Hermeto fails to resolve the version, it will omit the
+version.</p>
+<h3 id="pyprojecttoml-pep-621-metadata">pyproject.toml <a href="https://packaging.python.org/en/latest/specifications/declaring-project-metadata/">PEP 621 metadata</a><a class="headerlink" href="#pyprojecttoml-pep-621-metadata" title="Permanent link">&para;</a></h3>
+<p>Supported cases</p>
+<div class="highlight"><pre><span></span><code><span class="k">[project]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+</code></pre></div>
+<p>Unsupported cases</p>
+<div class="highlight"><pre><span></span><code><span class="k">[project]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
+<span class="n">dynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="setupcfg-declarative-config">setup.cfg <a href="https://setuptools.pypa.io/en/stable/userguide/declarative_config.html">declarative config</a><a class="headerlink" href="#setupcfg-declarative-config" title="Permanent link">&para;</a></h3>
+<p>Supported cases</p>
+<div class="highlight"><pre><span></span><code><span class="k">[metadata]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">my_package</span>
+<span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1.0</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">[metadata]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">my_package</span>
+<span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">file: VERSION</span>
+<span class="c1"># taken from ./VERSION</span>
+<span class="c1"># example content:</span>
+<span class="c1">#   0.1.0</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">[metadata]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">my_package</span>
+<span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">attr: my_package.VERSION</span>
+<span class="c1"># taken from my_package/__init__.py or my_package.py</span>
+<span class="c1"># example content:</span>
+<span class="c1">#   VERSION = &quot;0.1.0&quot;</span>
+</code></pre></div>
+<p>Unsupported cases</p>
+<ul>
+<li>missing <code>version</code></li>
+<li>some forms of <code>version = attr:</code> (those requiring executing the module)</li>
+</ul>
+<h3 id="setuppy">setup.py<a class="headerlink" href="#setuppy" title="Permanent link">&para;</a></h3>
+<p><em>Using setup.py is <a href="https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged">discouraged</a>.</em></p>
+<p>Supported cases</p>
+<div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_package&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># basic variable usage is supported</span>
+<span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;my_package&quot;</span>
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># setup() call can be anywhere in the file</span>
+    <span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">NAME</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">VERSION</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="distribution-formats">Distribution formats<a class="headerlink" href="#distribution-formats" title="Permanent link">&para;</a></h2>
+<p>Python packages typically distribute both the <a href="https://packaging.python.org/en/latest/specifications/binary-distribution-format">binary format</a> (called wheel)
+and the <a href="https://packaging.python.org/en/latest/specifications/source-distribution-format">source format</a> (called sdist).</p>
+<p>Wheels are much more convenient; they are the pre-built format, installing from
+a wheel amounts to unzipping the wheel and copying the files to the right place.</p>
+<p>Sdists are more difficult to install. Pip must first build a wheel from the
+sdist using a <a href="https://peps.python.org/pep-0517">PEP 517</a> build system. To do that, pip has to install the build
+system and its dependencies (defined via <a href="https://peps.python.org/pep-0518">PEP 518</a>).</p>
+<h3 id="building-with-wheels">Building with wheels<a class="headerlink" href="#building-with-wheels" title="Permanent link">&para;</a></h3>
+<p>Building with wheels is helpful when you do not want or cannot build from source.
+Some projects do not even distribute as sdists. For example, <a href="https://pypi.org/project/tensorflow/2.11.0/#files">tensorflow</a>
+(as of version 2.11.0) distributes wheels only.</p>
+<p>You can use the binary filter object to prefetch the wheels you need to reduce
+the total download size and ensure compatibility with your target platform.</p>
+<p>Hermeto supports three binary fetching strategies, analogous to pip's
+<code>--no-binary</code>, <code>--prefer-binary</code>, and <code>--only-binary</code> options:</p>
+<ol>
+<li><strong>No Binaries</strong> (default)</li>
+<li>Configuration: <code>binary</code> field unspecified</li>
+<li>
+<p>Behavior: Hermeto operates in source-only mode. No binary artifacts will
+     be prefetched for any packages. This is the default behavior.</p>
+</li>
+<li>
+<p><strong>Prefer binaries</strong></p>
+</li>
+<li>Configuration: <code>binary</code> field specified with <code>packages</code> filter set to <code>:all:</code></li>
+<li>
+<p>Behavior</p>
+<ul>
+<li>Hermeto will attempt to prefetch compatible binaries for all
+     dependencies where possible</li>
+<li>If no matching binary is available, it will attempt to prefetch
+     sdists instead</li>
+<li>When binaries <em>are</em> available, Hermeto will attempt to also prefetch an
+     sdist for each package - this is specifically meant to cover the case
+     where a specific arch (of more than one specified) <em>doesn't</em> have a
+     wheel, and the whole build would likely fail otherwise</li>
+</ul>
+</li>
+<li>
+<p><strong>Only binaries for specific packages</strong></p>
+</li>
+<li>Configuration: <code>binary</code> field specified with <code>packages</code> filter set to specific
+     package names</li>
+<li>Behavior: For packages in the <code>packages</code> filter, Hermeto will attempt to
+     prefetch only binaries. If no matching binary can be found for one of these
+     packages, the operation will fail. Sdists for these packages will not be prefetched.
+     For packages not in the <code>packages</code> filter, Hermeto falls back to the "no binary"
+     mode above, i.e. only sdists are prefetched.</li>
+</ol>
+<h4 id="filter-options">Filter Options<a class="headerlink" href="#filter-options" title="Permanent link">&para;</a></h4>
+<p>The <code>binary</code> object accepts the following filter options:</p>
+<ul>
+<li>
+<p><strong><code>packages</code></strong>: Comma-separated list of package names to limit the filtering scope.
+  Default: <code>:all:</code>.</p>
+</li>
+<li>
+<p><strong><code>arch</code></strong>: Architecture filter. Accepts comma-separated values. Default: <code>"x86_64"</code>.</p>
+</li>
+<li>
+<p><strong><code>os</code></strong>: Operating system filter. Accepts comma-separated values. Default: <code>"linux"</code>.</p>
+</li>
+<li>
+<p><strong><code>py_version</code></strong>: Python version filter. Accepts a single integer consisting of
+  the major and minor versions combined (e.g., 312 for Python 3.12). Default: <code>None</code>.</p>
+</li>
+<li>
+<p><strong><code>py_impl</code></strong>: Python implementation filter. Accepts comma-separated values.
+  Default: <code>"cp"</code>.</p>
+</li>
+<li>
+<p><strong><code>abi</code></strong>: ABI filter. Accepts comma-separated values. Default: <code>:all:</code>.</p>
+</li>
+<li>
+<p><strong><code>platform</code></strong>: Regex pattern to match against platform tags. Default: <code>None</code>.</p>
+</li>
+</ul>
+<p>For more information, see the <a href="https://packaging.python.org/en/latest/specifications/platform-compatibility-tags">platform compatibility tags</a> specification.</p>
+<h4 id="filter-logic">Filter Logic<a class="headerlink" href="#filter-logic" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>:all:</code> or <code>None</code> are equivalent and mean that no filter is applied</li>
+<li>multiple values within a single filter field are combined with <strong>OR</strong> logic</li>
+<li>multiple filter fields are combined with <strong>AND</strong> logic</li>
+<li><code>arch</code> and <code>os</code> are mutually exclusive with <code>platform</code></li>
+</ul>
+<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<p>Prefetch wheels with default filters:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Prefetch wheels for Python 3.12 on Linux aarch64:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;os&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;arch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;aarch64&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;py_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">312</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;py_impl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cp,pp&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Prefetch wheels for specific packages and platforms:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;packages&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;numpy,pandas&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;^(any|musllinux.*)$&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="building-from-source">Building from source<a class="headerlink" href="#building-from-source" title="Permanent link">&para;</a></h3>
+<p>Building wheels from sdists takes a long time, but building from source gives
+you an important guarantee which using pre-built wheels does not: what you
+installed matches the source code. This can be especially important for Python
+packages implemented in C or other compiled languages.</p>
+<h4 id="requirements-buildtxt">requirements-build.txt<a class="headerlink" href="#requirements-buildtxt" title="Permanent link">&para;</a></h4>
+<p>To allow building from source in a network-isolated environment, Hermeto must
+download all the PEP 517 build dependencies before the build starts.</p>
+<p>Hermeto requires a fully resolved requirements-build.txt to do this. The file
+follows the same rules as requirements.txt, but contains build dependencies
+rather than runtime dependencies.</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>This file must contain all the transitive build dependencies of each of your
+transitive runtime dependencies (you are installing dependencies from source).</p>
+</blockquote>
+<p>We recommend the <a href="https://pypi.org/project/pybuild-deps">pybuild-deps</a> package to generate the requirements-build.txt
+file. It will automatically generate build requirements from your
+requirements.txt file.</p>
+<p><em>Adding a requirements-build.txt should not require changes in your build
+process. Pip should install the build dependencies automatically as needed, you
+don't have to install them explicitly. The purpose of requirements-build.txt is
+to make Hermeto fetch the build dependencies and provide them to pip for offline
+installation.</em></p>
+<h2 id="using-fetched-dependencies">Using fetched dependencies<a class="headerlink" href="#using-fetched-dependencies" title="Permanent link">&para;</a></h2>
+<p>See the <a href="#example">Example</a> for a complete walkthrough of Hermeto usage.</p>
+<p>Hermeto downloads the Python dependencies into the deps/pip/ subpath of the
+output directory. The directory is a flat list of the downloaded distributions
+of your runtime and build dependencies.</p>
+<div class="highlight"><pre><span></span><code>hermeto-output/deps/pip
+├── certifi-2022.12.7.tar.gz
+├── ...
+├── pdm-pep517-1.0.6.tar.gz
+├── requests-2.28.2.tar.gz
+├── ...
+└── wheel-0.38.4.tar.gz
+</code></pre></div>
+<p>To make pip use the downloaded archives, use the
+<a href="https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f"><code>--find-links</code></a>
+and
+<a href="https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-index"><code>--no-index</code></a>
+options. The <code>--find-links</code> option tells pip to look for
+dependency archives in a directory, <code>--no-index</code> prevents pip from preferring PyPI
+over the local directory. Pip also accepts environment variables; Hermeto
+generates <code>PIP_FIND_LINKS</code> and <code>PIP_NO_INDEX</code> for you.
+See <a href="#generate-environment-variables">Example: Generate environment variables</a>
+for more details.</p>
+<h3 id="using-external-dependencies">Using external dependencies<a class="headerlink" href="#using-external-dependencies" title="Permanent link">&para;</a></h3>
+<p>It gets a bit trickier with <a href="#external-dependencies">external dependencies</a>. Pip
+does not respect the <code>--find-links</code> option for dependencies specified via URLs.
+Instead, Hermeto's <code>inject-files</code> subcommand rewrites your requirements.txt
+file(s) in-place to replace the URLs with file paths in the local file system
+(it is also the case that an environment variable for telling Cargo where to
+look for prefetched deps is set by <code>inject-files</code>).</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>hermeto<span class="w"> </span>inject-files<span class="w"> </span>./hermeto-output<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
+<span class="m">2023</span>-01-26<span class="w"> </span><span class="m">16</span>:41:09,990<span class="w"> </span>INFO<span class="w"> </span>Overwriting<span class="w"> </span>/tmp/test/foo-project/requirements.txt
+</code></pre></div>
+<p>We can look at the <code>git diff</code> to see what the package remapping looks like. As
+an example,</p>
+<div class="highlight"><pre><span></span><code><span class="gd">- dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \</span>
+<span class="gi">+ dockerfile-parse @ file:///absolute-path/hermeto-output/deps/pip/.../dockerfile-parse-...tar.gz</span>
+</code></pre></div>
+<p>External dependencies are stored a bit further down the deps/pip tree to avoid
+mixing them with PyPI dependencies. The path and filename is an implementation
+detail.</p>
+<div class="highlight"><pre><span></span><code>hermeto-output/deps/pip
+├── ...
+├── external-dockerfile-parse
+│   └── dockerfile-parse-external-sha256-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
+└── ...
+</code></pre></div>
+<h2 id="working-with-rust-based-dependencies">Working with Rust-based dependencies<a class="headerlink" href="#working-with-rust-based-dependencies" title="Permanent link">&para;</a></h2>
+<p>Hermeto provides a way to prepare hermetic build of a Python package which
+depends on Rust-based packages. This process cannot be fully automated on
+Hermeto's side, thus it would require minor intervention from users.</p>
+<p>Building such project requires that all build dependencies are  listed in
+requirements-build.txt. To achieve this <a href="https://pypi.org/project/pybuild-deps">pybuild-deps</a> could be used. The
+following command will take care of generating the list</p>
+<div class="highlight"><pre><span></span><code>pybuild-deps<span class="w"> </span>compile<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-build.txt<span class="w"> </span>requirements.txt
+</code></pre></div>
+<p>Note that this step requires internet connection.</p>
+<p>Once requirements-build.txt is populated fetch could be done as usual. Hermeto
+will fetch all run time and build time dependencies for both Python and Rust
+parts.</p>
+<p>Note that a system which is to be used for building these extensions must have
+<code>rustc</code>, <code>cargo</code>, and all necessary C libraries installed.</p>
+<p>With these preparations running a pip installation as usual should be sufficient
+to build and install a Rust-based extension.</p>
+<p>Note that sometimes Rust-based extensions can break a build. This could happen
+when such dependency is distributed with a Cargo.lock not matching Cargo.toml
+(while rare this seems to happen due to peculiarities of the release process for
+some packages). In this case a package will be rejected with a note about lock
+file mismatch and an additional report from Cargo about inability to load
+package lock file due to a mismatch. There is no good solution for this problem
+on Hermeto's side and the best course of action is to reach out to maintainers
+of this extension and notify them about the mismatch. Switching to a binary
+distribution of the package would also resolve this problem at the price of not
+building it from sources (see <a href="#building-with-wheels">Building with wheels</a> for
+additional context).</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>--mode<span class="w"> </span>permissive<span class="w"> </span>fetch-deps<span class="w"> </span>pip
+</code></pre></div>
+<p>(note that the parameter is global, not a <code>fetch-deps</code>-specific one). This would
+instruct Cargo PM which handles Rust dependencies to attempt to regenerate
+Cargo.lock. This is problematic as well since it makes builds unpredictable in
+the sense that two different builds of the same package can result in different
+versions of dependencies used because the lock file was regenerated at build
+time instead of being locked by maintainers. Please be aware that this is still
+a workaround and that the proper solution is to engage with a package
+maintainers and ensure that they supply correct Cargo.lock.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<p>Common issues you may face when fetching dependencies or when installing the
+fetched dependencies.</p>
+<p>First, please make sure that your project meets Hermeto's requirements (this
+document) and that you are using Hermeto as intended (for reference, see the
+<a href="#example">Example</a> for a complete walkthrough).</p>
+<h3 id="miscellaneous-errors-while-building-from-source">Miscellaneous errors while building from source<a class="headerlink" href="#miscellaneous-errors-while-building-from-source" title="Permanent link">&para;</a></h3>
+<p><em>Have you read <a href="#building-from-source">Building from source</a>?</em></p>
+<p>Even if you have all the build dependencies available, installing from source
+can come with unforeseen complications. Pip's
+<a href="https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-no-binary"><code>--no-binary</code></a>
+flag can help debug faster.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># on your machine</span>
+virtualenv<span class="w"> </span>venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="c1"># or in a container</span>
+podman<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:</span><span class="nv">$PWD</span><span class="s2">:z&quot;</span><span class="w"> </span>-w<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span><span class="w"> </span>ubi8/python-39<span class="w"> </span>bash
+
+pip<span class="w"> </span>install<span class="w"> </span>--no-binary<span class="w"> </span>:all:<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+<p>Notably, older versions of pip and setuptools have a fair share of bugs related
+to PEP 517 handling. A good first course of action can be to upgrade pip and
+setuptools and try again.</p>
+<p>Other pip install options such as
+<a href="https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-use-pep517"><code>--use-pep517</code></a>
+may also be of interest.</p>
+<h3 id="need-to-install-newer-pip">Need to install newer pip<a class="headerlink" href="#need-to-install-newer-pip" title="Permanent link">&para;</a></h3>
+<p>Problem: you've found out that some build errors are caused by bugs in an older
+pip version. But the base image for your container build comes with <code>pip==&lt;old&gt;</code>
+and you cannot upgrade during the build because you're building with network
+isolation.</p>
+<p>Solution: make Hermeto fetch a newer pip for you. Then you can upgrade pip from
+the prefetched archive.</p>
+<div class="highlight"><pre><span></span><code># add to requirements-build.txt or use a separate file
+pip==22.3.1 --hash=...
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>.
+</code></pre></div>
+<p><em>You can use a similar approach to upgrade setuptools or other build
+dependencies before installing your app. Build dependencies other than pip
+should be part or <a href="#requirements-buildtxt">requirements-build.txt</a> already.</em></p>
+<h3 id="failing-to-compile-a-dependency">Failing to compile a dependency<a class="headerlink" href="#failing-to-compile-a-dependency" title="Permanent link">&para;</a></h3>
+<p>Building dependencies written in C typically requires gcc, CPython headers and
+other development libraries. Hermeto does not fetch these, getting them into the
+build is up to you. The best case scenario, if you're building a container, is
+that the base image already contains everything you need. For example, the
+<a href="https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f">ubi8/python-39</a> image contains most of the typical development libraries.</p>
+<p>To find out what non-Python dependencies you need, try to <code>pip install
+--no-binary :all:</code> in a clean environment (e.g. a container) as shown
+<a href="#miscellaneous-errors-while-building-from-source">above</a>. The error messages
+you get should hopefully point you to the required dependencies.</p>
+<p>For dependencies compiled from other languages, such as Rust, we don't know of
+any good solutions for offline installation. If you do manage to make it work,
+please let us know.</p>
+<h3 id="dependency-does-not-distribute-sources">Dependency does not distribute sources<a class="headerlink" href="#dependency-does-not-distribute-sources" title="Permanent link">&para;</a></h3>
+<p>Some projects do not distribute sdists to PyPI. For example, <a href="https://pypi.org/project/tensorflow/2.11.0/#files">tensorflow</a> (as
+of version 2.11.0) distributes only wheels.</p>
+<p>Possible workarounds:</p>
+<ul>
+<li>Enable pre-fetching wheels using binary filter object in JSON input.</li>
+<li>Find the git repository for the project, get the source tarball for a release.</li>
+</ul>
+<p>In requirements.txt, specify the dependency <a href="#https-urls">via an https url</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="gd">- tensorflow==2.11.0</span>
+<span class="gi">+ tensorflow @ https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.11.0.tar.gz \</span>
+<span class="gi">+     --hash=sha256:99c732b92b1b37fc243a559e02f9aef5671771e272758aa4aec7f34dc92dac48</span>
+</code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<p>Let's build a <a href="https://github.com/hermetoproject/doc-examples/tree/pip-basic">basic pip project</a>.</p>
+<p>Get the repo if you want to try for yourself</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/hermetoproject/doc-examples.git<span class="w"> </span>--branch<span class="o">=</span>pip-basic
+</code></pre></div>
+<p>then <code>cd</code> into the <code>doc-examples</code> directory.</p>
+<h4 id="pre-fetch-dependencies">Pre-fetch dependencies<a class="headerlink" href="#pre-fetch-dependencies" title="Permanent link">&para;</a></h4>
+<p>As mentioned above in
+<a href="#specifying-packages-to-process">Specifying packages to process</a>,
+Hermeto pre-fetches using the <code>fetch-deps</code> command.</p>
+<p>Sources can be fetched with</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>pip
+</code></pre></div>
+<p>Note that <code>path</code> is not specified explicitly and defaults to <code>.</code>, and a
+short-hand notation for package manager is used.</p>
+<p>It's possible to add parameters in JSON format to point Hermeto at a specific
+source directory, and/or additional requirements files, if needed, e.g.</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./foo-project<span class="s1">&#39;{</span>
+<span class="s1">  &quot;type&quot;: &quot;pip&quot;,</span>
+<span class="s1">  &quot;requirements_files&quot;: [&quot;requirements.txt&quot;],</span>
+<span class="s1">  &quot;requirements_build_files&quot;: [&quot;requirements-build.txt&quot;]</span>
+<span class="s1">}&#39;</span>
+</code></pre></div>
+<h4 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h4>
+<p>Next, we need to generate the environment file so that the <code>pip install</code> command
+can find the cached dependencies</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>generate-env<span class="w"> </span>./hermeto-output<span class="w"> </span>-o<span class="w"> </span>./hermeto.env<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
+</code></pre></div>
+<p>We can see the variables needed by the package manager</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>cat<span class="w"> </span>hermeto.env
+<span class="nb">export</span><span class="w"> </span><span class="nv">PIP_FIND_LINKS</span><span class="o">=</span>/tmp/hermeto-output/deps/pip
+<span class="nb">export</span><span class="w"> </span><span class="nv">PIP_NO_INDEX</span><span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
+<h4 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h4>
+<p>In order to support the network isolated build, we need to remember to <code>source</code>
+the environment file in the step that executes <code>pip install</code>.</p>
+<p>Dockerfile</p>
+<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9/python-312</span>
+
+<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>/src/simple-color-output
+<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/src/simple-color-output</span>
+
+<span class="c"># Need to source the hermeto.env file to set the environment variables</span>
+<span class="c"># (in the same RUN instruction as the pip commands)</span>
+<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>.
+
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python3&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;simple_color_output&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>After mounting the required Hermeto data, we can then build the image!</p>
+<div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tag<span class="w"> </span>simple_color_output
+</code></pre></div>
+<p>We can then run the image to see the output</p>
+<div class="highlight"><pre><span></span><code>podman<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>simple_color_output:latest
+</code></pre></div>
+<p>which should output</p>
+<!-- markdownlint-disable-next-line no-inline-html -->
+<p><font color='red'>Hello</font> <font color='green'>colorful</font> <font color='blue'>World!</font></p>
+<p>Note that the repo also contains a <code>build.sh</code> script which will execute all of
+these steps for you.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.action.edit", "content.action.view", "content.code.copy", "content.tooltips", "navigation.sections", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

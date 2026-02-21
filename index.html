@@ -1,0 +1,1504 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="usage/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Hermeto</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hermeto" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Hermeto" class="md-header__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hermeto
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Hermeto" class="md-nav__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hermeto
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-managers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package managers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package managers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bundler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cargo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cargo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generic-fetcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generic fetcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gomod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gomod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rpm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yarn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        yarn
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package managers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Package managers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="bundler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bundler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cargo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cargo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="generic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    generic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="gomod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gomod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="npm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    npm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rpm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="yarn_classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="yarn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-managers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package managers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package managers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bundler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cargo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cargo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generic-fetcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generic fetcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gomod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gomod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rpm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yarn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        yarn
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/index.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="hermeto">Hermeto<a class="headerlink" href="#hermeto" title="Permanent link">&para;</a></h1>
+<!-- markdownlint-disable-next-line link-image-style line-length -->
+<p><a href="https://codecov.io/github/hermetoproject/hermeto"><img alt="coverage badge" src="https://codecov.io/github/hermetoproject/hermeto/graph/badge.svg?token=VJKRTZQBMY" /></a> <a href="https://github.com/hermetoproject/hermeto/pkgs/container/hermeto/versions?filters%5Bversion_type%5D=tagged"><img alt="container badge" src="https://img.shields.io/badge/container-latest-blue" /></a></p>
+<p>Hermeto is a CLI tool that pre-fetches your project's dependencies to aid in
+making your build process <a href="https://slsa.dev/spec/v0.1/requirements#hermetic">hermetic</a>.</p>
+<p>To see if we support your package manager(s), please check the
+<a href="#package-managers">package managers</a> section.</p>
+<p>The primary intended use of Hermeto's outputs is for network-isolated container
+builds.</p>
+<h2 id="table-of-contents">Table of contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#goals">Goals</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#basic-usage">Basic usage</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#package-managers">Package managers</a></li>
+<li><a href="#project-status">Project status</a></li>
+</ul>
+<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
+<p>Please note that Hermeto is rather picky, aiming to</p>
+<ul>
+<li>encourage or enforce best practices</li>
+<li>never execute arbitrary code <sup id="fnref:pip-download-example"><a class="footnote-ref" href="#fn:pip-download-example">1</a></sup></li>
+<li>keep the implementation simple</li>
+</ul>
+<p>To play nicely with Hermeto, the build process for your project must be</p>
+<ul>
+<li><strong>Defined</strong> - Hermeto only fetches dependencies that are explicitly declared -
+  typically in a lockfile generated by your package manager.</li>
+<li><strong>Reproducible</strong> - Hermeto will refuse to fetch a dependency if it's not
+  pinned to an exact version. This goes for transitive dependencies as well (and
+  ties to the Defined point). Most package managers pin all dependencies
+  automatically in lockfiles.</li>
+<li><strong>Secure</strong> - Even with a lockfile, your build is not truly safe from supply
+  chain attacks unless you verify the checksums of all dependencies. If your
+  package manager supports specifying the expected checksums, we strongly
+  encourage you to make use of them.</li>
+</ul>
+<p>⚠ Hermeto will verify checksums if present, but doesn't require them by
+  default. This may change in the future.</p>
+<p>In return, Hermeto will help make your build</p>
+<ul>
+<li><strong>Auditable</strong> - by generating a manifest of all the dependencies that go into
+  your build.</li>
+</ul>
+<p>The ability to achieve the goals depends on the build process being <em>hermetic</em>.
+Ideally, you should try to isolate the build from both the internet and the
+underlying host system to avoid implicit dependencies, unreproducible behavior
+and whole hosts of other issues. Hermeto itself is not a hermetic build system.
+We suggest you take advantage of existing technologies - such as containers - to
+achieve network isolation.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<h3 id="standalone">Standalone<a class="headerlink" href="#standalone" title="Permanent link">&para;</a></h3>
+<p>We do not distribute Hermeto as a standalone package as of now.</p>
+<p>To install Hermeto for local development, see CONTRIBUTING.md.</p>
+<h3 id="container-image">Container image<a class="headerlink" href="#container-image" title="Permanent link">&para;</a></h3>
+<!-- markdownlint-disable-next-line link-image-style -->
+<p><a href="https://github.com/hermetoproject/hermeto/pkgs/container/hermeto/versions?filters%5Bversion_type%5D=tagged"><img alt="container badge" src="https://img.shields.io/badge/container-latest-blue" /></a></p>
+<div class="highlight"><pre><span></span><code>ghcr.io/hermetoproject/hermeto
+</code></pre></div>
+<p>You may wish to set up an alias to make local usage more convenient</p>
+<div class="highlight"><pre><span></span><code><span class="nb">alias</span><span class="w"> </span><span class="nv">hermeto</span><span class="o">=</span><span class="s1">&#39;podman run --rm -ti -v &quot;$PWD:$PWD:z&quot; -w &quot;$PWD&quot; ghcr.io/hermetoproject/hermeto:latest&#39;</span>
+</code></pre></div>
+<p>Note that the alias mounts the current working directory — the container will
+have access to files in that directory and nowhere else.</p>
+<h2 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--sbom-output-type<span class="w"> </span>cyclonedx<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>gomod
+</code></pre></div>
+<p>The <code>fetch-deps</code> command fetches your project's dependencies and stores them on
+your disk. Hermeto also produces a detailed SBOM containing information about
+all the project's components and packages. You can find the SBOM in the output
+directory.</p>
+<p>See <code>docs/usage.md</code> for a more detailed, practical example of Hermeto usage.</p>
+<p>You might also like to check out <code>hermeto --help</code> and the <code>--help</code> texts of the
+available subcommands.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<h3 id="modes">Modes<a class="headerlink" href="#modes" title="Permanent link">&para;</a></h3>
+<p>Hermeto can be run in two modes using the global CLI option <code>--mode</code>.</p>
+<ul>
+<li>strict</li>
+<li>permissive</li>
+</ul>
+<p>The default mode is <code>strict</code>. In this mode, <em>some</em> input requirements that are
+not met are treated as errors. On the other hand, the <code>permissive</code> mode treats
+them as warnings. This means that Hermeto will proceed and generate an SBOM, but
+it may not be complete or accurate.</p>
+<p>The permissive mode can currently suppress the following:</p>
+<ul>
+<li>go <code>vendor</code> directory inconsistencies (See <code>docs/gomod.md</code> on vendoring
+  information)</li>
+<li>cargo manifest file <code>Cargo.toml</code> is out of sync with <code>Cargo.lock</code></li>
+</ul>
+<h3 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h3>
+<p>Settings can be provided via the following sources (highest priority first):</p>
+<ol>
+<li><strong>Environment variables</strong>: prefixed with <code>HERMETO_</code>, using <code>__</code> for nested
+   settings (e.g., <code>HERMETO_GOMOD__DOWNLOAD_MAX_TRIES=10</code>)</li>
+<li><strong>CLI option</strong>: <code>--config-file path/to/config.yaml</code></li>
+<li><strong>Config files</strong> (automatically loaded if present): <code>~/.config/hermeto/config.yaml</code>,
+   <code>hermeto.yaml</code>, <code>.hermeto.yaml</code></li>
+</ol>
+<p>Any settings specified will override the default values present in the
+<a href="https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/config.py">config.py</a> module. The only supported format for config files is YAML.</p>
+<ul>
+<li><code>gomod.download_max_tries</code> max retry attempts for go commands.</li>
+<li><code>gomod.environment_variables</code> default environment variables for gomod.</li>
+<li><code>gomod.proxy_url</code> sets the GOPROXY variable that Hermeto uses internally when
+  downloading Go modules. See <a href="https://go.dev/ref/mod#environment-variables">Go environment variables</a>.</li>
+<li><code>http.connect_timeout</code> connection timeout (seconds) for HTTP requests
+  (default: 30).</li>
+<li><code>http.read_timeout</code> read timeout (seconds) for HTTP requests (default: 300).
+  Long-running downloads can take arbitrarily long as long as bytes keep
+  flowing.</li>
+<li><code>http.timeout</code> (deprecated) automatically migrated to <code>http.read_timeout</code>.</li>
+<li><code>runtime.concurrency_limit</code> max concurrent operations.</li>
+<li><code>runtime.subprocess_timeout</code> timeout (seconds) for subprocess commands.</li>
+</ul>
+<h2 id="package-managers">Package managers<a class="headerlink" href="#package-managers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Package manager</th>
+<th>Ecosystem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#bundler">bundler</a></td>
+<td>Ruby</td>
+</tr>
+<tr>
+<td><a href="#cargo">cargo</a></td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><a href="#generic-fetcher">generic</a></td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><a href="#gomod">gomod</a></td>
+<td>Go</td>
+</tr>
+<tr>
+<td><a href="#npm">npm</a></td>
+<td>JavaScript</td>
+</tr>
+<tr>
+<td><a href="#pip">pip</a></td>
+<td>Python</td>
+</tr>
+<tr>
+<td><a href="#rpm">rpm</a></td>
+<td>RPM</td>
+</tr>
+<tr>
+<td><a href="#yarn">yarn</a></td>
+<td>JavaScript</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bundler"><a href="https://bundler.io">bundler</a><a class="headerlink" href="#bundler" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports bundler by parsing the <a href="https://bundler.io/guides/using_bundler_in_applications.html#gemfilelock">Gemfile.lock</a> file present in the
+source repository and downloading the declared dependencies.</p>
+<p>To generate a lockfile or to make sure the file is up to date, you can use for
+example the <code>bundle lock</code> command, which generates the <code>Gemfile.lock</code> file based
+on the dependencies specified in the <a href="https://bundler.io/v2.5/man/gemfile.5.html">Gemfile</a>. Both files must be present in
+the source repository so you should check them into your git repository.</p>
+<p>See docs/bundler.md for more details.</p>
+<h3 id="cargo"><a href="https://doc.rust-lang.org/cargo">cargo</a><a class="headerlink" href="#cargo" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports Cargo by invoking the Cargo CLI to fetch Rust dependencies as
+declared in your project, ensuring reproducible builds with explicitly defined
+versions. Make sure to have up-to-date <a href="https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html">Cargo.lock</a> present in your project.</p>
+<p>See docs/cargo.md for more details.</p>
+<h3 id="generic-fetcher">generic fetcher<a class="headerlink" href="#generic-fetcher" title="Permanent link">&para;</a></h3>
+<p>Generic fetcher is a way for Hermeto to support prefetching arbitrary files that
+don't fit into other package managers. With the generic fetcher, you can easily
+fetch those files with Hermeto along with your other language-specific
+dependencies, satisfy the hermetic build condition and have them recorded in the
+SBOM.</p>
+<p>Hermeto uses a simple custom lockfile named <code>artifacts.lock.yaml</code> that is
+expected to be present in the repository, or supplied in JSON input. The
+lockfile describes the urls, checksums and output filenames for the downloaded
+files.</p>
+<p>Currently supported types of artifacts</p>
+<ul>
+<li>Arbitrary files</li>
+<li>Maven artifacts</li>
+</ul>
+<p>See docs/generic.md for more details.</p>
+<h3 id="gomod"><a href="https://go.dev/ref/mod">gomod</a><a class="headerlink" href="#gomod" title="Permanent link">&para;</a></h3>
+<p>Current version: 1.25 <sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> <sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup></p>
+<p>The gomod package manager works by parsing the <a href="https://go.dev/ref/mod#go-mod-file">go.mod</a> file present in the
+source repository to determine which dependencies to download. Hermeto does not
+parse this file on its own - rather, we rely on the <code>go</code> command to download and
+list the required dependencies.</p>
+<p>From Go 1.17 onward, the go.mod file includes all the transitively required
+dependencies of your application - see the section about <em>Pruned module graphs</em>
+in the <a href="https://tip.golang.org/doc/go1.17#go-command">Go 1.17 changelog</a>. In previous Go versions, the go.mod file included
+only direct dependencies. Hermeto does support downloading and listing all
+transitive dependencies for earlier versions thanks to Go's backwards
+compatibility<sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">3</a></sup>. Note that using Go &gt;= 1.17 in your project has the
+added benefit of downloading fewer dependencies (as noted in the changelog), in
+some cases drastically so.</p>
+<p>See docs/gomod.md for more details.</p>
+<h3 id="npm"><a href="https://docs.npmjs.com">npm</a><a class="headerlink" href="#npm" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports npm by parsing <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json">package-lock.json</a> file present in the source
+repository and downloading the declared dependencies.</p>
+<p>To generate lockfile or to make sure the file is up to date, you can use
+<a href="https://docs.npmjs.com/cli/v9/commands/npm-install?v=true">npm install</a>.</p>
+<p>Make sure lockfile version is higher than v1 (Node.js 15 or higher).</p>
+<p>See docs/npm.md for more details.</p>
+<h3 id="pip"><a href="https://pip.pypa.io/en/stable">pip</a><a class="headerlink" href="#pip" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports pip by parsing <a href="https://pip.pypa.io/en/stable/reference/requirements-file-format">requirements.txt</a> files present in the source
+repository and downloading the declared dependencies.</p>
+<p>The files must be lockfiles, i.e. declare all the transitive dependencies and
+pin them to specific versions. Generating such a lockfile is best done using
+tools like <a href="https://pip-tools.readthedocs.io/en/stable">pip-compile</a></p>
+<p>We support source distribution file format (<a href="https://packaging.python.org/en/latest/specifications/source-distribution-format">sdist</a>) as well as binary
+distribution file format (<a href="https://packaging.python.org/en/latest/specifications/binary-distribution-format">wheel</a>).</p>
+<p>See docs/pip.md for more details.</p>
+<h3 id="rpm"><a href="https://rpm.org/about.html">rpm</a><a class="headerlink" href="#rpm" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports rpm by parsing the <code>rpms.lock.yaml</code> file present in the source
+repository and downloading the declared dependencies. To generate this YAML
+"lockfile", one can currently only use <a href="https://github.com/konflux-ci/rpm-lockfile-prototype">rpm-lockfile-prototype</a> for this job.</p>
+<p>See docs/rpm.md for more details.</p>
+<h3 id="yarn"><a href="https://yarnpkg.com">yarn</a><a class="headerlink" href="#yarn" title="Permanent link">&para;</a></h3>
+<p>Current version: v4</p>
+<p>Unlike NPM, hermeto merely drives the underlying <code>yarn</code> CLI command operations,
+that is, hermeto leaves most of the heavy lifting to Yarn itself and it mainly
+focuses on post-process validation. Note that having a Yarn lockfile
+(<code>yarn.lock</code>) checked into the repository is paramount for hermeto to process a
+project successfully. If missing, you can easily generate one by running
+<a href="https://v3.yarnpkg.com/getting-started/usage#installing-all-the-dependencies">yarn install</a> prior to pointing hermeto to your project.</p>
+<p>See docs/yarn.md for more details.</p>
+<h2 id="project-status">Project status<a class="headerlink" href="#project-status" title="Permanent link">&para;</a></h2>
+<p>Hermeto was derived from (but is not a direct fork of) <a href="https://github.com/containerbuildsystem/cachito">Cachito</a>.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:pip-download-example">
+<p>See for example this <a href="https://discuss.python.org/t/pip-download-just-the-source-packages-no-building-no-metadata-etc/4651">python.org discussion</a>&#160;<a class="footnote-backref" href="#fnref:pip-download-example" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Hermeto expects to use a specific version of the <code>go</code> command
+  when downloading dependencies. This is the version installed in the
+  <a href="#container-image">hermeto container</a>. We do not guarantee correctness if you
+  run Hermeto locally (outside the container) with a different Go version.
+  You <em>are</em> free to use a different version to build your project.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p>The <code>go</code> command promises to be backwards compatible with previous
+  versions. If your go.mod file specifies the intended go version, Hermeto
+  should handle it appropriately. If your go version is <em>higher</em> than what
+  Hermeto uses, there is a good chance it will be compatible regardless, as long
+  as the dependency resolution did not change between the two versions.
+  For example, dependency resolution did change in <a href="https://tip.golang.org/doc/go1.18#go-command">Go 1.18</a> but not in
+  <a href="https://tip.golang.org/doc/go1.19#go-command">Go 1.19</a>. Things are a bit more complicated with <a href="https://tip.golang.org/doc/go1.21">Go 1.21</a>, if you are or
+  have been experiencing issues with hermeto related to Go 1.21+, please refer
+  to our gomod documentation for more details.&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["content.action.edit", "content.action.view", "content.code.copy", "content.tooltips", "navigation.sections", "search.share", "search.suggest"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
