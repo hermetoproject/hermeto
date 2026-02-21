@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import subprocess
 from collections.abc import Collection
-from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from textwrap import dedent
@@ -27,6 +26,7 @@ from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
+from hermeto.core.package_managers.pip.models import PyPIArtifact, URLArtifact, VCSArtifact
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -612,13 +612,16 @@ class TestDownload:
             pypi_checksum={pypi_checksum_sdist},
             req_file_checksums=set() if missing_req_file_checksum else {req_file_checksum_sdist},
         )
-        sdist_d_i = sdist_DPI.download_info | {
-            "kind": "pypi",
-            "requirement_file": str(req_file.file_path.subpath_from_root),
-            "missing_req_file_checksum": missing_req_file_checksum,
-            "package_type": "sdist",
-            "index_url": expect_index_url,
-        }
+        sdist_d_i = PyPIArtifact(
+            package="foo",
+            path=sdist_download,
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=missing_req_file_checksum,
+            build_dependency=False,
+            index_url=expect_index_url,
+            package_type="sdist",
+            _version="1.0",
+        )
         verify_sdist_checksum_call = mock.call(sdist_download, {pypi_checksum_sdist})
         expected_downloads = [sdist_d_i]
 
@@ -627,7 +630,7 @@ class TestDownload:
             wheel_0_download = pip_deps.join_within_root("foo-1.0-cp35-many-linux.whl").path
             wheel_1_download = pip_deps.join_within_root("foo-1.0-cp25-win32.whl").path
             wheel_2_download = pip_deps.join_within_root("foo-1.0-any.whl").path
-            wheel_downloads: list[dict[str, Any]] = []
+            wheel_downloads: list[PyPIArtifact] = []
 
             for wheel_path, pypi_checksum in zip(
                 [wheel_0_download, wheel_1_download, wheel_2_download],
@@ -645,14 +648,16 @@ class TestDownload:
                 )
                 wheels_DPI.append(dpi)
                 wheel_downloads.append(
-                    dpi.download_info
-                    | {
-                        "kind": "pypi",
-                        "requirement_file": str(req_file.file_path.subpath_from_root),
-                        "missing_req_file_checksum": missing_req_file_checksum,
-                        "package_type": "wheel",
-                        "index_url": expect_index_url,
-                    }
+                    PyPIArtifact(
+                        package="foo",
+                        path=wheel_path,
+                        requirement_file=str(req_file.file_path.subpath_from_root),
+                        missing_req_file_checksum=missing_req_file_checksum,
+                        build_dependency=False,
+                        index_url=expect_index_url,
+                        package_type="wheel",
+                        _version="1.0",
+                    )
                 )
 
             verify_wheel0_checksum_call = mock.call(
@@ -798,18 +803,25 @@ class TestDownload:
             "external-bar", "bar-external-sha256-654321.tar.gz"
         ).path
 
-        url_download_info = {
+        url_download_info = URLArtifact(
+            package="bar",
+            path=url_download,
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=False,
+            build_dependency=False,
+            original_url=plain_url,
+            url_with_hash=plain_url,
+        )
+
+        mock_download_url_package.return_value = {
             "package": "bar",
             "path": url_download,
             "requirement_file": str(req_file.file_path.subpath_from_root),
-            # Checksums are *mandatory*
             "missing_req_file_checksum": False,
-            "package_type": "",
+            "package_type": None,
             "original_url": plain_url,
             "url_with_hash": plain_url,
         }
-
-        mock_download_url_package.return_value = deepcopy(url_download_info)
 
         mock_must_match_any_checksum.side_effect = [
             None if checksum_match else PackageRejected("", solution=None),
@@ -819,7 +831,7 @@ class TestDownload:
         # <call>
         found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
         expected_download = [
-            url_download_info | {"kind": "url"},
+            url_download_info,
         ]
         assert found_download == expected_download
         assert pip_deps.path.is_dir()
@@ -896,24 +908,34 @@ class TestDownload:
             f"bacon-gitcommit-{GIT_REF}.tar.gz",
         ).path
 
-        vcs_download_info = {
+        vcs_download_info = VCSArtifact(
+            package="bacon",
+            path=vcs_download,
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=True,
+            build_dependency=False,
+            url=git_url,
+            host="github.com",
+            namespace="spam",
+            repo="bacon",
+            ref=GIT_REF,
+        )
+
+        mock_download_vcs_package.return_value = {
             "package": "bacon",
             "path": vcs_download,
-            "requirement_file": str(req_file.file_path.subpath_from_root),
-            # vcs deps *can't have* checksums
-            "missing_req_file_checksum": True,
-            "package_type": "",
+            "url": git_url,
+            "host": "github.com",
+            "namespace": "spam",
             "repo": "bacon",
-            # etc., not important for this test
+            "ref": GIT_REF,
         }
-
-        mock_download_vcs_package.return_value = deepcopy(vcs_download_info)
         # </setup>
 
         # <call>
         found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
         expected_download = [
-            vcs_download_info | {"kind": "vcs"},
+            vcs_download_info,
         ]
         assert found_download == expected_download
         assert pip_deps.path.is_dir()
@@ -966,22 +988,26 @@ class TestDownload:
 
         downloads = pip._download_from_requirement_files(rooted_tmp_path, [req_file1, req_file2])
         assert downloads == [
-            pypi_package1.download_info
-            | {
-                "kind": "pypi",
-                "requirement_file": str(req_file1.subpath_from_root),
-                "missing_req_file_checksum": True,
-                "package_type": "sdist",
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-            },
-            pypi_package2.download_info
-            | {
-                "kind": "pypi",
-                "requirement_file": str(req_file2.subpath_from_root),
-                "missing_req_file_checksum": True,
-                "package_type": "sdist",
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-            },
+            PyPIArtifact(
+                package="foo",
+                path=pypi_download1,
+                requirement_file=str(req_file1.subpath_from_root),
+                missing_req_file_checksum=True,
+                build_dependency=False,
+                index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+                package_type="sdist",
+                _version="1.0.0",
+            ),
+            PyPIArtifact(
+                package="bar",
+                path=pypi_download2,
+                requirement_file=str(req_file2.subpath_from_root),
+                missing_req_file_checksum=True,
+                build_dependency=False,
+                index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+                package_type="sdist",
+                _version="0.0.1",
+            ),
         ]
         _check_metadata_in_sdist.assert_has_calls(
             [mock.call(pypi_package1.path), mock.call(pypi_package2.path)], any_order=True
@@ -1077,28 +1103,28 @@ def test_resolve_pip(
     mock_metadata.return_value = ("foo", "1.0")
     mock_download.side_effect = [
         [
-            {
-                "version": "2.1",
-                "kind": "pypi",
-                "package": "bar",
-                "path": "some/path",
-                "requirement_file": str(req_file.subpath_from_root),
-                "missing_req_file_checksum": False,
-                "package_type": "sdist",
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-            }
+            PyPIArtifact(
+                package="bar",
+                path=Path("some/path"),
+                requirement_file=str(req_file.subpath_from_root),
+                missing_req_file_checksum=False,
+                build_dependency=False,
+                index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+                package_type="sdist",
+                _version="2.1",
+            )
         ],
         [
-            {
-                "version": "0.0.5",
-                "kind": "pypi",
-                "package": "baz",
-                "path": "another/path",
-                "requirement_file": str(build_req_file.subpath_from_root),
-                "missing_req_file_checksum": False,
-                "package_type": "sdist",
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-            }
+            PyPIArtifact(
+                package="baz",
+                path=Path("another/path"),
+                requirement_file=str(build_req_file.subpath_from_root),
+                missing_req_file_checksum=False,
+                build_dependency=False,
+                index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+                package_type="sdist",
+                _version="0.0.5",
+            )
         ],
     ]
     if custom_requirements:
@@ -1333,7 +1359,7 @@ def test_fetch_pip_source(
                 "kind": "url",
                 "requirement_file": "requirements.txt",
                 "missing_req_file_checksum": False,
-                "package_type": "",
+                "package_type": None,
             },
             {
                 "name": "baz",
@@ -1372,7 +1398,7 @@ def test_fetch_pip_source(
                 "kind": "url",
                 "requirement_file": "requirements.txt",
                 "missing_req_file_checksum": True,
-                "package_type": "",
+                "package_type": None,
             },
         ],
         "packages_containing_rust_code": [],
@@ -1636,7 +1662,7 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
                 "kind": "url",
                 "requirement_file": "requirements.txt",
                 "missing_req_file_checksum": False,
-                "package_type": "",
+                "package_type": None,
             },
             {
                 "name": "baz",
@@ -1675,7 +1701,7 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
                 "kind": "url",
                 "requirement_file": "requirements.txt",
                 "missing_req_file_checksum": True,
-                "package_type": "",
+                "package_type": None,
             },
         ],
         "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
