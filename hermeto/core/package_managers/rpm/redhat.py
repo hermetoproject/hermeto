@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import logging
 import uuid
 from functools import cached_property

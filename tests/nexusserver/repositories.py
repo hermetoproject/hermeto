@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """Repository configuration for Nexus server."""
 
 from dataclasses import dataclass, field

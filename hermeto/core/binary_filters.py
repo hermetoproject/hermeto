@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """Base classes for binary package filtering."""
 
 from abc import ABC, abstractmethod

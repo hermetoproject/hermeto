@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """
 Resolve the dependency list for a yarn project.
 

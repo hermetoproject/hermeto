@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import textwrap
 from pathlib import Path
 from typing import ClassVar, Iterable

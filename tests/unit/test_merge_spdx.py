@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from collections import defaultdict
 from functools import reduce
 from operator import add

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """RPM-specific binary package filtering."""
 
 from typing import Any

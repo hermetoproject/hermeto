@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """This module provides functionality to handle Rust extensions in Python packages."""
 
 import logging

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """This module provides functionality to parse and validate requirements.txt files."""
 
 import functools

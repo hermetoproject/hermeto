@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import logging
 from functools import cached_property
 from pathlib import Path

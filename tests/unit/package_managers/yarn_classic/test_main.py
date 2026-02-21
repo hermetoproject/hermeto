@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import itertools
 import json
 from collections.abc import Iterable

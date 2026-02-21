@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import re
 from itertools import zip_longest
 from pathlib import Path

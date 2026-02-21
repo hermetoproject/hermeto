@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import itertools
 import re
 from enum import Enum

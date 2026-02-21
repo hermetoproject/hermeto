@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections import defaultdict
 from collections.abc import Iterable

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum

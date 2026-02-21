@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import os
 from pathlib import Path
 from typing import Any, TypeVar

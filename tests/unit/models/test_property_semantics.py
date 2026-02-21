@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 import pytest
 
 from hermeto import APP_NAME
