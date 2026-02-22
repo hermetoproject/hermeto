@@ -87,11 +87,6 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         extract_dir = pip_deps_dir / filename
         shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
 
-        cargo_lockfiles = list(extract_dir.rglob("Cargo.lock"))
-        if not cargo_lockfiles:
-            shutil.rmtree(extract_dir, ignore_errors=True)
-            continue
-
         # The unpacked URL/VCS package may have an arbitrary directory name that we cannot control.
         # Therefore, it is inside a predictable directory derived from the package name.
         nitems = sum(1 for _ in extract_dir.iterdir())
@@ -104,6 +99,18 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         if not _depends_on_rust(source_dir):
             shutil.rmtree(extract_dir, ignore_errors=True)
             continue
+
+        cargo_lockfiles = list(extract_dir.rglob("Cargo.lock"))
+        if not cargo_lockfiles:
+            log.warning(
+                "Detected Rust-based python package %s without Cargo.lock. "
+                "Skipping Rust dependency prefetch for reproducibility. "
+                "Ask package maintainers to include Cargo.lock.",
+                package_path.name,
+            )
+            shutil.rmtree(extract_dir, ignore_errors=True)
+            continue
+
         rust_root_dir = _get_rust_root_dir(cargo_lockfiles)
         packages_containing_rust_code.append(
             CargoPackageInput(
