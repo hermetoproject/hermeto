@@ -49,9 +49,9 @@ jobs:
       # 1. [ALWAYS] Semantic version tag:
       #    - extracts version from github.ref (must be a git tag ref)
       #
-      # 2. [CONDITIONAL] 'latest' tag to ensure latest points to stable releases only:
-      #    - release event: only for stable releases, i.e. '!github.event.release.prerelease'
-      #    - manual workflow trigger: only if 'push_latest' checkbox is checked
+      # 2. [CONDITIONAL] 'latest' tag (single rule, no duplicates):
+      #    - release event: only when the release is "latest" on GitHub and its not a "pre-release" ( it avoids overwriting latest releases when publishing older releases from maintenance branches)
+      #    - manual workflow trigger: only when 'push_latest' checkbox is checked
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
@@ -59,7 +59,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ (github.event_name == 'workflow_dispatch' && inputs.push_latest) || (github.event_name == 'release' && !github.event.release.prerelease) }}
+            type=raw,value=latest,enable=${{ (github.event_name == 'workflow_dispatch' && inputs.push_latest) || (github.event_name == 'release' && github.event.release.latest && !github.event.release.prerelease) }}
 
       # Multi-arch build setup
       - name: Build and push container image
