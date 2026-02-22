@@ -87,9 +87,43 @@ class TestTopLevelOpts:
     def test_version_option(self) -> None:
         expect_version = importlib.metadata.version(f"{APP_NAME}")
         result = invoke_expecting_sucess(app, ["--version"])
-        lines = result.output.splitlines()
-        assert lines[0] == f"{APP_NAME} {expect_version}"
-        assert lines[1].startswith("Supported package managers: bundler")
+        assert expect_version in result.output
+
+    @pytest.fixture
+    def _fake_package_managers(self) -> dict[str, Any]:
+        return {
+            "foo": mock.Mock(return_value=RequestOutput.empty()),
+            "bar": mock.Mock(return_value=RequestOutput.empty()),
+            "x-baz": mock.Mock(return_value=RequestOutput.empty()),
+        }
+
+    @pytest.mark.parametrize(
+        "args, expected_backends",
+        [
+            (["list-backends"], ["bar", "foo"]),
+            (["list-backends", "--experimental"], ["baz"]),
+            (["list-backends", "--all"], ["bar", "baz", "foo"]),
+        ],
+    )
+    def test_list_backends_option(
+        self,
+        args: list[str],
+        expected_backends: list[str],
+        _fake_package_managers: dict[str, Any],
+    ) -> None:
+        with mock.patch.dict(
+            "hermeto.core.resolver._package_managers",
+            values=_fake_package_managers,
+            clear=True,
+        ):
+            result = invoke_expecting_sucess(app, args)
+
+        items = [item.strip() for item in result.output.split(",")]
+        assert items == expected_backends
+
+    def test_list_backends_option_invalid(self) -> None:
+        result = invoke_expecting_invalid_usage(app, ["list-backends", "--all", "--experimental"])
+        assert "Please pick only one option." in result.output
 
     @pytest.mark.parametrize(
         "config_values",
