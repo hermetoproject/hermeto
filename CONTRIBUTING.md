@@ -29,9 +29,10 @@ Alternatively, submit a pull request with one of the following
 * In case the change is trivial, you can start with a draft or even provide a PR with the final implementation.
 
 When working on a pull request please make sure that you have followed [pull
-request guidelines](#pull-request-guidelines). Please consult
-[Development](#development) section, it contains a lot of helpful information
-which will make contributing fast and pleasant process.
+request guidelines](#pull-request-guidelines). For AI-assisted contributions,
+make sure to comply with the [AI Contribution Policy](AI_CONTRIBUTION_POLICY.md).
+Please consult [Development](#development) section, it contains a lot of helpful
+information which will make contributing fast and pleasant process.
 
 ### How we deal with larger features
 
