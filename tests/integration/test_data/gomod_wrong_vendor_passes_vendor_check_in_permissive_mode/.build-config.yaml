@@ -7,4 +7,6 @@ environment_variables:
   value: ${output_dir}/deps/gomod
 - name: GOPROXY
   value: file://${GOMODCACHE}/cache/download
+- name: GOSUMDB
+  value: 'off'
 project_files: []

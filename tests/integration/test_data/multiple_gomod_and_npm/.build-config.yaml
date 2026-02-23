@@ -7,6 +7,8 @@ environment_variables:
   value: ${output_dir}/deps/gomod
 - name: GOPROXY
   value: file://${GOMODCACHE}/cache/download
+- name: GOSUMDB
+  value: 'off'
 project_files:
 - abspath: ${test_case_tmp_path}/npm-package/package-lock.json
   template: |
