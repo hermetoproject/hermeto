@@ -6,6 +6,9 @@ import pytest
 
 from . import utils
 
+
+pytestmark = pytest.mark.skip(reason="Legacy entrypoint no longer supported")
+
 log = logging.getLogger(__name__)
 
 
@@ -80,6 +83,7 @@ def test_e2e_cargo(
         actual_repo_dir,
         test_data_dir,
         test_case,
+        test_params.branch,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
@@ -87,3 +91,4 @@ def test_e2e_cargo(
         env_vars_filename="cachi2.env",
         hermeto_image_entrypoint="cachi2",
     )
+

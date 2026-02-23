@@ -49,6 +49,7 @@ def test_e2e_multiple(
         actual_repo_dir,
         test_data_dir,
         test_case,
+        test_params.branch,
         check_cmd,
         expected_cmd_output,
         hermeto_image,

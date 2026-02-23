@@ -61,6 +61,14 @@ yaml.representer.SafeRepresenter.add_representer(
 
 CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specification/refs/heads/master/schema/bom-1.6.schema.json"
 
+DEFAULT_INTEGRATION_TESTS_REPO = (
+    "https://github.com/cachito-testing/integration-tests"
+)
+def get_integration_tests_repo_url() -> str:
+    return os.getenv(
+        "HERMETO_INTEGRATION_TESTS_REPO",
+        DEFAULT_INTEGRATION_TESTS_REPO,
+    )
 
 @dataclass
 class TestParameters:
@@ -320,25 +328,31 @@ def _fetch_cyclone_dx_schema() -> dict[str, Any]:
     return response.json()
 
 
-def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
+def clone_integration_test_branch(tmp_path: Path, branch: str) -> Path:
     """
-    Clone a custom integration test repository for a specific test.
-
-    This allows individual tests to use their own fork/repository without affecting
-    other tests. The repository is cloned to a temporary directory.
-
+    Clone integration-tests repository branch.
+    Supports environment override for repo URL or local path.
+    
     :param tmp_path: pytest fixture for temporary directory
-    :param repo_url: URL of the repository to clone
     :param branch: Branch to checkout after cloning
     :return: Path to the cloned repository
     """
-    # Create unique directory name based on repo and branch
-    repo_name = repo_url.rstrip("/").split("/")[-1].removesuffix(".git")
+
+    repo_override = os.getenv("HERMETO_INTEGRATION_TESTS_REPO")
+
+    # If override is a local path, use it directly
+    if repo_override and Path(repo_override).exists():
+        repo_dir = Path(repo_override)
+        log.info(f"Using local integration-tests repo at {repo_dir}")
+        return repo_dir
+
+    repo_url = get_integration_tests_repo_url()
+
     safe_branch = branch.replace("/", "_")
+    repo_dir = tmp_path / f"integration-tests_{safe_branch}"
 
-    repo_dir = tmp_path / f"{repo_name}_{safe_branch}"
+    log.info(f"Cloning integration tests repo from {repo_url} (branch: {branch})")
 
-    log.info(f"Cloning custom test repository from {repo_url} (branch: {branch})")
     GitRepo.clone_from(
         url=repo_url,
         to_path=repo_dir,
@@ -346,8 +360,8 @@ def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
         depth=1,
         recurse_submodules=True,
     )
+    
     return repo_dir
-
 
 def fetch_deps_and_check_output(
     tmp_path: Path,
@@ -379,9 +393,15 @@ def fetch_deps_and_check_output(
     # Use custom repository if specified, otherwise use the default session-scoped one
     # To maintain backwards compatibility, we keep the original behavior of cloning default repo at start of whole test
     if test_params.repo_url is not None:
-        actual_repo_dir = _clone_custom_test_repo(
-            tmp_path, test_params.repo_url, test_params.branch
+        repo_dir = tmp_path / f"custom_repo_{test_params.branch.replace('/', '_')}"
+        GitRepo.clone_from(
+            url=test_params.repo_url,
+            to_path=repo_dir,
+            branch=test_params.branch,
+            depth=1,
+            recurse_submodules=True,
         )
+        actual_repo_dir = repo_dir
     else:
         actual_repo_dir = test_repo_dir
         repo = GitRepo(actual_repo_dir)
@@ -460,7 +480,7 @@ def fetch_deps_and_check_output(
     if test_params.check_deps_checksums:
         files_checksums = _calculate_files_checksums_in_dir(output_dir.joinpath("deps"))
         expected_files_checksums_path = test_data_dir.joinpath(
-            test_data_dir, test_case, "fetch_deps_sha256sums.json"
+            test_case, "fetch_deps_sha256sums.json"
         )
         update_test_data_if_needed(expected_files_checksums_path, files_checksums)
         expected_files_checksums = _load_json_or_yaml(expected_files_checksums_path)
@@ -476,8 +496,9 @@ def build_image_and_check_cmd(
     test_repo_dir: Path,
     test_data_dir: Path,
     test_case: str,
+    branch: str,
     check_cmd: list,
-    expected_cmd_output: str,
+    expected_cmd_output: list[str],
     hermeto_image: ContainerImage,
     hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
@@ -533,12 +554,19 @@ def build_image_and_check_cmd(
     assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     log.info("Build container image with all prerequisites retrieved in previous steps")
-    container_folder = test_data_dir.joinpath(test_case, "container")
+    
+    branch_name = branch
+    
+    integration_repo = clone_integration_test_branch(
+      tmp_path,
+      branch_name,
+    )
+    containerfile_path = integration_repo.joinpath("Containerfile")
 
     with build_image_for_test_case(
         source_dir=test_repo_dir,
         output_dir=tmp_path,
-        containerfile_path=container_folder.joinpath("Containerfile"),
+        containerfile_path=containerfile_path,
         test_case=test_case,
     ) as test_image:
         log.info(f"Run command {check_cmd} on built image {test_image.repository}")
@@ -771,3 +799,4 @@ def determine_integration_tests_to_skip() -> Any:
     elif just_some_package_managers_were_affected_by(changes):
         return SUPPORTED_PMS - affected_package_managers(changes)
     return set()
+
