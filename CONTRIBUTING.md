@@ -151,6 +151,12 @@ Observe the following guidelines when submitting a pull request for review
 
 * Write clear and informative *commit messages*. If you want to provide further context, use the PR's description
 * [Sign off on](https://developercertificate.org) all commits
+* Use your full name and a valid, deliverable email address for commit
+  authorship. The notion of a "known identity" is open to interpretation. We simply require a real full name
+  rather than a pseudonym or handle (sorry, no anonymous contributions). The same applies to the
+  [DCO sign-off](https://developercertificate.org) which is required on all commits. If you set
+  your `user.name` and `user.email` git configuration options, you can sign your commits
+  automatically with `git commit -s`
 * Please use the PR's description to provide further explanation of the pull request's title
 * Split changes into multiple commits such that each commit addresses a clear and concise problem
 * Avoid PRs which are too large — split the work into multiple PRs if necessary
