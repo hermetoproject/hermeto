@@ -44,6 +44,7 @@ def test_help(hermeto_image: utils.HermetoImage, tmp_path: Path) -> None:
             [],  # No additional commands are run to verify the build
             [],
             id="legacy_entrypoint_e2e_test",
+            marks=pytest.mark.no_proxy_mode,  # Issues with the legacy entrypoint and model validation
         ),
     ],
 )

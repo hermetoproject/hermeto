@@ -58,3 +58,15 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         choices=("podman", "buildah"),
         help="Container engine: podman or buildah (env: HERMETO_TEST_CONTAINER_ENGINE)",
     )
+    group.addoption(
+        "--hermeto-local-nexus-proxy",
+        action="store_true",
+        default=os.getenv("HERMETO_TEST_LOCAL_NEXUS_PROXY") == "1",
+        help="Enable local Nexus proxy for registry tests (env: HERMETO_TEST_LOCAL_NEXUS_PROXY=1)",
+    )
+    group.addoption(
+        "--hermeto-local-nexus-no-cleanup",
+        action="store_true",
+        default=os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1",
+        help="Keep Nexus container running after tests (env: HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1)",
+    )

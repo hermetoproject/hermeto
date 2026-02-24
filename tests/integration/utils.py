@@ -22,6 +22,12 @@ from hermeto.core.scm import GitRepo
 from hermeto.core.type_aliases import StrPath
 from hermeto.interface.cli import DEFAULT_OUTPUT
 from tests.integration.container_engine import get_container_engine
+from tests.integration.proxy import (
+    DEFAULT_LOCAL_NEXUS_PROXY_ENV,
+    is_local_nexus_proxy_enabled,
+    parse_proxy_env,
+    validate_and_strip_proxy_refs,
+)
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
@@ -33,11 +39,18 @@ log = logging.getLogger(__name__)
 container_engine = get_container_engine()
 
 
+def _default_hermeto_env() -> dict[str, str]:
+    """Return default Hermeto env vars for the test session, if any are enabled."""
+    if is_local_nexus_proxy_enabled():
+        return dict(DEFAULT_LOCAL_NEXUS_PROXY_ENV)
+    return {}
+
+
 def _resolve_hermeto_env(
     run_defaults: Mapping[str, str] | None = None,
     test_overrides: Mapping[str, str] | None = None,
     call_overrides: Mapping[str, str] | None = None,
-    unset_hermeto_env: Collection[str] | None = None,
+    unset_hermeto_env: Collection[str] = (),
 ) -> dict[str, str]:
     """Resolve effective Hermeto env for one test invocation."""
     resolved = {
@@ -45,9 +58,7 @@ def _resolve_hermeto_env(
         **(test_overrides or {}),
         **(call_overrides or {}),
     }
-    for key in unset_hermeto_env or ():
-        resolved.pop(key, None)
-    return resolved
+    return {k: v for k, v in resolved.items() if k not in unset_hermeto_env}
 
 
 def _env_to_engine_flags(env: Mapping[str, str] | None) -> list[str]:
@@ -428,6 +439,7 @@ def fetch_deps_and_check_output(
     cmd.append(json.dumps(test_params.packages))
 
     merged_env = _resolve_hermeto_env(
+        run_defaults=_default_hermeto_env(),
         test_overrides=test_params.hermeto_env,
         call_overrides=hermeto_env_overrides,
         unset_hermeto_env=test_params.unset_hermeto_env,
@@ -462,15 +474,23 @@ def fetch_deps_and_check_output(
         expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
         expected_sbom_path = test_data_dir.joinpath(test_case, "bom.json")
 
+        # If any proxy backends are configured, validate and strip proxy refs from the SBOM
+        # before comparing to test data.
+        sbom_for_comparison = sbom
+        backend_proxy_urls = parse_proxy_env(merged_env)
+        if backend_proxy_urls:
+            log.info("Validating and stripping proxy metadata from SBOM")
+            sbom_for_comparison = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
+
         update_test_data_if_needed(expected_build_config_path, build_config)
-        update_test_data_if_needed(expected_sbom_path, sbom)
+        update_test_data_if_needed(expected_sbom_path, sbom_for_comparison)
 
         expected_build_config = _load_json_or_yaml(expected_build_config_path)
         expected_sbom = _replace_timestamps(_load_json_or_yaml(expected_sbom_path))
 
         log.info("Compare output files")
         assert build_config == expected_build_config
-        assert _sort_obj(sbom) == _sort_obj(expected_sbom)
+        assert _sort_obj(sbom_for_comparison) == _sort_obj(expected_sbom)
 
         log.info("Validate SBOM schema")
         schema = _fetch_cyclone_dx_schema()

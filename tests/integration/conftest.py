@@ -11,7 +11,9 @@ import pytest
 import requests
 from git import Repo
 
+from tests.integration.proxy import TEST_NEXUS_PORT, is_local_nexus_proxy_enabled
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
+from tests.nexusserver import DEFAULT_NEXUS_HOST, initialize_nexus
 
 from . import utils
 
@@ -26,6 +28,8 @@ _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_DNFSERVER_SSL_PORT", "--hermeto-dnfserver-ssl-port"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
+    ("HERMETO_TEST_LOCAL_NEXUS_PROXY", "--hermeto-local-nexus-proxy"),
+    ("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP", "--hermeto-local-nexus-no-cleanup"),
 ]
 
 
@@ -176,3 +180,35 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
             raise RuntimeError("DNF server didn't start fast enough")
 
         yield
+
+
+@pytest.fixture(autouse=True, scope="session")
+def local_nexusserver(top_level_test_dir: Path) -> Iterator[None]:
+    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
+        yield
+        return
+
+    with contextlib.ExitStack() as context:
+        container, client = initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT)
+        context.enter_context(client)
+
+        # Allows inspection of running Nexus container after test completion
+        if os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1":
+            log.info("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
+        else:
+            context.enter_context(container)
+
+        log.info("Nexus server ready at %s", client.base_url)
+        yield
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Skip tests that are incompatible with proxy mode."""
+    if not is_local_nexus_proxy_enabled():
+        return
+
+    for item in items:
+        if item.get_closest_marker("no_proxy_mode"):
+            item.add_marker(
+                pytest.mark.skip(reason="Test incompatible with local Nexus proxy mode")
+            )
