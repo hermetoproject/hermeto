@@ -11,7 +11,9 @@ import pytest
 import requests
 from git import Repo
 
+from tests.integration.proxy import TEST_NEXUS_PORT, is_local_nexus_proxy_enabled
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
+from tests.nexusserver import DEFAULT_NEXUS_HOST, initialize_nexus
 
 from . import utils
 
@@ -180,20 +182,40 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
         yield
 
 
+@pytest.fixture(autouse=True, scope="session")
+def local_nexusserver(top_level_test_dir: Path) -> Iterator[None]:
+    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
+        yield
+        return
+
+    with contextlib.ExitStack() as context:
+        container, client = initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT)
+        context.enter_context(client)
+
+        # Allows inspection of running Nexus container after test completion
+        if os.getenv("HERMETO_TEST_NEXUS_NO_CLEANUP") == "1":
+            log.info("HERMETO_TEST_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
+        else:
+            context.enter_context(container)
+
+        log.info("Nexus server ready at %s", client.base_url)
+        yield
+
+
 def pytest_collection_modifyitems(
     session: pytest.Session, config: pytest.Config, items: list[pytest.Item]
 ) -> None:
-    """Remove redundant tests which don't have to run for the latest code change.
+    """Skip tests that are incompatible with proxy mode or unaffected by code changes."""
+    # do not try to skip by code-change heuristic if a keyword or marker is specified
+    skip_by_change = not (config.getoption("-k") or config.getoption("-m"))
 
-    This function implements a standard pytest hook. Please refer to pytest
-    docs for further information.
-    """
-    # do not try to skip tests if a keyword or marker is specified
-    if config.getoption("-k") or config.getoption("-m"):
-        return
+    tests_to_skip = utils.determine_integration_tests_to_skip() if skip_by_change else set()
+    proxy_mode = is_local_nexus_proxy_enabled()
 
-    skip_mark = pytest.mark.skip(reason="No changes to tested code")
-    tests_to_skip = utils.determine_integration_tests_to_skip()
     for item in items:
-        if utils.tested_object_name(item.path) in tests_to_skip:
-            item.add_marker(skip_mark)
+        if proxy_mode and item.get_closest_marker("no_proxy_mode"):
+            item.add_marker(
+                pytest.mark.skip(reason="Test incompatible with local Nexus proxy mode")
+            )
+        elif utils.tested_object_name(item.path) in tests_to_skip:
+            item.add_marker(pytest.mark.skip(reason="No changes to tested code"))

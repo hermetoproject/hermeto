@@ -4,6 +4,10 @@ Manages a local [Sonatype Nexus](https://www.sonatype.com/products/sonatype-nexu
 
 ## Usage
 
+### As part of integration tests
+
+Set `HERMETO_TEST_LOCAL_NEXUS_PROXY=1` to enable local Nexus proxy mode (done automatically by `nox -s all-integration-tests`).
+
 ### Standalone
 
 ```bash

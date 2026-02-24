@@ -22,6 +22,8 @@ from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
+BACKEND_ANNOTATION_PREFIX = f"{APP_NAME}:backend:"
+
 
 def datetime_to_iso_8601(value: datetime) -> str:
     """Serialize a datetime to a string in ISO 8601 standard."""
@@ -173,9 +175,9 @@ def create_backend_annotation(
     if not components:
         return None
     if backend_name.startswith("x-"):
-        text = f"{APP_NAME}:backend:experimental:{backend_name}"
+        text = f"{BACKEND_ANNOTATION_PREFIX}experimental:{backend_name}"
     else:
-        text = f"{APP_NAME}:backend:{backend_name}"
+        text = f"{BACKEND_ANNOTATION_PREFIX}{backend_name}"
     return Annotation(
         subjects={c.bom_ref for c in components},
         annotator={"organization": {"name": "red hat"}},
