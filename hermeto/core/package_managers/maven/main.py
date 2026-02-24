@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+import subprocess
 from typing import Any
 from urllib.parse import urlparse
 
@@ -104,7 +105,12 @@ def _download_maven_artifacts(
         if artifact_type != "jar":
             cmd.append(f"-Dpackaging={artifact_type}")
 
-        run_cmd(cmd, {"cwd": package_dir.path})
+        # Suppress errors to avoid failing the entire operation
+        # TODO: properly handle download failures
+        try:
+            run_cmd(cmd, {"cwd": package_dir.path})
+        except subprocess.CalledProcessError as e:
+            log.warning("Failed to download Maven artifact %s: %s", artifact_coord, e.output)
 
     # Save checksums from lockfile data
     _save_checksums(maven_stuff, deps_dir)

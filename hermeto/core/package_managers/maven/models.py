@@ -204,6 +204,7 @@ class MavenLockfile:
                 extract_dependency(child)
 
         for plugin in self.lockfile_data.get("mavenPlugins", []):
+            print("Parsing plugin %s:%s:%s", plugin.get("groupId"), plugin.get("artifactId"), plugin.get("version"))
             resolved_url = plugin.get("resolved")
             if resolved_url:
                 result[resolved_url] = {
