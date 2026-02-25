@@ -16,7 +16,6 @@ from hermeto.core.config import NpmSettings
 from hermeto.core.errors import (
     LockfileNotFound,
     PackageRejected,
-    UnexpectedFormat,
     UnsupportedFeature,
 )
 from hermeto.core.models.input import Request
@@ -29,7 +28,6 @@ from hermeto.core.package_managers.npm.main import (
     PackageLock,
     ResolvedNpmPackage,
     _clone_repo_pack_archive,
-    _extract_git_info_npm,
     _generate_component_list,
     _get_npm_dependencies,
     _Purlifier,
@@ -37,12 +35,10 @@ from hermeto.core.package_managers.npm.main import (
     _should_replace_dependency,
     _update_package_json_files,
     _update_package_lock_with_local_paths,
-    _update_vcs_url_with_full_hostname,
     fetch_npm_source,
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID
-from tests.common_utils import GIT_REF
 
 MOCK_REPO_ID = RepoID("https://github.com/foolish/bar.git", "abcdef1234")
 MOCK_REPO_VCS_URL = "git%2Bhttps://github.com/foolish/bar.git%40abcdef1234"
@@ -1521,54 +1517,6 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
     npm_deps_dir = mock.Mock(spec=RootedPath)
     with pytest.raises(UnsupportedFeature, match=expected_error):
         _resolve_npm(rooted_tmp_path, npm_deps_dir)
-
-
-@pytest.mark.parametrize(
-    "vcs, expected",
-    [
-        (
-            (f"git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git#{GIT_REF}"),
-            {
-                "url": "ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git",
-                "ref": GIT_REF,
-                "host": "bitbucket.org",
-                "namespace": "cachi-testing",
-                "repo": "cachi2-without-deps",
-            },
-        ),
-    ],
-)
-def test_extract_git_info_npm(vcs: NormalizedUrl, expected: dict[str, str]) -> None:
-    assert _extract_git_info_npm(vcs) == expected
-
-
-def test_extract_git_info_with_missing_ref() -> None:
-    vcs = NormalizedUrl("git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git")
-    expected_error = (
-        "ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git "
-        "is not valid VCS url. ref is missing."
-    )
-    with pytest.raises(UnexpectedFormat, match=expected_error):
-        _extract_git_info_npm(vcs)
-
-
-@pytest.mark.parametrize(
-    "vcs, expected",
-    [
-        (
-            "github:kevva/is-positive#97edff6",
-            "git+ssh://git@github.com/kevva/is-positive.git#97edff6",
-        ),
-        ("github:kevva/is-positive", "git+ssh://git@github.com/kevva/is-positive.git"),
-        (
-            "bitbucket:cachi-testing/cachi2-without-deps#9e164b9",
-            "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git#9e164b9",
-        ),
-        ("gitlab:foo/bar#YOLO", "git+ssh://git@gitlab.com/foo/bar.git#YOLO"),
-    ],
-)
-def test_update_vcs_url_with_full_hostname(vcs: str, expected: str) -> None:
-    assert _update_vcs_url_with_full_hostname(vcs) == expected
 
 
 @mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
