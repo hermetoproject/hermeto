@@ -286,6 +286,16 @@ pytest --hermeto-image=localhost/hermeto:latest [path/to/integration/test]
 
 All hermeto integration test CLI options as well as the corresponding environment variables can be listed with `pytest --help`.
 
+To run integration tests in parallel, use the `-n` option + the number of workers. To utilize all CPU cores, use `auto` as the number of workers. Examples:
+
+```shell
+nox -s integration-tests -- -n 4
+nox -s integration-tests -- -n auto
+
+pytest [path/to/test] -n 4
+pytest [path/to/test] -n auto
+```
+
 ### Adding new dependencies to the project
 
 Sometimes when working on adding a new feature you may need to add a new dependency to the project.
