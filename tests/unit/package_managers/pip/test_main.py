@@ -1597,7 +1597,7 @@ def test_generate_purl_main_package(
 @mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
 @mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
-@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present_or_fail")
+@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present")
 def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(
     mock_verify_lockfile_present: mock.Mock,
     mock_run_cmd: mock.Mock,
