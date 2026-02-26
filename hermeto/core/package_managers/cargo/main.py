@@ -130,7 +130,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        _verify_lockfile_is_present_or_fail(package_dir)
+        _verify_lockfile_is_present_or_fail(package_dir, request.mode)
 
         vendor_result = _fetch_dependencies(package_dir, request)
         # cargo allows to specify configuration per-package
@@ -226,15 +226,18 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     return name, version
 
 
-def _verify_lockfile_is_present_or_fail(package_dir: RootedPath) -> None:
-    # Most packages will be locked, however metapackages (i.e. those, which
-    # contain just a workspace and could even lack a name) could arrive without
-    # a lock file. A user could try and fix this by explicitly locking the
-    # package first.
-    if not (package_dir.path / "Cargo.lock").exists():
+def _verify_lockfile_is_present_or_fail(package_dir: RootedPath, mode: Mode) -> None:
+    """Verify that the Cargo.lock file is present in the package directory."""
+    lockfile = package_dir.path / "Cargo.lock"
+    if lockfile.exists():
+        return
+
+    if mode == Mode.PERMISSIVE:
+        log.warning("Cargo.lock not found in %s, continuing due to permissive mode", package_dir)
+    else:
         raise LockfileNotFound(
-            files=package_dir.path / "Cargo.lock",
-            solution="Please lock it first by running 'cargo generate-lockfile'",
+            lockfile,
+            solution=f"Cargo.lock not found in {package_dir}, run `cargo generate-lockfile` or use permissive mode",
         )
 
 
