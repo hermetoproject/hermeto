@@ -189,4 +189,4 @@ jobs:
           HERMETO_TEST_LOCAL_DNF_SERVER: '1'
         run: |
           git config --global --add safe.directory "*"
-          /var/tmp/venv/bin/nox -s integration-tests
+          /var/tmp/venv/bin/nox -s integration-tests -- -n auto
