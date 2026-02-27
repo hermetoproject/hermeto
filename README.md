@@ -94,7 +94,8 @@ hermeto fetch-deps \
 The `fetch-deps` command fetches your project's dependencies and stores them on
 your disk. Hermeto also produces a detailed SBOM containing information about
 all the project's components and packages. You can find the SBOM in the output
-directory.
+directory. See `docs/sbom.md` for SBOM structure, custom fields, and
+CycloneDX/SPDX mapping.
 
 See `docs/usage.md` for a more detailed, practical example of Hermeto usage.
 
