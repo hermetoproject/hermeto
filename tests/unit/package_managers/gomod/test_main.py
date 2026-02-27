@@ -1439,7 +1439,7 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
 
 
 @pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
-@mock.patch("hermeto.core.package_managers.gomod.main.Go._run")
+@mock.patch("hermeto.core.package_managers.gomod.go.Go._run")
 def test_vendor_deps(
     mock_run_cmd: mock.Mock,
     go_vendor_cmd: str,
@@ -2429,7 +2429,7 @@ class TestGo:
     @mock.patch.object(Go, "__post_init__", lambda self: None)
     @mock.patch("hermeto.core.package_managers.gomod.go.tempfile.TemporaryDirectory")
     @mock.patch("pathlib.Path.home")
-    @mock.patch("hermeto.core.package_managers.gomod.main.Go._retry")
+    @mock.patch("hermeto.core.package_managers.gomod.go.Go._retry")
     @mock.patch("hermeto.core.package_managers.gomod.go.get_cache_dir")
     def test_from_missing_toolchain(
         self,
@@ -2489,7 +2489,7 @@ class TestGo:
         ],
     )
     @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.main.Go._run")
+    @mock.patch("hermeto.core.package_managers.gomod.go.Go._run")
     def test_call(
         self,
         mock_run: mock.Mock,
