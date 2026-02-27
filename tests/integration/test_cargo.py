@@ -56,6 +56,29 @@ log = logging.getLogger(__name__)
             ),
             id="cargo_uses_resolver_v3",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="cargo/missing-lockfile",
+                packages=({"path": ".", "type": "cargo"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=2,
+                expected_output="Cargo.lock not found",
+            ),
+            id="cargo_missing_lockfile",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="cargo/missing-lockfile",
+                packages=({"path": ".", "type": "cargo"},),
+                global_flags=["--mode", "permissive"],
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="cargo_missing_lockfile_permissive_mode",
+        ),
     ],
 )
 def test_cargo_packages(
