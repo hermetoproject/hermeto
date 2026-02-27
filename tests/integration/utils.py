@@ -163,9 +163,9 @@ def build_image_for_test_case(
         "-f",
         str(containerfile_path),
         "-v",
-        f"{source_dir}:{source_dir_mount_point}:Z",
+        f"{source_dir}:{source_dir_mount_point}:z",  # SELinux shared mount
         "-v",
-        f"{output_dir}:{output_dir_mount_point}:Z",
+        f"{output_dir}:{output_dir_mount_point}:Z",  # SELinux exclusive mount
         "--no-cache",
         "--network",
         "none",
