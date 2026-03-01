@@ -44,7 +44,7 @@ def resolve_packages(request: Request) -> RequestOutput:
     """
     original_source_dir = request.source_dir
 
-    with TemporaryDirectory(f".{APP_NAME}-source-copy", dir=".") as temp_dir:
+    with TemporaryDirectory(prefix=f".{APP_NAME}-source-copy-", dir=".") as temp_dir:
         source_backup = copy_directory(original_source_dir.path, Path(temp_dir).resolve())
 
         request.source_dir = RootedPath(source_backup)
