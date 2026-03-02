@@ -74,7 +74,7 @@ tell Hermeto to process them.
 
 Hermeto further restricts what you can put in your requirements.txt files. All of the dependencies
 must be
-[pinned](https://github.com/release-engineering/cachito/blob/master/docs/pip.md#pinning-versions)
+[pinned](pip.md#requirementstxt)
 to an exact version. Hermeto will refuse to process requirements files that use the
 --extra-index-url option, which means that if a private registry is to be specified, only a single
 one supported and the `--index-url` option should be used.
