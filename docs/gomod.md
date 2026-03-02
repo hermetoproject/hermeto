@@ -6,7 +6,7 @@
 - [gomod flags](#gomod-flags)
 - [Vendoring](#vendoring)
 - [Understanding reported dependencies](#understanding-reported-dependencies)
-- [Go 1.21+](#go-121-since-v050)
+- [Go 1.21+](#go-121)
 - [Full example walkthrough](#example)
 
 ## Specifying modules [^modules] to process
@@ -215,13 +215,13 @@ fail.
 Please make sure to keep your go.sum file up to date, perhaps by incorporating
 the `go mod tidy` command in your dev workflow.
 
-### Go 1.21+ *(since v0.5.0)*
+### Go 1.21+
 
 Starting with [Go 1.21][], Go changed the meaning of the `go 1.X` directive in
 that it now specifies the [minimum required version][] of Go rather than a
 suggested version as it originally did. The format of the version string in the
 `go` directive now also includes the micro release and if you don't include the
-micro release in your `go.qmod` file yourself (i.e. you only specify the
+micro release in your `go.mod` file yourself (i.e. you only specify the
 language release) Go will try to correct it automatically inside the file. Last
 but not least, Go 1.21 also introduced a new keyword
 [`toolchain`](https://go.dev/ref/mod#go-mod-file-toolchain) to the
@@ -229,13 +229,13 @@ but not least, Go 1.21 also introduced a new keyword
 be able to process your `go.mod` file with an older version of Go (and hence
 older hermeto) as you could in the past for various reasons. Many projects bump
 their required Go toolchain's micro release as soon as it becomes available
-upstream (i.e. not waiting for distributions to bundle them properly). This
-caused problems in version *v0.5.0* because the container image's version simply
-may not have been high enough to process a given project's `go.mod` file.
-Therefore, version *v0.7.0* introduced a mechanism to always rely on the origin
-0th release of a toolchain (e.g. 1.21.0) and use the `GOTOOLCHAIN=auto` setting
-to instruct Go to fetch any toolchain as specified by the `go.mod` file
-automatically, hence allowing us to keep up with frequent micro version bumps.
+upstream (i.e. not waiting for distributions to bundle them properly).
+
+To handle this, Hermeto's container image includes the latest official upstream
+Go toolchain, which is kept up to date via dependabot. Hermeto
+configures `GOTOOLCHAIN=auto` so that if the `go.mod` requires a toolchain
+version newer than the one pre-installed, Go can automatically fetch a
+matching one.
 **Note that such a language version would still need to be officially marked as
 supported by hermeto, i.e. we'd not allow Go to fetch e.g. a 1.22 toolchain if
 the maximum supported Go version by hermeto were 1.21!**
