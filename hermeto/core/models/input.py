@@ -82,6 +82,8 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
         location = " -> ".join(map(str, error["loc"]))
         if error.get("type") != "union_tag_invalid":
             message = error["msg"]
+            if location != "__root__":
+                message = f"{location}\n  {message}"
         else:
             # Handle regular union tag errors (i.e. errors which stem from
             # a missing package manager implementation). Errors in experimental
@@ -90,15 +92,16 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
             raw = ctx.get("expected_tags", "")
             expected = [t.strip(" '") for t in raw.split(",")]
             quoted = ", ".join(f"'{t}'" for t in sorted(expected))
-            message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
-
-        if location != "__root__":
-            message = f"{location}\n  {message}"
+            message = f"Unknown package manager '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
 
         return message
 
     header = f"{n_errors} validation error{'' if n_errors == 1 else 's'} for user input"
     details = "\n".join(map(show_error, errors))
+
+    if all(e.get("type") == "union_tag_invalid" for e in errors):
+        return details
+
     return f"{header}\n{details}"
 
 
