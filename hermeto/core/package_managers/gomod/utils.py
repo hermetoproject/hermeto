@@ -3,9 +3,8 @@ import os
 import tempfile
 from pathlib import Path
 from types import TracebackType
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from hermeto import APP_NAME
 from hermeto.core.package_managers.gomod.go import Go
 from hermeto.core.type_aliases import StrPath
 

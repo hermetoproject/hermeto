@@ -11,7 +11,6 @@ from tempfile import TemporaryDirectory
 
 from yarn import print_banner
 
-
 PANDEMO_DIR = "gomod-pandemonium"
 
 
