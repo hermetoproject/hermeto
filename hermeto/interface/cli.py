@@ -119,8 +119,9 @@ Paths = list[Path]
 
 
 def _bail_out_with_error(e: BaseError) -> None:
-    """Report and error and set correct exit code."""
-    log.error("%s: %s", type(e).__name__, str(e).replace("\n", r"\n"))
+    """Report an error and set correct exit code."""
+    if not isinstance(e, InvalidInput):
+        log.error("%s: %s", type(e).__name__, str(e).replace("\n", r"\n"))
     print(f"Error: {type(e).__name__}: {e.friendly_msg()}", file=sys.stderr)
     raise typer.Exit(2 if e.is_invalid_usage else 1)
 
