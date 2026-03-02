@@ -3,14 +3,12 @@ import logging
 import os
 import re
 import shutil
-import tempfile
 from collections import UserDict
 from collections.abc import Iterable, Iterator
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from types import TracebackType
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 
 import git
@@ -50,7 +48,6 @@ from hermeto.core.package_managers.gomod.utils import (
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
-from hermeto.core.type_aliases import StrPath
 from hermeto.core.utils import GIT_PRISTINE_ENV, get_cache_dir, load_json_stream
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
