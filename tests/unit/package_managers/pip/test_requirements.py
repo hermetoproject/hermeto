@@ -579,7 +579,7 @@ class TestPipRequirementsFile:
         "file_contents, expected_error",
         (
             # Invalid (probably) format
-            ("--spam", "Unknown requirements file option '--spam'"),
+            ("--spam", r"Unknown requirements file option '--spam'.*"),
             (
                 "--prefer-binary=spam",
                 "Unexpected value for requirements file option '--prefer-binary=spam'",
