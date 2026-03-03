@@ -230,8 +230,8 @@ be able to process your `go.mod` file with an older version of Go (and hence
 older hermeto) as you could in the past for various reasons. Many projects bump
 their required Go toolchain's micro release as soon as it becomes available
 upstream (i.e. not waiting for distributions to bundle them properly). 
-Hermeto [v0.42.0](https://github.com/hermetoproject/hermeto/releases/tag/0.42.0) preinstalls the latest officially supported upstream Go toolchain (which depends on dependabot update schedule). This is the primary mechanism to process projects.
-`GOTOOLCHAIN=auto` is also the part of execution. `GOTOOLCHAIN=auto` automatically fetches any toolchain as specified by the `go.mod` file. It acts a fallback mechanism. If the preinstalled toolchain does not satisfy the version constraints declared in `go.mod`.
+Hermeto [v0.42.0](https://github.com/hermetoproject/hermeto/releases/tag/0.42.0) preinstalls the latest officially supported upstream Go toolchain, with its version kept current by Dependabot. This is the primary mechanism to process projects.
+`GOTOOLCHAIN=auto` is also used during execution and acts as a fallback mechanism. It automatically fetches any toolchain specified in the `go.mod` file if the pre-installed toolchain does not satisfy the version constraints.
 **Note that such a language version would still need to be officially marked as
 supported by hermeto, i.e. we'd not allow Go to fetch e.g. a 1.22 toolchain if
 the maximum supported Go version by hermeto were 1.21!**
