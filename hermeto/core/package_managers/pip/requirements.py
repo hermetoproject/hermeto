@@ -195,7 +195,11 @@ class PipRequirementsFile:
                     option = part
 
                 if option not in self.OPTIONS:
-                    raise UnexpectedFormat(f"Unknown requirements file option {part!r}")
+                    raise UnexpectedFormat(
+                        f"Unknown requirements file option {part!r} "
+                        f"in file '{self.file_path.path}' "
+                        f"while parsing line: '{line}'"
+                    )
 
                 _require_value = self.OPTIONS[option]
 
