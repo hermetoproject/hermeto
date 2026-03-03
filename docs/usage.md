@@ -35,7 +35,9 @@ Make sure to set the remote as well.
 
 <!-- markdownlint-disable-next-line no-inline-html -->
 <pre>
-git init && git add -A && git commit -m "initial commit" && \
+git init
+git add -A
+git commit -m "initial commit"
 git remote add origin https://github.com/someorg/somerepo
 </pre>
 
