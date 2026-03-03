@@ -345,6 +345,23 @@ def test_verify_corepack_yarn_version_invalid_version(
         ),
         pytest.param(
             [
+                RegistryPackage(
+                    name="esbuild-wasm",
+                    version="0.25.3",
+                    url="https://registry.yarnpkg.com/esbuild-wasm/-/esbuild-wasm-0.25.3.tgz",
+                    dev=False,
+                ),
+                RegistryPackage(
+                    name="esbuild-wasm",
+                    version="0.25.3",
+                    url="https://registry.yarnpkg.com/esbuild-wasm/-/esbuild-wasm-0.25.3.tgz",
+                    dev=True,
+                ),
+            ],
+            id="alias_resolution_same_tarball_different_dev",
+        ),
+        pytest.param(
+            [
                 LinkPackage(name="foo", version="1.0.0", path=RootedPath("/path/to/foo")),
                 FilePackage(name="bar", version="1.0.0", path=RootedPath("/path/to/bar")),
             ],

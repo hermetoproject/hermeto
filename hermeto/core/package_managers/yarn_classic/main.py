@@ -2,6 +2,7 @@
 import logging
 from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -260,7 +261,8 @@ def _verify_no_offline_mirror_collisions(packages: Iterable[YarnClassicPackage])
         tarball_collisions[tarball_name].append(p)
 
     for tarball_name, packages in tarball_collisions.items():
-        if all(pkg == packages[0] for pkg in packages):
+        first = packages[0]
+        if all(replace(pkg, dev=first.dev) == first for pkg in packages):
             continue
 
         raise PackageManagerError(
