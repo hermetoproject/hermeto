@@ -2,18 +2,17 @@
 
 name: Publish documentation
 on:
-  push:
-    branches:
-      - main
-
+  release:
+    types: [released]
 permissions:
   contents: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ github.event.release.tag_name }}
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
@@ -28,4 +27,16 @@ jobs:
           path: .cache
           restore-keys: mkdocs-material-
       - run: pip install mkdocs-material
+      - name: Check if this is the latest release
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_TAG=$(gh release view --json tagName -q .tagName)
+          if [ "$LATEST_TAG" = "${{ github.event.release.tag_name }}" ]; then
+            echo "is_latest=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_latest=false" >> $GITHUB_OUTPUT
+          fi
       - run: mkdocs gh-deploy --force --strict
+        if: steps.latest.outputs.is_latest == 'true'
