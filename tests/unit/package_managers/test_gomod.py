@@ -1973,6 +1973,7 @@ INVALID_VERSION_STRINGS = [
     "go 1.21prerelease",  # pre-release with no number
     "go 1.21prerelease_4",  # pre-release with non-alphanum character
     "toolchain 1.21",  # missing 'go' prefix for the toolchain spec
+    "go 1.21:.0",  # colon before patch component (was wrongly accepted due to :? vs (?:)
 ]
 
 

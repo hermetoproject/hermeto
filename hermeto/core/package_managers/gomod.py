@@ -862,7 +862,7 @@ def _get_gomod_version(go_mod_file: RootedPath) -> tuple[str | None, str | None]
     # - 'go 1.21.0'
     # - '   go 1.21.0rc4'
     # - 'go 1.21beta1//commentary'
-    version_str_regex = r"(?P<ver>\d+\.\d+(:?\.\d+)?(?:[a-zA-Z]+\d+)?)"
+    version_str_regex = r"(?P<ver>\d+\.\d+(?:\.\d+)?(?:[a-zA-Z]+\d+)?)"
     post_version_chars_regex = r"\s*(?:\/\/.*)?"
     go_version_regex = rf"^\s*go\s+{version_str_regex}{post_version_chars_regex}$"
     toolchain_version_regex = rf"^\s*toolchain\s+go{version_str_regex}{post_version_chars_regex}$"
