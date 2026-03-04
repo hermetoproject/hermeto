@@ -257,30 +257,32 @@ def config(
 ) -> None:
     """Show current configuration. Values overridden from defaults are marked with (*)."""
 
-    def _annotate_overrides(model: pydantic.BaseModel, diff: bool) -> dict:
-        """Recursively build config dict, marking overridden fields with (*) OR get only overridden fields.
-
-        Uses Pydantic's model_fields_set which tracks every field that was
-        explicitly set (via env var, config file, or programmatic override)
-        rather than falling back to its default.
-        """
+    def _get_diff(model: pydantic.BaseModel) -> dict:
+        """Recursively build a dictionary of only overridden config fields."""
         result = {}
-        overridden = model.model_fields_set
-        if diff:
-            iterateIn = model.model_fields_set
-        else:
-            iterateIn = model.model_fields
-            
-        for field_name in iterateIn:
+        for field_name in model.model_fields_set:
             value = getattr(model, field_name)
             if isinstance(value, pydantic.BaseModel):
-                result[field_name] = _annotate_overrides(value, diff)
+                sub_diff = _get_diff(value)
+                if sub_diff:
+                    result[field_name] = sub_diff
             else:
-                result[field_name] = value if diff else (f"{value} (*)" if field_name in overridden else value)
+                result[field_name] = value
         return result
 
-    
-    cfg = _annotate_overrides(get_config(), diff)
+    def _get_annotated_config(model: pydantic.BaseModel) -> dict:
+        """Recursively build a dictionary of all config fields, marking overridden ones."""
+        result = {}
+        overridden = model.model_fields_set
+        for field_name in model.model_fields:
+            value = getattr(model, field_name)
+            if isinstance(value, pydantic.BaseModel):
+                result[field_name] = _get_annotated_config(value)
+            else:
+                result[field_name] = f"{value} (*)" if field_name in overridden else value
+        return result
+
+    cfg = _get_diff(get_config()) if diff else _get_annotated_config(get_config())
 
     dumpers = {
         "json": lambda data: json.dumps(data, indent=2),
