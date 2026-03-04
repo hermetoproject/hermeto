@@ -798,6 +798,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
         "GOPATH": "${output_dir}/deps/gomod",
         "GOMODCACHE": "${output_dir}/deps/gomod/pkg/mod",
         "GOPROXY": "file://${GOMODCACHE}/cache/download",
+        "GOSUMDB": "off",
     }
     env_vars_template.update(config.gomod.environment_variables)
 

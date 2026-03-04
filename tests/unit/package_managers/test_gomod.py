@@ -77,6 +77,7 @@ def env_variables() -> list[EnvironmentVariable]:
         EnvironmentVariable(name="GOMODCACHE", value="${output_dir}/deps/gomod/pkg/mod"),
         EnvironmentVariable(name="GOPATH", value="${output_dir}/deps/gomod"),
         EnvironmentVariable(name="GOPROXY", value="file://${GOMODCACHE}/cache/download"),
+        EnvironmentVariable(name="GOSUMDB", value="off"),
     ]
 
 

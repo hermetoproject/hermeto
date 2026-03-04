@@ -48,12 +48,12 @@ def test_cannot_determine_format(filename: str, expect_reason: str) -> None:
 def test_generate_env_as_json() -> None:
     env_vars = [
         {"name": "GOCACHE", "value": "deps/gomod", "kind": "path"},
-        {"name": "GOSUMDB", "value": "sum.golang.org", "kind": "literal"},
+        {"name": "GOSUMDB", "value": "off", "kind": "literal"},
     ]
     build_config = BuildConfig(environment_variables=env_vars, project_files=[])
 
     gocache = '{"name": "GOCACHE", "value": "/output/dir/deps/gomod"}'
-    gosumdb = '{"name": "GOSUMDB", "value": "sum.golang.org"}'
+    gosumdb = '{"name": "GOSUMDB", "value": "off"}'
     expect_content = f"[{gocache}, {gosumdb}]"
 
     content = generate_envfile(build_config, EnvFormat.json, relative_to_path=Path("/output/dir"))
@@ -63,7 +63,7 @@ def test_generate_env_as_json() -> None:
 def test_generate_env_as_env() -> None:
     env_vars = [
         {"name": "GOCACHE", "value": "deps/gomod", "kind": "path"},
-        {"name": "GOSUMDB", "value": "sum.golang.org", "kind": "literal"},
+        {"name": "GOSUMDB", "value": "off", "kind": "literal"},
         {"name": "SNEAKY", "value": "foo; echo hello there", "kind": "literal"},
     ]
     build_config = BuildConfig(environment_variables=env_vars, project_files=[])
@@ -71,7 +71,7 @@ def test_generate_env_as_env() -> None:
     expect_content = dedent(
         """
         export GOCACHE=/output/dir/deps/gomod
-        export GOSUMDB=sum.golang.org
+        export GOSUMDB=off
         export SNEAKY='foo; echo hello there'
         """
     ).strip()
