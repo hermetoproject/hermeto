@@ -282,16 +282,15 @@ def config(
     
     cfg = _annotate_overrides(get_config(), diff)
 
-    if diff and not cfg:
-        print("No overrides — all values are at their defaults.")
-        return
-
-    if format == "yaml":
-        print(yaml.dump(cfg))
-    elif format == "json":
-        print(json.dumps(cfg,indent=2))
+    dumpers = {
+        "json": lambda data: json.dumps(data, indent=2),
+        "yaml": yaml.dump,
+    }
+    dumper = dumpers.get(format)
+    if dumper:
+        print(dumper(cfg))
     else:
-        raise typer.BadParameter(f"Invalid format: {format}. Supported: json, yaml")
+        raise typer.BadParameter(f"Invalid format: {format}. Supported: {', '.join(dumpers.keys())}")
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
