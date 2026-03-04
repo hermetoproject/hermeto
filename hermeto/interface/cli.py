@@ -257,6 +257,19 @@ def config(
 ) -> None:
     """Show current configuration. Values overridden from defaults are marked with (*)."""
 
+    _SENSITIVE_FIELDS = {
+        "proxy_password",
+        "proxy_login",
+    }
+
+    def _mask(field_name: str, value: object) -> object:
+        """Redact sensitive field values."""
+        if field_name not in _SENSITIVE_FIELDS:
+            return value
+        if isinstance(value, dict):
+            return {k: "***" for k in value} if value else {}
+        return "***" if value is not None else None
+
     def _get_diff(model: pydantic.BaseModel) -> dict:
         """Recursively build a dictionary of only overridden config fields."""
         result = {}
@@ -267,7 +280,7 @@ def config(
                 if sub_diff:
                     result[field_name] = sub_diff
             else:
-                result[field_name] = value
+                result[field_name] = _mask(field_name, value)
         return result
 
     def _get_annotated_config(model: pydantic.BaseModel) -> dict:
@@ -279,7 +292,8 @@ def config(
             if isinstance(value, pydantic.BaseModel):
                 result[field_name] = _get_annotated_config(value)
             else:
-                result[field_name] = f"{value} (*)" if field_name in overridden else value
+                masked = _mask(field_name, value)
+                result[field_name] = f"{masked} (*)" if field_name in overridden else masked
         return result
 
     cfg = _get_diff(get_config()) if diff else _get_annotated_config(get_config())
