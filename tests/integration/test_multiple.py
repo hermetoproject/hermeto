@@ -26,6 +26,23 @@ from . import utils
             [],
             id="multiple_gomod_and_npm",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="multiple/rust-and-pip",
+                packages=(
+                    {"type": "cargo", "path": "rust-crate"},
+                    {"type": "pip", "path": "python-pkg"},
+                    # using RPM to provide cargo and python in the image
+                    {"type": "rpm"},
+                ),
+                flags=[],
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            [],
+            [],
+            id="multiple_rust_and_pip",
+        ),
     ],
 )
 def test_e2e_multiple(
