@@ -102,6 +102,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     return f"{header}\n{details}"
 
 
+# Supported package managers
 PackageManagerType = Literal[
     "bundler",
     "cargo",
@@ -111,9 +112,9 @@ PackageManagerType = Literal[
     "pip",
     "rpm",
     "yarn",
-    # Add experimental package managers here with x- prefix, e.g. "x-foo"
+    # Add experimental package managers here with -x prefix, e.g. "x-foo"
+    "x-maven",
 ]
-
 
 Flag = Literal[
     "cgo-disable", "dev-package-managers", "force-gomod-tidy", "gomod-vendor", "gomod-vendor-check"
@@ -303,6 +304,12 @@ class GomodPackageInput(_PackageInputBase):
     type: Literal["gomod"]
 
 
+class MavenPackageInput(_PackageInputBase):
+    """Accepted input for a maven package."""
+
+    type: Literal["x-maven"]
+
+
 class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
@@ -414,6 +421,7 @@ PackageInput = Annotated[
     | CargoPackageInput
     | GenericPackageInput
     | GomodPackageInput
+    | MavenPackageInput
     | NpmPackageInput
     | PipPackageInput
     | RpmPackageInput
@@ -509,6 +517,11 @@ class Request(pydantic.BaseModel):
     def gomod_packages(self) -> list[GomodPackageInput]:
         """Get the gomod packages specified for this request."""
         return self._packages_by_type(GomodPackageInput)
+
+    @property
+    def maven_packages(self) -> list[MavenPackageInput]:
+        """Get the maven packages specified for this request."""
+        return self._packages_by_type(MavenPackageInput)
 
     @property
     def npm_packages(self) -> list[NpmPackageInput]:
