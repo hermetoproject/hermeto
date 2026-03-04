@@ -5,6 +5,7 @@ import importlib.metadata
 import json
 import logging
 import shutil
+import yaml
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -14,6 +15,7 @@ import pydantic
 import typer
 
 import hermeto.core.config as config
+from hermeto.core.config import get_config
 from hermeto import APP_NAME
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
@@ -239,6 +241,57 @@ def list_backends() -> None:
     if experimental:
         print("Experimental:", ", ".join(experimental))
 
+@app.command()
+@handle_errors
+def config(
+    format: str = typer.Option(
+        "json",
+        "--format",
+        help="Default: JSON, Supported: JSON, YAML",
+    ),
+    diff: bool = typer.Option(
+        False,
+        "--diff",
+        help="Show only the differences between the current configuration and the default configuration.",
+    ),
+) -> None:
+    """Show current configuration. Values overridden from defaults are marked with (*)."""
+
+    def _annotate_overrides(model: pydantic.BaseModel, diff: bool) -> dict:
+        """Recursively build config dict, marking overridden fields with (*) OR get only overridden fields.
+
+        Uses Pydantic's model_fields_set which tracks every field that was
+        explicitly set (via env var, config file, or programmatic override)
+        rather than falling back to its default.
+        """
+        result = {}
+        overridden = model.model_fields_set
+        if diff:
+            iterateIn = model.model_fields_set
+        else:
+            iterateIn = model.model_fields
+            
+        for field_name in iterateIn:
+            value = getattr(model, field_name)
+            if isinstance(value, pydantic.BaseModel):
+                result[field_name] = _annotate_overrides(value, diff)
+            else:
+                result[field_name] = value if diff else (f"{value} (*)" if field_name in overridden else value)
+        return result
+
+    
+    cfg = _annotate_overrides(get_config(), diff)
+
+    if diff and not cfg:
+        print("No overrides — all values are at their defaults.")
+        return
+
+    if format == "yaml":
+        print(yaml.dump(cfg))
+    elif format == "json":
+        print(json.dumps(cfg,indent=2))
+    else:
+        raise typer.BadParameter(f"Invalid format: {format}. Supported: json, yaml")
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
