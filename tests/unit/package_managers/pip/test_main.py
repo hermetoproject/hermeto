@@ -7,7 +7,6 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, Literal
 from unittest import mock
-from urllib.parse import urlparse
 
 import pypi_simple
 import pytest
@@ -73,7 +72,7 @@ def mock_requirement(
         url = "https://example.org/file.tar.gz"
 
     if hashes is None and qualifiers is None and kind == "url":
-        qualifiers = {"cachito_hash": "sha256:abcdef"}
+        hashes = ["sha256:abcdef"]
 
     return mock.Mock(
         package=package,
@@ -286,7 +285,6 @@ class TestDownload:
             "https://github.com/spam/eggs", GIT_REF, to_path=download_path
         )
 
-    @pytest.mark.parametrize("hash_as_qualifier", [True, False])
     @pytest.mark.parametrize(
         "host_in_url, trusted_hosts, host_is_trusted",
         [
@@ -303,27 +301,20 @@ class TestDownload:
     def test_download_url_package(
         self,
         mock_download_file: Any,
-        hash_as_qualifier: bool,
         host_in_url: bool,
         trusted_hosts: list[str],
         host_is_trusted: bool,
         rooted_tmp_path: RootedPath,
     ) -> None:
         """Test downloading of a single URL package."""
-        # Add the #cachito_package fragment to make sure the .tar.gz extension
-        # will be found even if the URL does not end with it
-        original_url = f"https://{host_in_url}/foo.tar.gz#cachito_package=foo"
-        url_with_hash = f"{original_url}&cachito_hash=sha256:abcdef"
-        if hash_as_qualifier:
-            original_url = url_with_hash
+        original_url = f"https://{host_in_url}/foo.tar.gz"
 
         req = mock_requirement(
             "foo",
             "url",
             url=original_url,
             download_line=f"foo @ {original_url}",
-            hashes=["sha256:abcdef"] if not hash_as_qualifier else [],
-            qualifiers={"cachito_hash": "sha256:abcdef"} if hash_as_qualifier else {},
+            hashes=["sha256:abcdef"],
         )
 
         download_info = pip._download_url_package(
@@ -336,31 +327,13 @@ class TestDownload:
             "package": "foo",
             "path": rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path,
             "original_url": original_url,
-            "url_with_hash": url_with_hash,
+            "checksum": "sha256:abcdef",
         }
 
         download_path = download_info["path"]
         mock_download_file.assert_called_once_with(
             original_url, download_path, insecure=host_is_trusted
         )
-
-    @pytest.mark.parametrize(
-        "original_url, url_with_hash",
-        [
-            (
-                "http://example.org/file.zip",
-                "http://example.org/file.zip#cachito_hash=sha256:abcdef",
-            ),
-            (
-                "http://example.org/file.zip#egg=spam",
-                "http://example.org/file.zip#egg=spam&cachito_hash=sha256:abcdef",
-            ),
-        ],
-    )
-    def test_add_cachito_hash_to_url(self, original_url: str, url_with_hash: str) -> None:
-        """Test adding the #cachito_hash fragment to URLs."""
-        hsh = "sha256:abcdef"
-        assert pip._add_cachito_hash_to_url(urlparse(original_url), hsh) == url_with_hash
 
     def test_ignored_and_rejected_options(self, caplog: pytest.LogCaptureFixture) -> None:
         """
@@ -445,25 +418,17 @@ class TestDownload:
         assert str(exc_info.value) == msg
 
     @pytest.mark.parametrize(
-        "hashes, cachito_hash, total",
+        "hashes",
         [
-            ([], None, 0),  # No --hash, no #cachito_hash
-            (["sha256:123456", "sha256:abcdef"], None, 2),  # 2x --hash
-            (["sha256:123456"], "sha256:abcdef", 2),  # 1x --hash, #cachito_hash
+            [],  # No --hash
+            ["sha256:123456", "sha256:abcdef"],  # 2x --hash
         ],
     )
-    def test_url_dep_invalid_hash_count(
-        self, hashes: list[str], cachito_hash: str | None, total: int
-    ) -> None:
+    def test_url_dep_invalid_hash_count(self, hashes: list[str]) -> None:
         """Test that if URL requirement specifies 0 or more than 1 hash, validation fails."""
-        if cachito_hash:
-            qualifiers = {"cachito_hash": cachito_hash}
-        else:
-            qualifiers = {}
-
         url = "http://example.org/foo.tar.gz"
         req = mock_requirement(
-            "foo", "url", hashes=hashes, qualifiers=qualifiers, download_line=f"foo @ {url}"
+            "foo", "url", hashes=hashes, qualifiers={}, download_line=f"foo @ {url}"
         )
         req_file = mock_requirements_file(requirements=[req])
 
@@ -518,20 +483,10 @@ class TestDownload:
         with pytest.raises(MissingChecksum):
             pip._download_dependencies(RootedPath("/output"), req_file)
 
-    @pytest.mark.parametrize(
-        "requirement_kind, hash_in_url",
-        [("pypi", False), ("vcs", False), ("url", True), ("url", False)],
-    )
-    def test_malformed_hash(self, requirement_kind: str, hash_in_url: bool) -> None:
+    @pytest.mark.parametrize("requirement_kind", ["pypi", "vcs", "url"])
+    def test_malformed_hash(self, requirement_kind: str) -> None:
         """Test that invalid hash specifiers cause a validation error."""
-        if hash_in_url:
-            hashes = []
-            qualifiers = {"cachito_hash": "malformed"}
-        else:
-            hashes = ["malformed"]
-            qualifiers = {}
-
-        req = mock_requirement("foo", requirement_kind, hashes=hashes, qualifiers=qualifiers)
+        req = mock_requirement("foo", requirement_kind, hashes=["malformed"])
         req_file = mock_requirements_file(requirements=[req])
 
         with pytest.raises(InvalidChecksum):
@@ -758,26 +713,20 @@ class TestDownload:
         """
         Test dependency downloading.
 
-        Mock the helper functions used for downloading here, test them properly
-        elsewhere.
-
-        Note that we're only testing the `cachito_hash` scenario. URL deps can
-        also be hashed in 'requirements.txt' like any other pip dep. We really
-        should expand this test, at some point, to include testing the `--hash`
-        option in 'requirements.txt'.
+        Mock the helper functions used for downloading here, test them properly elsewhere.
 
         URL deps *must always* have a checksum, so we're only testing the case
         where the checksum *doesn't match* (we check for *missing*
         checksums elsewhere for URL deps).
         """
         # <setup>
-        plain_url = "https://example.org/bar.tar.gz#cachito_hash=sha256:654321"
+        plain_url = "https://example.org/bar.tar.gz"
         url_req = mock_requirement(
             "bar",
             "url",
             download_line=f"bar @ {plain_url}",
             url=plain_url,
-            qualifiers={"cachito_hash": "sha256:654321"},
+            hashes=["sha256:654321"],
         )
 
         options = []
@@ -806,7 +755,7 @@ class TestDownload:
             "missing_req_file_checksum": False,
             "package_type": "",
             "original_url": plain_url,
-            "url_with_hash": plain_url,
+            "checksum": "sha256:654321",
         }
 
         mock_download_url_package.return_value = deepcopy(url_download_info)
@@ -831,11 +780,7 @@ class TestDownload:
 
         # <check calls to checksum verification method>
         if checksum_match:
-            # This looks confusing, but as mentioned above, we're currently only
-            # testing the `cachito_hash` hash, which is a loophole allowing
-            # hashed URLs and unhashed VCS deps to coexist in a
-            # 'requirements.txt' file.
-            msg = "No hash options used, will not require hashes unless HTTP(S) dependencies"
+            msg = "At least one dependency uses the --hash option, will require hashes"
         else:
             msg = (
                 "Download 'bar-external-sha256-654321.tar.gz' was removed from the output directory"
@@ -1120,6 +1065,7 @@ def test_resolve_pip(
             {
                 "name": "bar",
                 "version": "2.1",
+                "checksum": None,
                 "type": "pip",
                 "build_dependency": False,
                 "kind": "pypi",
@@ -1131,6 +1077,7 @@ def test_resolve_pip(
             {
                 "name": "baz",
                 "version": "0.0.5",
+                "checksum": None,
                 "type": "pip",
                 "build_dependency": True,
                 "kind": "pypi",
@@ -1237,20 +1184,6 @@ def test_metadata_check_invalid_argument() -> None:
         (
             dedent(
                 """\
-                foo==1.0.0
-                bar @ https://github.com/org/bar/archive/refs/tags/bar-2.0.0.zip#cachito_hash=sha256:fedcba
-                """
-            ),
-            dedent(
-                """\
-                foo==1.0.0
-                bar @ file://${output_dir}/deps/pip/bar-fedcba.zip#cachito_hash=sha256:fedcba
-                """
-            ),
-        ),
-        (
-            dedent(
-                """\
                 --require-hashes
                 foo==1.0.0 --hash=sha256:abcdef
                 bar @ https://github.com/org/bar/archive/refs/tags/bar-2.0.0.zip --hash=sha256:fedcba
@@ -1327,7 +1260,8 @@ def test_fetch_pip_source(
         "dependencies": [
             {
                 "name": "bar",
-                "version": "https://x.org/bar.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "version": "https://x.org/bar.zip",
+                "checksum": "sha256:aaaaaaaaaa",
                 "type": "pip",
                 "build_dependency": False,
                 "kind": "url",
@@ -1338,6 +1272,7 @@ def test_fetch_pip_source(
             {
                 "name": "baz",
                 "version": "0.0.5",
+                "checksum": None,
                 "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
                 "type": "pip",
                 "build_dependency": True,
@@ -1356,6 +1291,7 @@ def test_fetch_pip_source(
             {
                 "name": "ham",
                 "version": "3.2",
+                "checksum": None,
                 "index_url": CUSTOM_PYPI_ENDPOINT,
                 "type": "pip",
                 "build_dependency": False,
@@ -1366,7 +1302,8 @@ def test_fetch_pip_source(
             },
             {
                 "name": "eggs",
-                "version": "https://x.org/eggs.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "version": "https://x.org/eggs.zip",
+                "checksum": "sha256:aaaaaaaaaa",
                 "type": "pip",
                 "build_dependency": False,
                 "kind": "url",
@@ -1549,10 +1486,11 @@ def test_fetch_pip_source(
         (
             {
                 "name": "https_dependency",
-                "version": f"https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz#egg=https_dependency&cachito_hash=sha256:de526c1",
+                "version": f"https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz",
                 "type": "pip",
                 "dev": False,
                 "kind": "url",
+                "checksum": "sha256:de526c1",
             },
             f"pkg:pypi/https-dependency?checksum=sha256:de526c1&download_url=https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz",
         ),
@@ -1630,7 +1568,8 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
         "dependencies": [
             {
                 "name": "bar",
-                "version": "https://x.org/bar.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "version": "https://x.org/bar.zip",
+                "checksum": "sha256:aaaaaaaaaa",
                 "type": "pip",
                 "build_dependency": False,
                 "kind": "url",
@@ -1641,6 +1580,7 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
             {
                 "name": "baz",
                 "version": "0.0.5",
+                "checksum": None,
                 "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
                 "type": "pip",
                 "build_dependency": True,
@@ -1659,6 +1599,7 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
             {
                 "name": "ham",
                 "version": "3.2",
+                "checksum": None,
                 "index_url": CUSTOM_PYPI_ENDPOINT,
                 "type": "pip",
                 "build_dependency": False,
@@ -1669,7 +1610,8 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
             },
             {
                 "name": "eggs",
-                "version": "https://x.org/eggs.zip#cachito_hash=sha256:aaaaaaaaaa",
+                "version": "https://x.org/eggs.zip",
+                "checksum": "sha256:aaaaaaaaaa",
                 "type": "pip",
                 "build_dependency": False,
                 "kind": "url",

@@ -628,10 +628,10 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     ),
                 )
 
-        # Fail if URL requirement does not specify exactly one hash (--hash or #cachito_hash)
+        # Fail if URL requirement does not specify exactly one hash (--hash)
         # or does not have a recognized file extension
         elif req.kind == "url":
-            n_hashes = len(req.hashes) + (1 if req.qualifiers.get("cachito_hash") else 0)
+            n_hashes = len(req.hashes)
             if n_hashes != 1:
                 raise InvalidChecksum(
                     checksum=req.hashes,
@@ -661,17 +661,13 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
     :raise InvalidChecksum: If hashes have invalid format
     """
     for req in requirements:
-        if req.kind == "url":
-            hashes = req.hashes or [req.qualifiers["cachito_hash"]]
-        else:
-            hashes = req.hashes
+        hashes = req.hashes
 
         if require_hashes and not hashes:
             # We shouldn't get here, but it's a definite error if we do.
             # VCS reqs *cannot* be hashed, so we'll always hit
-            # this for any VCS req in a 'requirements.txt' which has *any* hash
-            # (other than a URL req with `cachito_hash``).
-            # For URL # requirements, having a hash is required to pass *basic* validation.
+            # this for any VCS req in a 'requirements.txt' which has *any* hash.
+            # For URL requirements, having a hash is required to pass *basic* validation.
             raise MissingChecksum(
                 None,
                 solution=(

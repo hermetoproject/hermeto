@@ -270,39 +270,6 @@ class TestPipRequirementsFile:
                 ],
                 [],
             ),
-            # Dependency from URL with a percent-escaped #cachito_hash
-            (
-                (
-                    "https://github.com/quay/appr/archive/58c88e49.tar.gz#egg=cnr_server"
-                    "&cachito_hash=sha256%3A4fd9429bfbb796a48c0bde6bd301ff5b3cc02adb3218"
-                    "9d912c7f55ec2e6c70c8"
-                ),
-                [
-                    {
-                        "package": "cnr-server",
-                        "kind": "url",
-                        "download_line": (
-                            "cnr_server @ https://github.com/quay/appr/archive/58c88e49.tar.gz"
-                            "#egg=cnr_server&cachito_hash=sha256%3A4fd9429bfbb796a48c0bde6bd30"
-                            "1ff5b3cc02adb32189d912c7f55ec2e6c70c8"
-                        ),
-                        "qualifiers": {
-                            "egg": "cnr_server",
-                            "cachito_hash": (
-                                "sha256:4fd9429bfbb796a48c0bde6bd301ff5b3cc02adb32189d912c7f55"
-                                "ec2e6c70c8"
-                            ),
-                        },
-                        "raw_package": "cnr_server",
-                        "url": (
-                            "https://github.com/quay/appr/archive/58c88e49.tar.gz#egg=cnr_server"
-                            "&cachito_hash=sha256%3A4fd9429bfbb796a48c0bde6bd301ff5b3cc02adb3218"
-                            "9d912c7f55ec2e6c70c8"
-                        ),
-                    },
-                ],
-                [],
-            ),
             # Dependency from URL with environment markers
             (
                 (

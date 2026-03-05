@@ -164,10 +164,7 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
     elif dependency_kind == "vcs":
         qualifiers = {"vcs_url": package["version"]}
     elif dependency_kind == "url":
-        defragmented_url, fragment = urlparse.urldefrag(package["version"])
-        fragments: dict[str, list[str]] = urlparse.parse_qs(fragment)
-        checksum: str = fragments["cachito_hash"][0]
-        qualifiers = {"download_url": defragmented_url, "checksum": checksum}
+        qualifiers = {"download_url": package["version"], "checksum": package["checksum"]}
     else:
         # Should not happen
         raise RuntimeError(f"Unexpected requirement kind: {dependency_kind}")
@@ -293,7 +290,7 @@ def _process_req(
         pass
     else:
         if req.kind == "url":
-            hashes = req.hashes or [req.qualifiers.get("cachito_hash", "")]
+            hashes = req.hashes
             if hashes:
                 download_info["missing_req_file_checksum"] = False
                 _checksum_must_match_or_path_unlink(
@@ -391,10 +388,6 @@ def _download_dependencies(
         log.info("At least one dependency uses the --hash option, will require hashes")
         require_hashes = True
     else:
-        # URL deps with a `cachito_hash` qualifier (which is a loophole
-        # allowing for unhashed VCS deps AND URL deps to coexist in a
-        # 'requirements.txt', thus `require_hashes` should NOT be set), will
-        # fall through to this branch.
         log.info(
             "No hash options used, will not require hashes unless HTTP(S) dependencies are present."
         )
@@ -492,32 +485,12 @@ def _download_url_package(
 
     download_binary_file(requirement.url, download_to.path, insecure=insecure)
 
-    if "cachito_hash" in requirement.qualifiers:
-        url_with_hash = requirement.url
-    else:
-        url_with_hash = _add_cachito_hash_to_url(url, requirement.hashes[0])
-
     return {
         "package": requirement.package,
         "path": download_to.path,
         "original_url": requirement.url,
-        "url_with_hash": url_with_hash,
+        "checksum": requirement.hashes[0],
     }
-
-
-def _add_cachito_hash_to_url(parsed_url: urlparse.ParseResult, hash_spec: str) -> str:
-    """
-    Add the #cachito_hash fragment to URL.
-
-    :param urllib.urlparse.ParseResult parsed_url: A parsed URL with no cachito_hash in fragment
-    :param str hash_spec: A hash specifier - "algorithm:digest", e.g. "sha256:123456"
-    :return: Original URL + cachito_hash in fragment
-    :rtype: str
-    """
-    new_fragment = f"cachito_hash={hash_spec}"
-    if parsed_url.fragment:
-        new_fragment = f"{parsed_url.fragment}&{new_fragment}"
-    return parsed_url._replace(fragment=new_fragment).geturl()
 
 
 def _download_from_requirement_files(
@@ -619,17 +592,18 @@ def _resolve_pip(
         if dep["kind"] == "pypi":
             version = dep["version"]
         elif dep["kind"] == "vcs":
-            # Version is "git+" followed by the URL used to to fetch from git
+            # Version is "git+" followed by the URL used to fetch from git
             version = f"git+{dep['url']}@{dep['ref']}"
         else:
-            # Version is the original URL with #cachito_hash added if it was not present
-            version = dep["url_with_hash"]
+            # Version is the original URL for URL dependencies
+            version = dep["original_url"]
         return version
 
     dependencies = [
         {
             "name": dep["package"],
             "version": _version(dep),
+            "checksum": dep.get("checksum"),
             "index_url": dep.get("index_url"),
             "type": "pip",
             "build_dependency": dep.get("build_dependency", False),
@@ -653,8 +627,7 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
     """Get the relative path under deps/pip/ where a URL or VCS requirement should be placed."""
     if requirement.kind == "url":
         package = requirement.package
-        hashes = requirement.hashes
-        hash_spec = hashes[0] if hashes else requirement.qualifiers["cachito_hash"]
+        hash_spec = requirement.hashes[0]
         _, _, digest = hash_spec.partition(":")
         orig_url = urlparse.urlparse(requirement.url)
         file_ext = ""
