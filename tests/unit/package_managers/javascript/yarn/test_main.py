@@ -1,28 +1,44 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from enum import Enum
 from itertools import zip_longest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 import pytest
 import semver
 
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
+    UnsupportedFeature,
 )
-from hermeto.core.models.output import EnvironmentVariable
+from hermeto.core.models.output import (
+    EnvironmentVariable,
+)
 from hermeto.core.package_managers.javascript.yarn.main import (
+    GitDep,
+    _build_clone_url,
+    _build_vcs_url,
+    _clone_and_resolve_git_deps,
     _configure_yarn_version,
+    _git_deps_from_lockfile,
     _resolve_yarn_project,
     _set_yarnrc_configuration,
     _strip_workspace_scripts,
     _verify_corepack_yarn_version,
+)
+from hermeto.core.package_managers.javascript.yarn.project import (
+    PackageJson,
+    Project,
+    YarnRc,
     _verify_yarnrc_paths,
 )
-from hermeto.core.package_managers.javascript.yarn.project import PackageJson, YarnRc
-from hermeto.core.package_managers.javascript.yarn.resolver import Package
 from hermeto.core.package_managers.javascript.yarn.utils import VersionsRange
 from hermeto.core.rooted_path import RootedPath
 
@@ -291,10 +307,11 @@ def test_set_yarnrc_configuration(
 def test_verify_yarnrc_paths_fail(
     request: pytest.FixtureRequest, tmp_path: Path, opt_path: str
 ) -> None:
+    source_dir = RootedPath(tmp_path)
     project = mock.Mock()
-    project.source_dir = tmp_path
+    project.source_dir = source_dir
     project.yarn_rc = YarnRc(
-        RootedPath(tmp_path / ".yarnrc.yml"), {request.node.callspec.id: opt_path}
+        source_dir.join_within_root(".yarnrc.yml"), {request.node.callspec.id: opt_path}
     )
 
     with pytest.raises(PackageRejected):
@@ -317,12 +334,13 @@ def test_workspace_focus_rejected_for_yarn_v3(
     project = mock.Mock(source_dir=rooted_tmp_path, yarn_rc=mock.MagicMock())
 
     with pytest.raises(PackageRejected):
-        _resolve_yarn_project(project, rooted_tmp_path, workspaces=["app"])
+        _resolve_yarn_project(project, rooted_tmp_path, Mode.STRICT, workspaces=["app"])
 
 
 def test_strip_workspace_scripts(rooted_tmp_path: RootedPath) -> None:
-    """Scripts are removed only from workspace package.json files in the package list."""
-    import json
+    """Scripts are removed from workspace package.json files matched by workspaces globs."""
+    root_json = rooted_tmp_path.join_within_root("package.json")
+    root_json.path.write_text(json.dumps({"name": "root", "workspaces": ["packages/app"]}))
 
     pkg_a_dir = rooted_tmp_path.join_within_root("packages", "app")
     pkg_a_dir.path.mkdir(parents=True)
@@ -338,26 +356,335 @@ def test_strip_workspace_scripts(rooted_tmp_path: RootedPath) -> None:
         json.dumps({"name": "unrelated", "scripts": {"postinstall": "echo bad"}})
     )
 
-    packages = [
-        Package(
-            raw_locator="app@workspace:packages/app",
-            version=None,
-            checksum=None,
-            cache_path=None,
-        ),
-        Package(
-            raw_locator="is-number@npm:7.0.0",
-            version="7.0.0",
-            checksum="abc",
-            cache_path="/cache/is-number.zip",
-        ),
-    ]
-
-    _strip_workspace_scripts(rooted_tmp_path, packages)
+    _strip_workspace_scripts(rooted_tmp_path)
 
     data_a = json.loads(pkg_a_json.path.read_text())
     assert "scripts" not in data_a
 
-    # Workspace not in the package list is left untouched
+    # Workspace not matched by the workspaces glob is left untouched
     data_b = json.loads(pkg_b_json.path.read_text())
     assert data_b["scripts"] == {"postinstall": "echo bad"}
+
+
+# --- Tests for git dependency support ---
+
+
+@contextmanager
+def _make_project(
+    package_json_data: dict[str, Any] | None = None,
+) -> Iterator[tuple[Project, mock.Mock, mock.Mock]]:
+    """Build an in-memory Project with ``.write()`` stubbed on package.json and yarnrc.
+
+    Yields ``(project, package_json_write, yarn_rc_write)``.
+    """
+    source_dir = RootedPath("/fake/project")
+    yarn_rc = YarnRc(source_dir.join_within_root(".yarnrc.yml"), {})
+    package_json = PackageJson(
+        source_dir.join_within_root("package.json").path,
+        package_json_data or {"name": "test-project", "version": "1.0.0"},
+    )
+    project = Project(source_dir=source_dir, yarn_rc=yarn_rc, package_json=package_json)
+    with (
+        mock.patch.object(project.package_json, "write") as mock_pj_write,
+        mock.patch.object(project.yarn_rc, "write") as mock_yarn_write,
+    ):
+        yield project, mock_pj_write, mock_yarn_write
+
+
+# A comprehensive lockfile that exercises multiple code paths in one test:
+# HTTPS git dep, SSH git dep, scoped git dep, npm dep (skipped), __metadata (skipped).
+MIXED_LOCKFILE = {
+    "__metadata": {"version": 8, "cacheKey": "10c0"},
+    "lodash@npm:4.17.21": {
+        "version": "4.17.21",
+        "resolution": "lodash@npm:4.17.21",
+    },
+    "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97": {
+        "version": "1.0.0",
+        "resolution": "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97",
+    },
+    "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7": {
+        "version": "1.0.0",
+        "resolution": "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7",
+    },
+    "@databricks/json-bigint@https://github.com/databricks/json-bigint.git#commit=a1defaf9": {
+        "version": "0.2.3",
+        "resolution": "@databricks/json-bigint@https://github.com/databricks/json-bigint.git#commit=a1defaf9",
+    },
+}
+
+
+class TestParseLockfileGitDeps:
+    def test_parses_mixed_lockfile(self) -> None:
+        result = _git_deps_from_lockfile(MIXED_LOCKFILE)
+
+        # Should find 3 git deps (HTTPS, SSH, scoped) and skip __metadata + npm
+        assert len(result) == 3
+
+        by_name = {d.name: d for d in result}
+
+        # HTTPS git dep
+        assert by_name["c2-wo-deps"].clone_url == (
+            "https://bitbucket.org/cachi-testing/cachi2-without-deps.git"
+        )
+        assert by_name["c2-wo-deps"].ref == "9e164b97"
+
+        # SSH (SCP-style) git dep
+        assert by_name["ccto-wo-deps"].clone_url == (
+            "git@github.com:cachito-testing/cachito-npm-without-deps.git"
+        )
+        assert by_name["ccto-wo-deps"].ref == "2f0ce1d7"
+
+        # Scoped git dep
+        assert by_name["@databricks/json-bigint"].clone_url == (
+            "https://github.com/databricks/json-bigint.git"
+        )
+        assert by_name["@databricks/json-bigint"].ref == "a1defaf9"
+
+    def test_empty_lockfile(self) -> None:
+        assert _git_deps_from_lockfile({}) == []
+
+    @pytest.mark.parametrize(
+        "lockfile",
+        [
+            {
+                "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.": {
+                    "version": "1.0.0",
+                    "resolution": "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+                },
+            },
+            {
+                "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0": {
+                    "version": "1.0.0",
+                    "resolution": "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
+                },
+            },
+        ],
+        ids=["patched-git", "workspace-git"],
+    )
+    def test_rejects_unsupported_git_deps(self, lockfile: dict) -> None:
+        with pytest.raises(UnsupportedFeature):
+            _git_deps_from_lockfile(lockfile)
+
+    def test_ignores_patches_of_non_git_deps(self) -> None:
+        lockfile = {
+            "left-pad@patch:left-pad@npm%3A1.3.0#./.yarn/patches/left-pad.patch"
+            "::version=1.3.0&hash=abc123&locator=berryscary%40workspace%3A.": {
+                "version": "1.3.0",
+                "resolution": (
+                    "left-pad@patch:left-pad@npm%3A1.3.0#./.yarn/patches/left-pad.patch"
+                    "::version=1.3.0&hash=abc123&locator=berryscary%40workspace%3A."
+                ),
+            },
+        }
+
+        assert _git_deps_from_lockfile(lockfile) == []
+
+    def test_extracts_plain_git_despite_npm_patches(self) -> None:
+        lockfile = {
+            "foo@https://github.com/owner/foo.git#commit=abc123": {
+                "version": "1.0.0",
+                "resolution": "foo@https://github.com/owner/foo.git#commit=abc123",
+            },
+            "left-pad@patch:left-pad@npm%3A1.3.0#./.yarn/patches/left-pad.patch"
+            "::version=1.3.0&hash=abc123&locator=berryscary%40workspace%3A.": {
+                "version": "1.3.0",
+                "resolution": (
+                    "left-pad@patch:left-pad@npm%3A1.3.0#./.yarn/patches/left-pad.patch"
+                    "::version=1.3.0&hash=abc123&locator=berryscary%40workspace%3A."
+                ),
+            },
+        }
+
+        result = _git_deps_from_lockfile(lockfile)
+        assert len(result) == 1
+        assert result[0].name == "foo"
+
+
+@pytest.mark.parametrize(
+    "protocol, source, expected",
+    [
+        ("https", "//github.com/owner/repo.git", "https://github.com/owner/repo.git"),
+        ("git@github.com", "cachito-testing/repo.git", "git@github.com:cachito-testing/repo.git"),
+        ("git+ssh", "//git@github.com/owner/repo.git", "ssh://git@github.com/owner/repo.git"),
+        ("git+https", "//github.com/owner/repo.git", "https://github.com/owner/repo.git"),
+    ],
+)
+def test_build_clone_url(protocol: str, source: str, expected: str) -> None:
+    assert _build_clone_url(protocol, source) == expected
+
+
+def test_build_clone_url_invalid() -> None:
+    with pytest.raises(PackageRejected, match="Cannot construct clone URL"):
+        _build_clone_url(None, "//github.com/owner/repo.git")
+
+
+@pytest.mark.parametrize(
+    "clone_url, ref, expected",
+    [
+        (
+            "https://github.com/owner/foo.git",
+            "abc123",
+            "git+https://github.com/owner/foo.git@abc123",
+        ),
+        (
+            "git@github.com:owner/bar.git",
+            "def456",
+            "git+ssh://git@github.com/owner/bar.git@def456",
+        ),
+        (
+            "ssh://git@github.com/owner/baz.git",
+            "abc999",
+            "git+ssh://git@github.com/owner/baz.git@abc999",
+        ),
+    ],
+)
+def test_build_vcs_url(clone_url: str, ref: str, expected: str) -> None:
+    dep = GitDep(name="pkg", clone_url=clone_url, ref=ref)
+    assert _build_vcs_url(dep) == expected
+
+
+class TestCloneAndResolveGitDeps:
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.clone_repo_pack_archive")
+    def test_clones_writes_relative_resolutions_and_dedupes(self, mock_clone: mock.Mock) -> None:
+        output_dir = RootedPath("/fake/output")
+        tarball = output_dir.join_within_root(
+            "deps/yarn/github.com/owner/my-dep/my-dep-external-gitcommit-abc123.tgz"
+        )
+        mock_clone.return_value = tarball
+
+        git_deps: list[GitDep] = [
+            GitDep(
+                name="my-dep",
+                clone_url="https://github.com/owner/my-dep.git",
+                ref="abc123",
+            ),
+            GitDep(
+                name="my-dep-alias",
+                clone_url="https://github.com/owner/my-dep.git",
+                ref="abc123",
+            ),
+        ]
+
+        with _make_project() as (project, mock_pj_write, _):
+            project_files, tarball_vcs_url_map = _clone_and_resolve_git_deps(
+                project, git_deps, output_dir
+            )
+
+            # clone_repo_pack_archive called only once for the deduped source
+            mock_clone.assert_called_once()
+            tarball_path = str(tarball.path)
+            assert "my-dep-external-gitcommit-abc123.tgz" in tarball_path
+
+            # Verify package.json resolutions were updated in memory
+            resolutions = project.package_json.data["resolutions"]
+            for name in ("my-dep", "my-dep-alias"):
+                assert name in resolutions
+                assert resolutions[name].startswith("file:")
+            mock_pj_write.assert_called_once()
+
+            # Verify ProjectFile template uses ${output_dir}
+            assert len(project_files) == 1
+            pf_template = json.loads(project_files[0].template)
+            assert "${output_dir}" in pf_template["resolutions"]["my-dep"]
+            assert "${output_dir}" in pf_template["resolutions"]["my-dep-alias"]
+
+            assert len(tarball_vcs_url_map) == 1
+            assert tarball_path in tarball_vcs_url_map
+            assert (
+                tarball_vcs_url_map[tarball_path]
+                == "git+https://github.com/owner/my-dep.git@abc123"
+            )
+
+    def test_rejects_name_collision(self) -> None:
+        output_dir = RootedPath("/fake/output")
+
+        git_deps: list[GitDep] = [
+            GitDep(name="my-dep", clone_url="https://github.com/owner/repo-a.git", ref="aaa"),
+            GitDep(name="my-dep", clone_url="https://github.com/owner/repo-b.git", ref="bbb"),
+        ]
+
+        with (
+            _make_project() as (project, _, _),
+            pytest.raises(PackageRejected),
+        ):
+            _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.clone_repo_pack_archive")
+    def test_dedupes_alternate_url_spellings(self, mock_clone: mock.Mock) -> None:
+        """https and SSH URLs for the same host/ns/repo/ref share one tarball and vcs_url."""
+        output_dir = RootedPath("/fake/output")
+        tarball = output_dir.join_within_root(
+            "deps/yarn/github.com/owner/my-dep/my-dep-external-gitcommit-abc123.tgz"
+        )
+        mock_clone.return_value = tarball
+
+        git_deps: list[GitDep] = [
+            GitDep(
+                name="my-dep",
+                clone_url="https://github.com/owner/my-dep.git",
+                ref="abc123",
+            ),
+            GitDep(
+                name="my-dep-ssh",
+                clone_url="git@github.com:owner/my-dep.git",
+                ref="abc123",
+            ),
+        ]
+
+        with _make_project() as (project, _, _):
+            _, tarball_vcs_url_map = _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+            mock_clone.assert_called_once()
+            tarball_path = str(tarball.path)
+            assert tarball_vcs_url_map == {
+                tarball_path: "git+https://github.com/owner/my-dep.git@abc123",
+            }
+            resolutions = project.package_json.data["resolutions"]
+            assert "my-dep" in resolutions
+            assert "my-dep-ssh" in resolutions
+
+
+class TestSetYarnrcConfigurationGitDeps:
+    def test_immutable_installs_always_true(self) -> None:
+        output_dir = RootedPath("/fake/output")
+        version = semver.Version.parse("4.0.0")
+
+        with _make_project() as (project, _, mock_yarn_write):
+            _set_yarnrc_configuration(project, output_dir, version)
+
+            assert project.yarn_rc["enableImmutableInstalls"] is True
+            mock_yarn_write.assert_called_once()
+
+
+class TestResolveYarnProjectGitDepsStrictMode:
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main._parse_lockfile_git_deps")
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main._verify_corepack_yarn_version")
+    @mock.patch(
+        "hermeto.core.package_managers.javascript.yarn.main.get_semver_from_package_manager"
+    )
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.get_semver_from_yarn_path")
+    def test_rejects_git_deps_in_strict_mode(
+        self,
+        mock_yarn_path: mock.Mock,
+        mock_pkg_mgr: mock.Mock,
+        mock_verify_corepack: mock.Mock,
+        mock_parse_git_deps: mock.Mock,
+    ) -> None:
+        mock_yarn_path.return_value = semver.Version.parse("4.0.0")
+        mock_pkg_mgr.return_value = semver.Version.parse("4.0.0")
+        mock_parse_git_deps.return_value = [
+            GitDep(
+                name="my-dep",
+                clone_url="https://github.com/owner/my-dep.git",
+                ref="abc123",
+            )
+        ]
+
+        output_dir = RootedPath("/fake/output")
+
+        with (
+            _make_project() as (project, _, _),
+            pytest.raises(PackageRejected),
+        ):
+            _resolve_yarn_project(project, output_dir, Mode.STRICT)

@@ -1,18 +1,40 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import copy
+import json
 import logging
 import tempfile
 from contextlib import contextmanager
-from typing import Generator
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Generator, cast
+from urllib.parse import parse_qs
 
 import semver
-
+import yaml
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
-from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
+from hermeto.core.constants import Mode
+from hermeto.core.errors import (
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.output import (
+    Component,
+    EnvironmentVariable,
+    ProjectFile,
+    RequestOutput,
+)
 from hermeto.core.models.sbom import create_backend_annotation
-from hermeto.core.package_managers.javascript.yarn.locators import WorkspaceLocator
+from hermeto.core.package_managers.javascript.js_utils import (
+    clone_repo_pack_archive,
+    parse_git_clone_url,
+)
+from hermeto.core.package_managers.javascript.yarn.locators import (
+    parse_locator,
+    parse_raw_locator,
+)
 from hermeto.core.package_managers.javascript.yarn.project import (
     PackageJson,
     Plugin,
@@ -22,105 +44,123 @@ from hermeto.core.package_managers.javascript.yarn.project import (
     get_semver_from_yarn_path,
 )
 from hermeto.core.package_managers.javascript.yarn.resolver import (
-    Package,
     create_components,
     resolve_packages,
 )
 from hermeto.core.package_managers.javascript.yarn.utils import (
+    TarballVcsUrlMap,
+    VcsUrl,
     VersionsRange,
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import RepoID, canonicalize_origin_url
 
 log = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class GitDep:
+    """A git dependency extracted from yarn.lock."""
+
+    name: str
+    clone_url: str
+    ref: str
+
+
+def _try_git_dep(resolution: str) -> GitDep | None:
+    """Classify a yarn.lock resolution for git-dep rewriting.
+
+    Returns a GitDep for plain rewriteable git dependencies, None for entries to
+    ignore (non-git, unparseable, supported npm/tarball patches), or raises for
+    unsupported git forms.
+
+    :param resolution: a yarn.lock ``resolution`` locator string
+    :return: a GitDep, or None if the resolution should be ignored
+    :raises UnsupportedFeature: if the resolution is a patched git dep or selects a
+        git workspace via ``#workspace=…&commit=…``
+    :raises PackageRejected: if a git locator has no usable protocol/source for cloning
+    """
+    try:
+        parsed = parse_raw_locator(resolution)
+        ref = parsed.parsed_reference
+    except UnexpectedFormat:
+        log.debug("Skipping resolution %r: could not parse locator", resolution)
+        return None
+
+    protocol = ref.protocol.removesuffix(":") if ref.protocol else None
+
+    # Validate patches (nested git fails; npm patches pass), then skip —
+    # they are not git deps to rewrite.
+    if protocol == "patch":
+        _validate_resolution(resolution)
+        return None
+
+    selector_qs = parse_qs(ref.selector)
+    if "commit" not in selector_qs:
+        return None
+    if "workspace" in selector_qs:
+        # Raises UnsupportedFeature for #workspace=…&commit=…
+        _validate_resolution(resolution)
+
+    commit = selector_qs["commit"][0]
+    clone_url = _build_clone_url(protocol, ref.source)
+
+    name = parsed.name
+    if parsed.scope:
+        name = f"@{parsed.scope}/{name}"
+
+    return GitDep(name, clone_url, commit)
+
+
+def _validate_resolution(resolution: str) -> None:
+    """Raise if the resolution is unsupported; discard the parsed locator."""
+    parse_locator(resolution)
+
+
 def fetch_yarn_source(request: Request) -> RequestOutput:
     """Process all the yarn source directories in a request."""
-    components = []
+    components: list[Component] = []
+    project_files: list[ProjectFile] = []
 
     for package in request.yarn_packages:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        components.extend(_resolve_yarn_project(project, request.output_dir, package.workspaces))
+        pkg_components, pkg_project_files, _ = _resolve_yarn_project(
+            project, request.output_dir, get_config().mode, package.workspaces
+        )
+        components.extend(pkg_components)
+        project_files.extend(pkg_project_files)
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "yarn"):
         annotations.append(backend_annotation)
+
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=_generate_environment_variables(),
-        project_files=[],
+        project_files=project_files,
         annotations=annotations,
     )
-
-
-def _verify_yarnrc_paths(project: Project) -> None:
-    paths_conf_opts = {
-        # pnpDataPath is only configurable in Yarn v3
-        project.yarn_rc.get("pnpDataPath"): "pnpDataPath",
-        project.yarn_rc.get("pnpUnpluggedFolder"): "pnpUnpluggedFolder",
-        project.yarn_rc.get("installStatePath"): "installStatePath",
-        project.yarn_rc.get("patchFolder"): "patchFolder",
-        project.yarn_rc.get("virtualFolder"): "virtualFolder",
-    }
-
-    for path in paths_conf_opts:
-        if path is not None:
-            try:
-                project.source_dir.join_within_root(path)
-            except Exception:
-                raise PackageRejected(
-                    (
-                        f"YarnRC '{paths_conf_opts[path]}={path}' property: path points "
-                        "outside of the source directory"
-                    ),
-                    solution=(
-                        "Make sure that all Yarn RC configuration options specifying a path "
-                        "point to a relative location inside the main repository"
-                    ),
-                )
-
-
-def _check_zero_installs(project: Project) -> None:
-    if project.is_zero_installs:
-        raise PackageRejected(
-            (f"Yarn zero install detected, PnP zero installs are unsupported by {APP_NAME}"),
-            solution=(
-                "Please convert your project to a regular install-based one.\n"
-                "Depending on whether you use Yarn's PnP or a different node linker Yarn setting "
-                "make sure to remove '.yarn/cache' or 'node_modules' directories respectively."
-            ),
-        )
-
-
-def _check_lockfile(project: Project) -> None:
-    lockfile_filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
-    if not project.source_dir.join_within_root(lockfile_filename).path.exists():
-        raise LockfileNotFound(
-            files=project.source_dir.join_within_root(lockfile_filename).path,
-        )
-
-
-def _verify_repository(project: Project) -> None:
-    _verify_yarnrc_paths(project)
-    _check_zero_installs(project)
-    _check_lockfile(project)
 
 
 def _resolve_yarn_project(
     project: Project,
     output_dir: RootedPath,
+    mode: Mode,
     workspaces: list[str] | None = None,
-) -> list[Component]:
+) -> tuple[list[Component], list[ProjectFile], list[GitDep]]:
     """Process a request for a single yarn source directory.
 
     :param project: the directory to be processed.
     :param output_dir: the directory where the prefetched dependencies will be placed.
+    :param mode: the processing mode (strict or permissive).
     :param workspaces: optional list of workspace names to focus on (Yarn v4 only).
+    :return: a tuple of (components, project_files, git_deps)
     :raises PackageManagerError: if fetching dependencies fails
+    :raises PackageRejected: if git deps are found in strict mode
     """
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
@@ -134,14 +174,39 @@ def _resolve_yarn_project(
             solution="Either upgrade to Yarn v4 or remove the 'workspaces' field from the input.",
         )
 
-    _verify_repository(project)
+    git_deps = _parse_lockfile_git_deps(project)
+
+    # Reject before mutating yarnrc / the lockfile when git deps need permissive mode.
+    if git_deps and mode != Mode.PERMISSIVE:
+        raise PackageRejected(
+            "Git dependencies in Yarn Berry projects cannot be processed in strict mode "
+            "because the lockfile must be modified to reference local tarballs."
+        )
 
     _set_yarnrc_configuration(project, output_dir, version)
 
-    packages = resolve_packages(project.source_dir, workspaces)
+    if not git_deps:
+        packages = resolve_packages(project.source_dir, workspaces)
 
-    if workspaces:
-        _strip_workspace_scripts(project.source_dir, packages)
+        _fetch_dependencies(project.source_dir, workspaces)
+
+        with _hide_dev_dependencies(project):
+            prod_packages = resolve_packages(project.source_dir, workspaces)
+
+        return create_components(packages, prod_packages, project, output_dir), [], git_deps
+
+    # When git deps are present the processing order is intentionally inverted
+    # compared to the normal path above: we must fetch first (to update the
+    # lockfile with local tarball references) and then resolve (to parse
+    # package data from the now-modified lockfile).
+    project_files, tarball_vcs_url_map = _clone_and_resolve_git_deps(project, git_deps, output_dir)
+
+    with _immutable_installs_disabled(project):
+        _fetch_dependencies(project.source_dir, workspaces)
+
+    project_files.append(_build_lockfile_project_file(project, output_dir))
+
+    packages = resolve_packages(project.source_dir, workspaces)
 
     _fetch_dependencies(project.source_dir, workspaces)
 
@@ -150,7 +215,11 @@ def _resolve_yarn_project(
 
     log.debug("Resolved %d total locators", len(packages))
     log.debug("Resolved %d production locators", len(prod_packages))
-    return create_components(packages, prod_packages, project, output_dir)
+    return (
+        create_components(packages, prod_packages, project, output_dir, tarball_vcs_url_map),
+        project_files,
+        git_deps,
+    )
 
 
 def _configure_yarn_version(project: Project) -> semver.Version:
@@ -274,6 +343,23 @@ def _set_yarnrc_configuration(
 
 
 @contextmanager
+def _immutable_installs_disabled(project: Project) -> Generator[None, None, None]:
+    """Temporarily allow yarn.lock updates so git deps can be rewritten to local tarballs.
+
+    Yarn refuses to change the lockfile when enableImmutableInstalls is true
+    (the default set in ``_set_yarnrc_configuration``). After git dependencies
+    are rewritten to ``file:`` resolutions, ``yarn install`` must update yarn.lock.
+    """
+    project.yarn_rc["enableImmutableInstalls"] = False
+    project.yarn_rc.write()
+    try:
+        yield
+    finally:
+        project.yarn_rc["enableImmutableInstalls"] = True
+        project.yarn_rc.write()
+
+
+@contextmanager
 def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
     """Temporarily remove devDependencies from every package.json in the source directory."""
     global_folder = project.yarn_rc.get("globalFolder")
@@ -313,29 +399,48 @@ def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
             project.yarn_rc.write()
 
 
-def _strip_workspace_scripts(source_dir: RootedPath, packages: list[Package]) -> None:
-    """Remove scripts from workspace package.json files.
+def _remove_scripts_field(package_json: PackageJson) -> None:
+    """Delete the scripts field from a package.json if present and write it back."""
+    if "scripts" in package_json:
+        del package_json["scripts"]
+        package_json.write()
 
-    yarn workspaces focus does not support --mode skip-build, and enableScripts: false
-    does not apply to workspace scripts (https://github.com/yarnpkg/berry/pull/4781).
-    Stripping the scripts field prevents lifecycle scripts from executing during focus.
 
-    :param source_dir: the project source directory.
-    :param packages: packages returned by ``resolve_packages``, used to find workspace paths.
+def _workspace_package_dirs(source_dir: RootedPath) -> list[Path]:
+    """Resolve workspace package directories from the root package.json workspaces field.
+
+    Supports both the array form (``["packages/*"]``) and the object form
+    (``{"packages": ["packages/*"]}``). Paths are constrained to ``source_dir``.
     """
-    for pkg in packages:
-        locator = pkg.parsed_locator
-        if not isinstance(locator, WorkspaceLocator):
-            continue
+    workspaces = PackageJson.from_dir(source_dir.path).data.get("workspaces", [])
+    if isinstance(workspaces, dict):
+        workspaces = workspaces.get("packages", [])
 
-        try:
-            pkg_json = PackageJson.from_dir(source_dir.path.joinpath(locator.relpath))
-        except LockfileNotFound:
-            continue
+    dirs: list[Path] = []
+    for pattern in workspaces:
+        for path in source_dir.path.glob(pattern):
+            if not path.is_dir() or not (path / "package.json").exists():
+                continue
+            # Reject workspace globs that escape the source tree.
+            source_dir.join_within_root(path.relative_to(source_dir.path))
+            dirs.append(path)
+    return dirs
 
-        if "scripts" in pkg_json:
-            del pkg_json["scripts"]
-            pkg_json.write()
+
+def _strip_workspace_scripts(source_dir: RootedPath) -> None:
+    """Remove scripts from the root and all workspace package.json files.
+
+    ``yarn workspaces focus`` does not support ``--mode skip-build``, and
+    ``enableScripts: false`` does not apply to workspace scripts
+    (https://github.com/yarnpkg/berry/pull/4781). Stripping the scripts field
+    prevents lifecycle scripts from executing during focus.
+
+    Discovers workspaces from the root package.json ``workspaces`` field so it
+    can also run on the git-deps path before ``resolve_packages``.
+    """
+    _remove_scripts_field(PackageJson.from_dir(source_dir.path))
+    for workspace_dir in _workspace_package_dirs(source_dir):
+        _remove_scripts_field(PackageJson.from_dir(workspace_dir))
 
 
 def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = None) -> None:
@@ -350,6 +455,11 @@ def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = N
     """
     try:
         if workspaces:
+            # Focus cannot use --mode skip-build, and enableScripts:false does not
+            # cover workspace scripts
+            # https://github.com/yarnpkg/berry/blob/7744e6678de126a2ca2398d4123e3f7e009256b8/packages/docusaurus/static/configuration/yarnrc.json#L252
+            _strip_workspace_scripts(source_dir)
+
             run_yarn_cmd(["workspaces", "focus", *workspaces], source_dir)
         else:
             run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
@@ -387,3 +497,200 @@ def _verify_corepack_yarn_version(expected_version: semver.Version, source_dir: 
         )
 
     log.info("Processing the request using yarn@%s", installed_yarn_version)
+
+
+def _parse_lockfile_git_deps(project: Project) -> list[GitDep]:
+    """Scan yarn.lock for git-resolved dependencies.
+
+    Loads the lockfile from disk, then delegates classification to
+    ``_git_deps_from_lockfile``.
+
+    :param project: the Project whose yarn.lock will be scanned.
+    :return: list of GitDep instances.
+    :raises UnsupportedFeature: if a patched or workspace-selecting git dep is found.
+    """
+    with project.lockfile_path.path.open("r") as f:
+        lockfile_data: dict[str, Any] = yaml.safe_load(f) or {}
+    return _git_deps_from_lockfile(lockfile_data)
+
+
+def _git_deps_from_lockfile(lockfile_data: dict[str, Any]) -> list[GitDep]:
+    """Extract rewriteable git dependencies from parsed yarn.lock data.
+
+    Each ``resolution`` is classified by ``_try_git_dep``, which rejects
+    unsupported variants (patched git deps, workspace+commit) so Hermeto never
+    rewrites ``resolutions`` over them. Supported npm/tarball patches are ignored.
+
+    :param lockfile_data: parsed yarn.lock contents.
+    :return: list of GitDep instances.
+    :raises UnsupportedFeature: if a patched or workspace-selecting git dep is found.
+    """
+    git_deps: list[GitDep] = []
+
+    for key, entry in lockfile_data.items():
+        if key == "__metadata":
+            continue
+
+        resolution = entry.get("resolution") if isinstance(entry, dict) else None
+        if not resolution:
+            continue
+
+        if dep := _try_git_dep(resolution):
+            git_deps.append(dep)
+
+    return git_deps
+
+
+def _build_clone_url(protocol: str | None, source: str | None) -> str:
+    """Build a clone-friendly URL from a Berry git locator's protocol and source.
+
+    Given protocol="https" and source="//host/path.git", returns "https://host/path.git".
+    For SCP-style locators like protocol="git@host", source="ns/repo.git", returns
+    "git@host:ns/repo.git".
+
+    The ``git+`` prefix (e.g. ``git+ssh``, ``git+https``) is stripped so the result
+    is a URL that git can clone directly and that clone_as_tarball can apply its
+    ssh-to-https fallback to correctly.
+    """
+    if not protocol or not source:
+        raise PackageRejected(
+            f"Cannot construct clone URL from protocol={protocol!r}, source={source!r}",
+            solution="Ensure the git dependency in yarn.lock has a valid URL.",
+        )
+
+    # Strip git+ prefix (e.g. git+ssh -> ssh, git+https -> https) so the URL
+    # is directly usable by git clone and the ssh-to-https fallback in clone_as_tarball.
+    protocol = protocol.removeprefix("git+")
+
+    return f"{protocol}:{source}"
+
+
+def _build_vcs_url(dep: GitDep) -> VcsUrl:
+    """Build a canonical vcs_url qualifier for PURL generation.
+
+    SCP-style clone URLs are normalized to ssh:// so Yarn PURLs match npm /
+    RepoID output (e.g. git+ssh://git@host/path@ref).
+    """
+    return RepoID(
+        canonicalize_origin_url(dep.clone_url),
+        dep.ref,
+    ).as_vcs_url_qualifier()
+
+
+def _ensure_unique_git_dep_names(git_deps: list[GitDep]) -> None:
+    """Reject git deps that share a package name but resolve to different sources.
+
+    Yarn resolutions are keyed by package name, so conflicting sources cannot be
+    expressed in a single package.json.
+    """
+    seen_names: dict[str, tuple[str, str]] = {}
+    for dep in git_deps:
+        url_ref_pair = (dep.clone_url, dep.ref)
+        if dep.name in seen_names and seen_names[dep.name] != url_ref_pair:
+            raise PackageRejected(
+                f"Multiple git dependencies share the name '{dep.name}' but resolve to "
+                f"different sources. This cannot be expressed in a single yarn resolution.",
+                solution=(
+                    "Ensure all git dependencies with the same package name point to the same "
+                    "repository and commit."
+                ),
+            )
+        seen_names[dep.name] = url_ref_pair
+
+
+def _clone_git_deps(
+    git_deps: list[GitDep],
+    output_dir: RootedPath,
+) -> tuple[dict[str, tuple[RootedPath, Path]], TarballVcsUrlMap]:
+    """Clone git deps to local tarballs, deduplicating identical sources.
+
+    :return: tuple of (package name -> (tarball path, path relative to output_dir),
+        tarball path -> vcs_url qualifier map)
+    """
+    yarn_deps_dir = output_dir.join_within_root("deps", "yarn")
+    tarball_info: dict[str, tuple[RootedPath, Path]] = {}
+    cloned_sources: dict[tuple[str, str, str, str], RootedPath] = {}
+    tarball_vcs_url_map: TarballVcsUrlMap = {}
+
+    for dep in git_deps:
+        clone_url = parse_git_clone_url(dep.clone_url, dep.ref)
+        source_key = (clone_url.host, clone_url.namespace, clone_url.repo, clone_url.ref)
+        if not all(source_key):
+            raise UnexpectedFormat(
+                f"Cannot parse git URL: {dep.clone_url}",
+                solution="Ensure the git dependency has a valid URL and commit ref.",
+            )
+
+        source_key = cast(tuple[str, str, str, str], source_key)
+        if source_key in cloned_sources:
+            tarball_rooted = cloned_sources[source_key]
+        else:
+            tarball_rooted = clone_repo_pack_archive(clone_url, yarn_deps_dir)
+            cloned_sources[source_key] = tarball_rooted
+            tarball_vcs_url_map[str(tarball_rooted.path)] = _build_vcs_url(dep)
+
+        rel_to_output = tarball_rooted.path.relative_to(output_dir.path)
+        tarball_info[dep.name] = (tarball_rooted, rel_to_output)
+
+    return tarball_info, tarball_vcs_url_map
+
+
+def _apply_git_dep_resolutions(
+    project: Project,
+    tarball_info: dict[str, tuple[RootedPath, Path]],
+) -> list[ProjectFile]:
+    """Write file: resolutions into package.json and return a templated ProjectFile."""
+    resolutions = project.package_json.data.get("resolutions", {})
+    for name, (tarball_rooted, _) in tarball_info.items():
+        resolutions[name] = f"file:{tarball_rooted.path}"
+    project.package_json["resolutions"] = resolutions
+    project.package_json.write()
+
+    template_data = copy.deepcopy(project.package_json.data)
+    for name, (_, rel_to_output) in tarball_info.items():
+        template_data["resolutions"][name] = f"file:${{output_dir}}/{rel_to_output}"
+
+    package_json_path = project.source_dir.join_within_root("package.json").path
+    return [
+        ProjectFile(
+            abspath=package_json_path.resolve(),
+            template=json.dumps(template_data, indent=2) + "\n",
+        )
+    ]
+
+
+def _clone_and_resolve_git_deps(
+    project: Project,
+    git_deps: list[GitDep],
+    output_dir: RootedPath,
+) -> tuple[list[ProjectFile], TarballVcsUrlMap]:
+    """Clone git deps, write resolutions to package.json, and return ProjectFiles.
+
+    :param project: the Project whose package.json will be modified
+    :param git_deps: list of GitDep instances
+    :param output_dir: base output directory
+    :return: tuple of (project files for the updated package.json, map of tarball paths
+        to vcs_url qualifiers for PURL generation)
+    :raises PackageRejected: if two git deps share the same name but different sources
+    """
+    _ensure_unique_git_dep_names(git_deps)
+    tarball_info, tarball_vcs_url_map = _clone_git_deps(git_deps, output_dir)
+    project_files = _apply_git_dep_resolutions(project, tarball_info)
+    return project_files, tarball_vcs_url_map
+
+
+def _build_lockfile_project_file(project: Project, output_dir: RootedPath) -> ProjectFile:
+    """Read the updated yarn.lock and build a ProjectFile with templated paths.
+
+    Replaces any occurrence of the output directory path with ${output_dir}.
+    """
+    lockfile_path = project.lockfile_path.path
+    lockfile_content = lockfile_path.read_text()
+
+    output_dir_str = str(output_dir.path)
+    lockfile_content = lockfile_content.replace(output_dir_str, "${output_dir}")
+
+    return ProjectFile(
+        abspath=lockfile_path.resolve(),
+        template=lockfile_content,
+    )

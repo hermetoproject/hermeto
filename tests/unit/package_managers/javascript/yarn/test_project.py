@@ -16,6 +16,7 @@ from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.javascript.yarn.project import (
     Project,
     YarnRc,
+    _verify_yarnrc_paths,
     get_semver_from_package_manager,
     get_semver_from_yarn_path,
 )
@@ -33,29 +34,29 @@ enableStrictSsl: false
 enableTelemetry: false
 globalFolder: /a/global/folder
 ignorePath: true
-installStatePath: /custom/install-state.gz
+installStatePath: ./.yarn/install-state.gz
 lockfileFilename: custom.lock
 nodeLinker: pnp
 npmRegistryServer: https://registry.alternative.com
 npmScopes:
   foobar:
     npmRegistryServer: https://registry.foobar.com
-patchFolder: /custom/patches
+patchFolder: ./.yarn/patches
 plugins:
 - path: .yarn/plugins/@yarnpkg/plugin-typescript.cjs
   spec: '@yarnpkg/plugin-typescript'
 - path: .yarn/plugins/@yarnpkg/plugin-exec.cjs
   spec: '@yarnpkg/plugin-exec'
-pnpDataPath: /custom/.pnp.data.json
+pnpDataPath: ./.pnp.data.json
 pnpMode: loose
-pnpUnpluggedFolder: /some/unplugged/folder
+pnpUnpluggedFolder: ./.yarn/unplugged
 supportedArchitectures:
   os:
   - linux
 unsafeHttpWhitelist:
 - example.org
 - foo.bar
-virtualFolder: /custom/__virtual__
+virtualFolder: ./.yarn/__virtual__
 yarnPath: .custom/path/yarn-3.6.1.cjs
 """
 
@@ -165,6 +166,10 @@ def test_parse_invalid_package_json_file(rooted_tmp_path: RootedPath) -> None:
 # --- Project tests ---
 
 
+def _prepare_lockfile(rooted_tmp_path: RootedPath, name: str = "yarn.lock") -> None:
+    rooted_tmp_path.join_within_root(name).path.touch()
+
+
 def _add_mock_yarn_cache_file(cache_path: RootedPath) -> None:
     cache_path.path.mkdir(parents=True)
     file = cache_path.join_within_root("mock-package-0.0.1.zip")
@@ -181,6 +186,7 @@ def _setup_zero_installs(nodeLinker: str, rooted_tmp_path: RootedPath) -> None:
 def test_parse_project_folder(rooted_tmp_path: RootedPath) -> None:
     _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
     _prepare_yarnrc_file(rooted_tmp_path, VALID_YARNRC_FILE)
+    _prepare_lockfile(rooted_tmp_path, "custom.lock")
 
     cache_path = "./.custom/cache"
 
@@ -195,6 +201,7 @@ def test_parse_project_folder(rooted_tmp_path: RootedPath) -> None:
 
 def test_parse_project_folder_without_yarnrc(rooted_tmp_path: RootedPath) -> None:
     _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
+    _prepare_lockfile(rooted_tmp_path)
 
     project = Project.from_source_dir(rooted_tmp_path)
 
@@ -217,11 +224,11 @@ def test_parsing_cache_folder_that_resolves_outside_of_the_repository(
 
     _prepare_yarnrc_file(rooted_tmp_path, yarn_rc)
     _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
+    _prepare_lockfile(rooted_tmp_path)
 
-    project = Project.from_source_dir(rooted_tmp_path)
-
+    # from_source_dir checks zero-installs, which resolves yarn_cache.
     with pytest.raises(PathOutsideRoot):
-        project.yarn_cache
+        Project.from_source_dir(rooted_tmp_path)
 
 
 # --- Semver parsing tests ---
@@ -356,8 +363,30 @@ def test_zero_installs_detection(
 
     _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
     _prepare_yarnrc_file(rooted_tmp_path, yarn_rc)
+    _prepare_lockfile(rooted_tmp_path, "custom.lock")
     project = Project.from_source_dir(rooted_tmp_path)
 
     if is_zero_installs:
         _setup_zero_installs(nodeLinker, rooted_tmp_path)
     assert project.is_zero_installs is is_zero_installs
+
+
+@pytest.mark.parametrize(
+    "opt_name",
+    [
+        pytest.param("installStatePath", id="installStatePath"),
+        pytest.param("patchFolder", id="patchFolder"),
+        pytest.param("pnpDataPath", id="pnpDataPath"),
+        pytest.param("pnpUnpluggedFolder", id="pnpUnpluggedFolder"),
+        pytest.param("virtualFolder", id="virtualFolder"),
+    ],
+)
+def test_verify_yarnrc_paths_fail(rooted_tmp_path: RootedPath, opt_name: str) -> None:
+    project = Project(
+        rooted_tmp_path,
+        YarnRc(rooted_tmp_path.join_within_root(".yarnrc.yml"), {opt_name: "/custom/path"}),
+        _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE),
+    )
+
+    with pytest.raises(PackageRejected):
+        _verify_yarnrc_paths(project)
