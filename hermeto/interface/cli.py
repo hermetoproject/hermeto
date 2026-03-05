@@ -110,6 +110,13 @@ class SBOMFormat(str, enum.Enum):
     spdx = "spdx"
 
 
+class OutputFormat(str, enum.Enum):
+    """Output format for the config command."""
+
+    json = "json"
+    yaml = "yaml"
+
+
 SBOM_TYPE_OPTION = typer.Option(
     SBOMFormat.cyclonedx,
     "--sbom-output-type",
@@ -244,10 +251,10 @@ def list_backends() -> None:
 @app.command()
 @handle_errors
 def config(
-    format: str = typer.Option(
-        "json",
+    format: OutputFormat = typer.Option(
+        OutputFormat.json,
         "--format",
-        help="Default: JSON, Supported: JSON, YAML",
+        help="Output format.",
     ),
     diff: bool = typer.Option(
         False,
@@ -296,17 +303,24 @@ def config(
                 result[field_name] = f"{masked} (*)" if field_name in overridden else masked
         return result
 
+    def _postprocess(s: str) -> str:
+        """Format (*) markers in JSON and YAML output."""
+        import re
+        s = re.sub(r' \(\*\)"', '"   (*)', s)       # JSON double-quoted strings
+        s = re.sub(r"'(.*?) \(\*\)'", r"'\1'   (*)", s)  # YAML single-quoted strings
+        return s
+
     cfg = _get_diff(get_config()) if diff else _get_annotated_config(get_config())
 
+    if diff and not cfg:
+        print("No overrides — all values are at their defaults.")
+        return
+
     dumpers = {
-        "json": lambda data: json.dumps(data, indent=2),
-        "yaml": yaml.dump,
+        OutputFormat.json: lambda d: _postprocess(json.dumps(d, indent=2, default=str)),
+        OutputFormat.yaml: lambda d: _postprocess(yaml.dump(d)),
     }
-    dumper = dumpers.get(format)
-    if dumper:
-        print(dumper(cfg))
-    else:
-        raise typer.BadParameter(f"Invalid format: {format}. Supported: {', '.join(dumpers.keys())}")
+    print(dumpers[format](cfg))
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
