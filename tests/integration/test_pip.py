@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 
 from . import utils
 
@@ -19,8 +21,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/without-deps",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_without_deps",
         ),
@@ -28,8 +28,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/legacy-cachito-hash",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_legacy_cachito_hash",
         ),
@@ -37,8 +35,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/full-hashes",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_full_hashes",
         ),
@@ -46,8 +42,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/missing-hashes",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_missing_hashes",
         ),
@@ -58,8 +52,6 @@ log = logging.getLogger(__name__)
                     {"path": "first", "type": "pip"},
                     {"path": "second", "type": "pip"},
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_multiple_packages",
         ),
@@ -70,7 +62,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "pip"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=UnsupportedFeature,
                 expected_output=(
                     "UnsupportedFeature: Direct references with 'file' scheme are not supported, "
                     "'file:///tmp/packages.zip'\n  "
@@ -86,8 +78,6 @@ log = logging.getLogger(__name__)
                     {"path": ".", "type": "pip"},
                     {"path": "subpath1/subpath2", "type": "pip"},
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_no_metadata",
         ),
@@ -95,8 +85,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/yanked",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_yanked",
         ),
@@ -104,8 +92,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/no-wheels",
                 packages=({"path": ".", "type": "pip", "binary": {}},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_no_wheels",
         ),
@@ -115,7 +101,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "pip"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=PackageRejected,
                 expected_output="Error: PackageRejected: No distributions found",
             ),
             id="pip_no_sdists",
@@ -124,8 +110,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/custom-index",
                 packages=({"path": ".", "type": "pip", "binary": {}},),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_custom_index",
             marks=pytest.mark.skipif(
@@ -140,8 +124,6 @@ log = logging.getLogger(__name__)
                 global_flags=["--mode", "permissive"],
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_rust_extension_lock_and_config_mismatch_permissive",
         ),
@@ -152,7 +134,7 @@ log = logging.getLogger(__name__)
                 global_flags=["--mode", "strict"],
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=PackageWithCorruptLockfileRejected,
                 expected_output="PackageWithCorruptLockfileRejected",
             ),
             id="pip_rust_extension_lock_and_config_mismatch_strict",
@@ -161,10 +143,8 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="pip/rust_dependency_unusual_cargo_toml_location",
                 packages=({"path": ".", "type": "pip"},),
-                expected_exit_code=0,
                 check_output=False,
                 check_deps_checksums=False,
-                expected_output="All dependencies fetched successfully",
             ),
             id="pip_rust_dependency_unusual_cargo_toml_location",
         ),
@@ -207,8 +187,6 @@ def test_pip_packages(
                         "requirements_build_files": ["requirements-build.txt"],
                     },
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["python3", "/app/src/test_package_cachi2/main.py"],
             ["registry.fedoraproject.org/fedora-minimal:37"],
@@ -225,8 +203,6 @@ def test_pip_packages(
                         "binary": {"py_version": 312, "platform": "^(any|manylinux.*)$"},
                     },
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["python3", "/app/package/main.py"],
             ["Hello, world!"],
@@ -243,8 +219,6 @@ def test_pip_packages(
                 flags=[],
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             # Invocation will fail if there was a failure to build the dependencies.
             ["python3", "/app/src/test_package_cachi2/main.py"],
