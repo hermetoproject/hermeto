@@ -3,6 +3,7 @@ from typing import Literal, NewType
 from urllib.parse import urlparse
 
 from hermeto.core.errors import UnexpectedFormat
+from hermeto.core.package_managers.javascript.js_utils import NpmGitInfo
 
 # In rare cases, package-lock.json may contain resolved urls from the Yarn registry.
 # This most likely happens when converting a yarn.lock to package-lock.json
@@ -58,7 +59,7 @@ def update_vcs_url_with_full_hostname(vcs: str) -> str:
     return vcs
 
 
-def extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
+def extract_git_info_npm(vcs_url: NormalizedUrl) -> NpmGitInfo:
     """
     Extract important info from a VCS requirement URL.
 
@@ -72,7 +73,7 @@ def extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
     The host, namespace and repo will be used to construct the file path under deps/npm.
 
     :param vcs_url: The URL of a VCS requirement, must be valid (have git ref in path)
-    :return: Dict with url, ref, host, namespace and repo keys
+    :return: NpmGitInfo with url, ref, host, namespace and repo
     """
     clean_url, _, ref = vcs_url.partition("#")
     # if scheme is git+protocol://, keep only protocol://
@@ -84,20 +85,19 @@ def extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
     # Everything up to the last '/' is namespace, the rest is repo
     namespace, _, repo = namespace_repo.rpartition("/")
 
-    vcs_url_info = {
-        "url": clean_url,
-        "ref": ref.lower(),
-        "namespace": namespace,
-        "repo": repo,
-    }
+    if not url.hostname:
+        raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. Host is missing.")
 
-    for key, value in vcs_url_info.items():
+    info = NpmGitInfo(
+        url=clean_url,
+        ref=ref.lower(),
+        host=url.hostname,
+        namespace=namespace,
+        repo=repo,
+    )
+
+    for key, value in info._asdict().items():
         if not value:
             raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. {key} is missing.")
 
-    if url.hostname:
-        vcs_url_info["host"] = url.hostname
-    else:
-        raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. Host is missing.")
-
-    return vcs_url_info
+    return info
