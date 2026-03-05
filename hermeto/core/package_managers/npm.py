@@ -492,10 +492,7 @@ def _clone_repo_pack_archive(
     :raise FetchError: If download failed
     """
     info = _extract_git_info_npm(vcs)
-    return clone_repo_pack_archive(
-        info["url"], info["ref"], download_dir,
-        host=info["host"], namespace=info["namespace"], repo=info["repo"],
-    )
+    return clone_repo_pack_archive(info["url"], info["ref"], download_dir)
 
 
 def _patch_url_to_point_to_a_proxy(url: NormalizedUrl, proxy_url: ProxyUrl) -> NormalizedUrl:
