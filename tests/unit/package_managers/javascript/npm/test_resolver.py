@@ -11,7 +11,11 @@ from pydantic import SecretStr
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import NpmSettings
-from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    LockfileNotFound,
+    PackageRejected,
+    UnsupportedFeature,
+)
 from hermeto.core.package_managers.javascript.npm.project import PackageLock
 from hermeto.core.package_managers.javascript.npm.resolver import (
     _get_npm_dependencies,
