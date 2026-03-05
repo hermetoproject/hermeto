@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 # uv.lock Overview and Potential Hermeto Integration
 
 ## Introduction
