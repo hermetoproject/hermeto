@@ -14,6 +14,7 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import LockfileNotFound, MissingChecksum, PackageRejected
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.package_managers.general import async_download_files, patch_url_to_point_to_proxy
+from hermeto.core.package_managers.javascript.js_utils import clone_repo_pack_archive
 from hermeto.core.package_managers.javascript.npm.project import (
     PackageLock,
     ResolvedNpmPackage,
@@ -26,7 +27,6 @@ from hermeto.core.package_managers.javascript.npm.utils import (
     normalize_resolved_url,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import clone_as_tarball
 
 DEPENDENCY_TYPES = (
     "dependencies",
@@ -44,24 +44,12 @@ def _clone_repo_pack_archive(
     """
     Clone a repository and pack its content as tar.
 
-    :param url: URL for file download
+    :param vcs: VCS URL (e.g. git+ssh://host/ns/repo.git#ref)
     :param download_dir: Output folder where dependencies will be downloaded
     :raise FetchError: If download failed
     """
     info = extract_git_info_npm(vcs)
-    download_path = download_dir.join_within_root(
-        info["host"],  # host
-        info["namespace"],
-        info["repo"],
-        f"{info['repo']}-external-gitcommit-{info['ref']}.tgz",
-    )
-
-    # Create missing directories
-    directory = Path(download_path).parent
-    directory.mkdir(parents=True, exist_ok=True)
-    clone_as_tarball(info["url"], info["ref"], download_path.path)
-
-    return download_path
+    return clone_repo_pack_archive(info, download_dir)
 
 
 async def async_download_with_auth(
