@@ -19,9 +19,9 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE, ExternalReference
+from hermeto.core.package_managers.javascript.js_utils import parse_git_clone_url
 from hermeto.core.package_managers.javascript.npm.utils import (
     classify_resolved_url,
-    extract_git_info_npm,
     normalize_resolved_url,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -351,8 +351,13 @@ class _Purlifier:
         if dep_type == "registry":
             pass
         elif dep_type == "git":
-            info = extract_git_info_npm(resolved_url)
-            repo_id = RepoID(origin_url=info.url, commit_id=info.ref)
+            clone_url = parse_git_clone_url(resolved_url)
+            if not clone_url.ref:
+                raise UnexpectedFormat(
+                    f"Cannot parse git URL: {clone_url}",
+                    solution="Ensure the git dependency has a valid URL and commit ref.",
+                )
+            repo_id = RepoID(origin_url=clone_url.url, commit_id=clone_url.ref)
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
             if self._repo_id is not None:
