@@ -328,7 +328,9 @@ def test_fetch_with_offline_mode_raises_error(tmp_path: Path) -> None:
     mock_request.source_dir = RootedPath(tmp_path)
     mock_request.output_dir = RootedPath(tmp_path / "output")
 
-    with pytest.raises(PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"):
+    with pytest.raises(
+        PackageRejected, match="cannot fetch Hugging Face dependencies in offline mode"
+    ):
         fetch_huggingface_source(mock_request)
 
 
@@ -462,9 +464,10 @@ def test_fetch_model(
     cache_root, datasets_cache = cache_dirs
 
     # Create snapshot path
-    snapshot_path = snapshot_path_factory(
-        model_data["repository"], model_data["revision"], model_data["type"]
-    )
+    repository = str(model_data["repository"])
+    revision = str(model_data["revision"])
+    repo_type = str(model_data["type"])
+    snapshot_path = snapshot_path_factory(repository, revision, repo_type)
     mock_snapshot.return_value = str(snapshot_path)
 
     model_entry = HuggingFaceModel(**model_data)

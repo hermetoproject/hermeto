@@ -97,15 +97,12 @@ class HuggingFaceModel(BaseModel):
         :param download_url: The base URL for the repository on HuggingFace
         :return: SBOM Component
         """
-        purl_kwargs = {
-            "type": "huggingface",
-            "name": self.purl_name,
-            "version": self.revision.lower(),  # PURL spec requires lowercase version
-        }
-        if self.purl_namespace:
-            purl_kwargs["namespace"] = self.purl_namespace
-
-        purl = PackageURL(**purl_kwargs).to_string()
+        purl = PackageURL(
+            type="huggingface",
+            name=self.purl_name,
+            version=self.revision.lower(),  # PURL spec requires lowercase version
+            namespace=self.purl_namespace if self.purl_namespace else None,
+        ).to_string()
 
         return Component(
             name=self.repository,
