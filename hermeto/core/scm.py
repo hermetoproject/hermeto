@@ -204,7 +204,7 @@ def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID:
             ),
         )
 
-    url = _canonicalize_origin_url(origin.url)
+    url = canonicalize_origin_url(origin.url)
     commit_id = repo.head.commit.hexsha
     return RepoID(url, commit_id)
 
@@ -264,7 +264,13 @@ def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[GitRepo, Path
     return current_repo, relative_path
 
 
-def _canonicalize_origin_url(url: str) -> str:
+def canonicalize_origin_url(url: str) -> str:
+    """Normalize a git remote URL for SBOM / PURL use.
+
+    SCP-style URLs (``[user@]host:path``) become ``ssh://[user@]host/path``.
+    HTTP(S) URLs have embedded credentials stripped. Already-canonical ``ssh://``
+    URLs are returned unchanged.
+    """
     if "://" in url:
         parsed: ParseResult = urlparse(url)
         if parsed.scheme == "ssh":
