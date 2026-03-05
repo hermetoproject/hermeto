@@ -121,7 +121,7 @@ See also `hermeto generate-env --help`.
 ### Inject project files
 
 While some package managers only need an environment file to be informed of the
-cache locations, others may need to create a configuration file or edit aBuild
+cache locations, others may need to create a configuration file or edit or rebuild
 the lockfile (or some other file in your project directory).
 
 Before starting your build, call `hermeto inject-files` to automatically make

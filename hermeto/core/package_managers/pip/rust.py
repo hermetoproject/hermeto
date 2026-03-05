@@ -53,19 +53,25 @@ def _depends_on_rust(extracted_dir: Path) -> bool:
     return False
 
 
-def _get_rust_root_dir(cargo_lockfiles: Iterable[Path]) -> Path:
-    """Find the top-most Cargo.lock in the package.
+def _shortest_path_parent(files: Iterable[Path]) -> Path:
+    return min(files, key=lambda x: len(x.parts)).parent
 
-    NOTE: This is not necessarily the most accurate solution, but this heuristic has proven to work
-    on the most popular python packages with rust dependencies. A repository may have multiple
-    Cargo.toml files (e.g. workspace), but we are mostly interested in Cargo.lock file.
 
-    Also, on the same level as Cargo.lock file, there is always a Cargo.toml file.
-
-    If this solution is not accurate enough, then we would probably need to check for the manifest
-    path in pyproject.toml config section for maturin or setuptools-rust.
+def _get_rust_root_dir(source_dir: Path) -> Path | None:
     """
-    return min(cargo_lockfiles, key=lambda x: len(x.parts)).parent
+    Find the Rust project root directory within a Python package source tree.
+
+    Recursively search the source directory for Cargo manifests. Return the directory containing
+    the shallowest (closest to the root) Cargo.lock if present, otherwise the directory containing
+    the shallowest Cargo.toml. Return None if neither is found.
+    """
+    if lockfiles := list(source_dir.rglob("Cargo.lock")):
+        return _shortest_path_parent(lockfiles)
+
+    if tomlfiles := list(source_dir.rglob("Cargo.toml")):
+        return _shortest_path_parent(tomlfiles)
+
+    return None
 
 
 def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[CargoPackageInput]:
@@ -88,11 +94,6 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         extract_dir = pip_deps_dir / filename
         shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
 
-        cargo_lockfiles = list(extract_dir.rglob("Cargo.lock"))
-        if not cargo_lockfiles:
-            shutil.rmtree(extract_dir, ignore_errors=True)
-            continue
-
         # The unpacked URL/VCS package may have an arbitrary directory name that we cannot control.
         # Therefore, it is inside a predictable directory derived from the package name.
         nitems = sum(1 for _ in extract_dir.iterdir())
@@ -105,7 +106,13 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         if not _depends_on_rust(source_dir):
             shutil.rmtree(extract_dir, ignore_errors=True)
             continue
-        rust_root_dir = _get_rust_root_dir(cargo_lockfiles)
+
+        rust_root_dir = _get_rust_root_dir(source_dir)
+        if rust_root_dir is None:
+            log.warning("No Rust root directory found in %s", source_dir)
+            shutil.rmtree(extract_dir, ignore_errors=True)
+            continue
+
         packages_containing_rust_code.append(
             CargoPackageInput(
                 type="cargo",

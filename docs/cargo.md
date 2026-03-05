@@ -18,7 +18,7 @@ hermeto fetch-deps cargo
 ```
 
 The default output directory is `hermeto-output`. You can change it by passing
-the `--output-dir` option for the `fetch-deps` command. See the help message
+the `--output` option for the `fetch-deps` command. See the help message
 for more information.
 
 After prefetching the dependencies, you can use the `hermeto inject-files`

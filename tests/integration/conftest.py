@@ -11,18 +11,44 @@ import pytest
 import requests
 from git import Repo
 
-from tests.integration.utils import TEST_SERVER_LOCALHOST
+from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
 
 from . import utils
 
 log = logging.getLogger(__name__)
+
+_ENV_VAR_CLI_MAP = [
+    ("HERMETO_TEST_INTEGRATION_TESTS_REPO", "--hermeto-integration-tests-repo"),
+    ("HERMETO_TEST_IMAGE", "--hermeto-image"),
+    ("HERMETO_TEST_LOCAL_PYPISERVER", "--hermeto-local-pypiserver"),
+    ("HERMETO_TEST_PYPISERVER_PORT", "--hermeto-pypiserver-port"),
+    ("HERMETO_TEST_LOCAL_DNF_SERVER", "--hermeto-local-dnf-server"),
+    ("HERMETO_TEST_DNFSERVER_SSL_PORT", "--hermeto-dnfserver-ssl-port"),
+    ("HERMETO_TEST_NETRC_CONTENT", "--hermeto-netrc-content"),
+    ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
+    ("HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS", "--hermeto-run-all-integration"),
+    ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
+]
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Sync CLI option values to env so existing os.getenv() code sees them."""
+
+    def env_value(cli_opt: str) -> str:
+        value = config.getoption(cli_opt)
+        if isinstance(value, bool):
+            return "1" if value else "0"
+        return value
+
+    for env_var, cli_opt in _ENV_VAR_CLI_MAP:
+        os.environ[env_var] = env_value(cli_opt)
 
 
 @pytest.fixture(scope="session")
 def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
     test_repo_url = os.environ.get(
         "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        "https://github.com/hermetoproject/integration-tests.git",
+        DEFAULT_INTEGRATION_TESTS_REPO,
     )
     # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
     repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
@@ -49,7 +75,7 @@ def top_level_test_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def hermeto_image() -> utils.HermetoImage:
-    if not (image_ref := os.environ.get("HERMETO_IMAGE")):
+    if not (image_ref := os.environ.get("HERMETO_TEST_IMAGE")):
         image_ref = "localhost/hermeto:latest"
         log.info("Building local hermeto:latest image")
         # <arbitrary_path>/hermeto/tests/integration/conftest.py
@@ -72,7 +98,7 @@ def local_pypiserver() -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "1"
     ):
         yield
         return
@@ -83,7 +109,7 @@ def local_pypiserver() -> Iterator[None]:
         proc = context.enter_context(subprocess.Popen([pypiserver_dir / "start.sh"]))
         context.callback(proc.terminate)
 
-        pypiserver_port = os.getenv("PYPISERVER_PORT", "8080")
+        pypiserver_port = os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080")
         for _ in range(60):
             time.sleep(1)
             try:
@@ -124,7 +150,7 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "true"
+        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "1"
     ):
         yield
         return
@@ -135,7 +161,7 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
         proc = context.enter_context(subprocess.Popen([dnfserver_dir / "start.sh"]))
         context.callback(proc.terminate)
 
-        ssl_port = os.getenv("DNFSERVER_SSL_PORT", "8443")
+        ssl_port = os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443")
         for _ in range(60):
             time.sleep(1)
             try:
