@@ -458,7 +458,7 @@ def _extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
     namespace_repo = url.path.strip("/").removesuffix(".git")
 
     # Everything up to the last '/' is namespace, the rest is repo
-    namespace, _, repo = namespace_repo.partition("/")
+    namespace, _, repo = namespace_repo.rpartition("/")
 
     vcs_url_info = {
         "url": clean_url,
