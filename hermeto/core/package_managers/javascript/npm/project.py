@@ -352,7 +352,7 @@ class _Purlifier:
             pass
         elif dep_type == "git":
             info = extract_git_info_npm(resolved_url)
-            repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
+            repo_id = RepoID(origin_url=info.url, commit_id=info.ref)
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
             if self._repo_id is not None:

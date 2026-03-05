@@ -2,6 +2,7 @@
 import pytest
 
 from hermeto.core.errors import UnexpectedFormat
+from hermeto.core.package_managers.javascript.js_utils import NpmGitInfo
 from hermeto.core.package_managers.javascript.npm.utils import (
     NormalizedUrl,
     extract_git_info_npm,
@@ -31,17 +32,17 @@ def test_is_from_npm_registry_can_parse_incorrect_registry_urls() -> None:
     [
         (
             (f"git+ssh://git@bitbucket.org/example-org/example-repo.git#{GIT_REF}"),
-            {
-                "url": "ssh://git@bitbucket.org/example-org/example-repo.git",
-                "ref": GIT_REF,
-                "host": "bitbucket.org",
-                "namespace": "example-org",
-                "repo": "example-repo",
-            },
+            NpmGitInfo(
+                url="ssh://git@bitbucket.org/example-org/example-repo.git",
+                ref=GIT_REF,
+                host="bitbucket.org",
+                namespace="example-org",
+                repo="example-repo",
+            ),
         ),
     ],
 )
-def test_extract_git_info_npm(vcs: NormalizedUrl, expected: dict[str, str]) -> None:
+def test_extract_git_info_npm(vcs: NormalizedUrl, expected: NpmGitInfo) -> None:
     assert extract_git_info_npm(vcs) == expected
 
 
