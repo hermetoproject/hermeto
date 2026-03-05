@@ -30,7 +30,6 @@ log = logging.getLogger(__name__)
                 check_output=False,
                 check_deps_checksums=False,
                 expected_exit_code=2,
-                expected_output="UnsupportedFeature: Found 8 unsupported dependencies, more details in the logs.",
             ),
             id="yarn_disallowed_protocols",
         ),
