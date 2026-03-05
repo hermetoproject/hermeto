@@ -333,7 +333,7 @@ def test_update_package_json_files(
                 "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": "types-react-dom-18.0.11.tgz",
                 "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": "abbrev-2.0.0.tgz",
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": "github.com/kevva/is-positive/is-positive-external-gitcommit-97edff6f.tgz",
-                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": "gitlab.foo.bar.com/osbs/hermetoproject/integration-tests/hermetoproject/integration-tests-external-gitcommit-c300503.tgz",
+                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": "gitlab.foo.bar.com/osbs/hermetoproject/integration-tests/integration-tests-external-gitcommit-c300503.tgz",
             },
         ),
     ],
