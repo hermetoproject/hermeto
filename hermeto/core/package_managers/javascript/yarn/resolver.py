@@ -56,6 +56,7 @@ from hermeto.core.package_managers.javascript.yarn.locators import (
 )
 from hermeto.core.package_managers.javascript.yarn.project import Project
 from hermeto.core.package_managers.javascript.yarn.utils import (
+    TarballVcsUrlMap,
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
@@ -230,9 +231,17 @@ def _resolve_workspace_packages(source_dir: RootedPath, workspaces: list[str]) -
 
 
 def create_components(
-    packages: list[Package], prod_packages: list[Package], project: Project, output_dir: RootedPath
+    packages: list[Package],
+    prod_packages: list[Package],
+    project: Project,
+    output_dir: RootedPath,
+    tarball_vcs_url_map: TarballVcsUrlMap | None = None,
 ) -> list[Component]:
-    """Create SBOM components for all the packages parsed from the 'yarn info' output."""
+    """Create SBOM components for all the packages parsed from the 'yarn info' output.
+
+    When ``tarball_vcs_url_map`` is provided, file dependencies whose locator path matches a
+    key use the git vcs_url qualifier instead of the default file-path qualifier.
+    """
     package_mapping: dict[Locator, Package] = {}
     patch_locators: list[PatchLocator] = []
 
@@ -249,7 +258,7 @@ def create_components(
             package_mapping[package.parsed_locator] = package
 
     component_resolver = _ComponentResolver(
-        package_mapping, dev_locators, patch_locators, project, output_dir
+        package_mapping, dev_locators, patch_locators, project, output_dir, tarball_vcs_url_map
     )
     return [component_resolver.get_component(package) for package in package_mapping.values()]
 
@@ -282,11 +291,14 @@ class _ComponentResolver:
         patch_locators: list[PatchLocator],
         project: Project,
         output_dir: RootedPath,
+        tarball_vcs_url_map: TarballVcsUrlMap | None = None,
     ) -> None:
+        """Initialize the component resolver."""
         self._project = project
         self._output_dir = output_dir
         self._package_mapping = package_mapping
         self._dev_raw_locators = dev_raw_locators
+        self._tarball_vcs_url_map = tarball_vcs_url_map or {}
         self._pedigree_mapping = self._get_pedigree_mapping(patch_locators)
         self._proxy_url = get_config().yarn.proxy_url
 
@@ -356,8 +368,7 @@ class _ComponentResolver:
             external_references=external_refs,
         )
 
-    @staticmethod
-    def _generate_purl_for_package(package: _ResolvedPackage, project: Project) -> str:
+    def _generate_purl_for_package(self, package: _ResolvedPackage, project: Project) -> str:
         """Create a purl for a package based on its protocol.
 
         :param package: the resolved package to be used in the purl generation.
@@ -390,18 +401,24 @@ class _ComponentResolver:
             subpath = str(workspace_path)
 
         elif isinstance(package.locator, (FileLocator, LinkLocator, PortalLocator)):
-            project_path = project.source_dir
-            workspace_path = package.locator.locator.relpath
-            package_path = package.locator.relpath
+            tarball_path = (
+                str(package.locator.relpath) if isinstance(package.locator, FileLocator) else None
+            )
+            if tarball_path and tarball_path in self._tarball_vcs_url_map:
+                qualifiers["vcs_url"] = self._tarball_vcs_url_map[tarball_path]
+            else:
+                project_path = project.source_dir
+                workspace_path = package.locator.locator.relpath
+                package_path = package.locator.relpath
 
-            normalized = project_path.join_within_root(workspace_path, package_path)
+                normalized = project_path.join_within_root(workspace_path, package_path)
 
-            try:
-                qualifiers.update(get_vcs_qualifiers(project_path.root))
-            except NotAGitRepo:
-                if get_config().mode != Mode.PERMISSIVE:
-                    raise
-            subpath = str(normalized.subpath_from_root)
+                try:
+                    qualifiers.update(get_vcs_qualifiers(project_path.root))
+                except NotAGitRepo:
+                    if get_config().mode != Mode.PERMISSIVE:
+                        raise
+                subpath = str(normalized.subpath_from_root)
 
         elif isinstance(package.locator, PatchLocator):
             raise _CouldNotResolve("Patches cannot be resolved into Components")
