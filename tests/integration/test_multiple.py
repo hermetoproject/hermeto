@@ -26,6 +26,25 @@ from . import utils
             [],
             id="multiple_gomod_and_npm",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="multiple/cargo-and-pip",
+                # TODO: remove repo_url once hermetoproject/integration-tests#<PR> is merged
+                repo_url="https://github.com/Siva-Sainath/integration-tests",
+                packages=(
+                    {"type": "cargo", "path": "rust-crate"},
+                    {"type": "pip", "path": "python-pkg"},
+                    # using RPM to provide cargo and python in the image
+                    {"type": "rpm"},
+                ),
+                flags=[],
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            [],
+            [],
+            id="multiple_rust_and_pip",
+        ),
     ],
 )
 def test_e2e_multiple(
