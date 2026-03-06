@@ -13,12 +13,12 @@ from typing import Annotated, Any, Literal, Union
 from urllib.parse import urlparse
 
 import pydantic
+from more_itertools import first
 from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
-from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
@@ -647,7 +647,10 @@ class SPDXSbom(pydantic.BaseModel):
         unidirectionally_related_package = lambda p: inverse_relationships.get(p) == self.SPDXID
         # Note: defaulting to top-level SPDXID is inherited from the original implementation.
         # It is unclear if it is really needed, but is left around to match the precedent.
-        root_id = first_for(unidirectionally_related_package, direct_relationships, self.SPDXID)
+        root_id = first(
+            (k for k in direct_relationships if unidirectionally_related_package(k)),
+            default=self.SPDXID,
+        )
         return root_id
 
     # NOTE: having this as cached will cause trouble when sequentially
