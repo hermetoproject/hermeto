@@ -327,3 +327,54 @@ def test_e2e_gomod(
         expected_cmd_output,
         hermeto_image,
     )
+
+def test_multi_toolchain_environment(
+        hermeto_image: utils.ContainerImage,
+        tmp_path: Path,
+        test_repo_dir: Path,
+        test_data_dir: Path,
+    ) -> None:
+        """Test using an alternate Go toolchain specified in the environment.
+
+        This test prepares an alternate Go toolchain, mounts it into the container,
+        and sets GOROOT and PATH environment variables to ensure Hermeto uses it
+        for dependency resolution. This addresses issue #1300.
+        Reference: https://github.com/hermetoproject/hermeto/issues/1300
+        """
+        test_case_name = "gomod_multi_toolchain"
+        test_case_path = test_data_dir / test_case_name
+
+        required_version = utils.get_required_go_version(test_case_path)
+        alt_go_bin_dir = utils.prepare_alt_go_toolchain(dest_dir=tmp_path, version=required_version)
+
+        # Map the local Go root to the container path
+        alt_go_root = alt_go_bin_dir.parent
+        container_go_root = "/opt/go-alt"
+        container_bin = f"{container_go_root}/bin"
+
+        test_params = utils.TestParameters(
+            branch="main",
+            # This path is relative to the repo root inside the container
+            packages=({"path": test_case_name, "type": "gomod"},),
+            expected_exit_code=0,
+            expected_output="All dependencies fetched successfully",
+        )
+
+        utils.fetch_deps_and_check_output(
+                tmp_path,
+                test_case_name,
+                test_params,
+                test_repo_dir,
+                test_data_dir,
+                hermeto_image,
+                mounts=[
+                    # Mount the full Go directory to satisfy internal lib/src dependencies
+                    (str(alt_go_root), container_go_root),
+                    # Mount the test project into the container's temporary repo
+                    (str(test_case_path), str(test_repo_dir / test_case_name))
+                ],
+                podman_flags=[
+                    "-e", f"GOROOT={container_go_root}",
+                    "-e", f"PATH={container_bin}:/usr/local/bin:/usr/bin:/bin"
+                ],
+            )
