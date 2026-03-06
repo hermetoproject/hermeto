@@ -1229,7 +1229,14 @@
       ],
       "purl": "pkg:golang/github.com/davecgh/go-spew@v1.1.1?type=module",
       "type": "library",
-      "version": "v1.1.1"
+      "version": "v1.1.1",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=module",
@@ -1242,7 +1249,14 @@
       ],
       "purl": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=module",
       "type": "library",
-      "version": "v3.2.2+incompatible"
+      "version": "v3.2.2+incompatible",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=package",
@@ -1281,7 +1295,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=module",
       "type": "library",
-      "version": "v4.0.0-20240626205759-b97aca303b29"
+      "version": "v4.0.0-20240626205759-b97aca303b29",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/echo@v4.0.0-20240626205759-b97aca303b29?type=package",
@@ -1307,7 +1328,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=module",
       "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
+      "version": "v0.0.0-20240626205759-b97aca303b29",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello/hi/hiii@v0.0.0-20240626205759-b97aca303b29?type=package",
@@ -1333,7 +1361,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=module",
       "type": "library",
-      "version": "v0.0.0-20240626205759-b97aca303b29"
+      "version": "v0.0.0-20240626205759-b97aca303b29",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/workspace_modules/hello@v0.0.0-20240626205759-b97aca303b29?type=package",
@@ -1398,7 +1433,14 @@
       ],
       "purl": "pkg:golang/github.com/labstack/gommon@v0.4.2?type=module",
       "type": "library",
-      "version": "v0.4.2"
+      "version": "v0.4.2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/mattn/go-colorable@v0.1.13?type=module",
@@ -1411,7 +1453,14 @@
       ],
       "purl": "pkg:golang/github.com/mattn/go-colorable@v0.1.13?type=module",
       "type": "library",
-      "version": "v0.1.13"
+      "version": "v0.1.13",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/mattn/go-colorable@v0.1.13?type=package",
@@ -1437,7 +1486,14 @@
       ],
       "purl": "pkg:golang/github.com/mattn/go-isatty@v0.0.20?type=module",
       "type": "library",
-      "version": "v0.0.20"
+      "version": "v0.0.20",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/mattn/go-isatty@v0.0.20?type=package",
@@ -1463,7 +1519,14 @@
       ],
       "purl": "pkg:golang/github.com/pmezard/go-difflib@v1.0.0?type=module",
       "type": "library",
-      "version": "v1.0.0"
+      "version": "v1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/stretchr/objx@v0.5.0?type=module",
@@ -1476,7 +1539,14 @@
       ],
       "purl": "pkg:golang/github.com/stretchr/objx@v0.5.0?type=module",
       "type": "library",
-      "version": "v0.5.0"
+      "version": "v0.5.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/stretchr/testify@v1.8.4?type=module",
@@ -1489,7 +1559,14 @@
       ],
       "purl": "pkg:golang/github.com/stretchr/testify@v1.8.4?type=module",
       "type": "library",
-      "version": "v1.8.4"
+      "version": "v1.8.4",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/valyala/bytebufferpool@v1.0.0?type=module",
@@ -1502,7 +1579,14 @@
       ],
       "purl": "pkg:golang/github.com/valyala/bytebufferpool@v1.0.0?type=module",
       "type": "library",
-      "version": "v1.0.0"
+      "version": "v1.0.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/valyala/bytebufferpool@v1.0.0?type=package",
@@ -1528,7 +1612,14 @@
       ],
       "purl": "pkg:golang/github.com/valyala/fasttemplate@v1.2.2?type=module",
       "type": "library",
-      "version": "v1.2.2"
+      "version": "v1.2.2",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/valyala/fasttemplate@v1.2.2?type=package",
@@ -1580,7 +1671,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/crypto@v0.17.0?type=module",
       "type": "library",
-      "version": "v0.17.0"
+      "version": "v0.17.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/example/hello/reverse@v0.0.0-20231013143937-1d6d2400d402?type=package",
@@ -1606,7 +1704,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/example/hello@v0.0.0-20231013143937-1d6d2400d402?type=module",
       "type": "library",
-      "version": "v0.0.0-20231013143937-1d6d2400d402"
+      "version": "v0.0.0-20231013143937-1d6d2400d402",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/mod@v0.8.0?type=module",
@@ -1619,7 +1724,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/mod@v0.8.0?type=module",
       "type": "library",
-      "version": "v0.8.0"
+      "version": "v0.8.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/net/http/httpguts@v0.19.0?type=package",
@@ -1697,7 +1809,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/net@v0.19.0?type=module",
       "type": "library",
-      "version": "v0.19.0"
+      "version": "v0.19.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/sys/unix@v0.15.0?type=package",
@@ -1723,7 +1842,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/sys@v0.15.0?type=module",
       "type": "library",
-      "version": "v0.15.0"
+      "version": "v0.15.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/term@v0.15.0?type=module",
@@ -1736,7 +1862,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/term@v0.15.0?type=module",
       "type": "library",
-      "version": "v0.15.0"
+      "version": "v0.15.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/text/secure/bidirule@v0.14.0?type=package",
@@ -1801,7 +1934,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/text@v0.14.0?type=module",
       "type": "library",
-      "version": "v0.14.0"
+      "version": "v0.14.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/time/rate@v0.5.0?type=package",
@@ -1827,7 +1967,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/time@v0.5.0?type=module",
       "type": "library",
-      "version": "v0.5.0"
+      "version": "v0.5.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/tools@v0.6.0?type=module",
@@ -1840,7 +1987,14 @@
       ],
       "purl": "pkg:golang/golang.org/x/tools@v0.6.0?type=module",
       "type": "library",
-      "version": "v0.6.0"
+      "version": "v0.6.0",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405?type=module",
@@ -1853,7 +2007,14 @@
       ],
       "purl": "pkg:golang/gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405?type=module",
       "type": "library",
-      "version": "v0.0.0-20161208181325-20d25e280405"
+      "version": "v0.0.0-20161208181325-20d25e280405",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/gopkg.in/yaml.v3@v3.0.1?type=module",
@@ -1870,7 +2031,14 @@
       ],
       "purl": "pkg:golang/gopkg.in/yaml.v3@v3.0.1?type=module",
       "type": "library",
-      "version": "v3.0.1"
+      "version": "v3.0.1",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/hash/crc32?type=package",

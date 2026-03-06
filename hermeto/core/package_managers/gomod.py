@@ -41,8 +41,11 @@ from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
     Annotation,
     Component,
+    ExternalReference,
     create_backend_annotation,
     spdx_now,
 )
@@ -78,6 +81,20 @@ class _ParsedModel(pydantic.BaseModel):
     )
 
 
+class ParsedOrigin(_ParsedModel):
+    """A Go module origin as returned by the -json option of go mod download (relevant fields only).
+
+    See:
+        go help mod download    (Origin struct in Module)
+    """
+
+    vcs: str
+    url: str
+    hash: str
+    tag_sum: str | None = None
+    ref: str | None = None
+
+
 class ParsedModule(_ParsedModel):
     """A Go module as returned by the -json option of various commands (relevant fields only).
 
@@ -90,6 +107,7 @@ class ParsedModule(_ParsedModel):
     version: str | None = None
     main: bool = False
     replace: Optional["ParsedModule"] = None
+    origin: Optional[ParsedOrigin] = None
 
 
 class ParsedPackage(_ParsedModel):
@@ -146,6 +164,7 @@ class Module(NamedTuple):
     version: str
     main: bool = False
     missing_hash_in_file: Path | None = None
+    proxy: str | None = None
 
     @property
     def purl(self) -> str:
@@ -165,11 +184,20 @@ class Module(NamedTuple):
         else:
             missing_hash_in_file = frozenset()
 
+        refs = None
+        ref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+
+        if self.proxy:
+            proxies = self.proxy.split(",")
+            is_indirect = lambda p: p.strip() and p.strip() != "direct"
+            refs = [ExternalReference(url=p.strip(), **ref_rest) for p in proxies if is_indirect(p)]
+
         return Component(
             name=self.name,
             version=self.version,
             purl=self.purl,
             properties=PropertySet(missing_hash_in_file=missing_hash_in_file).to_properties(),
+            external_references=refs,
         )
 
 
@@ -541,6 +569,15 @@ def _get_module_id(module: ParsedModule) -> ModuleID:
     return name, version_or_path
 
 
+def _get_proxy_for_module(module: ParsedModule) -> str | None:
+    """Return the proxy URL for a module, or None if fetched directly."""
+    if module.origin:
+        # ParsedOrigin exists = direct VCS fetch
+        return None
+    # No ParsedOrigin = fetched via proxy
+    return get_config().gomod.proxy_url
+
+
 def _create_modules_from_parsed_data(
     main_module: Module,
     main_module_dir: RootedPath,
@@ -554,6 +591,8 @@ def _create_modules_from_parsed_data(
         name, version_or_path = mod_id
         original_name = module.path
         missing_hash_in_file = None
+
+        proxy = _get_proxy_for_module(module)
 
         if not version_or_path.startswith("."):
             version = version_or_path
@@ -579,6 +618,7 @@ def _create_modules_from_parsed_data(
             original_name=original_name,
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
+            proxy=proxy,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
@@ -826,11 +866,14 @@ def _create_main_module_from_parsed_data(
         # Should not happen, since the version is always resolved from the Git repo
         raise RuntimeError(f"Version was not identified for main module at {resolved_subpath}")
 
+    proxy = _get_proxy_for_module(parsed_main_module)
+
     return Module(
         name=parsed_main_module.path,
         original_name=parsed_main_module.path,
         version=parsed_main_module.version,
         real_path=resolved_path,
+        proxy=proxy,
     )
 
 

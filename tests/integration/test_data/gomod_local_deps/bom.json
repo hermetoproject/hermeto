@@ -137,6 +137,13 @@
           "value": "hermeto"
         }
       ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests/staging/src/some-module@v0.0.0-20210216123728-b2e465b91a6a?type=module",
       "type": "library",
       "version": "v0.0.0-20210216123728-b2e465b91a6a"
@@ -165,7 +172,14 @@
       ],
       "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=module",
       "type": "library",
-      "version": "v0.0.0-20210216123728-b2e465b91a6a"
+      "version": "v0.0.0-20210216123728-b2e465b91a6a",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://proxy.golang.org",
+          "comment": "proxy URL"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210216123728-b2e465b91a6a?type=package",
