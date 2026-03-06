@@ -29,6 +29,8 @@ from . import utils
         pytest.param(
             utils.TestParameters(
                 branch="multiple/cargo-and-pip",
+                # TODO: remove repo_url once hermetoproject/integration-tests#<PR> is merged
+                repo_url="https://github.com/Siva-Sainath/integration-tests",
                 packages=(
                     {"type": "cargo", "path": "rust-crate"},
                     {"type": "pip", "path": "python-pkg"},
