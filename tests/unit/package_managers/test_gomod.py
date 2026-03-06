@@ -1903,8 +1903,9 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
     local_repo_path.path.mkdir()
     remote_repo_path.path.mkdir()
     remote_repo = git.Repo.init(remote_repo_path)
-    remote_repo.config_writer().set_value("user", "name", "user").release()
-    remote_repo.config_writer().set_value("user", "email", "user@example.com").release()
+    with remote_repo.config_writer() as config:
+        config.set_value("user", "name", "user")
+        config.set_value("user", "email", "user@example.com")
 
     with open(readme_file_path, "wb"):
         pass
