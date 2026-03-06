@@ -152,6 +152,7 @@ def test_parse_gemlock(
             "type": "rubygems",
             "source": "https://rubygems.org/",
             "platforms": ["ruby"],
+            "original_platforms": ["ruby"],
             **base_dep,
         },
     ]
@@ -346,6 +347,7 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
             "type": "rubygems",
             "source": "https://rubygems.org/",
             "platforms": ["i8080_cpm"],
+            "original_platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
@@ -384,6 +386,7 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
             "type": "rubygems",
             "source": "https://rubygems.org/",
             "platforms": ["i8080_cpm"],
+            "original_platforms": ["i8080_cpm"],
             **base_dep,
         },
     ]
@@ -397,3 +400,35 @@ def test_parse_gemlock_detects_binaries_and_skips_then_when_instructed_to_skip(
     assert some_message_contains_substring("Skipping binary dependency", caplog.messages)
 
     assert result == expected_deps
+
+
+@mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
+def test_binary_gem_uses_original_platform_for_download_url(
+    mock_run_cmd: mock.MagicMock,
+    mock_ensure_bundler_files_exist: mock.MagicMock,
+    sample_parser_output: dict[str, Any],
+    rooted_tmp_path: RootedPath,
+) -> None:
+    base_dep: dict[str, str] = sample_parser_output["dependencies"][0]
+    sample_parser_output["dependencies"] = [
+        {
+            "type": "rubygems",
+            "source": "https://rubygems.org/",
+            "platforms": ["aarch64-linux"],
+            "original_platforms": ["aarch64-linux-gnu"],
+            **base_dep,
+        },
+    ]
+
+    mock_run_cmd.return_value = json.dumps(sample_parser_output)
+    result = parse_lockfile(
+        rooted_tmp_path, binary_filters=BundlerBinaryFilters.with_allow_binary_behavior()
+    )
+
+    assert len(result) == 1
+    dep = result[0]
+    assert isinstance(dep, GemPlatformSpecificDependency)
+    assert (
+        dep.remote_location == "https://rubygems.org/downloads/example-0.1.0-aarch64-linux-gnu.gem"
+    )
