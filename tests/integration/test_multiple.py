@@ -28,7 +28,7 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="multiple/rust-and-pip",
+                branch="multiple/cargo-and-pip",
                 packages=(
                     {"type": "cargo", "path": "rust-crate"},
                     {"type": "pip", "path": "python-pkg"},
