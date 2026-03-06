@@ -1,10 +1,9 @@
 # https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions
 
-name: Publish documentation
+name: Publish release documentation
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [released]
 
 permissions:
   contents: write
@@ -30,4 +29,6 @@ jobs:
           path: .cache
           restore-keys: mkdocs-material-
       - run: pip install mkdocs-material mike
-      - run: mike deploy --push dev
+      - run: |
+          mike deploy --push latest
+          mike set-default --push latest

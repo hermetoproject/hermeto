@@ -31,6 +31,10 @@ theme:
     - search.share
     - search.suggest
 
+extra:
+  version:
+    provider: mike
+
 # Navigation bar
 nav:
   - Home: index.md
