@@ -26,7 +26,6 @@ _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_DNFSERVER_SSL_PORT", "--hermeto-dnfserver-ssl-port"),
     ("HERMETO_TEST_NETRC_CONTENT", "--hermeto-netrc-content"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
-    ("HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS", "--hermeto-run-all-integration"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
 ]
 
@@ -178,22 +177,3 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
             raise RuntimeError("DNF server didn't start fast enough")
 
         yield
-
-
-def pytest_collection_modifyitems(
-    session: pytest.Session, config: pytest.Config, items: list[pytest.Item]
-) -> None:
-    """Remove redundant tests which don't have to run for the latest code change.
-
-    This function implements a standard pytest hook. Please refer to pytest
-    docs for further information.
-    """
-    # do not try to skip tests if a keyword or marker is specified
-    if config.getoption("-k") or config.getoption("-m"):
-        return
-
-    skip_mark = pytest.mark.skip(reason="No changes to tested code")
-    tests_to_skip = utils.determine_integration_tests_to_skip()
-    for item in items:
-        if utils.tested_object_name(item.path) in tests_to_skip:
-            item.add_marker(skip_mark)

@@ -58,12 +58,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="Regenerate expected test data files (env: HERMETO_TEST_GENERATE_DATA=1)",
     )
     group.addoption(
-        "--hermeto-run-all-integration",
-        action="store_true",
-        default=os.getenv("HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS") == "1",
-        help="Run all integration tests, disable skip-by-changed-files (env: HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS=1)",
-    )
-    group.addoption(
         "--hermeto-container-engine",
         action="store",
         default=os.getenv("HERMETO_TEST_CONTAINER_ENGINE", "podman"),

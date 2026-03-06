@@ -114,7 +114,7 @@ def _run_integration_tests(session: Session, env: dict[str, str]) -> None:
 
 @nox.session(name="integration-tests")
 def integration_tests(session: Session) -> None:
-    """Run integration tests only for the affected code base in the current branch."""
+    """Run integration tests."""
     _run_integration_tests(session, {})
 
 
@@ -124,7 +124,6 @@ def all_integration_tests(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS": "1",
             "HERMETO_TEST_LOCAL_PYPISERVER": "1",
             "HERMETO_TEST_LOCAL_DNF_SERVER": "1",
         },
@@ -137,7 +136,6 @@ def generate_test_data(session: Session) -> None:
     _run_integration_tests(
         session,
         {
-            "HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS": "1",
             "HERMETO_TEST_GENERATE_DATA": "1",
         },
     )
