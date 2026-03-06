@@ -63,7 +63,7 @@ jobs:
 
       # Multi-arch build setup
       - name: Build and push container image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
