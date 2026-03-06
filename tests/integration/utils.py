@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from tarfile import ExtractError, TarFile
@@ -23,6 +23,12 @@ from hermeto.core.scm import GitRepo
 from hermeto.core.type_aliases import StrPath
 from hermeto.interface.cli import DEFAULT_OUTPUT
 from tests.integration.container_engine import get_container_engine
+from tests.integration.proxy import (
+    DEFAULT_LOCAL_NEXUS_PROXY_ENV,
+    is_local_nexus_proxy_enabled,
+    parse_proxy_env,
+    validate_and_strip_proxy_refs,
+)
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
@@ -48,6 +54,37 @@ SUPPORTED_PMS: frozenset = frozenset(list(resolver._package_managers) + EXTRA_PM
 
 log = logging.getLogger(__name__)
 container_engine = get_container_engine()
+
+
+def _default_hermeto_env() -> dict[str, str]:
+    """Return default Hermeto env vars for the test session, if any are enabled."""
+    if is_local_nexus_proxy_enabled():
+        return dict(DEFAULT_LOCAL_NEXUS_PROXY_ENV)
+    return {}
+
+
+def _resolve_hermeto_env(
+    run_defaults: Mapping[str, str] | None = None,
+    test_overrides: Mapping[str, str] | None = None,
+    call_overrides: Mapping[str, str] | None = None,
+    unset_hermeto_env: Collection[str] = (),
+) -> dict[str, str]:
+    """Resolve effective Hermeto env for one test invocation."""
+    resolved = {
+        **(run_defaults or {}),
+        **(test_overrides or {}),
+        **(call_overrides or {}),
+    }
+    return {k: v for k, v in resolved.items() if k not in unset_hermeto_env}
+
+
+def _env_to_engine_flags(env: Mapping[str, str] | None) -> list[str]:
+    """Convert env var dict to container engine ``-e`` flags."""
+    if env is None:
+        return []
+
+    return [flag for name, value in env.items() for flag in ("-e", f"{name}={value}")]
+
 
 # use the '|' style for multiline strings
 # https://github.com/yaml/pyyaml/issues/240
@@ -75,6 +112,9 @@ class TestParameters:
     global_flags: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     repo_url: str | None = None
+    hermeto_env: dict[str, str] = field(default_factory=dict)
+    unset_hermeto_env: set[str] = field(default_factory=set)
+    netrc_content: str | None = None
 
 
 class ContainerImage:
@@ -98,11 +138,9 @@ class ContainerImage:
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: str | None = None,
         entrypoint: str | None = None,
-        podman_flags: list[str] | None = None,
+        podman_flags: Sequence[str] | None = None,
     ) -> tuple[str, int]:
-        if podman_flags is None:
-            podman_flags = []
-
+        podman_flags = [] if podman_flags is None else list(podman_flags)
         podman_flags.extend(["-v", f"{tmp_path}:{tmp_path}:z"])
 
         for src, dest in mounts:
@@ -126,9 +164,9 @@ class HermetoImage(ContainerImage):
         mounts: Sequence[tuple[StrPath, StrPath]] = (),
         net: str | None = "host",
         entrypoint: str | None = None,
-        podman_flags: list[str] | None = None,
+        podman_flags: Sequence[str] | None = None,
+        netrc_content: str | None = None,
     ) -> tuple[str, int]:
-        netrc_content = os.getenv("HERMETO_TEST_NETRC_CONTENT")
         if netrc_content:
             with tempfile.TemporaryDirectory() as netrc_tmpdir:
                 netrc_path = Path(netrc_tmpdir, ".netrc")
@@ -357,10 +395,11 @@ def fetch_deps_and_check_output(
     test_params: TestParameters,
     test_repo_dir: Path,
     test_data_dir: Path,
-    hermeto_image: ContainerImage,
+    hermeto_image: HermetoImage,
     mounts: Sequence[tuple[StrPath, StrPath]] = (),
     entrypoint: str | None = None,
     podman_flags: list[str] | None = None,
+    hermeto_env_overrides: dict[str, str] | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
 ) -> Path:
     """
@@ -375,6 +414,7 @@ def fetch_deps_and_check_output(
     :param mounts: Additional volumes to be mounted to the image
     :param entrypoint: Entrypoint to be used for the image
     :param podman_flags: Additional flags to be passed to podman
+    :param hermeto_env_overrides: Highest-precedence env var overrides for this call
     :param fetch_output_dirname: Name of the directory where the fetch output is stored
     :return: Path to the repository directory used (for passing to build_image_and_check_cmd)
     """
@@ -415,12 +455,22 @@ def fetch_deps_and_check_output(
 
     cmd.append(json.dumps(test_params.packages))
 
+    merged_env = _resolve_hermeto_env(
+        run_defaults=_default_hermeto_env(),
+        test_overrides=test_params.hermeto_env,
+        call_overrides=hermeto_env_overrides,
+        unset_hermeto_env=test_params.unset_hermeto_env,
+    )
+    if merged_env:
+        log.info("Injecting Hermeto env vars: %s", merged_env)
+
     (output, exit_code) = hermeto_image.run_cmd_on_image(
         cmd,
         tmp_path,
         [*mounts, (actual_repo_dir, actual_repo_dir)],
         entrypoint=entrypoint,
-        podman_flags=podman_flags,
+        podman_flags=(podman_flags or []) + _env_to_engine_flags(merged_env),
+        netrc_content=test_params.netrc_content,
     )
     assert exit_code == test_params.expected_exit_code, (
         f"Fetching deps ended with unexpected exitcode: {exit_code} != "
@@ -441,15 +491,23 @@ def fetch_deps_and_check_output(
         expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
         expected_sbom_path = test_data_dir.joinpath(test_case, "bom.json")
 
+        # If any proxy backends are configured, validate and strip proxy refs from the SBOM
+        # before comparing to test data.
+        sbom_for_comparison = sbom
+        backend_proxy_urls = parse_proxy_env(merged_env)
+        if backend_proxy_urls:
+            log.info("Validating and stripping proxy metadata from SBOM")
+            sbom_for_comparison = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
+
         update_test_data_if_needed(expected_build_config_path, build_config)
-        update_test_data_if_needed(expected_sbom_path, sbom)
+        update_test_data_if_needed(expected_sbom_path, sbom_for_comparison)
 
         expected_build_config = _load_json_or_yaml(expected_build_config_path)
         expected_sbom = _replace_timestamps(_load_json_or_yaml(expected_sbom_path))
 
         log.info("Compare output files")
         assert build_config == expected_build_config
-        assert _sort_obj(sbom) == _sort_obj(expected_sbom)
+        assert _sort_obj(sbom_for_comparison) == _sort_obj(expected_sbom)
 
         log.info("Validate SBOM schema")
         schema = _fetch_cyclone_dx_schema()
@@ -480,7 +538,7 @@ def build_image_and_check_cmd(
     test_case: str,
     check_cmd: list,
     expected_cmd_output: str,
-    hermeto_image: ContainerImage,
+    hermeto_image: HermetoImage,
     hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",

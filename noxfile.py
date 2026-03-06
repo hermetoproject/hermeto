@@ -105,11 +105,8 @@ def unit_tests(session: Session) -> None:
 
 def _run_integration_tests(session: Session, env: dict[str, str]) -> None:
     install_requirements(session)
-    netrc = "machine 127.0.0.1 login cachi2-user password cachi2-pass"
-    default_env = {"HERMETO_TEST_NETRC_CONTENT": os.getenv("HERMETO_TEST_NETRC_CONTENT", netrc)}
-    default_env.update(env)
     cmd = "pytest --log-cli-level=WARNING -W ignore::DeprecationWarning tests/integration"
-    session.run(*cmd.split(), *session.posargs, env=default_env)
+    session.run(*cmd.split(), *session.posargs, env=env)
 
 
 @nox.session(name="integration-tests")
@@ -127,6 +124,7 @@ def all_integration_tests(session: Session) -> None:
             "HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS": "1",
             "HERMETO_TEST_LOCAL_PYPISERVER": "1",
             "HERMETO_TEST_LOCAL_DNF_SERVER": "1",
+            "HERMETO_TEST_LOCAL_NEXUS_PROXY": "1",
         },
     )
 
