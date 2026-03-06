@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import contextlib
 import logging
 import os
 import subprocess
 import time
 from collections.abc import Iterator
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 
 import pytest
 import requests
 from git import Repo
 
+from hermeto.core.utils import copy_directory
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
 
 from . import utils
@@ -32,7 +33,10 @@ _ENV_VAR_CLI_MAP = [
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Sync CLI option values to env so existing os.getenv() code sees them."""
+    """
+    - Sync CLI option values to env so existing os.getenv() code sees them.
+    - Start pypiserver and dnfserver once in the master process (controller or single process).
+    """
 
     def env_value(cli_opt: str) -> str:
         value = config.getoption(cli_opt)
@@ -43,17 +47,26 @@ def pytest_configure(config: pytest.Config) -> None:
     for env_var, cli_opt in _ENV_VAR_CLI_MAP:
         os.environ[env_var] = env_value(cli_opt)
 
+    # Start pypiserver and dnfserver once in the master process (controller or single process).
+    worker_id = os.getenv("PYTEST_XDIST_WORKER", "master")
+    if worker_id == "master":
+        stack = ExitStack()
+        try:
+            stack.enter_context(_pypiserver_context())
+            stack.enter_context(_dnfserver_context())
+        except Exception:
+            stack.close()
+            raise
+        setattr(config, "_hermeto_exit_stack", stack)
+
 
 @pytest.fixture(scope="session")
-def test_repo_dir(tmp_path_factory: pytest.FixtureRequest) -> Path:
-    test_repo_url = os.environ.get(
-        "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        DEFAULT_INTEGRATION_TESTS_REPO,
-    )
-    # https://pytest.org/en/latest/reference/reference.html#tmp-path-factory-factory-api
-    repo_dir = tmp_path_factory.mktemp("integration-tests", False)  # type: ignore
-    Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
-    return repo_dir
+def test_repo_dir(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> Path:
+    base = tmp_path_factory.getbasetemp()
+    target = base / "integration-tests"
+    if worker_id == "master":
+        return target
+    return copy_directory(base.parent / "integration-tests", target)
 
 
 @pytest.fixture(scope="session")
@@ -90,11 +103,17 @@ def hermeto_image() -> utils.HermetoImage:
     return hermeto
 
 
-# autouse=True: It's nicer to see the pypiserver setup logs at the beginning of the test suite.
-# Otherwise, pypiserver would start once the pip tests need it and the logs would be buried between
-# test output.
-@pytest.fixture(autouse=True, scope="session")
-def local_pypiserver() -> Iterator[None]:
+def _terminate_proc(proc: subprocess.Popen[bytes]) -> None:
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+
+
+@contextmanager
+def _pypiserver_context() -> Iterator[None]:
     if (
         os.getenv("CI")
         and os.getenv("GITHUB_ACTIONS")
@@ -103,9 +122,9 @@ def local_pypiserver() -> Iterator[None]:
         yield
         return
 
-    pypiserver_dir = Path(__file__).parent.parent / "pypiserver"
+    pypiserver_dir = Path(__file__).parents[1] / "pypiserver"
 
-    with contextlib.ExitStack() as context:
+    with ExitStack() as context:
         proc = context.enter_context(subprocess.Popen([pypiserver_dir / "start.sh"]))
         context.callback(proc.terminate)
 
@@ -120,13 +139,17 @@ def local_pypiserver() -> Iterator[None]:
             except requests.RequestException as e:
                 log.debug(e)
         else:
+            _terminate_proc(proc)
             raise RuntimeError("pypiserver didn't start fast enough")
 
+    try:
         yield
+    finally:
+        _terminate_proc(proc)
 
 
-@pytest.fixture(autouse=True, scope="session")
-def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
+@contextmanager
+def _dnfserver_context() -> Iterator[None]:
     def _check_ssl_configuration() -> None:
         # TLS auth enforced
         resp = requests.get(
@@ -155,13 +178,12 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
         yield
         return
 
-    dnfserver_dir = top_level_test_dir / "dnfserver"
+    dnfserver_dir = Path(__file__).parents[1] / "dnfserver"
+    ssl_port = os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443")
 
-    with contextlib.ExitStack() as context:
+    with ExitStack() as context:
         proc = context.enter_context(subprocess.Popen([dnfserver_dir / "start.sh"]))
         context.callback(proc.terminate)
-
-        ssl_port = os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443")
         for _ in range(60):
             time.sleep(1)
             try:
@@ -173,11 +195,16 @@ def local_dnfserver(top_level_test_dir: Path) -> Iterator[None]:
                 log.info("Failed to connect to the DNF server, retrying...")
                 continue
             except requests.RequestException as e:
+                _terminate_proc(proc)
                 raise RuntimeError(e)
         else:
+            _terminate_proc(proc)
             raise RuntimeError("DNF server didn't start fast enough")
 
+    try:
         yield
+    finally:
+        _terminate_proc(proc)
 
 
 def pytest_collection_modifyitems(
@@ -188,6 +215,17 @@ def pytest_collection_modifyitems(
     This function implements a standard pytest hook. Please refer to pytest
     docs for further information.
     """
+    test_repo_url = os.getenv(
+        "HERMETO_TEST_INTEGRATION_TESTS_REPO",
+        DEFAULT_INTEGRATION_TESTS_REPO,
+    )
+    tmp_path_factory: pytest.TempPathFactory = getattr(config, "_tmp_path_factory")
+    base: Path = tmp_path_factory.getbasetemp()
+    repo_dir = base.parent / "integration-tests"
+    if not repo_dir.exists():
+        repo_dir.mkdir(parents=True)
+        Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
+
     # do not try to skip tests if a keyword or marker is specified
     if config.getoption("-k") or config.getoption("-m"):
         return
@@ -197,3 +235,10 @@ def pytest_collection_modifyitems(
     for item in items:
         if utils.tested_object_name(item.path) in tests_to_skip:
             item.add_marker(skip_mark)
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    """Stop pypiserver and dnfserver started in pytest_configure."""
+    stack = getattr(config, "_hermeto_exit_stack", None)
+    if stack is not None:
+        stack.close()
