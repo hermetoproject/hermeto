@@ -169,7 +169,7 @@ def parse_locator(locator_str: str) -> Locator:
     :raises UnsupportedFeature: if the locator has a type that we don't support
     """
     try:
-        locator = _parse_locator(locator_str)
+        locator = parse_raw_locator(locator_str)
         parsed_reference = locator.parsed_reference
         protocol = (
             parsed_reference.protocol.removesuffix(":") if parsed_reference.protocol else None
@@ -202,7 +202,7 @@ def parse_locator(locator_str: str) -> Locator:
     raise UnexpectedFormat(f"parsing {locator_str!r}: unknown protocol")
 
 
-def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
+def _parse_patch_locator(locator: "ParsedLocator") -> PatchLocator:
     # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-patch/sources/patchUtils.ts#L13
     reference = locator.parsed_reference
     if not reference.source:
@@ -244,7 +244,7 @@ def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
     return PatchLocator(original_package, patches, parent_locator)
 
 
-def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
+def _parse_file_locator(locator: "ParsedLocator") -> FileLocator:
     reference = locator.parsed_reference
 
     relpath = Path(reference.selector)
@@ -273,7 +273,7 @@ def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
 
 # dataclass rather than NamedTuple because NamedTuple doesn't support cached_property
 @dataclass(frozen=True)
-class _ParsedLocator:
+class ParsedLocator:
     scope: str | None
     name: str
     raw_reference: str
@@ -285,11 +285,11 @@ class _ParsedLocator:
         return name_at_ref
 
     @cached_property
-    def parsed_reference(self) -> "_ParsedReference":
+    def parsed_reference(self) -> "ParsedReference":
         return _parse_reference(self.raw_reference)
 
 
-class _ParsedReference(NamedTuple):
+class ParsedReference(NamedTuple):
     protocol: str | None
     source: str | None
     selector: str
@@ -303,17 +303,17 @@ class _ParsedReference(NamedTuple):
         return param_value[0]
 
 
-def _parse_locator(locator_str: str) -> _ParsedLocator:
+def parse_raw_locator(locator_str: str) -> ParsedLocator:
     # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/yarnpkg-core/sources/structUtils.ts#L411
     locator_re = re.compile(r"^(?:@([^/]+?)/)?([^@/]+?)(?:@(.+))$")
     match = locator_re.match(locator_str)
     if not match:
         raise UnexpectedFormat("could not parse locator (expected [@scope/]name@reference)")
     scope, name, reference = match.groups()
-    return _ParsedLocator(scope, name, reference)
+    return ParsedLocator(scope, name, reference)
 
 
-def _parse_reference(reference_str: str) -> _ParsedReference:
+def _parse_reference(reference_str: str) -> ParsedReference:
     """Parse a reference string.
 
     [@scope/]name@reference
@@ -340,7 +340,7 @@ def _parse_reference(reference_str: str) -> _ParsedReference:
     selector = unquote(groups[2]) if has_source else unquote(groups[1])
     bindings = parse_qs(groups[3]) if groups[3] else None
 
-    return _ParsedReference(
+    return ParsedReference(
         protocol,
         source,
         selector,

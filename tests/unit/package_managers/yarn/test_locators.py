@@ -16,11 +16,11 @@ from hermeto.core.package_managers.yarn.locators import (
     PatchLocator,
     PortalLocator,
     WorkspaceLocator,
-    _parse_locator,
+    ParsedLocator,
+    ParsedReference,
     _parse_reference,
-    _ParsedLocator,
-    _ParsedReference,
     parse_locator,
+    parse_raw_locator,
 )
 
 SUPPORTED_LOCATORS = [
@@ -81,44 +81,44 @@ ALL_LOCATORS = SUPPORTED_LOCATORS + UNSUPPORTED_LOCATORS
 
 PARSED_LOCATORS_AND_REFERENCES = [
     (
-        _ParsedLocator(scope="isaacs", name="cliui", raw_reference="npm:8.0.2"),
-        _ParsedReference(protocol="npm:", source=None, selector="8.0.2", params=None),
+        ParsedLocator(scope="isaacs", name="cliui", raw_reference="npm:8.0.2"),
+        ParsedReference(protocol="npm:", source=None, selector="8.0.2", params=None),
     ),
     (
-        _ParsedLocator(scope="npmcli", name="fs", raw_reference="npm:3.1.0"),
-        _ParsedReference(protocol="npm:", source=None, selector="3.1.0", params=None),
+        ParsedLocator(scope="npmcli", name="fs", raw_reference="npm:3.1.0"),
+        ParsedReference(protocol="npm:", source=None, selector="3.1.0", params=None),
     ),
     (
-        _ParsedLocator(scope=None, name="abbrev", raw_reference="npm:1.1.1"),
-        _ParsedReference(protocol="npm:", source=None, selector="1.1.1", params=None),
+        ParsedLocator(scope=None, name="abbrev", raw_reference="npm:1.1.1"),
+        ParsedReference(protocol="npm:", source=None, selector="1.1.1", params=None),
     ),
     (
-        _ParsedLocator(scope=None, name="agent-base", raw_reference="npm:6.0.2"),
-        _ParsedReference(protocol="npm:", source=None, selector="6.0.2", params=None),
+        ParsedLocator(scope=None, name="agent-base", raw_reference="npm:6.0.2"),
+        ParsedReference(protocol="npm:", source=None, selector="6.0.2", params=None),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope="montypython", name="brian", raw_reference="workspace:packages/the-life-of/brian"
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="workspace:", source=None, selector="packages/the-life-of/brian", params=None
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None, name="the-answer", raw_reference="workspace:packages/the-answer"
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="workspace:", source=None, selector="packages/the-answer", params=None
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="ansi-regex-link",
             raw_reference="link:external-packages/ansi-regex::locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="link:",
             source=None,
             selector="external-packages/ansi-regex",
@@ -126,12 +126,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="once-portal",
             raw_reference="portal:external-packages/once::locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="portal:",
             source=None,
             selector="external-packages/once",
@@ -139,12 +139,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="supports-hyperlinks-folder",
             raw_reference="file:external-packages/supports-hyperlinks#external-packages/supports-hyperlinks::hash=cfa5f5&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="file:",
             source="external-packages/supports-hyperlinks",
             selector="external-packages/supports-hyperlinks",
@@ -152,12 +152,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="strip-ansi-tarball",
             raw_reference="file:../../external-packages/strip-ansi-4.0.0.tgz::locator=the-answer%40workspace%3Apackages%2Fthe-answer",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="file:",
             source=None,
             selector="../../external-packages/strip-ansi-4.0.0.tgz",
@@ -165,12 +165,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="strip-ansi-tarball",
             raw_reference="file:external-packages/strip-ansi-4.0.0.tgz::locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="file:",
             source=None,
             selector="external-packages/strip-ansi-4.0.0.tgz",
@@ -178,12 +178,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="c2-wo-deps-2",
             raw_reference="https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="https:",
             source=None,
             selector="//bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
@@ -191,16 +191,16 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(scope=None, name="left-pad", raw_reference="npm:1.3.0"),
-        _ParsedReference(protocol="npm:", source=None, selector="1.3.0", params=None),
+        ParsedLocator(scope=None, name="left-pad", raw_reference="npm:1.3.0"),
+        ParsedReference(protocol="npm:", source=None, selector="1.3.0", params=None),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="left-pad",
             raw_reference="patch:left-pad@npm%3A1.3.0#~./my-patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="left-pad@npm:1.3.0",
             selector="~./my-patches/left-pad.patch",
@@ -212,12 +212,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="left-pad",
             raw_reference="patch:left-pad@npm%3A1.3.0#optional!./my-patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="left-pad@npm:1.3.0",
             selector="optional!./my-patches/left-pad.patch",
@@ -229,16 +229,16 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(scope=None, name="fsevents", raw_reference="npm:2.3.2"),
-        _ParsedReference(protocol="npm:", source=None, selector="2.3.2", params=None),
+        ParsedLocator(scope=None, name="fsevents", raw_reference="npm:2.3.2"),
+        ParsedReference(protocol="npm:", source=None, selector="2.3.2", params=None),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="fsevents",
             raw_reference="patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="fsevents@npm:2.3.2",
             selector="~builtin<compat/fsevents>",
@@ -246,12 +246,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="fsevents",
             raw_reference="patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="fsevents@npm:2.3.2",
             selector="optional!builtin<compat/fsevents>",
@@ -259,12 +259,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="fsevents",
             raw_reference="patch:fsevents@patch%3Afsevents@npm%253A2.3.2%23./my-patches/fsevents.patch%3A%3Aversion=2.3.2&hash=cf0bf0&locator=berryscary%2540workspace%253A.#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="fsevents@patch:fsevents@npm%3A2.3.2#./my-patches/fsevents.patch::version=2.3.2&hash=cf0bf0&locator=berryscary%40workspace%3A.",
             selector="~builtin<compat/fsevents>",
@@ -272,16 +272,16 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(scope=None, name="typescript", raw_reference="npm:5.1.6"),
-        _ParsedReference(protocol="npm:", source=None, selector="5.1.6", params=None),
+        ParsedLocator(scope=None, name="typescript", raw_reference="npm:5.1.6"),
+        ParsedReference(protocol="npm:", source=None, selector="5.1.6", params=None),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="typescript",
             raw_reference="patch:typescript@npm%3A5.1.6#builtin<compat/typescript>::version=5.1.6&hash=5da071",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="typescript@npm:5.1.6",
             selector="builtin<compat/typescript>",
@@ -289,16 +289,16 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(scope=None, name="is-positive", raw_reference="npm:3.1.0"),
-        _ParsedReference(protocol="npm:", source=None, selector="3.1.0", params=None),
+        ParsedLocator(scope=None, name="is-positive", raw_reference="npm:3.1.0"),
+        ParsedReference(protocol="npm:", source=None, selector="3.1.0", params=None),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="is-negative",
             raw_reference="patch:is-positive@npm%3A3.1.0#~builtin<foo>&./my-patches/is-positive.patch&builtin<bar>&~./baz.patch::version=3.1.0&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="is-positive@npm:3.1.0",
             selector="~builtin<foo>&./my-patches/is-positive.patch&builtin<bar>&~./baz.patch",
@@ -306,12 +306,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="left-pad",
             raw_reference="patch:left-pad@npm%3A1.3.0#~/patches/left-pad.patch::version=1.3.0&hash=629bda",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="left-pad@npm:1.3.0",
             selector="~/patches/left-pad.patch",
@@ -319,12 +319,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="left-pad",
             raw_reference="patch:left-pad@npm%3A1.3.0#/tmp/patches/left-pad.patch::version=1.3.0&hash=629bda",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="left-pad@npm:1.3.0",
             selector="/tmp/patches/left-pad.patch",
@@ -332,12 +332,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="left-pad",
             raw_reference="patch:left-pad@npm%3A1.3.0#optional!locator!./patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="left-pad@npm:1.3.0",
             selector="optional!locator!./patches/left-pad.patch",
@@ -349,12 +349,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="holy-hand-grenade",
             raw_reference="exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="exec:",
             source="./generate-holy-hand-grenade.js",
             selector="./generate-holy-hand-grenade.js",
@@ -362,12 +362,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="c2-wo-deps",
             raw_reference="https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="https:",
             source="//bitbucket.org/cachi-testing/cachi2-without-deps.git",
             selector="commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
@@ -375,12 +375,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="ccto-wo-deps",
             raw_reference="git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="git@github.com:",
             source="cachito-testing/cachito-npm-without-deps.git",
             selector="commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
@@ -388,12 +388,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="npm-lifecycle-scripts",
             raw_reference="https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="https:",
             source="//github.com/chmeliik/js-lifecycle-scripts.git",
             selector="workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
@@ -401,12 +401,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         ),
     ),
     (
-        _ParsedLocator(
+        ParsedLocator(
             scope=None,
             name="ccto-wo-deps",
             raw_reference="patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
         ),
-        _ParsedReference(
+        ParsedReference(
             protocol="patch:",
             source="ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
             selector="./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch",
@@ -530,14 +530,14 @@ PARSED_SUPPORTED_LOCATORS = [
 )
 def test_parse_locator_helper(
     locator_str: str,
-    expect_parsed_locator: _ParsedLocator,
-    expect_parsed_reference: _ParsedReference,
+    expect_parsed_locator: ParsedLocator,
+    expect_parsed_reference: ParsedReference,
 ) -> None:
     """Test the helpers that parse locators and references generically.
 
     Note that these don't care which locator types are supported and which aren't.
     """
-    locator = _parse_locator(locator_str)
+    locator = parse_raw_locator(locator_str)
     assert locator == expect_parsed_locator
     assert locator.parsed_reference == expect_parsed_reference
     assert str(locator) == locator_str
@@ -558,7 +558,7 @@ def test_parse_locator_helper(
 )
 def test_unexpected_locator_format(locator_str: str) -> None:
     with pytest.raises(UnexpectedFormat, match="could not parse locator"):
-        _parse_locator(locator_str)
+        parse_raw_locator(locator_str)
 
 
 def test_unexpected_reference_format() -> None:
