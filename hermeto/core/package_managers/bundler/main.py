@@ -7,7 +7,9 @@ from textwrap import dedent
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
-from hermeto.core.errors import PackageRejected, UnsupportedFeature
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import BundlerBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -19,6 +21,7 @@ from hermeto.core.package_managers.bundler.parser import (
     PathDependency,
     parse_lockfile,
 )
+from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 
@@ -77,12 +80,17 @@ def _resolve_bundler_package(
     dependencies = parse_lockfile(package_dir, binary_filters)
 
     name, version = _get_main_package_name_and_version(package_dir, dependencies)
-    vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
+    try:
+        qualifiers = get_vcs_qualifiers(package_dir.root)
+    except NotAGitRepo:
+        if get_config().mode == Mode.STRICT:
+            raise
+        qualifiers = None
     main_package_purl = PackageURL(
         type="gem",
         name=name,
         version=version,
-        qualifiers={"vcs_url": vcs_url},
+        qualifiers=qualifiers,
         subpath=str(package_dir.subpath_from_root),
     )
 
@@ -158,9 +166,18 @@ def _get_name_and_version_from_lockfile(dependencies: ParseResult) -> tuple[str,
 
 def _get_repo_name_from_origin_remote(package_dir: RootedPath) -> str:
     """Extract repository name from git origin remote in the package directory."""
-    repo_path = get_repo_id(package_dir.root).parsed_origin_url.path
-    repo_name = Path(repo_path).stem
+    try:
+        repo_id = get_repo_id(package_dir.root)
+    except NotAGitRepo:
+        raise PackageRejected(
+            reason="Unable to infer package name from origin URL",
+            solution=(
+                "Provide valid metadata in the package files or ensure "
+                "the package files are in a git repository whose 'origin' remote has a valid URL."
+            ),
+        )
 
+    repo_name = Path(repo_id.parsed_origin_url.path).stem
     resolved_path = Path(repo_name).joinpath(package_dir.subpath_from_root)
     return str(resolved_path)
 

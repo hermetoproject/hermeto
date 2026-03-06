@@ -15,6 +15,7 @@ from pydantic_settings import (
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.errors import InvalidInput
 
 # Ascending priority
@@ -182,6 +183,7 @@ class Config(BaseSettings):
     gomod: GomodSettings = GomodSettings()
     http: HttpSettings = HttpSettings()
     runtime: RuntimeSettings = RuntimeSettings()
+    mode: Mode = Mode.STRICT
 
     @model_validator(mode="before")
     @classmethod
@@ -309,7 +311,7 @@ def get_config() -> Config:
     return config
 
 
-def set_config(path: Path) -> None:
+def set_config(path: Path) -> Config:
     """Set global config variable using input from file."""
     global config
     # Validate beforehand for a friendlier error message: https://github.com/pydantic/pydantic-settings/pull/432
@@ -321,3 +323,4 @@ def set_config(path: Path) -> None:
     # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
     cli_config_class = create_cli_config_class(path)
     config = cli_config_class()
+    return config
