@@ -3,6 +3,7 @@
 This document proposes adding uv support to Hermeto as requested in
 [issue #1142][].
 
+- [Implementation phases](#implementation-phases)
 - [Non-goals](#non-goals)
 - [Hermeto's uv support scope](#hermetos-uv-support-scope)
   - [Supported uv.lock source types](#supported-uvlock-source-types)
@@ -18,6 +19,27 @@ This document proposes adding uv support to Hermeto as requested in
 - [Using fetched dependencies](#using-fetched-dependencies)
   - [Building your project using pre-fetched uv dependencies](#building-your-project-using-pre-fetched-uv-dependencies)
 - [Full example walkthrough](#example)
+
+## Implementation phases
+
+uv provides a `uv pip` sub-command that is fully compatible with the standard
+`pip` interface. Since Hermeto already supports pip, supporting `uv pip` projects
+requires minimal additional work and is the natural first phase of uv support —
+users can already point Hermeto at a `requirements.txt` generated or managed via
+`uv pip compile` without any new backend code.
+
+The more significant work — and the focus of this document — is Phase 2: native
+support for uv's own lockfile format, `uv.lock`. The two phases are:
+
+- **Phase 1 — `uv pip` compatibility**: projects that use `uv pip` with a
+  standard `requirements.txt` are already handled by Hermeto's existing pip
+  backend. No new backend is required. Users should follow the [pip][]
+  documentation.
+
+- **Phase 2 — `uv.lock` support**: a dedicated uv backend for projects using
+  uv's native `uv.lock` lockfile. This phase introduces a new `"type": "uv"`
+  input, a `uv.lock` parser, platform-aware artifact selection, and environment
+  marker evaluation. The remainder of this document describes Phase 2.
 
 ## Non-goals
 
@@ -145,7 +167,7 @@ where `'JSON input'` is:
 
 ```js
 {
-  // "uv" tells Hermeto to process a uv project
+  // "uv" tells Hermeto to process a uv project using uv.lock
   "type": "uv",
   // path to the package (relative to the --source directory)
   // defaults to "."
@@ -160,6 +182,12 @@ where `'JSON input'` is:
 ```
 
 or more simply by just invoking `hermeto fetch-deps uv`.
+
+> **NOTE**
+>
+> If your project uses `uv pip` with a standard `requirements.txt` rather than
+> `uv.lock`, use `"type": "pip"` instead — the existing pip backend covers this
+> case already. See [Implementation phases](#implementation-phases).
 
 For a complete example, see [Example: Pre-fetch dependencies](#pre-fetch-dependencies).
 
@@ -278,9 +306,9 @@ hermeto-output/deps/uv/
 
 ### Building your project using pre-fetched uv dependencies
 
-To make `uv sync` (or `uv pip install`) use the pre-fetched artifacts instead
-of reaching out to the network, several environment variables must be set in
-your build environment. Hermeto generates these automatically:
+To make `uv sync` use the pre-fetched artifacts instead of reaching out to the
+network, several environment variables must be set in your build environment.
+Hermeto generates these automatically:
 
 ```shell
 hermeto generate-env ./hermeto-output -o ./hermeto.env --for-output-dir /tmp/hermeto-output
@@ -341,8 +369,6 @@ export UV_NO_INDEX=true
 ```dockerfile
 FROM python:3.12-slim
 
-# Copy pre-fetched artifacts (mounted at build time)
-# Copy source
 COPY doc-examples/ /src/doc-examples
 WORKDIR /src/doc-examples
 
@@ -367,5 +393,6 @@ podman build . \
 [issue #1142]: https://github.com/hermetoproject/hermeto/issues/1142
 [PEP 425]: https://peps.python.org/pep-0425/
 [PEP 508]: https://peps.python.org/pep-0508/
+[pip]: pip.md
 [uv]: https://docs.astral.sh/uv/
 [workspaces]: https://docs.astral.sh/uv/concepts/workspaces/
