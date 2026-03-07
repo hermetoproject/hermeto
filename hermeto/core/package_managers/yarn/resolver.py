@@ -24,12 +24,21 @@ from packageurl import PackageURL
 from semver import Version
 
 from hermeto import APP_NAME
+from hermeto.core.config import get_config
 from hermeto.core.errors import (
     PackageManagerError,
     PackageRejected,
     UnsupportedFeature,
 )
-from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    Component,
+    ExternalReference,
+    Patch,
+    PatchDiff,
+    Pedigree,
+)
 from hermeto.core.package_managers.yarn.locators import (
     FileLocator,
     HttpsLocator,
@@ -278,11 +287,19 @@ class _ComponentResolver:
 
         purl = self._generate_purl_for_package(resolved_package, self._project)
 
+        proxy_url = get_config().yarn.proxy_url
+        external_refs = None
+
+        if isinstance(resolved_package.locator, NpmLocator) and proxy_url is not None:
+            proxy_common = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+            external_refs = [ExternalReference(url=str(proxy_url), **proxy_common)]
+
         return Component(
             name=resolved_package.name,
             version=resolved_package.version,
             purl=purl,
             pedigree=self._pedigree_mapping.get(package.parsed_locator),
+            external_references=external_refs,
         )
 
     @staticmethod

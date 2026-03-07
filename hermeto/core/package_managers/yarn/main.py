@@ -4,6 +4,7 @@ import logging
 import semver
 
 from hermeto import APP_NAME
+from hermeto.core.config import get_config
 from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -223,6 +224,15 @@ def _set_yarnrc_configuration(
     yarn_rc["enableGlobalCache"] = True
     yarn_rc["globalFolder"] = str(output_dir.join_within_root("deps", "yarn"))
 
+    config = get_config()
+    if (proxy_url := config.yarn.proxy_url) is not None:
+        yarn_rc["npmRegistryServer"] = str(proxy_url)
+        login = config.yarn.proxy_login
+        password = config.yarn.proxy_password
+        if login is not None and password is not None:
+            yarn_rc["npmAlwaysAuth"] = True
+            yarn_rc["npmAuthIdent"] = f"{login}:{password}"
+
     # In Yarn v4, constraints can be automatically executed as part of `yarn install`, so they
     # need to be explicitly disabled
     if version in VersionsRange("4.0.0-rc1", "5.0.0"):  # type: ignore
@@ -237,7 +247,18 @@ def _fetch_dependencies(source_dir: RootedPath) -> None:
     :param source_dir: the directory in which the yarn command will be called.
     :raises PackageManagerError: if the 'yarn install' command fails.
     """
-    run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
+    try:
+        run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
+    except PackageManagerError as e:
+        # TODO: this follows a precedent set in resolver. Either a more robust way for
+        # dealing with this must be found or a comment provided that such methods do not exist.
+        has_proxy = get_config().yarn.proxy_url is not None
+        if has_proxy and e.stderr and "Invalid authentication" in e.stderr:
+            raise PackageManagerError(
+                "Proxy requires authentication. Invalid or no authentication was provided",
+                solution="Verify that proxy URL, login and password are set correctly.",
+            )
+        raise
 
 
 def _generate_environment_variables() -> list[EnvironmentVariable]:

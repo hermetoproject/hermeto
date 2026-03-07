@@ -73,47 +73,6 @@ def _migrate_deprecated_field(
         )
 
 
-class PipSettings(BaseModel, extra="forbid"):
-    """Settings for Pip."""
-
-    # This setting exists for legacy use-cases only and must not be relied upon
-    ignore_dependencies_crates: bool = False
-
-
-class YarnSettings(BaseModel, extra="forbid"):
-    """Settings for Yarn v2+."""
-
-    # This setting exists for legacy use-cases only and must not be relied upon
-    enabled: bool = True
-
-
-class GomodSettings(BaseModel, extra="forbid"):
-    """Settings for Go modules."""
-
-    proxy_url: str = "https://proxy.golang.org,direct"
-    download_max_tries: int = 5
-    environment_variables: dict[str, str] = {}
-
-
-class HttpSettings(BaseModel, extra="forbid"):
-    """HTTP-related settings."""
-
-    connect_timeout: int = 30
-    read_timeout: int = 300
-
-
-class RuntimeSettings(BaseModel, extra="forbid"):
-    """General runtime execution settings."""
-
-    # This is how an environment variable name should look like:
-    #   HERMETO_RUNTIME__CONCURRENCY_LIMIT
-    # Note single underscore after application name, then name of the section
-    # as it appears in Config class definition, then double underscore and
-    # field name after that.
-    subprocess_timeout: int = 3600
-    concurrency_limit: int = 5
-
-
 def _proxy_url_must_not_contain_credentials(url: HttpUrl | None) -> HttpUrl | None:
     if url is None:
         return None
@@ -158,6 +117,47 @@ class ProxyMixin(BaseModel):
         if self.proxy_login is not None and self.proxy_url is None:
             raise InvalidInput("Proxy URL must be set when proxy credentials are set")
         return self
+
+
+class PipSettings(BaseModel, extra="forbid"):
+    """Settings for Pip."""
+
+    # This setting exists for legacy use-cases only and must not be relied upon
+    ignore_dependencies_crates: bool = False
+
+
+class YarnSettings(ProxyMixin, extra="forbid"):
+    """Settings for Yarn v2+."""
+
+    # This setting exists for legacy use-cases only and must not be relied upon
+    enabled: bool = True
+
+
+class GomodSettings(BaseModel, extra="forbid"):
+    """Settings for Go modules."""
+
+    proxy_url: str = "https://proxy.golang.org,direct"
+    download_max_tries: int = 5
+    environment_variables: dict[str, str] = {}
+
+
+class HttpSettings(BaseModel, extra="forbid"):
+    """HTTP-related settings."""
+
+    connect_timeout: int = 30
+    read_timeout: int = 300
+
+
+class RuntimeSettings(BaseModel, extra="forbid"):
+    """General runtime execution settings."""
+
+    # This is how an environment variable name should look like:
+    #   HERMETO_RUNTIME__CONCURRENCY_LIMIT
+    # Note single underscore after application name, then name of the section
+    # as it appears in Config class definition, then double underscore and
+    # field name after that.
+    subprocess_timeout: int = 3600
+    concurrency_limit: int = 5
 
 
 class NpmSettings(ProxyMixin, extra="forbid"):
