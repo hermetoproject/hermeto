@@ -66,6 +66,23 @@ CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specificatio
 
 @dataclass
 class TestParameters:
+    """Parameters for a single integration test case.
+
+    :param check_output: when True, the generated ``.build-config.json`` and
+        SBOM (``bom.json``) are compared against stored expected test data.
+        Set to False for tests where the fetch is expected to fail since no
+        output files will be produced.
+    :param check_deps_checksums: when True, sha256 checksums of every file
+        in the fetched ``deps/`` directory are calculated and compared against
+        a stored ``fetch_deps_sha256sums.json`` file.  Defaults to True so
+        that checksum verification is the norm and skipping it is a conscious
+        decision.  Set to False when:
+
+        * the test expects a non-zero exit code (no deps are fetched)
+        * the package manager produces non-deterministic output whose file
+          contents may vary between runs (e.g. bundler, cargo)
+    """
+
     branch: str
     packages: tuple[dict[str, Any], ...]
     check_output: bool = True
