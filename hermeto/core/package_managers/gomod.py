@@ -1809,9 +1809,16 @@ def _list_installed_toolchains() -> set[Go]:
     for path in (HERMETO_GO_INSTALL_DIR, get_cache_dir()):
         paths |= {p.resolve().parent for p in Path(path).rglob("bin/go")}
 
-    # filter out symlinked paths
-    go_binary_paths = set([Path(p, "go").resolve() for p in paths if Path(p, "go").exists()])
-    for bin_path in go_binary_paths:
+    # Resolve paths for deduplication only; preserve original symlink names for the binary.
+    # Tools like snap rely on argv[0] for dispatch, resolving /snap/bin/go into /usr/bin/snap
+    # which breaks Go execution.
+    go_binary_paths: dict[Path, Path] = {}
+    for p in paths:
+        bin_path = Path(p, "go")
+        if bin_path.exists():
+            go_binary_paths.setdefault(bin_path.resolve(), bin_path)
+
+    for bin_path in go_binary_paths.values():
         try:
             log.debug("Probing %s toolchain...", bin_path)
             ret.add(Go(binary=bin_path.as_posix()))
