@@ -4,9 +4,11 @@ import hashlib
 import json
 import logging
 import os
+import platform
 import shutil
 import sys
 import tempfile
+import urllib.request
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -26,6 +28,8 @@ from tests.integration.container_engine import get_container_engine
 
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
+
+DEFAULT_INTEGRATION_TESTS_REPO = "https://github.com/hermetoproject/integration-tests.git"
 
 # Individual files could be added to the set as well.
 PATHS_TO_CODE = frozenset(
@@ -161,9 +165,9 @@ def build_image_for_test_case(
         "-f",
         str(containerfile_path),
         "-v",
-        f"{source_dir}:{source_dir_mount_point}:Z",
+        f"{source_dir}:{source_dir_mount_point}:z",  # SELinux shared mount
         "-v",
-        f"{output_dir}:{output_dir_mount_point}:Z",
+        f"{output_dir}:{output_dir_mount_point}:Z",  # SELinux exclusive mount
         "--no-cache",
         "--network",
         "none",
@@ -307,7 +311,7 @@ def update_test_data_if_needed(path: Path, data: dict[str, Any]) -> None:
     else:
         raise ValueError(f"Don't know how to serialize data to {path.name} :(")
 
-    if os.getenv("HERMETO_GENERATE_TEST_DATA") == "true":
+    if os.getenv("HERMETO_TEST_GENERATE_DATA") == "1":
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as file:
             file.write(serialize(data))
@@ -758,7 +762,7 @@ def just_some_package_managers_were_affected_by(changes: tuple[Path, ...]) -> bo
 
 
 def must_test_all() -> bool:
-    return os.getenv("HERMETO_RUN_ALL_INTEGRATION_TESTS", "false").lower() == "true"
+    return os.getenv("HERMETO_TEST_RUN_ALL_INTEGRATION_TESTS") == "1"
 
 
 def determine_integration_tests_to_skip() -> Any:
@@ -771,3 +775,81 @@ def determine_integration_tests_to_skip() -> Any:
     elif just_some_package_managers_were_affected_by(changes):
         return SUPPORTED_PMS - affected_package_managers(changes)
     return set()
+
+# Official hashes from go.dev to verify the toolchains we're downloading
+# to keep the tests secure and stable.
+EXPECTED_GO_HASHES = {
+    "1.21.6": {
+        "amd64": "3f934f40ac360b9c01f616a9aa1796d227d8b0328bf64cb045c7b8c4ee9caea4",
+        "arm64": "e2e8aa88e1b5170a0d495d7d9c766af2b2b6c6925a8f8956d834ad6b4cacbd9a",
+    }
+}
+
+def get_required_go_version(project_path: Path) -> str:
+    """Extract required Go version from go.mod."""
+    go_mod_path = project_path / "go.mod"
+    if not go_mod_path.exists():
+        raise FileNotFoundError(f"Could not find go.mod in {project_path}")
+
+    with open(go_mod_path, "r") as f:
+        for line in f:
+            if line.startswith("go "):
+                return line.split()[1].strip()
+
+    raise ValueError(f"No 'go' version directive found in {go_mod_path}")
+
+def _download_and_verify_toolchain(url: str, dest_path: Path, expected_hash: str) -> None:
+    """Download toolchain and verify SHA-256 checksum."""
+    log.info("Downloading alternative Go toolchain from %s", url)
+    if not url.startswith("https://"):
+        raise ValueError(f"URL scheme not allowed: {url}")
+    urllib.request.urlretrieve(url, dest_path) # noqa: S310
+
+    sha256 = hashlib.sha256()
+    with open(dest_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            sha256.update(chunk)
+
+    actual_hash = sha256.hexdigest()
+    if actual_hash != expected_hash:
+        dest_path.unlink(missing_ok=True)
+        raise ValueError(
+            f"SECURITY ALERT: Hash mismatch for {url}!\n"
+            f"Expected: {expected_hash}\nActual: {actual_hash}"
+        )
+
+def _get_go_arch() -> str | None:
+    """Identify host architecture and map to Go's naming convention."""
+    machine = platform.machine().lower()
+    if machine in ("x86_64", "amd64"):
+        return "amd64"
+    elif machine in ("aarch64", "arm64"):
+        return "arm64"
+    else:
+        return None
+
+def prepare_alt_go_toolchain(dest_dir: Path, version: str) -> Path:
+    """Identify host architecture and setup verified Go toolchain."""
+    go_arch = _get_go_arch()
+
+    if go_arch is None:
+        raise ValueError(f"Unsupported architecture: {platform.machine()}")
+
+    expected_hash = EXPECTED_GO_HASHES[version][go_arch]
+
+    filename = f"go{version}.linux-{go_arch}.tar.gz"
+    url = f"https://go.dev/dl/{filename}"
+
+    tar_path = dest_dir / filename
+    extract_path = dest_dir / f"go-alt-{version}"
+
+    if not extract_path.exists():
+        _download_and_verify_toolchain(url, tar_path, expected_hash)
+
+        log.info("Extracting verified toolchain to %s", extract_path)
+        extract_path.mkdir(parents=True, exist_ok=True)
+        with TarFile.open(tar_path, "r:gz") as tar:
+            # Mitigation for CVE-2007-4559 (path traversal)
+            _safe_extract(tar, str(extract_path))
+
+    return extract_path / "go" / "bin"
