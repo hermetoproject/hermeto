@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
-# Temporary compatibility shim — replaced commit by commit.
-from hermeto.core.package_managers.npm._npm_legacy import (  # noqa: F401
-    _generate_component_list,
-    _resolve_npm,
-    fetch_npm_source,
-)
 from hermeto.core.package_managers.npm.fetch import (  # noqa: F401
     _async_download_tar,
     _clone_repo_pack_archive,
     _get_npm_dependencies,
     _patch_url_to_point_to_a_proxy,
+)
+from hermeto.core.package_managers.npm.main import (  # noqa: F401
+    _generate_component_list,
+    _resolve_npm,
+    fetch_npm_source,
 )
 from hermeto.core.package_managers.npm.package_lock import (  # noqa: F401
     DEPENDENCY_TYPES,

@@ -893,8 +893,8 @@ def test_generate_component_list(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm._npm_legacy.create_backend_annotation")
-@mock.patch("hermeto.core.package_managers.npm._npm_legacy._resolve_npm")
+@mock.patch("hermeto.core.package_managers.npm.main.create_backend_annotation")
+@mock.patch("hermeto.core.package_managers.npm.main._resolve_npm")
 def test_fetch_npm_source(
     mock_resolve_npm: mock.Mock,
     mock_create_annotation: mock.Mock,
@@ -1463,9 +1463,9 @@ def test_resolve_npm_validation(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm._npm_legacy._get_npm_dependencies")
-@mock.patch("hermeto.core.package_managers.npm._npm_legacy._update_package_lock_with_local_paths")
-@mock.patch("hermeto.core.package_managers.npm._npm_legacy._update_package_json_files")
+@mock.patch("hermeto.core.package_managers.npm.main._get_npm_dependencies")
+@mock.patch("hermeto.core.package_managers.npm.main._update_package_lock_with_local_paths")
+@mock.patch("hermeto.core.package_managers.npm.main._update_package_json_files")
 def test_resolve_npm(
     update_package_json_files: mock.Mock,
     update_package_lock_with_local_paths: mock.Mock,
