@@ -18,7 +18,7 @@ from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball
 
 if TYPE_CHECKING:
-    from hermeto.core.package_managers.npm._npm_legacy import NormalizedUrl
+    from hermeto.core.package_managers.npm.package_lock import NormalizedUrl
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def _clone_repo_pack_archive(
     :param download_dir: Output folder where dependencies will be downloaded
     :raise FetchError: If download failed
     """
-    from hermeto.core.package_managers.npm._npm_legacy import _extract_git_info_npm
+    from hermeto.core.package_managers.npm.package_lock import _extract_git_info_npm
 
     info = _extract_git_info_npm(vcs)
     download_path = download_dir.join_within_root(
@@ -53,7 +53,7 @@ def _clone_repo_pack_archive(
 
 
 def _patch_url_to_point_to_a_proxy(url: NormalizedUrl, proxy_url: ProxyUrl) -> NormalizedUrl:
-    from hermeto.core.package_managers.npm._npm_legacy import NormalizedUrl
+    from hermeto.core.package_managers.npm.package_lock import NormalizedUrl
 
     # Convert 'https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz'
     # to '<proxyaddress>/accepts/-/accepts-1.3.8.tgz'.
@@ -89,7 +89,7 @@ def _get_npm_dependencies(
     :param deps_to_download: Dict of dependencies to be downloaded.
     :return: Dictionary of Resolved URL dependencies with downloaded paths
     """
-    from hermeto.core.package_managers.npm._npm_legacy import (
+    from hermeto.core.package_managers.npm.package_lock import (
         _classify_resolved_url,
         _normalize_resolved_url,
     )

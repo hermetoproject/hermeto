@@ -65,7 +65,7 @@ def npm_request(rooted_tmp_path: RootedPath, npm_input_packages: list[dict[str, 
 @pytest.fixture
 def mock_get_repo_id() -> Iterator[mock.Mock]:
     with mock.patch(
-        "hermeto.core.package_managers.npm._npm_legacy.get_repo_id"
+        "hermeto.core.package_managers.npm.package_lock.get_repo_id"
     ) as mocked_get_repo_id:
         mocked_get_repo_id.return_value = MOCK_REPO_ID
         yield mocked_get_repo_id

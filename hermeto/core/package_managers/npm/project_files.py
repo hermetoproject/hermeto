@@ -10,7 +10,7 @@ from hermeto.core.models.output import ProjectFile
 from hermeto.core.rooted_path import RootedPath
 
 if TYPE_CHECKING:
-    from hermeto.core.package_managers.npm._npm_legacy import NormalizedUrl, PackageLock
+    from hermeto.core.package_managers.npm.package_lock import NormalizedUrl, PackageLock
 
 
 def _should_replace_dependency(dependency_version: str) -> bool:
@@ -38,7 +38,7 @@ def _update_package_lock_with_local_paths(
     :param download_paths:
     :param package_lock: PackageLock instance which holds package-lock.json content
     """
-    from hermeto.core.package_managers.npm._npm_legacy import (
+    from hermeto.core.package_managers.npm.package_lock import (
         DEPENDENCY_TYPES,
         _classify_resolved_url,
         _normalize_resolved_url,
@@ -77,7 +77,7 @@ def _update_package_json_files(
     :param workspaces: list of workspaces paths
     :param pkg_dir: Package subdirectory
     """
-    from hermeto.core.package_managers.npm._npm_legacy import DEPENDENCY_TYPES
+    from hermeto.core.package_managers.npm.package_lock import DEPENDENCY_TYPES
 
     package_json_paths = []
     for workspace in workspaces:
