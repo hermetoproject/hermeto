@@ -628,7 +628,6 @@ class TestDownload:
                 None,  # sdist_download
                 None,  # wheel_0_download - checksums OK
                 PackageRejected("", solution=None),  # wheel_1_download - checksums NOK
-                PackageRejected("", solution=None),  # wheel_2_download - no checksums to verify
             ]
         else:
             mock_must_match_any_checksum.side_effect = [
@@ -637,13 +636,21 @@ class TestDownload:
         # </setup>
 
         # <call>
-        found_downloads = pip._download_dependencies(rooted_tmp_path, req_file, binary_filters)
-        assert found_downloads == expected_downloads
+        if binary_filters is not None:
+            # wheel_1 fails checksum verification -> must raise
+            with pytest.raises(PackageRejected):
+                pip._download_dependencies(rooted_tmp_path, req_file, binary_filters)
+        else:
+            found_downloads = pip._download_dependencies(
+                rooted_tmp_path, req_file, binary_filters
+            )
+            assert found_downloads == expected_downloads
         assert pip_deps.path.is_dir()
         # </call>
 
         # <check calls that must always be made>
-        mock_check_metadata_in_sdist.assert_called_once_with(sdist_DPI.path)
+        if binary_filters is None:
+            mock_check_metadata_in_sdist.assert_called_once_with(sdist_DPI.path)
         mock_process_package_distributions.assert_called_once_with(
             req, pip_deps, binary_filters, expect_index_url
         )
@@ -654,22 +661,12 @@ class TestDownload:
         ]
 
         if binary_filters is not None:
-            if missing_req_file_checksum:
-                verify_checksums_calls.extend(
-                    [
-                        verify_wheel0_checksum_call,
-                        verify_wheel1_checksum_call,
-                        verify_wheel2_checksum_call,
-                    ]
-                )
-            # req file checksums exist
-            else:
-                verify_checksums_calls.extend(
-                    [
-                        verify_wheel0_checksum_call,
-                        verify_wheel1_checksum_call,
-                    ]
-                )
+            verify_checksums_calls.extend(
+                [
+                    verify_wheel0_checksum_call,
+                    verify_wheel1_checksum_call,
+                ]
+            )
 
         mock_must_match_any_checksum.assert_has_calls(verify_checksums_calls)
         assert mock_must_match_any_checksum.call_count == len(verify_checksums_calls)
@@ -678,14 +675,15 @@ class TestDownload:
 
         # <check basic logging output>
         assert f"-- Processing requirement line '{req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{req.download_line}' in path 'deps/pip/foo-1.0.tar.gz'"
-        ) in caplog.text
+        if binary_filters is None:
+            assert (
+                f"Successfully processed '{req.download_line}' in path 'deps/pip/foo-1.0.tar.gz'"
+            ) in caplog.text
         # </check basic logging output>
 
         # <check downloaded wheels>
         if binary_filters is not None:
-            # wheel 1 does not match any checksums
+            # wheel 1 does not match any checksums -> file removed and error raised
             assert (
                 f"Download '{wheel_1_download.name}' was removed from the output directory"
             ) in caplog.text
@@ -766,11 +764,15 @@ class TestDownload:
         # </setup>
 
         # <call>
-        found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
-        expected_download = [
-            url_download_info | {"kind": "url"},
-        ]
-        assert found_download == expected_download
+        if checksum_match:
+            found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
+            expected_download = [
+                url_download_info | {"kind": "url"},
+            ]
+            assert found_download == expected_download
+        else:
+            with pytest.raises(PackageRejected):
+                pip._download_dependencies(rooted_tmp_path, req_file, None)
         assert pip_deps.path.is_dir()
         # </call>
 
@@ -793,10 +795,11 @@ class TestDownload:
 
         # <check basic logging output>
         assert f"-- Processing requirement line '{url_req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{url_req.download_line}' in path 'deps/pip/external-bar/"
-            f"bar-external-sha256-654321.tar.gz'"
-        ) in caplog.text
+        if checksum_match:
+            assert (
+                f"Successfully processed '{url_req.download_line}' in path 'deps/pip/external-bar/"
+                f"bar-external-sha256-654321.tar.gz'"
+            ) in caplog.text
         # </check basic logging output>
 
     @mock.patch("hermeto.core.package_managers.pip.main._download_vcs_package")

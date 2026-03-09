@@ -275,6 +275,7 @@ def _process_req(
         except PackageRejected:
             path.unlink()
             log.warning("Download '%s' was removed from the output directory", path.name)
+            raise
 
     if dpi:
         if dpi.req_file_checksums:
