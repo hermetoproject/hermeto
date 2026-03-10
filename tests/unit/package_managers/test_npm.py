@@ -24,19 +24,21 @@ from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.npm.main import (
     NormalizedUrl,
-    NpmComponentInfo,
-    Package,
-    PackageLock,
-    ResolvedNpmPackage,
     _clone_repo_pack_archive,
     _generate_component_list,
     _get_npm_dependencies,
-    _Purlifier,
     _resolve_npm,
     _should_replace_dependency,
     _update_package_json_files,
     _update_package_lock_with_local_paths,
     fetch_npm_source,
+)
+from hermeto.core.package_managers.npm.project import (
+    NpmComponentInfo,
+    Package,
+    PackageLock,
+    ResolvedNpmPackage,
+    _Purlifier,
 )
 from hermeto.core.package_managers.npm.utils import (
     extract_git_info_npm,
@@ -66,7 +68,7 @@ def npm_request(rooted_tmp_path: RootedPath, npm_input_packages: list[dict[str, 
 
 @pytest.fixture
 def mock_get_repo_id() -> Iterator[mock.Mock]:
-    with mock.patch("hermeto.core.package_managers.npm.main.get_repo_id") as mocked_get_repo_id:
+    with mock.patch("hermeto.core.package_managers.npm.project.get_repo_id") as mocked_get_repo_id:
         mocked_get_repo_id.return_value = MOCK_REPO_ID
         yield mocked_get_repo_id
 
