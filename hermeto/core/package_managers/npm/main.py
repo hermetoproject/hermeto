@@ -6,7 +6,7 @@ import json
 import logging
 from functools import cached_property, partial
 from pathlib import Path
-from typing import Any, Literal, NewType, TypedDict
+from typing import Any, TypedDict
 from urllib.parse import urlparse
 
 import aiohttp
@@ -33,6 +33,12 @@ from hermeto.core.models.sbom import (
     create_backend_annotation,
 )
 from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.npm.utils import (
+    NormalizedUrl,
+    classify_resolved_url,
+    extract_git_info_npm,
+    normalize_resolved_url,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_id
 
@@ -43,12 +49,6 @@ DEPENDENCY_TYPES = (
     "peerDependencies",
 )
 log = logging.getLogger(__name__)
-
-# Known CNAMEs for the official npm registry server.
-# In rare cases, package-lock.json may contain resolved urls with the yarn CNAME.
-# This most likely happens when converting a yarn.lock to package-lock.json
-# ("importing" one with npm or "exporting" with yarn).
-NPM_REGISTRY_CNAMES = ("registry.npmjs.org", "registry.yarnpkg.com")
 
 
 class NpmComponentInfo(TypedDict):
@@ -291,8 +291,8 @@ class PackageLock:
             missing_hash_in_file = None
             external_refs = None
             if package.resolved_url:  # dependency is not bundled
-                resolved_url = _normalize_resolved_url(package.resolved_url)
-                dep_type = _classify_resolved_url(resolved_url)
+                resolved_url = normalize_resolved_url(package.resolved_url)
+                dep_type = classify_resolved_url(resolved_url)
 
                 if not package.integrity:
                     if dep_type in ("registry", "https"):
@@ -363,13 +363,13 @@ class _Purlifier:
         qualifiers: dict[str, str] | None = None
         subpath: str | None = None
 
-        resolved_url = _normalize_resolved_url(resolved_url)
-        dep_type = _classify_resolved_url(resolved_url)
+        resolved_url = normalize_resolved_url(resolved_url)
+        dep_type = classify_resolved_url(resolved_url)
 
         if dep_type == "registry":
             pass
         elif dep_type == "git":
-            info = _extract_git_info_npm(resolved_url)
+            info = extract_git_info_npm(resolved_url)
             repo_id = RepoID(origin_url=info["url"], commit_id=info["ref"])
             qualifiers = {"vcs_url": repo_id.as_vcs_url_qualifier()}
         elif dep_type == "file":
@@ -392,9 +392,6 @@ class _Purlifier:
         )
 
 
-NormalizedUrl = NewType("NormalizedUrl", str)
-
-
 def _load_json_file(file_path: Path) -> Any:
     """Load and parse a JSON file, raising an appropriate error on decode failure."""
     try:
@@ -409,89 +406,6 @@ def _load_json_file(file_path: Path) -> Any:
         raise UnexpectedFormat(f"The {file_path.name} file must contain valid JSON: {e}") from e
 
 
-def _normalize_resolved_url(resolved_url: str) -> NormalizedUrl:
-    if resolved_url.startswith(("github:", "gitlab:", "bitbucket:")):
-        resolved_url = _update_vcs_url_with_full_hostname(resolved_url)
-    return NormalizedUrl(resolved_url)
-
-
-def _classify_resolved_url(
-    resolved_url: NormalizedUrl,
-) -> Literal["registry", "git", "file", "https"]:
-    url = urlparse(resolved_url)
-    if url.hostname in NPM_REGISTRY_CNAMES:
-        return "registry"
-    if url.scheme == "git" or url.scheme.startswith("git+"):
-        return "git"
-    if url.scheme == "file":
-        return "file"
-    return "https"
-
-
-def _update_vcs_url_with_full_hostname(vcs: str) -> str:
-    """Update VCS URL with full hostname.
-
-    Transform github:kevva/is-positive#97edff6
-    into git+ssh://github.com/kevva/is-positive.git#97edff6
-
-    :param vcs: VCS URL to be modified with full hostname and file extension
-    :return: Updated VCS URL
-    """
-    host, _, path = vcs.partition(":")
-    namespace_repo, _, ref = path.partition("#")
-    suffix_domain = "org" if host == "bitbucket" else "com"
-
-    vcs = f"git+ssh://git@{host}.{suffix_domain}/{namespace_repo}.git"
-    if ref:
-        vcs = f"{vcs}#{ref}"
-    return vcs
-
-
-def _extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
-    """
-    Extract important info from a VCS requirement URL.
-
-    Given a URL such as git+ssh://user@host/namespace/repo.git#9e164b970
-
-    this function will extract:
-    - the "clean" URL: ssh://user@host/namespace/repo.git
-    - the git ref: 9e164b970
-
-    The clean URL and ref can be passed straight to scm.Git to fetch the repo.
-    The host, namespace and repo will be used to construct the file path under deps/npm.
-
-    :param vcs_url: The URL of a VCS requirement, must be valid (have git ref in path)
-    :return: Dict with url, ref, host, namespace and repo keys
-    """
-    clean_url, _, ref = vcs_url.partition("#")
-    # if scheme is git+protocol://, keep only protocol://
-    clean_url = clean_url.removeprefix("git+")
-
-    url = urlparse(clean_url)
-    namespace_repo = url.path.strip("/").removesuffix(".git")
-
-    # Everything up to the last '/' is namespace, the rest is repo
-    namespace, _, repo = namespace_repo.partition("/")
-
-    vcs_url_info = {
-        "url": clean_url,
-        "ref": ref.lower(),
-        "namespace": namespace,
-        "repo": repo,
-    }
-
-    for key, value in vcs_url_info.items():
-        if not value:
-            raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. {key} is missing.")
-
-    if url.hostname:
-        vcs_url_info["host"] = url.hostname
-    else:
-        raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. Host is missing.")
-
-    return vcs_url_info
-
-
 def _clone_repo_pack_archive(
     vcs: NormalizedUrl,
     download_dir: RootedPath,
@@ -503,7 +417,7 @@ def _clone_repo_pack_archive(
     :param download_dir: Output folder where dependencies will be downloaded
     :raise FetchError: If download failed
     """
-    info = _extract_git_info_npm(vcs)
+    info = extract_git_info_npm(vcs)
     download_path = download_dir.join_within_root(
         info["host"],  # host
         info["namespace"],
@@ -559,9 +473,9 @@ def _get_npm_dependencies(
     config = get_config()
 
     for url, info in deps_to_download.items():
-        url = _normalize_resolved_url(url)
+        url = normalize_resolved_url(url)
         fetch_url = url
-        dep_type = _classify_resolved_url(url)
+        dep_type = classify_resolved_url(url)
         proxy_auth = None
 
         if dep_type == "file":
@@ -658,18 +572,18 @@ def _update_package_lock_with_local_paths(
                         package.package_dict[dep_type].update({dependency: ""})
 
         if package.path and package.resolved_url:
-            url = _normalize_resolved_url(str(package.resolved_url))
+            url = normalize_resolved_url(str(package.resolved_url))
         else:
             continue
 
         # Remove integrity for git sources, their integrity checksum will change when
         # constructing tar archive from cloned repository
-        if _classify_resolved_url(url) == "git":
+        if classify_resolved_url(url) == "git":
             if package.integrity:
                 package.integrity = ""
 
         # Replace the resolved_url of all packages, unless it's already a file url:
-        if _classify_resolved_url(url) != "file":
+        if classify_resolved_url(url) != "file":
             templated_abspath = Path("${output_dir}", download_paths[url].subpath_from_root)
             package.resolved_url = f"file://{templated_abspath}"
 
