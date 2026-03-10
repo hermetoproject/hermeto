@@ -15,7 +15,13 @@ import tomlkit.exceptions
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
-from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnexpectedFormat
+from hermeto.core.errors import (
+    LockfileNotFound,
+    NotAGitRepo,
+    PackageManagerError,
+    PackageRejected,
+    UnexpectedFormat,
+)
 from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation, spdx_now
@@ -377,7 +383,10 @@ def _run_cmd_watching_out_for_lock_mismatch(
             else:
                 raise PackageWithCorruptLockfileRejected(str(package_dir))
         else:
-            raise
+            raise PackageManagerError(
+                f"Cargo execution failed: `{' '.join(cmd)}` failed with rc={e.returncode}",
+                stderr=e.stderr,
+            ) from e
 
 
 def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
