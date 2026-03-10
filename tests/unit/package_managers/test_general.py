@@ -21,7 +21,6 @@ from hermeto.core.package_managers.general import (
     download_binary_file,
     pkg_requests_session,
 )
-from hermeto.core.type_aliases import StrPath
 from tests.common_utils import GIT_REF
 
 
@@ -230,7 +229,7 @@ async def test_async_download_files(
 
         return MagicMock(side_effect=mock_download_binary_file)
 
-    files_to_download: dict[str, StrPath] = {
+    files_to_download = {
         "file1": str(tmp_path / "path1"),
         "file2": str(tmp_path / "path2"),
         "file3": str(tmp_path / "path3"),
