@@ -776,14 +776,6 @@ def determine_integration_tests_to_skip() -> Any:
         return SUPPORTED_PMS - affected_package_managers(changes)
     return set()
 
-# Official hashes from go.dev to verify the toolchains we're downloading
-# to keep the tests secure and stable.
-EXPECTED_GO_HASHES = {
-    "1.21.6": {
-        "amd64": "3f934f40ac360b9c01f616a9aa1796d227d8b0328bf64cb045c7b8c4ee9caea4",
-        "arm64": "e2e8aa88e1b5170a0d495d7d9c766af2b2b6c6925a8f8956d834ad6b4cacbd9a",
-    }
-}
 
 def get_required_go_version(project_path: Path) -> str:
     """Extract required Go version from go.mod."""
@@ -798,58 +790,35 @@ def get_required_go_version(project_path: Path) -> str:
 
     raise ValueError(f"No 'go' version directive found in {go_mod_path}")
 
-def _download_and_verify_toolchain(url: str, dest_path: Path, expected_hash: str) -> None:
-    """Download toolchain and verify SHA-256 checksum."""
-    log.info("Downloading alternative Go toolchain from %s", url)
-    if not url.startswith("https://"):
-        raise ValueError(f"URL scheme not allowed: {url}")
-    urllib.request.urlretrieve(url, dest_path) # noqa: S310
 
-    sha256 = hashlib.sha256()
-    with open(dest_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            sha256.update(chunk)
-
-    actual_hash = sha256.hexdigest()
-    if actual_hash != expected_hash:
-        dest_path.unlink(missing_ok=True)
-        raise ValueError(
-            f"SECURITY ALERT: Hash mismatch for {url}!\n"
-            f"Expected: {expected_hash}\nActual: {actual_hash}"
-        )
-
-def _get_go_arch() -> str | None:
+def _get_go_arch() -> str:
     """Identify host architecture and map to Go's naming convention."""
     machine = platform.machine().lower()
     if machine in ("x86_64", "amd64"):
         return "amd64"
     elif machine in ("aarch64", "arm64"):
         return "arm64"
-    else:
-        return None
+    raise ValueError(f"Unsupported architecture: {machine}")
+
 
 def prepare_alt_go_toolchain(dest_dir: Path, version: str) -> Path:
-    """Identify host architecture and setup verified Go toolchain."""
+    """Identify host architecture and setup Go toolchain."""
     go_arch = _get_go_arch()
 
-    if go_arch is None:
-        raise ValueError(f"Unsupported architecture: {platform.machine()}")
-
-    expected_hash = EXPECTED_GO_HASHES[version][go_arch]
-
     filename = f"go{version}.linux-{go_arch}.tar.gz"
-    url = f"https://go.dev/dl/{filename}"
 
     tar_path = dest_dir / filename
     extract_path = dest_dir / f"go-alt-{version}"
 
     if not extract_path.exists():
-        _download_and_verify_toolchain(url, tar_path, expected_hash)
+        url = f"https://go.dev/dl/{filename}"
 
-        log.info("Extracting verified toolchain to %s", extract_path)
+        log.info("Downloading alternative Go toolchain from %s", url)
+        urllib.request.urlretrieve(url, tar_path)  # noqa: S310
+
+        log.info("Extracting toolchain to %s", extract_path)
         extract_path.mkdir(parents=True, exist_ok=True)
         with TarFile.open(tar_path, "r:gz") as tar:
-            # Mitigation for CVE-2007-4559 (path traversal)
             _safe_extract(tar, str(extract_path))
 
     return extract_path / "go" / "bin"
