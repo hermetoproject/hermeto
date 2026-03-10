@@ -162,9 +162,10 @@ def _pypiserver_context() -> Iterator[None]:
 def _dnfserver_context() -> Iterator[None]:
     def _check_ssl_configuration() -> None:
         # TLS auth enforced
+        certs_dir = dnfserver_dir.parent / "certificates"
         resp = requests.get(
             f"https://{TEST_SERVER_LOCALHOST}:{ssl_port}",
-            verify=f"{dnfserver_dir}/certificates/CA.crt",
+            verify=str(certs_dir / "CA.crt"),
         )
         if resp.status_code == requests.codes.ok:
             raise requests.RequestException("DNF server TLS client authentication misconfigured")
@@ -173,10 +174,10 @@ def _dnfserver_context() -> Iterator[None]:
         resp = requests.get(
             f"https://{TEST_SERVER_LOCALHOST}:{ssl_port}",
             cert=(
-                f"{dnfserver_dir}/certificates/client.crt",
-                f"{dnfserver_dir}/certificates/client.key",
+                str(certs_dir / "client.crt"),
+                str(certs_dir / "client.key"),
             ),
-            verify=f"{dnfserver_dir}/certificates/CA.crt",
+            verify=str(certs_dir / "CA.crt"),
         )
         resp.raise_for_status()
 

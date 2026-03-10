@@ -145,7 +145,7 @@ def test_rpm_packages(
         test_repo_dir,
         test_data_dir,
         hermeto_image,
-        mounts=[(top_level_test_dir / "dnfserver/certificates", "/certificates")],
+        mounts=[(top_level_test_dir / "certificates", "/certificates")],
     )
 
 

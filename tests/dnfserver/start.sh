@@ -38,6 +38,6 @@ podman run --rm --replace --name cachi2-dnfserver \
     -p "${HTTP_PORT}":81 \
     -p "${SSL_PORT}":443 \
     -v "${DIR}/nginx.conf":/etc/nginx/nginx.conf:ro,Z \
-    -v "${DIR}/certificates/":/etc/nginx/ssl:ro,Z \
+    -v "${DIR}/../certificates/":/etc/nginx/ssl:ro,Z \
     -v "${WORKDIR}/dnfrepo":/dnfrepo:ro,Z \
     "${DNFSERVER_IMAGE:-$DEFAULT_IMAGE}"
