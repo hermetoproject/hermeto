@@ -22,17 +22,7 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property
-from hermeto.core.package_managers.npm.main import (
-    NormalizedUrl,
-    _clone_repo_pack_archive,
-    _generate_component_list,
-    _get_npm_dependencies,
-    _resolve_npm,
-    _should_replace_dependency,
-    _update_package_json_files,
-    _update_package_lock_with_local_paths,
-    fetch_npm_source,
-)
+from hermeto.core.package_managers.npm.main import _generate_component_list, fetch_npm_source
 from hermeto.core.package_managers.npm.project import (
     NpmComponentInfo,
     Package,
@@ -40,9 +30,22 @@ from hermeto.core.package_managers.npm.project import (
     ResolvedNpmPackage,
     _Purlifier,
 )
+from hermeto.core.package_managers.npm.resolver import (
+    _clone_repo_pack_archive,
+    _get_npm_dependencies,
+    _resolve_npm,
+    _should_replace_dependency,
+    _update_package_json_files,
+    _update_package_lock_with_local_paths,
+)
 from hermeto.core.package_managers.npm.utils import (
-    extract_git_info_npm,
-    update_vcs_url_with_full_hostname,
+    NormalizedUrl,
+)
+from hermeto.core.package_managers.npm.utils import (
+    extract_git_info_npm as _extract_git_info_npm,
+)
+from hermeto.core.package_managers.npm.utils import (
+    update_vcs_url_with_full_hostname as _update_vcs_url_with_full_hostname,
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID
@@ -1465,9 +1468,9 @@ def test_resolve_npm_validation(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm.main._get_npm_dependencies")
-@mock.patch("hermeto.core.package_managers.npm.main._update_package_lock_with_local_paths")
-@mock.patch("hermeto.core.package_managers.npm.main._update_package_json_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver._get_npm_dependencies")
+@mock.patch("hermeto.core.package_managers.npm.resolver._update_package_lock_with_local_paths")
+@mock.patch("hermeto.core.package_managers.npm.resolver._update_package_json_files")
 def test_resolve_npm(
     update_package_json_files: mock.Mock,
     update_package_lock_with_local_paths: mock.Mock,
@@ -1543,7 +1546,7 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
     ],
 )
 def test_extract_git_info_npm(vcs: NormalizedUrl, expected: dict[str, str]) -> None:
-    assert extract_git_info_npm(vcs) == expected
+    assert _extract_git_info_npm(vcs) == expected
 
 
 def test_extract_git_info_with_missing_ref() -> None:
@@ -1553,7 +1556,7 @@ def test_extract_git_info_with_missing_ref() -> None:
         "is not valid VCS url. ref is missing."
     )
     with pytest.raises(UnexpectedFormat, match=expected_error):
-        extract_git_info_npm(vcs)
+        _extract_git_info_npm(vcs)
 
 
 @pytest.mark.parametrize(
@@ -1572,10 +1575,10 @@ def test_extract_git_info_with_missing_ref() -> None:
     ],
 )
 def test_update_vcs_url_with_full_hostname(vcs: str, expected: str) -> None:
-    assert update_vcs_url_with_full_hostname(vcs) == expected
+    assert _update_vcs_url_with_full_hostname(vcs) == expected
 
 
-@mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
 def test_clone_repo_pack_archive(
     mock_clone_as_tarball: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
@@ -1676,10 +1679,10 @@ def test_should_replace_dependency(dependency_version: str, expected_result: boo
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.npm.main.must_match_any_checksum")
+@mock.patch("hermeto.core.package_managers.npm.resolver.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
 def test_get_npm_dependencies(
     mock_clone_as_tarball: mock.Mock,
     mock_from_sri: mock.Mock,
@@ -1931,11 +1934,11 @@ def test_npm_settings_rejects_proxy_urls_containing_credentials(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.npm.main.must_match_any_checksum")
+@mock.patch("hermeto.core.package_managers.npm.resolver.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
-@mock.patch("hermeto.core.package_managers.npm.main.get_config")
+@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.resolver.get_config")
 def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
     mocked_config: mock.Mock,
     mock_clone_as_tarball: mock.Mock,
@@ -1989,11 +1992,11 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.npm.main.must_match_any_checksum")
+@mock.patch("hermeto.core.package_managers.npm.resolver.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
-@mock.patch("hermeto.core.package_managers.npm.main.get_config")
+@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.resolver.get_config")
 def test_npm_proxy_credentials_propagate_to_registry_hosts(
     mocked_config: mock.Mock,
     mock_clone_as_tarball: mock.Mock,
@@ -2048,11 +2051,11 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.npm.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.npm.main.must_match_any_checksum")
+@mock.patch("hermeto.core.package_managers.npm.resolver.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.npm.main.clone_as_tarball")
-@mock.patch("hermeto.core.package_managers.npm.main.get_config")
+@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.npm.resolver.get_config")
 def test_npm_proxy_url_gets_substituted_for_registry_hosts(
     mocked_config: mock.Mock,
     mock_clone_as_tarball: mock.Mock,
