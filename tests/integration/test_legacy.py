@@ -37,7 +37,6 @@ def test_help(hermeto_image: utils.ContainerImage, tmp_path: Path) -> None:
                 branch="cargo/mixed-git-crate-dependency",
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
-                check_deps_checksums=False,
                 expected_exit_code=0,
                 expected_output="",
             ),

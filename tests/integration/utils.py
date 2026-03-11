@@ -66,10 +66,35 @@ CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specificatio
 
 @dataclass
 class TestParameters:
+    """Parameters for a single integration test case.
+
+    :param branch: branch to check out in the integration-tests repository.
+    :param packages: tuple of package dicts passed to the ``fetch-deps`` command.
+    :param check_output: when True, the generated ``.build-config.json`` and
+        SBOM (``bom.json``) are compared against stored expected test data.
+        Set to False when output comparison is intentionally skipped — either
+        because the fetch is expected to fail and no output files are produced,
+        or because the test verifies output through other means.
+    :param expected_exit_code: the exit code the ``fetch-deps`` command is
+        expected to return.  Defaults to 0 (success).
+    :param expected_output: a substring that must appear in the command output.
+    :param global_flags: extra CLI flags inserted before the sub-command.
+    :param flags: extra CLI flags appended after the sub-command.
+    :param repo_url: when set, the test clones this repository instead of the
+        shared session-scoped integration-tests repo.
+
+    .. note:: **Deps-checksum verification** is determined automatically.
+       When ``expected_exit_code != 0`` no deps are fetched, so checksums are
+       skipped.  For successful tests the runner looks for a
+       ``fetch_deps_sha256sums.json`` file in the expected test-data directory;
+       if the file exists checksums are verified, otherwise they are skipped.
+       Package managers whose output is non-deterministic (e.g. bundler, cargo)
+       simply have no such file committed.
+    """
+
     branch: str
     packages: tuple[dict[str, Any], ...]
     check_output: bool = True
-    check_deps_checksums: bool = True
     expected_exit_code: int = 0
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
@@ -459,14 +484,16 @@ def fetch_deps_and_check_output(
     if deps_content_file.exists():
         _validate_expected_dep_file_contents(deps_content_file, output_dir)
 
-    if test_params.check_deps_checksums:
+    # Deps-checksum verification is auto-determined:
+    #  - skip when the test expects a non-zero exit code (no deps fetched)
+    #  - otherwise verify only when a stored checksums file exists
+    expected_files_checksums_path = test_data_dir.joinpath(
+        test_case, "fetch_deps_sha256sums.json"
+    )
+    if test_params.expected_exit_code == 0 and expected_files_checksums_path.exists():
         files_checksums = _calculate_files_checksums_in_dir(output_dir.joinpath("deps"))
-        expected_files_checksums_path = test_data_dir.joinpath(
-            test_data_dir, test_case, "fetch_deps_sha256sums.json"
-        )
         update_test_data_if_needed(expected_files_checksums_path, files_checksums)
         expected_files_checksums = _load_json_or_yaml(expected_files_checksums_path)
-
         log.info("Compare checksums of fetched deps files")
         assert files_checksums == expected_files_checksums
 
