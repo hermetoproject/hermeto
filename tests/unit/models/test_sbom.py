@@ -17,6 +17,7 @@ from hermeto.core.models.sbom import (
     Metadata,
     Property,
     Sbom,
+    SPDXCreationInfo,
     SPDXPackage,
     SPDXPackageAnnotation,
     SPDXPackageExternalRefPackageManagerPURL,
@@ -1516,3 +1517,96 @@ def test_deduplicate_spdx_packages() -> None:
 
     assert len(deduped_packages) == len(expected_packages)
     assert deduped_packages == expected_packages
+
+
+class TestSPDXHashingLogic:
+    """Regression tests to ensure mathematically distinct objects produce distinct hashes, and identical objects produce identical hashes."""
+
+    def test_spdx_relation_hash_prevents_concatenation_collision(self) -> None:
+        rel_a = SPDXRelation(
+            spdxElementId="pkg-a", relatedSpdxElement="1", relationshipType="DEPENDS_ON"
+        )
+        rel_b = SPDXRelation(
+            spdxElementId="pkg-", relatedSpdxElement="a1", relationshipType="DEPENDS_ON"
+        )
+        rel_a_clone = SPDXRelation(
+            spdxElementId="pkg-a", relatedSpdxElement="1", relationshipType="DEPENDS_ON"
+        )
+
+        assert rel_a == rel_a_clone
+        assert hash(rel_a) == hash(rel_a_clone)
+
+        assert rel_a != rel_b
+        assert hash(rel_a) != hash(rel_b)
+
+    def test_spdx_package_hash_prevents_commutative_order_collision(self) -> None:
+        ann_1 = SPDXPackageAnnotation(
+            annotator="Tool A",
+            annotationDate=SPDX_EPOCH_STRFTIME,
+            annotationType="OTHER",
+            comment="1",
+        )
+        ann_2 = SPDXPackageAnnotation(
+            annotator="Tool B",
+            annotationDate=SPDX_EPOCH_STRFTIME,
+            annotationType="OTHER",
+            comment="2",
+        )
+
+        pkg_a = SPDXPackage(
+            SPDXID="SPDXRef-1",
+            name="lib",
+            versionInfo="1",
+            annotations=[ann_1, ann_2],
+            externalRefs=[],
+            downloadLocation="NOASSERTION",
+        )
+        pkg_a_clone = SPDXPackage(
+            SPDXID="SPDXRef-1",
+            name="lib",
+            versionInfo="1",
+            annotations=[ann_1, ann_2],
+            externalRefs=[],
+            downloadLocation="NOASSERTION",
+        )
+        pkg_b = SPDXPackage(
+            SPDXID="SPDXRef-1",
+            name="lib",
+            versionInfo="1",
+            annotations=[ann_2, ann_1],
+            externalRefs=[],
+            downloadLocation="NOASSERTION",
+        )
+
+        assert pkg_a == pkg_a_clone
+        assert hash(pkg_a) == hash(pkg_a_clone)
+
+        assert pkg_a != pkg_b
+        assert hash(pkg_a) != hash(pkg_b)
+
+    def test_spdx_sbom_hash_respects_creation_info(self) -> None:
+        info_1 = SPDXCreationInfo(created="2026-01-01T10:00:00Z", creators=["Tool: Builder"])
+        info_1_clone = SPDXCreationInfo(created="2026-01-01T10:00:00Z", creators=["Tool: Builder"])
+        info_2 = SPDXCreationInfo(created="2026-01-01T10:05:00Z", creators=["Tool: Builder"])
+
+        sbom_1 = SPDXSbom(
+            SPDXID="SPDXRef-DOCUMENT",
+            documentNamespace="https://example.com/1",
+            creationInfo=info_1,
+        )
+        sbom_1_clone = SPDXSbom(
+            SPDXID="SPDXRef-DOCUMENT",
+            documentNamespace="https://example.com/1",
+            creationInfo=info_1_clone,
+        )
+        sbom_2 = SPDXSbom(
+            SPDXID="SPDXRef-DOCUMENT",
+            documentNamespace="https://example.com/1",
+            creationInfo=info_2,
+        )
+
+        assert sbom_1 == sbom_1_clone
+        assert hash(sbom_1) == hash(sbom_1_clone)
+
+        assert sbom_1 != sbom_2
+        assert hash(sbom_1) != hash(sbom_2)

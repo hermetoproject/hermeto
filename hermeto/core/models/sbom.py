@@ -501,14 +501,15 @@ class SPDXPackage(pydantic.BaseModel):
 
     def __hash__(self) -> int:
         return hash(
-            hash(self.SPDXID)
-            + hash(self.name)
-            + hash(self.versionInfo)
-            + hash(self.downloadLocation)
-            + sum(hash(e) for e in self.externalRefs)
-            + sum(hash(a) for a in self.annotations)
-            # NOTE: in an exceptionally rare case there could be a slim chance of collision here.
-            + hash(self.sourceInfo)
+            (
+                self.SPDXID,
+                self.name,
+                self.versionInfo,
+                self.downloadLocation,
+                tuple(self.externalRefs),
+                tuple(self.annotations),
+                self.sourceInfo,
+            )
         )
 
     @staticmethod
@@ -556,8 +557,7 @@ class SPDXRelation(pydantic.BaseModel):
 
     def __hash__(self) -> int:
         return hash(
-            hash(self.spdxElementId + self.relatedSpdxElement + self.relationshipType)
-            + hash(self.comment)
+            (self.spdxElementId, self.relatedSpdxElement, self.relationshipType, self.comment)
         )
 
 
@@ -585,10 +585,14 @@ class SPDXSbom(pydantic.BaseModel):
 
     def __hash__(self) -> int:
         return hash(
-            hash(self.name + self.documentNamespace)
-            + hash(SPDXCreationInfo)
-            + sum(hash(p) for p in self.packages)
-            + sum(hash(r) for r in self.relationships)
+            (
+                self.name,
+                self.documentNamespace,
+                tuple(self.creationInfo.creators),
+                self.creationInfo.created,
+                tuple(self.packages),
+                tuple(self.relationships),
+            )
         )
 
     @classmethod
