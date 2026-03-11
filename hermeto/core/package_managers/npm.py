@@ -263,8 +263,10 @@ class PackageLock:
 
     def get_main_package(self) -> NpmComponentInfo:
         """Return a dict with sbom component data for the main package."""
-        name = self._lockfile_data["name"]
-        version = self._lockfile_data["version"]
+        name = self._lockfile_data.get("name")
+        if not name:
+            raise UnexpectedFormat("The main package in package-lock.json is missing a 'name'.")
+        version = self._lockfile_data.get("version")
         purl = self._purlifier.get_purl(name, version, "file:.", integrity=None)
         return {
             "name": name,
