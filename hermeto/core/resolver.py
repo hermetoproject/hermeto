@@ -27,7 +27,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "bundler": bundler.fetch_bundler_source,
     "cargo": cargo.fetch_cargo_source,
     "gomod": gomod.fetch_gomod_source,
-    "maven": maven.fetch_maven_source,
+    "x-maven": maven.fetch_maven_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "yarn": metayarn.fetch_yarn_source,

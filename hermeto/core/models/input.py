@@ -104,7 +104,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
 
 # Supported package managers
 PackageManagerType = Literal[
-    "bundler", "cargo", "generic", "gomod", "maven", "npm", "pip", "rpm", "yarn"
+    "bundler", "cargo", "generic", "gomod", "npm", "pip", "rpm", "x-maven", "yarn"
 ]
 
 Flag = Literal[
@@ -298,7 +298,7 @@ class GomodPackageInput(_PackageInputBase):
 class MavenPackageInput(_PackageInputBase):
     """Accepted input for a maven package."""
 
-    type: Literal["maven"]
+    type: Literal["x-maven"]
 
 
 class NpmPackageInput(_PackageInputBase):
