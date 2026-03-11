@@ -356,7 +356,8 @@ def _process_url_req(
         download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
         **kwargs,
     )
-    if req.url.endswith(WHEEL_FILE_EXTENSION):
+    parsed_url = urlparse.urlparse(req.url)
+    if parsed_url.path.endswith(WHEEL_FILE_EXTENSION):
         result["package_type"] = "wheel"
 
     return result
