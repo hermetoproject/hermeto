@@ -20,13 +20,13 @@ project_files:
 - abspath: ${test_case_tmp_path}/package-lock.json
   template: |
     {
-      "name": "cachito-npm-with-multiple-dep-versions",
+      "name": "npm-with-multiple-dep-versions",
       "version": "1.0.0",
       "lockfileVersion": 3,
       "requires": true,
       "packages": {
         "": {
-          "name": "cachito-npm-with-multiple-dep-versions",
+          "name": "npm-with-multiple-dep-versions",
           "version": "1.0.0",
           "license": "ISC",
           "workspaces": [
@@ -36,7 +36,7 @@ project_files:
             "is-positive": ""
           },
           "devDependencies": {
-            "cachito-npm-without-deps": ""
+            "npm-without-deps": ""
           }
         },
         "foo": {
@@ -56,11 +56,6 @@ project_files:
             "node": ">=0.10.0"
           }
         },
-        "node_modules/cachito-npm-without-deps": {
-          "version": "1.0.0",
-          "resolved": "file://${output_dir}/deps/npm/github.com/cachito-testing/cachito-npm-without-deps/cachito-npm-without-deps-external-gitcommit-2f0ce1d7b1f8b35572d919428b965285a69583f6.tgz",
-          "dev": true
-        },
         "node_modules/foo": {
           "resolved": "foo",
           "link": true
@@ -73,13 +68,18 @@ project_files:
           "engines": {
             "node": ">=0.10.0"
           }
+        },
+        "node_modules/npm-without-deps": {
+          "version": "1.0.0",
+          "resolved": "file://${output_dir}/deps/npm/github.com/hermetoproject/integration-tests/integration-tests-external-gitcommit-b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tgz",
+          "dev": true
         }
       }
     }
 - abspath: ${test_case_tmp_path}/package.json
   template: |
     {
-      "name": "cachito-npm-with-multiple-dep-versions",
+      "name": "npm-with-multiple-dep-versions",
       "version": "1.0.0",
       "description": "",
       "main": "index.js",
@@ -92,7 +92,7 @@ project_files:
         "is-positive": ""
       },
       "devDependencies": {
-        "cachito-npm-without-deps": ""
+        "npm-without-deps": ""
       },
       "workspaces": [
         "foo"

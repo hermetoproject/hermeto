@@ -11,8 +11,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=package",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -135,30 +135,30 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=module",
-      "name": "github.com/cachito-testing/gomod-vendor-check-pass",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=module",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=module",
       "type": "library",
-      "version": "v0.0.0-20210802173203-0543a5034b68"
+      "version": "v0.0.0-20260311161302-acda5b87da24"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=package",
-      "name": "github.com/cachito-testing/gomod-vendor-check-pass",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=package",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=package",
       "type": "library",
-      "version": "v0.0.0-20210802173203-0543a5034b68"
+      "version": "v0.0.0-20260311161302-acda5b87da24"
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",

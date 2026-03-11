@@ -3,19 +3,19 @@ project_files:
 - abspath: ${test_case_tmp_path}/first_pkg/package-lock.json
   template: |
     {
-      "name": "npm-cachi2-first-package",
+      "name": "npm-first-package",
       "version": "1.0.0",
       "lockfileVersion": 3,
       "requires": true,
       "packages": {
         "": {
-          "name": "npm-cachi2-first-package",
+          "name": "npm-first-package",
           "version": "1.0.0",
           "license": "ISC",
           "dependencies": {
             "@types/react-dom": "^18.0.1",
-            "cachito-npm-without-deps": "",
-            "is-positive": ""
+            "is-positive": "",
+            "npm-without-deps": ""
           },
           "devDependencies": {
             "express": "^4.18.2"
@@ -100,11 +100,6 @@ project_files:
           "engines": {
             "node": ">= 0.8"
           }
-        },
-        "node_modules/cachito-npm-without-deps": {
-          "version": "1.0.0",
-          "resolved": "file://${output_dir}/deps/npm/external-cachito-npm-without-deps/cachito-npm-without-deps-external-sha512-43e71f90ad5f9eb349ab18a283f8954994def373962ddc61b866bdea4d48249e67913c6b84dca1e8c519e981ca1fcc62b438292104a88ee9ed72db76a41efede.tgz",
-          "integrity": "sha512-Q+cfkK1fnrNJqxiig/iVSZTe83OWLdxhuGa96k1IJJ5nkTxrhNyh6MUZ6YHKH8xitDgpIQSojuntctt2pB7+3g=="
         },
         "node_modules/call-bind": {
           "version": "1.0.2",
@@ -476,6 +471,11 @@ project_files:
             "node": ">= 0.6"
           }
         },
+        "node_modules/npm-without-deps": {
+          "version": "1.0.0",
+          "resolved": "file://${output_dir}/deps/npm/external-npm-without-deps/npm-without-deps-external-sha512-8c1abf64841a445eb384c5aa5c26c3a51d54c876db62777a3b5fc3e4debd29e2bf68e4b74fe6fbc322a1d0c4cf02fd2668a5df73aebd4118c54931d18ca086a1.tgz",
+          "integrity": "sha512-jBq/ZIQaRF6zhMWqXCbDpR1UyHbbYnd6O1/D5N69KeK/aOS3T+b7wyKh0MTPAv0maKXfc669QRjFSTHRjKCGoQ=="
+        },
         "node_modules/object-inspect": {
           "version": "1.12.3",
           "resolved": "file://${output_dir}/deps/npm/object-inspect-1.12.3.tgz",
@@ -718,7 +718,7 @@ project_files:
 - abspath: ${test_case_tmp_path}/first_pkg/package.json
   template: |
     {
-      "name": "npm-cachi2-first-package",
+      "name": "npm-first-package",
       "version": "1.0.0",
       "description": "",
       "main": "index.js",
@@ -727,33 +727,33 @@ project_files:
       },
       "repository": {
         "type": "git",
-        "url": "git+https://github.com/cachito-testing/cachito-npm-workspaces.git"
+        "url": "git+https://github.com/hermetoproject/integration-tests.git"
       },
       "author": "",
       "license": "ISC",
       "bugs": {
-        "url": "https://github.com/cachito-testing/cachito-npm-workspaces/issues"
+        "url": "https://github.com/hermetoproject/integration-tests/issues"
       },
-      "homepage": "https://github.com/cachito-testing/cachito-npm-workspaces#readme",
+      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "devDependencies": {
         "express": "^4.18.2"
       },
       "dependencies": {
         "@types/react-dom": "^18.0.1",
-        "cachito-npm-without-deps": "",
+        "npm-without-deps": "",
         "is-positive": ""
       }
     }
 - abspath: ${test_case_tmp_path}/second_pkg/package-lock.json
   template: |
     {
-      "name": "npm-cachi2-second-pkg",
+      "name": "npm-second-pkg",
       "version": "1.0.0",
       "lockfileVersion": 3,
       "requires": true,
       "packages": {
         "": {
-          "name": "npm-cachi2-second-pkg",
+          "name": "npm-second-pkg",
           "version": "1.0.0",
           "license": "ISC",
           "dependencies": {
@@ -1428,7 +1428,7 @@ project_files:
 - abspath: ${test_case_tmp_path}/second_pkg/package.json
   template: |
     {
-      "name": "npm-cachi2-second-pkg",
+      "name": "npm-second-pkg",
       "version": "1.0.0",
       "main": "index.js",
       "scripts": {
@@ -1436,14 +1436,14 @@ project_files:
       },
       "repository": {
         "type": "git",
-        "url": "git+https://github.com/cachito-testing/cachito-npm-workspaces.git"
+        "url": "git+https://github.com/hermetoproject/integration-tests.git"
       },
       "author": "",
       "license": "ISC",
       "bugs": {
-        "url": "https://github.com/cachito-testing/cachito-npm-workspaces/issues"
+        "url": "https://github.com/hermetoproject/integration-tests/issues"
       },
-      "homepage": "https://github.com/cachito-testing/cachito-npm-workspaces#readme",
+      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "description": "",
       "dependencies": {
         "bitbucket-cachi2-npm-without-deps-second": "",
@@ -1455,20 +1455,20 @@ project_files:
 - abspath: ${test_case_tmp_path}/third_pkg/package-lock.json
   template: |
     {
-      "name": "npm-cachi2-third-package",
+      "name": "npm-third-package",
       "version": "1.0.0",
       "lockfileVersion": 3,
       "requires": true,
       "packages": {
         "": {
-          "name": "npm-cachi2-third-package",
+          "name": "npm-third-package",
           "version": "1.0.0",
           "license": "ISC",
           "dependencies": {
-            "cachito-npm-without-deps": "",
             "chai": "4.2.0",
             "fecha": "file:fecha-4.2.3.tgz",
             "is-positive": "",
+            "npm-without-deps": "",
             "sax": "0.1.1"
           }
         },
@@ -1478,11 +1478,6 @@ project_files:
           "engines": {
             "node": "*"
           }
-        },
-        "node_modules/cachito-npm-without-deps": {
-          "version": "1.0.0",
-          "resolved": "file://${output_dir}/deps/npm/external-cachito-npm-without-deps/cachito-npm-without-deps-external-sha512-43e71f90ad5f9eb349ab18a283f8954994def373962ddc61b866bdea4d48249e67913c6b84dca1e8c519e981ca1fcc62b438292104a88ee9ed72db76a41efede.tgz",
-          "integrity": "sha512-Q+cfkK1fnrNJqxiig/iVSZTe83OWLdxhuGa96k1IJJ5nkTxrhNyh6MUZ6YHKH8xitDgpIQSojuntctt2pB7+3g=="
         },
         "node_modules/chai": {
           "version": "4.2.0",
@@ -1536,6 +1531,11 @@ project_files:
             "node": ">=0.10.0"
           }
         },
+        "node_modules/npm-without-deps": {
+          "version": "1.0.0",
+          "resolved": "file://${output_dir}/deps/npm/external-npm-without-deps/npm-without-deps-external-sha512-8c1abf64841a445eb384c5aa5c26c3a51d54c876db62777a3b5fc3e4debd29e2bf68e4b74fe6fbc322a1d0c4cf02fd2668a5df73aebd4118c54931d18ca086a1.tgz",
+          "integrity": "sha512-jBq/ZIQaRF6zhMWqXCbDpR1UyHbbYnd6O1/D5N69KeK/aOS3T+b7wyKh0MTPAv0maKXfc669QRjFSTHRjKCGoQ=="
+        },
         "node_modules/pathval": {
           "version": "1.1.1",
           "resolved": "file://${output_dir}/deps/npm/pathval-1.1.1.tgz",
@@ -1562,7 +1562,7 @@ project_files:
 - abspath: ${test_case_tmp_path}/third_pkg/package.json
   template: |
     {
-      "name": "npm-cachi2-third-package",
+      "name": "npm-third-package",
       "version": "1.0.0",
       "main": "index.js",
       "scripts": {
@@ -1570,16 +1570,16 @@ project_files:
       },
       "repository": {
         "type": "git",
-        "url": "git+https://github.com/cachito-testing/cachito-npm-workspaces.git"
+        "url": "git+https://github.com/hermetoproject/integration-tests.git"
       },
       "author": "",
       "license": "ISC",
       "bugs": {
-        "url": "https://github.com/cachito-testing/cachito-npm-workspaces/issues"
+        "url": "https://github.com/hermetoproject/integration-tests/issues"
       },
-      "homepage": "https://github.com/cachito-testing/cachito-npm-workspaces#readme",
+      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
-        "cachito-npm-without-deps": "",
+        "npm-without-deps": "",
         "is-positive": "",
         "fecha": "file:fecha-4.2.3.tgz",
         "chai": "4.2.0",
