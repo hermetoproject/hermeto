@@ -16,6 +16,7 @@ from packageurl import PackageURL
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import ProxyUrl, get_config
 from hermeto.core.errors import (
+    InvalidLockfileFormat,
     LockfileNotFound,
     MissingChecksum,
     PackageRejected,
@@ -209,8 +210,7 @@ class PackageLock:
     @classmethod
     def from_file(cls, lockfile_path: RootedPath) -> "PackageLock":
         """Create a PackageLock from a package-lock.json file."""
-        with lockfile_path.path.open("r") as f:
-            lockfile_data = json.load(f)
+        lockfile_data = _load_json_file(lockfile_path.path)
 
         lockfile_version = lockfile_data.get("lockfileVersion")
         if lockfile_version not in (2, 3):
@@ -392,6 +392,20 @@ class _Purlifier:
 
 
 NormalizedUrl = NewType("NormalizedUrl", str)
+
+
+def _load_json_file(file_path: Path) -> Any:
+    """Load and parse a JSON file, raising an appropriate error on decode failure."""
+    try:
+        with file_path.open("r") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        if "lock" in file_path.name:
+            raise InvalidLockfileFormat(
+                lockfile_path=file_path,
+                err_details=str(e),
+            ) from e
+        raise UnexpectedFormat(f"The {file_path.name} file must contain valid JSON: {e}") from e
 
 
 def _normalize_resolved_url(resolved_url: str) -> NormalizedUrl:
@@ -675,8 +689,7 @@ def _update_package_json_files(
 
     package_json_projectfiles = []
     for package_json_path in package_json_paths:
-        with open(package_json_path) as f:
-            package_json_content = json.load(f)
+        package_json_content = _load_json_file(package_json_path.path)
 
         for dep_type in DEPENDENCY_TYPES:
             if package_json_content.get(dep_type):
