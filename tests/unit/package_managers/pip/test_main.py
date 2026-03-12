@@ -1643,3 +1643,29 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
 
     with pytest.raises(PackageWithCorruptLockfileRejected):
         pip.fetch_pip_source(request)
+
+
+@pytest.mark.parametrize(
+    ("test_url", "expected_type"),
+    [
+        ("https://example.com/pkg-1.0-py3-none-any.whl", "wheel"),
+        ("https://example.com/pkg-1.0-py3-none-any.whl#sha256=08695f5ad7", "wheel"),
+        ("https://example.com/pkg-1.0-py3-none-any.whl?v=1.0#sha256=08695f5ad7", "wheel"),
+        ("https://example.com/pkg-1.0.tar.gz", ""),
+        ("https://example.com/pkg-1.0.tar.gz#sha256=08695f5ad7", ""),
+        ("https://example.com/pkg-1.0.tar.gz?v=1.0#sha256=08695f5ad7", ""),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.pip.main._download_url_package")
+@mock.patch("hermeto.core.package_managers.pip.main._process_req")
+def test_process_url_req(
+    mock_process_req: mock.Mock,
+    mock_download_url_package: mock.Mock,
+    test_url: str,
+    expected_type: str,
+) -> None:
+    """Ensure wheel packages are correctly identified even with URL fragments."""
+    req = mock_requirement("pkg", "url", url=test_url)
+    mock_process_req.return_value = {"package_type": ""}
+    result = pip._process_url_req(req, pip_deps_dir=mock.Mock(), trusted_hosts=set())
+    assert result.get("package_type") == expected_type
