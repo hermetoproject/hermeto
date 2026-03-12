@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       push_latest:
-        description: 'Also push as latest tag'
+        description: "Also push as latest tag"
         required: true
         type: boolean
         default: false
@@ -60,6 +60,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ (github.event_name == 'workflow_dispatch' && inputs.push_latest) || (github.event_name == 'release' && !github.event.release.prerelease) }}
+            type=raw,value=test,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       # Multi-arch build setup
       - name: Build and push container image
@@ -68,6 +69,6 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.event_name == 'release' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
