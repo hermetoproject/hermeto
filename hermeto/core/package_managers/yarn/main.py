@@ -247,6 +247,7 @@ def _generate_environment_variables() -> list[EnvironmentVariable]:
         "YARN_ENABLE_IMMUTABLE_CACHE": "false",
         "YARN_ENABLE_MIRROR": "true",
         "YARN_GLOBAL_FOLDER": "${output_dir}/deps/yarn",
+        "npm_config_build_from_source": "true",
     }
 
     return [EnvironmentVariable(name=key, value=value) for key, value in env_vars.items()]
