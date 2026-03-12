@@ -711,7 +711,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     annotations: list[Annotation] = []
 
     repo_name = _get_repository_name(request.source_dir)
-    version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    try:
+        version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            version_resolver = ModuleVersionResolver.without_repo()
+        else:
+            raise
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
@@ -741,7 +747,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir)
+            try:
+                vendor_changed = _vendor_changed(main_module_dir)
+            except NotAGitRepo:
+                if get_config().mode == Mode.PERMISSIVE:
+                    vendor_changed = False
+                else:
+                    raise
             if vendor_changed and get_config().mode != Mode.PERMISSIVE:
                 raise PackageRejected(
                     reason=(
@@ -1366,10 +1378,21 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
 class ModuleVersionResolver:
     """Resolves the versions of Go modules in a git repository."""
 
-    def __init__(self, repo: GitRepo, commit: git.objects.commit.Commit):
+    PLACEHOLDER_VERSION = "v0.0.0"
+
+    def __init__(
+        self,
+        repo: GitRepo,
+        commit: git.objects.commit.Commit,
+    ):
         """Initialize a ModuleVersionResolver for the provided Repo."""
         self._repo = repo
         self._commit = commit
+
+    @classmethod
+    def without_repo(cls) -> "ModuleVersionResolver":
+        """Return a resolver that always produces a placeholder version."""
+        return _StaticVersionResolver()
 
     @classmethod
     def from_repo_path(cls, repo_path: RootedPath) -> "Self":
@@ -1658,6 +1681,17 @@ class ModuleVersionResolver:
             semantic_version = tag_name[1:]
 
         return semver.version.Version.parse(semantic_version)
+
+
+class _StaticVersionResolver(ModuleVersionResolver):
+    """Returns a fixed version for all modules (permissive mode without git)."""
+
+    def __init__(self, version: str = ModuleVersionResolver.PLACEHOLDER_VERSION):
+        self._version = version
+
+    def get_golang_version(self, _module_name: str, _app_dir: RootedPath) -> str:
+        """Return the static placeholder version."""
+        return self._version
 
 
 def _validate_local_replacements(modules: Iterable[ParsedModule], app_path: RootedPath) -> None:
