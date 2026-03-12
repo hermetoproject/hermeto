@@ -327,45 +327,45 @@ versions of Maven, making it easier to adopt in legacy codebases.
 
 ### Fetching Content
 
-As a proof of concept, the official [Maven Dependency Plugin](https://maven.apache.org/plugins/maven-dependency-plugin/)
-will be used to fetch dependencies using the artifact coordinates listed in the lockfile. The
-plugin provides mechanisms for project dependencies to be downloaded to a local Maven repository
-outside of a typical build invocation, particularly its `get` goal. Its `get` goal can be invoked from any
-directory that has a `pom.xml` file.
-
-The plugin will be configured to save artifacts to an appropriate `hermeto-output` directory and
-ignore dependencies:
-
-```sh
-mvn org.apache.maven.plugins:maven-dependency-plugin:3.9.0:get \
-  -Dmaven.repo.local="hermeto-output/deps/maven" \
-  -Dtransitive=false \
-  -DartifactId={artifactId} \
-  -DgroupId={groupId} \
-  -Dversion={version} \
-  -Dclassifier={classifier} \
-  -Dpackaging={artifact_type}
-```
-
+Hermeto fetches Maven artifacts directly via HTTP using the `resolved` URLs recorded in the
+`lockfile.json`. The full set of artifacts to download — JARs, POM files, parent POM chains,
+BOM imports, plugin artifacts, and build extensions — is derived from the lockfile.
 
 #### Native vs. Hermeto Fetch
 
-The Maven dependency plugin is considered a "native" approach, however there are several downsides
-to its use:
+Hermeto is responsible for downloading Maven dependencies directly rather than delegating to a
+Maven CLI tool. Invoking Maven CLI commands during the prefetch phase risks executing arbitrary
+plugin code, introduces uncontrolled network access beyond what is recorded in the lockfile, and
+makes it difficult to assert that the resulting SBOM is accurate.
 
-- Each invocation of the `mvn` command line imposes significant overhead, and thus is very slow.
-- The directory specified by the `-Dmaven.repo.local` system property will include the
-  `maven-dependency-plugin`'s compiled code and transitive dependencies. This is because `mvn`
-  command does not embed the `maven-dependency-plugin` - it must download it and its dependencies
-  in order to function.
-- The `maven-dependency-plugin` will download any parent POM referenced by the provided Maven
-  artifact. This behavior is necessary, but may obfuscate bugs due to missing `lockfile.json` data.
-  The plugin otherwise behaves correctly and will not download package dependencies if the
-  `-Dtransitive=false` flag is set.
+#### Project Structure
 
-Use of this plugin is an acceptable tradeoff to get a working proof of concept, however there is
-general consensus that Hermeto should reverse engineer the package download process before
-declaring this package manager generally available.
+Artifacts are saved to `{output_dir}/deps/maven` following the standard Maven local repository
+layout so that Maven can locate them offline during the build:
+
+```
+deps/maven/
+└── {groupId as directory path}/
+    └── {artifactId}/
+        └── {version}/
+            ├── {artifactId}-{version}.jar
+            ├── {artifactId}-{version}.jar.sha1
+            ├── {artifactId}-{version}.pom
+            ├── {artifactId}-{version}.pom.sha1
+            └── _remote.repositories
+```
+
+#### File Formats and Metadata
+
+- **Artifact files**: JARs, WARs, and other packaging types as recorded in the lockfile.
+- **POM files**: Each artifact's own POM and its full parent POM chain are downloaded alongside
+  the artifact. Maven requires these to resolve dependency metadata during the build.
+- **Checksum sidecar files**: A checksum file (e.g. `.sha1`) is written next to each artifact.
+  The algorithm is taken from the `checksumAlgorithm` field in the lockfile. Maven validates these
+  during the build to detect corrupted or tampered artifacts.
+- **`_remote.repositories`**: A metadata file required by Maven's local repository format. Hermeto
+  generates this file for each artifact directory, recording the repository ID the artifact was
+  fetched from. Without this file, Maven may attempt to re-download artifacts from the network.
 
 <!-- 
 Decide if the package manager can be trusted to fetch dependencies, or if Hermeto should "reverse
@@ -521,3 +521,4 @@ Optional - provide reference links that support decisions in this document.
 
 - 2025-07-30: Initial draft
 - 2026-01-28: Update based on proof of concept implementation with `maven-dependency-plugin`
+- 2026-03-12: Revised fetching approach to use Hermeto's native HTTP fetch instead of Maven CLI
