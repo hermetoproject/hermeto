@@ -68,6 +68,8 @@ class _UrlMixin:
 class _PathMixin:
     path: RootedPath
 
+
+class _PathPackage(_BasePackage, _PathMixin):
     def _get_vcs_qualifiers(self) -> dict[str, str] | None:
         """Return vcs_url qualifiers dict if repo ID is available, else None."""
         try:
@@ -78,6 +80,32 @@ class _PathMixin:
             else:
                 raise
         return qualifiers
+
+    @property
+    def purl(self) -> str:
+        """Return package URL."""
+        return PackageURL(
+            type="npm",
+            name=self.name,
+            version=self.version,
+            qualifiers=self._get_vcs_qualifiers(),
+            subpath=str(self.path.subpath_from_root),
+        ).to_string()
+
+
+@dataclass
+class FilePackage(_PathPackage):
+    """A Yarn 1.x package from a local file path."""
+
+
+@dataclass
+class WorkspacePackage(_PathPackage):
+    """A Yarn 1.x local workspace package."""
+
+
+@dataclass
+class LinkPackage(_PathPackage):
+    """A Yarn 1.x local link package."""
 
 
 @dataclass
@@ -135,54 +163,6 @@ class UrlPackage(_BasePackage, _UrlMixin):
             name=self.name,
             version=self.version,
             qualifiers=qualifiers,
-        ).to_string()
-
-
-@dataclass
-class FilePackage(_BasePackage, _PathMixin):
-    """A Yarn 1.x package from a local file path."""
-
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=self._get_vcs_qualifiers(),
-            subpath=str(self.path.subpath_from_root),
-        ).to_string()
-
-
-@dataclass
-class WorkspacePackage(_BasePackage, _PathMixin):
-    """A Yarn 1.x local workspace package."""
-
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=self._get_vcs_qualifiers(),
-            subpath=str(self.path.subpath_from_root),
-        ).to_string()
-
-
-@dataclass
-class LinkPackage(_BasePackage, _PathMixin):
-    """A Yarn 1.x local link package."""
-
-    @property
-    def purl(self) -> str:
-        """Return package URL."""
-        return PackageURL(
-            type="npm",
-            name=self.name,
-            version=self.version,
-            qualifiers=self._get_vcs_qualifiers(),
-            subpath=str(self.path.subpath_from_root),
         ).to_string()
 
 
