@@ -25,7 +25,11 @@ from hermeto.core.models.output import (
     ProjectFile,
     RequestOutput,
 )
-from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.models.sbom import (
+    Annotation,
+    create_backend_annotation,
+    spdx_now,
+)
 from hermeto.core.package_managers.js_utils import clone_repo_pack_archive
 
 from hermeto.core.package_managers.yarn.locators import parse_raw_locator
@@ -65,7 +69,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        pkg_components, pkg_project_files = _resolve_yarn_project(
+        pkg_components, pkg_project_files, git_deps = _resolve_yarn_project(
             project, request.output_dir, request.mode
         )
         components.extend(pkg_components)
@@ -74,6 +78,24 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     annotations = []
     if backend_annotation := create_backend_annotation(components, "yarn"):
         annotations.append(backend_annotation)
+    if git_deps:
+        subjects: list[str] = []
+        for gitdep in git_deps:
+            # find bom-ref
+            for component in components:
+                if gitdep.name == component.name:
+                    subjects.append(component.bom_ref)
+                    break
+
+        annotations.append(
+            Annotation(
+                subjects=subjects,
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text="hermeto:permissive-mode:yarn:using-git-dependencies",
+            )
+        )
+
     return RequestOutput.from_obj_list(
         components=components,
         environment_variables=_generate_environment_variables(),
@@ -136,7 +158,7 @@ def _verify_repository(project: Project) -> None:
 
 def _resolve_yarn_project(
     project: Project, output_dir: RootedPath, mode: Mode
-) -> tuple[list[Component], list[ProjectFile]]:
+) -> tuple[list[Component], list[ProjectFile], list[GitDep]]:
     """Process a request for a single yarn source directory.
 
     :param project: the directory to be processed.
@@ -157,7 +179,7 @@ def _resolve_yarn_project(
         _set_yarnrc_configuration(project, output_dir, version)
         packages = resolve_packages(project.source_dir)
         _fetch_dependencies(project.source_dir)
-        return create_components(packages, project, output_dir), []
+        return create_components(packages, project, output_dir), [], git_deps
 
     # When git deps are present the processing order is intentionally inverted
     # compared to the normal path above: we must fetch first (to update the
@@ -189,6 +211,7 @@ def _resolve_yarn_project(
     return (
         create_components(packages, project, output_dir, tarball_vcs_url_map),
         project_files,
+        git_deps,
     )
 
 
