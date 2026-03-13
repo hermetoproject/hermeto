@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import textwrap
 from typing import Any
+from unittest import mock
 
 import pytest
 
 from hermeto.core.errors import UnexpectedFormat
+from hermeto.core.models.input import Request
 from hermeto.core.package_managers.cargo.main import (
     CargoPackage,
+    CargoVendorResult,
     _resolve_main_package,
     _sanitize_cargo_config,
+    fetch_cargo_source,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -234,3 +238,37 @@ def test_cargo_config_without_registries_gets_sanitized(config_input: str) -> No
 def test_sanitize_cargo_config_raises_unexpected_format(invalid_config: str) -> None:
     with pytest.raises(UnexpectedFormat):
         _sanitize_cargo_config(invalid_config)
+
+
+@mock.patch("hermeto.core.package_managers.cargo.main._resolve_main_package")
+@mock.patch("hermeto.core.package_managers.cargo.main._generate_sbom_components")
+@mock.patch("hermeto.core.package_managers.cargo.main._fetch_dependencies")
+@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present")
+def test_fetch_cargo_source_generates_offline_env_var(
+    mock_verify: mock.Mock,
+    mock_fetch: mock.Mock,
+    mock_generate_sbom: mock.Mock,
+    mock_resolve_main: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_verify.return_value = None
+    config_template = """
+    [source.vendored-sources]
+    directory = "/tmp/old-path"
+    """
+    mock_fetch.return_value = CargoVendorResult(
+        config_template=config_template, lockfile_was_generated=False
+    )
+    mock_generate_sbom.return_value = []
+    mock_resolve_main.return_value = CargoPackage(name="test", version="0.1.0")
+
+    request = Request(
+        source_dir=rooted_tmp_path,
+        output_dir=rooted_tmp_path.join_within_root("output"),
+        packages=[{"type": "cargo", "path": "."}],
+    )
+
+    output = fetch_cargo_source(request)
+
+    env_vars = output.build_config.environment_variables
+    assert any(env.name == "CARGO_NET_OFFLINE" and env.value == "true" for env in env_vars)

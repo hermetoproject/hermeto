@@ -1,4 +1,6 @@
-environment_variables: []
+environment_variables:
+- name: CARGO_NET_OFFLINE
+  value: 'true'
 project_files:
 - abspath: ${test_case_tmp_path}/.cargo/config.toml
   template: |

@@ -23,7 +23,13 @@ from hermeto.core.errors import (
     UnexpectedFormat,
 )
 from hermeto.core.models.input import Mode, Request
-from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
+from hermeto.core.models.output import (
+    Annotation,
+    Component,
+    EnvironmentVariable,
+    ProjectFile,
+    RequestOutput,
+)
 from hermeto.core.models.sbom import create_backend_annotation, spdx_now
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
@@ -154,8 +160,12 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     if backend_annotation := create_backend_annotation(components, "cargo"):
         annotations.append(backend_annotation)
+    env_vars = [
+        EnvironmentVariable(name="CARGO_NET_OFFLINE", value="true"),
+    ]
     return RequestOutput.from_obj_list(
         components=components,
+        environment_variables=env_vars,
         project_files=project_files,
         annotations=annotations,
     )

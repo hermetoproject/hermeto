@@ -345,8 +345,12 @@ def test_verify_corepack_yarn_version_invalid_version(
         ),
         pytest.param(
             [
-                LinkPackage(name="foo", version="1.0.0", path=RootedPath("/path/to/foo")),
-                FilePackage(name="bar", version="1.0.0", path=RootedPath("/path/to/bar")),
+                LinkPackage(
+                    name="foo", version="1.0.0", path=RootedPath(Path("/path/to/foo").absolute())
+                ),
+                FilePackage(
+                    name="bar", version="1.0.0", path=RootedPath(Path("/path/to/bar").absolute())
+                ),
             ],
             id="skipped_packages",
         ),
