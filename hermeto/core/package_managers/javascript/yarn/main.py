@@ -11,6 +11,8 @@ from urllib.parse import parse_qs
 
 import semver
 import yaml
+from packageurl import PackageURL
+
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
@@ -26,7 +28,11 @@ from hermeto.core.models.output import (
     ProjectFile,
     RequestOutput,
 )
-from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.models.sbom import (
+    Annotation,
+    create_backend_annotation,
+    spdx_now,
+)
 from hermeto.core.package_managers.javascript.js_utils import (
     clone_repo_pack_archive,
     parse_git_clone_url,
@@ -123,20 +129,39 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     """Process all the yarn source directories in a request."""
     components: list[Component] = []
     project_files: list[ProjectFile] = []
+    git_deps: list[GitDep] = []
 
     for package in request.yarn_packages:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        pkg_components, pkg_project_files, _ = _resolve_yarn_project(
+        pkg_components, pkg_project_files, pkg_git_deps = _resolve_yarn_project(
             project, request.output_dir, get_config().mode, package.workspaces
         )
         components.extend(pkg_components)
         project_files.extend(pkg_project_files)
+        git_deps.extend(pkg_git_deps)
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "yarn"):
         annotations.append(backend_annotation)
+    if git_deps:
+
+        def get_vcs_url(c: Component) -> str | None:
+            purl = PackageURL.from_string(c.purl)
+            return purl.qualifiers.get("vcs_url") if purl.qualifiers else None
+
+        vcs_urls = {_build_vcs_url(d) for d in git_deps}
+        subjects = [c.bom_ref for c in components if get_vcs_url(c) in vcs_urls]
+
+        annotations.append(
+            Annotation(
+                subjects=subjects,
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text="hermeto:permissive-mode:yarn:using-git-dependencies",
+            )
+        )
 
     return RequestOutput.from_obj_list(
         components=components,
