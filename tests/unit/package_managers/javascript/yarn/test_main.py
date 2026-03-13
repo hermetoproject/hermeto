@@ -15,9 +15,12 @@ from hermeto.core.errors import (
     UnexpectedFormat,
     UnsupportedFeature,
 )
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import (
+    Component,
     EnvironmentVariable,
 )
+from hermeto.core.package_managers.javascript.yarn import fetch_yarn_source
 from hermeto.core.package_managers.javascript.yarn.main import (
     GitDep,
     _build_clone_url,
@@ -38,6 +41,7 @@ from hermeto.core.package_managers.javascript.yarn.project import (
 )
 from hermeto.core.package_managers.javascript.yarn.utils import VersionsRange
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import first_for
 
 
 @pytest.fixture(scope="module")
@@ -346,6 +350,43 @@ def test_strip_workspace_scripts(rooted_tmp_path: RootedPath) -> None:
 
 
 # --- Tests for git dependency support ---
+
+
+@pytest.mark.parametrize(
+    "input_request",
+    [pytest.param([{"type": "yarn", "path": "."}], id="single_package")],
+    indirect=["input_request"],
+)
+@mock.patch("hermeto.core.package_managers.javascript.yarn.main._resolve_yarn_project")
+@mock.patch("hermeto.core.package_managers.javascript.yarn.project.Project.from_source_dir")
+def test_fetch_yarn_source_git_dep_annotation(
+    mock_project_from_source_dir: mock.Mock,
+    mock_resolve_yarn: mock.Mock,
+    input_request: Request,
+    yarn_env_variables: list[EnvironmentVariable],
+) -> None:
+    mock_project = mock.Mock()
+    mock_project_from_source_dir.return_value = mock_project
+
+    components = [
+        Component(
+            name="foo",
+            purl="pkg:npm/foo@1.0.0?vcs_url=git+https://github.com/owner/foo.git@abc123",
+            version="1.0.0",
+        )
+    ]
+    git_deps = [GitDep(name="foo", clone_url="https://github.com/owner/foo.git", ref="abc123")]
+    mock_resolve_yarn.return_value = (components, [], git_deps)
+
+    output = fetch_yarn_source(input_request)
+
+    git_ann = first_for(
+        lambda a: a.text == "hermeto:permissive-mode:yarn:using-git-dependencies",
+        output.annotations,
+        None,
+    )
+    assert git_ann is not None
+    assert components[0].bom_ref in git_ann.subjects
 
 
 def _make_project(package_json_data: dict[str, Any] | None = None) -> Project:
