@@ -8,6 +8,8 @@ import pytest
 from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.input import Request
 from hermeto.core.package_managers.cargo.main import (
+    CARGO_OFFLINE_ENV_VAR_NAME,
+    CARGO_OFFLINE_ENV_VAR_VALUE,
     CargoPackage,
     CargoVendorResult,
     _resolve_main_package,
@@ -271,4 +273,7 @@ def test_fetch_cargo_source_generates_offline_env_var(
     output = fetch_cargo_source(request)
 
     env_vars = output.build_config.environment_variables
-    assert any(env.name == "CARGO_NET_OFFLINE" and env.value == "true" for env in env_vars)
+    assert any(
+        env.name == CARGO_OFFLINE_ENV_VAR_NAME and env.value == CARGO_OFFLINE_ENV_VAR_VALUE
+        for env in env_vars
+    )

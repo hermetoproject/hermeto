@@ -37,6 +37,9 @@ from hermeto.core.utils import run_cmd
 
 log = logging.getLogger(__name__)
 
+CARGO_OFFLINE_ENV_VAR_NAME = "CARGO_NET_OFFLINE"
+CARGO_OFFLINE_ENV_VAR_VALUE = "true"
+
 
 class CargoVendorResult(NamedTuple):
     """
@@ -161,7 +164,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
     if backend_annotation := create_backend_annotation(components, "cargo"):
         annotations.append(backend_annotation)
     env_vars = [
-        EnvironmentVariable(name="CARGO_NET_OFFLINE", value="true"),
+        EnvironmentVariable(name=CARGO_OFFLINE_ENV_VAR_NAME, value=CARGO_OFFLINE_ENV_VAR_VALUE),
     ]
     return RequestOutput.from_obj_list(
         components=components,
