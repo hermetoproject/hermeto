@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections.abc import Generator, Iterable
-from itertools import chain
 from pathlib import Path
 from typing import Any
 
 import pydantic
+from more_itertools import flatten
 
 from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.rooted_path import RootedPath
@@ -52,7 +52,7 @@ def _get_workspace_paths(workspaces_globs: list[str], source_dir: RootedPath) ->
     def all_paths_matching(glob: str) -> Generator[Path, None, None]:
         return (path.resolve() for path in source_dir.path.glob(glob) if path.is_dir())
 
-    return list(chain.from_iterable(map(all_paths_matching, workspaces_globs)))
+    return list(flatten(map(all_paths_matching, workspaces_globs)))
 
 
 def _extract_workspaces_globs(package: dict[str, Any]) -> list[str]:

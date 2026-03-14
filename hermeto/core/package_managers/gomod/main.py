@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 
 import git
 import semver
+from more_itertools import unique_everseen
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
@@ -923,14 +924,8 @@ def _deduplicate_resolved_modules(
     package_modules: Iterable[ParsedModule],
     downloaded_modules: Iterable[ParsedModule],
 ) -> Iterable[ParsedModule]:
-    modules_by_name_and_version: dict[ModuleID, ParsedModule] = {}
-
     # package_modules have the replace data, so they should take precedence in the deduplication
-    for module in chain(package_modules, downloaded_modules):
-        # get the module for this name+version or create a new one
-        modules_by_name_and_version.setdefault(_get_module_id(module), module)
-
-    return modules_by_name_and_version.values()
+    return list(unique_everseen(chain(package_modules, downloaded_modules), key=_get_module_id))
 
 
 class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):

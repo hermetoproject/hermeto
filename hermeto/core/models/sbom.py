@@ -7,18 +7,18 @@ from collections import defaultdict
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
-from itertools import chain, groupby
+from itertools import groupby
 from pathlib import Path
 from typing import Annotated, Any, Literal, Union
 from urllib.parse import urlparse
 
 import pydantic
+from more_itertools import first_true, flatten
 from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
-from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
@@ -233,9 +233,7 @@ class Sbom(pydantic.BaseModel):
                 # in the future. It is a very rare corner case, though, and it only matters when
                 # merging multiple CycloneDX SBOMs.
                 annotations=self.annotations + other.annotations,
-                components=merge_component_properties(
-                    chain.from_iterable(s.components for s in [self, other])
-                ),
+                components=merge_component_properties([*self.components, *other.components]),
             )
         else:
             return self + other.to_cyclonedx()
@@ -354,7 +352,7 @@ class Sbom(pydantic.BaseModel):
             relationships=relationships,
             documentNamespace=doc_namespace,
             creationInfo=SPDXCreationInfo(
-                creators=sum([creator(tool) for tool in self.metadata.tools], []),
+                creators=list(flatten(creator(tool) for tool in self.metadata.tools)),
                 created=spdx_now(),
             ),
         )
@@ -652,7 +650,9 @@ class SPDXSbom(pydantic.BaseModel):
         unidirectionally_related_package = lambda p: inverse_relationships.get(p) == self.SPDXID
         # Note: defaulting to top-level SPDXID is inherited from the original implementation.
         # It is unclear if it is really needed, but is left around to match the precedent.
-        root_id = first_for(unidirectionally_related_package, direct_relationships, self.SPDXID)
+        root_id = first_true(
+            direct_relationships, pred=unidirectionally_related_package, default=self.SPDXID
+        )
         return root_id
 
     # NOTE: having this as cached will cause trouble when sequentially
