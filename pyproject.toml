@@ -20,6 +20,7 @@ dependencies = [
   "aiohttp-retry",
   "createrepo-c ; sys_platform == 'linux'",
   "gitpython",
+  "more-itertools",
   "packageurl-python",
   "packaging",
   "pyarn",
