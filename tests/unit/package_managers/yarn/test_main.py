@@ -63,7 +63,10 @@ class YarnVersions(Enum):
 
     @classmethod
     def unsupported(cls) -> list["YarnVersions"]:
-        return list(set(cls.__members__.values()).difference(set(cls.supported())))
+        return sorted(
+            set(cls.__members__.values()).difference(set(cls.supported())),
+            key=lambda v: v.value,
+        )
 
 
 SAMPLE_PLUGINS = """
