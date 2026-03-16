@@ -36,10 +36,7 @@ _ENV_VAR_CLI_MAP = [
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """
-    - Sync CLI option values to env so existing os.getenv() code sees them.
-    - Start pypiserver and dnfserver once in the master process (controller or single process).
-    """
+    """Sync CLI option values to env so existing os.getenv() code sees them."""
 
     def env_value(cli_opt: str) -> str:
         value = config.getoption(cli_opt)
@@ -49,17 +46,6 @@ def pytest_configure(config: pytest.Config) -> None:
 
     for env_var, cli_opt in _ENV_VAR_CLI_MAP:
         os.environ[env_var] = env_value(cli_opt)
-
-    # Start pypiserver and dnfserver once in the master process (controller or single process).
-    if os.getenv("PYTEST_XDIST_WORKER", "master") == "master":
-        stack = contextlib.ExitStack()
-        try:
-            stack.enter_context(_pypiserver_context())
-            stack.enter_context(_dnfserver_context())
-        except Exception:
-            stack.close()
-            raise
-        setattr(config, "_hermeto_exit_stack", stack)
 
 
 @pytest.fixture(scope="session")
@@ -228,13 +214,15 @@ def _dnfserver_context() -> Iterator[None]:
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
-    """Clone the integration tests repository.
+    """Prepare the integration test environment in the master process.
+
+    - Clone the integration tests repository.
+    - Start pypiserver and dnfserver once (controller or single process).
 
     This function implements a standard pytest hook. Please refer to pytest
     docs for further information.
     https://docs.pytest.org/en/stable/reference/reference.html#pytest.hookspec.pytest_sessionstart
     """
-    # Skip cloning the test repository for worker processes.
     if os.getenv("PYTEST_XDIST_WORKER", "master") != "master":
         return
 
@@ -249,10 +237,21 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         repo_dir.mkdir(parents=True)
         Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
 
+    stack = contextlib.ExitStack()
+    try:
+        stack.enter_context(_pypiserver_context())
+        stack.enter_context(_dnfserver_context())
+    except Exception:
+        stack.close()
+        raise
+    setattr(session.config, "_hermeto_exit_stack", stack)
 
-def pytest_unconfigure(config: pytest.Config) -> None:
-    """Stop pypiserver and dnfserver started in pytest_configure."""
-    stack = getattr(config, "_hermeto_exit_stack", None)
+
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    """Stop PyPI and DNF servers."""
+
+    # NOTE: Only the controller/master has the exit stacks defined in its config
+    stack = getattr(session.config, "_hermeto_exit_stack", None)
     if stack is not None:
         stack.close()
 
