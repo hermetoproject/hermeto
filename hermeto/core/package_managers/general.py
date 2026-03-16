@@ -16,6 +16,7 @@ from hermeto.core.errors import FetchError
 from hermeto.core.http_requests import (
     DEFAULT_RETRY_OPTIONS,
     SAFE_REQUEST_METHODS,
+    RetryAfterJitterRetry,
     get_requests_session,
 )
 from hermeto.core.type_aliases import StrPath
@@ -130,7 +131,7 @@ async def async_download_files(
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
-    retry_options = aiohttp_retry.JitterRetry(
+    retry_options = RetryAfterJitterRetry(
         attempts=num_attempts,
         statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
         exceptions={
