@@ -224,6 +224,9 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     name = package_info.get("name", package_dir.path.stem)
     version = package_info.get("version", None)
 
+    if isinstance(version, dict) and version.get("workspace"):
+        version = None
+
     # check for a workspace package version
     # https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
     if version is None:
