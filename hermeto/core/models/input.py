@@ -27,8 +27,8 @@ ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
 
 
 def _handle_legacy_allow_binary(
-    instance: Union["PipPackageInput", "BundlerPackageInput"],
-    binary_filter_class: type["PipBinaryFilters"] | type["BundlerBinaryFilters"],
+    instance: Union["PipPackageInput", "BundlerPackageInput", "NpmPackageInput"],
+    binary_filter_class: type["PipBinaryFilters"] | type["BundlerBinaryFilters"] | type["NpmBinaryFilters"],
 ) -> None:
     """Handle backward compatibility for allow_binary field.
 
@@ -270,6 +270,15 @@ class RpmBinaryFilters(pydantic.BaseModel, extra="forbid"):
     arch: BinaryFilterStr = BINARY_FILTER_ALL
 
 
+class NpmBinaryFilters(BinaryModeOptions):
+    """Binary filters specific to npm packages."""
+
+    @classmethod
+    def with_allow_binary_behavior(cls) -> Self:
+        """Create filters that mimic the old allow_binary=True behavior."""
+        return cls()
+
+
 class BundlerPackageInput(_PackageInputBase):
     """Accepted input for a bundler package."""
 
@@ -307,6 +316,14 @@ class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
     type: Literal["npm"]
+    allow_binary: bool = False
+    binary: NpmBinaryFilters | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _handle_legacy_allow_binary_field(self) -> Self:
+        """Handle backward compatibility for allow_binary field."""
+        _handle_legacy_allow_binary(self, NpmBinaryFilters)
+        return self
 
 
 class PipPackageInput(_PackageInputBase):

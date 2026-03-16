@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import io
 import json
 import os
+import tarfile
 import urllib.parse
 from collections.abc import Iterator
 from pathlib import Path
@@ -19,8 +21,8 @@ from hermeto.core.errors import (
     UnexpectedFormat,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import Request
-from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.input import NpmBinaryFilters, Request
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.npm import (
     NormalizedUrl,
@@ -38,6 +40,7 @@ from hermeto.core.package_managers.npm import (
     _update_package_json_files,
     _update_package_lock_with_local_paths,
     _update_vcs_url_with_full_hostname,
+    _detect_prebuilt_binaries,
     fetch_npm_source,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -2073,3 +2076,85 @@ def test_npm_proxy_url_gets_substituted_for_registry_hosts(
     for call in mock_async_download_files.mock_calls:
         location = next(iter(call.kwargs["files_to_download"].keys()))
         assert location.startswith(proxy_url), msg
+
+
+def _create_tgz_with_files(path: Path, filenames: list[str]) -> None:
+    """Helper to create a .tgz archive containing the given filenames."""
+    with tarfile.open(path, "w:gz") as tar:
+        for filename in filenames:
+            data = b"fake binary content"
+            info = tarfile.TarInfo(name=filename)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+
+
+def test_detect_prebuilt_binaries_rejects_when_no_binary_field(
+    tmp_path: Path,
+) -> None:
+    """Test that prebuilt .node binaries cause PackageRejected when binary is not set."""
+    tgz_path = tmp_path / "bufferutil-4.0.9.tgz"
+    _create_tgz_with_files(
+        tgz_path,
+        [
+            "package/prebuilds/linux-x64/node.napi.node",
+            "package/prebuilds/darwin-x64/node.napi.node",
+            "package/index.js",
+        ],
+    )
+
+    download_paths: dict[NormalizedUrl, RootedPath] = {
+        NormalizedUrl("https://registry.npmjs.org/bufferutil/-/bufferutil-4.0.9.tgz"): RootedPath(
+            tgz_path
+        ),
+    }
+
+    with pytest.raises(PackageRejected, match="contains prebuilt binaries"):
+        _detect_prebuilt_binaries(download_paths, binary_filters=None)
+
+
+def test_detect_prebuilt_binaries_allows_when_binary_field_set(
+    tmp_path: Path,
+) -> None:
+    """Test that prebuilt .node binaries are allowed when binary field is set."""
+    tgz_path = tmp_path / "bufferutil-4.0.9.tgz"
+    _create_tgz_with_files(
+        tgz_path,
+        [
+            "package/prebuilds/linux-x64/node.napi.node",
+            "package/index.js",
+        ],
+    )
+
+    download_paths: dict[NormalizedUrl, RootedPath] = {
+        NormalizedUrl("https://registry.npmjs.org/bufferutil/-/bufferutil-4.0.9.tgz"): RootedPath(
+            tgz_path
+        ),
+    }
+
+    # Should NOT raise when binary_filters is set
+    _detect_prebuilt_binaries(download_paths, binary_filters=NpmBinaryFilters())
+
+
+def test_detect_prebuilt_binaries_passes_when_no_prebuilds(
+    tmp_path: Path,
+) -> None:
+    """Test that tarballs without prebuilt .node binaries pass regardless."""
+    tgz_path = tmp_path / "lodash-4.17.21.tgz"
+    _create_tgz_with_files(
+        tgz_path,
+        [
+            "package/index.js",
+            "package/package.json",
+            "package/lib/utils.js",
+        ],
+    )
+
+    download_paths: dict[NormalizedUrl, RootedPath] = {
+        NormalizedUrl("https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"): RootedPath(
+            tgz_path
+        ),
+    }
+
+    # Should NOT raise for any binary_filters value
+    _detect_prebuilt_binaries(download_paths, binary_filters=None)
+    _detect_prebuilt_binaries(download_paths, binary_filters=NpmBinaryFilters())
