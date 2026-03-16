@@ -217,7 +217,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     """Prepare the integration test environment in the master process.
 
     - Clone the integration tests repository.
-    - Start pypiserver and dnfserver once (controller or single process).
+    - Start pypiserver, dnfserver and nexus once (controller or single process).
 
     This function implements a standard pytest hook. Please refer to pytest
     docs for further information.
@@ -241,39 +241,37 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     try:
         stack.enter_context(_pypiserver_context())
         stack.enter_context(_dnfserver_context())
+        _start_nexusserver(stack)
     except Exception:
         stack.close()
         raise
     setattr(session.config, "_hermeto_exit_stack", stack)
 
 
+def _start_nexusserver(stack: contextlib.ExitStack) -> None:
+    """Start local Nexus proxy server if enabled."""
+
+    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
+        return
+
+    container, client = initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT)
+    stack.enter_context(client)
+
+    if os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1":
+        log.info("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
+    else:
+        stack.enter_context(container)
+
+    log.info("Nexus server ready at %s", client.base_url)
+
+
 def pytest_sessionfinish(session: pytest.Session) -> None:
-    """Stop PyPI and DNF servers."""
+    """Stop test servers started in pytest_sessionstart."""
 
     # NOTE: Only the controller/master has the exit stacks defined in its config
     stack = getattr(session.config, "_hermeto_exit_stack", None)
     if stack is not None:
         stack.close()
-
-
-@pytest.fixture(autouse=True, scope="session")
-def local_nexusserver(top_level_test_dir: Path) -> Iterator[None]:
-    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
-        yield
-        return
-
-    with contextlib.ExitStack() as context:
-        container, client = initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT)
-        context.enter_context(client)
-
-        # Allows inspection of running Nexus container after test completion
-        if os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1":
-            log.info("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
-        else:
-            context.enter_context(container)
-
-        log.info("Nexus server ready at %s", client.base_url)
-        yield
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
