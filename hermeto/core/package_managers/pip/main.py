@@ -598,7 +598,22 @@ def _resolve_pip(
         return resolved
 
     resolved_req_files = resolve_req_files(requirement_files, False)
+    if not resolved_req_files:
+        log.warning("No requirements files found, no dependencies will be fetched")
+    else:
+        log.info(
+            "Using requirements files: %s",
+            ", ".join(str(f.subpath_from_root) for f in resolved_req_files),
+        )
+
     resolved_build_req_files = resolve_req_files(build_requirement_files, True)
+    if not resolved_build_req_files:
+        log.info("No build requirements files found")
+    else:
+        log.info(
+            "Using build requirements files: %s",
+            ", ".join(str(f.subpath_from_root) for f in resolved_build_req_files),
+        )
 
     requires = _download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
     build_requires = _download_from_requirement_files(
