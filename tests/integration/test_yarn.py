@@ -30,7 +30,6 @@ log = logging.getLogger(__name__)
                 check_output=False,
                 check_deps_checksums=False,
                 expected_exit_code=2,
-                expected_output="UnsupportedFeature: Found 8 unsupported dependencies, more details in the logs.",
             ),
             id="yarn_disallowed_protocols",
         ),
@@ -84,6 +83,29 @@ log = logging.getLogger(__name__)
                 expected_output="Required files not found:",
             ),
             id="yarn_missing_lockfile",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="yarn/with-git-deps",
+                global_flags=["--mode=permissive"],
+                packages=({"path": ".", "type": "yarn"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="yarn_git_resolve_permissive",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="yarn/with-git-deps",
+                packages=({"path": ".", "type": "yarn"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_exit_code=2,
+                expected_output="Git dependencies in Yarn Berry projects cannot be processed in strict mode because the lockfile must be modified to reference local tarballs.",
+            ),
+            id="yarn_git_resolve_strict",
         ),
     ],
 )

@@ -159,6 +159,15 @@ class Project(NamedTuple):
         return False
 
     @property
+    def lockfile_path(self) -> RootedPath:
+        """The path to the lockfile for this project.
+
+        The lockfile name is affected by the lockfileFilename configuration in yarnrc.
+        """
+        filename = self.yarn_rc.get("lockfileFilename", "yarn.lock")
+        return self.source_dir.join_within_root(filename)
+
+    @property
     def yarn_cache(self) -> RootedPath:
         """The path to the yarn cache folder.
 
