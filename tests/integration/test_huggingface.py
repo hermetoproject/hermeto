@@ -7,10 +7,6 @@ import pytest
 from . import utils
 
 
-# TODO: These tests are skipped because the required test data branches
-# (huggingface/e2e, huggingface/tiny-model, etc.) need to be created
-# in the hermetoproject/integration-tests repository first.
-@pytest.mark.skip(reason="Test data branches not yet created in integration-tests repo")
 @pytest.mark.parametrize(
     "test_params,check_cmd,expected_cmd_output",
     [
@@ -22,8 +18,17 @@ from . import utils
                 check_deps_checksums=False,
                 expected_exit_code=0,
             ),
-            ["python3", "-c", "from transformers import AutoModel; print('SUCCESS')"],
-            "SUCCESS",
+            [
+                "/venv/bin/python3",
+                "-c",
+                (
+                    "from huggingface_hub import snapshot_download; "
+                    "path = snapshot_download("
+                    "'hf-internal-testing/tiny-random-gpt2', local_files_only=True); "
+                    "print(path)"
+                ),
+            ],
+            "tiny-random-gpt2",
             id="huggingface_e2e",
         ),
     ],
@@ -32,7 +37,7 @@ def test_e2e_huggingface(
     test_params: utils.TestParameters,
     check_cmd: list[str],
     expected_cmd_output: str,
-    hermeto_image: utils.ContainerImage,
+    hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     test_repo_dir: Path,
     test_data_dir: Path,
@@ -52,13 +57,13 @@ def test_e2e_huggingface(
     """
     test_case = request.node.callspec.id
 
-    utils.fetch_deps_and_check_output(
+    actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
-        test_repo_dir,
+        actual_repo_dir,
         test_data_dir,
         test_case,
         check_cmd,

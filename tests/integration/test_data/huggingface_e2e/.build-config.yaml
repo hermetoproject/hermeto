@@ -1,0 +1,12 @@
+environment_variables:
+- name: HF_DATASETS_CACHE
+  value: ${output_dir}/deps/huggingface/datasets
+- name: HF_HOME
+  value: ${output_dir}/deps/huggingface
+- name: HF_HUB_CACHE
+  value: ${output_dir}/deps/huggingface/hub
+- name: HF_HUB_OFFLINE
+  value: '1'
+- name: HUGGINGFACE_HUB_CACHE
+  value: ${output_dir}/deps/huggingface/hub
+project_files: []
