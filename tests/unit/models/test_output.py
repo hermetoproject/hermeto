@@ -205,3 +205,37 @@ class TestEnvironmentVariable:
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
         with pytest.raises(BaseError, match=err_msg):
             envs[0].resolve_value(mappings)
+
+class TestRequestOutputExperimental:
+    def test_generate_sbom_experimental_flag(self) -> None:
+        from hermeto import APP_NAME
+        from hermeto.core.models.sbom import Annotation
+        from hermeto.core.models.property_semantics import PropertyEnum
+        from datetime import datetime, timezone
+
+        anno = Annotation(
+             subjects=set(),
+             annotator={"organization": {"name": "red hat"}},
+             timestamp=datetime.now(timezone.utc),
+             text=f"{APP_NAME}:backend:experimental:x-foo"
+        )
+        ro = RequestOutput(annotations=[anno], components=[], build_config=BuildConfig())
+        sbom = ro.generate_sbom()
+        assert any(p.name == PropertyEnum.PROP_EXPERIMENTAL and p.value == "true" for p in sbom.metadata.properties)
+
+    def test_generate_sbom_no_experimental_flag(self) -> None:
+        from hermeto import APP_NAME
+        from hermeto.core.models.sbom import Annotation
+        from hermeto.core.models.property_semantics import PropertyEnum
+        from datetime import datetime, timezone
+
+        anno = Annotation(
+             subjects=set(),
+             annotator={"organization": {"name": "red hat"}},
+             timestamp=datetime.now(timezone.utc),
+             text=f"{APP_NAME}:backend:pip"
+        )
+        ro = RequestOutput(annotations=[anno], components=[], build_config=BuildConfig())
+        sbom = ro.generate_sbom()
+        assert not any(p.name == PropertyEnum.PROP_EXPERIMENTAL for p in sbom.metadata.properties)
+

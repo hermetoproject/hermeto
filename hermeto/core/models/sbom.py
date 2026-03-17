@@ -150,6 +150,7 @@ class Metadata(pydantic.BaseModel):
     """Metadata field in a SBOM."""
 
     tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
+    properties: list[Property] = pydantic.Field(default_factory=list)
 
 
 def spdx_now() -> datetime:
@@ -226,6 +227,9 @@ class Sbom(pydantic.BaseModel):
 
     def __add__(self, other: Union["Sbom", "SPDXSbom"]) -> "Sbom":
         if isinstance(other, self.__class__):
+            # deduplicate properties by name, let `other` overwrite `self`
+            props = {p.name: p for p in self.metadata.properties}
+            props.update({p.name: p for p in other.metadata.properties})
             return Sbom(
                 # NOTE: We might consider deduplicating annotations based on the annotation text
                 # in the future. It is a very rare corner case, though, and it only matters when
@@ -233,6 +237,10 @@ class Sbom(pydantic.BaseModel):
                 annotations=self.annotations + other.annotations,
                 components=merge_component_properties(
                     chain.from_iterable(s.components for s in [self, other])
+                ),
+                metadata=Metadata(
+                    tools=self.metadata.tools,
+                    properties=list(props.values()),
                 ),
             )
         else:
@@ -259,7 +267,22 @@ class Sbom(pydantic.BaseModel):
         """
 
         def create_document_root() -> SPDXPackage:
-            return SPDXPackage(name="", versionInfo="", SPDXID="SPDXRef-DocumentRoot-File-")
+            annotations = []
+            for prop in self.metadata.properties:
+                annotations.append(
+                    SPDXPackageAnnotation(
+                        annotator=f"Tool: {APP_NAME}:jsonencoded",
+                        annotationDate=spdx_now(),
+                        annotationType="OTHER",
+                        comment=json.dumps({"name": prop.name, "value": prop.value}),
+                    )
+                )
+            return SPDXPackage(
+                name="",
+                versionInfo="",
+                SPDXID="SPDXRef-DocumentRoot-File-",
+                annotations=annotations,
+            )
 
         def create_root_relationship() -> SPDXRelation:
             return SPDXRelation(
@@ -769,9 +792,16 @@ class SPDXSbom(pydantic.BaseModel):
                 tools.append(Tool(vendor=vendor, name=name))
                 name, vendor = None, None
 
+        properties = []
+        root_package = next((p for p in self.packages if p.SPDXID == self.root_id), None)
+        if root_package:
+            for an in root_package.annotations:
+                if an.annotator.endswith(":jsonencoded"):
+                    properties.append(Property(**json.loads(an.comment)))
+
         return Sbom(
             components=components,
-            metadata=Metadata(tools=tools),
+            metadata=Metadata(tools=tools, properties=properties),
         )
 
 
