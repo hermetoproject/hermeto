@@ -543,6 +543,9 @@ class SPDXCreationInfo(pydantic.BaseModel):
     creators: list[str] = []
     created: ISODatetime
 
+    def __hash__(self) -> int:
+        return hash((tuple(self.creators), self.created))
+
 
 class SPDXRelation(pydantic.BaseModel):
     """SPDX Relationship.
@@ -588,7 +591,7 @@ class SPDXSbom(pydantic.BaseModel):
     def __hash__(self) -> int:
         return hash(
             hash(self.name + self.documentNamespace)
-            + hash(SPDXCreationInfo)
+            + hash(self.creationInfo)
             + sum(hash(p) for p in self.packages)
             + sum(hash(r) for r in self.relationships)
         )
