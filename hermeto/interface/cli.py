@@ -5,6 +5,7 @@ import importlib.metadata
 import json
 import logging
 import shutil
+import yaml
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -14,6 +15,7 @@ import pydantic
 import typer
 
 import hermeto.core.config as config
+from hermeto.core.config import get_config
 from hermeto import APP_NAME
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
@@ -106,6 +108,13 @@ class SBOMFormat(str, enum.Enum):
 
     cyclonedx = "cyclonedx"
     spdx = "spdx"
+
+
+class OutputFormat(str, enum.Enum):
+    """Output format for the config command."""
+
+    json = "json"
+    yaml = "yaml"
 
 
 SBOM_TYPE_OPTION = typer.Option(
@@ -239,6 +248,79 @@ def list_backends() -> None:
     if experimental:
         print("Experimental:", ", ".join(experimental))
 
+@app.command()
+@handle_errors
+def config(
+    format: OutputFormat = typer.Option(
+        OutputFormat.json,
+        "--format",
+        help="Output format.",
+    ),
+    diff: bool = typer.Option(
+        False,
+        "--diff",
+        help="Show only the differences between the current configuration and the default configuration.",
+    ),
+) -> None:
+    """Show current configuration. Values overridden from defaults are marked with (*)."""
+
+    _SENSITIVE_FIELDS = {
+        "proxy_password",
+        "proxy_login",
+    }
+
+    def _mask(field_name: str, value: object) -> object:
+        """Redact sensitive field values."""
+        if field_name not in _SENSITIVE_FIELDS:
+            return value
+        if isinstance(value, dict):
+            return {k: "***" for k in value} if value else {}
+        return "***" if value is not None else None
+
+    def _get_diff(model: pydantic.BaseModel) -> dict:
+        """Recursively build a dictionary of only overridden config fields."""
+        result = {}
+        for field_name in model.model_fields_set:
+            value = getattr(model, field_name)
+            if isinstance(value, pydantic.BaseModel):
+                sub_diff = _get_diff(value)
+                if sub_diff:
+                    result[field_name] = sub_diff
+            else:
+                result[field_name] = _mask(field_name, value)
+        return result
+
+    def _get_annotated_config(model: pydantic.BaseModel) -> dict:
+        """Recursively build a dictionary of all config fields, marking overridden ones."""
+        result = {}
+        overridden = model.model_fields_set
+        for field_name in model.model_fields:
+            value = getattr(model, field_name)
+            if isinstance(value, pydantic.BaseModel):
+                result[field_name] = _get_annotated_config(value)
+            else:
+                masked = _mask(field_name, value)
+                result[field_name] = f"{masked} (*)" if field_name in overridden else masked
+        return result
+
+    def _postprocess(s: str) -> str:
+        """Format (*) markers in JSON and YAML output."""
+        import re
+        s = re.sub(r' \(\*\)"', '"   (*)', s)       # JSON double-quoted strings
+        s = re.sub(r"'(.*?) \(\*\)'", r"'\1'   (*)", s)  # YAML single-quoted strings
+        return s
+
+    cfg = _get_diff(get_config()) if diff else _get_annotated_config(get_config())
+
+    if diff and not cfg:
+        print("No overrides — all values are at their defaults.")
+        return
+
+    dumpers = {
+        OutputFormat.json: lambda d: _postprocess(json.dumps(d, indent=2, default=str)),
+        OutputFormat.yaml: lambda d: _postprocess(yaml.dump(d)),
+    }
+    print(dumpers[format](cfg))
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
