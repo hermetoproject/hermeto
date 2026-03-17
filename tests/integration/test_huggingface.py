@@ -1,5 +1,4 @@
-"""Integration tests for Hugging Face package manager."""
-
+# SPDX-License-Identifier: GPL-3.0-only
 from pathlib import Path
 
 import pytest
@@ -19,7 +18,7 @@ from . import utils
                 expected_exit_code=0,
             ),
             ["cat", "/verification-result"],
-            "OK:",
+            ["OK:"],
             id="huggingface_e2e",
         ),
     ],
@@ -38,13 +37,7 @@ def test_e2e_huggingface(
     End to end test for Hugging Face fetcher.
 
     :param test_params: Test case arguments
-    :param check_cmd: Command to run in container to verify
-    :param expected_cmd_output: Expected output from check command
-    :param hermeto_image: Container image for hermeto
     :param tmp_path: Temp directory for pytest
-    :param test_repo_dir: Test repository directory
-    :param test_data_dir: Test data directory
-    :param request: Pytest request fixture
     """
     test_case = request.node.callspec.id
 
