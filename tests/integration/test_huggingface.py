@@ -18,17 +18,8 @@ from . import utils
                 check_deps_checksums=False,
                 expected_exit_code=0,
             ),
-            [
-                "/venv/bin/python3",
-                "-c",
-                (
-                    "from huggingface_hub import snapshot_download; "
-                    "path = snapshot_download("
-                    "'hf-internal-testing/tiny-random-gpt2', local_files_only=True); "
-                    "print(path)"
-                ),
-            ],
-            "tiny-random-gpt2",
+            ["cat", "/verification-result"],
+            "OK:",
             id="huggingface_e2e",
         ),
     ],

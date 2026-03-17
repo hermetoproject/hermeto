@@ -1,10 +1,22 @@
-FROM localhost/hermeto:latest
+FROM mirror.gcr.io/python:3.11-slim
 
-ENTRYPOINT []
+# Test disabled network access
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 
-RUN cp -r /tmp/hermeto-output/deps/huggingface/ /deps
+# Source hermeto env to get HF_HUB_CACHE etc.
+# Verify the HuggingFace cache is valid: read the ref, resolve the snapshot,
+# and confirm expected model files exist (replicates what huggingface_hub's
+# snapshot_download(local_files_only=True) checks under the hood).
+RUN . /tmp/hermeto.env && \
+    python3 -c "\
+import os; \
+cache = os.environ['HF_HUB_CACHE']; \
+repo = cache + '/models--hf-internal-testing--tiny-random-gpt2'; \
+rev = open(repo + '/refs/main').read().strip(); \
+snap = repo + '/snapshots/' + rev; \
+assert os.path.isdir(snap), f'snapshot dir missing: {snap}'; \
+assert os.path.exists(snap + '/config.json'), 'config.json missing'; \
+assert os.path.exists(snap + '/model.safetensors'), 'model.safetensors missing'; \
+print('OK: ' + snap)" > /verification-result
 
-ENV HF_HUB_CACHE=/deps/hub
-ENV HF_HUB_OFFLINE=1
-
-CMD ["/venv/bin/python3", "-c", "from huggingface_hub import snapshot_download; path = snapshot_download('hf-internal-testing/tiny-random-gpt2', local_files_only=True); print(path)"]
+CMD ["cat", "/verification-result"]
