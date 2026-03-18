@@ -636,7 +636,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                 raise InvalidChecksum(
                     checksum=req.hashes,
                     solution=(
-                        f"URL requirement must specify exactly one hash, but specifies {n_hashes}"
+                        f"URL requirement must specify exactly one hash, but specifies {n_hashes}\n"
                         "Please specify the expected hashes for all plain URLs using "
                         "--hash options (one --hash for each)"
                     ),
@@ -664,14 +664,23 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
         hashes = req.hashes
 
         if require_hashes and not hashes:
-            # We shouldn't get here, but it's a definite error if we do.
             # VCS reqs *cannot* be hashed, so we'll always hit
             # this for any VCS req in a 'requirements.txt' which has *any* hash.
             # For URL requirements, having a hash is required to pass *basic* validation.
+            if req.kind == "vcs":
+                raise MissingChecksum(
+                    req.download_line,
+                    solution=(
+                        "Git dependencies do not support pip's --hash option.\n"
+                        "Please use an https URL instead, for example:\n"
+                        "  dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \\\n"
+                        "      --hash=sha256:..."
+                    ),
+                )
             raise MissingChecksum(
                 None,
                 solution=(
-                    f"Hash is required, dependency does not specify any: {req.download_line}"
+                    f"Hash is required, dependency does not specify any: {req.download_line}\n"
                     "Please specify the expected hashes for all dependencies"
                 ),
             )
