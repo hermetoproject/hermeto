@@ -51,9 +51,9 @@ from hermeto.core.package_managers.gomod.go import (
     _ParsedModel,
     _select_toolchain,
 )
+from hermeto.core.package_managers.gomod.utils import _clean_go_modcache, _go_exec_env
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
-from hermeto.core.type_aliases import StrPath
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
@@ -380,12 +380,6 @@ def _create_packages_from_parsed_data(
     return [_create_package(package) for package in parsed_packages]
 
 
-def _clean_go_modcache(go: Go, dir_: StrPath | None) -> None:
-    # It's easier to mock a helper when testing a huge function than individual object instances
-    if dir_ is not None:
-        go(["clean", "-modcache"], {"env": {"GOPATH": dir_, "GOCACHE": dir_}})
-
-
 def _update_sbom_annotations(components: list[Component], annotations: list[Annotation]) -> None:
     """
     Update SBOM annotations with subjects from the provided components.
@@ -672,16 +666,6 @@ def _parse_packages(
             packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp}))
             all_packages = chain(all_packages, packages)
     return iter(all_packages)
-
-
-def _go_exec_env(**extra_vars: str) -> dict[str, str]:
-    """Build the base environment for go command execution."""
-    env = {
-        "PATH": os.environ.get("PATH", ""),
-        "HOME": os.environ.get("HOME", Path.home().as_posix()),  # HOME= can be unset, hence Path
-        "NETRC": os.environ.get("NETRC", ""),
-    }
-    return env | extra_vars
 
 
 def _resolve_gomod(
