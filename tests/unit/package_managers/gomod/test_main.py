@@ -42,7 +42,6 @@ from hermeto.core.package_managers.gomod.main import (
     _disable_telemetry,
     _get_go_sum_files,
     _get_repository_name,
-    _go_exec_env,
     _go_list_deps,
     _parse_go_sum,
     _parse_local_modules,
@@ -100,14 +99,6 @@ def gomod_request(tmp_path: Path, gomod_input_packages: list[dict[str, str]]) ->
         output_dir=tmp_path / "output",
         packages=gomod_input_packages,
     )
-
-
-@pytest.fixture
-def go_mod_file(tmp_path: Path, request: pytest.FixtureRequest) -> None:
-    output_file = tmp_path / "go.mod"
-
-    with open(output_file, "w") as f:
-        f.write(request.param)
 
 
 def proc_mock(
@@ -1914,38 +1905,3 @@ def test_parse_packages(
     # _parse_packages calls _go_list_deps always with the './...' pattern
     assert all("./..." in call.args[0] for call in calls)
     assert set(pkgs) == expected
-
-
-_ENV_VARS_BASE_INIT = {v: "/some/path" for v in ("PATH", "HOME", "NETRC")}
-
-
-@pytest.mark.parametrize(
-    "env, extra_env, expected",
-    [
-        pytest.param(_ENV_VARS_BASE_INIT, None, _ENV_VARS_BASE_INIT, id="vars_inherited"),
-        pytest.param(
-            {},
-            None,
-            {"PATH": "", "HOME": "/mocked/home", "NETRC": ""},
-            id="vars_defaults",
-        ),
-        pytest.param(
-            _ENV_VARS_BASE_INIT,
-            {"GOPATH": "/tmp/go"},
-            _ENV_VARS_BASE_INIT | {"GOPATH": "/tmp/go"},
-            id="with_extra_env",
-        ),
-    ],
-)
-@mock.patch("pathlib.Path.home", return_value=Path("/mocked/home"))
-def test_go_exec_env(
-    mock_home: mock.Mock,
-    monkeypatch: pytest.MonkeyPatch,
-    env: dict[str, str],
-    extra_env: dict[str, str] | None,
-    expected: dict[str, str],
-) -> None:
-    monkeypatch.setattr(os, "environ", env)
-
-    actual = _go_exec_env() if extra_env is None else _go_exec_env(**extra_env)
-    assert actual == expected
