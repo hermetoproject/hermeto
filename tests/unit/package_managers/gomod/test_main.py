@@ -23,7 +23,7 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property, PropertyEnum
-from hermeto.core.package_managers.gomod import (
+from hermeto.core.package_managers.gomod.main import (
     Go,
     GoVersion,
     GoWork,
@@ -95,7 +95,7 @@ def mock_which_go() -> Iterator[None]:
 
 @pytest.fixture(autouse=True)
 def mock_go_release() -> Iterator[mock.MagicMock]:
-    with mock.patch("hermeto.core.package_managers.gomod.Go._get_release") as _mock:
+    with mock.patch("hermeto.core.package_managers.gomod.main.Go._get_release") as _mock:
         # Using a side_effect instead of return_value because return_value always takes precedence
         # and we would not be able to override this easily.
         _mock.side_effect = lambda: "go1.21.0"
@@ -176,13 +176,13 @@ def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPacka
         pytest.param(False, True, id="has_workspaces"),
     ),
 )
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod._go_list_deps")
-@mock.patch("hermeto.core.package_managers.gomod._parse_packages")
-@mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod._validate_local_replacements")
+@mock.patch("hermeto.core.package_managers.gomod.main.GoWork._get_go_work")
+@mock.patch("hermeto.core.package_managers.gomod.main._go_list_deps")
+@mock.patch("hermeto.core.package_managers.gomod.main._parse_packages")
+@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_gomod_version")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main._validate_local_replacements")
 @mock.patch("subprocess.run")
 def test_resolve_gomod(
     mock_run: mock.Mock,
@@ -303,11 +303,11 @@ def test_resolve_gomod(
     )
 
 
-@mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod._validate_local_replacements")
-@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
+@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_gomod_version")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main._validate_local_replacements")
+@mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
 @mock.patch("subprocess.run")
 def test_resolve_gomod_vendor_dependencies(
     mock_run: mock.Mock,
@@ -386,9 +386,9 @@ def test_resolve_gomod_vendor_dependencies(
     assert resolve_result.modules_in_go_sum == expect_result.modules_in_go_sum
 
 
-@mock.patch("hermeto.core.package_managers.gomod._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_gomod_version")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
 @mock.patch("subprocess.run")
 def test_resolve_gomod_no_deps(
     mock_run: mock.Mock,
@@ -558,7 +558,7 @@ def test_parse_broken_go_sum(rooted_tmp_path: RootedPath, caplog: pytest.LogCapt
     ]
 
 
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
 def test_parse_local_modules(version_resolver: mock.Mock) -> None:
     go_list_m_json = """
     {
@@ -757,7 +757,7 @@ def test_parse_workspace_modules(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
+@mock.patch("hermeto.core.package_managers.gomod.main.GoWork._get_go_work")
 def test_get_go_sum_files(
     mock_get_go_work: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -774,7 +774,7 @@ def test_get_go_sum_files(
 
 
 @pytest.mark.parametrize("has_workspaces", (False, True))
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
 def test_create_modules_from_parsed_data(
     mock_version_resolver: mock.Mock,
     has_workspaces: bool,
@@ -1158,7 +1158,7 @@ def test_package_to_component(package: Package, expected_component: Component) -
 
 
 @pytest.mark.parametrize("pattern", ["./...", "all"])
-@mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+@mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
 def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."]) -> None:
     go_list_deps_json = """
         {
@@ -1209,7 +1209,7 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
     mock_run_cmd.assert_called_once_with(call_args, {})
 
 
-@mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+@mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
 def test_go_list_deps_fail(
     mock_run_cmd: mock.Mock,
 ) -> None:
@@ -1439,7 +1439,7 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
 
 
 @pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
-@mock.patch("hermeto.core.package_managers.gomod.Go._run")
+@mock.patch("hermeto.core.package_managers.gomod.main.Go._run")
 def test_vendor_deps(
     mock_run_cmd: mock.Mock,
     go_vendor_cmd: str,
@@ -1625,8 +1625,8 @@ def test_vendor_changed(
         {"foo": {}, "bar": {"go.mod": ""}},
     ),
 )
-@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
-@mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+@mock.patch("hermeto.core.package_managers.gomod.main._list_installed_toolchains")
+@mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
 def test_missing_gomod_file(
     mock_run_cmd: mock.Mock,
     mock_list_installed_toolchains: mock.Mock,
@@ -1774,16 +1774,16 @@ def test_missing_gomod_file(
         ),
     ),
 )
-@mock.patch("hermeto.core.package_managers.gomod._list_installed_toolchains")
-@mock.patch("hermeto.core.package_managers.gomod._get_repository_name")
-@mock.patch("hermeto.core.package_managers.gomod._find_missing_gomod_files")
-@mock.patch("hermeto.core.package_managers.gomod._resolve_gomod")
-@mock.patch("hermeto.core.package_managers.gomod.GoCacheTemporaryDirectory")
-@mock.patch("hermeto.core.package_managers.gomod.ModuleVersionResolver.from_repo_path")
-@mock.patch("hermeto.core.package_managers.gomod._select_toolchain")
-@mock.patch("hermeto.core.package_managers.gomod._get_go_work_path")
-@mock.patch("hermeto.core.package_managers.gomod._vendor_changed")
-@mock.patch("hermeto.core.package_managers.gomod.create_backend_annotation")
+@mock.patch("hermeto.core.package_managers.gomod.main._list_installed_toolchains")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_repository_name")
+@mock.patch("hermeto.core.package_managers.gomod.main._find_missing_gomod_files")
+@mock.patch("hermeto.core.package_managers.gomod.main._resolve_gomod")
+@mock.patch("hermeto.core.package_managers.gomod.main.GoCacheTemporaryDirectory")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver.from_repo_path")
+@mock.patch("hermeto.core.package_managers.gomod.main._select_toolchain")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_go_work_path")
+@mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
+@mock.patch("hermeto.core.package_managers.gomod.main.create_backend_annotation")
 def test_fetch_gomod_source(
     mock_create_annotation: mock.Mock,
     mock_vendor_changed: mock.Mock,
@@ -1999,9 +1999,9 @@ def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) 
         pytest.param("1.22", "1.22.1", ["1.20", "1.19.2"], "1.22.1", id="install_missing"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.Go.from_missing_toolchain")
-@mock.patch("hermeto.core.package_managers.gomod.Go._get_release")
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
+@mock.patch("hermeto.core.package_managers.gomod.main.Go.from_missing_toolchain")
+@mock.patch("hermeto.core.package_managers.gomod.main.Go._get_release")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_gomod_version")
 def test_select_toolchain(
     mock_get_gomod_version: mock.Mock,
     mock_go_get_release: mock.Mock,
@@ -2039,7 +2039,7 @@ def test_select_toolchain(
         assert str(result.version) == expected_result
 
 
-@mock.patch("hermeto.core.package_managers.gomod._get_gomod_version")
+@mock.patch("hermeto.core.package_managers.gomod.main._get_gomod_version")
 def test_select_toolchain_fail(
     mock_get_gomod_version: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -2061,7 +2061,7 @@ def test_select_toolchain_fail(
         pytest.param("local", True, id="telemetry_enabled"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+@mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
 def test_disable_telemetry(
     mock_run_cmd: mock.Mock,
     GOTELEMETRY: str,
@@ -2088,7 +2088,7 @@ def test_disable_telemetry(
         pytest.param("workspaces", "resolve_gomod_workspaces.json", id="with_workspaces"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
+@mock.patch("hermeto.core.package_managers.gomod.main.GoWork._get_go_work")
 def test_parse_packages(
     mock_get_go_work: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -2198,8 +2198,8 @@ def test_parse_packages(
     ],
 )
 @mock.patch.dict(os.environ, {}, clear=False)
-@mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
-@mock.patch("hermeto.core.package_managers.gomod.Go", spec=Go)
+@mock.patch("hermeto.core.package_managers.gomod.main.get_cache_dir")
+@mock.patch("hermeto.core.package_managers.gomod.main.Go", spec=Go)
 def test_list_installed_toolchains(
     mock_go: mock.Mock,
     mock_get_cache_dir: mock.Mock,
@@ -2221,7 +2221,7 @@ def test_list_installed_toolchains(
         os.environ["PATH"] = ":".join(prefixed_paths)
 
     with mock.patch(
-        "hermeto.core.package_managers.gomod.HERMETO_GO_INSTALL_DIR",
+        "hermeto.core.package_managers.gomod.main.HERMETO_GO_INSTALL_DIR",
         new=Path(tmp_path, "usr/local"),
     ):
         result = _list_installed_toolchains()
@@ -2320,7 +2320,7 @@ class TestGo:
             pytest.param("go1.21.0-asdf\n", "go1.21.0-asdf", id="vendor_suffix"),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    @mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
     def test_get_release(
         self,
         mock_run: mock.Mock,
@@ -2345,7 +2345,7 @@ class TestGo:
             ),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    @mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
     def test_run(
         self,
         mock_run: mock.Mock,
@@ -2372,8 +2372,8 @@ class TestGo:
             ),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    @mock.patch("hermeto.core.package_managers.gomod.main.get_config")
+    @mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
     @mock.patch("time.sleep")
     def test_retry(
         self,
@@ -2405,8 +2405,8 @@ class TestGo:
         assert mock_run.call_count == tries_needed
         assert mock_sleep.call_count == tries_needed - 1
 
-    @mock.patch("hermeto.core.package_managers.gomod.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.run_cmd")
+    @mock.patch("hermeto.core.package_managers.gomod.main.get_config")
+    @mock.patch("hermeto.core.package_managers.gomod.main.run_cmd")
     @mock.patch("time.sleep")
     def test_retry_failure(
         self, mock_sleep: Any, mock_run: Any, mock_config: Any, caplog: pytest.LogCaptureFixture
@@ -2427,10 +2427,10 @@ class TestGo:
 
     @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
     @mock.patch.object(Go, "__post_init__", lambda self: None)
-    @mock.patch("hermeto.core.package_managers.gomod.tempfile.TemporaryDirectory")
+    @mock.patch("hermeto.core.package_managers.gomod.main.tempfile.TemporaryDirectory")
     @mock.patch("pathlib.Path.home")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._retry")
-    @mock.patch("hermeto.core.package_managers.gomod.get_cache_dir")
+    @mock.patch("hermeto.core.package_managers.gomod.main.Go._retry")
+    @mock.patch("hermeto.core.package_managers.gomod.main.get_cache_dir")
     def test_from_missing_toolchain(
         self,
         mock_cache_dir: mock.Mock,
@@ -2488,8 +2488,8 @@ class TestGo:
             pytest.param("go1.21.0", True, id="custom_release_needs_installation"),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.Go._run")
+    @mock.patch("hermeto.core.package_managers.gomod.main.get_config")
+    @mock.patch("hermeto.core.package_managers.gomod.main.Go._run")
     def test_call(
         self,
         mock_run: mock.Mock,
@@ -2512,7 +2512,7 @@ class TestGo:
             mock_run.assert_called_with(cmd, **env)
 
     @pytest.mark.parametrize("retry", [False, True])
-    @mock.patch("hermeto.core.package_managers.gomod.get_config")
+    @mock.patch("hermeto.core.package_managers.gomod.main.get_config")
     @mock.patch("subprocess.run")
     def test_call_failure(
         self,
@@ -2555,7 +2555,7 @@ class TestGoWork:
         assert go_work.path == go_work_path.path
         assert go_work.data == go_work_data
 
-    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
+    @mock.patch("hermeto.core.package_managers.gomod.main.GoWork._get_go_work")
     def test_from_file(
         self,
         mock_get_go_work: mock.Mock,
@@ -2602,7 +2602,7 @@ class TestGoWork:
             ),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.gomod.GoWork._get_go_work")
+    @mock.patch("hermeto.core.package_managers.gomod.main.GoWork._get_go_work")
     def test_workspace_paths(
         self,
         mock_get_go_work: mock.Mock,
