@@ -128,7 +128,7 @@ class ProjectFile(pydantic.BaseModel):
             baz==1.0.0  # comment with $ invalid placeholder
         """
         template = string.Template(self.template)
-        return template.safe_substitute(output_dir=output_dir)
+        return template.safe_substitute(output_dir=output_dir.as_posix())
 
 
 class BuildConfig(pydantic.BaseModel):
@@ -167,16 +167,15 @@ class RequestOutput(pydantic.BaseModel):
         sbom = Sbom(
             annotations=self.annotations, components=merge_component_properties(self.components)
         )
-        if any(
-            anno.text.startswith(f"{APP_NAME}:backend:experimental:")
-            for anno in self.annotations
-        ):
-            sbom.metadata.properties.append(Property(name=PropertyEnum.PROP_EXPERIMENTAL, value="true"))
+        experimental_subjects = set()
+        has_experimental_anno = False
+        for anno in self.annotations:
+            if anno.text.startswith(f"{APP_NAME}:backend:experimental:"):
+                has_experimental_anno = True
+                experimental_subjects.update(anno.subjects)
 
-            experimental_subjects = set()
-            for anno in self.annotations:
-                if anno.text.startswith(f"{APP_NAME}:backend:experimental:"):
-                    experimental_subjects.update(anno.subjects)
+        if has_experimental_anno:
+            sbom.metadata.properties.append(Property(name=PropertyEnum.PROP_EXPERIMENTAL, value="true"))
 
             for comp in sbom.components:
                 if comp.bom_ref in experimental_subjects:

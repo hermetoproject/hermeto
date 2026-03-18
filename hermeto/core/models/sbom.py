@@ -267,16 +267,16 @@ class Sbom(pydantic.BaseModel):
         """
 
         def create_document_root() -> SPDXPackage:
-            annotations = []
-            for prop in self.metadata.properties:
-                annotations.append(
-                    SPDXPackageAnnotation(
-                        annotator=f"Tool: {APP_NAME}:jsonencoded",
-                        annotationDate=spdx_now(),
-                        annotationType="OTHER",
-                        comment=json.dumps({"name": prop.name, "value": prop.value}),
-                    )
+            now = spdx_now()
+            annotations = [
+                SPDXPackageAnnotation(
+                    annotator=f"Tool: {APP_NAME}:jsonencoded",
+                    annotationDate=now,
+                    annotationType="OTHER",
+                    comment=json.dumps({"name": prop.name, "value": prop.value}),
                 )
+                for prop in self.metadata.properties
+            ]
             return SPDXPackage(
                 name="",
                 versionInfo="",
@@ -795,9 +795,11 @@ class SPDXSbom(pydantic.BaseModel):
         properties = []
         root_package = next((p for p in self.packages if p.SPDXID == self.root_id), None)
         if root_package:
-            for an in root_package.annotations:
-                if an.annotator.endswith(":jsonencoded"):
-                    properties.append(Property(**json.loads(an.comment)))
+            properties = [
+                Property(**json.loads(an.comment))
+                for an in root_package.annotations
+                if an.annotator.endswith(":jsonencoded")
+            ]
 
         return Sbom(
             components=components,
