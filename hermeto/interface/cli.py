@@ -13,8 +13,8 @@ from typing import Any
 import pydantic
 import typer
 
-import hermeto.core.config as config
 from hermeto import APP_NAME
+from hermeto.core.config import set_config
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.input import Flag, Mode, PackageInput, Request, parse_user_input
@@ -191,7 +191,7 @@ def main(  # noqa: D103 docstring becomes part of --help message
 ) -> None:
     setup_logging(log_level)
     if config_file:
-        config.set_config(config_file)
+        set_config(config_file)
 
 
 def _if_json_then_validate(value: str) -> str:

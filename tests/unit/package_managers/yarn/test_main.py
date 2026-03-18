@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import itertools
 import re
 from enum import Enum
-from itertools import zip_longest
+from itertools import chain, zip_longest
 from pathlib import Path
 from unittest import mock
 
@@ -486,7 +485,7 @@ def test_fetch_yarn_source(
 
     expected_output = RequestOutput(
         annotations=[mock_annotation],
-        components=list(itertools.chain.from_iterable(package_components)),
+        components=list(chain.from_iterable(package_components)),
         build_config=BuildConfig(environment_variables=yarn_env_variables),
     )
     assert output == expected_output

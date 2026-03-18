@@ -7,7 +7,6 @@ from urllib.parse import urlsplit
 
 import git
 import pytest
-from git.repo import Repo
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
 from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
@@ -45,7 +44,7 @@ class TestRepoID:
     def test_get_repo_id(
         self, repo_url: str, expect_result: str | Exception, golang_repo_path: Path
     ) -> None:
-        Repo(golang_repo_path).create_remote("origin", repo_url)
+        git.Repo(golang_repo_path).create_remote("origin", repo_url)
         expect_commit_id = "4a481f0bae82adef3ea6eae3d167af6e74499cb2"
 
         if isinstance(expect_result, str):
@@ -89,8 +88,8 @@ def test_clone_as_tarball(golang_repo_path: Path, tmp_path: Path) -> None:
 
     my_path = tmp_path / "my-repo" / "app"
 
-    original_repo = Repo(original_path)
-    my_repo = Repo(my_path)
+    original_repo = git.Repo(original_path)
+    my_repo = git.Repo(my_path)
 
     assert original_repo.commit().hexsha != my_repo.commit().hexsha
     assert my_repo.commit().hexsha == INITIAL_COMMIT

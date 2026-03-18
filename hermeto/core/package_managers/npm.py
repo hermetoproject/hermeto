@@ -2,10 +2,9 @@
 import asyncio
 import copy
 import fnmatch
-import functools
 import json
 import logging
-from functools import partial
+from functools import cached_property, partial
 from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict
 from urllib.parse import urlparse
@@ -202,7 +201,7 @@ class PackageLock:
                 return True
         return False
 
-    @functools.cached_property
+    @cached_property
     def _purlifier(self) -> "_Purlifier":
         pkg_path = self._lockfile_path.join_within_root("..")
         return _Purlifier(pkg_path)
@@ -341,7 +340,7 @@ class _Purlifier:
         """Init a purlifier for the package at pkg_path."""
         self._pkg_path = pkg_path
 
-    @functools.cached_property
+    @cached_property
     def _repo_id(self) -> RepoID:
         return get_repo_id(self._pkg_path.root)
 

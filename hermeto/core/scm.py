@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import logging
-import os
 import re
 import tarfile
 import tempfile
@@ -189,7 +188,7 @@ def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID:
 
     See `man git-clone` (GIT URLS) for some of the url formats that git supports.
     """
-    if isinstance(repo, (str, os.PathLike)):
+    if isinstance(repo, (str, PathLike)):
         repo = GitRepo(repo, search_parent_directories=True)
     elif isinstance(repo, git.Repo) and not isinstance(repo, GitRepo):
         repo = GitRepo(repo.working_dir)

@@ -6,7 +6,6 @@ import io
 import logging
 import re
 from collections.abc import Iterator
-from re import Pattern
 from typing import IO, Any, Literal
 from urllib import parse as urlparse
 
@@ -426,7 +425,7 @@ class PipRequirement:
 
     @staticmethod
     def _adjust_direct_access_requirement(
-        line: str, direct_ref_pattern: Pattern[str]
+        line: str, direct_ref_pattern: re.Pattern[str]
     ) -> tuple[str, dict[str, str]]:
         """Modify the requirement line so it can be parsed and extract qualifiers.
 

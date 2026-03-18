@@ -2,8 +2,8 @@
 import logging
 from typing import Any
 
-import requests
 from requests import Session
+from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 log = logging.getLogger(__name__)
@@ -34,9 +34,9 @@ def get_requests_session(retry_options: dict | None = None) -> Session:
     """
     if retry_options is None:
         retry_options = {}
-    session = requests.Session()
+    session = Session()
     retry_options = {**DEFAULT_RETRY_OPTIONS, **retry_options}
-    adapter = requests.adapters.HTTPAdapter(max_retries=Retry(**retry_options))
+    adapter = HTTPAdapter(max_retries=Retry(**retry_options))
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
