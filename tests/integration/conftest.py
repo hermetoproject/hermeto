@@ -13,13 +13,14 @@ from filelock import FileLock
 from git import Repo
 
 from hermeto.core.utils import copy_directory
-from tests.integration.proxy import (
-    TEST_NEXUS_PORT,
-    is_local_nexus_enabled,
-    is_local_nexus_proxy_enabled,
-)
+from tests.integration.proxy import is_local_nexus_enabled, is_local_nexus_proxy_enabled
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
-from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_MTLS_PORT, initialize_nexus
+from tests.nexusserver import (
+    DEFAULT_NEXUS_HOST,
+    DEFAULT_NEXUS_MTLS_PORT,
+    DEFAULT_NEXUS_TLS_PORT,
+    initialize_nexus,
+)
 
 from . import utils
 
@@ -208,6 +209,10 @@ def _nexusserver_context() -> Iterator[None]:
         client_cert = (str(certs_dir / "client.crt"), str(certs_dir / "client.key"))
         status_url = lambda port: f"https://{DEFAULT_NEXUS_HOST}:{port}/service/rest/v1/status"
 
+        # Basic TLS must be reachable
+        resp = requests.get(status_url(DEFAULT_NEXUS_TLS_PORT), verify=ca_cert)
+        resp.raise_for_status()
+
         # mTLS must reject without client cert
         resp = requests.get(status_url(DEFAULT_NEXUS_MTLS_PORT), verify=ca_cert)
         if resp.status_code == requests.codes.ok:
@@ -241,7 +246,7 @@ def _nexusserver_context() -> Iterator[None]:
         log.info("Starting Nexus server via podman-compose")
         subprocess.run(compose_up_cmd, check=True)
 
-        with initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT) as client:
+        with initialize_nexus(host=DEFAULT_NEXUS_HOST) as client:
             log.info("Nexus server ready at %s", client.base_url)
 
         _check_tls_configuration()

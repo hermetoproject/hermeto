@@ -137,13 +137,21 @@ jobs:
           /var/tmp/venv/bin/podman-compose -f tests/nexusserver/docker-compose.yml up -d
           /var/tmp/venv/bin/python tests/nexusserver/configure.py
 
-          # Verify mTLS rejects unauthenticated access
+          # Verify basic TLS
           status=$(curl -sSI \
                         --output /dev/null \
                         --write-out "%{http_code}" \
                         --retry-delay 1 \
                         --retry 30 \
                         --retry-all-errors \
+                        --cacert tests/certificates/CA.crt \
+                        https://127.0.0.1:8443/service/rest/v1/status)
+          [[ "${status}" == "200" ]] || exit 1
+
+          # Verify mTLS rejects unauthenticated access
+          status=$(curl -sSI \
+                        --output /dev/null \
+                        --write-out "%{http_code}" \
                         --cacert tests/certificates/CA.crt \
                         https://127.0.0.1:8444/service/rest/v1/status)
           [[ "${status}" != "200" ]] || exit 1
