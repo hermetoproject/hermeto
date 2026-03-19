@@ -1060,7 +1060,6 @@ def _parse_packages(
             log.debug(f"Querying workspace module '{wsp}' for list of packages")
 
             packages = list(_go_list_deps(go, "./...", run_params | {"cwd": wsp}))
-            log.debug(packages)
             all_packages = chain(all_packages, packages)
     return iter(all_packages)
 
