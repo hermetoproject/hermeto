@@ -1,0 +1,18 @@
+services:
+  nexus:
+    container_name: hermeto-nexus
+    image: docker.io/sonatype/nexus3:latest
+    ports:
+      - "8082:8081"
+    volumes:
+      - nexus-data:/nexus-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/service/rest/v1/status/writable"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+
+volumes:
+  nexus-data:
+    name: hermeto-nexus-data

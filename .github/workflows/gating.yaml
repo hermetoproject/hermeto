@@ -122,12 +122,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install createrepo-c
           python3 -m venv /var/tmp/venv
-          /var/tmp/venv/bin/pip3 install --upgrade pip nox
+          /var/tmp/venv/bin/pip3 install --upgrade pip nox podman-compose requests typer tenacity
 
       - name: add checkout action...
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Start Nexus test server
+        run: |
+          /var/tmp/venv/bin/podman-compose -f tests/nexusserver/docker-compose.yml up -d
+          /var/tmp/venv/bin/python tests/nexusserver/start.py
 
       - name: PyPI test server start
         run: |
@@ -189,6 +194,7 @@ jobs:
           HERMETO_TEST_IMAGE: localhost/hermeto:${{ github.sha }}
           HERMETO_TEST_LOCAL_PYPISERVER: "1"
           HERMETO_TEST_LOCAL_DNF_SERVER: "1"
+          HERMETO_TEST_LOCAL_NEXUS: "1"
         run: |
           git config --global --add safe.directory "*"
           /var/tmp/venv/bin/nox -s integration-tests -- -n auto

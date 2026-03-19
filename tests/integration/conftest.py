@@ -241,28 +241,43 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     try:
         stack.enter_context(_pypiserver_context())
         stack.enter_context(_dnfserver_context())
-        _start_nexusserver(stack)
+        stack.enter_context(_nexusserver_context())
     except Exception:
         stack.close()
         raise
     setattr(session.config, "_hermeto_exit_stack", stack)
 
 
-def _start_nexusserver(stack: contextlib.ExitStack) -> None:
-    """Start local Nexus proxy server if enabled."""
-
+@contextlib.contextmanager
+def _nexusserver_context() -> Iterator[None]:
     if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
+        yield
         return
 
-    container, client = initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT)
-    stack.enter_context(client)
+    compose_file = Path(__file__).parents[1] / "nexusserver" / "docker-compose.yml"
+    compose_up_cmd = ["podman-compose", "-f", str(compose_file), "up", "-d"]
+    compose_down_cmd = ["podman-compose", "-f", str(compose_file), "down", "-v"]
 
-    if os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1":
-        log.info("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
-    else:
-        stack.enter_context(container)
+    def compose_down() -> None:
+        log.info("Stopping Nexus server and removing volumes")
+        subprocess.run(compose_down_cmd)
 
-    log.info("Nexus server ready at %s", client.base_url)
+    # Stale volumes break initialization. (Nexus deletes admin.password after first login)
+    compose_down()
+
+    with contextlib.ExitStack() as context:
+        if os.getenv("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP") == "1":
+            log.info("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP=1, Nexus server will NOT be cleaned up")
+        else:
+            context.callback(compose_down)
+
+        log.info("Starting Nexus server via podman-compose")
+        subprocess.run(compose_up_cmd, check=True)
+
+        with initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT) as client:
+            log.info("Nexus server ready at %s", client.base_url)
+
+        yield
 
 
 def pytest_sessionfinish(session: pytest.Session) -> None:

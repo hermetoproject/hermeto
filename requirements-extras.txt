@@ -1122,6 +1122,10 @@ ply==3.11 \
     --hash=sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3 \
     --hash=sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce
     # via pyarn
+podman-compose==1.5.0 \
+    --hash=sha256:5cc09362852711ce5d27648e41cb5fd058ea5a75acbcdec2f8d0b0c114a18e8e \
+    --hash=sha256:f0b9d35f4da1b309172adf208a5cb7a882b532a834c2202666c1988b6f147546
+    # via hermeto (pyproject.toml)
 propcache==0.4.1 \
     --hash=sha256:0002004213ee1f36cfb3f9a42b5066100c44276b9b72b4e1504cddd3d692e86e \
     --hash=sha256:0013cb6f8dde4b2a2f66903b8ba740bdfe378c943c4377a200551ceb27f379e4 \
@@ -1438,6 +1442,7 @@ python-dotenv==1.2.2 \
     --hash=sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a \
     --hash=sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3
     # via
+    #   podman-compose
     #   pydantic-settings
     #   pytest-env
 pyyaml==6.0.3 \
@@ -1518,6 +1523,7 @@ pyyaml==6.0.3 \
     #   hermeto (pyproject.toml)
     #   mkdocs
     #   mkdocs-get-deps
+    #   podman-compose
     #   pymdown-extensions
     #   pyyaml-env-tag
 pyyaml-env-tag==1.1 \
