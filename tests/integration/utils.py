@@ -34,6 +34,8 @@ TEST_SERVER_LOCALHOST = "127.0.0.1"
 
 DEFAULT_INTEGRATION_TESTS_REPO = "https://github.com/hermetoproject/integration-tests.git"
 
+HERMETO_TEST_IMAGE_TAG = "localhost/hermeto-test:latest"
+
 
 log = logging.getLogger(__name__)
 container_engine = get_container_engine()
@@ -167,6 +169,17 @@ class HermetoImage(ContainerImage):
 
 def build_image(context_dir: Path, tag: str) -> ContainerImage:
     return _build_image(flags=[], tag=tag, context_dir=context_dir)
+
+
+def build_hermeto_test_image(base_image: str) -> None:
+    """Build a derived hermeto image for integration tests."""
+    cert_dir = Path(__file__).parents[1] / "certificates"
+    containerfile = Path(__file__).parent / "Containerfile.test"
+    _build_image(
+        flags=["-f", str(containerfile), "--build-arg", f"HERMETO_BASE_IMAGE={base_image}"],
+        tag=HERMETO_TEST_IMAGE_TAG,
+        context_dir=cert_dir,
+    )
 
 
 def build_image_for_test_case(

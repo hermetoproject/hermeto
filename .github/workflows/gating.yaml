@@ -81,6 +81,11 @@ jobs:
           # * DL3041 - Specify version with dnf install -y <package>-<version>
           ignore: DL3041
           failure-threshold: warning
+      - uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: tests/integration/Containerfile.test
+          ignore: DL3006
+          failure-threshold: warning
 
   markdownlint:
     name: Markdownlint

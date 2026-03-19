@@ -86,7 +86,11 @@ def top_level_test_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def hermeto_image(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> utils.HermetoImage:
-    """Build or reuse the Hermeto image once per test run when using pytest-xdist."""
+    """Build or reuse the Hermeto image once per test run when using pytest-xdist.
+
+    The final image is a thin derived layer that adds test-specific modifications
+    on top of the base hermeto image (e.g. trusting the test CA certificate).
+    """
 
     def _build_and_pull_image() -> utils.HermetoImage:
         if not env_image:
@@ -96,10 +100,11 @@ def hermeto_image(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> u
             repo_root = Path(__file__).parents[2]
             utils.build_image(repo_root, tag=image_ref)
 
-        hermeto = utils.HermetoImage(image_ref)
         if not image_ref.startswith("localhost/"):
-            hermeto.pull_image()
-        return hermeto
+            utils.HermetoImage(image_ref).pull_image()
+
+        utils.build_hermeto_test_image(image_ref)
+        return utils.HermetoImage(utils.HERMETO_TEST_IMAGE_TAG)
 
     env_image = os.getenv("HERMETO_TEST_IMAGE")
     image_ref = env_image or "localhost/hermeto:latest"
@@ -113,7 +118,7 @@ def hermeto_image(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> u
     fn = root_tmp_dir / "hermeto_image"
     with FileLock(str(fn) + ".lock"):
         if fn.is_file():
-            hermeto = utils.HermetoImage(image_ref)
+            hermeto = utils.HermetoImage(utils.HERMETO_TEST_IMAGE_TAG)
         else:
             hermeto = _build_and_pull_image()
             fn.touch()
