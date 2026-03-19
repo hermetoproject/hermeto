@@ -17,12 +17,16 @@ from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
 BACKEND_ANNOTATION_PREFIX = f"{APP_NAME}:backend:"
+
+BACKEND_ANNOTATION_TOOL = f"{APP_NAME}:backend"
+JSON_ENCODED_TOOL = f"{APP_NAME}:jsonencoded"
 
 
 def datetime_to_iso_8601(value: datetime) -> str:
@@ -232,7 +236,9 @@ class Sbom(pydantic.BaseModel):
                 # NOTE: We might consider deduplicating annotations based on the annotation text
                 # in the future. It is a very rare corner case, though, and it only matters when
                 # merging multiple CycloneDX SBOMs.
-                annotations=self.annotations + other.annotations,
+                annotations=merge_component_annotations(
+                    chain.from_iterable(s.annotations for s in [self, other])
+                ),
                 components=merge_component_properties(
                     chain.from_iterable(s.components for s in [self, other])
                 ),
@@ -289,19 +295,28 @@ class Sbom(pydantic.BaseModel):
             result = []
             base_spdx_annotation = partial(
                 SPDXPackageAnnotation,
-                annotator=f"Tool: {APP_NAME}:jsonencoded",
                 annotationDate=spdx_now(),
                 annotationType="OTHER",
             )
 
             for annotation in self.annotations:
                 if bom_ref in annotation.subjects:
-                    result.append(base_spdx_annotation(comment=annotation.text))
+                    tool = (
+                        BACKEND_ANNOTATION_TOOL
+                        if annotation.text.startswith(BACKEND_ANNOTATION_PREFIX)
+                        else JSON_ENCODED_TOOL
+                    )
+                    result.append(
+                        base_spdx_annotation(annotator=f"Tool: {tool}", comment=annotation.text)
+                    )
 
             for property in properties:
                 result.append(
                     base_spdx_annotation(
-                        comment=json.dumps(dict(name=f"{property.name}", value=f"{property.value}"))
+                        annotator=f"Tool: {JSON_ENCODED_TOOL}",
+                        comment=json.dumps(
+                            dict(name=f"{property.name}", value=f"{property.value}")
+                        ),
                     )
                 )
 
@@ -724,17 +739,44 @@ class SPDXSbom(pydantic.BaseModel):
 
     def to_cyclonedx(self) -> Sbom:
         """Convert a SPDX SBOM to a CycloneDX SBOM."""
+
+        def process_annotation(annotation: SPDXPackageAnnotation) -> Property | None:
+            """Process SPDX package annotation.
+
+            Args:
+                annotation: A SPDX package annotation.
+
+            Returns:
+                A Property object if the annotation is a JSON encoded or a custom annotation,
+                None if the annotation is a backend annotation.
+            """
+            if annotation.annotator.endswith(JSON_ENCODED_TOOL):
+                try:
+                    return Property(**json.loads(annotation.comment))
+                except json.JSONDecodeError:
+                    raise UnexpectedFormat(
+                        f"Invalid JSON encoded annotation: {annotation.comment}",
+                        solution="Please check if the annotation is a valid JSON object.",
+                    )
+            elif annotation.annotator.endswith(BACKEND_ANNOTATION_TOOL):
+                return None
+            else:
+                return Property(name=annotation.annotator, value=annotation.comment)
+
         components = []
+        backend_annotations = defaultdict(set)
         eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
         for package in self.packages:
-            properties = [
-                (
-                    Property(**json.loads(an.comment))
-                    if an.annotator.endswith(":jsonencoded")
-                    else Property(name=an.annotator, value=an.comment)
-                )
-                for an in package.annotations
-            ]
+            purls = _extract_purls(package.externalRefs)
+
+            properties = []
+            for ann in package.annotations:
+                processed = process_annotation(ann)
+                if processed is not None:
+                    properties.append(processed)
+                else:
+                    backend_annotations[ann.comment].update(purls)
+
             # sourceInfo morphs into ExternalReference of type PROXY_REF_TYPE
             # with PROXY_COMMENT comment
             if package.sourceInfo is not None:
@@ -749,7 +791,6 @@ class SPDXSbom(pydantic.BaseModel):
                 properties=properties,
                 external_references=exrefs,
             )
-            purls = _extract_purls(package.externalRefs)
 
             # cyclonedx doesn't support multiple purls, therefore
             # new component is created for each purl
@@ -774,10 +815,46 @@ class SPDXSbom(pydantic.BaseModel):
                 tools.append(Tool(vendor=vendor, name=name))
                 name, vendor = None, None
 
+        annotations = [
+            Annotation(
+                subjects=SortedSet(purls),
+                annotator={"organization": {"name": "red hat"}},
+                timestamp=spdx_now(),
+                text=backend,
+            )
+            for backend, purls in backend_annotations.items()
+        ]
+
         return Sbom(
+            annotations=annotations,
             components=components,
             metadata=Metadata(tools=tools),
         )
+
+
+def merge_component_annotations(annotations: Iterable[Annotation]) -> list[Annotation]:
+    """Merge component annotations."""
+    backend_annotations: dict[str, set[str]] = defaultdict(set)
+    other_annotations = []
+    for ann in annotations:
+        if ann.text.startswith(BACKEND_ANNOTATION_PREFIX):
+            backend_annotations[ann.text].update(ann.subjects)
+        else:
+            other_annotations.append(ann)
+
+    all_annotations = other_annotations + [
+        Annotation(
+            subjects=SortedSet(subjects),
+            annotator={"organization": {"name": "red hat"}},
+            timestamp=spdx_now(),
+            text=text,
+        )
+        for text, subjects in backend_annotations.items()
+    ]
+
+    return sorted(
+        all_annotations, key=lambda ann: (ann.annotator, ann.text, ann.timestamp, ann.subjects)
+    )
 
 
 def merge_component_properties(components: Iterable[Component]) -> list[Component]:
