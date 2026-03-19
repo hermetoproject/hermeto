@@ -7,8 +7,10 @@ import pydantic
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.property_semantics import PropertyEnum
 from hermeto.core.models.sbom import (
+    ANNOTATOR_JSON,
     FOUND_BY_APP_PROPERTY,
     PROXY_COMMENT,
     PROXY_REF_TYPE,
@@ -25,10 +27,40 @@ from hermeto.core.models.sbom import (
     SPDXSbom,
     Tool,
     create_backend_annotation,
+    merge_component_annotations,
     merge_component_properties,
 )
 
 SPDX_EPOCH_STRFTIME = datetime.datetime.fromtimestamp(0).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _cyclonedx_spdx_roundtrip_backend_annotations() -> list[Annotation]:
+    """Backend annotations reused by SPDX round-trip parametrized tests."""
+    return [
+        Annotation(
+            subjects=["pkg:npm/spdx-expression-parse@1.0.0"],
+            annotator={"organization": {"name": "red hat"}},
+            timestamp="2026-01-01T00:00:00Z",
+            text="hermeto:backend:npm",
+        ),
+        Annotation(
+            subjects=[
+                "pkg:golang/github.com/org/A@v1.0.0",
+                "pkg:golang/github.com/org/A@v1.1.0",
+            ],
+            annotator={"organization": {"name": "red hat"}},
+            timestamp="2026-01-01T00:00:00Z",
+            text="hermeto:backend:golang",
+        ),
+    ]
+
+
+def _sbom_for_cyclonedx_spdx_roundtrip(components: list[dict[str, object]]) -> Sbom:
+    """Shared CycloneDX SBOM shape for SPDX round-trip parametrized tests."""
+    return Sbom(
+        annotations=_cyclonedx_spdx_roundtrip_backend_annotations(),
+        components=components,
+    )
 
 
 class TestComponent:
@@ -404,8 +436,8 @@ class TestSbom:
         "sbom",
         [
             pytest.param(
-                Sbom(
-                    components=[
+                _sbom_for_cyclonedx_spdx_roundtrip(
+                    [
                         {
                             "name": "spdx-expression-parse",
                             "version": "v1.0.0",
@@ -421,13 +453,13 @@ class TestSbom:
                             "version": "v1.1.0",
                             "purl": "pkg:golang/github.com/org/A@v1.1.0",
                         },
-                    ],
+                    ]
                 ),
                 id="base_case",
             ),
             pytest.param(
-                Sbom(
-                    components=[
+                _sbom_for_cyclonedx_spdx_roundtrip(
+                    [
                         {
                             "name": "spdx-expression-parse",
                             "version": "v1.0.0",
@@ -450,13 +482,13 @@ class TestSbom:
                             "version": "v1.1.0",
                             "purl": "pkg:golang/github.com/org/A@v1.1.0",
                         },
-                    ],
+                    ]
                 ),
                 id="one_external_reference",
             ),
             pytest.param(
-                Sbom(
-                    components=[
+                _sbom_for_cyclonedx_spdx_roundtrip(
+                    [
                         {
                             "name": "spdx-expression-parse",
                             "version": "v1.0.0",
@@ -484,7 +516,7 @@ class TestSbom:
                             "version": "v1.1.0",
                             "purl": "pkg:golang/github.com/org/A@v1.1.0",
                         },
-                    ],
+                    ]
                 ),
                 id="two_external_references",
             ),
@@ -504,6 +536,7 @@ class TestSbom:
         # TODO: Stop storing components/properties as a list and use sets; that, however, will
         # cause issues with the JSON encoder/decoder.
         sbom.components = merge_component_properties(sbom.components)
+        sbom.annotations = merge_component_annotations(sbom.annotations)
         assert cyclonedx_sbom == sbom
 
     def test_generate_package_annotations(self, mock_spdx_now: str) -> None:
@@ -530,8 +563,10 @@ class TestSbom:
         spdx_sbom = sbom.to_spdx("NOASSERTION")
         pkg = next((pkg for pkg in spdx_sbom.packages if pkg.name == "test-package"))
 
-        assert pkg.annotations[0].comment == "Hello, world!"
-        assert pkg.annotations[1].comment == '{"name": "hermeto:found_by", "value": "hermeto"}'
+        assert {a.comment for a in pkg.annotations} == {
+            '{"name": "hermeto:found_by", "value": "hermeto"}',
+            "Hello, world!",
+        }
 
     def test_spdx_annotation_subjects_filtering(self, mock_spdx_now: str) -> None:
         """Annotations should only be applied to SPDX packages whose bom-ref is in subjects."""
@@ -1073,6 +1108,35 @@ class TestSPDXSbom:
                 tools=[Tool(vendor="hermetoproject", name=f"{APP_NAME}")],
             ),
         )
+
+    def test_to_cyclonedx_invalid_json_annotation(self, mock_spdx_now: str) -> None:
+        """Malformed JSON in a jsonencoded SPDX annotation should raise UnexpectedFormat."""
+        sbom = SPDXSbom(
+            documentNamespace="NOASSERTION",
+            creationInfo={
+                "creators": [f"Tool: {APP_NAME}", "Organization: hermetoproject"],
+                "created": SPDX_EPOCH_STRFTIME,
+            },
+            packages=[
+                {
+                    "SPDXID": "SPDXRef-Package-test-abc123",
+                    "name": "test-package",
+                    "versionInfo": "1.0.0",
+                    "externalRefs": [_gen_ref("pkg:npm/test-package@1.0.0")],
+                    "annotations": [
+                        {
+                            "annotator": f"Tool: {ANNOTATOR_JSON}",
+                            "annotationDate": SPDX_EPOCH_STRFTIME,
+                            "annotationType": "OTHER",
+                            "comment": "not valid json {{{",
+                        }
+                    ],
+                },
+            ],
+        )
+
+        with pytest.raises(UnexpectedFormat, match="Invalid JSON in annotation"):
+            sbom.to_cyclonedx()
 
     # SPDX SBOM objects are very verbose and it is rather hard to tell the
     # difference between them at a glance. It is unavoidable when a SBOM is

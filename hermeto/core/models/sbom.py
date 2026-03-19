@@ -5,6 +5,7 @@ import logging
 import re
 from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
@@ -17,12 +18,17 @@ from packageurl import PackageURL
 from typing_extensions import Self
 
 from hermeto import APP_NAME
+from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
 BACKEND_ANNOTATION_PREFIX = f"{APP_NAME}:backend:"
+
+ANNOTATOR_BACKEND = f"{APP_NAME}:backend"
+ANNOTATOR_JSON = f"{APP_NAME}:jsonencoded"
+_ANNOTATOR_ORG = {"organization": {"name": "red hat"}}
 
 
 def datetime_to_iso_8601(value: datetime) -> str:
@@ -32,6 +38,70 @@ def datetime_to_iso_8601(value: datetime) -> str:
 
 ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
 SortedSet = Annotated[set[str], pydantic.PlainSerializer(sorted, return_type=list[str])]
+
+
+@dataclass
+class _PerBackendAccumulator:
+    _max_timestamp: datetime
+    subjects: set[str] = field(default_factory=set)
+
+    @property
+    def max_timestamp(self) -> datetime:
+        return self._max_timestamp
+
+    @max_timestamp.setter
+    def max_timestamp(self, value: datetime) -> None:
+        if value > self._max_timestamp:
+            self._max_timestamp = value
+
+    def accumulate(self, subjects: Iterable[str], at: datetime) -> None:
+        """Add subjects and update the max timestamp."""
+        self.subjects.update(subjects)
+        self.max_timestamp = at
+
+    @staticmethod
+    def to_annotations(
+        accumulators: dict[str, "_PerBackendAccumulator"],
+    ) -> "list[Annotation]":
+        """Convert accumulated backends to CycloneDX annotations."""
+        return [
+            Annotation(
+                subjects=SortedSet(acc.subjects),
+                annotator=_ANNOTATOR_ORG,
+                timestamp=acc.max_timestamp,
+                text=name,
+            )
+            for name, acc in accumulators.items()
+        ]
+
+
+a_backend_indicator = object()
+
+
+def convert_annotation_to_property(
+    annotation: "SPDXPackageAnnotation",
+) -> Property | object:
+    """Convert a SPDX annotation to a CycloneDX property or a backend indicator.
+
+    Returns a Property for JSON-encoded or custom annotations,
+    or `a_backend_indicator` for backend annotations.
+    """
+    if annotation.annotator.endswith(ANNOTATOR_JSON):
+        try:
+            return Property(**json.loads(annotation.comment))
+        except json.JSONDecodeError:
+            raise UnexpectedFormat(
+                f"Invalid JSON in annotation: {annotation.comment!r}",
+                solution=(
+                    "The annotation comment should be a valid JSON object"
+                    ' with "name" and "value" keys,'
+                    ' e.g. {"name": "property_name", "value": "property_value"}.'
+                ),
+            )
+    elif annotation.annotator.endswith(ANNOTATOR_BACKEND):
+        return a_backend_indicator
+    else:
+        return Property(name=annotation.annotator, value=annotation.comment)
 
 
 class Annotation(pydantic.BaseModel):
@@ -180,7 +250,7 @@ def create_backend_annotation(
         text = f"{BACKEND_ANNOTATION_PREFIX}{backend_name}"
     return Annotation(
         subjects={c.bom_ref for c in components},
-        annotator={"organization": {"name": "red hat"}},
+        annotator=_ANNOTATOR_ORG,
         timestamp=spdx_now(),
         text=text,
     )
@@ -232,7 +302,9 @@ class Sbom(pydantic.BaseModel):
                 # NOTE: We might consider deduplicating annotations based on the annotation text
                 # in the future. It is a very rare corner case, though, and it only matters when
                 # merging multiple CycloneDX SBOMs.
-                annotations=self.annotations + other.annotations,
+                annotations=merge_component_annotations(
+                    chain.from_iterable(s.annotations for s in [self, other])
+                ),
                 components=merge_component_properties(
                     chain.from_iterable(s.components for s in [self, other])
                 ),
@@ -289,19 +361,31 @@ class Sbom(pydantic.BaseModel):
             result = []
             base_spdx_annotation = partial(
                 SPDXPackageAnnotation,
-                annotator=f"Tool: {APP_NAME}:jsonencoded",
                 annotationDate=spdx_now(),
                 annotationType="OTHER",
             )
 
             for annotation in self.annotations:
                 if bom_ref in annotation.subjects:
-                    result.append(base_spdx_annotation(comment=annotation.text))
+                    tool = ANNOTATOR_JSON
+                    if annotation.text.startswith(BACKEND_ANNOTATION_PREFIX):
+                        tool = ANNOTATOR_BACKEND
+
+                    result.append(
+                        base_spdx_annotation(
+                            annotator=f"Tool: {tool}",
+                            annotationDate=annotation.timestamp,
+                            comment=annotation.text,
+                        )
+                    )
 
             for property in properties:
                 result.append(
                     base_spdx_annotation(
-                        comment=json.dumps(dict(name=f"{property.name}", value=f"{property.value}"))
+                        annotator=f"Tool: {ANNOTATOR_JSON}",
+                        comment=json.dumps(
+                            dict(name=f"{property.name}", value=f"{property.value}")
+                        ),
                     )
                 )
 
@@ -724,17 +808,26 @@ class SPDXSbom(pydantic.BaseModel):
 
     def to_cyclonedx(self) -> Sbom:
         """Convert a SPDX SBOM to a CycloneDX SBOM."""
+
         components = []
+        backend_accumulators: dict[str, _PerBackendAccumulator] = {}
+        get_backend_name = lambda ann: ann.comment
         eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
         for package in self.packages:
-            properties = [
-                (
-                    Property(**json.loads(an.comment))
-                    if an.annotator.endswith(":jsonencoded")
-                    else Property(name=an.annotator, value=an.comment)
-                )
-                for an in package.annotations
-            ]
+            purls = _extract_purls(package.externalRefs)
+
+            properties = []
+            for ann in package.annotations:
+                result = convert_annotation_to_property(ann)
+                if result is a_backend_indicator:
+                    accumulator = backend_accumulators.setdefault(
+                        get_backend_name(ann),
+                        _PerBackendAccumulator(ann.annotationDate),
+                    )
+                    accumulator.accumulate(purls, ann.annotationDate)
+                else:
+                    properties.append(result)
+
             # sourceInfo morphs into ExternalReference of type PROXY_REF_TYPE
             # with PROXY_COMMENT comment
             if package.sourceInfo is not None:
@@ -749,7 +842,6 @@ class SPDXSbom(pydantic.BaseModel):
                 properties=properties,
                 external_references=exrefs,
             )
-            purls = _extract_purls(package.externalRefs)
 
             # cyclonedx doesn't support multiple purls, therefore
             # new component is created for each purl
@@ -774,10 +866,38 @@ class SPDXSbom(pydantic.BaseModel):
                 tools.append(Tool(vendor=vendor, name=name))
                 name, vendor = None, None
 
+        annotations = _PerBackendAccumulator.to_annotations(backend_accumulators)
+
         return Sbom(
+            annotations=annotations,
             components=components,
             metadata=Metadata(tools=tools),
         )
+
+
+def merge_component_annotations(annotations: Iterable[Annotation]) -> list[Annotation]:
+    """Merge component annotations."""
+    other_annotations = []
+    backend_accumulators: dict[str, _PerBackendAccumulator] = {}
+    get_backend_name = lambda ann: ann.text
+    for ann in annotations:
+        if ann.text.startswith(BACKEND_ANNOTATION_PREFIX):
+            accumulator = backend_accumulators.setdefault(
+                get_backend_name(ann),
+                _PerBackendAccumulator(ann.timestamp),
+            )
+            accumulator.accumulate(ann.subjects, ann.timestamp)
+        else:
+            other_annotations.append(ann)
+
+    all_annotations = other_annotations + _PerBackendAccumulator.to_annotations(
+        backend_accumulators
+    )
+
+    return sorted(
+        all_annotations,
+        key=lambda ann: (ann.text, ann.timestamp, tuple(sorted(ann.subjects))),
+    )
 
 
 def merge_component_properties(components: Iterable[Component]) -> list[Component]:
