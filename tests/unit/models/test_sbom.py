@@ -25,6 +25,7 @@ from hermeto.core.models.sbom import (
     SPDXSbom,
     Tool,
     create_backend_annotation,
+    merge_component_annotations,
     merge_component_properties,
 )
 
@@ -405,6 +406,23 @@ class TestSbom:
         [
             pytest.param(
                 Sbom(
+                    annotations=[
+                        Annotation(
+                            subjects=["pkg:npm/spdx-expression-parse@1.0.0"],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:npm",
+                        ),
+                        Annotation(
+                            subjects=[
+                                "pkg:golang/github.com/org/A@v1.0.0",
+                                "pkg:golang/github.com/org/A@v1.1.0",
+                            ],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:golang",
+                        ),
+                    ],
                     components=[
                         {
                             "name": "spdx-expression-parse",
@@ -427,6 +445,23 @@ class TestSbom:
             ),
             pytest.param(
                 Sbom(
+                    annotations=[
+                        Annotation(
+                            subjects=["pkg:npm/spdx-expression-parse@1.0.0"],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:npm",
+                        ),
+                        Annotation(
+                            subjects=[
+                                "pkg:golang/github.com/org/A@v1.0.0",
+                                "pkg:golang/github.com/org/A@v1.1.0",
+                            ],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:golang",
+                        ),
+                    ],
                     components=[
                         {
                             "name": "spdx-expression-parse",
@@ -456,6 +491,23 @@ class TestSbom:
             ),
             pytest.param(
                 Sbom(
+                    annotations=[
+                        Annotation(
+                            subjects=["pkg:npm/spdx-expression-parse@1.0.0"],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:npm",
+                        ),
+                        Annotation(
+                            subjects=[
+                                "pkg:golang/github.com/org/A@v1.0.0",
+                                "pkg:golang/github.com/org/A@v1.1.0",
+                            ],
+                            annotator={"organization": {"name": "red hat"}},
+                            timestamp="2026-01-01T00:00:00Z",
+                            text="hermeto:backend:golang",
+                        ),
+                    ],
                     components=[
                         {
                             "name": "spdx-expression-parse",
@@ -500,6 +552,7 @@ class TestSbom:
         )
         cyclonedx_sbom = sbom.to_spdx("NOASSERTION").to_cyclonedx()
 
+        sbom.annotations = merge_component_annotations(sbom.annotations)
         # We have to re-order components because 'hermeto' now comes alphabetically later
         # TODO: Stop storing components/properties as a list and use sets; that, however, will
         # cause issues with the JSON encoder/decoder.
