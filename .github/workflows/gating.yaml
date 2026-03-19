@@ -132,7 +132,7 @@ jobs:
       - name: Start Nexus test server
         run: |
           /var/tmp/venv/bin/podman-compose -f tests/nexusserver/docker-compose.yml up -d
-          /var/tmp/venv/bin/python tests/nexusserver/start.py
+          /var/tmp/venv/bin/python tests/nexusserver/configure.py
 
       - name: PyPI test server start
         run: |

@@ -14,7 +14,7 @@ Set `HERMETO_TEST_LOCAL_NEXUS_PROXY=1` to enable local Nexus proxy mode (done au
 bash tests/nexusserver/run.sh
 ```
 
-Starts Nexus via podman-compose, configures it, and attaches to logs. Press Ctrl+C to stop and clean up. Configuration options for `start.py` can be set via CLI flags or environment variables:
+Starts Nexus via podman-compose, configures it, and attaches to logs. Press Ctrl+C to stop and clean up. Configuration options for `configure.py` can be set via CLI flags or environment variables:
 
 | CLI flag | Env var | Default |
 |---|---|---|

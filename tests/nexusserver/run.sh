@@ -18,7 +18,7 @@ podman-compose -f "$DIR/docker-compose.yml" down -v 2>/dev/null || true
 podman-compose -f "$DIR/docker-compose.yml" up -d
 
 echo "--- Initializing Nexus ---"
-python "$DIR/start.py"
+python "$DIR/configure.py"
 
 echo -e "\nPress Ctrl+C to stop and cleanup...\n"
 podman-compose -f "$DIR/docker-compose.yml" logs -f
