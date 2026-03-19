@@ -5,6 +5,7 @@ import fnmatch
 import functools
 import json
 import logging
+import tarfile
 from functools import partial
 from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict
@@ -23,8 +24,8 @@ from hermeto.core.errors import (
     UnexpectedFormat,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import Request
-from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.input import NpmBinaryFilters, Request
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
@@ -626,6 +627,57 @@ def _get_npm_dependencies(
     return download_paths
 
 
+def _detect_prebuilt_binaries(
+    download_paths: dict[NormalizedUrl, RootedPath],
+    binary_filters: NpmBinaryFilters | None,
+) -> None:
+    """Scan downloaded tarballs for prebuilt .node binaries.
+
+    Prebuildify packages ship platform-specific .node binaries under a
+    ``prebuilds/`` directory inside the npm tarball. This function detects
+    such binaries and either rejects or allows them based on the user's
+    ``binary`` configuration.
+
+    :param download_paths: mapping of resolved URLs to downloaded tarball paths
+    :param binary_filters: user-provided binary filters, or None if not set
+    :raises PackageRejected: if prebuilt binaries are found and binary_filters is None
+    """
+    for url, path in download_paths.items():
+        if not path.path.suffix == ".tgz" or not path.path.exists():
+            continue
+
+        try:
+            with tarfile.open(path.path, "r:gz") as tar:
+                prebuilt_files = [
+                    m.name for m in tar.getmembers()
+                    if m.name.endswith(".node") and "prebuilds/" in m.name
+                ]
+        except (tarfile.TarError, OSError):
+            continue
+
+        if not prebuilt_files:
+            continue
+
+        pkg_name = path.path.stem.removesuffix(".tgz")
+        log.info("Found prebuilt binaries in %s: %s", pkg_name, prebuilt_files)
+
+        if binary_filters is not None:
+            log.warning(
+                "Allowing prebuilt binaries in %s because 'binary' field is set",
+                pkg_name,
+            )
+        else:
+            raise PackageRejected(
+                f"Package '{pkg_name}' contains prebuilt binaries: {prebuilt_files}",
+                solution=(
+                    "Prebuilt binaries were found in this npm package. "
+                    "To allow them, set 'binary': {} in your package input. "
+                    "Alternatively, the npm_config_build_from_source=true environment "
+                    "variable is already set to compile from source at build time."
+                ),
+            )
+
+
 def _should_replace_dependency(dependency_version: str) -> bool:
     """Check if dependency must be updated in package(-lock).json.
 
@@ -745,7 +797,11 @@ def fetch_npm_source(request: Request) -> RequestOutput:
     npm_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     for package in request.npm_packages:
-        info = _resolve_npm(request.source_dir.join_within_root(package.path), npm_deps_dir)
+        info = _resolve_npm(
+            request.source_dir.join_within_root(package.path),
+            npm_deps_dir,
+            binary_filters=package.binary,
+        )
         component_info.append(info["package"])
 
         for dependency in info["dependencies"]:
@@ -766,7 +822,11 @@ def fetch_npm_source(request: Request) -> RequestOutput:
     )
 
 
-def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmPackage:
+def _resolve_npm(
+    pkg_path: RootedPath,
+    npm_deps_dir: RootedPath,
+    binary_filters: NpmBinaryFilters | None = None,
+) -> ResolvedNpmPackage:
     """Resolve and fetch npm dependencies for the given package.
 
     :param pkg_path: the path to the directory containing npm-shrinkwrap.json or package-lock.json
@@ -807,6 +867,9 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
     download_paths = _get_npm_dependencies(
         npm_deps_dir, package_lock.get_dependencies_to_download()
     )
+
+    # Scan downloaded tarballs for prebuilt .node binaries
+    _detect_prebuilt_binaries(download_paths, binary_filters)
 
     # Update package-lock.json, package.json(s) files with local paths to dependencies and store them as ProjectFiles
     _update_package_lock_with_local_paths(download_paths, package_lock)

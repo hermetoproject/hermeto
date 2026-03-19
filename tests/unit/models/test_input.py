@@ -14,6 +14,7 @@ from hermeto.core.models.input import (
     BundlerPackageInput,
     GomodPackageInput,
     Mode,
+    NpmBinaryFilters,
     NpmPackageInput,
     PackageInput,
     PipBinaryFilters,
@@ -400,8 +401,8 @@ class TestRequest:
             "packages": [
                 {"type": "gomod", "path": Path(".")},
                 {"type": "gomod", "path": Path("subpath")},
-                {"type": "npm", "path": Path(".")},
-                {"type": "npm", "path": Path("subpath")},
+                {"type": "npm", "path": Path("."), "allow_binary": False, "binary": None},
+                {"type": "npm", "path": Path("subpath"), "allow_binary": False, "binary": None},
                 {
                     "type": "pip",
                     "path": Path("."),
@@ -535,12 +536,13 @@ class TestLegacyAllowBinary:
         [
             pytest.param(PipPackageInput, "pip", id="pip"),
             pytest.param(BundlerPackageInput, "bundler", id="bundler"),
+            pytest.param(NpmPackageInput, "npm", id="npm"),
         ],
     )
     def test_no_migration_when_allow_binary_false(
         self,
-        package_class: type[PipPackageInput | BundlerPackageInput],
-        package_type: Literal["pip", "bundler"],
+        package_class: type[PipPackageInput | BundlerPackageInput | NpmPackageInput],
+        package_type: Literal["pip", "bundler", "npm"],
     ) -> None:
         """Test early return when allow_binary=False."""
         package = package_class(type=package_type, allow_binary=False)
@@ -552,13 +554,14 @@ class TestLegacyAllowBinary:
         [
             pytest.param(PipPackageInput, "pip", PipBinaryFilters, id="pip"),
             pytest.param(BundlerPackageInput, "bundler", BundlerBinaryFilters, id="bundler"),
+            pytest.param(NpmPackageInput, "npm", NpmBinaryFilters, id="npm"),
         ],
     )
     def test_migration_when_allow_binary_true(
         self,
-        package_class: type[PipPackageInput | BundlerPackageInput],
-        package_type: Literal["pip", "bundler"],
-        binary_filter_class: type[PipBinaryFilters | BundlerBinaryFilters],
+        package_class: type[PipPackageInput | BundlerPackageInput | NpmPackageInput],
+        package_type: Literal["pip", "bundler", "npm"],
+        binary_filter_class: type[PipBinaryFilters | BundlerBinaryFilters | NpmBinaryFilters],
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Test allow_binary=True migrates to binary filters."""
@@ -573,12 +576,13 @@ class TestLegacyAllowBinary:
         [
             pytest.param(PipPackageInput, "pip", id="pip"),
             pytest.param(BundlerPackageInput, "bundler", id="bundler"),
+            pytest.param(NpmPackageInput, "npm", id="npm"),
         ],
     )
     def test_both_fields_binary_unchanged(
         self,
-        package_class: type[PipPackageInput | BundlerPackageInput],
-        package_type: Literal["pip", "bundler"],
+        package_class: type[PipPackageInput | BundlerPackageInput | NpmPackageInput],
+        package_type: Literal["pip", "bundler", "npm"],
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Test binary field unchanged when both fields specified."""
