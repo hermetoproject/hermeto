@@ -8,6 +8,7 @@ import pytest
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 from hermeto.core.package_managers.pip.requirements import PipRequirement, PipRequirementsFile
 from hermeto.core.rooted_path import RootedPath
+from packaging.requirements import Requirement
 
 
 class TestPipRequirementsFile:
@@ -1002,12 +1003,34 @@ class TestPipRequirementsFile:
 
     def test_invalid_kind_for_url(self) -> None:
         """Test extracting URL from a requirement that does not have one."""
-        requirement = PipRequirement()
-        requirement.download_line = "aiowsgi==0.7"
-        requirement.kind = "pypi"
+        requirement = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert requirement.kind == "pypi"
 
         with pytest.raises(ValueError, match="Cannot extract URL from pypi requirement"):
             _ = requirement.url
+
+    def test_pip_requirement_is_packaging_requirement_subclass(self) -> None:
+        """Test that PipRequirement is a proper subclass of packaging.Requirement."""
+        req = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert isinstance(req, Requirement)
+        assert isinstance(req, PipRequirement)
+
+    def test_pip_requirement_inherits_packaging_fields(self) -> None:
+        """Test that properties derived from packaging.Requirement work correctly."""
+        req = PipRequirement.from_line('aiowsgi[spam,bacon]==0.7; python_version < "3"', [])
+
+        # raw_package and package are properties derived from self.name
+        assert req.raw_package == "aiowsgi"
+        assert req.package == "aiowsgi"
+
+        # version_specs is a property derived from self.specifier
+        assert ("==", "0.7") in req.version_specs
+
+        # environment_marker is a property derived from self.marker
+        assert req.environment_marker == 'python_version < "3"'
+
+        # extras is inherited directly from packaging.Requirement
+        assert req.extras == {"spam", "bacon"}
 
     def _assert_pip_requirement(self, pip_requirement: Any, expected_requirement: Any) -> None:
         for attr, default_value in self.PIP_REQUIREMENT_ATTRS.items():
