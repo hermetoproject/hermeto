@@ -18,6 +18,7 @@ import requests
 import yaml
 
 from hermeto import APP_NAME
+from hermeto.core.errors import BaseError, get_error_name_from_code
 from hermeto.core.scm import GitRepo
 from hermeto.core.type_aliases import StrPath
 from hermeto.interface.cli import DEFAULT_OUTPUT
@@ -90,7 +91,7 @@ class TestParameters:
     packages: tuple[dict[str, Any], ...]
     check_output: bool = True
     check_deps_checksums: bool = True
-    expected_exit_code: int = 0
+    expected_error: type[BaseError] | None = None
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
@@ -455,13 +456,17 @@ def fetch_deps_and_check_output(
         podman_flags=(podman_flags or []) + _env_to_engine_flags(merged_env),
         netrc_content=test_params.netrc_content,
     )
-    assert exit_code == test_params.expected_exit_code, (
-        f"Fetching deps ended with unexpected exitcode: {exit_code} != "
-        f"{test_params.expected_exit_code}, output-cmd: {output}"
+    expected_exit_code = (
+        test_params.expected_error.exit_code if test_params.expected_error is not None else 0
     )
-    assert test_params.expected_output in str(output), (
-        f"Expected msg {test_params.expected_output} was not found in cmd output: {output}"
+    assert exit_code == expected_exit_code, (
+        f"Fetching deps ended with unexpected exitcode: {exit_code} ({get_error_name_from_code(exit_code)})"
+        f" != {expected_exit_code} ({get_error_name_from_code(expected_exit_code)}), output-cmd: {output}"
     )
+    if test_params.expected_output:
+        assert test_params.expected_output in str(output), (
+            f"Expected msg {test_params.expected_output} was not found in cmd output: {output}"
+        )
 
     if test_params.check_output:
         build_config = _load_json_or_yaml(output_dir.joinpath(".build-config.json"))

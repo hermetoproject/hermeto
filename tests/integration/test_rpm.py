@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import ChecksumVerificationFailed
 from hermeto.interface.cli import DEFAULT_OUTPUT
 
 from . import utils
@@ -20,7 +21,6 @@ from . import utils
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_missing_checksum",
         ),
@@ -30,7 +30,7 @@ from . import utils
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ChecksumVerificationFailed,
                 expected_output="Unmatched checksum",
             ),
             id="rpm_unmatched_checksum",
@@ -41,7 +41,7 @@ from . import utils
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ChecksumVerificationFailed,
                 expected_output="Unexpected file size",
             ),
             id="rpm_unexpected_size",
@@ -55,7 +55,6 @@ from . import utils
                 ),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_multiple_packages",
         ),
@@ -65,7 +64,6 @@ from . import utils
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_multiple_archs",
         ),
@@ -75,7 +73,6 @@ from . import utils
                 packages=({"path": ".", "type": "rpm", "binary": {"arch": "x86_64"}},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_multiple_archs_with_filtering",
         ),
@@ -98,7 +95,6 @@ from . import utils
                 ),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_dnf_tls_client_auth",
             marks=pytest.mark.skipif(
@@ -115,7 +111,6 @@ from . import utils
                 ),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_multiple_packages_summary",
         ),
@@ -158,7 +153,6 @@ def test_rpm_packages(
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
             ),
             id="rpm_repo_file",
         ),
@@ -235,8 +229,6 @@ def test_repo_files(
                         },
                     },
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["vim", "--version"],
             ["Vi IMproved 7.4"],
@@ -253,8 +245,6 @@ def test_repo_files(
                         "type": "rpm",
                     },
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["vim", "--version"],
             ["VIM - Vi IMproved 8.2"],
@@ -271,8 +261,6 @@ def test_repo_files(
                         "type": "rpm",
                     },
                 ),
-                expected_exit_code=0,
-                expected_output="All dependencies fetched successfully",
             ),
             ["ab", "-V"],
             ["This is ApacheBench, Version 2.3"],

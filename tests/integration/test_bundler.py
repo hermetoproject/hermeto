@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import LockfileNotFound, PackageManagerError
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -18,8 +20,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "bundler"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
-                expected_output="Required files not found:",
+                expected_error=LockfileNotFound,
             ),
             id="bundler_missing_gemfile",
         ),
@@ -29,8 +30,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "bundler"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
-                expected_output="Required files not found:",
+                expected_error=LockfileNotFound,
             ),
             id="bundler_missing_lockfile",
         ),
@@ -40,8 +40,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "bundler"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
-                expected_output="Failed to parse",
+                expected_error=PackageManagerError,
             ),
             id="bundler_missing_git_revision",
         ),
@@ -72,8 +71,6 @@ def test_bundler_packages(
                 packages=({"path": ".", "type": "bundler", "binary": {}},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             [],  # No additional commands are run to verify the build
             [],
@@ -85,8 +82,6 @@ def test_bundler_packages(
                 packages=({"path": ".", "type": "bundler", "binary": {}},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             [],  # No additional commands are run to verify the build
             [],
