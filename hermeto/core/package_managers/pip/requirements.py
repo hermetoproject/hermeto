@@ -229,44 +229,72 @@ class PipRequirementsFile:
         return global_options, requirement_options, " ".join(requirement)
 
 
-class PipRequirement:
-    """Parse a requirement and its options from a requirement line."""
+class PipRequirement(Requirement):
+    """Parse a requirement and its options from a requirement line.
+
+    Subclasses :class:`packaging.requirements.Requirement` to reuse its parsing
+    logic and adds pip-specific attributes such as ``kind``, ``download_line``,
+    ``hashes``, ``qualifiers``, and ``options``.
+    """
 
     # Regex used to determine if a direct access requirement specifies a
     # package name, e.g. "name @ https://..."
     HAS_NAME_IN_DIRECT_ACCESS_REQUIREMENT = re.compile(r"@.+://")
 
-    def __init__(self) -> None:
-        """Initialize a PipRequirement."""
-        # The package name after it has been processed by setuptools, e.g. "_" are replaced
-        # with "-"
-        self.package: str = ""
-        # The package name as defined in the requirement line
-        self.raw_package: str = ""
-        self.extras: set[str] = set()
-        self.version_specs: list[tuple[str, str]] = []
-        self.environment_marker: str | None = None
+    def __init__(self, requirement_string: str) -> None:
+        """Initialize a PipRequirement by parsing the given requirement string.
+
+        :param str requirement_string: a PEP 508 requirement string to be parsed
+            by the parent :class:`packaging.requirements.Requirement`
+        """
+        self._pep508_url: str | None = None
+        self._pip_url: str | None = None
+
+        super().__init__(requirement_string)
+
         self.hashes: list[str] = []
         self.qualifiers: dict[str, str] = {}
 
         self.kind: Literal["pypi", "url", "vcs"]
-        self.download_line: str = ""
+        self.download_line: str = requirement_string
 
         self.options: list[str] = []
 
-        self._url: Any = None
+    @property
+    def raw_package(self) -> str:
+        """Return the package name as defined in the requirement line."""
+        return self.name
 
     @property
-    def url(self) -> str:
+    def package(self) -> str:
+        """Return the canonicalized package name (e.g. underscores replaced with dashes)."""
+        return canonicalize_name(self.name)
+
+    @property  # type: ignore[override]
+    def url(self) -> str:  # type: ignore[override]
         """Extract the URL from the download line of a VCS or URL requirement."""
-        if self._url is None:
+        if self._pip_url is None:
             if self.kind not in ("url", "vcs"):
                 raise ValueError(f"Cannot extract URL from {self.kind} requirement")
-            # package @ url ; environment_marker
+            # download_line format: package @ url ; environment_marker
             parts = self.download_line.split()
-            self._url = parts[2]
+            self._pip_url = parts[2]
 
-        return self._url
+        return self._pip_url
+
+    @url.setter
+    def url(self, value: str | None) -> None:  # type: ignore[override]
+        self._pep508_url = value
+
+    @property
+    def version_specs(self) -> list[tuple[str, str]]:
+        """Return version specifiers as a list of (operator, version) tuples."""
+        return [(spec.operator, spec.version) for spec in self.specifier]
+
+    @property
+    def environment_marker(self) -> str | None:
+        """Return the environment marker as a string, or None if not set."""
+        return str(self.marker) if self.marker else None
 
     def __str__(self) -> str:
         """Return the string representation of the PipRequirement."""
@@ -286,6 +314,7 @@ class PipRequirement:
         """
         options = list(self.options)
         download_line = self.download_line
+
         if url:
             download_line_parts: list[str] = []
             download_line_parts.append(self.raw_package)
@@ -311,16 +340,8 @@ class PipRequirement:
                     "Removed editable option when copying the requirement %r", self.raw_package
                 )
 
-        requirement = self.__class__()
-        # Extras are incorrectly treated as part of the URL itself. If we're setting
-        # the URL, they must be skipped.
-        if not url:
-            requirement.extras = set(self.extras)
-        requirement.package = self.package
-        requirement.raw_package = self.raw_package
-        # Version specs are ignored by pip when applied to a URL, let's do the same.
-        requirement.version_specs = [] if url else list(self.version_specs)
-        requirement.environment_marker = self.environment_marker
+        requirement = self.__class__(download_line)
+
         requirement.hashes = list(hashes or self.hashes)
         requirement.qualifiers = dict(self.qualifiers)
         requirement.kind = "url" if url else self.kind
@@ -341,31 +362,27 @@ class PipRequirement:
         """
         to_be_parsed = line
         qualifiers: dict[str, str] = {}
-        requirement = cls()
+        kind: Literal["pypi", "url", "vcs"]
 
         if not (direct_access_kind := cls._assess_direct_access_requirement(line)):
-            requirement.kind = "pypi"
+            kind = "pypi"
         else:
-            requirement.kind = direct_access_kind
+            kind = direct_access_kind
             to_be_parsed, qualifiers = cls._adjust_direct_access_requirement(
                 to_be_parsed, cls.HAS_NAME_IN_DIRECT_ACCESS_REQUIREMENT
             )
 
         try:
-            req = Requirement(to_be_parsed)
+            requirement = cls(to_be_parsed)
         except InvalidRequirement as exc:
             # see https://github.com/pypa/setuptools/pull/2137
             raise UnexpectedFormat(f"Unable to parse the requirement {to_be_parsed!r}: {exc}")
 
         hashes, options = cls._split_hashes_from_options(options)
 
+        requirement.kind = kind
         requirement.download_line = to_be_parsed
         requirement.options = options
-        requirement.package = canonicalize_name(req.name)
-        requirement.raw_package = req.name
-        requirement.version_specs = [(spec.operator, spec.version) for spec in req.specifier]
-        requirement.extras = req.extras
-        requirement.environment_marker = str(req.marker) if req.marker else None
         requirement.hashes = hashes
         requirement.qualifiers = qualifiers
 
