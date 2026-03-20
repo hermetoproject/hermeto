@@ -3,12 +3,14 @@ import textwrap
 from typing import Any
 
 import pytest
+import tomlkit
 
 from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.package_managers.cargo.main import (
     CargoPackage,
     _resolve_main_package,
     _sanitize_cargo_config,
+    _use_vendored_sources,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -234,3 +236,51 @@ def test_cargo_config_without_registries_gets_sanitized(config_input: str) -> No
 def test_sanitize_cargo_config_raises_unexpected_format(invalid_config: str) -> None:
     with pytest.raises(UnexpectedFormat):
         _sanitize_cargo_config(invalid_config)
+
+
+@pytest.mark.parametrize(
+    "existing_config, expected_keys",
+    [
+        pytest.param(
+            None,
+            ["source"],
+            id="no_existing_config",
+        ),
+        pytest.param(
+            """
+            [build]
+            target = "x86_64-unknown-linux-gnu"
+
+            [net]
+            retry = 3
+            """,
+            ["build", "net", "source"],
+            id="existing_config_is_preserved",
+        ),
+    ],
+)
+def test_use_vendored_sources(
+    rooted_tmp_path: RootedPath,
+    existing_config: str | None,
+    expected_keys: list[str],
+) -> None:
+    config_template = {
+        "source": {
+            "crates-io": {"replace-with": "vendored-sources"},
+            "vendored-sources": {"directory": "${output_dir}/deps/cargo"},
+        }
+    }
+    cargo_dir = rooted_tmp_path.path / ".cargo"
+    cargo_dir.mkdir()
+
+    if existing_config is not None:
+        (cargo_dir / "config.toml").write_text(textwrap.dedent(existing_config))
+
+    result = _use_vendored_sources(rooted_tmp_path, config_template)
+    result_toml = tomlkit.loads(result.template).unwrap()
+
+    for key in expected_keys:
+        assert key in result_toml, f"[{key}] section was silently dropped"
+
+    assert result_toml["source"]["crates-io"]["replace-with"] == "vendored-sources"
+    assert result_toml["source"]["vendored-sources"]["directory"] == "${output_dir}/deps/cargo"

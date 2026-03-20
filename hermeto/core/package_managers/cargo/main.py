@@ -493,6 +493,6 @@ def _use_vendored_sources(package_dir: RootedPath, config_template: dict) -> Pro
     cfn = ".cargo/config" if _old_style_config_is_present_in(package_dir) else ".cargo/config.toml"
     config_path = package_dir.join_within_root(cfn).path
 
-    original_content = _parse_toml_project_file(config_path) if config_path.exists() else {}
-    original_content.update(config_template)
-    return ProjectFile(abspath=config_path, template=tomlkit.dumps(config_template))
+    merged_content = _parse_toml_project_file(config_path) if config_path.exists() else {}
+    merged_content.update(config_template)
+    return ProjectFile(abspath=config_path, template=tomlkit.dumps(merged_content))
