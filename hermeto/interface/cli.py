@@ -120,7 +120,11 @@ Paths = list[Path]
 
 def _bail_out_with_error(e: BaseError) -> None:
     """Report and error and set correct exit code."""
-    log.error("%s: %s", type(e).__name__, str(e).replace("\n", r"\n"))
+    # To fix #1016 without breaking FileHandlers, we log the error but conditionally
+    # suppress it from the console if it's an InvalidInput (because we print it right after).
+    kwargs: dict[str, Any] = {"extra": {"suppress_console": True}} if isinstance(e, InvalidInput) else {}
+    log.error("%s: %s", type(e).__name__, str(e).replace("\n", r"\n"), **kwargs)
+
     print(f"Error: {type(e).__name__}: {e.friendly_msg()}", file=sys.stderr)
     raise typer.Exit(2 if e.is_invalid_usage else 1)
 
