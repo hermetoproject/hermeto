@@ -49,7 +49,7 @@ from hermeto.core.models.sbom import (
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
 from hermeto.core.type_aliases import StrPath
-from hermeto.core.utils import GIT_PRISTINE_ENV, get_cache_dir, load_json_stream, run_cmd
+from hermeto.core.utils import get_cache_dir, load_json_stream, run_cmd
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
 # NOTE: the 'extra' dict is unused right now, but it's a positional argument for the adapter class
@@ -1762,8 +1762,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
     repo.git.add("--intent-to-add", "--force", "--", context_relative_path)
 
     try:
-        # Diffing modules.txt should catch most issues and produce relatively useful output
-        modules_txt_diff = repo.git.diff("--", str(modules_txt), env=GIT_PRISTINE_ENV)
+        modules_txt_diff = repo.git.diff("--", str(modules_txt))
         if modules_txt_diff:
             log.error_or_warn(
                 "%s changed after vendoring:\n%s",
@@ -1773,8 +1772,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
             )
             return True
 
-        # Show only if files were added/deleted/modified, not the full diff
-        vendor_diff = repo.git.diff("--name-status", "--", str(vendor), env=GIT_PRISTINE_ENV)
+        vendor_diff = repo.git.diff("--name-status", "--", str(vendor))
         if vendor_diff:
             log.error_or_warn(
                 "%s directory changed after vendoring:\n%s",

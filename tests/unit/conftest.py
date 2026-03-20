@@ -21,9 +21,11 @@ def _create_git_repo(path: Path, files: dict[StrPath, FileContents] | None = Non
     :return: Initialized git repository
     """
     path.mkdir(exist_ok=True)
-    repo = git.Repo.init(path)
+    repo = git.Repo.init(path, initial_branch="master")
     repo.git.config("user.name", "user")
     repo.git.config("user.email", "user@example.com")
+    repo.git.config("commit.gpgSign", "false")
+    repo.git.config("tag.gpgSign", "false")
 
     if files is not None:
         for file_path, content in files.items():
