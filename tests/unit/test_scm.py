@@ -30,6 +30,14 @@ class TestRepoID:
                 "https://student:password@github.com/student/repo.git",
                 "https://github.com/student/repo.git",
             ),
+            (
+                "https://my-token@github.com/org/repo.git",
+                "https://github.com/org/repo.git",
+            ),
+            (
+                "https://my-token@github.enterprise.corp:8443/org/repo.git",
+                "https://github.enterprise.corp:8443/org/repo.git",
+            ),
             # unsupported
             (
                 "./foo:bar",
