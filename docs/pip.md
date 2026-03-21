@@ -848,7 +848,7 @@ RUN source /tmp/hermeto.env \
     && python3 -m pip install --use-pep517 -r requirements.txt \
     && python3 -m pip install --use-pep517 .
 
-CMD ["python3", "-m", "simple_color_output"]
+ENTRYPOINT ["python3", "-m", "simple_color_output"]
 ```
 
 After mounting the required Hermeto data, we can then build the image!
