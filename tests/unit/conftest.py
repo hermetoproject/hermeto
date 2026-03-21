@@ -13,6 +13,13 @@ from hermeto.core.type_aliases import StrPath
 FileContents = str
 
 
+@pytest.fixture(autouse=True)
+def _isolate_git_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Prevent developer's global/system git config from affecting unit tests."""
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", "/dev/null")
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+
+
 def _create_git_repo(path: Path, files: dict[StrPath, FileContents] | None = None) -> git.Repo:
     """Create a git repository with initial files.
 

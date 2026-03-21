@@ -64,7 +64,7 @@ from hermeto.core.package_managers.gomod import (
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
-from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
+from hermeto.core.utils import load_json_stream
 from tests.common_utils import GIT_REF, Symlink, write_file_tree
 
 GO_CMD_PATH = "/usr/bin/go"
@@ -1903,6 +1903,9 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
     local_repo_path.path.mkdir()
     remote_repo_path.path.mkdir()
     remote_repo = git.Repo.init(remote_repo_path)
+    with remote_repo.config_writer() as config:
+        config.set_value("user", "name", "user")
+        config.set_value("user", "email", "user@example.com")
 
     with open(readme_file_path, "wb"):
         pass
@@ -1916,8 +1919,8 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
 
     git.Repo.clone_from(remote_repo_path, local_repo_path)
 
-    remote_repo.create_tag("v1.0.0", ref=initial_commit, env=GIT_PRISTINE_ENV)
-    remote_repo.create_tag("v2.0.0", env=GIT_PRISTINE_ENV)
+    remote_repo.create_tag("v1.0.0", ref=initial_commit)
+    remote_repo.create_tag("v2.0.0")
 
     return remote_repo_path, local_repo_path
 
