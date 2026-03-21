@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 from pydantic import ValidationError
@@ -14,7 +15,7 @@ from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.general import async_download_files
-from hermeto.core.package_managers.generic.models import GenericLockfileV1
+from hermeto.core.package_managers.generic.models import GenericLockfileV1, LockfileArtifactUrl
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -83,13 +84,31 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     log.info(f"Reading generic lockfile: {lockfile_path}")
     lockfile = _load_lockfile(lockfile_path, output_dir)
     to_download: dict[str, str | os.PathLike[str]] = {}
+    headers_by_url: dict[str, dict[str, str]] = {}
 
     for artifact in lockfile.artifacts:
         # create the parent directory for the artifact
         Path.mkdir(Path(artifact.filename).parent, parents=True, exist_ok=True)
-        to_download[str(artifact.download_url)] = artifact.filename
+        url = str(artifact.download_url)
+        to_download[url] = artifact.filename
 
-    asyncio.run(async_download_files(to_download, get_config().runtime.concurrency_limit))
+        if isinstance(artifact, LockfileArtifactUrl):
+            auth_header = artifact.resolve_auth_header()
+            if auth_header:
+                host = urlparse(url).hostname
+                header_names = ", ".join(auth_header.keys())
+                log.warning(
+                    f"Sending auth header(s) [{header_names}] to host '{host}' "
+                    f"for artifact '{artifact.filename}'. "
+                    f"Ensure that this host is trusted."
+                )
+                headers_by_url[url] = auth_header
+
+    asyncio.run(
+        async_download_files(
+            to_download, get_config().runtime.concurrency_limit, headers_by_url=headers_by_url
+        )
+    )
 
     # verify checksums
     for artifact in lockfile.artifacts:
