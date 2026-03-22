@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 import git
 import pydantic
 import semver
+from more_itertools import first, unique_everseen
 from packageurl import PackageURL
 from packaging import version
 from pydantic.alias_generators import to_pascal
@@ -1001,7 +1002,7 @@ def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go
             log.debug("Installing Go toolchain version '%s'", target_version)
             release_str = f"go{str(target_version)}"
             try:
-                work_toolchain = next(iter(installed_toolchains))
+                work_toolchain = first(installed_toolchains)
                 go = Go.from_missing_toolchain(release_str, work_toolchain.binary)
                 log.debug("Using Go toolchain version '%s'", go.version)
             except Exception as ex:
@@ -1306,14 +1307,8 @@ def _deduplicate_resolved_modules(
     package_modules: Iterable[ParsedModule],
     downloaded_modules: Iterable[ParsedModule],
 ) -> Iterable[ParsedModule]:
-    modules_by_name_and_version: dict[ModuleID, ParsedModule] = {}
-
     # package_modules have the replace data, so they should take precedence in the deduplication
-    for module in chain(package_modules, downloaded_modules):
-        # get the module for this name+version or create a new one
-        modules_by_name_and_version.setdefault(_get_module_id(module), module)
-
-    return modules_by_name_and_version.values()
+    return list(unique_everseen(chain(package_modules, downloaded_modules), key=_get_module_id))
 
 
 class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):

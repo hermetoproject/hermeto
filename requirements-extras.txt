@@ -871,6 +871,10 @@ mkdocs-material-extensions==1.3.1 \
     --hash=sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443 \
     --hash=sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31
     # via mkdocs-material
+more-itertools==10.8.0 \
+    --hash=sha256:52d4362373dcf7c52546bc4af9a86ee7c4579df9a8dc268be0a2f949d376cc9b \
+    --hash=sha256:f638ddf8a1a0d134181275fb5d58b086ead7c6a72429ad725c67503f13ba30bd
+    # via hermeto (pyproject.toml)
 multidict==6.7.1 \
     --hash=sha256:026d264228bcd637d4e060844e39cdc60f86c479e463d49075dedc21b18fbbe0 \
     --hash=sha256:03ede2a6ffbe8ef936b92cb4529f27f42be7f56afcdab5ab739cd5f27fb1cbf9 \

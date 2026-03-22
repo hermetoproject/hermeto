@@ -10,6 +10,7 @@ from typing import Any, Literal, NewType, TypedDict
 from urllib.parse import urlparse
 
 import aiohttp
+from more_itertools import partition
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
@@ -608,8 +609,13 @@ def _get_npm_dependencies(
                 "proxy_auth": proxy_auth,
             }
 
-    files_with_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is not None}
-    files_without_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is None}
+    # Using partition to split files in a single pass with complementary predicates
+    items_without_auth, items_with_auth = partition(
+        lambda item: item[1]["proxy_auth"] is not None,
+        files_to_download.items(),
+    )
+    files_with_auth = dict(items_with_auth)
+    files_without_auth = dict(items_without_auth)
 
     asyncio.run(_async_download_tar([files_with_auth, files_without_auth]))
 
