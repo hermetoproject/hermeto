@@ -51,6 +51,7 @@ def yarn_classic_env_variables() -> list[EnvironmentVariable]:
             name="YARN_YARN_OFFLINE_MIRROR", value="${output_dir}/deps/yarn-classic"
         ),
         EnvironmentVariable(name="YARN_YARN_OFFLINE_MIRROR_PRUNING", value="false"),
+        EnvironmentVariable(name="npm_config_build_from_source", value="true"),
     ]
 
 

@@ -40,6 +40,7 @@ def yarn_env_variables() -> list[EnvironmentVariable]:
         EnvironmentVariable(name="YARN_ENABLE_IMMUTABLE_CACHE", value="false"),
         EnvironmentVariable(name="YARN_ENABLE_MIRROR", value="true"),
         EnvironmentVariable(name="YARN_GLOBAL_FOLDER", value="${output_dir}/deps/yarn"),
+        EnvironmentVariable(name="npm_config_build_from_source", value="true"),
     ]
 
 

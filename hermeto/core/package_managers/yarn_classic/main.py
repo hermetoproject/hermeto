@@ -182,6 +182,7 @@ def _generate_build_environment_variables() -> list[EnvironmentVariable]:
     env_vars = {
         "YARN_YARN_OFFLINE_MIRROR": "${output_dir}/deps/yarn-classic",
         "YARN_YARN_OFFLINE_MIRROR_PRUNING": "false",
+        "npm_config_build_from_source": "true",
     }
 
     return [EnvironmentVariable(name=key, value=value) for key, value in env_vars.items()]
