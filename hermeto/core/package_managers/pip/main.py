@@ -10,7 +10,8 @@ from urllib import parse as urlparse
 
 import pypi_simple
 from packageurl import PackageURL
-from packaging.utils import canonicalize_name
+from packaging.utils import canonicalize_name, canonicalize_version
+from packaging.version import InvalidVersion
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
@@ -156,7 +157,16 @@ def _generate_purl_dependency(package: dict[str, Any]) -> str:
     qualifiers: dict[str, str] | None = None
 
     if dependency_kind == "pypi":
-        version = package["version"]
+        raw_version = package["version"]
+        try:
+            version = canonicalize_version(raw_version)
+        except InvalidVersion:
+            log.warning(
+                "Cannot canonicalize version %r for dependency %s, keeping raw value",
+                raw_version,
+                name,
+            )
+            version = raw_version
         index_url = package["index_url"]
         if index_url.rstrip("/") != pypi_simple.PYPI_SIMPLE_ENDPOINT.rstrip("/"):
             qualifiers = {"repository_url": index_url}

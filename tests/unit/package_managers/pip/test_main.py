@@ -1430,7 +1430,7 @@ def test_fetch_pip_source(
                 "kind": "pypi",
                 "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
             },
-            "pkg:pypi/pypi-package@1.0.0",
+            "pkg:pypi/pypi-package@1",
         ),
         (
             {
@@ -1441,7 +1441,7 @@ def test_fetch_pip_source(
                 "kind": "pypi",
                 "index_url": CUSTOM_PYPI_ENDPOINT,
             },
-            f"pkg:pypi/mypypi-package@2.0.0?repository_url={CUSTOM_PYPI_ENDPOINT}",
+            f"pkg:pypi/mypypi-package@2?repository_url={CUSTOM_PYPI_ENDPOINT}",
         ),
         (
             {
@@ -1494,12 +1494,42 @@ def test_fetch_pip_source(
             },
             f"pkg:pypi/https-dependency?checksum=sha256:de526c1&download_url=https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz",
         ),
+        (
+            {
+                "name": "version_variants",
+                "version": "1.0",
+                "type": "pip",
+                "dev": False,
+                "kind": "pypi",
+                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
+            },
+            "pkg:pypi/version-variants@1",
+        ),
     ],
 )
 def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: str) -> None:
     purl = pip._generate_purl_dependency(dependency)
 
     assert purl == expected_purl
+
+
+def test_generate_purl_dependencies_version_normalization() -> None:
+    """Different textual versions should canonicalize to the same PURL for PyPI deps."""
+    base_dep = {
+        "name": "normpkg",
+        "type": "pip",
+        "dev": False,
+        "kind": "pypi",
+        "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
+    }
+
+    versions = ["1.0", "1.0.0", "1.00", "01.0"]
+    purls = {
+        v: pip._generate_purl_dependency({**base_dep, "version": v}) for v in versions
+    }
+
+    # All variants should yield the same PURL after canonicalization
+    assert len(set(purls.values())) == 1
 
 
 @pytest.mark.parametrize(
