@@ -523,7 +523,7 @@ class TestBearerAuthModel:
         assert auth.header == "PRIVATE-TOKEN"
 
     def test_extra_fields_rejected(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             BearerAuth(value="$TOKEN", unknown_field="bad")  # type: ignore[call-arg]
 
 
