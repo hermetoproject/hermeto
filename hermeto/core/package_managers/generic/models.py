@@ -25,14 +25,23 @@ from hermeto.core.models.sbom import Component, ExternalReference
 from hermeto.core.rooted_path import RootedPath
 
 CHECKSUM_FORMAT = re.compile(r"^[a-zA-Z0-9]+:[a-zA-Z0-9]+$")
-ENV_VAR_PATTERN = re.compile(r"\$(?:([A-Za-z_][A-Za-z0-9_]*)|(\{([A-Za-z_][A-Za-z0-9_]*)\}))")
+ENV_VAR_PATTERN = re.compile(
+    r"\$(?:(?P<bare>[A-Za-z_][A-Za-z0-9_]*)"
+    r"|\{(?P<braced>[A-Za-z_][A-Za-z0-9_]*)\})"
+)
 
 
-def resolve_env_vars(value: str) -> str:
+def _get_var_name(match: re.Match) -> str:
+    """Extract the variable name from a regex match of ENV_VAR_PATTERN."""
+    return match.group("bare") or match.group("braced")
+
+
+def resolve_env_var(value: str) -> str:
     """Resolve environment variable placeholders in a string.
 
-    Replaces shell-like ``$VAR`` and ``${VAR}`` references with the corresponding
-    environment variable values.
+    Replaces shell-like ``$VAR`` and ``${VAR}`` references with the
+    corresponding environment variable values. Any ``$`` not followed
+    by a valid identifier or braced identifier is left as-is.
 
     :param value: the string that may contain ``$VAR`` or ``${VAR}`` placeholders
     :return: the string with all placeholders resolved
@@ -42,19 +51,13 @@ def resolve_env_vars(value: str) -> str:
     if not matches:
         return value
 
-    var_names = [match.group(1) or match.group(3) for match in matches]
-    missing_vars = sorted({var for var in var_names if var not in os.environ})
-
+    missing_vars = sorted({_get_var_name(m) for m in matches if _get_var_name(m) not in os.environ})
     if missing_vars:
         raise PackageManagerError(
             f"Required environment variable(s) not set: {', '.join(missing_vars)}"
         )
 
-    def _replace(match: re.Match) -> str:
-        var_name = match.group(1) or match.group(3)
-        return os.environ[var_name]
-
-    return ENV_VAR_PATTERN.sub(_replace, value)
+    return ENV_VAR_PATTERN.sub(lambda m: os.environ[_get_var_name(m)], value)
 
 
 class BearerAuth(BaseModel):
@@ -170,7 +173,7 @@ class LockfileArtifactUrl(LockfileArtifactBase):
             return {}
         bearer = self.auth.bearer
         try:
-            resolved_value = resolve_env_vars(bearer.value)
+            resolved_value = resolve_env_var(bearer.value)
         except PackageManagerError:
             raise PackageManagerError(
                 f"Authentication failed for '{self.download_url}': "

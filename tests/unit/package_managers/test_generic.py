@@ -29,7 +29,7 @@ from hermeto.core.package_managers.generic.models import (
     AuthConfig,
     BearerAuth,
     LockfileArtifactUrl,
-    resolve_env_vars,
+    resolve_env_var,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -456,7 +456,7 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
 
 
 class TestResolveEnvVars:
-    """Tests for resolve_env_vars utility function."""
+    """Tests for resolve_env_var utility function."""
 
     @pytest.mark.parametrize(
         "env_vars, input_string, expected",
@@ -492,7 +492,7 @@ class TestResolveEnvVars:
     ) -> None:
         for name, value in env_vars.items():
             monkeypatch.setenv(name, value)
-        assert resolve_env_vars(input_string) == expected
+        assert resolve_env_var(input_string) == expected
 
     @pytest.mark.parametrize(
         "vars_to_del, input_string, match_re",
@@ -513,7 +513,7 @@ class TestResolveEnvVars:
         for var in vars_to_del:
             monkeypatch.delenv(var, raising=False)
         with pytest.raises(PackageManagerError, match=match_re):
-            resolve_env_vars(input_string)
+            resolve_env_var(input_string)
 
 
 class TestBearerAuthModel:
