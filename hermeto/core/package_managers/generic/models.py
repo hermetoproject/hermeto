@@ -30,9 +30,17 @@ ENV_VAR_PATTERN = re.compile(
     r"|\{(?P<braced>[A-Za-z_][A-Za-z0-9_]*)\})"
 )
 
+# Auth types supported by the generic backend. Update this list when adding
+# new auth types so that error messages stay accurate.
+_SUPPORTED_AUTH_TYPES = ["bearer"]
+
 
 def _get_var_name(match: re.Match) -> str:
-    """Extract the variable name from a regex match of ENV_VAR_PATTERN."""
+    """Extract the variable name from a regex match of ENV_VAR_PATTERN.
+
+    Handles both ``$VAR`` and ``${VAR}`` syntax. Any ``$`` not followed by a
+    valid identifier or braced identifier is silently ignored by the pattern.
+    """
     return match.group("bare") or match.group("braced")
 
 
@@ -60,26 +68,43 @@ def resolve_env_var(value: str) -> str:
     return ENV_VAR_PATTERN.sub(lambda m: os.environ[_get_var_name(m)], value)
 
 
-class BearerAuth(BaseModel):
-    """Bearer token authentication configuration.
+def _resolve_auth_headers(auth: dict | None) -> dict[str, str]:
+    """Resolve authentication headers from a raw auth config dict.
 
-    :param header: HTTP header name to use (defaults to ``Authorization``)
-    :param value: header value, may contain ``$ENV_VAR`` or ``${ENV_VAR}`` references
+    Reads the auth type from the top-level key and resolves the corresponding
+    headers. The ``url`` and ``method`` parameters are currently unused but
+    are accepted for forward compatibility with signing schemes such as AWS
+    SigV4 that require them to compute a per-request signature.
+
+    :param auth: the raw auth dict from the lockfile, or ``None``
+    :param url: the URL being requested, used by signing schemes (e.g. AWS SigV4)
+    :param method: the HTTP method being used, used by signing schemes
+    :return: a dict mapping HTTP header names to their resolved values,
+             or an empty dict if ``auth`` is ``None``
+    :raises PackageManagerError: if the auth type is unrecognised, required
+        fields are missing, or referenced environment variables are not set
     """
+    if auth is None:
+        return {}
 
-    header: str = "Authorization"
-    value: str
-    model_config = ConfigDict(extra="forbid")
+    if len(auth) != 1:
+        raise PackageManagerError(
+            f"Exactly one auth type must be specified "
+            f"(one of: {_SUPPORTED_AUTH_TYPES}), got: {list(auth) or 'none'}"
+        )
 
+    auth_type, config = next(iter(auth.items()))
 
-class AuthConfig(BaseModel):
-    """Authentication configuration wrapper.
+    if auth_type == "bearer":
+        header = config.get("header", "Authorization")
+        value = config.get("value")
+        if not value:
+            raise PackageManagerError("Bearer auth requires a 'value' field")
+        return {header: resolve_env_var(value)}
 
-    Currently supports only ``bearer``, but is extensible for future auth types.
-    """
-
-    bearer: BearerAuth
-    model_config = ConfigDict(extra="forbid")
+    raise PackageManagerError(
+        f"Unrecognised auth type '{auth_type}'. Valid types are: {_SUPPORTED_AUTH_TYPES}"
+    )
 
 
 class LockfileMetadata(BaseModel):
@@ -151,10 +176,12 @@ class LockfileArtifactUrl(LockfileArtifactBase):
 
     :param download_url: The URL to download the artifact from.
     :param auth: Optional authentication configuration for this artifact.
+        The top-level key identifies the auth type (e.g. ``bearer``); the
+        value is a dict of fields specific to that type.
     """
 
     download_url: Annotated[AnyUrl, PlainSerializer(str, return_type=str)]
-    auth: AuthConfig | None = None
+    auth: dict | None = None
 
     def resolve_filename(self) -> str:
         """Resolve the filename of the artifact."""
@@ -163,23 +190,18 @@ class LockfileArtifactUrl(LockfileArtifactBase):
             return Path(url_path).name
         return self.filename
 
-    def resolve_auth_header(self) -> dict[str, str]:
-        """Resolve the authentication header for this artifact.
+    def resolve_auth_headers(self) -> dict[str, str]:
+        """Resolve the authentication headers for this artifact.
 
-        :return: a dict mapping header name to resolved value, or empty dict if no auth
-        :raises PackageManagerError: if a referenced env var is not set
+        Delegates to :func:`resolve_auth_headers`, passing through the URL
+        and method for auth schemes that require them (e.g. AWS SigV4).
+        Returns an empty dict if no auth is configured.
+
+        :return: a dict mapping HTTP header names to their resolved values,
+                 or an empty dict if no auth is configured
+        :raises PackageManagerError: if a referenced environment variable is not set
         """
-        if self.auth is None:
-            return {}
-        bearer = self.auth.bearer
-        try:
-            resolved_value = resolve_env_var(bearer.value)
-        except PackageManagerError:
-            raise PackageManagerError(
-                f"Authentication failed for '{self.download_url}': "
-                f"could not resolve environment variable(s) in auth value '{bearer.value}'"
-            )
-        return {bearer.header: resolved_value}
+        return _resolve_auth_headers(self.auth)
 
     def get_sbom_component(self) -> Component:
         """Return an SBOM component representation of the artifact."""
