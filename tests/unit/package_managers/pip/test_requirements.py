@@ -568,14 +568,10 @@ class TestPipRequirementsFile:
                 "cnr_server@foo@https://github.com/quay/appr/archive/58c88e49.tar.gz",
                 "Unable to extract scheme from direct access requirement",
             ),
-            # Valid format but we don't support it
-            (
-                "pip @ file:///localbuilds/pip-1.3.1.zip",
-                UnsupportedFeature("Direct references with 'file' scheme are not supported"),
-            ),
+            # Valid format but we don't support it (actually file is now supported for internal rewrites)
             (
                 "file:///localbuilds/pip-1.3.1.zip",
-                UnsupportedFeature("Direct references with 'file' scheme are not supported"),
+                UnsupportedFeature("Dependency name could not be determined from the requirement"),
             ),
             (
                 "https://github.com/quay/appr/archive/58c88e49.tar.gz",
@@ -1002,12 +998,10 @@ class TestPipRequirementsFile:
         self._assert_pip_requirement(new_requirement, expected_changes)
 
     def test_invalid_kind_for_url(self) -> None:
-        """Test extracting URL from a requirement that does not have one."""
+        """Test that a PyPI requirement has no URL."""
         requirement = PipRequirement.from_line("aiowsgi==0.7", [])
         assert requirement.kind == "pypi"
-
-        with pytest.raises(ValueError, match="Cannot extract URL from pypi requirement"):
-            _ = requirement.url
+        assert requirement.url is None
 
     def test_pip_requirement_is_packaging_requirement_subclass(self) -> None:
         """Test that PipRequirement is a proper subclass of packaging.Requirement."""

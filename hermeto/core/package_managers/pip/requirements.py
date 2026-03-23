@@ -247,18 +247,23 @@ class PipRequirement(Requirement):
         :param str requirement_string: a PEP 508 requirement string to be parsed
             by the parent :class:`packaging.requirements.Requirement`
         """
-        self._pep508_url: str | None = None
-        self._pip_url: str | None = None
-
         super().__init__(requirement_string)
 
         self.hashes: list[str] = []
         self.qualifiers: dict[str, str] = {}
 
-        self.kind: Literal["pypi", "url", "vcs"]
+        if not (kind := self.__class__._assess_direct_access_requirement(requirement_string)):
+            self.kind: Literal["pypi", "url", "vcs"] = "pypi"
+        else:
+            self.kind = kind
+
         self.download_line: str = requirement_string
 
         self.options: list[str] = []
+
+        if self.kind in ("url", "vcs"):
+            parts = self.download_line.split()
+            self.url = parts[2]
 
     @property
     def raw_package(self) -> str:
@@ -269,22 +274,6 @@ class PipRequirement(Requirement):
     def package(self) -> str:
         """Return the canonicalized package name (e.g. underscores replaced with dashes)."""
         return canonicalize_name(self.name)
-
-    @property  # type: ignore[override]
-    def url(self) -> str:  # type: ignore[override]
-        """Extract the URL from the download line of a VCS or URL requirement."""
-        if self._pip_url is None:
-            if self.kind not in ("url", "vcs"):
-                raise ValueError(f"Cannot extract URL from {self.kind} requirement")
-            # download_line format: package @ url ; environment_marker
-            parts = self.download_line.split()
-            self._pip_url = parts[2]
-
-        return self._pip_url
-
-    @url.setter
-    def url(self, value: str | None) -> None:  # type: ignore[override]
-        self._pep508_url = value
 
     @property
     def version_specs(self) -> list[tuple[str, str]]:
@@ -362,12 +351,8 @@ class PipRequirement(Requirement):
         """
         to_be_parsed = line
         qualifiers: dict[str, str] = {}
-        kind: Literal["pypi", "url", "vcs"]
 
-        if not (direct_access_kind := cls._assess_direct_access_requirement(line)):
-            kind = "pypi"
-        else:
-            kind = direct_access_kind
+        if cls._assess_direct_access_requirement(line):
             to_be_parsed, qualifiers = cls._adjust_direct_access_requirement(
                 to_be_parsed, cls.HAS_NAME_IN_DIRECT_ACCESS_REQUIREMENT
             )
@@ -380,8 +365,6 @@ class PipRequirement(Requirement):
 
         hashes, options = cls._split_hashes_from_options(options)
 
-        requirement.kind = kind
-        requirement.download_line = to_be_parsed
         requirement.options = options
         requirement.hashes = hashes
         requirement.qualifiers = qualifiers
@@ -397,7 +380,7 @@ class PipRequirement(Requirement):
             e.g. "vcs", and the second item is a bool indicating if the requirement is a
             direct access requirement
         """
-        URL_SCHEMES = {"http", "https", "ftp"}
+        URL_SCHEMES = {"http", "https", "ftp", "file"}
         VCS_SCHEMES = {
             "bzr",
             "bzr+ftp",
