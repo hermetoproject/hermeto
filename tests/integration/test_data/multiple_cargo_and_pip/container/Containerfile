@@ -1,0 +1,27 @@
+# A corresponding rpms.lock.yaml was built for UBI9
+FROM registry.access.redhat.com/ubi9/ubi@sha256:304b50df1ea4db9706d8a30f4bbf26f582936ebc80c7e075c72ff2af99292a54
+
+# Install dependencies from RPM lockfile (requires network).
+RUN dnf -y install \
+    cargo \
+    python3-pip \
+    python3-devel \
+    libffi-devel \
+    openssl-devel
+
+# Build the native Rust crate
+WORKDIR /src/rust-crate
+RUN . /tmp/hermeto.env && cargo build
+
+# Pre-install all build dependencies for Python package with Rust extension
+WORKDIR /src/python-pkg
+RUN . /tmp/hermeto.env && \
+    unset PIP_NO_INDEX && \
+    unset PIP_FIND_LINKS && \
+    python3 -m pip install -r requirements-build.txt --require-hashes
+
+# Install the Python package and its runtime dependencies
+RUN . /tmp/hermeto.env && \
+    unset PIP_NO_INDEX && \
+    unset PIP_FIND_LINKS && \
+    python3 -m pip install --no-build-isolation -r requirements.txt --require-hashes

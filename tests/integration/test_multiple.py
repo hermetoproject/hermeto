@@ -26,6 +26,29 @@ from . import utils
             [],
             id="multiple_gomod_and_npm",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/e2e_rust_extensions-siva",
+                # Use the fork/branch fixture repository (branch: pip/e2e_rust_extensions-siva)
+                # https://github.com/Siva-Sainath/integration-tests/tree/pip/e2e_rust_extensions-siva
+                repo_url="https://github.com/Siva-Sainath/integration-tests.git",
+                packages=(
+                    {"type": "cargo", "path": "rust-crate"},
+                    {"type": "pip", "path": "python-pkg"},
+                    # using RPM to provide cargo and python in the image
+                    {"type": "rpm"},
+                ),
+                flags=[],
+                expected_exit_code=0,
+                expected_output="All dependencies fetched successfully",
+                check_deps_checksums=False,
+                container_network="host",
+                mount_rpm_repos=True,
+            ),
+            [],
+            [],
+            id="multiple_cargo_and_pip",
+        ),
     ],
 )
 def test_e2e_multiple(
@@ -52,4 +75,6 @@ def test_e2e_multiple(
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+        container_network=test_params.container_network,
+        mount_rpm_repos=test_params.mount_rpm_repos,
     )
