@@ -21,6 +21,7 @@ services:
       - "8444:444"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+      - ./htpasswd:/etc/nginx/auth/htpasswd:ro,z
       - ../certificates/server.crt:/etc/nginx/certs/server.crt:ro,z
       - ../certificates/server.key:/etc/nginx/certs/server.key:ro,z
       - ../certificates/CA.crt:/etc/nginx/certs/CA.crt:ro,z

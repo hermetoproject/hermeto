@@ -263,8 +263,7 @@ Build Hermeto image (localhost/hermeto:latest) and run **all** integration tests
 nox -s all-integration-tests
 ```
 
-Note: while developing, you can run the PyPI server with `tests/pypiserver/start.sh &`
-and the Nexus server with `tests/nexusserver/run.sh` to speed up the tests.
+Note: while developing, you can run the Nexus server with `tests/nexusserver/run.sh`.
 
 To run integration-tests with custom image, specify the HERMETO\_TEST\_IMAGE environment variable or use the --hermeto-image option. Examples:
 

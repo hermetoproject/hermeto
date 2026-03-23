@@ -3,7 +3,6 @@ import contextlib
 import logging
 import os
 import subprocess
-import time
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -14,7 +13,7 @@ from git import Repo
 
 from hermeto.core.utils import copy_directory
 from tests.integration.proxy import is_local_nexus_enabled, is_local_nexus_proxy_enabled
-from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
+from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO
 from tests.nexusserver import (
     DEFAULT_NEXUS_HOST,
     DEFAULT_NEXUS_MTLS_PORT,
@@ -29,8 +28,6 @@ log = logging.getLogger(__name__)
 _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_INTEGRATION_TESTS_REPO", "--hermeto-integration-tests-repo"),
     ("HERMETO_TEST_IMAGE", "--hermeto-image"),
-    ("HERMETO_TEST_LOCAL_PYPISERVER", "--hermeto-local-pypiserver"),
-    ("HERMETO_TEST_PYPISERVER_PORT", "--hermeto-pypiserver-port"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
     ("HERMETO_TEST_LOCAL_NEXUS", "--hermeto-local-nexus"),
@@ -127,51 +124,11 @@ def hermeto_image(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> u
     return hermeto
 
 
-def _terminate_proc(proc: subprocess.Popen[bytes]) -> None:
-    proc.terminate()
-    try:
-        proc.wait(timeout=30)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-
-
-@contextlib.contextmanager
-def _pypiserver_context() -> Iterator[None]:
-    if (
-        os.getenv("CI")
-        and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") != "1"
-    ):
-        yield
-        return
-
-    pypiserver_dir = Path(__file__).parent.parent / "pypiserver"
-
-    with contextlib.ExitStack() as context:
-        proc = context.enter_context(subprocess.Popen([pypiserver_dir / "start.sh"]))
-        context.callback(_terminate_proc, proc)
-
-        pypiserver_port = os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080")
-        for _ in range(60):
-            time.sleep(1)
-            try:
-                resp = requests.get(f"http://{TEST_SERVER_LOCALHOST}:{pypiserver_port}")
-                resp.raise_for_status()
-                log.debug(resp.text)
-                break
-            except requests.RequestException as e:
-                log.debug(e)
-        else:
-            raise RuntimeError("pypiserver didn't start fast enough")
-
-        yield
-
-
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Prepare the integration test environment in the master process.
 
     - Clone the integration tests repository.
-    - Start pypiserver and nexus once (controller or single process).
+    - Start nexus once (controller or single process).
 
     This function implements a standard pytest hook. Please refer to pytest
     docs for further information.
@@ -193,7 +150,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     stack = contextlib.ExitStack()
     try:
-        stack.enter_context(_pypiserver_context())
         stack.enter_context(_nexusserver_context())
     except Exception:
         stack.close()
@@ -210,7 +166,8 @@ def _nexusserver_context() -> Iterator[None]:
         status_url = lambda port: f"https://{DEFAULT_NEXUS_HOST}:{port}/service/rest/v1/status"
 
         # Basic TLS must be reachable
-        resp = requests.get(status_url(DEFAULT_NEXUS_TLS_PORT), verify=ca_cert)
+        nexus_auth = ("hermeto-user", "hermeto-pass")
+        resp = requests.get(status_url(DEFAULT_NEXUS_TLS_PORT), verify=ca_cert, auth=nexus_auth)
         resp.raise_for_status()
 
         # mTLS must reject without client cert

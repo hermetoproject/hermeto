@@ -22,18 +22,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="Hermeto container image reference; build local image if not set (env: HERMETO_TEST_IMAGE)",
     )
     group.addoption(
-        "--hermeto-local-pypiserver",
-        action="store_true",
-        default=os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") == "1",
-        help="Start local pypiserver for pip tests (env: HERMETO_TEST_LOCAL_PYPISERVER=1)",
-    )
-    group.addoption(
-        "--hermeto-pypiserver-port",
-        action="store",
-        default=os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080"),
-        help="Port for local pypiserver (env: HERMETO_TEST_PYPISERVER_PORT)",
-    )
-    group.addoption(
         "--hermeto-generate-test-data",
         action="store_true",
         default=os.getenv("HERMETO_TEST_GENERATE_DATA") == "1",

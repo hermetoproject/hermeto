@@ -3,4 +3,5 @@ ARG HERMETO_BASE_IMAGE
 # hadolint ignore=DL3006
 FROM $HERMETO_BASE_IMAGE
 COPY CA.crt /etc/pki/ca-trust/source/anchors/test-ca.crt
+ENV REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
 RUN update-ca-trust

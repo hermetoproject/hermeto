@@ -50,6 +50,13 @@ class NpmProxyConfig(ProxyRepositoryConfig):
 
 
 @dataclass
+class PypiProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a PyPI proxy repository."""
+
+    format: str = field(default="pypi", init=False)
+
+
+@dataclass
 class YumProxyConfig(ProxyRepositoryConfig):
     """Configuration for a Yum proxy repository."""
 
@@ -58,6 +65,7 @@ class YumProxyConfig(ProxyRepositoryConfig):
 
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
+    PypiProxyConfig(name="pypi-proxy", remote_url="https://pypi.org"),
     YumProxyConfig(
         name="yum-proxy",
         remote_url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9",
