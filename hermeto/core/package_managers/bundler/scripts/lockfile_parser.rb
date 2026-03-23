@@ -3,8 +3,28 @@
 require 'bundler'
 require 'json'
 
+class HermetoLockfileParser < Bundler::LockfileParser
+  attr_reader :original_platform
+
+  def initialize(lockfile)
+    @original_platform = {}
+    super
+  end
+
+  private
+
+  def parse_spec(line)
+    super
+
+    return unless line =~ NAME_VERSION
+    if @current_spec && $1.size == 4
+      @original_platform[@current_spec] = $4 || Gem::Platform::RUBY
+    end
+  end
+end
+
 lockfile_content = File.read("Gemfile.lock")
-lockfile_parser = Bundler::LockfileParser.new(lockfile_content)
+lockfile_parser = HermetoLockfileParser.new(lockfile_content)
 
 parsed_specs = []
 
@@ -16,7 +36,8 @@ lockfile_parser.specs.each do |spec|
         version: spec.version,
         type: 'rubygems',
         source: spec.source.remotes.first,
-        platforms: [spec.platform]
+        platforms: [spec.platform],
+        original_platforms: [lockfile_parser.original_platform[spec]]
       }
 
       existing_spec = parsed_specs.find { |s|
@@ -27,8 +48,9 @@ lockfile_parser.specs.each do |spec|
       }
 
       if existing_spec
-        # extend the platforms array
+        # extend the platforms arrays
         existing_spec[:platforms] << parsed_spec[:platforms].first
+        existing_spec[:original_platforms] << parsed_spec[:original_platforms].first
       else
         parsed_specs << parsed_spec
       end

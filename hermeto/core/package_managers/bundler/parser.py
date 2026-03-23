@@ -57,7 +57,7 @@ def parse_lockfile(
     result: ParseResult = []
     for dep in dependencies:
         if dep["type"] == "rubygems":
-            for platform in dep["platforms"]:
+            for platform, original_platform in zip(dep["platforms"], dep["original_platforms"]):
                 if platform == "ruby":
                     result.append(GemDependency(**dep))
                 else:
@@ -68,7 +68,12 @@ def parse_lockfile(
                             "Will download binary dependency %s because 'binary' field is set",
                             full_name,
                         )
-                        result.append(GemPlatformSpecificDependency(platform=platform, **dep))
+                        result.append(
+                            GemPlatformSpecificDependency(
+                                platform=original_platform,
+                                **dep,
+                            )
+                        )
                     else:
                         # No need to force a platform if we skip the packages.
                         log.warning(
