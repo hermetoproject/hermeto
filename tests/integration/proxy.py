@@ -33,6 +33,14 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url", "repository_url"})
 
 
+def is_local_nexus_enabled() -> bool:
+    """Return True when a local Nexus instance should be running."""
+    return (
+        os.getenv("HERMETO_TEST_LOCAL_NEXUS") == "1"
+        or os.getenv("HERMETO_TEST_LOCAL_NEXUS_PROXY") == "1"
+    )
+
+
 def is_local_nexus_proxy_enabled() -> bool:
     """Return True when local Nexus proxy defaults should be enabled."""
     return os.getenv("HERMETO_TEST_LOCAL_NEXUS_PROXY") == "1"

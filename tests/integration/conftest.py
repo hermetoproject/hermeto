@@ -13,9 +13,13 @@ from filelock import FileLock
 from git import Repo
 
 from hermeto.core.utils import copy_directory
-from tests.integration.proxy import TEST_NEXUS_PORT, is_local_nexus_proxy_enabled
+from tests.integration.proxy import (
+    TEST_NEXUS_PORT,
+    is_local_nexus_enabled,
+    is_local_nexus_proxy_enabled,
+)
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO, TEST_SERVER_LOCALHOST
-from tests.nexusserver import DEFAULT_NEXUS_HOST, initialize_nexus
+from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_MTLS_PORT, initialize_nexus
 
 from . import utils
 
@@ -26,10 +30,9 @@ _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_IMAGE", "--hermeto-image"),
     ("HERMETO_TEST_LOCAL_PYPISERVER", "--hermeto-local-pypiserver"),
     ("HERMETO_TEST_PYPISERVER_PORT", "--hermeto-pypiserver-port"),
-    ("HERMETO_TEST_LOCAL_DNF_SERVER", "--hermeto-local-dnf-server"),
-    ("HERMETO_TEST_DNFSERVER_SSL_PORT", "--hermeto-dnfserver-ssl-port"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
+    ("HERMETO_TEST_LOCAL_NEXUS", "--hermeto-local-nexus"),
     ("HERMETO_TEST_LOCAL_NEXUS_PROXY", "--hermeto-local-nexus-proxy"),
     ("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP", "--hermeto-local-nexus-no-cleanup"),
 ]
@@ -158,67 +161,11 @@ def _pypiserver_context() -> Iterator[None]:
         yield
 
 
-@contextlib.contextmanager
-def _dnfserver_context() -> Iterator[None]:
-    def _check_ssl_configuration() -> None:
-        # TLS auth enforced
-        certs_dir = dnfserver_dir.parent / "certificates"
-        resp = requests.get(
-            f"https://{TEST_SERVER_LOCALHOST}:{ssl_port}",
-            verify=str(certs_dir / "CA.crt"),
-        )
-        if resp.status_code == requests.codes.ok:
-            raise requests.RequestException("DNF server TLS client authentication misconfigured")
-
-        # TLS auth passes
-        resp = requests.get(
-            f"https://{TEST_SERVER_LOCALHOST}:{ssl_port}",
-            cert=(
-                str(certs_dir / "client.crt"),
-                str(certs_dir / "client.key"),
-            ),
-            verify=str(certs_dir / "CA.crt"),
-        )
-        resp.raise_for_status()
-
-    if (
-        os.getenv("CI")
-        and os.getenv("GITHUB_ACTIONS")
-        or os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "1"
-    ):
-        yield
-        return
-
-    dnfserver_dir = Path(__file__).parents[1] / "dnfserver"
-    ssl_port = os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443")
-
-    with contextlib.ExitStack() as context:
-        proc = context.enter_context(subprocess.Popen([dnfserver_dir / "start.sh"]))
-        context.callback(_terminate_proc, proc)
-
-        for _ in range(60):
-            time.sleep(1)
-            try:
-                _check_ssl_configuration()
-                break
-            except requests.ConnectionError:
-                # ConnectionResetError is often reported locally, waiting it over
-                # helps.
-                log.info("Failed to connect to the DNF server, retrying...")
-                continue
-            except requests.RequestException as e:
-                raise RuntimeError(e)
-        else:
-            raise RuntimeError("DNF server didn't start fast enough")
-
-        yield
-
-
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Prepare the integration test environment in the master process.
 
     - Clone the integration tests repository.
-    - Start pypiserver, dnfserver and nexus once (controller or single process).
+    - Start pypiserver and nexus once (controller or single process).
 
     This function implements a standard pytest hook. Please refer to pytest
     docs for further information.
@@ -241,7 +188,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     stack = contextlib.ExitStack()
     try:
         stack.enter_context(_pypiserver_context())
-        stack.enter_context(_dnfserver_context())
         stack.enter_context(_nexusserver_context())
     except Exception:
         stack.close()
@@ -251,7 +197,22 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
 @contextlib.contextmanager
 def _nexusserver_context() -> Iterator[None]:
-    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_proxy_enabled():
+    def _check_tls_configuration() -> None:
+        certs_dir = Path(__file__).parents[1] / "certificates"
+        ca_cert = str(certs_dir / "CA.crt")
+        client_cert = (str(certs_dir / "client.crt"), str(certs_dir / "client.key"))
+        status_url = lambda port: f"https://{DEFAULT_NEXUS_HOST}:{port}/service/rest/v1/status"
+
+        # mTLS must reject without client cert
+        resp = requests.get(status_url(DEFAULT_NEXUS_MTLS_PORT), verify=ca_cert)
+        if resp.status_code == requests.codes.ok:
+            raise requests.RequestException("Nexus mTLS client authentication misconfigured")
+
+        # mTLS must accept with client cert
+        resp = requests.get(status_url(DEFAULT_NEXUS_MTLS_PORT), cert=client_cert, verify=ca_cert)
+        resp.raise_for_status()
+
+    if (os.getenv("CI") and os.getenv("GITHUB_ACTIONS")) or not is_local_nexus_enabled():
         yield
         return
 
@@ -277,6 +238,8 @@ def _nexusserver_context() -> Iterator[None]:
 
         with initialize_nexus(host=DEFAULT_NEXUS_HOST, port=TEST_NEXUS_PORT) as client:
             log.info("Nexus server ready at %s", client.base_url)
+
+        _check_tls_configuration()
 
         yield
 

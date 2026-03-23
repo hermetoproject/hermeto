@@ -49,6 +49,17 @@ class NpmProxyConfig(ProxyRepositoryConfig):
     format: str = field(default="npm", init=False)
 
 
+@dataclass
+class YumProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a Yum proxy repository."""
+
+    format: str = field(default="yum", init=False)
+
+
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
+    YumProxyConfig(
+        name="yum-proxy",
+        remote_url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9",
+    ),
 ]

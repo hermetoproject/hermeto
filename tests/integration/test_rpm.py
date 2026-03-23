@@ -102,8 +102,8 @@ from . import utils
             ),
             id="rpm_dnf_tls_client_auth",
             marks=pytest.mark.skipif(
-                os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") != "1",
-                reason="HERMETO_TEST_LOCAL_DNF_SERVER!=1",
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="HERMETO_TEST_LOCAL_NEXUS!=1",
             ),
         ),
         pytest.param(

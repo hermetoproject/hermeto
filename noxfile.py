@@ -122,7 +122,7 @@ def all_integration_tests(session: Session) -> None:
         session,
         {
             "HERMETO_TEST_LOCAL_PYPISERVER": "1",
-            "HERMETO_TEST_LOCAL_DNF_SERVER": "1",
+            "HERMETO_TEST_LOCAL_NEXUS": "1",
             "HERMETO_TEST_LOCAL_NEXUS_PROXY": "1",
         },
     )
