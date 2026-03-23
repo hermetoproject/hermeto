@@ -160,7 +160,7 @@ def version_callback(value: bool) -> None:
 
 @app.callback()
 @handle_errors
-def main(  # noqa: D103 docstring becomes part of --help message
+def main(  # noqa: D103 -- docstring becomes part of --help message
     version: bool = typer.Option(  # noqa: ARG001
         False,
         "--version",
@@ -242,8 +242,8 @@ def list_backends() -> None:
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
-def fetch_deps(  # noqa: D103; docstring becomes part of --help message
-    ctx: typer.Context,
+def fetch_deps(  # noqa: D103 -- docstring becomes part of --help message
+    ctx: typer.Context,  # noqa: ARG001
     raw_input: str = typer.Argument(
         ...,
         help="Specify JSON input or path to JSON input file to process. See usage examples.",
@@ -476,7 +476,7 @@ def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
 
 @app.command(help=MERGE_SBOMS_HELP)
 @handle_errors
-def merge_sboms(  # noqa: D103; docstring becomes part of --help message
+def merge_sboms(  # noqa: D103 -- docstring becomes part of --help message
     sbom_files_to_merge: Paths = typer.Argument(
         ...,
         callback=_prevalidate_sbom_files_args,
