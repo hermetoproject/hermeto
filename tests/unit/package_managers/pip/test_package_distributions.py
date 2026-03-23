@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from pathlib import Path
 from unittest import mock
 
 import pypi_simple
@@ -43,12 +44,24 @@ def mock_pypi_simple_distribution_package(
 
 def test_sdist_sorting() -> None:
     """Test that sdist preference key can be used for sorting in the expected order."""
-    unyanked_tar_gz = mock_distribution_package_info(name="unyanked.tar.gz", is_yanked=False)
-    unyanked_zip = mock_distribution_package_info(name="unyanked.zip", is_yanked=False)
-    unyanked_tar_bz2 = mock_distribution_package_info(name="unyanked.tar.bz2", is_yanked=False)
-    yanked_tar_gz = mock_distribution_package_info(name="yanked.tar.gz", is_yanked=True)
-    yanked_zip = mock_distribution_package_info(name="yanked.zip", is_yanked=True)
-    yanked_tar_bz2 = mock_distribution_package_info(name="yanked.tar.bz2", is_yanked=True)
+    unyanked_tar_gz = mock_distribution_package_info(
+        name="unyanked", path=Path("unyanked.tar.gz"), is_yanked=False
+    )
+    unyanked_zip = mock_distribution_package_info(
+        name="unyanked", path=Path("unyanked.zip"), is_yanked=False
+    )
+    unyanked_tar_bz2 = mock_distribution_package_info(
+        name="unyanked", path=Path("unyanked.tar.bz2"), is_yanked=False
+    )
+    yanked_tar_gz = mock_distribution_package_info(
+        name="yanked", path=Path("yanked.tar.gz"), is_yanked=True
+    )
+    yanked_zip = mock_distribution_package_info(
+        name="yanked", path=Path("yanked.zip"), is_yanked=True
+    )
+    yanked_tar_bz2 = mock_distribution_package_info(
+        name="yanked", path=Path("yanked.tar.bz2"), is_yanked=True
+    )
 
     # Original order is descending by preference
     sdists = [
@@ -79,24 +92,28 @@ class TestProcessPreferBinaryMode:
     def test_returns_wheels_plus_best_sdist(self) -> None:
         """Prefer-binary mode returns wheels and the best sdist together."""
         wheel1 = mock_distribution_package_info(
-            name="pkg-1.0.0-cp312-cp312-manylinux_x86_64.whl",
+            name="pkg",
             version="1.0.0",
             package_type="wheel",
+            path=Path("pkg-1.0.0-cp312-cp312-manylinux_x86_64.whl"),
         )
         wheel2 = mock_distribution_package_info(
-            name="pkg-1.0.0-py3-none-any.whl",
+            name="pkg",
             version="1.0.0",
             package_type="wheel",
+            path=Path("pkg-1.0.0-py3-none-any.whl"),
         )
         sdist_tar = mock_distribution_package_info(
-            name="pkg-1.0.0.tar.gz",
+            name="pkg",
             version="1.0.0",
             package_type="sdist",
+            path=Path("pkg-1.0.0.tar.gz"),
         )
         sdist_zip = mock_distribution_package_info(
-            name="pkg-1.0.0.zip",
+            name="pkg",
             version="1.0.0",
             package_type="sdist",
+            path=Path("pkg-1.0.0.zip"),
         )
 
         result = _process_prefer_binary_mode(

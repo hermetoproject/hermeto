@@ -105,7 +105,7 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
     # Higher number = higher preference
     yanked_pref = 0 if sdist_pkg.is_yanked else 1
 
-    filename = sdist_pkg.name
+    filename = sdist_pkg.path.name
     if filename.endswith(".tar.gz"):
         filetype_pref = 2
     elif filename.endswith(".zip"):
