@@ -242,7 +242,7 @@ def list_backends() -> None:
 
 @app.command(help=FETCH_DEPS_HELP)
 @handle_errors
-def fetch_deps(  # noqa: D103; docstring becomes part of --help message
+def fetch_deps(  # noqa: D103  # docstring becomes part of --help message
     ctx: typer.Context,
     raw_input: str = typer.Argument(
         ...,
@@ -476,7 +476,7 @@ def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
 
 @app.command(help=MERGE_SBOMS_HELP)
 @handle_errors
-def merge_sboms(  # noqa: D103; docstring becomes part of --help message
+def merge_sboms(  # noqa: D103  # docstring becomes part of --help message
     sbom_files_to_merge: Paths = typer.Argument(
         ...,
         callback=_prevalidate_sbom_files_args,

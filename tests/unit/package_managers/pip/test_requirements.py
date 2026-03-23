@@ -4,11 +4,11 @@ from textwrap import dedent
 from typing import Any
 
 import pytest
+from packaging.requirements import Requirement
 
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 from hermeto.core.package_managers.pip.requirements import PipRequirement, PipRequirementsFile
 from hermeto.core.rooted_path import RootedPath
-from packaging.requirements import Requirement
 
 
 class TestPipRequirementsFile:
@@ -571,7 +571,7 @@ class TestPipRequirementsFile:
             # Valid format but we don't support it (actually file is now supported for internal rewrites)
             (
                 "file:///localbuilds/pip-1.3.1.zip",
-                UnsupportedFeature("Dependency name could not be determined from the requirement"),
+                UnsupportedFeature("Direct references with 'file' scheme are not supported"),
             ),
             (
                 "https://github.com/quay/appr/archive/58c88e49.tar.gz",

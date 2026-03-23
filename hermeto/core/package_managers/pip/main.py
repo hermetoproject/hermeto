@@ -355,7 +355,7 @@ def _process_url_req(
         download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
         **kwargs,
     )
-    if req.url.endswith(WHEEL_FILE_EXTENSION):
+    if req.url is not None and req.url.endswith(WHEEL_FILE_EXTENSION):
         result["package_type"] = "wheel"
 
     return result
@@ -442,7 +442,9 @@ def _download_vcs_package(requirement: PipRequirement, pip_deps_dir: RootedPath)
 
     :return: Dict with package name, download path and git info
     """
-    git_info = extract_git_info(requirement.url)
+    # requirement.url is always set for vcs/url kinds (see PipRequirement.__init__)
+    req_url: str = requirement.url  # type: ignore[assignment]
+    git_info = extract_git_info(req_url)
 
     download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(requirement))
     download_to.path.parent.mkdir(exist_ok=True, parents=True)
@@ -468,7 +470,9 @@ def _download_url_package(
 
     :return: Dict with package name, download path, original URL and URL with hash
     """
-    url = urlparse.urlparse(requirement.url)
+    # requirement.url is always set for vcs/url kinds (see PipRequirement.__init__)
+    req_url: str = requirement.url  # type: ignore[assignment]
+    url = urlparse.urlparse(req_url)
 
     download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(requirement))
     download_to.path.parent.mkdir(exist_ok=True, parents=True)
@@ -482,12 +486,12 @@ def _download_url_package(
     else:
         insecure = False
 
-    download_binary_file(requirement.url, download_to.path, insecure=insecure)
+    download_binary_file(req_url, download_to.path, insecure=insecure)
 
     return {
         "package": requirement.package,
         "path": download_to.path,
-        "original_url": requirement.url,
+        "original_url": req_url,
         "checksum": requirement.hashes[0],
     }
 
@@ -628,7 +632,9 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
         package = requirement.package
         hash_spec = requirement.hashes[0]
         _, _, digest = hash_spec.partition(":")
-        orig_url = urlparse.urlparse(requirement.url)
+        # requirement.url is always set for vcs/url kinds (see PipRequirement.__init__)
+        req_url: str = requirement.url  # type: ignore[assignment]
+        orig_url = urlparse.urlparse(req_url)
         file_ext = ""
         for ext in ALL_FILE_EXTENSIONS:
             if orig_url.path.endswith(ext):
@@ -643,7 +649,9 @@ def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
             filepath = Path(f"{package}-{digest}{file_ext}")
 
     elif requirement.kind == "vcs":
-        git_info = extract_git_info(requirement.url)
+        # requirement.url is always set for vcs/url kinds (see PipRequirement.__init__)
+        req_url_vcs: str = requirement.url  # type: ignore[assignment]
+        git_info = extract_git_info(req_url_vcs)
         repo = git_info["repo"]
         ref = git_info["ref"]
         filepath = Path(f"{repo}-gitcommit-{ref}.tar.gz")

@@ -461,6 +461,11 @@ class PipRequirement(Requirement):
                         package_name = value
 
         if not package_name:
+            # Check for file:// scheme before raising the generic name error
+            if parsed_url.scheme == "file":
+                raise UnsupportedFeature(
+                    f"Direct references with 'file' scheme are not supported, {line!r}"
+                )
             raise UnsupportedFeature(
                 reason=(
                     f"Dependency name could not be determined from the requirement {line!r} "
@@ -611,7 +616,9 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
 
         # Fail if VCS requirement uses any VCS other than git or does not have a valid ref
         elif req.kind == "vcs":
-            url = urlparse.urlparse(req.url)
+            # req.url is always set for vcs/url kinds (see PipRequirement.__init__)
+            vcs_url: str = req.url  # type: ignore[assignment]
+            url = urlparse.urlparse(vcs_url)
 
             if not url.scheme.startswith("git"):
                 raise UnsupportedFeature(
@@ -641,7 +648,9 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     ),
                 )
 
-            url = urlparse.urlparse(req.url)
+            # req.url is always set for vcs/url kinds (see PipRequirement.__init__)
+            plain_url: str = req.url  # type: ignore[assignment]
+            url = urlparse.urlparse(plain_url)
             if not any(url.path.endswith(ext) for ext in ALL_FILE_EXTENSIONS):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
