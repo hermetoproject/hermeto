@@ -1,0 +1,15 @@
+FROM quay.io/rbean/test:hermeto-hf-integration-test
+
+# Test disabled network access
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
+
+# Source hermeto env to get HF_HUB_CACHE etc., then verify the model
+# is resolvable offline using huggingface_hub's snapshot_download.
+# This will raise LocalEntryNotFoundError if hermeto didn't populate the cache.
+RUN . /tmp/hermeto.env && \
+    python3 -c "\
+from huggingface_hub import snapshot_download; \
+path = snapshot_download('hf-internal-testing/tiny-random-gpt2', local_files_only=True); \
+print(path)"
+
+CMD ["echo", "OK"]

@@ -1,0 +1,34 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:huggingface/hf-internal-testing/tiny-random-gpt2@71034c5d8bde858ff824298bdedc65515b97d2b9",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://huggingface.co/hf-internal-testing/tiny-random-gpt2"
+        }
+      ],
+      "name": "hf-internal-testing/tiny-random-gpt2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:huggingface/hf-internal-testing/tiny-random-gpt2@71034c5d8bde858ff824298bdedc65515b97d2b9",
+      "type": "library",
+      "version": "71034c5d8bde858ff824298bdedc65515b97d2b9"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
