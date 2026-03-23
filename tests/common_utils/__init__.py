@@ -18,7 +18,6 @@ class Symlink(str):
 def write_file_tree(tree_def: dict, rooted_at: StrPath, exist_ok: bool = False) -> None:
     """
     Write a file tree to disk.
-
     :param tree_def: Definition of file tree, see usage for intuitive examples
     :param rooted_at: Root of file tree, must be an existing directory
     :param exist_ok: If True, existing directories will not cause this function to fail
@@ -33,4 +32,3 @@ def write_file_tree(tree_def: dict, rooted_at: StrPath, exist_ok: bool = False) 
         else:
             entry_path.mkdir(exist_ok=exist_ok)
             write_file_tree(value, entry_path, exist_ok=exist_ok)
-      
