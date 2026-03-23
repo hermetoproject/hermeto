@@ -1,0 +1,36 @@
+version = 1
+requires-python = ">=3.12"
+
+[manifest]
+members = ["pkg-a", "pkg-b"]
+
+[[package]]
+name = "pkg-a"
+version = "0.1.0"
+source = { editable = "packages/pkg-a" }
+dependencies = [
+    { name = "requests" },
+]
+
+[[package]]
+name = "pkg-b"
+version = "0.2.0"
+source = { editable = "packages/pkg-b" }
+dependencies = [
+    { name = "requests" },
+]
+
+[[package]]
+name = "certifi"
+version = "2024.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/certifi-2024.2.2.tar.gz", hash = "sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f", size = 164886 }
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760", size = 131218 }

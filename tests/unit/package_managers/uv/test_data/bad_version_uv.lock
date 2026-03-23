@@ -1,0 +1,7 @@
+version = 99
+requires-python = ">=3.12"
+
+[[package]]
+name = "my-project"
+version = "0.1.0"
+source = { virtual = "." }

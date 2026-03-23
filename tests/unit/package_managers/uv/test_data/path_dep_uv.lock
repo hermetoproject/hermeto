@@ -1,0 +1,15 @@
+version = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "my-project"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "local-pkg" },
+]
+
+[[package]]
+name = "local-pkg"
+version = "0.1.0"
+source = { directory = "../local-pkg" }

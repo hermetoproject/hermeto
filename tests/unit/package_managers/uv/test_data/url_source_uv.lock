@@ -1,0 +1,18 @@
+version = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "my-project"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "my-url-dep" },
+]
+
+[[package]]
+name = "my-url-dep"
+version = "2.0.0"
+source = { url = "https://example.com/packages/my-url-dep-2.0.0.whl" }
+wheels = [
+    { url = "https://example.com/packages/my-url-dep-2.0.0.whl", hash = "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", size = 5000 },
+]

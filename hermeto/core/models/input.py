@@ -110,6 +110,7 @@ PackageManagerType = Literal[
     "npm",
     "pip",
     "rpm",
+    "uv",
     "yarn",
     # Add experimental package managers here with x- prefix, e.g. "x-foo"
 ]
@@ -403,6 +404,21 @@ class RpmPackageInput(_PackageInputBase):
     binary: RpmBinaryFilters | None = None
 
 
+class UvPackageInput(_PackageInputBase):
+    """Accepted input for a uv package."""
+
+    type: Literal["uv"]
+    lockfile: Path | None = None
+    include_dev: bool = False
+
+    @pydantic.field_validator("lockfile")
+    @classmethod
+    def _lockfile_path_is_relative(cls, lockfile: Path | None) -> Path | None:
+        if lockfile is not None:
+            check_sane_relpath(lockfile)
+        return lockfile
+
+
 class YarnPackageInput(_PackageInputBase):
     """Accepted input for a yarn package."""
 
@@ -417,6 +433,7 @@ PackageInput = Annotated[
     | NpmPackageInput
     | PipPackageInput
     | RpmPackageInput
+    | UvPackageInput
     | YarnPackageInput,
     # https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
     pydantic.Field(discriminator="type"),
@@ -524,6 +541,11 @@ class Request(pydantic.BaseModel):
     def rpm_packages(self) -> list[RpmPackageInput]:
         """Get the rpm packages specified for this request."""
         return self._packages_by_type(RpmPackageInput)
+
+    @property
+    def uv_packages(self) -> list[UvPackageInput]:
+        """Get the uv packages specified for this request."""
+        return self._packages_by_type(UvPackageInput)
 
     @property
     def yarn_packages(self) -> list[YarnPackageInput]:

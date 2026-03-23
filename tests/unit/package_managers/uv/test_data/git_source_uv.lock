@@ -1,0 +1,15 @@
+version = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "my-project"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "my-git-dep" },
+]
+
+[[package]]
+name = "my-git-dep"
+version = "1.0.0"
+source = { git = "https://github.com/example/my-git-dep.git?tag=v1.0.0#abc123def456" }
