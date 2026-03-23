@@ -46,7 +46,7 @@ def test_workspaces_could_be_parsed(
     expected_result = [
         Workspace(
             path=workspace_path.path,
-            package_json=PackageJson.from_file(workspace_package_json_path),
+            package_json=PackageJson.from_file(workspace_package_json_path.path),
         ),
     ]
     result = extract_workspace_metadata(rooted_tmp_path)

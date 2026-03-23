@@ -7,7 +7,8 @@ from urllib.parse import urlparse
 
 from pyarn.lockfile import Package as PYarnPackage
 
-from hermeto.core.package_managers.yarn_classic.project import PackageJson, YarnLock
+from hermeto.core.package_managers.common import PackageJson
+from hermeto.core.package_managers.yarn_classic.project import YarnLock
 from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
 
 

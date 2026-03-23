@@ -15,8 +15,9 @@ from pyarn.lockfile import Package as PYarnPackage
 from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
-from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
+from hermeto.core.package_managers.yarn_classic.project import Project, YarnLock
 from hermeto.core.package_managers.yarn_classic.utils import (
     find_runtime_deps,
     get_git_tarball_mirror_name,
@@ -337,9 +338,9 @@ def _get_packages_from_lockfile(
 
 def _get_main_package(source_dir: RootedPath, package_json: PackageJson) -> WorkspacePackage:
     """Return a WorkspacePackage for the main package in package.json."""
-    if "name" not in package_json._data:
+    if "name" not in package_json.data:
         raise PackageRejected(
-            f"The package.json file located at {package_json.path.path} is missing the name field",
+            f"The package.json file located at {package_json.path} is missing the name field",
             solution="Ensure the package.json file has a valid name.",
         )
     return WorkspacePackage(
@@ -401,7 +402,7 @@ def _read_name_from_tarball(tarball_path: RootedPath) -> str:
 
 def _read_name_from_package_json(path: RootedPath) -> str:
     """Read the package name from a package.json file."""
-    package_json = PackageJson.from_file(path)
+    package_json = PackageJson.from_file(path.path)
 
     if (name := package_json.data.get("name")) is None:
         raise ValueError(f"No 'name' field found in package.json in {path}")
