@@ -22,7 +22,15 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Flag, Mode, Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Annotation, Component, Property, PropertyEnum
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    Annotation,
+    Component,
+    ExternalReference,
+    Property,
+    PropertyEnum,
+)
 from hermeto.core.package_managers.gomod import (
     Go,
     GoVersion,
@@ -34,6 +42,7 @@ from hermeto.core.package_managers.gomod import (
     Package,
     ParsedGoWork,
     ParsedModule,
+    ParsedOrigin,
     ParsedPackage,
     ResolvedGoModule,
     StandardPackage,
@@ -44,6 +53,7 @@ from hermeto.core.package_managers.gomod import (
     _get_go_sum_files,
     _get_go_work_path,
     _get_gomod_version,
+    _get_proxy_for_module,
     _get_repository_name,
     _go_exec_env,
     _go_list_deps,
@@ -980,6 +990,13 @@ def test_module_to_component() -> None:
         name="github.com/another-org/nice-repo",
         version="v0.0.1",
         purl="pkg:golang/github.com/another-org/nice-repo@v0.0.1?type=module",
+        external_references=[
+            ExternalReference(
+                url="https://goproxy.corp.example.com",
+                type=PROXY_REF_TYPE,
+                comment=PROXY_COMMENT,
+            )
+        ],
     )
 
     component = Module(
@@ -987,9 +1004,41 @@ def test_module_to_component() -> None:
         version="v0.0.1",
         original_name="github.com/my-org/nice-repo",
         real_path="github.com/another-org/nice-repo",
+        proxy=["https://goproxy.corp.example.com"],
     ).to_component()
 
     assert component == expected_component
+
+
+@pytest.mark.parametrize(
+    "proxy_url, has_origin, expected_proxies",
+    [
+        ("https://goproxy.corp.example.com,direct", True, None),
+        ("https://proxy.golang.org,direct", False, None),
+        ("https://goproxy.corp.example.com,direct", False, ["https://goproxy.corp.example.com"]),
+        (
+            "https://goproxy.corp.example.com,https://proxy.golang.org,direct",
+            False,
+            ["https://goproxy.corp.example.com", "https://proxy.golang.org"],
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.gomod.get_config")
+def test_get_proxy_for_module(
+    mock_config: mock.Mock,
+    proxy_url: str,
+    has_origin: bool,
+    expected_proxies: list[str] | None,
+) -> None:
+    mock_config.return_value.gomod.proxy_url = proxy_url
+    origin = (
+        ParsedOrigin(vcs="git", url="https://github.com/org/repo", hash="abc123")
+        if has_origin
+        else None
+    )
+    module = ParsedModule(path="github.com/org/repo", version="v1.0.0", origin=origin)
+
+    assert _get_proxy_for_module(module) == expected_proxies
 
 
 def test_create_packages_from_parsed_data() -> None:
@@ -2664,3 +2713,102 @@ def test_go_exec_env(
 
     actual = _go_exec_env() if extra_env is None else _go_exec_env(**extra_env)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_fields",
+    [
+        pytest.param(
+            {
+                "Vcs": "git",
+                "Url": "github.com/my-org/some-repo",
+                "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "Ref": "refs/tags/v1.11.0",
+            },
+            {
+                "vcs": "git",
+                "url": "github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_origin",
+        ),
+    ],
+)
+def test_parsed_origin_from_json(input_json: dict, expected_fields: dict) -> None:
+    """Test ParsedOrigin parsing from JSON with PascalCase field mapping."""
+    origin = ParsedOrigin.model_validate(input_json)
+
+    assert origin.vcs == expected_fields["vcs"]
+    assert origin.url == expected_fields["url"]
+    assert origin.hash == expected_fields["hash"]
+    assert origin.tag_sum == expected_fields["tag_sum"]
+    assert origin.ref == expected_fields["ref"]
+
+
+@pytest.mark.parametrize(
+    "input_json,expected_origin",
+    [
+        pytest.param(
+            {
+                "Path": "github.com/my-org/some-repo",
+                "Version": "v1.11.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": {
+                    "Vcs": "git",
+                    "Url": "https://github.com/my-org/some-repo",
+                    "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                    "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                    "Ref": "refs/tags/v1.11.0",
+                },
+            },
+            {
+                "vcs": "git",
+                "url": "https://github.com/my-org/some-repo",
+                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
+                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
+                "ref": "refs/tags/v1.11.0",
+            },
+            id="module_with_origin",
+        ),
+        pytest.param(
+            {
+                "Path": "example.org/some/package",
+                "Version": "v1.0.0",
+                "Main": False,
+                "Replace": None,
+                "Origin": None,
+            },
+            None,
+            id="module_without_origin",
+        ),
+        pytest.param(
+            {"Path": "example.org/local/package", "Version": None, "Main": True, "Replace": None},
+            None,
+            id="module_missing_origin_field",
+        ),
+    ],
+)
+def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | None) -> None:
+    """Test ParsedModule parsing with optional Origin field."""
+    from hermeto.core.package_managers.gomod import ParsedModule
+
+    module = ParsedModule.model_validate(input_json)
+
+    assert module.path == input_json["Path"]
+    assert module.version == input_json.get("Version")
+    assert module.main == input_json.get("Main", False)
+    assert module.replace == input_json.get("Replace")
+
+    if expected_origin is None:
+        assert module.origin is None
+    else:
+        assert module.origin is not None
+        assert module.origin.vcs == expected_origin["vcs"]
+        assert module.origin.url == expected_origin["url"]
+        assert module.origin.hash == expected_origin["hash"]
+        assert module.origin.tag_sum == expected_origin["tag_sum"]
+        assert module.origin.ref == expected_origin["ref"]
