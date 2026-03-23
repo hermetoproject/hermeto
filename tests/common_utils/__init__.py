@@ -32,4 +32,4 @@ def write_file_tree(tree_def: dict, rooted_at: StrPath, exist_ok: bool = False) 
             entry_path.write_text(value)
         else:
             entry_path.mkdir(exist_ok=exist_ok)
-            write_file_tree(value, entry_path)
+            write_file_tree(value, entry_path, exist_ok=exist_ok)
