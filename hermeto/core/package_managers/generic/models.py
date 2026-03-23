@@ -38,21 +38,23 @@ def resolve_env_vars(value: str) -> str:
     :return: the string with all placeholders resolved
     :raises PackageManagerError: if any referenced environment variable is not set
     """
-    missing: list[str] = []
+    matches = list(ENV_VAR_PATTERN.finditer(value))
+    if not matches:
+        return value
+
+    var_names = [match.group(1) or match.group(3) for match in matches]
+    missing_vars = sorted({var for var in var_names if var not in os.environ})
+
+    if missing_vars:
+        raise PackageManagerError(
+            f"Required environment variable(s) not set: {', '.join(missing_vars)}"
+        )
 
     def _replace(match: re.Match) -> str:
-        # group(1) matches $VAR, group(3) matches ${VAR}
         var_name = match.group(1) or match.group(3)
-        env_value = os.environ.get(var_name)
-        if env_value is None:
-            missing.append(var_name)
-            return match.group(0)
-        return env_value
+        return os.environ[var_name]
 
-    resolved = ENV_VAR_PATTERN.sub(_replace, value)
-    if missing:
-        raise PackageManagerError(f"Required environment variable(s) not set: {', '.join(missing)}")
-    return resolved
+    return ENV_VAR_PATTERN.sub(_replace, value)
 
 
 class BearerAuth(BaseModel):

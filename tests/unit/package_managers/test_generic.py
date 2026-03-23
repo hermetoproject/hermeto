@@ -4,6 +4,7 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
@@ -457,57 +458,62 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
 class TestResolveEnvVars:
     """Tests for resolve_env_vars utility function."""
 
-    def test_single_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("MY_TOKEN", "secret123")
-        assert resolve_env_vars("$MY_TOKEN") == "secret123"
+    @pytest.mark.parametrize(
+        "env_vars, input_string, expected",
+        [
+            ({"MY_TOKEN": "secret123"}, "$MY_TOKEN", "secret123"),
+            ({"GITHUB_TOKEN": "ghp_xxx"}, "Bearer $GITHUB_TOKEN", "Bearer ghp_xxx"),
+            ({"GITEA_TOKEN": "tok_yyy"}, "token $GITEA_TOKEN", "token tok_yyy"),
+            ({"VAR1": "aaa", "VAR2": "bbb"}, "$VAR1:$VAR2", "aaa:bbb"),
+            ({}, "plain-value", "plain-value"),
+            ({}, "", ""),
+            ({"MY_TOKEN": "secret456"}, "${MY_TOKEN}", "secret456"),
+            ({"USER": "admin"}, "${USER}_token", "admin_token"),
+            ({"VAR1": "aaa", "VAR2": "bbb"}, "$VAR1:${VAR2}", "aaa:bbb"),
+        ],
+        ids=[
+            "single_var",
+            "var_with_prefix",
+            "var_with_nonstandard_prefix",
+            "multiple_vars",
+            "no_vars",
+            "empty_string",
+            "curly_brace_single_var",
+            "curly_brace_with_prefix",
+            "mixed_syntax",
+        ],
+    )
+    def test_success_cases(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        env_vars: dict[str, str],
+        input_string: str,
+        expected: str,
+    ) -> None:
+        for name, value in env_vars.items():
+            monkeypatch.setenv(name, value)
+        assert resolve_env_vars(input_string) == expected
 
-    def test_var_with_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("GITHUB_TOKEN", "ghp_xxx")
-        assert resolve_env_vars("Bearer $GITHUB_TOKEN") == "Bearer ghp_xxx"
-
-    def test_var_with_nonstandard_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("GITEA_TOKEN", "tok_yyy")
-        assert resolve_env_vars("token $GITEA_TOKEN") == "token tok_yyy"
-
-    def test_multiple_vars(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("VAR1", "aaa")
-        monkeypatch.setenv("VAR2", "bbb")
-        assert resolve_env_vars("$VAR1:$VAR2") == "aaa:bbb"
-
-    def test_no_vars(self) -> None:
-        assert resolve_env_vars("plain-value") == "plain-value"
-
-    def test_missing_var_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("NONEXISTENT_VAR", raising=False)
-        with pytest.raises(PackageManagerError, match="NONEXISTENT_VAR"):
-            resolve_env_vars("$NONEXISTENT_VAR")
-
-    def test_multiple_missing_vars(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("MISSING1", raising=False)
-        monkeypatch.delenv("MISSING2", raising=False)
-        with pytest.raises(PackageManagerError, match="MISSING1.*MISSING2"):
-            resolve_env_vars("$MISSING1 $MISSING2")
-
-    def test_empty_string(self) -> None:
-        assert resolve_env_vars("") == ""
-
-    def test_curly_brace_single_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("MY_TOKEN", "secret456")
-        assert resolve_env_vars("${MY_TOKEN}") == "secret456"
-
-    def test_curly_brace_with_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("USER", "admin")
-        assert resolve_env_vars("${USER}_token") == "admin_token"
-
-    def test_mixed_syntax(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("VAR1", "aaa")
-        monkeypatch.setenv("VAR2", "bbb")
-        assert resolve_env_vars("$VAR1:${VAR2}") == "aaa:bbb"
-
-    def test_curly_brace_missing_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("MISSING_VAR", raising=False)
-        with pytest.raises(PackageManagerError, match="MISSING_VAR"):
-            resolve_env_vars("${MISSING_VAR}")
+    @pytest.mark.parametrize(
+        "vars_to_del, input_string, match_re",
+        [
+            (["NONEXISTENT_VAR"], "$NONEXISTENT_VAR", "NONEXISTENT_VAR"),
+            (["MISSING1", "MISSING2"], "$MISSING1 $MISSING2", "MISSING1.*MISSING2"),
+            (["MISSING_VAR"], "${MISSING_VAR}", "MISSING_VAR"),
+        ],
+        ids=["single_missing", "multiple_missing", "curly_brace_missing"],
+    )
+    def test_missing_vars_raise(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        vars_to_del: list[str],
+        input_string: str,
+        match_re: str,
+    ) -> None:
+        for var in vars_to_del:
+            monkeypatch.delenv(var, raising=False)
+        with pytest.raises(PackageManagerError, match=match_re):
+            resolve_env_vars(input_string)
 
 
 class TestBearerAuthModel:
@@ -535,7 +541,7 @@ class TestAuthConfig:
         assert config.bearer.value == "$TOKEN"
 
     def test_extra_fields_rejected(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             AuthConfig(
                 bearer=BearerAuth(value="$TOKEN"),
                 unknown="bad",  # type: ignore[call-arg]
