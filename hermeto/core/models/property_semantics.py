@@ -18,6 +18,7 @@ class PropertyEnum(str, Enum):
     PROP_BUNDLER_PACKAGE_BINARY = f"{APP_NAME}:bundler:package:binary"
     PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
+    PROP_EXPERIMENTAL = f"{APP_NAME}:experimental"
     PROP_FOUND_BY = f"{APP_NAME}:found_by"
     PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
     PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
