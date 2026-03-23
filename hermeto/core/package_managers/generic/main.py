@@ -95,13 +95,6 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
         if isinstance(artifact, LockfileArtifactUrl):
             auth_header = artifact.resolve_auth_header()
             if auth_header:
-                host = urlparse(url).hostname
-                header_names = ", ".join(auth_header.keys())
-                log.warning(
-                    f"Sending auth header(s) [{header_names}] to host '{host}' "
-                    f"for artifact '{artifact.filename}'. "
-                    f"Ensure that this host is trusted."
-                )
                 headers_by_url[url] = auth_header
 
     asyncio.run(
