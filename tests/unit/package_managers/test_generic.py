@@ -4,7 +4,6 @@ from typing import Any
 from unittest import mock
 
 import pytest
-from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
@@ -26,9 +25,8 @@ from hermeto.core.package_managers.generic.main import (
     fetch_generic_source,
 )
 from hermeto.core.package_managers.generic.models import (
-    AuthConfig,
-    BearerAuth,
     LockfileArtifactUrl,
+    _resolve_auth_headers,
     resolve_env_var,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -175,6 +173,32 @@ artifacts:
           value: "$MY_TOKEN"
 """
 
+LOCKFILE_V2_UNKNOWN_AUTH_TYPE = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: sha256:abc123def456
+      auth:
+        unknown_type:
+          value: "$MY_TOKEN"
+"""
+
+LOCKFILE_V2_MULTIPLE_AUTH_TYPES = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: sha256:abc123def456
+      auth:
+        bearer:
+          value: "$MY_TOKEN"
+        another:
+          value: "$OTHER_TOKEN"
+"""
+
 
 @pytest.mark.parametrize(
     ["model_input", "components"],
@@ -317,12 +341,10 @@ def test_resolve_generic_lockfile_invalid(
     expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
     with open(lockfile_path, "w") as f:
         f.write(lockfile)
 
-    # setup testing downloaded dependency
     deps_path = rooted_tmp_path.join_within_root(DEFAULT_DEPS_DIR)
     Path.mkdir(deps_path.path, parents=True, exist_ok=True)
     with open(deps_path.join_within_root("archive.zip"), "w") as f:
@@ -411,7 +433,6 @@ def test_resolve_generic_lockfile_valid(
     expected_components: list[dict[str, Any]],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
     with open(lockfile_path, "w") as f:
         f.write(lockfile_content)
@@ -442,7 +463,6 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
         ],
     }
 
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
     with open(lockfile_path, "w") as f:
         f.write(LOCKFILE_VALID)
@@ -516,40 +536,48 @@ class TestResolveEnvVars:
             resolve_env_var(input_string)
 
 
-class TestBearerAuthModel:
-    """Tests for BearerAuth Pydantic model."""
+class TestResolveAuthHeaders:
+    """Tests for the _resolve_auth_headers module-level function."""
 
-    def test_defaults(self) -> None:
-        auth = BearerAuth(value="$TOKEN")
-        assert auth.header == "Authorization"
-        assert auth.value == "$TOKEN"
+    def test_none_returns_empty(self) -> None:
+        assert _resolve_auth_headers(None) == {}
 
-    def test_custom_header(self) -> None:
-        auth = BearerAuth(header="PRIVATE-TOKEN", value="$GITLAB_TOKEN")
-        assert auth.header == "PRIVATE-TOKEN"
+    def test_bearer_default_header(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test123")
+        result = _resolve_auth_headers({"bearer": {"value": "Bearer $GITHUB_TOKEN"}})
+        assert result == {"Authorization": "Bearer ghp_test123"}
 
-    def test_extra_fields_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            BearerAuth(value="$TOKEN", unknown_field="bad")  # type: ignore[call-arg]
+    def test_bearer_custom_header(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GITLAB_TOKEN", "glpat_xxx")
+        result = _resolve_auth_headers(
+            {"bearer": {"header": "PRIVATE-TOKEN", "value": "$GITLAB_TOKEN"}}
+        )
+        assert result == {"PRIVATE-TOKEN": "glpat_xxx"}
+
+    def test_bearer_missing_value_raises(self) -> None:
+        with pytest.raises(PackageManagerError, match="requires a 'value' field"):
+            _resolve_auth_headers({"bearer": {"header": "Authorization"}})
+
+    def test_unknown_auth_type_raises(self) -> None:
+        with pytest.raises(PackageManagerError, match="Unrecognised auth type 'unknown_type'"):
+            _resolve_auth_headers({"unknown_type": {"value": "$TOKEN"}})
+
+    def test_multiple_auth_types_raises(self) -> None:
+        with pytest.raises(PackageManagerError, match="Exactly one auth type must be specified"):
+            _resolve_auth_headers({"bearer": {"value": "$T1"}, "another": {"value": "$T2"}})
+
+    def test_empty_auth_dict_raises(self) -> None:
+        with pytest.raises(PackageManagerError, match="Exactly one auth type must be specified"):
+            _resolve_auth_headers({})
+
+    def test_missing_env_var_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("UNSET_TOKEN", raising=False)
+        with pytest.raises(PackageManagerError, match="UNSET_TOKEN"):
+            _resolve_auth_headers({"bearer": {"value": "$UNSET_TOKEN"}})
 
 
-class TestAuthConfig:
-    """Tests for AuthConfig Pydantic model."""
-
-    def test_valid(self) -> None:
-        config = AuthConfig(bearer=BearerAuth(value="$TOKEN"))
-        assert config.bearer.value == "$TOKEN"
-
-    def test_extra_fields_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            AuthConfig(
-                bearer=BearerAuth(value="$TOKEN"),
-                unknown="bad",  # type: ignore[call-arg]
-            )
-
-
-class TestResolveAuthHeader:
-    """Tests for LockfileArtifactUrl.resolve_auth_header method."""
+class TestLockfileArtifactUrlResolveAuthHeaders:
+    """Tests for LockfileArtifactUrl.resolve_auth_headers method."""
 
     def test_no_auth(self, rooted_tmp_path: RootedPath) -> None:
         artifact = LockfileArtifactUrl.model_validate(
@@ -559,7 +587,7 @@ class TestResolveAuthHeader:
             },
             context={"output_dir": rooted_tmp_path},
         )
-        assert artifact.resolve_auth_header() == {}
+        assert artifact.resolve_auth_headers() == {}
 
     def test_bearer_default_header(
         self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
@@ -573,7 +601,7 @@ class TestResolveAuthHeader:
             },
             context={"output_dir": rooted_tmp_path},
         )
-        assert artifact.resolve_auth_header() == {"Authorization": "Bearer ghp_test123"}
+        assert artifact.resolve_auth_headers() == {"Authorization": "Bearer ghp_test123"}
 
     def test_bearer_custom_header(
         self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
@@ -587,9 +615,12 @@ class TestResolveAuthHeader:
             },
             context={"output_dir": rooted_tmp_path},
         )
-        assert artifact.resolve_auth_header() == {"PRIVATE-TOKEN": "glpat_xxx"}
+        assert artifact.resolve_auth_headers() == {"PRIVATE-TOKEN": "glpat_xxx"}
 
-    def test_missing_env_var_raises(self, rooted_tmp_path: RootedPath) -> None:
+    def test_missing_env_var_raises(
+        self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.delenv("UNSET_TOKEN", raising=False)
         artifact = LockfileArtifactUrl.model_validate(
             {
                 "download_url": "https://example.com/file.zip",
@@ -598,20 +629,8 @@ class TestResolveAuthHeader:
             },
             context={"output_dir": rooted_tmp_path},
         )
-        with pytest.raises(PackageManagerError, match="Authentication failed for"):
-            artifact.resolve_auth_header()
-
-    def test_missing_env_var_includes_url(self, rooted_tmp_path: RootedPath) -> None:
-        artifact = LockfileArtifactUrl.model_validate(
-            {
-                "download_url": "https://private.example.com/secret.tar.gz",
-                "checksum": "sha256:abc123",
-                "auth": {"bearer": {"value": "$MISSING_SECRET"}},
-            },
-            context={"output_dir": rooted_tmp_path},
-        )
-        with pytest.raises(PackageManagerError, match="private.example.com/secret.tar.gz"):
-            artifact.resolve_auth_header()
+        with pytest.raises(PackageManagerError, match="UNSET_TOKEN"):
+            artifact.resolve_auth_headers()
 
 
 class TestAuthInLockfileV1Rejected:
@@ -650,21 +669,19 @@ class TestLockfileV2WithAuth:
         assert lockfile.metadata.version == "2.0"
         assert len(lockfile.artifacts) == 3
 
-        # GitLab artifact with custom header
+        # GitLab artifact — raw dict preserved as-is from the lockfile
         gitlab_artifact = lockfile.artifacts[0]
         assert isinstance(gitlab_artifact, LockfileArtifactUrl)
-        assert gitlab_artifact.auth is not None
-        assert gitlab_artifact.auth.bearer.header == "PRIVATE-TOKEN"
-        assert gitlab_artifact.auth.bearer.value == "$GITLAB_TOKEN"
+        assert gitlab_artifact.auth == {
+            "bearer": {"header": "PRIVATE-TOKEN", "value": "$GITLAB_TOKEN"}
+        }
 
-        # GitHub artifact with default Authorization header
+        # GitHub artifact — default header, so only value present
         github_artifact = lockfile.artifacts[1]
         assert isinstance(github_artifact, LockfileArtifactUrl)
-        assert github_artifact.auth is not None
-        assert github_artifact.auth.bearer.header == "Authorization"
-        assert github_artifact.auth.bearer.value == "Bearer $GITHUB_TOKEN"
+        assert github_artifact.auth == {"bearer": {"value": "Bearer $GITHUB_TOKEN"}}
 
-        # Public artifact without auth
+        # Public artifact — no auth
         public_artifact = lockfile.artifacts[2]
         assert isinstance(public_artifact, LockfileArtifactUrl)
         assert public_artifact.auth is None
@@ -689,22 +706,18 @@ class TestLockfileV2WithAuth:
 
         _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
-        # Verify async_download_files was called with correct headers_by_url
         mock_asyncio_run.assert_called_once()
-        # The coroutine was created by async_download_files; verify the mock was called
         mock_download.assert_called_once()
         _, kwargs = mock_download.call_args
         assert "headers_by_url" in kwargs
         headers = kwargs["headers_by_url"]
 
-        # GitLab artifact should have PRIVATE-TOKEN header
         gitlab_url = "https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz"
         assert headers[gitlab_url] == {"PRIVATE-TOKEN": "glpat_test"}
 
-        # GitHub artifact should have Authorization header
         github_url = "https://api.github.com/repos/owner/repo/tarball/v1.0.0"
         assert headers[github_url] == {"Authorization": "Bearer ghp_test"}
 
-        # Public artifact should NOT be in headers_by_url
+        # Public artifact should not appear in headers_by_url at all
         public_url = "https://example.com/public-file.zip"
         assert public_url not in headers

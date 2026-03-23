@@ -3,7 +3,6 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from urllib.parse import urlparse
 
 import yaml
 from pydantic import ValidationError
@@ -93,9 +92,9 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
         to_download[url] = artifact.filename
 
         if isinstance(artifact, LockfileArtifactUrl):
-            auth_header = artifact.resolve_auth_header()
-            if auth_header:
-                headers_by_url[url] = auth_header
+            auth_headers = artifact.resolve_auth_headers()
+            if auth_headers:
+                headers_by_url[url] = auth_headers
 
     asyncio.run(
         async_download_files(
