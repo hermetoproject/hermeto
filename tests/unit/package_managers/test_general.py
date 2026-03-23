@@ -183,6 +183,7 @@ async def test_async_download_binary_file(
         auth=None,
         raise_for_status=True,
         ssl=None,
+        headers=None,
     )
 
 
