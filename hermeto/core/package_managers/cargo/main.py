@@ -224,6 +224,9 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     name = package_info.get("name", package_dir.path.stem)
     version = package_info.get("version", None)
 
+    if isinstance(version, dict) and version.get("workspace"):
+        version = None
+
     # check for a workspace package version
     # https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
     if version is None:
@@ -466,8 +469,13 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
 
 def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
     toml_template = tomlkit.parse(template).value
+
+    if "source" not in toml_template:
+        return toml_template
+
     # Absolute path has to be replaced with relative path for sources relocation to work:
-    toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
+    if "vendored-sources" in toml_template["source"]:
+        toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
     # A correct output_dir value will be supplied by the application during a later stage.
     return toml_template
 

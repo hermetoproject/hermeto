@@ -9,6 +9,7 @@ from hermeto.core.package_managers.cargo.main import (
     CargoPackage,
     _resolve_main_package,
     _sanitize_cargo_config,
+    _swap_sources_directory_for_subsitution_slot,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -234,3 +235,50 @@ def test_cargo_config_without_registries_gets_sanitized(config_input: str) -> No
 def test_sanitize_cargo_config_raises_unexpected_format(invalid_config: str) -> None:
     with pytest.raises(UnexpectedFormat):
         _sanitize_cargo_config(invalid_config)
+
+
+def test_resolve_main_package_with_workspace_inheritance(rooted_tmp_path: RootedPath) -> None:
+    """Verify that version.workspace = true shorthand falls back to workspace.package version."""
+    write_cargo_toml(
+        rooted_tmp_path,
+        """
+        [workspace.package]
+        version = "2.5.0"
+
+        [package]
+        name = "inherited-pkg"
+        version.workspace = true
+        """,
+    )
+
+    name, version = _resolve_main_package(rooted_tmp_path)
+    assert name == "inherited-pkg"
+    assert version == "2.5.0"
+
+
+def test_swap_sources_zero_dependencies_no_crash() -> None:
+    """Verify projects with no remote dependencies (missing [source] table) don't crash."""
+    
+    template = """
+    [unused_table]
+    key = "value"
+    """
+
+    
+    result = _swap_sources_directory_for_subsitution_slot(template)
+
+    assert "source" not in result
+    assert result["unused_table"]["key"] == "value"
+
+
+def test_swap_sources_happy_path_still_works() -> None:
+    """Ensure the standard case still correctly swaps the absolute directory path."""
+    template = """
+    [source.vendored-sources]
+    directory = "/absolute/path/to/original/deps"
+    """
+
+    result = _swap_sources_directory_for_subsitution_slot(template)
+
+    expected_path = "${output_dir}/deps/cargo"
+    assert result["source"]["vendored-sources"]["directory"] == expected_path
