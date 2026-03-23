@@ -49,6 +49,7 @@ class TestRepoID:
 
         if isinstance(expect_result, str):
             repo_id = get_repo_id(golang_repo_path)
+            assert repo_id is not None
             assert repo_id.origin_url == expect_result
             assert repo_id.parsed_origin_url == urlsplit(expect_result)
             assert repo_id.commit_id == expect_commit_id

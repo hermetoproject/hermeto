@@ -24,6 +24,7 @@ from pydantic.alias_generators import to_pascal
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -33,11 +34,12 @@ from hermeto.core.errors import (
     FetchError,
     GitError,
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
@@ -709,7 +711,13 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     annotations: list[Annotation] = []
 
     repo_name = _get_repository_name(request.source_dir)
-    version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    try:
+        version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            version_resolver = ModuleVersionResolver.without_repo()
+        else:
+            raise
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
@@ -739,8 +747,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir, request.mode)
-            if vendor_changed and request.mode == Mode.STRICT:
+            try:
+                vendor_changed = _vendor_changed(main_module_dir)
+            except NotAGitRepo:
+                if get_config().mode == Mode.PERMISSIVE:
+                    vendor_changed = False
+                else:
+                    raise
+            if vendor_changed and get_config().mode != Mode.PERMISSIVE:
                 raise PackageRejected(
                     reason=(
                         "The content of the vendor directory is not consistent with go.mod. "
@@ -813,11 +827,14 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath, repo_name: str | None, parsed_main_module: ParsedModule
 ) -> Module:
     resolved_subpath = main_module_dir.subpath_from_root
 
-    if str(resolved_subpath) == ".":
+    if repo_name is None:
+        # PERMISSIVE mode without git repo - use the module path as resolved_path
+        resolved_path = parsed_main_module.path
+    elif str(resolved_subpath) == ".":
         resolved_path = repo_name
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
@@ -834,12 +851,18 @@ def _create_main_module_from_parsed_data(
     )
 
 
-def _get_repository_name(source_dir: RootedPath) -> str:
+def _get_repository_name(source_dir: RootedPath) -> str | None:
     """Return the name resolved from the Git origin URL.
 
     The name is a treated form of the URL, after stripping the scheme, user and .git extension.
     """
-    url = get_repo_id(source_dir).parsed_origin_url
+    try:
+        repo_id = get_repo_id(source_dir)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            return None
+        raise
+    url = repo_id.parsed_origin_url
     return f"{url.hostname}{url.path.rstrip('/').removesuffix('.git')}"
 
 
@@ -1355,10 +1378,21 @@ class GoCacheTemporaryDirectory(tempfile.TemporaryDirectory):
 class ModuleVersionResolver:
     """Resolves the versions of Go modules in a git repository."""
 
-    def __init__(self, repo: GitRepo, commit: git.objects.commit.Commit):
+    PLACEHOLDER_VERSION = "v0.0.0"
+
+    def __init__(
+        self,
+        repo: GitRepo,
+        commit: git.objects.commit.Commit,
+    ):
         """Initialize a ModuleVersionResolver for the provided Repo."""
         self._repo = repo
         self._commit = commit
+
+    @classmethod
+    def without_repo(cls) -> "ModuleVersionResolver":
+        """Return a resolver that always produces a placeholder version."""
+        return _StaticVersionResolver()
 
     @classmethod
     def from_repo_path(cls, repo_path: RootedPath) -> "Self":
@@ -1649,6 +1683,17 @@ class ModuleVersionResolver:
         return semver.version.Version.parse(semantic_version)
 
 
+class _StaticVersionResolver(ModuleVersionResolver):
+    """Returns a fixed version for all modules (permissive mode without git)."""
+
+    def __init__(self, version: str = ModuleVersionResolver.PLACEHOLDER_VERSION):
+        self._version = version
+
+    def get_golang_version(self, _module_name: str, _app_dir: RootedPath) -> str:
+        """Return the static placeholder version."""
+        return self._version
+
+
 def _validate_local_replacements(modules: Iterable[ParsedModule], app_path: RootedPath) -> None:
     replaced_paths = [
         (module.path, module.replace.path)
@@ -1743,12 +1788,13 @@ def _vendor_deps(
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
+def _vendor_changed(context_dir: RootedPath) -> bool:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
     """
     repo_root = context_dir.root
+    mode = get_config().mode
 
     # Get the correct repo context (main or submodule)
     repo, context_relative_path = get_repo_for_path(repo_root, context_dir.path)
@@ -1768,7 +1814,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s changed after vendoring:\n%s",
                 modules_txt,
                 modules_txt_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=mode,
             )
             return True
 
@@ -1779,7 +1825,7 @@ def _vendor_changed(context_dir: RootedPath, enforcing_mode: Mode) -> bool:
                 "%s directory changed after vendoring:\n%s",
                 vendor,
                 vendor_diff,
-                enforcing_mode=enforcing_mode,
+                enforcing_mode=mode,
             )
             return True
     finally:

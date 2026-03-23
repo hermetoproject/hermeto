@@ -5,9 +5,11 @@ from unittest import mock
 import pytest
 from git.repo import Repo
 
-from hermeto.core.errors import PackageRejected
+from hermeto.core.constants import Mode
+from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
+    _get_repo_name_from_origin_remote,
     _prepare_for_hermetic_build,
     _resolve_bundler_package,
 )
@@ -231,3 +233,51 @@ def test_prepare_for_hermetic_build_ignores_a_directory_in_place_of_config(
     result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
 
     assert result.template == expected_config_contents
+
+
+@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
+def test_get_repo_name_raises_without_git_repo(
+    mock_handle_get_repo_id: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+
+    with pytest.raises(PackageRejected):
+        _get_repo_name_from_origin_remote(rooted_tmp_path)
+
+
+@mock.patch("hermeto.core.package_managers.bundler.main.get_config")
+@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
+def test_get_repo_name_raises_without_git_repo_even_in_permissive_mode(
+    mock_handle_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Name inference from origin remote is mode-insensitive; it always requires git."""
+    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    with pytest.raises(PackageRejected):
+        _get_repo_name_from_origin_remote(rooted_tmp_path)
+
+
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.get_config")
+@mock.patch("hermeto.core.package_managers.bundler.gem_models.get_vcs_qualifiers")
+def test_path_dependency_purl_strict_mode_raises_without_git_repo(
+    mock_get_vcs_qualifiers: mock.Mock,
+    mock_get_config: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """PathDependency.purl re-raises NotAGitRepo in STRICT mode."""
+    mock_get_vcs_qualifiers.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
+    mock_get_config.return_value.mode = Mode.STRICT
+
+    dep = PathDependency(
+        name="my-path-dep",
+        version="0.1.0",
+        root=rooted_tmp_path,
+        subpath=".",
+    )
+
+    with pytest.raises(NotAGitRepo):
+        _ = dep.purl
