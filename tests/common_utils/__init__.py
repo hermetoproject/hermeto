@@ -30,6 +30,8 @@ def write_file_tree(tree_def: dict, rooted_at: StrPath, exist_ok: bool = False) 
             os.symlink(value, entry_path)
         elif isinstance(value, str):
             entry_path.write_text(value)
-        else:
+        elif isinstance(value, dict):
             entry_path.mkdir(exist_ok=exist_ok)
-            write_file_tree(value, entry_path)
+            write_file_tree(value, entry_path, exist_ok=exist_ok)
+        else:
+            raise TypeError(f"Unsupported entry type: {type(value)}")
