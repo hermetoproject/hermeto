@@ -71,9 +71,9 @@ async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
-    auth: aiohttp.BasicAuth | None = None,
     ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
+    headers: dict[str, str] | None = None,
 ) -> None:
     """
     Download a binary file (such as a TAR archive) from a URL using asyncio.
@@ -81,8 +81,8 @@ async def _async_download_binary_file(
     :param aiohttp_retry.RetryClient session: Aiohttp interface for making HTTP requests.
     :param str url: URL for file download
     :param str download_path: File path location
-    :param aiohttp.BasicAuth auth: Authentication for the URL
     :param int chunk_size: Chunk size param for Response.content.read()
+    :param dict[str, str] headers: Custom HTTP headers.
     :raise FetchError: If download failed
     """
     try:
@@ -94,9 +94,9 @@ async def _async_download_binary_file(
         async with session.get(
             url,
             timeout=timeout,
-            auth=auth,
             raise_for_status=True,
             ssl=ssl_context,
+            headers=headers,
         ) as resp:
             with open(download_path, "wb") as f:
                 while True:
@@ -115,18 +115,32 @@ async def _async_download_binary_file(
     log.debug(f"Download completed - {url}")
 
 
+def _merge_headers(
+    global_headers: dict[str, str] | None,
+    url_headers: dict[str, str] | None,
+) -> dict[str, str] | None:
+    """Merge global headers and url-specific headers."""
+    if not global_headers and not url_headers:
+        return None
+    merged = dict(global_headers or {})
+    merged.update(url_headers or {})
+    return merged
+
+
 async def async_download_files(
     files_to_download: Mapping[str, StrPath],
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
-    auth: aiohttp.BasicAuth | None = None,
+    headers: dict[str, str] | None = None,
+    headers_by_url: Mapping[str, dict[str, str]] | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
     :param files_to_download: Mapping of URLs and file paths to download.
     :param concurrency_limit: Max number of concurrent tasks (downloads).
     :param ssl_context: Optional SSL context for the requests.
-    :param auth: Optional authorization data for proxies.
+    :param headers: Optional custom HTTP headers to apply to all requests.
+    :param headers_by_url: Optional mapping of URL to custom HTTP headers.
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
@@ -163,6 +177,10 @@ async def async_download_files(
                         t.cancel()
                     raise
 
+            # Get the headers specifically for this URL and merge them with global headers
+            url_specific_headers = headers_by_url.get(url) if headers_by_url else None
+            merged_headers = _merge_headers(headers, url_specific_headers)
+
             tasks.add(
                 asyncio.create_task(
                     _async_download_binary_file(
@@ -170,7 +188,7 @@ async def async_download_files(
                         url,
                         download_path,
                         ssl_context=ssl_context,
-                        auth=auth,
+                        headers=merged_headers,
                     )
                 )
             )

@@ -538,7 +538,7 @@ async def _async_download_tar(files_to_download_list: list[dict[str, dict[str, A
     ftd = lambda ftd: {it["fetch_url"]: it["download_path"] for it in ftd.values()}
     adf = partial(async_download_files, concurrency_limit=get_config().runtime.concurrency_limit)
 
-    await asyncio.gather(*[adf(files_to_download=ftd(f), auth=auth(f)) for f in ftdl])
+    await asyncio.gather(*[adf(files_to_download=ftd(f), headers=auth(f)) for f in ftdl])
 
 
 def _get_npm_dependencies(
@@ -577,10 +577,12 @@ def _get_npm_dependencies(
                 if config.npm.proxy_url is not None:
                     fetch_url = _patch_url_to_point_to_a_proxy(url, config.npm.proxy_url)
                     if config.npm.proxy_login and config.npm.proxy_password:
-                        proxy_auth = aiohttp.BasicAuth(
-                            config.npm.proxy_login,
-                            config.npm.proxy_password,
-                        )
+                        proxy_auth = {
+                            "Authorization": aiohttp.BasicAuth(
+                                config.npm.proxy_login,
+                                config.npm.proxy_password,
+                            ).encode()
+                        }
             else:  # dep_type == "https"
                 if info["integrity"]:
                     algorithm, digest = ChecksumInfo.from_sri(info["integrity"])
