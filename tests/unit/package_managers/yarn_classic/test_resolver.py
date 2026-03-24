@@ -201,10 +201,12 @@ def test_create_package_from_pyarn_package(
 
 
 def test_create_package_from_pyarn_package_fail_absolute_path(rooted_tmp_path: RootedPath) -> None:
+    import os
+    abs_path = os.path.abspath("/root/some/path")
     pyarn_package = PYarnPackage(
         name="foo",
         version="1.0.0",
-        path="/root/some/path",
+        path=abs_path,
     )
     error_msg = (
         f"The package {pyarn_package.name}@{pyarn_package.version} has an absolute path "
@@ -247,30 +249,72 @@ def test_create_package_from_pyarn_package_fail_unexpected_format(
 @mock.patch(
     "hermeto.core.package_managers.yarn_classic.resolver._YarnClassicPackageFactory.create_package_from_pyarn_package"
 )
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.PYarnPackage.from_dict")
 def test_get_packages_from_lockfile(
-    mock_create_package: mock.Mock, rooted_tmp_path: RootedPath
+    mock_from_dict: mock.Mock, mock_create_package: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
     # Setup lockfile instance
-    mock_pyarn_lockfile = mock.Mock()
-    mock_yarn_lock = mock.Mock(yarn_lockfile=mock_pyarn_lockfile)
-    mock_pyarn_package_1 = mock.Mock()
-    mock_pyarn_package_2 = mock.Mock()
-    mock_pyarn_lockfile.packages.return_value = [mock_pyarn_package_1, mock_pyarn_package_2]
+    mock_yarn_lock = mock.Mock()
+    mock_yarn_lock.yarn_lockfile.data = {"pkg1@1.0.0": {}, "pkg2@2.0.0": {}}
+
+    mock_pyarn_package_1 = mock.Mock(alias=None)
+    mock_pyarn_package_2 = mock.Mock(alias=None)
+    mock_from_dict.side_effect = [mock_pyarn_package_1, mock_pyarn_package_2]
 
     # Setup classifier
     mock_package_1 = mock.Mock()
     mock_package_2 = mock.Mock()
     mock_create_package.side_effect = [mock_package_1, mock_package_2]
-    create_package_expected_calls = [
-        mock.call(mock_pyarn_package_1),
-        mock.call(mock_pyarn_package_2),
-    ]
-
+    
     output = _get_packages_from_lockfile(rooted_tmp_path, rooted_tmp_path, mock_yarn_lock, set())
 
-    mock_pyarn_lockfile.packages.assert_called_once()
-    mock_create_package.assert_has_calls(create_package_expected_calls)
+    assert mock_from_dict.call_count == 2
+    mock_from_dict.assert_any_call("pkg1@1.0.0", {})
+    mock_from_dict.assert_any_call("pkg2@2.0.0", {})
+    mock_create_package.assert_has_calls([mock.call(mock_pyarn_package_1), mock.call(mock_pyarn_package_2)])
     assert output == [mock_package_1, mock_package_2]
+
+
+@mock.patch(
+    "hermeto.core.package_managers.yarn_classic.resolver._YarnClassicPackageFactory.create_package_from_pyarn_package"
+)
+@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.PYarnPackage.from_dict")
+def test_get_packages_from_lockfile_with_alias(
+    mock_from_dict: mock.Mock, mock_create_package: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    # Setup lockfile instance with an alias in the second selector
+    mock_yarn_lock = mock.Mock()
+    raw_name_with_alias = 'esbuild@^0.25.0, "esbuild@npm:esbuild-wasm@^0.25.3"'
+    mock_yarn_lock.yarn_lockfile.data = {raw_name_with_alias: {}}
+
+    # The first pyarn package parsed from from_dict will miss the alias
+    mock_pyarn_package_no_alias = mock.Mock(alias=None)
+    mock_pyarn_package_no_alias2 = mock.Mock(alias=None)
+    
+    # The second PYarnPackage parsing the second selector will correctly extract the alias
+    mock_pyarn_package_with_alias = mock.Mock(alias="esbuild")
+    
+    mock_from_dict.side_effect = [
+        mock_pyarn_package_no_alias,   # for full raw name
+        mock_pyarn_package_no_alias2,  # for first selector 'esbuild@^0.25.0'
+        mock_pyarn_package_with_alias  # for second selector 'esbuild@npm:esbuild-wasm@^0.25.3'
+    ]
+
+    # Setup expected returned package
+    mock_package_expected = mock.Mock()
+    mock_create_package.side_effect = [mock_package_expected]
+    
+    output = _get_packages_from_lockfile(rooted_tmp_path, rooted_tmp_path, mock_yarn_lock, set())
+
+    assert mock_from_dict.call_count == 3
+    # It parses the full block first
+    mock_from_dict.assert_any_call(raw_name_with_alias, {})
+    # Since alias is None and "npm:" is present, it parses the secondary selectors starting with esbuild@^0.25.0
+    mock_from_dict.assert_any_call("esbuild@npm:esbuild-wasm@^0.25.3", {})
+    
+    # It uses the package that HAS the alias
+    mock_create_package.assert_called_once_with(mock_pyarn_package_with_alias)
+    assert output == [mock_package_expected]
 
 
 @mock.patch("hermeto.core.package_managers.yarn_classic.project.YarnLock.from_file")
@@ -341,7 +385,7 @@ def test_get_main_package_no_name(rooted_tmp_path: RootedPath) -> None:
         f"The package.json file located at {package_json._path.path} is missing the name field"
     )
 
-    with pytest.raises(PackageRejected, match=error_msg):
+    with pytest.raises(PackageRejected, match=re.escape(error_msg)):
         _get_main_package(rooted_tmp_path, package_json)
 
 
