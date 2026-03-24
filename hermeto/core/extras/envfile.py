@@ -14,7 +14,7 @@ class EnvFormat(str, Enum):
 
     json = "json"
     env = "env"
-    sh = "env"
+    sh = "sh"
 
     @classmethod
     def based_on_suffix(cls, filepath: Path) -> "EnvFormat":
