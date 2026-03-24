@@ -4,12 +4,14 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
     ChecksumVerificationFailed,
     InvalidLockfileFormat,
     LockfileNotFound,
+    PackageManagerError,
     PackageRejected,
     PathOutsideRoot,
 )
@@ -22,6 +24,12 @@ from hermeto.core.package_managers.generic.main import (
     _resolve_generic_lockfile,
     _resolve_lockfile_path,
     fetch_generic_source,
+)
+from hermeto.core.package_managers.generic.models import (
+    AuthConfig,
+    BearerAuth,
+    LockfileArtifactUrl,
+    resolve_env_vars,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -123,6 +131,48 @@ artifacts:
     - download_url: https://example.com/artifact
       filename: archive.zip
       checksum: md5:32112bed1914cfe3799600f962750b1d
+"""
+
+LOCKFILE_V2_WITH_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz
+      filename: archive.tar.gz
+      checksum: sha256:abc123def456
+      auth:
+        bearer:
+          header: PRIVATE-TOKEN
+          value: "$GITLAB_TOKEN"
+    - download_url: https://api.github.com/repos/owner/repo/tarball/v1.0.0
+      filename: repo.tar.gz
+      checksum: sha256:def456abc789
+      auth:
+        bearer:
+          value: "Bearer $GITHUB_TOKEN"
+    - download_url: https://example.com/public-file.zip
+      checksum: sha256:aaa111bbb222
+"""
+
+LOCKFILE_V2_NO_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+"""
+
+LOCKFILE_V1_WITH_AUTH = """
+metadata:
+    version: '1.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        bearer:
+          value: "$MY_TOKEN"
 """
 
 
@@ -251,6 +301,11 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
             InvalidLockfileFormat,
             id="wrong_checksum_format",
         ),
+        pytest.param(
+            LOCKFILE_V1_WITH_AUTH,
+            InvalidLockfileFormat,
+            id="auth_in_v1_rejected",
+        ),
     ],
 )
 @mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
@@ -376,11 +431,13 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
                 "download_url": "https://example.com/artifact",
                 "filename": str(rooted_tmp_path.join_within_root("archive.zip")),
                 "checksum": "md5:3a18656e1cea70504b905836dee14db0",
+                "auth": None,
             },
             {
                 "checksum": "md5:32112bed1914cfe3799600f962750b1d",
                 "download_url": "https://example.com/more/complex/path/file.tar.gz?foo=bar#fragment",
                 "filename": str(rooted_tmp_path.join_within_root("file.tar.gz")),
+                "auth": None,
             },
         ],
     }
@@ -391,3 +448,263 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
         f.write(LOCKFILE_VALID)
 
     assert _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump() == expected_lockfile
+
+
+# =============================================
+# Tests for bearer token authentication support
+# =============================================
+
+
+class TestResolveEnvVars:
+    """Tests for resolve_env_vars utility function."""
+
+    @pytest.mark.parametrize(
+        "env_vars, input_string, expected",
+        [
+            ({"MY_TOKEN": "secret123"}, "$MY_TOKEN", "secret123"),
+            ({"GITHUB_TOKEN": "ghp_xxx"}, "Bearer $GITHUB_TOKEN", "Bearer ghp_xxx"),
+            ({"GITEA_TOKEN": "tok_yyy"}, "token $GITEA_TOKEN", "token tok_yyy"),
+            ({"VAR1": "aaa", "VAR2": "bbb"}, "$VAR1:$VAR2", "aaa:bbb"),
+            ({}, "plain-value", "plain-value"),
+            ({}, "", ""),
+            ({"MY_TOKEN": "secret456"}, "${MY_TOKEN}", "secret456"),
+            ({"USER": "admin"}, "${USER}_token", "admin_token"),
+            ({"VAR1": "aaa", "VAR2": "bbb"}, "$VAR1:${VAR2}", "aaa:bbb"),
+        ],
+        ids=[
+            "single_var",
+            "var_with_prefix",
+            "var_with_nonstandard_prefix",
+            "multiple_vars",
+            "no_vars",
+            "empty_string",
+            "curly_brace_single_var",
+            "curly_brace_with_prefix",
+            "mixed_syntax",
+        ],
+    )
+    def test_success_cases(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        env_vars: dict[str, str],
+        input_string: str,
+        expected: str,
+    ) -> None:
+        for name, value in env_vars.items():
+            monkeypatch.setenv(name, value)
+        assert resolve_env_vars(input_string) == expected
+
+    @pytest.mark.parametrize(
+        "vars_to_del, input_string, match_re",
+        [
+            (["NONEXISTENT_VAR"], "$NONEXISTENT_VAR", "NONEXISTENT_VAR"),
+            (["MISSING1", "MISSING2"], "$MISSING1 $MISSING2", "MISSING1.*MISSING2"),
+            (["MISSING_VAR"], "${MISSING_VAR}", "MISSING_VAR"),
+        ],
+        ids=["single_missing", "multiple_missing", "curly_brace_missing"],
+    )
+    def test_missing_vars_raise(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        vars_to_del: list[str],
+        input_string: str,
+        match_re: str,
+    ) -> None:
+        for var in vars_to_del:
+            monkeypatch.delenv(var, raising=False)
+        with pytest.raises(PackageManagerError, match=match_re):
+            resolve_env_vars(input_string)
+
+
+class TestBearerAuthModel:
+    """Tests for BearerAuth Pydantic model."""
+
+    def test_defaults(self) -> None:
+        auth = BearerAuth(value="$TOKEN")
+        assert auth.header == "Authorization"
+        assert auth.value == "$TOKEN"
+
+    def test_custom_header(self) -> None:
+        auth = BearerAuth(header="PRIVATE-TOKEN", value="$GITLAB_TOKEN")
+        assert auth.header == "PRIVATE-TOKEN"
+
+    def test_extra_fields_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            BearerAuth(value="$TOKEN", unknown_field="bad")  # type: ignore[call-arg]
+
+
+class TestAuthConfig:
+    """Tests for AuthConfig Pydantic model."""
+
+    def test_valid(self) -> None:
+        config = AuthConfig(bearer=BearerAuth(value="$TOKEN"))
+        assert config.bearer.value == "$TOKEN"
+
+    def test_extra_fields_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            AuthConfig(
+                bearer=BearerAuth(value="$TOKEN"),
+                unknown="bad",  # type: ignore[call-arg]
+            )
+
+
+class TestResolveAuthHeader:
+    """Tests for LockfileArtifactUrl.resolve_auth_header method."""
+
+    def test_no_auth(self, rooted_tmp_path: RootedPath) -> None:
+        artifact = LockfileArtifactUrl.model_validate(
+            {
+                "download_url": "https://example.com/file.zip",
+                "checksum": "sha256:abc123",
+            },
+            context={"output_dir": rooted_tmp_path},
+        )
+        assert artifact.resolve_auth_header() == {}
+
+    def test_bearer_default_header(
+        self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test123")
+        artifact = LockfileArtifactUrl.model_validate(
+            {
+                "download_url": "https://api.github.com/repos/owner/repo/tarball/v1.0",
+                "checksum": "sha256:abc123",
+                "auth": {"bearer": {"value": "Bearer $GITHUB_TOKEN"}},
+            },
+            context={"output_dir": rooted_tmp_path},
+        )
+        assert artifact.resolve_auth_header() == {"Authorization": "Bearer ghp_test123"}
+
+    def test_bearer_custom_header(
+        self, rooted_tmp_path: RootedPath, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("GITLAB_TOKEN", "glpat_xxx")
+        artifact = LockfileArtifactUrl.model_validate(
+            {
+                "download_url": "https://gitlab.example.com/api/v4/projects/123/archive.tar.gz",
+                "checksum": "sha256:abc123",
+                "auth": {"bearer": {"header": "PRIVATE-TOKEN", "value": "$GITLAB_TOKEN"}},
+            },
+            context={"output_dir": rooted_tmp_path},
+        )
+        assert artifact.resolve_auth_header() == {"PRIVATE-TOKEN": "glpat_xxx"}
+
+    def test_missing_env_var_raises(self, rooted_tmp_path: RootedPath) -> None:
+        artifact = LockfileArtifactUrl.model_validate(
+            {
+                "download_url": "https://example.com/file.zip",
+                "checksum": "sha256:abc123",
+                "auth": {"bearer": {"value": "$UNSET_TOKEN"}},
+            },
+            context={"output_dir": rooted_tmp_path},
+        )
+        with pytest.raises(PackageManagerError, match="Authentication failed for"):
+            artifact.resolve_auth_header()
+
+    def test_missing_env_var_includes_url(self, rooted_tmp_path: RootedPath) -> None:
+        artifact = LockfileArtifactUrl.model_validate(
+            {
+                "download_url": "https://private.example.com/secret.tar.gz",
+                "checksum": "sha256:abc123",
+                "auth": {"bearer": {"value": "$MISSING_SECRET"}},
+            },
+            context={"output_dir": rooted_tmp_path},
+        )
+        with pytest.raises(PackageManagerError, match="private.example.com/secret.tar.gz"):
+            artifact.resolve_auth_header()
+
+
+class TestAuthInLockfileV1Rejected:
+    """Test that auth is rejected in v1.0 lockfiles."""
+
+    def test_auth_in_v1_raises(self, rooted_tmp_path: RootedPath) -> None:
+        lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+        with open(lockfile_path, "w") as f:
+            f.write(LOCKFILE_V1_WITH_AUTH)
+
+        with pytest.raises(InvalidLockfileFormat):
+            _load_lockfile(lockfile_path.path, rooted_tmp_path)
+
+
+class TestLockfileV2WithAuth:
+    """Tests for lockfile v2.0 with auth configuration."""
+
+    def test_load_v2_no_auth(self, rooted_tmp_path: RootedPath) -> None:
+        lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+        with open(lockfile_path, "w") as f:
+            f.write(LOCKFILE_V2_NO_AUTH)
+
+        lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+        assert lockfile.metadata.version == "2.0"
+        assert len(lockfile.artifacts) == 1
+        artifact = lockfile.artifacts[0]
+        assert isinstance(artifact, LockfileArtifactUrl)
+        assert artifact.auth is None
+
+    def test_load_v2_with_auth(self, rooted_tmp_path: RootedPath) -> None:
+        lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+        with open(lockfile_path, "w") as f:
+            f.write(LOCKFILE_V2_WITH_AUTH)
+
+        lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+        assert lockfile.metadata.version == "2.0"
+        assert len(lockfile.artifacts) == 3
+
+        # GitLab artifact with custom header
+        gitlab_artifact = lockfile.artifacts[0]
+        assert isinstance(gitlab_artifact, LockfileArtifactUrl)
+        assert gitlab_artifact.auth is not None
+        assert gitlab_artifact.auth.bearer.header == "PRIVATE-TOKEN"
+        assert gitlab_artifact.auth.bearer.value == "$GITLAB_TOKEN"
+
+        # GitHub artifact with default Authorization header
+        github_artifact = lockfile.artifacts[1]
+        assert isinstance(github_artifact, LockfileArtifactUrl)
+        assert github_artifact.auth is not None
+        assert github_artifact.auth.bearer.header == "Authorization"
+        assert github_artifact.auth.bearer.value == "Bearer $GITHUB_TOKEN"
+
+        # Public artifact without auth
+        public_artifact = lockfile.artifacts[2]
+        assert isinstance(public_artifact, LockfileArtifactUrl)
+        assert public_artifact.auth is None
+
+    @mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+    @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+    @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
+    def test_resolve_lockfile_passes_auth_headers(
+        self,
+        mock_checksums: mock.Mock,
+        mock_download: mock.Mock,
+        mock_asyncio_run: mock.Mock,
+        rooted_tmp_path: RootedPath,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("GITLAB_TOKEN", "glpat_test")
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
+
+        lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+        with open(lockfile_path, "w") as f:
+            f.write(LOCKFILE_V2_WITH_AUTH)
+
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+        # Verify async_download_files was called with correct headers_by_url
+        mock_asyncio_run.assert_called_once()
+        # The coroutine was created by async_download_files; verify the mock was called
+        mock_download.assert_called_once()
+        _, kwargs = mock_download.call_args
+        assert "headers_by_url" in kwargs
+        headers = kwargs["headers_by_url"]
+
+        # GitLab artifact should have PRIVATE-TOKEN header
+        gitlab_url = "https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz"
+        assert headers[gitlab_url] == {"PRIVATE-TOKEN": "glpat_test"}
+
+        # GitHub artifact should have Authorization header
+        github_url = "https://api.github.com/repos/owner/repo/tarball/v1.0.0"
+        assert headers[github_url] == {"Authorization": "Bearer ghp_test"}
+
+        # Public artifact should NOT be in headers_by_url
+        public_url = "https://example.com/public-file.zip"
+        assert public_url not in headers
