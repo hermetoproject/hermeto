@@ -2812,3 +2812,44 @@ def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | Non
         assert module.origin.hash == expected_origin["hash"]
         assert module.origin.tag_sum == expected_origin["tag_sum"]
         assert module.origin.ref == expected_origin["ref"]
+
+
+@mock.patch.dict(os.environ, {"PATH": ""})
+@mock.patch("shutil.which")
+@mock.patch("hermeto.core.package_managers.gomod.Go._get_release")
+def test_multi_toolchain_detection(
+    mock_get_release: mock.Mock,
+    mock_which: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """
+    Test that Hermeto can successfully detect a multi-toolchain environment
+    by pointing the search paths to a temporary directory with fake binaries.
+    """
+    expected_go_releases = ["go1.20.1", "go1.21.0-custom.build.info"]
+    system_go_dir = tmp_path / "usr" / "local" / "go"
+    cache_go_dir = tmp_path / ".cache" / "hermeto" / "go" / "go1.21"
+
+    for go_dir in (system_go_dir, cache_go_dir):
+        bin_dir = go_dir / "bin"
+        bin_dir.mkdir(parents=True)
+        (bin_dir / "go").touch()
+        (bin_dir / "go").chmod(0o755)
+
+    mock_which.side_effect = lambda cmd, *args, **kwargs: cmd if Path(cmd).is_absolute() else None
+
+    with (
+        mock.patch("hermeto.core.package_managers.gomod.HERMETO_GO_INSTALL_DIR", system_go_dir),
+        mock.patch(
+            "hermeto.core.package_managers.gomod.get_cache_dir",
+            return_value=tmp_path / ".cache" / "hermeto",
+        ),
+    ):
+        mock_get_release.side_effect = expected_go_releases
+        installed_toolchains = _list_installed_toolchains()
+
+    expected = {GoVersion(release) for release in expected_go_releases}
+    actual = {go.version for go in installed_toolchains}
+
+    assert expected == actual
+    assert mock_get_release.call_count == len(expected_go_releases)
