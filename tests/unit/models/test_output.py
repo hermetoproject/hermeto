@@ -65,7 +65,9 @@ class TestBuildConfig:
         ]
 
     def test_conflicting_project_files(self) -> None:
-        expect_error = "conflict by /some/path:"
+        import re
+
+        expect_error = re.escape(f"conflict by {Path('/some/path')}:")
         with pytest.raises(pydantic.ValidationError, match=expect_error):
             BuildConfig(
                 environment_variables=[],
@@ -205,3 +207,35 @@ class TestEnvironmentVariable:
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
         with pytest.raises(BaseError, match=err_msg):
             envs[0].resolve_value(mappings)
+
+
+class TestRequestOutputExperimental:
+    @pytest.mark.parametrize(
+        ("annotation_text_template", "expect_flag"),
+        [
+            ("{app_name}:backend:experimental:x-foo", True),
+            ("{app_name}:backend:pip", False),
+        ],
+    )
+    def test_generate_sbom_experimental_flag(
+        self, annotation_text_template: str, expect_flag: bool
+    ) -> None:
+        from datetime import datetime, timezone
+
+        from hermeto import APP_NAME
+        from hermeto.core.models.property_semantics import PropertyEnum
+        from hermeto.core.models.sbom import Annotation
+
+        anno = Annotation(
+            subjects=set(),
+            annotator={"organization": {"name": "red hat"}},
+            timestamp=datetime.now(timezone.utc),
+            text=annotation_text_template.format(app_name=APP_NAME),
+        )
+        ro = RequestOutput(annotations=[anno], components=[], build_config=BuildConfig())
+        sbom = ro.generate_sbom()
+        has_flag = any(
+            p.name == PropertyEnum.PROP_EXPERIMENTAL and p.value == "true"
+            for p in sbom.metadata.properties
+        )
+        assert has_flag is expect_flag
