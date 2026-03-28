@@ -73,7 +73,10 @@ def _run_lockfile_parser(package_dir: Path) -> dict[str, Any]:
         except subprocess.CalledProcessError as e:
             raise PackageManagerError("Failed to parse Gemfile.lock") from e
 
-    return json.loads(output)
+    try:
+        return json.loads(output)
+    except json.JSONDecodeError as e:
+        raise PackageManagerError("Failed to load JSON output from parsed Gemfile.lock") from e
 
 
 def parse_lockfile(

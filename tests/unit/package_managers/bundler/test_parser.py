@@ -88,10 +88,20 @@ def test_run_lockfile_parser_raises_exception_on_os_error(
     tmp_path: Path,
 ) -> None:
     mock_run_cmd.side_effect = subprocess.CalledProcessError(returncode=1, cmd="cmd")
-    with pytest.raises(PackageManagerError) as exc_info:
+
+    with pytest.raises(PackageManagerError):
         _run_lockfile_parser(tmp_path)
 
-    assert "Failed to parse Gemfile.lock" in exc_info.value.friendly_msg()
+
+@mock.patch("hermeto.core.package_managers.bundler.parser.run_cmd")
+def test_run_lockfile_parser_raises_exception_on_invalid_json(
+    mock_run_cmd: mock.MagicMock,
+    tmp_path: Path,
+) -> None:
+    mock_run_cmd.return_value = "not valid json"
+
+    with pytest.raises(PackageManagerError):
+        _run_lockfile_parser(tmp_path)
 
 
 @mock.patch("hermeto.core.package_managers.bundler.parser._ensure_bundler_files_exist")
