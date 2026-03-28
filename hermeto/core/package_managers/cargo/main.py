@@ -451,6 +451,17 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
                     subpath=local_packages.get(pkg_name),
                 ).to_component()
             )
+        elif pkg.get("source") is None:
+            # Workspace members have no `source` field in Cargo.lock.
+            # Assumes all sourceless packages not already matched are workspace members.
+            components.append(
+                LocalCargoPackage(
+                    name=pkg_name,
+                    version=pkg_version,
+                    vcs_url=vcs_url,
+                    subpath=pkg_name,
+                ).to_component()
+            )
         else:
             components.append(
                 CargoPackage(

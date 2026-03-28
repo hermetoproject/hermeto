@@ -1,22 +1,36 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import textwrap
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 import tomlkit
+from packageurl import PackageURL
 
 from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.package_managers.cargo.main import (
     CargoPackage,
+    _generate_sbom_components,
     _resolve_main_package,
     _sanitize_cargo_config,
     _use_vendored_sources,
 )
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import RepoID
 
 
 def write_cargo_toml(rooted_path: RootedPath, content: str) -> None:
     (rooted_path.path / "Cargo.toml").write_text(content)
+
+
+def write_cargo_lock(rooted_path: RootedPath, packages: list[dict]) -> None:
+    lines = ["version = 4", ""]
+    for pkg in packages:
+        lines.append("[[package]]")
+        for key, value in pkg.items():
+            lines.append(f'{key} = "{value}"')
+        lines.append("")
+    (rooted_path.path / "Cargo.lock").write_text("\n".join(lines))
 
 
 def test_standard_package_with_name_and_version(rooted_tmp_path: RootedPath) -> None:
@@ -284,3 +298,88 @@ def test_use_vendored_sources(
 
     assert result_toml["source"]["crates-io"]["replace-with"] == "vendored-sources"
     assert result_toml["source"]["vendored-sources"]["directory"] == "${output_dir}/deps/cargo"
+
+
+MOCK_REPO_ID = RepoID("ssh://git@github.com/test/repo.git", "abc123")
+
+
+def test_workspace_members_get_local_package_treatment(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    write_cargo_toml(
+        rooted_tmp_path,
+        """
+        [package]
+        name = "bug"
+        version = "0.1.0"
+        [workspace]
+        members = ["","a", "b"]
+    """,
+    )
+    write_cargo_lock(
+        rooted_tmp_path,
+        [
+            {"name": "a", "version": "0.0.0"},
+            {"name": "b", "version": "0.0.0"},
+            {"name": "bug", "version": "0.1.0"},
+            {
+                "name": "mock",
+                "version": "0.0.1",
+                "source": "registry+https://github.com/rust-lang/crates.io-index",
+                "checksum": "abc123",
+            },
+        ],
+    )
+
+    with patch(
+        "hermeto.core.package_managers.cargo.main.get_repo_id",
+        return_value=MOCK_REPO_ID,
+    ):
+        components = _generate_sbom_components(rooted_tmp_path)
+
+    by_name = {c.name: PackageURL.from_string(c.purl) for c in components}
+
+    assert "vcs_url" in by_name["a"].qualifiers
+    assert by_name["a"].subpath == "a"
+
+    assert "vcs_url" in by_name["b"].qualifiers
+    assert by_name["b"].subpath == "b"
+
+    # registry package must have no vcs_url and no subpath
+    assert "vcs_url" not in by_name["mock"].qualifiers
+    assert by_name["mock"].subpath is None
+
+
+def test_registry_packages_unaffected_by_workspace_fix(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    write_cargo_toml(
+        rooted_tmp_path,
+        """
+        [package]
+        name = "bug"
+        version = "0.1.0"
+    """,
+    )
+    write_cargo_lock(
+        rooted_tmp_path,
+        [
+            {"name": "bug", "version": "0.1.0"},
+            {
+                "name": "mock",
+                "version": "0.0.1",
+                "source": "registry+https://github.com/rust-lang/crates.io-index",
+                "checksum": "abc123",
+            },
+        ],
+    )
+    with patch(
+        "hermeto.core.package_managers.cargo.main.get_repo_id",
+        return_value=MOCK_REPO_ID,
+    ):
+        components = _generate_sbom_components(rooted_tmp_path)
+
+    mock = next(c for c in components if c.name == "mock")
+    purl = PackageURL.from_string(mock.purl)
+    assert "vcs_url" not in purl.qualifiers
+    assert purl.subpath is None
