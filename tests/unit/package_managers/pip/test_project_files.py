@@ -176,6 +176,41 @@ class TestPyprojectTOML:
         assert PyProjectTOML(rooted_tmp_path).get_version() == expect_version
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
 
+    @pytest.mark.parametrize(
+        "toml_content, expected",
+        [
+            pytest.param(
+                dedent(
+                    """
+                    [build-system]
+                    requires = ["setuptools", "maturin==0.14.0"]
+                    """
+                ),
+                ["setuptools", "maturin==0.14.0"],
+                id="basic",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    [build-system]
+                    """
+                ),
+                [],
+                id="empty",
+            ),
+            pytest.param(
+                "",
+                [],
+                id="empty-string",
+            ),
+        ],
+    )
+    def test_get_build_system_requires(
+        self, rooted_tmp_path: RootedPath, toml_content: str, expected: list[str]
+    ) -> None:
+        rooted_tmp_path.join_within_root("pyproject.toml").path.write_text(toml_content)
+        assert PyProjectTOML(rooted_tmp_path).get_build_system_requires() == expected
+
 
 class TestSetupCFG:
     """SetupCFG tests."""
@@ -285,6 +320,63 @@ class TestSetupCFG:
 
         assert SetupCFG(rooted_tmp_path).get_version() == expect_version
         self._assert_has_logs(expect_logs, rooted_tmp_path.path, caplog)
+
+    @pytest.mark.parametrize(
+        "cfg_content, expected",
+        [
+            pytest.param(
+                dedent(
+                    """
+                    [options]
+                    setup_requires = maturin; setuptools-rust
+                    """
+                ),
+                ["maturin", "setuptools-rust"],
+                id="basic-with-semicolon",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    [options]
+                    setup_requires = maturin, setuptools-rust
+                    """
+                ),
+                ["maturin", "setuptools-rust"],
+                id="basic-with-comma",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    [options]
+                    setup_requires =
+                        maturin
+                        setuptools-rust
+                    """
+                ),
+                ["maturin", "setuptools-rust"],
+                id="basic-with-newline",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    [options]
+                    """
+                ),
+                [],
+                id="empty",
+            ),
+            pytest.param(
+                "",
+                [],
+                id="empty-string",
+            ),
+        ],
+    )
+    def test_get_setup_requires(
+        self, rooted_tmp_path: RootedPath, cfg_content: str, expected: list[str]
+    ) -> None:
+        rooted_tmp_path.join_within_root("setup.cfg").path.write_text(cfg_content)
+        assert SetupCFG(rooted_tmp_path).get_setup_requires() == expected
 
     def _assert_has_logs(
         self, expect_logs: list[str], tmpdir: Path, caplog: pytest.LogCaptureFixture
@@ -887,6 +979,47 @@ class TestSetupPY:
 
         setup_py = SetupPY(rooted_tmp_path)
         assert setup_py.exists() == exists
+
+    @pytest.mark.parametrize(
+        "setup_py_content, expected",
+        [
+            pytest.param(
+                dedent(
+                    """
+                    from setuptools import setup
+                    setup(setup_requires=["maturin==0.14.0", "wheel"])
+                    """
+                ),
+                ["maturin==0.14.0", "wheel"],
+                id="basic-with-setup_requires",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    from setuptools import setup
+                    setup(setup_requires=[])
+                    """
+                ),
+                [],
+                id="empty",
+            ),
+            pytest.param(
+                dedent(
+                    """
+                    from setuptools import setup
+                    setup(setup_requires=None)
+                    """
+                ),
+                [],
+                id="none",
+            ),
+        ],
+    )
+    def test_get_setup_requires(
+        self, rooted_tmp_path: RootedPath, setup_py_content: str, expected: list[str]
+    ) -> None:
+        rooted_tmp_path.join_within_root("setup.py").path.write_text(setup_py_content)
+        assert SetupPY(rooted_tmp_path).get_setup_requires() == expected
 
     def _test_get_value(
         self,

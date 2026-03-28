@@ -8,12 +8,12 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any
 
-from pybuild_deps import parsers
-
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.package_managers.cargo import fetch_cargo_source
+from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
 from hermeto.core.package_managers.pip.requirements import WHEEL_FILE_EXTENSION
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 
@@ -27,27 +27,19 @@ def _has_rust_build_deps(raw_build_dependencies: list[str]) -> bool:
 
 
 def _depends_on_rust(extracted_dir: Path) -> bool:
-    file_parser_map = {
-        "pyproject.toml": parsers.parse_pyproject_toml,
-        "setup.cfg": parsers.parse_setup_cfg,
-        "setup.py": parsers.parse_setup_py,
+    root = RootedPath(extracted_dir)
+    python_files_map = {
+        "pyproject.toml": PyProjectTOML(root).get_build_system_requires,
+        "setup.cfg": SetupCFG(root).get_setup_requires,
+        "setup.py": SetupPY(root).get_setup_requires,
     }
-    for file_name, parser in file_parser_map.items():
-        file_path = extracted_dir / file_name
-        if not file_path.exists():
+
+    for file, get_build_deps_method in python_files_map.items():
+        if not root.join_within_root(file).path.exists():
             continue
 
-        # The file is decoded as utf-8-sig because plain utf-8 has proven to be problematic with certain sources from pypi:
-        # https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
-        file_contents = file_path.read_text(encoding="utf-8-sig")
-        try:
-            build_dependencies = parser(file_contents)
-        except parsers.SetupPyParsingError:
-            # pybuild-deps parser has some known edge-cases for older packages relying on setup.py
-            log.error("Unable to parse build dependencies for %s.", extracted_dir.name)
-            continue
-
-        if _has_rust_build_deps(build_dependencies):
+        build_deps = get_build_deps_method()
+        if _has_rust_build_deps(build_deps):
             return True
 
     return False

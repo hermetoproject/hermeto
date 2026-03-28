@@ -141,6 +141,15 @@ class PyProjectTOML(SetupFile):
             log.warning("No project.version in pyproject.toml")
             return None
 
+    def get_build_system_requires(self) -> list[str]:
+        """Get build requirements."""
+        try:
+            requires = self._parsed_toml["build-system"]["requires"]
+        except KeyError:
+            return []
+
+        return [str(item) for item in requires]
+
     @functools.cached_property
     def _parsed_toml(self) -> dict[str, Any]:
         try:
@@ -205,6 +214,14 @@ class SetupCFG(SetupFile):
         version = _any_to_version(version)
         log.info("Found metadata.version in setup.cfg: %r", version)
         return version
+
+    def get_setup_requires(self) -> list[str]:
+        """Get build requirements."""
+        setup_requires = self._get_option("options", "setup_requires")
+        if setup_requires is None:
+            return []
+
+        return [s for req in re.split(r"[;,\n]", setup_requires.strip()) if (s := req.strip())]
 
     @functools.cached_property
     def _parsed(self) -> configparser.ConfigParser | None:
@@ -505,12 +522,24 @@ class SetupPY(SetupFile):
         log.info("Found version in setup.py: %r", version)
         return version
 
+    def get_setup_requires(self) -> list[str]:
+        """Get build requirements."""
+        setup_requires = self._get_setup_kwarg("setup_requires")
+        if setup_requires is None:
+            return []
+
+        return [str(item) for item in setup_requires]
+
     @functools.cached_property
     def _ast(self) -> ast.AST | None:
         """Try to parse the AST."""
         log.debug("Parsing setup.py at %r", str(self._setup_file))
         try:
-            return ast.parse(self._setup_file.path.read_text(), self._setup_file.path.name)
+            # The file is decoded as utf-8-sig because plain utf-8 has proven to be problematic with certain sources from pypi:
+            # https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
+            return ast.parse(
+                self._setup_file.path.read_text(encoding="utf-8-sig"), self._setup_file.path.name
+            )
         except SyntaxError as e:
             log.error("Syntax error when parsing setup.py: %s", e)
             return None
