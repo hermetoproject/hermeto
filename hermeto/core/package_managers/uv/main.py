@@ -6,7 +6,8 @@ from urllib.parse import unquote, urlparse
 from packageurl import PackageURL
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
-from hermeto.core.models.input import Request
+from hermeto.core.errors import UnsupportedFeature
+from hermeto.core.models.input import Mode, Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.general import download_binary_file
@@ -29,6 +30,15 @@ def fetch_uv_source(request: Request) -> RequestOutput:
         for package_entry in lockfile.get("package", []):
             package_name = package_entry.get("name")
             package_version = package_entry.get("version")
+            source_kind = _source_kind(package_entry)
+
+            if source_kind not in {"registry", "virtual"}:
+                if _should_skip_unsupported_source(
+                    source_kind=source_kind,
+                    package_name=package_name if isinstance(package_name, str) else "<unknown>",
+                    mode=request.mode,
+                ):
+                    continue
 
             if isinstance(package_name, str):
                 purl = PackageURL(type="pypi", name=package_name, version=package_version).to_string()
@@ -36,26 +46,60 @@ def fetch_uv_source(request: Request) -> RequestOutput:
                     Component(name=package_name, version=package_version, purl=purl)
                 )
 
-            for artifact in _iter_remote_artifacts(package_entry):
-                if artifact["url"] in downloaded_urls:
-                    continue
+            if source_kind == "registry":
+                for artifact in _iter_remote_artifacts(package_entry):
+                    if artifact["url"] in downloaded_urls:
+                        continue
 
-                filename = _artifact_filename(artifact["url"])
-                destination = deps_dir.join_within_root(filename).path
+                    filename = _artifact_filename(artifact["url"])
+                    destination = deps_dir.join_within_root(filename).path
 
-                log.info("Downloading uv artifact %s", artifact["url"])
-                download_binary_file(artifact["url"], destination)
+                    log.info("Downloading uv artifact %s", artifact["url"])
+                    download_binary_file(artifact["url"], destination)
 
-                if artifact["hash"]:
-                    must_match_any_checksum(destination, [ChecksumInfo.from_hash(artifact["hash"])])
+                    if artifact["hash"]:
+                        must_match_any_checksum(
+                            destination, [ChecksumInfo.from_hash(artifact["hash"])]
+                        )
 
-                downloaded_urls.add(artifact["url"])
+                    downloaded_urls.add(artifact["url"])
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "x-uv"):
         annotations.append(backend_annotation)
 
     return RequestOutput.from_obj_list(components=components, annotations=annotations)
+
+
+def _source_kind(package_entry: dict) -> str:
+    source = package_entry.get("source")
+    if not isinstance(source, dict):
+        return "unknown"
+
+    for kind in ["registry", "virtual", "git", "path", "editable", "directory"]:
+        if kind in source:
+            return kind
+
+    return "unknown"
+
+
+def _should_skip_unsupported_source(source_kind: str, package_name: str, mode: Mode) -> bool:
+    reason = (
+        f"uv package '{package_name}' uses source kind '{source_kind}', "
+        "which is not supported yet by the experimental x-uv backend"
+    )
+
+    if mode == Mode.PERMISSIVE:
+        log.warning("%s; continuing due to permissive mode", reason)
+        return True
+
+    raise UnsupportedFeature(
+        reason,
+        solution=(
+            "Use permissive mode to continue without this dependency, or update input to use "
+            "registry-backed dependencies only for now."
+        ),
+    )
 
 
 def _iter_remote_artifacts(package_entry: dict) -> list[dict[str, str | None]]:
