@@ -20,7 +20,7 @@ from hermeto.core.errors import (
     UnsupportedFeature,
 )
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, Property
 from hermeto.core.package_managers.npm import (
     NormalizedUrl,
@@ -794,7 +794,12 @@ def test_generate_component_list(
                     Component(name="foo", version="1.0.0", purl="pkg:npm/foo@1.0.0"),
                     Component(name="bar", version="2.0.0", purl="pkg:npm/bar@2.0.0"),
                 ],
-                "environment_variables": [],
+                "environment_variables": [
+                    EnvironmentVariable(
+                        name="npm_config_build_from_source",
+                        value="true",
+                    ),
+                ],
                 "project_files": [
                     ProjectFile(abspath="/some/path", template="some text"),
                 ],
@@ -881,7 +886,12 @@ def test_generate_component_list(
                     Component(name="spam", version="3.0.0", purl="pkg:npm/spam@3.0.0"),
                     Component(name="eggs", version="4.0.0", purl="pkg:npm/eggs@4.0.0"),
                 ],
-                "environment_variables": [],
+                "environment_variables": [
+                    EnvironmentVariable(
+                        name="npm_config_build_from_source",
+                        value="true",
+                    ),
+                ],
                 "project_files": [
                     ProjectFile(abspath="/some/path", template="some text"),
                     ProjectFile(abspath="/some/other/path", template="some other text"),
