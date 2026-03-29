@@ -90,6 +90,14 @@ class TestPackageInput:
                     "binary": None,
                 },
             ),
+            pytest.param(
+                {"type": "x-uv"},
+                {
+                    "type": "x-uv",
+                    "path": Path("."),
+                },
+                id="x_uv_default",
+            ),
             (
                 {
                     "type": "rpm",
@@ -246,7 +254,7 @@ class TestPackageInput:
             ),
             pytest.param(
                 {"type": "go-package"},
-                r"Input tag 'go-package' found using 'type' does not match any of the expected tags: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                r"Input tag 'go-package' found using 'type' does not match any of the expected tags: .*'x-uv'.*",
                 id="incorrect_type_tag",
             ),
             pytest.param(
