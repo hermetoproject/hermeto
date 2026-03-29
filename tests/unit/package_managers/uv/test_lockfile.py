@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
+from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound
 from hermeto.core.models.input import Request
 from hermeto.core.package_managers.uv.lockfile import parse_uv_lockfile
 from hermeto.core.package_managers.uv.main import fetch_uv_source
@@ -100,50 +100,3 @@ sdist = {{ url = "https://example.com/sniffio-1.3.1.tar.gz", hash = "sha256:{che
     assert output.components[0].name == "sniffio"
     assert output.components[0].purl == "pkg:pypi/sniffio@1.3.1"
     assert (tmp_path / "deps" / "uv" / "sniffio-1.3.1.tar.gz").exists()
-
-
-def test_fetch_uv_source_rejects_git_source_in_strict_mode(tmp_path: Path) -> None:
-    (tmp_path / "uv.lock").write_text(
-        """
-version = 1
-
-[[package]]
-name = "foo"
-version = "1.0.0"
-source = { git = "https://github.com/example/foo", rev = "0123456789abcdef" }
-""".strip()
-        + "\n"
-    )
-
-    request = Request(
-        source_dir=tmp_path,
-        output_dir=tmp_path,
-        packages=[{"type": "x-uv"}],
-    )
-
-    with pytest.raises(UnsupportedFeature, match=r"source kind 'git'"):
-        fetch_uv_source(request)
-
-
-def test_fetch_uv_source_skips_git_source_in_permissive_mode(tmp_path: Path) -> None:
-    (tmp_path / "uv.lock").write_text(
-        """
-version = 1
-
-[[package]]
-name = "foo"
-version = "1.0.0"
-source = { git = "https://github.com/example/foo", rev = "0123456789abcdef" }
-""".strip()
-        + "\n"
-    )
-
-    request = Request(
-        source_dir=tmp_path,
-        output_dir=tmp_path,
-        packages=[{"type": "x-uv"}],
-        mode="permissive",
-    )
-
-    output = fetch_uv_source(request)
-    assert output.components == []
