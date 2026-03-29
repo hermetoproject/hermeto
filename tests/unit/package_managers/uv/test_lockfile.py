@@ -8,7 +8,7 @@ import pytest
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
 from hermeto.core.models.input import Request
 from hermeto.core.package_managers.uv.lockfile import parse_uv_lockfile
-from hermeto.core.package_managers.uv.main import fetch_uv_source
+from hermeto.core.package_managers.uv.main import _artifact_filename, fetch_uv_source
 from hermeto.core.rooted_path import RootedPath
 
 
@@ -153,3 +153,15 @@ source = { git = "https://github.com/example/foo", rev = "0123456789abcdef" }
 
     output = fetch_uv_source(request)
     assert output.components == []
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        pytest.param("https://example.com/sniffio-1.3.1.tar.gz", "sniffio-1.3.1.tar.gz", id="normal"),
+        pytest.param("https://example.com/", "artifact.bin", id="root_path"),
+        pytest.param("https://example.com", "artifact.bin", id="empty_path"),
+    ],
+)
+def test_artifact_filename(url: str, expected: str) -> None:
+    assert _artifact_filename(url) == expected
