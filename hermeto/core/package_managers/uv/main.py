@@ -134,7 +134,7 @@ def _iter_remote_artifacts(package_entry: dict) -> list[_ArtifactRecord]:
 def _artifact_filename(url: str) -> str:
     parsed = urlparse(url)
     name = unquote(Path(parsed.path).name)
-    if name:
+    if name and name not in ("/", "\\"):
         return name
 
     return "artifact.bin"
