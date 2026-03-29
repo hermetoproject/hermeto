@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from pathlib import Path
+from typing import TypedDict
 from urllib.parse import unquote, urlparse
 
 from packageurl import PackageURL
@@ -14,6 +15,11 @@ from hermeto.core.package_managers.general import download_binary_file
 from hermeto.core.package_managers.uv.lockfile import parse_uv_lockfile
 
 log = logging.getLogger(__name__)
+
+
+class _ArtifactRecord(TypedDict):
+    url: str
+    hash: str | None
 
 
 def fetch_uv_source(request: Request) -> RequestOutput:
@@ -70,7 +76,6 @@ def fetch_uv_source(request: Request) -> RequestOutput:
 
     return RequestOutput.from_obj_list(components=components, annotations=annotations)
 
-
 def _source_kind(package_entry: dict) -> str:
     source = package_entry.get("source")
     if not isinstance(source, dict):
@@ -102,25 +107,26 @@ def _should_skip_unsupported_source(source_kind: str, package_name: str, mode: M
     )
 
 
-def _iter_remote_artifacts(package_entry: dict) -> list[dict[str, str | None]]:
-    artifacts: list[dict[str, str | None]] = []
+def _iter_remote_artifacts(package_entry: dict) -> list[_ArtifactRecord]:
+    artifacts: list[_ArtifactRecord] = []
 
-    sdist = package_entry.get("sdist")
-    if isinstance(sdist, dict):
-        url = sdist.get("url")
-        hash_ = sdist.get("hash")
-        if isinstance(url, str):
-            artifacts.append({"url": url, "hash": hash_ if isinstance(hash_, str) else None})
+    def _append_remote_artifact(data: object) -> None:
+        if not isinstance(data, dict):
+            return
+
+        url = data.get("url")
+        if not isinstance(url, str):
+            return
+
+        hash_ = data.get("hash")
+        artifacts.append({"url": url, "hash": hash_ if isinstance(hash_, str) else None})
+
+    _append_remote_artifact(package_entry.get("sdist"))
 
     wheels = package_entry.get("wheels")
     if isinstance(wheels, list):
         for wheel in wheels:
-            if not isinstance(wheel, dict):
-                continue
-            url = wheel.get("url")
-            hash_ = wheel.get("hash")
-            if isinstance(url, str):
-                artifacts.append({"url": url, "hash": hash_ if isinstance(hash_, str) else None})
+            _append_remote_artifact(wheel)
 
     return artifacts
 

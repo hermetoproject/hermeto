@@ -32,4 +32,10 @@ def parse_uv_lockfile(package_dir: RootedPath) -> dict[str, Any]:
     if not isinstance(version, int):
         raise InvalidLockfileFormat(lockfile.path, "missing or invalid top-level 'version' field")
 
+    packages = parsed.get("package")
+    if packages is not None and not isinstance(packages, list):
+        raise InvalidLockfileFormat(lockfile.path, "field 'package' must be an array of tables")
+    if isinstance(packages, list) and any(not isinstance(pkg, dict) for pkg in packages):
+        raise InvalidLockfileFormat(lockfile.path, "field 'package' must contain TOML tables")
+
     return parsed

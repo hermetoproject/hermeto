@@ -17,17 +17,23 @@ def test_parse_uv_lockfile_missing(tmp_path: Path) -> None:
         parse_uv_lockfile(RootedPath(tmp_path))
 
 
-def test_parse_uv_lockfile_invalid_toml(tmp_path: Path) -> None:
-    (tmp_path / "uv.lock").write_text("not = [valid")
+@pytest.mark.parametrize(
+    "content, expect_error",
+    [
+        pytest.param("not = [valid", r"uv.lock", id="invalid_toml"),
+        pytest.param("[[package]]\nname = \"foo\"\n", r"version", id="missing_version"),
+        pytest.param("version = 1\npackage = \"foo\"\n", r"package", id="package_not_array"),
+        pytest.param(
+            "version = 1\npackage = [\"foo\"]\n",
+            r"package",
+            id="package_contains_non_table",
+        ),
+    ],
+)
+def test_parse_uv_lockfile_invalid(tmp_path: Path, content: str, expect_error: str) -> None:
+    (tmp_path / "uv.lock").write_text(content)
 
-    with pytest.raises(InvalidLockfileFormat, match=r"uv.lock"):
-        parse_uv_lockfile(RootedPath(tmp_path))
-
-
-def test_parse_uv_lockfile_missing_version(tmp_path: Path) -> None:
-    (tmp_path / "uv.lock").write_text("[[package]]\nname = \"foo\"\n")
-
-    with pytest.raises(InvalidLockfileFormat, match=r"version"):
+    with pytest.raises(InvalidLockfileFormat, match=expect_error):
         parse_uv_lockfile(RootedPath(tmp_path))
 
 

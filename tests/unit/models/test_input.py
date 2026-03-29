@@ -253,13 +253,8 @@ class TestPackageInput:
                 {}, r"Unable to extract tag using discriminator 'type'", id="no_type_discrinator"
             ),
             pytest.param(
-                {"type": "go-package"},
-                r"Input tag 'go-package' found using 'type' does not match any of the expected tags: .*'x-uv'.*",
-                id="incorrect_type_tag",
-            ),
-            pytest.param(
-                {"type": "gomod", "path": "/absolute"},
-                r"Value error, path must be relative: /absolute",
+                {"type": "gomod", "path": str(Path.cwd())},
+                r"Value error, path must be relative:",
                 id="path_not_relative",
             ),
             pytest.param(
@@ -269,17 +264,17 @@ class TestPackageInput:
             ),
             pytest.param(
                 {"type": "gomod", "path": "weird/../subpath"},
-                r"Value error, path contains ..: weird/../subpath",
+                r"Value error, path contains ..: weird[\\/]+\.\.[\\/]+subpath",
                 id="gomod_path_references_parent_directory_2",
             ),
             pytest.param(
                 {"type": "pip", "requirements_files": ["weird/../subpath"]},
-                r"pip.requirements_files\n  Value error, path contains ..: weird/../subpath",
+                r"pip.requirements_files\n  Value error, path contains ..: weird[\\/]+\.\.[\\/]+subpath",
                 id="pip_path_references_parent_directory",
             ),
             pytest.param(
                 {"type": "pip", "requirements_build_files": ["weird/../subpath"]},
-                r"pip.requirements_build_files\n  Value error, path contains ..: weird/../subpath",
+                r"pip.requirements_build_files\n  Value error, path contains ..: weird[\\/]+\.\.[\\/]+subpath",
                 id="pip_path_references_parent_directory",
             ),
             pytest.param(
@@ -323,6 +318,22 @@ class TestPackageInput:
         with pytest.raises(pydantic.ValidationError, match=expect_error):
             adapter: pydantic.TypeAdapter[PackageInput] = pydantic.TypeAdapter(PackageInput)
             adapter.validate_python(input_data)
+
+    def test_invalid_type_tag_error_shape(self) -> None:
+        adapter: pydantic.TypeAdapter[PackageInput] = pydantic.TypeAdapter(PackageInput)
+
+        with pytest.raises(pydantic.ValidationError) as exc_info:
+            adapter.validate_python({"type": "go-package"})
+
+        err = exc_info.value.errors()[0]
+        assert err["type"] == "union_tag_invalid"
+        assert err["loc"] == ()
+        assert err["input"] == {"type": "go-package"}
+        assert err["ctx"]["discriminator"] == "'type'"
+        assert err["ctx"]["tag"] == "go-package"
+        expected_tags = err["ctx"]["expected_tags"]
+        assert "'gomod'" in expected_tags
+        assert "'x-uv'" in expected_tags
 
 
 class TestSSLOptions:
