@@ -635,7 +635,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                 raise InvalidChecksum(
                     checksum=req.hashes,
                     solution=(
-                        f"URL requirement must specify exactly one hash, but specifies {n_hashes}"
+                        f"URL requirement must specify exactly one hash, but specifies {n_hashes}.\n"
                         "Please specify the expected hashes for all plain URLs using "
                         "--hash options (one --hash for each)"
                     ),
@@ -670,7 +670,7 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
             raise MissingChecksum(
                 None,
                 solution=(
-                    f"Hash is required, dependency does not specify any: {req.download_line}"
+                    f"Hash is required, dependency does not specify any: {req.download_line}.\n"
                     "Please specify the expected hashes for all dependencies"
                 ),
             )
