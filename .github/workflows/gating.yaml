@@ -40,7 +40,7 @@ jobs:
           nox -s "python-${{ matrix.python-version }}"
 
       - name: Upload coverage reports to Codecov
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.10'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
