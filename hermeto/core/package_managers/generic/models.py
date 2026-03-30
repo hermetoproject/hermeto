@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 import re
 from abc import ABC, abstractmethod
 from collections import Counter
@@ -24,12 +25,64 @@ from hermeto.core.models.sbom import Component, ExternalReference
 from hermeto.core.rooted_path import RootedPath
 
 CHECKSUM_FORMAT = re.compile(r"^[a-zA-Z0-9]+:[a-zA-Z0-9]+$")
+ENV_VAR_PATTERN = re.compile(r"\$(?:([A-Za-z_][A-Za-z0-9_]*)|(\{([A-Za-z_][A-Za-z0-9_]*)\}))")
+
+
+def resolve_env_vars(value: str) -> str:
+    """Resolve environment variable placeholders in a string.
+
+    Replaces shell-like ``$VAR`` and ``${VAR}`` references with the corresponding
+    environment variable values.
+
+    :param value: the string that may contain ``$VAR`` or ``${VAR}`` placeholders
+    :return: the string with all placeholders resolved
+    :raises PackageManagerError: if any referenced environment variable is not set
+    """
+    matches = list(ENV_VAR_PATTERN.finditer(value))
+    if not matches:
+        return value
+
+    var_names = [match.group(1) or match.group(3) for match in matches]
+    missing_vars = sorted({var for var in var_names if var not in os.environ})
+
+    if missing_vars:
+        raise PackageManagerError(
+            f"Required environment variable(s) not set: {', '.join(missing_vars)}"
+        )
+
+    def _replace(match: re.Match) -> str:
+        var_name = match.group(1) or match.group(3)
+        return os.environ[var_name]
+
+    return ENV_VAR_PATTERN.sub(_replace, value)
+
+
+class BearerAuth(BaseModel):
+    """Bearer token authentication configuration.
+
+    :param header: HTTP header name to use (defaults to ``Authorization``)
+    :param value: header value, may contain ``$ENV_VAR`` or ``${ENV_VAR}`` references
+    """
+
+    header: str = "Authorization"
+    value: str
+    model_config = ConfigDict(extra="forbid")
+
+
+class AuthConfig(BaseModel):
+    """Authentication configuration wrapper.
+
+    Currently supports only ``bearer``, but is extensible for future auth types.
+    """
+
+    bearer: BearerAuth
+    model_config = ConfigDict(extra="forbid")
 
 
 class LockfileMetadata(BaseModel):
     """Defines format of the metadata section in the lockfile."""
 
-    version: Literal["1.0"]
+    version: Literal["1.0", "2.0"]
     model_config = ConfigDict(extra="forbid")
 
 
@@ -94,9 +147,11 @@ class LockfileArtifactUrl(LockfileArtifactBase):
     Defines format of a single artifact in the lockfile.
 
     :param download_url: The URL to download the artifact from.
+    :param auth: Optional authentication configuration for this artifact.
     """
 
     download_url: Annotated[AnyUrl, PlainSerializer(str, return_type=str)]
+    auth: AuthConfig | None = None
 
     def resolve_filename(self) -> str:
         """Resolve the filename of the artifact."""
@@ -104,6 +159,24 @@ class LockfileArtifactUrl(LockfileArtifactBase):
             url_path = urlparse(str(self.download_url)).path
             return Path(url_path).name
         return self.filename
+
+    def resolve_auth_header(self) -> dict[str, str]:
+        """Resolve the authentication header for this artifact.
+
+        :return: a dict mapping header name to resolved value, or empty dict if no auth
+        :raises PackageManagerError: if a referenced env var is not set
+        """
+        if self.auth is None:
+            return {}
+        bearer = self.auth.bearer
+        try:
+            resolved_value = resolve_env_vars(bearer.value)
+        except PackageManagerError:
+            raise PackageManagerError(
+                f"Authentication failed for '{self.download_url}': "
+                f"could not resolve environment variable(s) in auth value '{bearer.value}'"
+            )
+        return {bearer.header: resolved_value}
 
     def get_sbom_component(self) -> Component:
         """Return an SBOM component representation of the artifact."""
@@ -218,7 +291,7 @@ class LockfileArtifactMaven(LockfileArtifactBase):
 
 
 class GenericLockfileV1(BaseModel):
-    """Defines format of our generic lockfile, version 1.0."""
+    """Defines format of our generic lockfile, versions 1.0 and 2.0."""
 
     metadata: LockfileMetadata
     artifacts: list[LockfileArtifactUrl | LockfileArtifactMaven]
@@ -237,4 +310,16 @@ class GenericLockfileV1(BaseModel):
                 + (f"Duplicate filenames: {duplicate_filenames}" if duplicate_filenames else "")
             )
 
+        return self
+
+    @model_validator(mode="after")
+    def no_auth_in_v1(self) -> "GenericLockfileV1":
+        """Validate that auth is not used in v1.0 lockfiles."""
+        if self.metadata.version == "1.0":
+            for artifact in self.artifacts:
+                if isinstance(artifact, LockfileArtifactUrl) and artifact.auth is not None:
+                    raise ValueError(
+                        "The 'auth' field is not supported in lockfile version 1.0. "
+                        "Please upgrade to version 2.0 to use authentication."
+                    )
         return self
