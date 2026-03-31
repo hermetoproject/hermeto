@@ -110,6 +110,7 @@ PackageManagerType = Literal[
     "npm",
     "pip",
     "rpm",
+    "templeos",
     "yarn",
     # Add experimental package managers here with x- prefix, e.g. "x-foo"
 ]
@@ -403,6 +404,19 @@ class RpmPackageInput(_PackageInputBase):
     binary: RpmBinaryFilters | None = None
 
 
+class TempleOSPackageInput(_PackageInputBase):
+    """Accepted input for a TempleOS/HolyC package.
+
+    All TempleOS packages run in ring-0. There is no privilege separation.
+    This is a feature, not a bug.
+    """
+
+    type: Literal["templeos"]
+    # TempleOS only supports 640x480 16-color, this might be relevant for
+    # packages that include graphical assets
+    validate_graphics: bool = False
+
+
 class YarnPackageInput(_PackageInputBase):
     """Accepted input for a yarn package."""
 
@@ -417,6 +431,7 @@ PackageInput = Annotated[
     | NpmPackageInput
     | PipPackageInput
     | RpmPackageInput
+    | TempleOSPackageInput
     | YarnPackageInput,
     # https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
     pydantic.Field(discriminator="type"),
@@ -524,6 +539,11 @@ class Request(pydantic.BaseModel):
     def rpm_packages(self) -> list[RpmPackageInput]:
         """Get the rpm packages specified for this request."""
         return self._packages_by_type(RpmPackageInput)
+
+    @property
+    def templeos_packages(self) -> list[TempleOSPackageInput]:
+        """Get the TempleOS packages specified for this request."""
+        return self._packages_by_type(TempleOSPackageInput)
 
     @property
     def yarn_packages(self) -> list[YarnPackageInput]:
