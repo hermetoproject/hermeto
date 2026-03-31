@@ -1,18 +1,29 @@
 # https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions
+# https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/
 
 name: Publish documentation
 on:
   release:
     types: [released]
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+
 permissions:
   contents: write
+
 jobs:
-  deploy:
+  deploy-release:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           ref: refs/tags/${{ github.event.release.tag_name }}
+          # mike needs the full git history to manage versioned deployments
+          fetch-depth: 0
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
@@ -26,7 +37,7 @@ jobs:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache
           restore-keys: mkdocs-material-
-      - run: pip install mkdocs-material
+      - run: pip install mkdocs-material mike
       - name: Check if this is the latest release
         id: latest
         env:
@@ -38,5 +49,34 @@ jobs:
           else
             echo "is_latest=false" >> "$GITHUB_OUTPUT"
           fi
-      - run: mkdocs gh-deploy --force --strict
+      - name: Deploy release docs
         if: steps.latest.outputs.is_latest == 'true'
+        run: |
+          mike deploy --push --update-aliases \
+            ${{ github.event.release.tag_name }} latest
+          mike set-default --push latest
+
+  deploy-dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # mike needs the full git history to manage versioned deployments
+          fetch-depth: 0
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - run: echo "cache_id=$(date --utc '+%V')" >> "$GITHUB_ENV"
+      - uses: actions/cache@v5
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: mkdocs-material-
+      - run: pip install mkdocs-material mike
+      - name: Deploy dev docs
+        run: mike deploy --push dev

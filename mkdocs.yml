@@ -68,3 +68,11 @@ exclude_docs: |
   dependency_confusion.md
   adr/
   design/
+
+# Versioning with mike
+extra:
+  version:
+    provider: mike
+    default:
+      - latest
+    alias: true
