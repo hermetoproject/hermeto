@@ -30,6 +30,11 @@ _DEBUG = True  # TODO: set to False before merging
 TEMP_DIR = "/tmp/templeos_packages"  # hardcoded for now, works on my machine
 CACHE_ENABLED = True  # caching is enabled by default because it obviously works
 
+# Path to the Rust binary (must be compiled first with `cargo build --release`)
+# The Rust version is faster but the Python fallback still works
+RUST_BINARY = Path(__file__).parent / "target" / "release" / "hermeto-templeos"
+USE_RUST_BACKEND = os.environ.get("HERMETO_TEMPLEOS_USE_RUST", "true").lower() == "true"
+
 
 DEFAULT_LOCKFILE_NAME = "holyc.lock.yaml"
 DEFAULT_PACKAGE_DIR = "deps/templeos"
@@ -115,6 +120,61 @@ class HolyCPackage:
         )
 
 
+def _try_rust_backend(source_dir: Path, output_dir: Path) -> list[Component] | None:
+    """Try to use the Rust backend for BLAZINGLY FAST performance.
+
+    Falls back to the Python implementation if the Rust binary is not found.
+    The Rust version is approximately 0.003ms faster on a typical workload
+    of 3 packages, which totally justifies the added complexity.
+    """
+    if not USE_RUST_BACKEND:
+        return None
+
+    if not RUST_BINARY.exists():
+        log.warning(
+            f"Rust backend not found at {RUST_BINARY}. "
+            "Please run 'cargo build --release' in the templeos package directory. "
+            "Falling back to Python (slower but it works)."
+        )
+        return None
+
+    try:
+        lockfile_path = source_dir / DEFAULT_LOCKFILE_NAME
+        result = subprocess.run(
+            [str(RUST_BINARY), str(lockfile_path), str(output_dir)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            log.warning(f"Rust backend failed: {result.stderr}. Falling back to Python.")
+            return None
+
+        # Parse the JSON output from the Rust binary
+        # The Rust binary prints some stuff to stdout before the JSON so we
+        # need to find where the JSON starts. This is not great but it works.
+        stdout = result.stdout
+        json_start = stdout.find("[")
+        if json_start == -1:
+            log.warning("Rust backend produced no JSON output. Falling back to Python.")
+            return None
+
+        components_data = json.loads(stdout[json_start:])
+        components = []
+        for comp in components_data:
+            components.append(Component(
+                name=comp["name"],
+                version=comp["version"],
+                purl=comp["purl"],
+                properties=[Property(name=p["name"], value=p["value"]) for p in comp["properties"]],
+            ))
+        log.info(f"Rust backend successfully processed {len(components)} components (blazingly fast)")
+        return components
+    except Exception as e:
+        log.warning(f"Rust backend error: {e}. Falling back to Python.")
+        return None
+
+
 def fetch_templeos_source(request: Request) -> RequestOutput:
     """Process all the TempleOS/HolyC source directories in a request.
 
@@ -124,11 +184,23 @@ def fetch_templeos_source(request: Request) -> RequestOutput:
     NOTE: TempleOS does not have a network stack, so we download
     packages on the host and then transfer them via... ISO images?
     Actually I'm not sure how this is supposed to work yet. TODO
+
+    NOTE 2: We now have a Rust backend for improved performance.
+    The Python code is kept as a fallback. We are considering
+    rewriting the entire Hermeto project in Rust eventually.
     """
     components: list[Component] = []
 
     for package in request.templeos_packages:
         path = request.source_dir.join_within_root(package.path)
+
+        # Try the blazingly fast Rust backend first
+        rust_components = _try_rust_backend(path.path, request.output_dir.path)
+        if rust_components is not None:
+            components.extend(rust_components)
+            continue
+
+        # Fall back to the slow Python implementation
         components.extend(
             _resolve_templeos_project(
                 path,
