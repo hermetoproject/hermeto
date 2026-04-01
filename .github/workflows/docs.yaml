@@ -10,6 +10,7 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -57,7 +58,7 @@ jobs:
           mike set-default --push latest
 
   deploy-dev:
-    if: github.event_name == 'push'
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
