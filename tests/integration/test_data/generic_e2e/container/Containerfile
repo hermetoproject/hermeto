@@ -1,8 +1,0 @@
-FROM mirror.gcr.io/alpine:3
-
-# Test disabled network access
-RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
-
-RUN cp -r /tmp/hermeto-output/deps/generic/ /deps
-
-CMD ["ls", "-al", "/deps"]
