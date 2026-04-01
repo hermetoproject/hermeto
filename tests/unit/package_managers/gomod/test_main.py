@@ -69,6 +69,7 @@ from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from tests.common_utils import GIT_REF, write_file_tree
+from tests.unit.package_managers.gomod.helpers import get_mock_dir, get_mocked_data, proc_mock
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -122,20 +123,6 @@ def gomod_request(tmp_path: Path, gomod_input_packages: list[dict[str, str]]) ->
         output_dir=tmp_path / "output",
         packages=gomod_input_packages,
     )
-
-
-def proc_mock(
-    args: str | list[str] = "", *, returncode: int, stdout: str | None
-) -> subprocess.CompletedProcess:
-    return subprocess.CompletedProcess(args, returncode=returncode, stdout=stdout)
-
-
-def get_mock_dir(data_dir: Path) -> Path:
-    return data_dir / "gomod-mocks"
-
-
-def get_mocked_data(data_dir: Path, filepath: str | Path) -> str:
-    return get_mock_dir(data_dir).joinpath(filepath).read_text()
 
 
 def _parse_mocked_data(data_dir: Path, file_path: str) -> ResolvedGoModule:

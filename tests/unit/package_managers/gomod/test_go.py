@@ -25,10 +25,7 @@ from hermeto.core.package_managers.gomod.go import (
 )
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import Symlink, write_file_tree
-from tests.unit.package_managers.gomod.test_main import (
-    get_mocked_data,
-    proc_mock,
-)
+from tests.unit.package_managers.gomod.helpers import get_mocked_data, proc_mock
 
 GO_CMD_PATH = "/usr/bin/go"
 
