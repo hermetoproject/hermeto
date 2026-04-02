@@ -284,3 +284,14 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             item.add_marker(
                 pytest.mark.skip(reason="Test incompatible with local Nexus proxy mode")
             )
+
+
+def pytest_report_header(config: pytest.Config) -> list[str]:
+    """Report effective Hermeto test configuration at the top of the test session."""
+    lines = ["Effective Hermeto test environment:"]
+    for env_var, cli_opt in _ENV_VAR_CLI_MAP:
+        value = config.getoption(cli_opt)
+        if isinstance(value, bool):
+            value = "1" if value else "0"
+        lines.append(f"  {env_var}={value}")
+    return lines
