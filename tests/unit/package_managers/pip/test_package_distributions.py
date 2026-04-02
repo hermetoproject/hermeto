@@ -468,10 +468,11 @@ class TestWheelsFilter:
             PipBinaryFilters(**filter_kwargs)
 
     def test_parse_py_version_from_interpreter(self) -> None:
-        assert _parse_py_version("cp312") == 312
-        assert _parse_py_version("pp312") == 312
-        assert _parse_py_version("py3") == 3
-        assert _parse_py_version("py2.py3") == 3
+        assert _parse_py_version("cp312") == [312]
+        assert _parse_py_version("pp312") == [312]
+        assert _parse_py_version("py3") == [3]
+        assert _parse_py_version("py2.py3") == [2, 3]
+        assert _parse_py_version("py38.py39.py310") == [38, 39, 310]
 
     def test_filter_with_invalid_wheel_filename_is_skipped(self) -> None:
         filters = PipBinaryFilters()
@@ -535,6 +536,12 @@ class TestWheelsFilter:
             ),
             pytest.param(
                 "package-1.0.0-cp313-cp313-linux_x86_64.whl", False, id="higher_py_version"
+            ),
+            pytest.param(
+                "package-1.0.0-py38.py39.py310.py312-none-any.whl", True, id="multiple_py_versions_matches"
+            ),
+            pytest.param(
+                "package-1.0.0-py38.py39.py310-none-any.whl", False, id="multiple_py_versions_no_match"
             ),
         ],
     )

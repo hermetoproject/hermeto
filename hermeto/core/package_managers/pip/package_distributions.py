@@ -368,26 +368,27 @@ class WheelsFilter(BinaryPackageFilter):
             or any(impl in interpreter for impl in self.py_impl)
         )
 
-        wheel_py_version = _parse_py_version(interpreter)
-        compatible_py_version = (
+        wheel_py_versions = _parse_py_version(interpreter)
+        compatible_py_version = any(
             self.py_version is None
-            or wheel_py_version == self.py_version
-            or (wheel_py_version < self.py_version and abi in ("abi3", "none"))
+            or v == self.py_version
+            or (v < self.py_version and abi in ("abi3", "none"))
+            for v in wheel_py_versions
         )
 
         return compatible_py_impl and compatible_py_version
 
 
-def _parse_py_version(interpreter: str) -> int:
+def _parse_py_version(interpreter: str) -> list[int]:
     """
     >>> _parse_py_version("cp312")
-    312
+    [312]
     >>> _parse_py_version("pp312")
-    312
+    [312]
     >>> _parse_py_version("py3")
-    3
+    [3]
     >>> _parse_py_version("py2.py3")
-    3
+    [2, 3]
     """
     parts = interpreter.split(".")
     versions = []
@@ -400,4 +401,4 @@ def _parse_py_version(interpreter: str) -> int:
     if not versions:
         raise RuntimeError(f"Invalid wheel interpreter: {interpreter}")
 
-    return max(versions)
+    return versions
