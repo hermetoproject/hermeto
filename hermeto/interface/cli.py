@@ -14,8 +14,15 @@ import pydantic
 import typer
 
 from hermeto import APP_NAME
-from hermeto.core.config import set_config
+from hermeto.core.config import get_config, set_config
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
+from hermeto.core.extras.config_show import (
+    format_diff_output,
+    format_yaml_output,
+    get_config_diff,
+    get_default_config,
+    get_effective_config,
+)
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.input import Flag, Mode, PackageInput, Request, parse_user_input
 from hermeto.core.models.output import BuildConfig
@@ -238,6 +245,27 @@ def list_backends() -> None:
     experimental = get_experimental_backends()
     if experimental:
         print("Experimental:", ", ".join(experimental))
+
+
+@app.command()
+@handle_errors
+def config(
+    diff: bool = typer.Option(
+        False,
+        "--diff",
+        help="Only show values that differ from defaults.",
+    ),
+) -> None:
+    """Show the current effective configuration."""
+    current_config = get_config()
+    effective = get_effective_config(current_config)
+    defaults = get_default_config()
+
+    if diff:
+        config_diff = get_config_diff(effective, defaults)
+        print(format_diff_output(config_diff))
+    else:
+        print(format_yaml_output(effective, defaults))
 
 
 @app.command(help=FETCH_DEPS_HELP)
