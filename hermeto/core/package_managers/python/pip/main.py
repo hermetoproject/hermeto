@@ -433,10 +433,9 @@ def _resolve_and_download_pypi_packages(
     # No attempt should be made at logging into custom indices, if query URL ends up pointing
     # to a custom index then authorization must be skipped.
     if config.pip.proxy_login and config.pip.proxy_password and (query_url == proxy_url):
-        requests_auth = requests.auth.HTTPBasicAuth(
-            config.pip.proxy_login, config.pip.proxy_password
-        )
-        aiohttp_auth = aiohttp.encode_basic_auth(config.pip.proxy_login, config.pip.proxy_password)
+        proxy_password = config.pip.proxy_password.get_secret_value()
+        requests_auth = requests.auth.HTTPBasicAuth(config.pip.proxy_login, proxy_password)
+        aiohttp_auth = aiohttp.encode_basic_auth(config.pip.proxy_login, proxy_password)
 
     resolve_callback = functools.partial(
         process_package_distributions,

@@ -4,7 +4,16 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import yaml
-from pydantic import AfterValidator, BaseModel, HttpUrl, ValidationError, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    FieldSerializationInfo,
+    HttpUrl,
+    SecretStr,
+    ValidationError,
+    field_serializer,
+    model_validator,
+)
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
@@ -103,7 +112,7 @@ class ProxyMixin(BaseModel):
 
     proxy_url: ProxyUrl = None
     proxy_login: str | None = None
-    proxy_password: str | None = None
+    proxy_password: SecretStr | None = None
 
     @model_validator(mode="after")
     def _validate_login_and_password_both_set(self) -> Self:
@@ -118,6 +127,16 @@ class ProxyMixin(BaseModel):
         if self.proxy_login is not None and self.proxy_url is None:
             raise InvalidInput("Proxy URL must be set when proxy credentials are set")
         return self
+
+    @field_serializer("proxy_password")
+    def _serialize_proxy_password(
+        self, value: SecretStr | None, info: FieldSerializationInfo
+    ) -> str | None:
+        if value is None:
+            return None
+        if info.context and info.context.get("reveal"):
+            return value.get_secret_value()
+        return str(value)
 
 
 class PipSettings(ProxyMixin, extra="forbid"):

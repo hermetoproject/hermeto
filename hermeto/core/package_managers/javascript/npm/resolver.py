@@ -107,11 +107,12 @@ def _get_npm_dependencies(
     files_to_download: dict[str, dict[str, Any]] = {}
     download_paths = {}
     config = get_config()
-    npm_proxy_basic_auth = (
-        aiohttp.encode_basic_auth(login=config.npm.proxy_login, password=config.npm.proxy_password)
-        if config.npm.proxy_login and config.npm.proxy_password
-        else None
-    )
+    npm_proxy_basic_auth = None
+    if config.npm.proxy_login and config.npm.proxy_password:
+        npm_proxy_basic_auth = aiohttp.encode_basic_auth(
+            login=config.npm.proxy_login,
+            password=config.npm.proxy_password.get_secret_value(),
+        )
 
     for url, info in deps_to_download.items():
         url = normalize_resolved_url(url)
