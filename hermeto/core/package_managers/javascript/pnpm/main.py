@@ -82,7 +82,9 @@ def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> 
 
     auth = None
     if proxy_login is not None and proxy_password is not None:
-        auth = aiohttp.encode_basic_auth(login=proxy_login, password=proxy_password)
+        auth = aiohttp.encode_basic_auth(
+            login=proxy_login, password=proxy_password.get_secret_value()
+        )
 
     files_with_auth = {}
     files_without_auth = {}

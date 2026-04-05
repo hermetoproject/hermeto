@@ -104,6 +104,55 @@ class TestTopLevelOpts:
         assert "bar, foo" in lines[0]
         assert "x-baz" in lines[1]
 
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_command(self) -> None:
+        config_file.config = None
+        result = invoke_expecting_sucess(app, ["config"])
+        config_file.config = None
+        assert "gomod:" in result.output
+        assert "# HERMETO_GOMOD__PROXY_URL" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_diff_command(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("HERMETO_RUNTIME__CONCURRENCY_LIMIT", "6")
+
+        config_file.config = None
+        result = invoke_expecting_sucess(app, ["config", "--diff"])
+        config_file.config = None
+
+        parsed = yaml.safe_load(result.output)
+        assert parsed["runtime"]["concurrency_limit"] == 6
+        # sections without overrides must not appear at all
+        assert "gomod" not in parsed
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_redacts_passwords_by_default(self) -> None:
+        env = {
+            "HERMETO_GOMOD__PROXY_URL": "https://proxy.example.com",
+            "HERMETO_GOMOD__PROXY_LOGIN": "user",
+            "HERMETO_GOMOD__PROXY_PASSWORD": "s3cret-value",
+        }
+        with mock.patch.dict(os.environ, env):
+            config_file.config = None
+            result = invoke_expecting_sucess(app, ["config"])
+        config_file.config = None
+        assert "s3cret-value" not in result.output
+        assert "**********" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_raw_shows_secrets(self) -> None:
+        env = {
+            "HERMETO_GOMOD__PROXY_URL": "https://proxy.example.com",
+            "HERMETO_GOMOD__PROXY_LOGIN": "user",
+            "HERMETO_GOMOD__PROXY_PASSWORD": "s3cret-value",
+        }
+        with mock.patch.dict(os.environ, env):
+            config_file.config = None
+            result = invoke_expecting_sucess(app, ["config", "--raw"])
+        config_file.config = None
+        assert "s3cret-value" in result.output
+        assert "**********" not in result.output
+
     @pytest.mark.parametrize(
         "config_values",
         [

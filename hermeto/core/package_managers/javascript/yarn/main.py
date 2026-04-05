@@ -262,7 +262,7 @@ def _set_yarnrc_configuration(
         password = config.yarn.proxy_password
         if login is not None and password is not None:
             yarn_rc["npmAlwaysAuth"] = True
-            yarn_rc["npmAuthIdent"] = f"{login}:{password}"
+            yarn_rc["npmAuthIdent"] = f"{login}:{password.get_secret_value()}"
 
     # In Yarn v4, constraints can be automatically executed as part of `yarn install`, so they
     # need to be explicitly disabled

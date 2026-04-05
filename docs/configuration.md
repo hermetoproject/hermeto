@@ -43,6 +43,29 @@ override lower-priority ones (listed top to bottom):
 
 Hermeto only supports YAML config files.
 
+## Inspecting active configuration
+
+Use `hermeto config` to display the effective configuration after all sources
+have been merged. Each field is annotated with its corresponding environment
+variable name, and values that differ from defaults are marked with `(*)`.
+
+```shell
+hermeto config
+```
+
+To show only values that differ from defaults:
+
+```shell
+hermeto config --diff
+```
+
+By default, sensitive fields such as `proxy_password` are redacted. To reveal
+them, pass `--raw`:
+
+```shell
+hermeto config --raw
+```
+
 ## Settings
 
 Some settings apply to every package manager. Others apply only to specific

@@ -402,7 +402,9 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
 
 
 def _make_basic_token_from_proxy_credential(cargo_config: CargoSettings) -> str:
-    credentials = f"{cargo_config.proxy_login}:{cargo_config.proxy_password}"
+    password = cargo_config.proxy_password
+    secret = password.get_secret_value() if password is not None else ""
+    credentials = f"{cargo_config.proxy_login}:{secret}"
     token = base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
     return f"Basic {token}"
 

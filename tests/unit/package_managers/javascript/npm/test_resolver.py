@@ -5,7 +5,9 @@ import urllib.parse
 from typing import Any
 from unittest import mock
 
+import aiohttp
 import pytest
+from pydantic import SecretStr
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import NpmSettings
@@ -431,7 +433,7 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
     mock_config = mock.Mock()
     mock_config.npm.proxy_url = "https://fakeproxy.com"
     # ruff would assume this is a hardcoded password otherwise
-    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_password = SecretStr("fake-proxy-password")  # noqa: S105
     mock_config.npm.proxy_login = "fake-proxy-login"
     mocked_config.return_value = mock_config
     mock_from_sri.return_value = ("fake-algorithm", "fake-digest")
@@ -493,19 +495,23 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
     mock_config = mock.Mock()
     mock_config.npm.proxy_url = "https://fakeproxy.com"
     # ruff would assume this is a hardcoded password otherwise
-    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_password = SecretStr("fake-proxy-password")  # noqa: S105
     mock_config.npm.proxy_login = "fake-proxy-login"
     mocked_config.return_value = mock_config
     mock_from_sri.return_value = ("fake-algorithm", "fake-digest")
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
+    expected_auth = aiohttp.encode_basic_auth("fake-proxy-login", "fake-proxy-password")
+
     for call in mock_async_download_files.call_args_list:
         files_to_download = call.args[0] if call.args else {}
         if not files_to_download:
             continue
 
-        assert call.kwargs.get("headers") is not None, "Not found credentials where they should be!"
+        headers = call.kwargs.get("headers")
+        assert headers is not None, "Not found credentials where they should be!"
+        assert all(header == {"Authorization": expected_auth} for header in headers.values())
 
 
 @pytest.mark.parametrize(
@@ -558,7 +564,7 @@ def test_npm_proxy_url_gets_substituted_for_registry_hosts(
     mock_config = mock.Mock()
     mock_config.npm.proxy_url = proxy_url
     # ruff would assume this is a hardcoded password otherwise
-    mock_config.npm.proxy_password = "fake-proxy-password"  # noqa: S105
+    mock_config.npm.proxy_password = SecretStr("fake-proxy-password")  # noqa: S105
     mock_config.npm.proxy_login = "fake-proxy-login"
     mocked_config.return_value = mock_config
     mock_from_sri.return_value = ("fake-algorithm", "fake-digest")

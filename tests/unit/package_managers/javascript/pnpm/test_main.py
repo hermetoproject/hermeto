@@ -5,6 +5,7 @@ from unittest import mock
 import aiohttp
 import pytest
 import yaml
+from pydantic import SecretStr
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
@@ -46,7 +47,7 @@ def _mock_pnpm_config(url: str | None, login: str | None, password: str | None) 
     mock_config = mock.Mock()
     mock_config.pnpm.proxy_url = url
     mock_config.pnpm.proxy_login = login
-    mock_config.pnpm.proxy_password = password
+    mock_config.pnpm.proxy_password = SecretStr(password) if password is not None else None
     return mock_config
 
 

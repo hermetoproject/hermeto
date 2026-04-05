@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 import sys
 import tarfile
 from pathlib import Path
@@ -101,3 +102,12 @@ def repo_with_submodule(tmp_path: Path) -> git.Repo:
     submodule.update(init=True, recursive=True)
 
     return main_repo
+
+
+@pytest.fixture()
+def _clean_hermeto_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure Config() returns pure defaults by clearing env vars and config files."""
+    for key in list(os.environ):
+        if key.startswith("HERMETO_") and not key.startswith("HERMETO_TEST_"):
+            monkeypatch.delenv(key)
+    monkeypatch.setattr("hermeto.core.config.CONFIG_FILE_PATHS", [])
