@@ -141,10 +141,11 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
         vendor_result = _fetch_dependencies(package_dir, request)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        config_template = _swap_sources_directory_for_subsitution_slot(
-            vendor_result.config_template
-        )
-        project_files.append(_use_vendored_sources(package_dir, config_template))
+        if vendor_result.config_template:
+            config_template = _swap_sources_directory_for_subsitution_slot(
+                vendor_result.config_template
+            )
+            project_files.append(_use_vendored_sources(package_dir, config_template))
         package_components = _generate_sbom_components(package_dir)
 
         if vendor_result.lockfile_was_generated:
