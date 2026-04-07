@@ -19,13 +19,7 @@ from hermeto.core.errors import ExecutableNotFound
 
 log = logging.getLogger(__name__)
 
-# Force Null configuration for the following git commands to ignore any user configuration
-# - https://git-scm.com/docs/git#Documentation/git.txt-GITCONFIGGLOBAL
-# - https://git-scm.com/docs/git#Documentation/git.txt-GITCONFIGNOSYSTEM
-GIT_PRISTINE_ENV = {
-    "GIT_CONFIG_GLOBAL": "/dev/null",
-    "GIT_CONFIG_NOSYSTEM": "1",
-}
+# Removed GIT_PRISTINE_ENV to prevent credential issues and force robust test assertions
 
 
 class _FastCopyFailedFallback(Exception):
