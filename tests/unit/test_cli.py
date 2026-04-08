@@ -796,7 +796,7 @@ class TestFetchDeps:
 
 def env_file_as_json(for_output_dir: Path) -> str:
     gocache = f'{{"name": "GOCACHE", "value": "{for_output_dir}/deps/gomod"}}'
-    gosumdb = '{"name": "GOSUMDB", "value": "sum.golang.org"}'
+    gosumdb = '{"name": "GOSUMDB", "value": "off"}'
     return f"[{gocache}, {gosumdb}]\n"
 
 
@@ -804,7 +804,7 @@ def env_file_as_env(for_output_dir: Path) -> str:
     return dedent(
         f"""
         export GOCACHE={for_output_dir}/deps/gomod
-        export GOSUMDB=sum.golang.org
+        export GOSUMDB=off
         """
     ).lstrip()
 
@@ -812,7 +812,7 @@ def env_file_as_env(for_output_dir: Path) -> str:
 class TestGenerateEnv:
     ENV_VARS = [
         {"name": "GOCACHE", "value": "${output_dir}/deps/gomod"},
-        {"name": "GOSUMDB", "value": "sum.golang.org"},
+        {"name": "GOSUMDB", "value": "off"},
     ]
 
     @pytest.fixture
