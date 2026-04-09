@@ -139,7 +139,7 @@ class FilePackage(_BasePackage, _PathMixin):
             name=self.name,
             version=self.version,
             qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
+            subpath=self.path.subpath_from_root.as_posix(),
         ).to_string()
 
 
@@ -157,7 +157,7 @@ class WorkspacePackage(_BasePackage, _PathMixin):
             name=self.name,
             version=self.version,
             qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
+            subpath=self.path.subpath_from_root.as_posix(),
         ).to_string()
 
 
@@ -175,7 +175,7 @@ class LinkPackage(_BasePackage, _PathMixin):
             name=self.name,
             version=self.version,
             qualifiers=qualifiers,
-            subpath=str(self.path.subpath_from_root),
+            subpath=self.path.subpath_from_root.as_posix(),
         ).to_string()
 
 
@@ -327,7 +327,20 @@ def _get_packages_from_lockfile(
     source_dir: RootedPath, mirror_dir: RootedPath, yarn_lock: YarnLock, runtime_deps: set[str]
 ) -> list[YarnClassicPackage]:
     """Return a list of Packages for all dependencies in yarn.lock."""
-    pyarn_packages: list[PYarnPackage] = yarn_lock.yarn_lockfile.packages()
+    pyarn_packages: list[PYarnPackage] = []
+
+    for raw_name, pkg_data in yarn_lock.yarn_lockfile.data.items():
+        pkg = PYarnPackage.from_dict(raw_name, pkg_data)
+
+        if pkg.alias is None and "npm:" in raw_name:
+            for selector in raw_name.split(','):
+                temp_pkg = PYarnPackage.from_dict(selector.strip(' \r\n\t"\''), pkg_data)
+                if temp_pkg.alias is not None:
+                    pkg = temp_pkg
+                    break
+
+        pyarn_packages.append(pkg)
+
     package_factory = _YarnClassicPackageFactory(source_dir, mirror_dir, runtime_deps)
 
     return [
