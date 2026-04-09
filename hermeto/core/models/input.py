@@ -3,9 +3,8 @@ import enum
 import logging
 import re
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union, get_args
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
 
 import pydantic
 from typing_extensions import Self
@@ -69,102 +68,69 @@ def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
         raise InvalidInput(_present_user_input_error(e)) from e
 
 
+_KNOWN_BACKEND_TYPES = {
+    "bundler",
+    "cargo",
+    "generic",
+    "gomod",
+    "npm",
+    "pip",
+    "rpm",
+    "yarn",
+}
+
+
 def _simplify_location(loc: tuple[str | int, ...]) -> str:
-    """Strip pydantic-internal prefixes from an error location path.
+    """Strip pydantic-internal prefixes from an error location, keeping only meaningful parts.
 
-    Removes leading elements that refer to pydantic internals (e.g. ``packages``,
-    integer indices, and known backend type names used as union discriminator tags)
-    so the user sees only the relevant field name.
+    Removes leading 'packages', numeric indices, and discriminated-union type names
+    so that users see the field name rather than the full internal path.
 
-    >>> _simplify_location(("packages", 0, "gomod", "path"))
-    'path'
-    >>> _simplify_location(("packages", 0))
-    ''
-    >>> _simplify_location(("type",))
-    'type'
-    >>> _simplify_location(("packages", 2, "pip", "requirements_files"))
-    'requirements_files'
-
-    Args:
-        loc: The error location tuple as returned by pydantic's ``ValidationError.errors()``.
-
-    Returns:
-        A simplified, user-facing location string with ``" -> "`` joining remaining parts,
-        or an empty string if all parts were stripped.
+    Examples:
+        ("packages", 0, "gomod", "path") -> "path"
+        ("packages", 0, "gomod", "what") -> "what"
+        ("packages", 0)                  -> ""   (no meaningful sub-field)
+        ("packages",)                    -> ""   (no meaningful sub-field)
+        ("what",)                        -> "what"
     """
-    # Lazily resolve to avoid circular reference at module level
-    known_backends = set(get_args(PackageManagerType))
-
-    i = 0
-    # Skip "packages" keyword and integer indices (package position)
-    while i < len(loc) and (loc[i] == "packages" or isinstance(loc[i], int)):
-        i += 1
-    # Skip the backend type name used as union discriminator tag
-    if i < len(loc) and loc[i] in known_backends:
-        i += 1
-    return " -> ".join(str(p) for p in loc[i:])
+    parts = [str(p) for p in loc]
+    # Remove leading "packages" and any numeric index that follows it
+    while parts and (parts[0] == "packages" or parts[0].isdigit()):
+        parts.pop(0)
+    # Remove discriminated-union type name if it is the next remaining part
+    if parts and parts[0] in _KNOWN_BACKEND_TYPES:
+        parts.pop(0)
+    return " -> ".join(parts)
 
 
-@dataclass
-class UserFriendlyError:
-    """Structured representation of a user-facing validation error."""
-    type: str
-    msg: str
-    loc: tuple[int | str, ...]
-    unknown_tag: str | None = None
-    expected_tags: list[str] | None = None
-    package_index: int | None = None
+def _present_user_input_error(validation_error: pydantic.ValidationError) -> str:
+    """Make a user-friendly representation of a pydantic.ValidationError.
 
-
-def _prepare_user_input_errors(validation_error: pydantic.ValidationError) -> list[UserFriendlyError]:
-    """Translate Pydantic validation errors into structured UserFriendlyError objects."""
-    res = []
-    for error in validation_error.errors():
-        loc = error["loc"]
-        type_ = error.get("type", "")
-        msg = error.get("msg", "")
-        
-        pkg_idx = None
-        if len(loc) >= 2 and loc[0] == "packages" and isinstance(loc[1], int):
-            pkg_idx = loc[1]
-            
-        unknown_tag = None
-        expected_tags = None
-        if type_ == "union_tag_invalid":
-            ctx = error.get("ctx", {})
-            unknown_tag = ctx.get("tag", "<unknown>")
-            raw = ctx.get("expected_tags", "")
-            expected_tags = [t.strip(" '") for t in raw.split(",")]
-            msg = "Unknown package manager"
-            
-        res.append(UserFriendlyError(
-            type=type_,
-            msg=msg,
-            loc=loc,
-            unknown_tag=unknown_tag,
-            expected_tags=expected_tags,
-            package_index=pkg_idx,
-        ))
-    return res
-
-
-def _format_user_input_error(errors: list[UserFriendlyError]) -> str:
-    """Format structured UserFriendlyError objects into a display string."""
+    Compared to pydantic's default message:
+    - don't show the model name, just say "user input"
+    - don't show the underlying error type (e.g. "type=value_error.const")
+    - strip internal pydantic location prefixes (package indices, union type names)
+    - rewrite pydantic jargon into plain language
+    - for a single error, omit the noisy header line
+    """
+    errors = validation_error.errors()
     n_errors = len(errors)
-    
-    def show_error(e: UserFriendlyError) -> str:
-        if e.type == "union_tag_invalid":
-            expected = sorted(e.expected_tags or [])
-            quoted = ", ".join(f"'{t}'" for t in expected)
-            tag = e.unknown_tag or "<unknown>"
-            message = f"Unknown package manager '{tag}'. Valid options are: {quoted}"
-            if e.package_index is not None and n_errors > 1:
-                message = f"packages -> {e.package_index}\n  {message}"
-            return message
 
-        message = e.msg
-        location = _simplify_location(e.loc)
-        if location and location != "__root__":
+    def show_error(error: "ErrorDict") -> str:
+        if error.get("type") == "union_tag_invalid":
+            # Handle regular union tag errors (i.e. errors which stem from
+            # a missing package manager implementation). Errors in experimental
+            # package managers are handled elsewhere.
+            ctx = error.get("ctx", {})
+            raw = ctx.get("expected_tags", "")
+            expected = [t.strip(" '") for t in raw.split(",")]
+            quoted = ", ".join(f"'{t}'" for t in sorted(expected))
+            tag = ctx.get("tag", "<unknown>")
+            return f"Unknown package manager '{tag}'. Valid options are: {quoted}"
+
+        location = _simplify_location(error["loc"])
+        message = error["msg"]
+        if location:
             message = f"{location}\n  {message}"
         return message
 
@@ -172,20 +138,8 @@ def _format_user_input_error(errors: list[UserFriendlyError]) -> str:
         return show_error(errors[0])
 
     header = f"{n_errors} validation errors for user input"
-    details = "\n".join(show_error(e) for e in errors)
+    details = "\n".join(map(show_error, errors))
     return f"{header}\n{details}"
-
-
-def _present_user_input_error(validation_error: pydantic.ValidationError) -> str:
-    """Rewrite a ValidationError into a friendlier user-facing string.
-
-    Modifications:
-    - strip pydantic internal prefixes from the location
-    - translate pydantic jargon like 'union_tag_invalid' into plain English
-    - for single errors, drop the "1 validation error for user input" header
-    """
-    structured = _prepare_user_input_errors(validation_error)
-    return _format_user_input_error(structured)
 
 
 PackageManagerType = Literal[

@@ -21,7 +21,6 @@ from hermeto.core.models.input import (
     Request,
     RpmPackageInput,
     SSLOptions,
-    _prepare_user_input_errors,
     _simplify_location,
     _validate_binary_filter_format,
     parse_user_input,
@@ -30,36 +29,32 @@ from hermeto.core.rooted_path import RootedPath
 
 
 def test_parse_user_input() -> None:
+    # Single error: no header, just the message directly
     expect_error = re.compile(r"type\n  Input should be 'gomod'")
     with pytest.raises(InvalidInput, match=expect_error):
         parse_user_input(GomodPackageInput.model_validate, {"type": "go-package"})
 
 
-class TestPresentUserInputError:
-    """Test the structured translation of validation errors."""
+class TestSimplifyLocation:
+    """Test the _simplify_location helper."""
 
-    def test_single_error_no_header(self) -> None:
-        """Single errors should be translated cleanly."""
-        try:
-            parse_user_input(GomodPackageInput.model_validate, {"type": "go-package"})
-        except InvalidInput as e:
-            # The exact string is formatted later, we just ensure it was raised cleanly
-            assert e is not None
-
-    def test_union_tag_invalid_translation(self) -> None:
-        """union_tag_invalid errors should be translated into structured format."""
-        adapter: pydantic.TypeAdapter[PackageInput] = pydantic.TypeAdapter(PackageInput)
-        try:
-            adapter.validate_python({"type": "asdf"})
-        except pydantic.ValidationError as e:
-            structured = _prepare_user_input_errors(e)
-            assert len(structured) == 1
-            err = structured[0]
-            assert err.type == "union_tag_invalid"
-            assert err.unknown_tag == "asdf"
-            assert err.expected_tags is not None
-            for backend in ("gomod", "npm", "pip", "yarn"):
-                assert backend in err.expected_tags
+    @pytest.mark.parametrize(
+        "loc, expected",
+        [
+            pytest.param(("packages", 0, "gomod", "path"), "path", id="strips_packages_index_type"),
+            pytest.param(("packages", 0, "gomod", "what"), "what", id="strips_unknown_field"),
+            pytest.param(("packages", 0), "", id="no_meaningful_subfield"),
+            pytest.param(("packages",), "", id="packages_only"),
+            pytest.param(("what",), "what", id="top_level_field"),
+            pytest.param(
+                ("packages", 0, "pip", "requirements_files", 0),
+                "requirements_files -> 0",
+                id="nested_list_field",
+            ),
+        ],
+    )
+    def test_simplify_location(self, loc: tuple[str | int, ...], expected: str) -> None:
+        assert _simplify_location(loc) == expected
 
 
 class TestPackageInput:
