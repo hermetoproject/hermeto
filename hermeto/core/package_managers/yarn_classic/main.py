@@ -3,10 +3,15 @@ import logging
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 from hermeto import APP_NAME
-from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
+from hermeto.core.errors import (
+    ExitError,
+    LockfileNotFound,
+    PackageManagerError,
+    PackageRejected,
+)
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
@@ -40,6 +45,8 @@ _yarn_classic_pattern = "yarn lockfile v1"  # See [yarn_classic_trait].
 
 class NotV1Lockfile(PackageRejected):
     """Indicate that a lockfile is of wrong tyrpoe."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_NOT_V1_LOCKFILE
 
     def __init__(self, package_path: Any) -> None:
         """Initialize a Missing Lockfile error."""

@@ -1,17 +1,82 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import textwrap
+from enum import IntEnum, unique
 from pathlib import Path
-from typing import ClassVar, Iterable
+from typing import Any, ClassVar, Iterable
 
 from hermeto import APP_NAME
 
 _argument_not_specified = "__argument_not_specified__"
 
 
-class BaseError(Exception):
+@unique
+class ExitError(IntEnum):
+    """Hermeto process exit codes."""
+
+    ERR_OK = 0
+    ERR_BASE = 1
+    ERR_USAGE = 2
+    ERR_PATH_OUTSIDE_ROOT = 3
+    ERR_INVALID_INPUT = 4
+    ERR_PACKAGE_REJECTED = 5
+    ERR_NOT_A_GIT_REPO = 6
+    ERR_UNEXPECTED_FORMAT = 7
+    ERR_UNSUPPORTED_FEATURE = 8
+    ERR_EXECUTABLE_NOT_FOUND = 9
+    ERR_CHECKSUM_VERIFICATION_FAILED = 10
+    ERR_INVALID_CHECKSUM = 11
+    ERR_MISSING_CHECKSUM = 12
+    ERR_LOCKFILE_NOT_FOUND = 13
+    ERR_INVALID_LOCKFILE_FORMAT = 14
+    ERR_FETCH = 15
+    ERR_PACKAGE_MANAGER = 16
+    ERR_GIT = 17
+    ERR_GIT_REMOTE_NOT_FOUND = 18
+    ERR_GIT_INVALID_REVISION = 19
+    ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED = 20
+    ERR_UNSATISFIABLE_ARCHITECTURE_FILTER = 21
+    ERR_NOT_V1_LOCKFILE = 22
+
+
+class ErrorRegistryMeta(type):
+    """Meta class for registering errors."""
+
+    registry: ClassVar[dict[ExitError, "ErrorRegistryMeta"]] = {}
+
+    def __init__(
+        cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any
+    ) -> None:
+        """Register error subclasses that declare their own exit code.
+
+        Subclasses that set ``_exit_error`` explicitly are registered and
+        checked for uniqueness.  Subclasses that omit it simply inherit
+        the parent's exit code — this is intentional for internal /
+        intermediary exceptions that are caught in code and never
+        propagated to the user.
+
+        :param name: name of the error class
+        :param bases: base classes of the error class
+        :param namespace: namespace of the error class
+        :param kwargs: keyword arguments
+        """
+        super().__init__(name, bases, namespace, **kwargs)
+        # Subclasses without _exit_error inherit their parent's code and
+        # are not registered
+        if "_exit_error" in namespace:
+            exit_error = namespace["_exit_error"]
+            if exit_error in ErrorRegistryMeta.registry:
+                raise RuntimeError(
+                    f"{name} and {ErrorRegistryMeta.registry[exit_error].__name__} "
+                    f"both use {exit_error!r}"
+                )
+            ErrorRegistryMeta.registry[exit_error] = cls
+
+
+class BaseError(Exception, metaclass=ErrorRegistryMeta):
     """Root of the error hierarchy. Don't raise this directly, use more specific error types."""
 
     is_invalid_usage: ClassVar[bool] = False
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_BASE
     default_solution: ClassVar[str | None] = None
 
     def __init__(
@@ -31,6 +96,11 @@ class BaseError(Exception):
         else:
             self.solution = solution
 
+    @property
+    def exit_code(self) -> int:
+        """Return the exit code for this error."""
+        return self._exit_error.value
+
     def friendly_msg(self) -> str:
         """Return the user-friendly representation of this error."""
         msg = str(self)
@@ -43,10 +113,13 @@ class UsageError(BaseError):
     """Generic error for "Hermeto was used incorrectly." Prefer more specific errors."""
 
     is_invalid_usage: ClassVar[bool] = True
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_USAGE
 
 
 class PathOutsideRoot(UsageError):
     """Afer joining a subpath, the result is outside the root of a rooted path."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_PATH_OUTSIDE_ROOT
 
     def __init__(
         self,
@@ -75,6 +148,8 @@ class PathOutsideRoot(UsageError):
 class InvalidInput(UsageError):
     """User input was invalid."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_INVALID_INPUT
+
 
 class PackageRejected(UsageError):
     """The Application refused to process the package the user requested.
@@ -82,6 +157,8 @@ class PackageRejected(UsageError):
     a) The package appears invalid (e.g. missing go.mod for a Go module).
     b) The package does not meet our extra requirements (e.g. missing checksums).
     """
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_PACKAGE_REJECTED
 
     def __init__(self, reason: str, *, solution: str | None) -> None:
         """Initialize a Package Rejected error.
@@ -97,9 +174,13 @@ class PackageRejected(UsageError):
 class NotAGitRepo(PackageRejected):
     """A package turned out to be not a git repository."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_NOT_A_GIT_REPO
+
 
 class UnexpectedFormat(UsageError):
     """The Application failed to parse a file in the user's package (e.g. requirements.txt)."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_UNEXPECTED_FORMAT
 
     default_solution = (
         "Please check if the format of your file is correct.\n"
@@ -113,6 +194,8 @@ class UnsupportedFeature(UsageError):
     The requested feature might be valid, but application doesn't implement it.
     """
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_UNSUPPORTED_FEATURE
+
     default_solution = (
         f"If you need {APP_NAME} to support this feature, please contact the maintainers."
     )
@@ -120,6 +203,8 @@ class UnsupportedFeature(UsageError):
 
 class ExecutableNotFound(UsageError):
     """A required executable was not found in PATH."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_EXECUTABLE_NOT_FOUND
 
     def __init__(
         self,
@@ -145,6 +230,8 @@ class ExecutableNotFound(UsageError):
 class ChecksumVerificationFailed(PackageRejected):
     """Checksum verification failed for a file."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_CHECKSUM_VERIFICATION_FAILED
+
     def __init__(
         self,
         filename: Path | str,
@@ -166,6 +253,8 @@ class ChecksumVerificationFailed(PackageRejected):
 
 class InvalidChecksum(PackageRejected):
     """Provided checksum/hash/integrity is not valid data."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_INVALID_CHECKSUM
 
     def __init__(
         self,
@@ -189,6 +278,8 @@ class InvalidChecksum(PackageRejected):
 
 class MissingChecksum(InvalidChecksum):
     """Provided checksum/hash/integrity is missing"""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_MISSING_CHECKSUM
 
     def __init__(
         self,
@@ -216,6 +307,8 @@ class MissingChecksum(InvalidChecksum):
 class LockfileNotFound(PackageRejected):
     """A required lockfile was not found."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_LOCKFILE_NOT_FOUND
+
     def __init__(
         self,
         files: Path | str | Iterable[Path | str],
@@ -240,6 +333,8 @@ class LockfileNotFound(PackageRejected):
 class InvalidLockfileFormat(PackageRejected):
     """Lockfile format is invalid or cannot be parsed."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_INVALID_LOCKFILE_FORMAT
+
     def __init__(
         self,
         lockfile_path: Path | str,
@@ -262,6 +357,8 @@ class InvalidLockfileFormat(PackageRejected):
 class FetchError(BaseError):
     """The Application failed to fetch a dependency or other data needed to process a package."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_FETCH
+
     default_solution = (
         "The error might be intermittent, please try again.\n"
         f"If the issue seems to be on the {APP_NAME} side, please contact the maintainers."
@@ -274,6 +371,8 @@ class PackageManagerError(BaseError):
     Maybe some configuration is invalid, maybe the package manager was unable to fetch a dependency,
     maybe the error is intermittent. We don't really know, but we do at least log the stderr.
     """
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_PACKAGE_MANAGER
 
     def __init__(
         self,
@@ -304,6 +403,8 @@ class PackageManagerError(BaseError):
 
 class GitError(BaseError):
     """Base class for Git operation failures."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_GIT
 
     def __init__(
         self,
@@ -342,6 +443,10 @@ class GitError(BaseError):
 class GitRemoteNotFoundError(GitError):
     """A Git remote with the specified name does not exist."""
 
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_GIT_REMOTE_NOT_FOUND
+
 
 class GitInvalidRevisionError(GitError):
     """Invalid Git revision (commits, branches, tags, revision specifiers)."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_GIT_INVALID_REVISION

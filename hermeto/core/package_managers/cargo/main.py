@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, ClassVar, NamedTuple
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
@@ -18,6 +18,7 @@ from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
+    ExitError,
     LockfileNotFound,
     NotAGitRepo,
     PackageManagerError,
@@ -45,6 +46,8 @@ class CargoVendorResult(NamedTuple):
 
 class PackageWithCorruptLockfileRejected(PackageRejected):
     """Package lock file does not match package config."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED
 
     def __init__(self, package_path: str) -> None:
         """Initialize the error."""
