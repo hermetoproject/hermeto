@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import ExitError
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -18,8 +20,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             id="cargo_just_a_crate_dependency",
         ),
@@ -29,8 +29,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             id="cargo_just_a_git_dependency",
         ),
@@ -40,8 +38,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             id="cargo_mixed_git_crate_dependency",
         ),
@@ -51,8 +47,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             id="cargo_uses_resolver_v3",
         ),
@@ -62,7 +56,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_LOCKFILE_NOT_FOUND,
                 expected_output="Cargo.lock not found",
             ),
             id="cargo_missing_lockfile",
@@ -74,7 +68,6 @@ log = logging.getLogger(__name__)
                 global_flags=["--mode", "permissive"],
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="cargo_missing_lockfile_permissive_mode",
@@ -106,8 +99,6 @@ def test_cargo_packages(
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
-                expected_output="",
             ),
             [],  # No additional commands are run to verify the build
             [],
@@ -119,7 +110,6 @@ def test_cargo_packages(
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
                 check_deps_checksums=False,
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             ["foo"],

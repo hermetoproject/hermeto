@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import ExitError
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -17,7 +19,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/with-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_with_deps",
@@ -26,7 +27,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/without-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_without_deps",
@@ -37,7 +37,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/correct-vendor-passes-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_correct_vendor_passes_vendor_check",
@@ -47,7 +46,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/correct-vendor-in-submodule-passes-vendor-check",
                 packages=({"path": "integration-tests", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_correct_vendor_in_submodule_passes_vendor_check",
@@ -59,7 +57,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
                     "consistent with go.mod. Please check the logs for more details"
@@ -74,7 +72,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": "integration-tests", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
                     "consistent with go.mod. Please check the logs for more details"
@@ -87,7 +85,6 @@ log = logging.getLogger(__name__)
                 branch="gomod/wrong-vendor-fails-vendor-check",
                 global_flags=["--mode=permissive"],
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_wrong_vendor_passes_vendor_check_in_permissive_mode",
@@ -99,7 +96,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
                     "consistent with go.mod. Please check the logs for more details"
@@ -112,7 +109,6 @@ log = logging.getLogger(__name__)
                 branch="gomod/empty-vendor-fails-vendor-check",
                 global_flags=["--mode=permissive"],
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_empty_vendor_passes_vendor_check_in_permissive_mode",
@@ -122,7 +118,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/local-deps",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_local_deps",
@@ -135,7 +130,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/generate-imported",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_generate_imported",
@@ -150,7 +144,6 @@ log = logging.getLogger(__name__)
                     {"path": "spam-module", "type": "gomod"},
                     {"path": "eggs-module", "type": "gomod"},
                 ),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_missing_checksums",
@@ -160,7 +153,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="gomod/workspaces",
                 packages=({"path": "./workspace_modules/hello", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             id="gomod_workspaces",
@@ -198,7 +190,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.18",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             ["retrodep", "--help"],
@@ -212,7 +203,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.21",
                 packages=({"path": ".", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             ["retrodep", "--help"],
@@ -229,7 +219,6 @@ def test_gomod_packages(
                     {"path": "spam-module", "type": "gomod"},
                     {"path": "eggs-module", "type": "gomod"},
                 ),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             [],  # check using CMD defined in Dockerfile
@@ -242,7 +231,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.21-dirty",
                 packages=({"path": "twenty", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             [],  # check using CMD defined in Dockerfile
@@ -256,7 +244,6 @@ def test_gomod_packages(
             utils.TestParameters(
                 branch="gomod/e2e-1.22-workspace-vendoring",
                 packages=({"path": "hi/hiii", "type": "gomod"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             [],  # check using CMD defined in Dockerfile
@@ -271,7 +258,6 @@ def test_gomod_packages(
                     {"path": "vendored-module", "type": "gomod"},
                     {"path": "non-vendored-module", "type": "gomod"},
                 ),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             [],  # check using CMD defined in Dockerfile
@@ -286,7 +272,6 @@ def test_gomod_packages(
                     {"path": "non-vendored-module", "type": "gomod"},
                     {"path": "vendored-module", "type": "gomod"},
                 ),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             [],  # check using CMD defined in Dockerfile
