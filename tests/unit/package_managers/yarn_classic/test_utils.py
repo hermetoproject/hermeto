@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 from unittest import mock
 
-from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.package_managers.yarn_classic.utils import find_runtime_deps
 from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
 from hermeto.core.rooted_path import RootedPath
@@ -32,7 +32,7 @@ def test_find_runtime_deps(
 ) -> None:
     package_json_path = rooted_tmp_path.join_within_root("package.json")
     package_json_path.path.write_text(PACKAGE_JSON)
-    package_json = PackageJson.from_file(package_json_path)
+    package_json = PackageJson.from_file(package_json_path.path)
 
     mock_yarn_lock_instance = mock_yarn_lock.return_value
     mock_yarn_lock_instance.data = {
@@ -104,7 +104,7 @@ def test_find_runtime_deps_with_workspace(
 ) -> None:
     package_json_path = rooted_tmp_path.join_within_root("package.json")
     package_json_path.path.write_text(MAIN_PACKAGE_JSON)
-    package_json = PackageJson.from_file(package_json_path)
+    package_json = PackageJson.from_file(package_json_path.path)
 
     workspace_dir = rooted_tmp_path.join_within_root("packages/workspace")
     workspace_dir.path.mkdir(parents=True)
@@ -114,7 +114,7 @@ def test_find_runtime_deps_with_workspace(
 
     w = Workspace(
         path=workspace_dir.path,
-        package_json=PackageJson.from_file(workspace_package_json),
+        package_json=PackageJson.from_file(workspace_package_json.path),
     )
 
     mock_yarn_lock_instance = mock_yarn_lock.return_value

@@ -12,8 +12,8 @@ from hermeto.core.errors import (
     PackageRejected,
     UnexpectedFormat,
 )
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.package_managers.yarn.project import (
-    PackageJson,
     Project,
     YarnRc,
     get_semver_from_package_manager,
@@ -140,7 +140,7 @@ def _prepare_package_json_file(rooted_tmp_path: RootedPath, data: str) -> Packag
     with open(path, "w") as f:
         f.write(data)
 
-    return PackageJson.from_file(path)
+    return PackageJson.from_file(path.path)
 
 
 def test_parse_package_json(rooted_tmp_path: RootedPath) -> None:
@@ -186,7 +186,7 @@ def test_parse_project_folder(rooted_tmp_path: RootedPath) -> None:
 
     assert project.yarn_rc is not None
     assert project.yarn_rc._path == rooted_tmp_path.join_within_root(".yarnrc.yml")
-    assert project.package_json._path == rooted_tmp_path.join_within_root("package.json")
+    assert project.package_json.path == rooted_tmp_path.join_within_root("package.json").path
 
 
 def test_parse_project_folder_without_yarnrc(rooted_tmp_path: RootedPath) -> None:
@@ -198,7 +198,7 @@ def test_parse_project_folder_without_yarnrc(rooted_tmp_path: RootedPath) -> Non
 
     assert len(project.yarn_rc.data) == 0
     assert project.yarn_rc._path == rooted_tmp_path.join_within_root(".yarnrc.yml")
-    assert project.package_json._path == rooted_tmp_path.join_within_root("package.json")
+    assert project.package_json.path == rooted_tmp_path.join_within_root("package.json").path
 
 
 def test_parse_empty_folder(rooted_tmp_path: RootedPath) -> None:

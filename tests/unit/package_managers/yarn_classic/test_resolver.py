@@ -12,8 +12,8 @@ from pyarn.lockfile import Package as PYarnPackage
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.package_managers.yarn_classic.main import MIRROR_DIR
-from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.package_managers.yarn_classic.resolver import (
     FilePackage,
     GitPackage,
@@ -319,8 +319,8 @@ def test_resolve_packages(
 
 def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
     package_json = PackageJson(
-        _path=rooted_tmp_path.join_within_root("package.json"),
-        _data={"name": "foo", "version": "1.0.0"},
+        rooted_tmp_path.join_within_root("package.json").path,
+        {"name": "foo", "version": "1.0.0"},
     )
     expected_output = WorkspacePackage(
         name="foo",
@@ -334,12 +334,10 @@ def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
 
 def test_get_main_package_no_name(rooted_tmp_path: RootedPath) -> None:
     package_json = PackageJson(
-        _path=rooted_tmp_path.join_within_root("package.json"),
-        _data={},
+        rooted_tmp_path.join_within_root("package.json").path,
+        {},
     )
-    error_msg = (
-        f"The package.json file located at {package_json._path.path} is missing the name field"
-    )
+    error_msg = f"The package.json file located at {package_json.path} is missing the name field"
 
     with pytest.raises(PackageRejected, match=error_msg):
         _get_main_package(rooted_tmp_path, package_json)
@@ -352,11 +350,8 @@ def test_get_workspace_packages(rooted_tmp_path: RootedPath) -> None:
     package_json_path = workspace_path.join_within_root("package.json")
     package_json_path.path.write_text('{"name": "foo", "version": "1.0.0"}')
 
-    package_json = PackageJson.from_file(package_json_path)
-    workspace = Workspace(
-        path=workspace_path.path,
-        package_json=package_json,
-    )
+    package_json = PackageJson.from_file(package_json_path.path)
+    workspace = Workspace(path=workspace_path.path, package_json=package_json)
 
     expected = [
         WorkspacePackage(

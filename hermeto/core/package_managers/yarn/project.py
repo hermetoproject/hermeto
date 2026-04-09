@@ -6,7 +6,6 @@ It also provides basic utility functions. The main logic to resolve and prefetch
 should be implemented in other modules.
 """
 
-import json
 import logging
 import re
 from collections import UserDict
@@ -16,12 +15,8 @@ from typing import Any, Literal, NamedTuple, TypedDict
 import semver
 import yaml
 
-from hermeto.core.errors import (
-    InvalidLockfileFormat,
-    LockfileNotFound,
-    PackageRejected,
-    UnexpectedFormat,
-)
+from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -81,54 +76,6 @@ class YarnRc(UserDict):
         return cls(file_path, yarnrc_data)
 
 
-class PackageJson(UserDict):
-    """A package.json file.
-
-    This class maps the contents of a package.json file to a specialized dictionary.
-    """
-
-    def __init__(self, path: RootedPath, data: dict[str, Any]) -> None:
-        """Initialize a PackageJson object.
-
-        :param path: the path to the package.json file, relative to the request source dir.
-        :param data: the raw data for the package.json file.
-        """
-        self._path = path
-        super().__init__(data)
-
-    @classmethod
-    def from_file(cls, file_path: RootedPath) -> "PackageJson":
-        """Parse the content of a package.json file."""
-        try:
-            with file_path.path.open("r") as f:
-                package_json_data = json.load(f)
-        except FileNotFoundError:
-            raise LockfileNotFound(
-                files=file_path.path,
-                solution=(
-                    "Please double-check that you have specified the correct path "
-                    "to the package directory containing this file"
-                ),
-            )
-        except json.decoder.JSONDecodeError as e:
-            raise InvalidLockfileFormat(
-                lockfile_path=file_path.path,
-                err_details=str(e),
-                solution=(
-                    "The package.json file must contain valid JSON. "
-                    "Refer to the parser error and fix the contents of the file."
-                ),
-            )
-
-        return cls(file_path, package_json_data)
-
-    def write(self) -> None:
-        """Write the data to the package.json file."""
-        with self._path.path.open("w") as f:
-            json.dump(self.data, f, indent=2)
-            f.write("\n")
-
-
 class Project(NamedTuple):
     """A directory containing yarn sources."""
 
@@ -177,7 +124,7 @@ class Project(NamedTuple):
         else:
             yarn_rc = YarnRc(yarn_rc_path, {})
 
-        package_json = PackageJson.from_file(source_dir.join_within_root("package.json"))
+        package_json = PackageJson.from_dir(source_dir.path)
         return cls(source_dir, yarn_rc, package_json)
 
 

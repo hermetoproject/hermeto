@@ -5,13 +5,9 @@ import pytest
 from pyarn import lockfile  # type: ignore
 
 from hermeto.core.errors import PackageRejected
+from hermeto.core.package_managers.common import PackageJson
 from hermeto.core.package_managers.yarn_classic.main import _verify_repository
-from hermeto.core.package_managers.yarn_classic.project import (
-    ConfigFile,
-    PackageJson,
-    Project,
-    YarnLock,
-)
+from hermeto.core.package_managers.yarn_classic.project import Project, YarnLock
 from hermeto.core.rooted_path import RootedPath
 
 VALID_PACKAGE_JSON_FILE = """
@@ -52,15 +48,10 @@ package-1
 """
 
 
-def _prepare_config_file(
-    rooted_tmp_path: RootedPath, config_file_class: ConfigFile, filename: str, content: str
-) -> ConfigFile:
+def _write_file(rooted_tmp_path: RootedPath, filename: str, content: str) -> RootedPath:
     path = rooted_tmp_path.join_within_root(filename)
-
-    with open(path, "w") as f:
-        f.write(content)
-
-    return config_file_class.from_file(path)
+    path.path.write_text(content)
+    return path
 
 
 def _setup_pnp_installs(rooted_tmp_path: RootedPath, pnp_kind: str) -> None:
@@ -70,133 +61,74 @@ def _setup_pnp_installs(rooted_tmp_path: RootedPath, pnp_kind: str) -> None:
         rooted_tmp_path.join_within_root("foo.pnp.cjs").path.touch()
 
 
-@pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content",
-    [
-        pytest.param(PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, id="package_json"),
-        pytest.param(YarnLock, "yarn.lock", VALID_YARN_LOCK_FILE, id="yarnlock"),
-    ],
-)
-def test_config_file_attributes(
-    rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-    config_file_content: str,
-) -> None:
-    found_config = _prepare_config_file(
-        rooted_tmp_path,
-        config_file_class,
-        config_file_name,
-        config_file_content,
-    )
-    assert found_config.path.root == rooted_tmp_path.root
+def test_package_json_config_file_attributes(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "package.json", VALID_PACKAGE_JSON_FILE)
+    package_json = PackageJson.from_file(path.path)
+    assert package_json.path == rooted_tmp_path.path / "package.json"
 
 
-@pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content, content_kind",
-    [
-        pytest.param(
-            PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, "json", id="package_json"
-        ),
-        pytest.param(YarnLock, "yarn.lock", VALID_YARN_LOCK_FILE, "pyarn", id="yarnlock"),
-    ],
-)
-def test_find_and_open_config_file(
-    rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-    config_file_content: str,
-    content_kind: str,
-) -> None:
-    found_config = _prepare_config_file(
-        rooted_tmp_path,
-        config_file_class,
-        config_file_name,
-        config_file_content,
-    )
-
-    if content_kind == "json":
-        assert found_config.data == json.loads(config_file_content)
-    elif content_kind == "pyarn":
-        assert found_config.data == lockfile.Lockfile.from_str(config_file_content).data
+def test_yarnlock_config_file_attributes(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "yarn.lock", VALID_YARN_LOCK_FILE)
+    yarn_lock = YarnLock.from_file(path)
+    assert yarn_lock.path.root == rooted_tmp_path.root
 
 
-@pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content",
-    [
-        pytest.param(
-            PackageJson,
-            "package.json",
-            INVALID_JSON_FILE,
-            id="invalid_package_json",
-        ),
-        pytest.param(YarnLock, "yarn.lock", EMPTY_YARN_LOCK_FILE, id="empty_yarnlock"),
-        pytest.param(YarnLock, "yarn.lock", INVALID_YARN_LOCK_FILE, id="invalid_yarnlock"),
-    ],
-)
-def test_from_file_bad(
-    rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-    config_file_content: str,
-) -> None:
+def test_package_json_find_and_open_config_file(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "package.json", VALID_PACKAGE_JSON_FILE)
+    package_json = PackageJson.from_file(path.path)
+    assert package_json.data == json.loads(VALID_PACKAGE_JSON_FILE)
+
+
+def test_yarnlock_find_and_open_config_file(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "yarn.lock", VALID_YARN_LOCK_FILE)
+    yarn_lock = YarnLock.from_file(path)
+    assert yarn_lock.data == lockfile.Lockfile.from_str(VALID_YARN_LOCK_FILE).data
+
+
+def test_package_json_from_file_bad(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "package.json", INVALID_JSON_FILE)
     with pytest.raises(PackageRejected):
-        _prepare_config_file(
-            rooted_tmp_path,
-            config_file_class,
-            config_file_name,
-            config_file_content,
-        )
+        PackageJson.from_file(path.path)
 
 
-@pytest.mark.parametrize(
-    "config_file_class, config_file_name",
-    [
-        pytest.param(
-            PackageJson,
-            "package.json",
-            id="missing_package_json",
-        ),
-        pytest.param(YarnLock, "yarn.lock", id="missing_yarnlock"),
-    ],
-)
-def test_from_file_missing(
-    rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-) -> None:
+def test_yarnlock_from_file_empty(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "yarn.lock", EMPTY_YARN_LOCK_FILE)
     with pytest.raises(PackageRejected):
-        path = rooted_tmp_path.join_within_root(config_file_name)
-        config_file_class.from_file(path)
+        YarnLock.from_file(path)
+
+
+def test_yarnlock_from_file_invalid(rooted_tmp_path: RootedPath) -> None:
+    path = _write_file(rooted_tmp_path, "yarn.lock", INVALID_YARN_LOCK_FILE)
+    with pytest.raises(PackageRejected):
+        YarnLock.from_file(path)
+
+
+def test_package_json_from_file_missing(rooted_tmp_path: RootedPath) -> None:
+    with pytest.raises(PackageRejected):
+        path = rooted_tmp_path.join_within_root("package.json")
+        PackageJson.from_file(path.path)
+
+
+def test_yarnlock_from_file_missing(rooted_tmp_path: RootedPath) -> None:
+    with pytest.raises(PackageRejected):
+        path = rooted_tmp_path.join_within_root("yarn.lock")
+        YarnLock.from_file(path)
 
 
 @pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content, pnp_kind",
+    "content, pnp_kind",
     [
-        pytest.param(
-            PackageJson,
-            "package.json",
-            PNP_PACKAGE_JSON_FILE,
-            "install_config",
-            id="installConfig",
-        ),
-        pytest.param(PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, "node", id="node"),
-        pytest.param(PackageJson, "package.json", VALID_PACKAGE_JSON_FILE, "pnp_cjs", id="pnp_cjs"),
+        pytest.param(PNP_PACKAGE_JSON_FILE, "install_config", id="installConfig"),
+        pytest.param(VALID_PACKAGE_JSON_FILE, "node", id="node"),
+        pytest.param(VALID_PACKAGE_JSON_FILE, "pnp_cjs", id="pnp_cjs"),
     ],
 )
 def test_pnp_installs_true(
     rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-    config_file_content: str,
+    content: str,
     pnp_kind: str,
 ) -> None:
-    _prepare_config_file(
-        rooted_tmp_path,
-        config_file_class,
-        config_file_name,
-        config_file_content,
-    )
+    _write_file(rooted_tmp_path, "package.json", content)
 
     project = Project.from_source_dir(rooted_tmp_path)
 
@@ -205,37 +137,9 @@ def test_pnp_installs_true(
         _verify_repository(project)
 
 
-@pytest.mark.parametrize(
-    "config_file_class, config_file_name, config_file_content",
-    [
-        pytest.param(
-            PackageJson,
-            "package.json",
-            VALID_PACKAGE_JSON_FILE,
-        ),
-    ],
-)
-def test_pnp_installs_false(
-    rooted_tmp_path: RootedPath,
-    config_file_class: ConfigFile,
-    config_file_name: str,
-    config_file_content: str,
-) -> None:
-    _prepare_config_file(
-        rooted_tmp_path,
-        config_file_class,
-        config_file_name,
-        config_file_content,
-    )
-    # A yarn v1 project needs a valid yarn lock to be accepted.
-    _prepare_config_file(
-        rooted_tmp_path,
-        # Ignoring type checking because of
-        #   incompatible type "type[YarnLock]"; expected "Union[PackageJson, YarnLock]"
-        YarnLock,  # type: ignore
-        "yarn.lock",
-        VALID_YARN_LOCK_FILE,
-    )
+def test_pnp_installs_false(rooted_tmp_path: RootedPath) -> None:
+    _write_file(rooted_tmp_path, "package.json", VALID_PACKAGE_JSON_FILE)
+    _write_file(rooted_tmp_path, "yarn.lock", VALID_YARN_LOCK_FILE)
 
     project = Project.from_source_dir(rooted_tmp_path)
 
