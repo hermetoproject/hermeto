@@ -51,25 +51,6 @@ pkg_requests_session = get_requests_session(retry_options={"allowed_methods": SA
 log = logging.getLogger(__name__)
 
 
-def is_safe_url(url: str) -> bool:
-    """Check if the resolved IP of a URL is public to prevent SSRF attacks."""
-    try:
-        hostname = urlparse(url).hostname
-        if not hostname:
-            return False
-
-        ip = socket.gethostbyname(hostname)
-        ip_obj = ipaddress.ip_address(ip)
-
-        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
-            return False
-
-        return True
-    except Exception as e:
-        log.warning(f"Failed to resolve URL {url}: {e}")
-        return False
-
-
 def download_binary_file(
     url: str,
     download_path: StrPath,
@@ -87,9 +68,6 @@ def download_binary_file(
     :param int chunk_size: Chunk size param for Response.iter_content()
     :raise FetchError: If download failed
     """
-    if not is_safe_url(url):
-        raise FetchError(f"Security error: URL '{url}' points to an unsafe or private IP address.")
-
     config = get_config()
     timeout = (config.http.connect_timeout, config.http.read_timeout)
     try:
@@ -133,9 +111,6 @@ async def _async_download_binary_file(
     :param int chunk_size: Chunk size param for Response.content.read()
     :raise FetchError: If download failed
     """
-    if not is_safe_url(url):
-        raise FetchError(f"Security error: URL '{url}' points to an unsafe or private IP address.")
-
     try:
         timeout = _get_aiohttp_timeout()
 
