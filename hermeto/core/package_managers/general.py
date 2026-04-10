@@ -29,11 +29,22 @@ _orig_create_connection = urllib3_connection.create_connection
 
 def safe_create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None, socket_options=None):
     host, port = address
-    ip = socket.gethostbyname(host)
-    ip_obj = ipaddress.ip_address(ip)
-    if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
-        raise ValueError(f"SSRF blocked: host {host} resolved to internal IP {ip}")
-    return _orig_create_connection((ip, port), timeout, source_address, socket_options)
+    err = None
+    for res in socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM):
+        ip = res[4][0]
+        ip_obj = ipaddress.ip_address(ip)
+        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+            raise ValueError(f"SSRF blocked: host {host} resolved to internal IP {ip}")
+            
+        try:
+            return _orig_create_connection((ip, port), timeout, source_address, socket_options)
+        except Exception as e:
+            err = e
+            continue
+            
+    if err is not None:
+        raise err
+    raise socket.error("getaddrinfo returned an empty list")
 
 urllib3_connection.create_connection = safe_create_connection
 
