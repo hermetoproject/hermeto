@@ -22,6 +22,30 @@ from hermeto.core.http_requests import (
 )
 from hermeto.core.type_aliases import StrPath
 
+from urllib3.util import connection as urllib3_connection
+from aiohttp.resolver import DefaultResolver
+
+_orig_create_connection = urllib3_connection.create_connection
+
+def safe_create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None, socket_options=None):
+    host, port = address
+    ip = socket.gethostbyname(host)
+    ip_obj = ipaddress.ip_address(ip)
+    if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+        raise ValueError(f"SSRF blocked: host {host} resolved to internal IP {ip}")
+    return _orig_create_connection((ip, port), timeout, source_address, socket_options)
+
+urllib3_connection.create_connection = safe_create_connection
+
+class SafeResolver(DefaultResolver):
+    async def resolve(self, host, port, family):
+        resolved = await super().resolve(host, port, family)
+        for r in resolved:
+            ip_obj = ipaddress.ip_address(r['host'])
+            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+                raise ValueError(f"SSRF blocked: resolved to internal IP {r['host']}")
+        return resolved
+
 pkg_requests_session = get_requests_session(retry_options={"allowed_methods": SAFE_REQUEST_METHODS})
 
 log = logging.getLogger(__name__)
@@ -70,7 +94,7 @@ def download_binary_file(
     timeout = (config.http.connect_timeout, config.http.read_timeout)
     try:
         resp = pkg_requests_session.get(
-            url, stream=True, verify=not insecure, auth=auth, timeout=timeout
+            url, stream=True, verify=not insecure, auth=auth, timeout=timeout, allow_redirects=False
         )
         resp.raise_for_status()
     except requests.RequestException as e:
@@ -124,6 +148,7 @@ async def _async_download_binary_file(
             auth=auth,
             raise_for_status=True,
             ssl=ssl_context,
+            allow_redirects=False,
         ) as resp:
             with open(download_path, "wb") as f:
                 while True:
@@ -165,11 +190,14 @@ async def async_download_files(
             aiohttp.ClientPayloadError,
         },
     )
+    custom_session = aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(resolver=SafeResolver()),
+        trust_env=True,
+    )
     retry_client = aiohttp_retry.RetryClient(
+        client_session=custom_session,
         retry_options=retry_options,
         trace_configs=[trace_config],
-        # respect proxy settings and .netrc
-        trust_env=True,
     )
 
     async with retry_client as session:
