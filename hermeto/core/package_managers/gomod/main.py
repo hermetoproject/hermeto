@@ -454,18 +454,26 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 )
 
             tmp_dir._go_instance = go
+            context_dir = main_module_dir
             if (go_work_path := _get_go_work_path(go, main_module_dir)) is not None:
                 go_work = GoWork.from_file(go_work_path, go)
+                context_dir = go_work.rooted_path.join_within_root(go_work.path.parent)
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, Path(tmp_dir.name), version_resolver, go, go_work
+                    main_module_dir,
+                    context_dir,
+                    request,
+                    Path(tmp_dir.name),
+                    version_resolver,
+                    go,
+                    go_work,
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
                 raise
 
-            vendor_changed = _vendor_changed(main_module_dir, request.mode)
+            vendor_changed = _vendor_changed(context_dir, request.mode)
             if vendor_changed and request.mode == Mode.STRICT:
                 raise PackageRejected(
                     reason=(
@@ -670,6 +678,7 @@ def _parse_packages(
 
 def _resolve_gomod(
     app_dir: RootedPath,
+    context_dir: RootedPath,
     request: Request,
     tmp_dir: Path,
     version_resolver: "ModuleVersionResolver",
@@ -681,6 +690,7 @@ def _resolve_gomod(
 
     :param go: Go instance/release to use for processing the request
     :param app_dir: the full path to the application source code
+    :param context_dir: the workspace root (or app_dir if no workspace)
     :param request: app request this is for
     :param tmp_dir: one temporary directory for all go modules
     :return: a dict containing the Go module itself ("module" key), the list of dictionaries
@@ -693,7 +703,7 @@ def _resolve_gomod(
 
     config = get_config()
 
-    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
+    should_vendor = context_dir.join_within_root("vendor").path.is_dir()
 
     if should_vendor:
         # Even though we do not perform a "go mod download" when vendoring is detected, some
@@ -730,7 +740,7 @@ def _resolve_gomod(
 
     # Vendor dependencies if the gomod-vendor flag is set
     if should_vendor:
-        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), run_params)
+        downloaded_modules = _vendor_deps(go, context_dir, bool(go_work), run_params)
     else:
         log.info("Downloading the gomod dependencies")
         downloaded_modules = (
