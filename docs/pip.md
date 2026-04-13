@@ -613,18 +613,17 @@ an example,
 
 ```diff
 - dockerfile-parse @ https://github.com/.../2.0.0.tar.gz \
-+ dockerfile-parse @ file:///absolute-path/hermeto-output/deps/pip/.../dockerfile-parse-...tar.gz
++ dockerfile-parse @ file:///absolute-path/hermeto-output/deps/pip/dockerfile-parse-....tar.gz
 ```
 
-External dependencies are stored a bit further down the deps/pip tree to avoid
-mixing them with PyPI dependencies. The path and filename is an implementation
-detail.
+External dependencies are stored flat alongside PyPI dependencies in
+deps/pip/. The filename includes the checksum hash. The exact filename
+format is an implementation detail.
 
 ```text
 hermeto-output/deps/pip
 ├── ...
-├── external-dockerfile-parse
-│   └── dockerfile-parse-external-sha256-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
+├── dockerfile-parse-36e4469abb0d96b0e3cd656284d5016e8a674cd57b8ebe5af64786fe63b8184d.tar.gz
 └── ...
 ```
 
