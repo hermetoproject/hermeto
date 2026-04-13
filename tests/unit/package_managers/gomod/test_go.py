@@ -401,20 +401,17 @@ def test_get_gomod_version(
     )
 
 
-INVALID_VERSION_STRINGS = [
-    "go1.21",  # missing space between go and version number
-    "go 1.21.0.100",  # non-conforming to the X.Y(.Z)? versioning template
-    "1.21",  # missing 'go' at the beginning
-    "go 1.21 foo",  # extra characters after version string
-    "go 1.21prerelease",  # pre-release with no number
-    "go 1.21prerelease_4",  # pre-release with non-alphanum character
-    "toolchain 1.21",  # missing 'go' prefix for the toolchain spec
-]
-
-
 @pytest.mark.parametrize(
     "go_mod_file",
-    [pytest.param(_, id=_) for _ in INVALID_VERSION_STRINGS],
+    [
+        pytest.param("go1.21", id="no_space_after_go_keyword"),
+        pytest.param("go 1.21.0.100", id="invalid_version_scheme"),
+        pytest.param("1.21", id="missing_go_keyword"),
+        pytest.param("go 1.21 foo", id="extra_characters_in_version_str"),
+        pytest.param("go 1.21prerelease", id="prerelease_no_number"),
+        pytest.param("go 1.21prerelease_4", id="prerelease_non_alphanum"),
+        pytest.param("toolchain 1.21", id="missing_go_in_toolchain_spec"),
+    ],
     indirect=True,
 )
 def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) -> None:
