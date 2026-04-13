@@ -143,14 +143,16 @@ def _prepare_package_json_file(rooted_tmp_path: RootedPath, data: str) -> Packag
     return PackageJson.from_file(path)
 
 
-def test_parse_package_json(rooted_tmp_path: RootedPath) -> None:
-    package_json = _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
-    assert package_json["packageManager"] == "yarn@3.6.1"
-
-
-def test_parse_empty_package_json_file(rooted_tmp_path: RootedPath) -> None:
-    package_json = _prepare_package_json_file(rooted_tmp_path, EMPTY_JSON_FILE)
-    assert package_json.get("packageManager") is None
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        pytest.param(VALID_PACKAGE_JSON_FILE, "yarn@3.6.1", id="valid"),
+        pytest.param(EMPTY_JSON_FILE, None, id="empty"),
+    ],
+)
+def test_parse_package_json(rooted_tmp_path: RootedPath, data: str, expected: str | None) -> None:
+    package_json = _prepare_package_json_file(rooted_tmp_path, data)
+    assert package_json.get("packageManager") == expected
 
 
 def test_parse_invalid_package_json_file(rooted_tmp_path: RootedPath) -> None:

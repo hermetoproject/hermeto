@@ -3,7 +3,6 @@ import os
 import subprocess
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
 from unittest import mock
 
 import pytest
@@ -154,7 +153,11 @@ class TestGo:
     @mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
     @mock.patch("time.sleep")
     def test_retry_failure(
-        self, mock_sleep: Any, mock_run: Any, mock_config: Any, caplog: pytest.LogCaptureFixture
+        self,
+        mock_sleep: mock.Mock,
+        mock_run: mock.Mock,
+        mock_config: mock.Mock,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         mock_config.return_value.gomod.download_max_tries = 5
 
@@ -226,25 +229,20 @@ class TestGo:
         assert result_go.binary == str(target_binary)
 
     @pytest.mark.parametrize(
-        "release, retry",
-        [
-            pytest.param(None, False, id="bundled_go"),
-            pytest.param("go1.20", True, id="custom_release_installed"),
-            pytest.param("go1.21.0", True, id="custom_release_needs_installation"),
-        ],
+        "retry", [pytest.param(False, id="no_retry"), pytest.param(True, id="retry")]
     )
-    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
     @mock.patch("hermeto.core.package_managers.gomod.go.Go._run")
+    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
     def test_call(
         self,
-        mock_run: mock.Mock,
         mock_get_config: mock.Mock,
-        tmp_path: Path,
-        release: str | None,
+        mock_run: mock.Mock,
         retry: bool,
     ) -> None:
         env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}
         opts = ["mod", "download"]
+        mock_get_config.return_value.gomod.download_max_tries = 1
+
         go = Go()
         go(opts, retry=retry, params=env)
 
@@ -252,25 +250,25 @@ class TestGo:
         if not retry:
             mock_run.assert_called_once_with(cmd, **env)
         else:
-            mock_get_config.return_value.gomod.download_max_tries = 1
             mock_run.call_count = 1
             mock_run.assert_called_with(cmd, **env)
 
-    @pytest.mark.parametrize("retry", [False, True])
-    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
+    @pytest.mark.parametrize(
+        "retry", [pytest.param(False, id="no_retry"), pytest.param(True, id="retry")]
+    )
     @mock.patch("subprocess.run")
+    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
     def test_call_failure(
         self,
-        mock_run: mock.Mock,
         mock_get_config: mock.Mock,
+        mock_run: mock.Mock,
         retry: bool,
     ) -> None:
+        opts = ["mod", "download"]
         tries = 1
         mock_get_config.return_value.gomod.download_max_tries = tries
-        failure = proc_mock(returncode=1, stdout="")
-        mock_run.side_effect = [failure]
+        mock_run.side_effect = [proc_mock(returncode=1, stdout="")]
 
-        opts = ["mod", "download"]
         cmd = [GO_CMD_PATH, *opts]
         error_msg = "Go execution failed: "
         if retry:
@@ -401,20 +399,17 @@ def test_get_gomod_version(
     )
 
 
-INVALID_VERSION_STRINGS = [
-    "go1.21",  # missing space between go and version number
-    "go 1.21.0.100",  # non-conforming to the X.Y(.Z)? versioning template
-    "1.21",  # missing 'go' at the beginning
-    "go 1.21 foo",  # extra characters after version string
-    "go 1.21prerelease",  # pre-release with no number
-    "go 1.21prerelease_4",  # pre-release with non-alphanum character
-    "toolchain 1.21",  # missing 'go' prefix for the toolchain spec
-]
-
-
 @pytest.mark.parametrize(
     "go_mod_file",
-    [pytest.param(_, id=_) for _ in INVALID_VERSION_STRINGS],
+    [
+        pytest.param("go1.21", id="missing_space"),
+        pytest.param("go 1.21.0.100", id="non_conforming"),
+        pytest.param("1.21", id="missing_go_prefix"),
+        pytest.param("go 1.21 foo", id="extra_characters"),
+        pytest.param("go 1.21prerelease", id="prerelease_no_number"),
+        pytest.param("go 1.21prerelease_4", id="prerelease_non_alphanum"),
+        pytest.param("toolchain 1.21", id="toolchain_missing_go_prefix"),
+    ],
     indirect=True,
 )
 def test_get_gomod_version_fail(rooted_tmp_path: RootedPath, go_mod_file: Path) -> None:

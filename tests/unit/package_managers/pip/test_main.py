@@ -92,67 +92,32 @@ def mock_requirements_file(requirements: list | None = None, options: list | Non
     return mock.Mock(requirements=requirements or [], options=options or [])
 
 
-@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
-def test_get_pip_metadata_from_pyproject_toml(
-    mock_pyproject_toml: mock.Mock,
+@pytest.mark.parametrize(
+    "mock_target, log_message",
+    [
+        ("PyProjectTOML", "Checking pyproject.toml for metadata"),
+        ("SetupPY", "Checking setup.py for metadata"),
+        ("SetupCFG", "Checking setup.cfg for metadata"),
+    ],
+)
+def test_get_pip_metadata_from_config_file(
+    mock_target: str,
+    log_message: str,
     rooted_tmp_path: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    pyproject_toml = mock_pyproject_toml.return_value
-    pyproject_toml.exists.return_value = True
-    pyproject_toml.get_name.return_value = "foo"
-    pyproject_toml.get_version.return_value = "0.1.0"
+    with mock.patch(f"hermeto.core.package_managers.pip.main.{mock_target}") as mock_cls:
+        instance = mock_cls.return_value
+        instance.exists.return_value = True
+        instance.get_name.return_value = "foo"
+        instance.get_version.return_value = "0.1.0"
 
-    name, version = pip._get_pip_metadata(rooted_tmp_path)
-    assert name == "foo"
-    assert version == "0.1.0"
-    assert "Checking pyproject.toml for metadata" in caplog.messages
-
-    # check logs
-    assert f"Resolved name {name} for package at {rooted_tmp_path}" in caplog.messages
-    assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
-
-
-@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
-def test_get_pip_metadata_from_setup_py(
-    mock_setup_py: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    setup_py = mock_setup_py.return_value
-    setup_py.exists.return_value = True
-    setup_py.get_name.return_value = "foo"
-    setup_py.get_version.return_value = "0.1.0"
-
-    name, version = pip._get_pip_metadata(rooted_tmp_path)
-    assert name == "foo"
-    assert version == "0.1.0"
-
-    # check logs
-    assert "Checking setup.py for metadata" in caplog.messages
-    assert f"Resolved name {name} for package at {rooted_tmp_path}" in caplog.messages
-    assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
-
-
-@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
-def test_get_pip_metadata_from_setup_cfg(
-    mock_setup_cfg: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    setup_cfg = mock_setup_cfg.return_value
-    setup_cfg.exists.return_value = True
-    setup_cfg.get_name.return_value = "foo"
-    setup_cfg.get_version.return_value = "0.1.0"
-
-    name, version = pip._get_pip_metadata(rooted_tmp_path)
-    assert name == "foo"
-    assert version == "0.1.0"
-
-    # check logs
-    assert "Checking setup.cfg for metadata" in caplog.messages
-    assert f"Resolved name {name} for package at {rooted_tmp_path}" in caplog.messages
-    assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
+        name, version = pip._get_pip_metadata(rooted_tmp_path)
+        assert name == "foo"
+        assert version == "0.1.0"
+        assert log_message in caplog.messages
+        assert f"Resolved name {name} for package at {rooted_tmp_path}" in caplog.messages
+        assert f"Resolved version {version} for package at {rooted_tmp_path}" in caplog.messages
 
 
 @mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
@@ -365,133 +330,277 @@ class TestDownload:
         assert log_msg in caplog.text
 
     @pytest.mark.parametrize(
-        "version_specs",
+        "req_kwargs, exc_type, match",
         [
-            [],
-            [("<", "1")],
-            [("==", "1"), ("<", "2")],
-            [("==", "1"), ("==", "1")],  # Probably no reason to handle this?
+            pytest.param(
+                {"package": "foo", "kind": "pypi", "version_specs": []},
+                PackageRejected,
+                "Requirement must be pinned to an exact version:",
+                id="pypi_unpinned_no_specs",
+            ),
+            pytest.param(
+                {"package": "foo", "kind": "pypi", "version_specs": [("<", "1")]},
+                PackageRejected,
+                "Requirement must be pinned to an exact version:",
+                id="pypi_unpinned_less_than",
+            ),
+            pytest.param(
+                {"package": "foo", "kind": "pypi", "version_specs": [("==", "1"), ("<", "2")]},
+                PackageRejected,
+                "Requirement must be pinned to an exact version:",
+                id="pypi_unpinned_mixed_specs",
+            ),
+            pytest.param(
+                {"package": "foo", "kind": "pypi", "version_specs": [("==", "1"), ("==", "1")]},
+                PackageRejected,
+                "Requirement must be pinned to an exact version:",
+                id="pypi_unpinned_duplicate_eq",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": "git+https://github.com/spam/eggs",
+                    "download_line": "eggs @ git+https://github.com/spam/eggs",
+                },
+                PackageRejected,
+                "No git ref in",
+                id="vcs_no_ref",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": "git+https://github.com/spam/eggs@",
+                    "download_line": "eggs @ git+https://github.com/spam/eggs@",
+                },
+                PackageRejected,
+                "No git ref in",
+                id="vcs_empty_ref",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": "git+https://github.com/spam/eggs@abcdef",
+                    "download_line": "eggs @ git+https://github.com/spam/eggs@abcdef",
+                },
+                PackageRejected,
+                "No git ref in",
+                id="vcs_short_ref",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": f"git+https://github.com@{GIT_REF}/spam/eggs",
+                    "download_line": f"eggs @ git+https://github.com@{GIT_REF}/spam/eggs",
+                },
+                PackageRejected,
+                "No git ref in",
+                id="vcs_ref_in_host",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": f"git+https://github.com/spam/eggs#@{GIT_REF}",
+                    "download_line": f"eggs @ git+https://github.com/spam/eggs#@{GIT_REF}",
+                },
+                PackageRejected,
+                "No git ref in",
+                id="vcs_ref_in_fragment",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": "svn://example.org/spam/eggs",
+                    "download_line": "eggs @ svn://example.org/spam/eggs",
+                },
+                UnsupportedFeature,
+                "Unsupported VCS for",
+                id="vcs_svn_scheme",
+            ),
+            pytest.param(
+                {
+                    "package": "eggs",
+                    "kind": "vcs",
+                    "url": "svn+https://example.org/spam/eggs",
+                    "download_line": "eggs @ svn+https://example.org/spam/eggs",
+                },
+                UnsupportedFeature,
+                "Unsupported VCS for",
+                id="vcs_svn_https_scheme",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "hashes": [],
+                    "qualifiers": {},
+                    "url": "http://example.org/foo.tar.gz",
+                    "download_line": "foo @ http://example.org/foo.tar.gz",
+                },
+                InvalidChecksum,
+                "Invalid checksum",
+                id="url_no_hash",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "hashes": ["sha256:123456", "sha256:abcdef"],
+                    "qualifiers": {},
+                    "url": "http://example.org/foo.tar.gz",
+                    "download_line": "foo @ http://example.org/foo.tar.gz",
+                },
+                InvalidChecksum,
+                "Invalid checksum",
+                id="url_two_hashes",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "url": "http://example.org/file.rar",
+                    "download_line": "foo @ http://example.org/file.rar",
+                },
+                PackageRejected,
+                "URL for requirement does not contain any recognized file extension:",
+                id="url_rar_extension",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "url": "https://example.org/file.wheel",
+                    "download_line": "foo @ https://example.org/file.wheel",
+                },
+                PackageRejected,
+                "URL for requirement does not contain any recognized file extension:",
+                id="url_wheel_extension",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "url": "http://example.tar.gz/file",
+                    "download_line": "foo @ http://example.tar.gz/file",
+                },
+                PackageRejected,
+                "URL for requirement does not contain any recognized file extension:",
+                id="url_ext_in_host",
+            ),
+            pytest.param(
+                {
+                    "package": "foo",
+                    "kind": "url",
+                    "url": "http://example.org/file?filename=file.tar.gz",
+                    "download_line": "foo @ http://example.org/file?filename=file.tar.gz",
+                },
+                PackageRejected,
+                "URL for requirement does not contain any recognized file extension:",
+                id="url_ext_in_query",
+            ),
         ],
     )
-    def test_pypi_dep_not_pinned(self, version_specs: list[str]) -> None:
-        """Test that unpinned PyPI deps cause a PackageRejected error."""
-        req = mock_requirement("foo", "pypi", version_specs=version_specs)
-        req_file = mock_requirements_file(requirements=[req])
-        with pytest.raises(PackageRejected) as exc_info:
-            pip._download_dependencies(RootedPath("/output"), req_file)
-        msg = f"Requirement must be pinned to an exact version: {req.download_line}"
-        assert str(exc_info.value) == msg
-
-    @pytest.mark.parametrize(
-        "url",
-        [
-            # there is no ref
-            "git+https://github.com/spam/eggs",
-            "git+https://github.com/spam/eggs@",
-            # ref is too short
-            "git+https://github.com/spam/eggs@abcdef",
-            # ref is in the wrong place
-            f"git+https://github.com@{GIT_REF}/spam/eggs",
-            f"git+https://github.com/spam/eggs#@{GIT_REF}",
-        ],
-    )
-    def test_vcs_dep_no_git_ref(self, url: str) -> None:
-        """Test that VCS deps with no git ref cause a PackageRejected error."""
-        req = mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
-        req_file = mock_requirements_file(requirements=[req])
-
-        with pytest.raises(PackageRejected) as exc_info:
-            pip._download_dependencies(RootedPath("/output"), req_file)
-
-        msg = f"No git ref in {req.download_line} (expected 40 hexadecimal characters)"
-        assert str(exc_info.value) == msg
-
-    @pytest.mark.parametrize("scheme", ["svn", "svn+https"])
-    def test_vcs_dep_not_git(self, scheme: str) -> None:
-        """Test that VCS deps not from git cause an UnsupportedFeature error."""
-        url = f"{scheme}://example.org/spam/eggs"
-        req = mock_requirement("eggs", "vcs", url=url, download_line=f"eggs @ {url}")
-        req_file = mock_requirements_file(requirements=[req])
-
-        with pytest.raises(UnsupportedFeature) as exc_info:
-            pip._download_dependencies(RootedPath("/output"), req_file)
-
-        msg = f"Unsupported VCS for {req.download_line}: {scheme} (only git is supported)"
-        assert str(exc_info.value) == msg
-
-    @pytest.mark.parametrize(
-        "hashes",
-        [
-            [],  # No --hash
-            ["sha256:123456", "sha256:abcdef"],  # 2x --hash
-        ],
-    )
-    def test_url_dep_invalid_hash_count(self, hashes: list[str]) -> None:
-        """Test that if URL requirement specifies 0 or more than 1 hash, validation fails."""
-        url = "http://example.org/foo.tar.gz"
-        req = mock_requirement(
-            "foo", "url", hashes=hashes, qualifiers={}, download_line=f"foo @ {url}"
-        )
-        req_file = mock_requirements_file(requirements=[req])
-
-        with pytest.raises(InvalidChecksum):
-            pip._download_dependencies(RootedPath("/output"), req_file)
-
-    @pytest.mark.parametrize(
-        "url",
-        [
-            # .rar is not a valid sdist extension
-            "http://example.org/file.rar",
-            # .wheel is not a valid extension
-            "https://example.org/file.wheel",
-            # extension is in the wrong place
-            "http://example.tar.gz/file",
-            "http://example.org/file?filename=file.tar.gz",
-        ],
-    )
-    def test_url_dep_unknown_file_ext(self, url: str) -> None:
-        """Test that missing / unknown file extension in URL causes a validation error."""
-        req = mock_requirement("foo", "url", url=url, download_line=f"foo @ {url}")
-        req_file = mock_requirements_file(requirements=[req])
-
-        match = "URL for requirement does not contain any recognized file extension:"
-        with pytest.raises(PackageRejected, match=match):
-            pip._download_dependencies(RootedPath("/output"), req_file)
-
-    @pytest.mark.parametrize(
-        "global_require_hash, local_hash", [(True, False), (False, True), (True, True)]
-    )
-    @pytest.mark.parametrize("requirement_kind", ["pypi", "vcs"])
-    def test_requirement_missing_hash(
-        self,
-        global_require_hash: bool,
-        local_hash: bool,
-        requirement_kind: str,
+    def test_download_rejects_invalid_dependency(
+        self, req_kwargs: dict[str, Any], exc_type: type[Exception], match: str | None
     ) -> None:
-        """Test that missing hashes cause a validation error."""
-        if global_require_hash:
-            options = ["--require-hashes"]
-        else:
-            options = []
-
-        if local_hash:
-            req_1 = mock_requirement("foo", requirement_kind, hashes=["sha256:abcdef"])
-        else:
-            req_1 = mock_requirement("foo", requirement_kind)
-
-        req_2 = mock_requirement("bar", requirement_kind)
-        req_file = mock_requirements_file(requirements=[req_1, req_2], options=options)
-
-        with pytest.raises(MissingChecksum):
+        """Test that invalid dependencies (unpinned, bad VCS ref, bad URL) are rejected."""
+        req = mock_requirement(**req_kwargs)
+        req_file = mock_requirements_file(requirements=[req])
+        with pytest.raises(exc_type, match=match):
             pip._download_dependencies(RootedPath("/output"), req_file)
 
-    @pytest.mark.parametrize("requirement_kind", ["pypi", "vcs", "url"])
-    def test_malformed_hash(self, requirement_kind: str) -> None:
-        """Test that invalid hash specifiers cause a validation error."""
-        req = mock_requirement("foo", requirement_kind, hashes=["malformed"])
-        req_file = mock_requirements_file(requirements=[req])
-
-        with pytest.raises(InvalidChecksum):
+    @pytest.mark.parametrize(
+        "requirements, options, exc_type",
+        [
+            pytest.param(
+                [
+                    ("foo", "pypi", {"hashes": ["sha256:abcdef"]}),
+                    ("bar", "pypi", {}),
+                ],
+                [],
+                MissingChecksum,
+                id="pypi_local_hash_triggers_missing",
+            ),
+            pytest.param(
+                [
+                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
+                    ("bar", "vcs", {}),
+                ],
+                [],
+                MissingChecksum,
+                id="vcs_local_hash_triggers_missing",
+            ),
+            pytest.param(
+                [
+                    ("foo", "pypi", {}),
+                    ("bar", "pypi", {}),
+                ],
+                ["--require-hashes"],
+                MissingChecksum,
+                id="pypi_global_require_hashes",
+            ),
+            pytest.param(
+                [
+                    ("foo", "vcs", {}),
+                    ("bar", "vcs", {}),
+                ],
+                ["--require-hashes"],
+                MissingChecksum,
+                id="vcs_global_require_hashes",
+            ),
+            pytest.param(
+                [
+                    ("foo", "pypi", {"hashes": ["sha256:abcdef"]}),
+                    ("bar", "pypi", {}),
+                ],
+                ["--require-hashes"],
+                MissingChecksum,
+                id="pypi_both_global_and_local_hash",
+            ),
+            pytest.param(
+                [
+                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
+                    ("bar", "vcs", {}),
+                ],
+                ["--require-hashes"],
+                MissingChecksum,
+                id="vcs_both_global_and_local_hash",
+            ),
+            pytest.param(
+                [("foo", "pypi", {"hashes": ["malformed"]})],
+                [],
+                InvalidChecksum,
+                id="pypi_malformed_hash",
+            ),
+            pytest.param(
+                [("foo", "vcs", {"hashes": ["malformed"]})],
+                [],
+                InvalidChecksum,
+                id="vcs_malformed_hash",
+            ),
+            pytest.param(
+                [("foo", "url", {"hashes": ["malformed"]})],
+                [],
+                InvalidChecksum,
+                id="url_malformed_hash",
+            ),
+        ],
+    )
+    def test_download_rejects_missing_or_malformed_hash(
+        self,
+        requirements: list[tuple[str, str, dict[str, Any]]],
+        options: list[str],
+        exc_type: type[Exception],
+    ) -> None:
+        """Test that missing or malformed hashes cause the expected validation error."""
+        reqs = [mock_requirement(pkg, kind, **kwargs) for pkg, kind, kwargs in requirements]
+        req_file = mock_requirements_file(requirements=reqs, options=options)
+        with pytest.raises(exc_type):
             pip._download_dependencies(RootedPath("/output"), req_file)
 
     @pytest.mark.parametrize(
@@ -969,34 +1078,33 @@ def test_resolve_pip_no_deps(mock_metadata: mock.Mock, rooted_tmp_path: RootedPa
     assert pkg_info == expected
 
 
+@pytest.mark.parametrize(
+    "file_kwarg",
+    [
+        pytest.param("requirement_files", id="requirement_files"),
+        pytest.param("build_requirement_files", id="build_requirement_files"),
+    ],
+)
 @mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
-def test_resolve_pip_invalid_req_file_path(
-    mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
+def test_resolve_pip_invalid_file_path(
+    mock_metadata: mock.Mock, rooted_tmp_path: RootedPath, file_kwarg: str
 ) -> None:
     mock_metadata.return_value = ("foo", "1.0")
     invalid_path = Path("foo/bar.txt")
-    requirement_files = [invalid_path]
+    output_dir = rooted_tmp_path.join_within_root("output")
     with pytest.raises(LockfileNotFound):
-        pip._resolve_pip(
-            package_path=rooted_tmp_path,
-            output_dir=rooted_tmp_path.join_within_root("output"),
-            requirement_files=requirement_files,
-        )
-
-
-@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
-def test_resolve_pip_invalid_bld_req_file_path(
-    mock_metadata: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    mock_metadata.return_value = ("foo", "1.0")
-    invalid_path = Path("foo/bar.txt")
-    build_requirement_files = [invalid_path]
-    with pytest.raises(LockfileNotFound):
-        pip._resolve_pip(
-            package_path=rooted_tmp_path,
-            output_dir=rooted_tmp_path.join_within_root("output"),
-            build_requirement_files=build_requirement_files,
-        )
+        if file_kwarg == "requirement_files":
+            pip._resolve_pip(
+                package_path=rooted_tmp_path,
+                output_dir=output_dir,
+                requirement_files=[invalid_path],
+            )
+        else:
+            pip._resolve_pip(
+                package_path=rooted_tmp_path,
+                output_dir=output_dir,
+                build_requirement_files=[invalid_path],
+            )
 
 
 @pytest.mark.parametrize("custom_requirements", [True, False])
@@ -1118,43 +1226,58 @@ def test_get_external_requirement_filepath(component_kind: str, url: str) -> Non
 @pytest.mark.parametrize(
     "sdist_filename",
     [
-        "myapp-0.1.tar",
-        "myapp-0.1.tar.bz2",
-        "myapp-0.1.tar.gz",
-        "myapp-0.1.tar.xz",
-        "myapp-0.1.zip",
+        pytest.param("myapp-0.1.tar", id="tar"),
+        pytest.param("myapp-0.1.tar.bz2", id="tar_bz2"),
+        pytest.param("myapp-0.1.tar.gz", id="tar_gz"),
+        pytest.param("myapp-0.1.tar.xz", id="tar_xz"),
+        pytest.param("myapp-0.1.zip", id="zip"),
     ],
 )
-def test_check_metadata_from_sdist(sdist_filename: str, data_dir: Path) -> None:
+def test_check_metadata_from_sdist(
+    sdist_filename: str,
+    data_dir: Path,
+) -> None:
     sdist_path = data_dir / "archives" / sdist_filename
     pip._check_metadata_in_sdist(sdist_path)
 
 
 def test_skip_check_on_tar_z(caplog: pytest.LogCaptureFixture) -> None:
-    sdist_path = Path("app.tar.Z")
-    pip._check_metadata_in_sdist(sdist_path)
-    assert f"Skip checking metadata from compressed sdist {sdist_path.name}" in caplog.text
+    pip._check_metadata_in_sdist(Path("app.tar.Z"))
+    assert "Skip checking metadata from compressed sdist app.tar.Z" in caplog.text
 
 
 @pytest.mark.parametrize(
-    "sdist_filename,expected_error",
+    "sdist_filename, exc_type, expected_error",
     [
-        ["myapp-0.1.tar.fake.zip", "a Zip file. Error:"],
-        ["myapp-0.1.zip.fake.tar", "a Tar file. Error:"],
-        ["myapp-without-pkg-info.tar.gz", "not include metadata"],
+        pytest.param(
+            "myapp-0.1.tar.fake.zip", PackageRejected, "a Zip file. Error:", id="fake_zip"
+        ),
+        pytest.param(
+            "myapp-0.1.zip.fake.tar", PackageRejected, "a Tar file. Error:", id="fake_tar"
+        ),
+        pytest.param(
+            "myapp-without-pkg-info.tar.gz",
+            PackageRejected,
+            "not include metadata",
+            id="missing_pkg_info",
+        ),
+        pytest.param(
+            "myapp-0.2.tar.ZZZ", ValueError, "Cannot check metadata", id="invalid_extension"
+        ),
     ],
 )
 def test_metadata_check_fails_from_sdist(
-    sdist_filename: Path, expected_error: str, data_dir: Path
+    sdist_filename: str,
+    exc_type: type[Exception],
+    expected_error: str,
+    data_dir: Path,
 ) -> None:
-    sdist_path = data_dir / "archives" / sdist_filename
-    with pytest.raises(PackageRejected, match=expected_error):
+    if sdist_filename == "myapp-0.2.tar.ZZZ":
+        sdist_path = Path(sdist_filename)
+    else:
+        sdist_path = data_dir / "archives" / sdist_filename
+    with pytest.raises(exc_type, match=expected_error):
         pip._check_metadata_in_sdist(sdist_path)
-
-
-def test_metadata_check_invalid_argument() -> None:
-    with pytest.raises(ValueError, match="Cannot check metadata"):
-        pip._check_metadata_in_sdist(Path("myapp-0.2.tar.ZZZ"))
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import io
 import json
-import re
 import tarfile
 from unittest import mock
 from urllib.parse import quote
@@ -201,47 +200,38 @@ def test_create_package_from_pyarn_package(
         assert package_factory.create_package_from_pyarn_package(pyarn_package) == expected_package
 
 
-def test_create_package_from_pyarn_package_fail_absolute_path(rooted_tmp_path: RootedPath) -> None:
-    pyarn_package = PYarnPackage(
-        name="foo",
-        version="1.0.0",
-        path="/root/some/path",
-    )
-    error_msg = (
-        f"The package {pyarn_package.name}@{pyarn_package.version} has an absolute path "
-        f"({pyarn_package.path}), which is not permitted."
-    )
-
-    package_factory = _YarnClassicPackageFactory(rooted_tmp_path, rooted_tmp_path, set())
-    with pytest.raises(PackageRejected, match=re.escape(error_msg)):
-        package_factory.create_package_from_pyarn_package(pyarn_package)
-
-
-def test_create_package_from_pyarn_package_fail_path_outside_root(
+@pytest.mark.parametrize(
+    "pkg_kwargs, expected_exc, match_msg",
+    [
+        pytest.param(
+            {"name": "foo", "version": "1.0.0", "path": "/root/some/path"},
+            PackageRejected,
+            "has an absolute path",
+            id="absolute_path",
+        ),
+        pytest.param(
+            {"name": "foo", "version": "1.0.0", "path": "../path/outside/root"},
+            PathOutsideRoot,
+            None,
+            id="path_outside_root",
+        ),
+        pytest.param(
+            {"name": "foo", "version": "1.0.0", "url": "ftp://some-tarball.tgz"},
+            UnexpectedFormat,
+            None,
+            id="unexpected_format",
+        ),
+    ],
+)
+def test_create_package_from_pyarn_package_fail_validation(
     rooted_tmp_path: RootedPath,
+    pkg_kwargs: dict,
+    expected_exc: type,
+    match_msg: str | None,
 ) -> None:
-    pyarn_package = PYarnPackage(
-        name="foo",
-        version="1.0.0",
-        path="../path/outside/root",
-    )
-
+    pyarn_package = PYarnPackage(**pkg_kwargs)
     package_factory = _YarnClassicPackageFactory(rooted_tmp_path, rooted_tmp_path, set())
-    with pytest.raises(PathOutsideRoot):
-        package_factory.create_package_from_pyarn_package(pyarn_package)
-
-
-def test_create_package_from_pyarn_package_fail_unexpected_format(
-    rooted_tmp_path: RootedPath,
-) -> None:
-    pyarn_package = PYarnPackage(
-        name="foo",
-        version="1.0.0",
-        url="ftp://some-tarball.tgz",
-    )
-
-    package_factory = _YarnClassicPackageFactory(rooted_tmp_path, rooted_tmp_path, set())
-    with pytest.raises(UnexpectedFormat):
+    with pytest.raises(expected_exc, match=match_msg):
         package_factory.create_package_from_pyarn_package(pyarn_package)
 
 
@@ -470,15 +460,18 @@ def test_successful_name_extraction(rooted_tmp_path: RootedPath) -> None:
     assert _read_name_from_tarball(tarball_path) == "foo"
 
 
-def test_no_package_json(rooted_tmp_path: RootedPath) -> None:
-    tarball_path = mock_tarball(path=rooted_tmp_path, package_json_content={})
-    with pytest.raises(ValueError, match="No package.json found"):
-        _read_name_from_tarball(tarball_path)
-
-
-def test_missing_name_field(rooted_tmp_path: RootedPath) -> None:
-    tarball_path = mock_tarball(path=rooted_tmp_path, package_json_content={"key": "foo"})
-    with pytest.raises(ValueError, match="No 'name' field found"):
+@pytest.mark.parametrize(
+    "content, error_match",
+    [
+        pytest.param({}, "No package.json found", id="no_package_json"),
+        pytest.param({"key": "foo"}, "No 'name' field found", id="missing_name_field"),
+    ],
+)
+def test_read_name_from_tarball_missing_or_invalid(
+    rooted_tmp_path: RootedPath, content: dict, error_match: str
+) -> None:
+    tarball_path = mock_tarball(path=rooted_tmp_path, package_json_content=content)
+    with pytest.raises(ValueError, match=error_match):
         _read_name_from_tarball(tarball_path)
 
 

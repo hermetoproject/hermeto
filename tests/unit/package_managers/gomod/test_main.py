@@ -1138,15 +1138,11 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
 
 
 @mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_go_list_deps_fail(
-    mock_run_cmd: mock.Mock,
-) -> None:
+def test_go_list_deps_fail(mock_run_cmd: mock.Mock) -> None:
     mock_run_cmd.side_effect = subprocess.CalledProcessError(1, cmd="foo")
-    expect_error = "Go execution failed: `go list -e -m -json` failed"
 
-    with pytest.raises(PackageManagerError) as ex:
+    with pytest.raises(PackageManagerError, match="Go execution failed:"):
         _go_list_deps(Go(), "./...", {})
-        assert expect_error in str(ex)
 
 
 def test_deduplicate_resolved_modules() -> None:

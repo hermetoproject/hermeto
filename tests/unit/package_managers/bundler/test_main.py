@@ -122,8 +122,24 @@ def test_get_main_package_name_and_version_from_repo_without_origin(
     assert "Failed to extract package name from origin remote" in exc_info.value.friendly_msg()
 
 
-def test_prepare_for_hermetic_build_injects_necessary_variable_into_empty_config(
+@pytest.mark.parametrize(
+    "existing_preamble",
+    [
+        pytest.param(None, id="empty_config"),
+        pytest.param(
+            dedent(
+                """---
+
+                BUNDLER_NONEXISTENT_VARIABLE: "true"
+                """
+            ),
+            id="existing_config",
+        ),
+    ],
+)
+def test_prepare_for_hermetic_build_injects_necessary_variable(
     rooted_tmp_path: RootedPath,
+    existing_preamble: str | None,
 ) -> None:
     expected_config_location = rooted_tmp_path.join_within_root(".bundle/config").path
     expected_config_contents = dedent(
@@ -139,41 +155,16 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_empty_config
 
     assert not expected_config_location.exists(), "Unexpected .bundle/config in rooted_tmp_path"
 
-    result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
-
-    assert result.template == expected_config_contents
-
-
-def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_config(
-    rooted_tmp_path: RootedPath,
-) -> None:
-    expected_config_location = rooted_tmp_path.join_within_root(".bundle/config").path
-    expected_config_contents = dedent(
-        """
-        BUNDLE_CACHE_PATH: "${output_dir}/deps/bundler"
-        BUNDLE_DEPLOYMENT: "true"
-        BUNDLE_NO_PRUNE: "true"
-        BUNDLE_ALLOW_OFFLINE_INSTALL: "true"
-        BUNDLE_DISABLE_VERSION_CHECK: "true"
-        BUNDLE_VERSION: "system"
-        """
-    )
-    existing_preamble = dedent(
-        """---
-
-        BUNDLER_NONEXISTENT_VARIABLE: "true"
-        """
-    )
-
-    assert not expected_config_location.exists(), "Unexpected .bundle/config in rooted_tmp_path"
-    assert not expected_config_location.parent.exists(), "Unexpected .bundle/ in rooted_tmp_path"
-
-    expected_config_location.parent.mkdir()
-    expected_config_location.write_text(existing_preamble)
+    if existing_preamble is not None:
+        assert not expected_config_location.parent.exists(), (
+            "Unexpected .bundle/ in rooted_tmp_path"
+        )
+        expected_config_location.parent.mkdir()
+        expected_config_location.write_text(existing_preamble)
 
     result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
 
-    assert result.template == existing_preamble + expected_config_contents
+    assert result.template == (existing_preamble or "") + expected_config_contents
 
 
 def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alternate_config(

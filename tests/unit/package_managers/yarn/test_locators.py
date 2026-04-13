@@ -642,16 +642,6 @@ def test_parse_unknown_protocol(locator_str: str) -> None:
                 "name@patch:name@npm%3A1.0.0#./my-custom.patch::locator=name@npm%3A1.0.0"
             ),
         ),
-    ],
-)
-def test_fail_to_parse_patch_locator(locator_str: str, expect_err: Exception) -> None:
-    with pytest.raises(type(expect_err), match=re.escape(str(expect_err))):
-        parse_locator(locator_str)
-
-
-@pytest.mark.parametrize(
-    "locator_str, expect_err",
-    [
         (
             "name@file:./path/to/dir#./path/to/different/dir::locator=foo@workspace%3A.",
             UnexpectedFormat(
@@ -684,6 +674,6 @@ def test_fail_to_parse_patch_locator(locator_str: str, expect_err: Exception) ->
         ),
     ],
 )
-def test_fail_to_parse_file_locator(locator_str: str, expect_err: Exception) -> None:
+def test_fail_to_parse_locator(locator_str: str, expect_err: Exception) -> None:
     with pytest.raises(type(expect_err), match=re.escape(str(expect_err))):
         parse_locator(locator_str)

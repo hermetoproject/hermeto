@@ -1081,9 +1081,8 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
-    msg = "Not found credentials where they should be!"
     for call in mock_async_download_files.mock_calls:
-        assert call.kwargs["auth"] is not None, msg
+        assert call.kwargs["auth"] is not None, "Not found credentials where they should be!"
 
 
 @pytest.mark.parametrize(
@@ -1141,7 +1140,6 @@ def test_npm_proxy_url_gets_substituted_for_registry_hosts(
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
-    msg = "Proxy URL was not substituted!"
     for call in mock_async_download_files.mock_calls:
         location = next(iter(call.kwargs["files_to_download"].keys()))
-        assert location.startswith(proxy_url), msg
+        assert location.startswith(proxy_url), "Proxy URL was not substituted!"
