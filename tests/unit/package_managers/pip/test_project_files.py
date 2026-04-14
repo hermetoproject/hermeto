@@ -1013,6 +1013,21 @@ class TestSetupPY:
                 [],
                 id="none",
             ),
+            pytest.param(
+                dedent(
+                    """
+                    from setuptools import setup
+                    extra = {'bar': False}
+                    opts = {
+                        'foo': True,
+                        **extra,
+                    }
+                    setup(setup_requires=["maturin==0.14.0"], **opts)
+                    """
+                ),
+                ["maturin==0.14.0"],
+                id="dict-unpacking",
+            ),
         ],
     )
     def test_get_setup_requires(

@@ -585,9 +585,12 @@ class SetupPY(SetupFile):
                 if setup_call is not None:
                     setup_path.append(ASTPathElement(root_node, name))
                     return setup_call, setup_path
-            # Value is a list of nodes (use any(), nodes will never be mixed with non-nodes)
+            # Value is a list that contains AST nodes. Some lists also contain None
+            # (e.g. Dict.keys uses None to represent ** unpacking).
             elif isinstance(value, list) and any(isinstance(x, ast.AST) for x in value):
                 for i, node in enumerate(value):
+                    if not isinstance(node, ast.AST):
+                        continue
                     setup_call, setup_path = self._find_setup_call(node)
                     if setup_call is not None:
                         setup_path.append(ASTPathElement(root_node, name, i))
