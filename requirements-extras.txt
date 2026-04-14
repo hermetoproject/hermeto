@@ -1405,9 +1405,9 @@ pypi-simple==1.8.0 \
     --hash=sha256:466f2fcd0d723822aae3a0ccfda22e68ff8cd7f50aae68911946ab1dd1d587e1 \
     --hash=sha256:85f56420ab1d8e7ef5e55daabcee20c73e714f2bfee5505d811b075cc72d9ecc
     # via hermeto (pyproject.toml)
-pytest==9.0.2 \
-    --hash=sha256:711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b \
-    --hash=sha256:75186651a92bd89611d1d9fc20f0b4345fd827c41ccd5c299a868a05d70edf11
+pytest==9.0.3 \
+    --hash=sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9 \
+    --hash=sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c
     # via
     #   hermeto (pyproject.toml)
     #   pytest-asyncio
