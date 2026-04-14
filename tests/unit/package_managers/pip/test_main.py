@@ -1767,7 +1767,6 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
     source_dir = rooted_tmp_path.re_root("source")
     output_dir = rooted_tmp_path.re_root("output")
     source_dir.path.mkdir()
-    source_dir.join_within_root("foo").path.mkdir()
 
     request = Request(
         source_dir=source_dir,
@@ -1782,78 +1781,14 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
     )
     mock_verify_lockfile_present.return_value = None
 
-    resolved_a = {
+    resolved = {
         "package": {"name": "foo", "version": "1.0", "type": "pip"},
-        "dependencies": [
-            {
-                "name": "bar",
-                "version": "https://x.org/bar.zip",
-                "checksum": "sha256:aaaaaaaaaa",
-                "type": "pip",
-                "build_dependency": False,
-                "kind": "url",
-                "requirement_file": "requirements.txt",
-                "missing_req_file_checksum": False,
-                "package_type": "",
-            },
-            {
-                "name": "baz",
-                "version": "0.0.5",
-                "checksum": None,
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-                "type": "pip",
-                "build_dependency": True,
-                "kind": "pypi",
-                "requirement_file": "requirements.txt",
-                "missing_req_file_checksum": False,
-                "package_type": "wheel",
-            },
-        ],
+        "dependencies": [],
         "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
-        "requirements": ["/package_a/requirements.txt", "/package_a/requirements-build.txt"],
-    }
-    resolved_b = {
-        "package": {"name": "spam", "version": "2.1", "type": "pip"},
-        "dependencies": [
-            {
-                "name": "ham",
-                "version": "3.2",
-                "checksum": None,
-                "index_url": CUSTOM_PYPI_ENDPOINT,
-                "type": "pip",
-                "build_dependency": False,
-                "kind": "pypi",
-                "requirement_file": "requirements.txt",
-                "missing_req_file_checksum": True,
-                "package_type": "sdist",
-            },
-            {
-                "name": "eggs",
-                "version": "https://x.org/eggs.zip",
-                "checksum": "sha256:aaaaaaaaaa",
-                "type": "pip",
-                "build_dependency": False,
-                "kind": "url",
-                "requirement_file": "requirements.txt",
-                "missing_req_file_checksum": True,
-                "package_type": "",
-            },
-        ],
-        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
-        "requirements": ["/package_b/requirements.txt"],
+        "requirements": [],
     }
 
-    replaced_file_a = ProjectFile(
-        abspath=Path("/package_a/requirements.txt"),
-        template="bar @ file://${output_dir}/deps/pip/...",
-    )
-    replaced_file_b = ProjectFile(
-        abspath=Path("/package_b/requirements.txt"),
-        template="eggs @ file://${output_dir}/deps/pip/...",
-    )
-
-    mock_resolve_pip.side_effect = [resolved_a, resolved_b]
-    mock_replace_requirements.side_effect = [replaced_file_a, None, replaced_file_b]
+    mock_resolve_pip.return_value = resolved
 
     mocked_repo = mock.Mock()
     mocked_repo.remote.return_value.url = "https://github.com/my-org/my-repo"
