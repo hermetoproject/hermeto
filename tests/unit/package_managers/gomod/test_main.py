@@ -240,8 +240,13 @@ def test_resolve_gomod(
         get_mocked_data(data_dir, f"{mocked_data_folder}/go.sum")
     )
 
+    context_dir = (
+        go_work.rooted_path.join_within_root(go_work.path.parent)
+        if go_work
+        else module_dir
+    )
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work
+        module_dir, context_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work
     )
 
     assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/pkg/mod"
@@ -339,7 +344,7 @@ def test_resolve_gomod_vendor_dependencies(
     )
 
     resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None
+        module_dir, module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None
     )
 
     assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
@@ -423,7 +428,7 @@ def test_resolve_gomod_no_deps(
     mock_get_gomod_version.return_value = ("1.21.4", None)
 
     main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None
+        module_path, module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None
     )
     packages_list = list(packages)
 
@@ -464,7 +469,7 @@ def test_resolve_gomod_suspicious_symlinks(symlinked_file: str, gomod_request: R
     app_dir = gomod_request.source_dir
 
     with pytest.raises(PathOutsideRoot):
-        _resolve_gomod(app_dir, gomod_request, tmp_path, version_resolver, Go(), go_work)
+        _resolve_gomod(app_dir, app_dir, gomod_request, tmp_path, version_resolver, Go(), go_work)
 
 
 @pytest.mark.parametrize(
@@ -1692,6 +1697,7 @@ def test_fetch_gomod_source(
 ) -> None:
     def resolve_gomod_mocked(
         app_dir: RootedPath,
+        context_dir: RootedPath,
         request: Request,
         tmp_dir: Path,
         version_resolver: ModuleVersionResolver,
@@ -1730,6 +1736,7 @@ def test_fetch_gomod_source(
     output = fetch_gomod_source(gomod_request)
     calls = [
         mock.call(
+            gomod_request.source_dir.join_within_root(package.path),
             gomod_request.source_dir.join_within_root(package.path),
             gomod_request,
             mock_tmp_dir_path,
@@ -2018,3 +2025,116 @@ def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | Non
         assert module.origin.hash == expected_origin["hash"]
         assert module.origin.tag_sum == expected_origin["tag_sum"]
         assert module.origin.ref == expected_origin["ref"]
+
+
+@pytest.mark.parametrize(
+    "vendor_at_root, expected_cache_dir",
+    [
+        (True, "vendor-cache"),
+        (False, "pkg/mod"),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.gomod.main._parse_packages")
+@mock.patch("hermeto.core.package_managers.gomod.main._parse_go_sum_from_workspaces")
+@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
+@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main._validate_local_replacements")
+@mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
+@mock.patch("subprocess.run")
+def test_resolve_gomod_uses_workspace_root_vendor(
+    mock_run: mock.Mock,
+    mock_vendor_changed: mock.Mock,
+    mock_validate_local_replacements: mock.Mock,
+    mock_version_resolver: mock.Mock,
+    mock_disable_telemetry: mock.Mock,
+    mock_parse_go_sum_workspaces: mock.Mock,
+    mock_parse_packages: mock.Mock,
+    tmp_path: Path,
+    data_dir: Path,
+    gomod_request: Request,
+    vendor_at_root: bool,
+    expected_cache_dir: str,
+) -> None:
+    """
+    Regression test for: Hermeto ignores workspace-root vendor dir.
+
+    When go.work is active, vendor/ lives at the workspace root (context_dir),
+    not inside the sub-module (app_dir). Hermeto must check context_dir/vendor,
+    not app_dir/vendor, and correctly toggle between offline vendoring and network downloads.
+    """
+    context_dir = gomod_request.source_dir
+    app_dir = context_dir.join_within_root("auth-service")
+    app_dir.path.mkdir(parents=True, exist_ok=True)
+
+    app_dir.join_within_root("go.sum").path.write_text("")
+
+    mock_disable_telemetry.return_value = None
+    mock_parse_go_sum_workspaces.return_value = frozenset()
+
+    mock_parse_packages.return_value = iter([])
+
+    run_side_effects = []
+    if vendor_at_root:
+        run_side_effects.append(proc_mock("go work vendor", returncode=0, stdout=""))
+        fixture_folder = "vendored"
+    else:
+        run_side_effects.append(proc_mock("go mod download -json", returncode=0, stdout=""))
+        fixture_folder = "non-vendored"
+
+    run_side_effects.extend(
+        [
+            proc_mock(
+                "go list -e -m -json",
+                returncode=0,
+                stdout=get_mocked_data(data_dir, "non-vendored/go_list_modules.json").replace(
+                    "{repo_dir}", str(app_dir)
+                ),
+            ),
+            proc_mock(
+                "go list -e -deps -json all",
+                returncode=0,
+                stdout=get_mocked_data(data_dir, f"{fixture_folder}/go_list_deps_all.json"),
+            ),
+        ]
+    )
+    mock_run.side_effect = run_side_effects
+
+    mock_version_resolver.get_golang_version.return_value = "v0.1.0"
+    mock_vendor_changed.return_value = False
+
+    if vendor_at_root:
+        context_dir.join_within_root("vendor").path.mkdir(parents=True)
+        context_dir.join_within_root("vendor/modules.txt").path.write_text(
+            get_mocked_data(data_dir, "vendored/modules.txt")
+        )
+
+    go_work = mock.MagicMock(spec=GoWork)
+    go_work.__bool__.return_value = True
+    type(go_work).path = mock.PropertyMock(
+        return_value=context_dir.join_within_root("go.work").path
+    )
+
+    resolve_result = _resolve_gomod(
+        app_dir=app_dir,
+        context_dir=context_dir,
+        request=gomod_request,
+        tmp_dir=tmp_path,
+        version_resolver=mock_version_resolver,
+        go=Go(),
+        go_work=go_work,
+    )
+
+    executed_commands = [call[0][0] for call in mock_run.call_args_list]
+    network_cmds = [cmd for cmd in executed_commands if "download" in cmd]
+
+    if vendor_at_root:
+        assert not network_cmds, "Expected vendored path but got a network download"
+        assert [GO_CMD_PATH, "work", "vendor"] in executed_commands
+    else:
+        assert network_cmds, "Expected network download but vendored path was taken"
+
+    go_list_calls = [call for call in mock_run.call_args_list if "list" in call[0][0]]
+    assert go_list_calls, "Expected 'go list' to be called"
+    assert go_list_calls[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/{expected_cache_dir}"
+
+    mock_validate_local_replacements.assert_called_once_with(resolve_result.parsed_modules, app_dir)
