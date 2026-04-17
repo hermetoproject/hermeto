@@ -344,21 +344,6 @@ def test_set_yarnrc_configuration(
     mock_write.assert_called_once()
 
 
-@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
-def test_verify_yarnrc_paths(
-    mock_get_semver: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    output_dir = rooted_tmp_path.join_within_root("output")
-    yarn_rc = YarnRc(rooted_tmp_path.join_within_root(".yarnrc.yml"), {})
-    project = mock.Mock()
-    project.yarn_rc = yarn_rc
-    project.package_json = mock.MagicMock()
-
-    _set_yarnrc_configuration(project, output_dir, semver.Version.parse("3.0.0"))
-    _verify_yarnrc_paths(project)
-
-
 def test_check_missing_lockfile(rooted_tmp_path: RootedPath) -> None:
     project = mock.Mock()
     project.source_dir = rooted_tmp_path

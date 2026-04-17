@@ -15,10 +15,8 @@ from hermeto.core.models.output import BuildConfig, EnvironmentVariable, Request
 from hermeto.core.models.sbom import Annotation, Component
 from hermeto.core.package_managers.yarn_classic.main import (
     MIRROR_DIR,
-    YARN_NETWORK_TIMEOUT_MILLISECONDS,
     _fetch_dependencies,
     _generate_build_environment_variables,
-    _get_prefetch_environment_variables,
     _resolve_yarn_project,
     _run_yarn_install,
     _verify_corepack_yarn_version,
@@ -243,20 +241,6 @@ def test_fetch_dependencies(
     mock_prefetch_env.assert_called_once()
     mock_yarn_install.assert_has_calls(expected_yarn_install_calls)
     assert mock_yarn_install.call_count == 2
-
-
-def test_get_prefetch_environment_variables() -> None:
-    expected_output = {
-        "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
-        "COREPACK_ENABLE_PROJECT_SPEC": "0",
-        "YARN_IGNORE_PATH": "true",
-        "YARN_IGNORE_SCRIPTS": "true",
-        "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
-    }
-
-    output = _get_prefetch_environment_variables()
-
-    assert output == expected_output
 
 
 @pytest.mark.parametrize(

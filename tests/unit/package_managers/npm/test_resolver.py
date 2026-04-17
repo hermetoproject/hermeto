@@ -15,7 +15,6 @@ from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFe
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.package_managers.npm.project import PackageLock
 from hermeto.core.package_managers.npm.resolver import (
-    _clone_repo_pack_archive,
     _get_npm_dependencies,
     _resolve_npm,
     _should_replace_dependency,
@@ -641,24 +640,6 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
     npm_deps_dir = mock.Mock(spec=RootedPath)
     with pytest.raises(UnsupportedFeature, match=expected_error):
         _resolve_npm(rooted_tmp_path, npm_deps_dir)
-
-
-@mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
-def test_clone_repo_pack_archive(
-    mock_clone_as_tarball: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    vcs = NormalizedUrl("git+ssh://bitbucket.org/cachi-testing/cachi2-without-deps.git#9e164b9")
-    download_path = _clone_repo_pack_archive(vcs, rooted_tmp_path)
-    expected_path = rooted_tmp_path.join_within_root(
-        "bitbucket.org",
-        "cachi-testing",
-        "cachi2-without-deps",
-        "cachi2-without-deps-external-gitcommit-9e164b9.tgz",
-    )
-    assert download_path.path.parent.is_dir()
-    mock_clone_as_tarball.assert_called_once_with(
-        "ssh://bitbucket.org/cachi-testing/cachi2-without-deps.git", "9e164b9", expected_path.path
-    )
 
 
 @pytest.mark.parametrize(

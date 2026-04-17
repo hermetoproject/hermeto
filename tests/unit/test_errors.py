@@ -67,8 +67,3 @@ def test_unsupported_feature_default_friendly_msg() -> None:
 
     no_default = errors.UnsupportedFeature("This feature is not supported", solution=None)
     assert no_default.friendly_msg() == "This feature is not supported"
-
-
-def test_turn_off_default_solution() -> None:
-    err = errors.UnsupportedFeature("This feature is not supported", solution=None)
-    assert err.friendly_msg() == "This feature is not supported"

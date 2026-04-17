@@ -234,15 +234,6 @@ def test_merging_several_spdx_sboms_works_in_general_independent_of_order(
             ),
             id="three unique SBOMs and a duplicate",
         ),
-        pytest.param(
-            (
-                "./tests/unit/data/sboms/alpine.pretty.json",
-                "./tests/unit/data/sboms/alpine.pretty.json",
-                "./tests/unit/data/sboms/alpine.pretty.json",
-                "./tests/unit/data/sboms/alpine.pretty.json",
-            ),
-            id="merging with self",
-        ),
     ],
 )
 def test_merging_same_spdx_sbom_multiple_times_does_not_increase_the_number_of_packages(

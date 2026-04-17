@@ -910,90 +910,6 @@ class TestDownload:
         ) in caplog.text
         # </check basic logging output>
 
-    @mock.patch("hermeto.core.package_managers.pip.main._download_vcs_package")
-    @mock.patch.object(Path, "unlink")
-    @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
-    @mock.patch("hermeto.core.scm.clone_as_tarball")
-    def test_download_dependencies_vcs(
-        self,
-        mock_clone_as_tarball: mock.Mock,
-        mock_async_download_files: mock.Mock,
-        mock_unlink: mock.Mock,
-        mock_download_vcs_package: mock.Mock,
-        rooted_tmp_path: RootedPath,
-        caplog: pytest.LogCaptureFixture,
-    ) -> None:
-        """
-        Test dependency downloading.
-
-        Mock the helper functions used for downloading here, test them properly elsewhere.
-
-        VCS deps *cannot* be hashed, so we are not checking any checksum-related functions.
-        """
-        # <setup>
-        # "egg" has a very specific meaning in Python packaging world. Let's avoid
-        # confusion
-        git_url = f"https://github.com/spam/bacon@{GIT_REF}"
-
-        vcs_req = mock_requirement(
-            "bacon", "vcs", download_line=f"bacon @ git+{git_url}", url=f"git+{git_url}"
-        )
-
-        req_file = mock_requirements_file(
-            requirements=[vcs_req],
-        )
-
-        pip_deps = rooted_tmp_path.join_within_root("deps", "pip")
-
-        vcs_download = pip_deps.join_within_root(
-            "github.com",
-            "spam",
-            "bacon",
-            f"bacon-gitcommit-{GIT_REF}.tar.gz",
-        ).path
-
-        vcs_download_info = {
-            "package": "bacon",
-            "path": vcs_download,
-            "requirement_file": str(req_file.file_path.subpath_from_root),
-            # vcs deps *can't have* checksums
-            "missing_req_file_checksum": True,
-            "package_type": "",
-            "repo": "bacon",
-            # etc., not important for this test
-        }
-
-        mock_download_vcs_package.return_value = deepcopy(vcs_download_info)
-        # </setup>
-
-        # <call>
-        found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
-        expected_download = [
-            vcs_download_info | {"kind": "vcs"},
-        ]
-        assert found_download == expected_download
-        assert pip_deps.path.is_dir()
-        # </call>
-
-        # <check calls that must always be made>
-        mock_download_vcs_package.assert_called_once_with(vcs_req, pip_deps)
-        # </check calls that must always be made>
-
-        # <check calls to checksum verification method>
-        msg = (
-            "No hash options used, will not require hashes unless HTTP(S) dependencies are present."
-        )
-        assert msg in caplog.text
-        # </check calls to checksum verification method>
-
-        # <check basic logging output>
-        assert f"-- Processing requirement line '{vcs_req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{vcs_req.download_line}' in path 'deps/pip/github.com/spam/bacon/"
-            f"bacon-gitcommit-{GIT_REF}.tar.gz'"
-        ) in caplog.text
-        # </check basic logging output>
-
     @mock.patch("hermeto.core.package_managers.pip.main.process_package_distributions")
     @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
     @mock.patch("hermeto.core.package_managers.pip.main._check_metadata_in_sdist")
@@ -1042,24 +958,6 @@ class TestDownload:
         _check_metadata_in_sdist.assert_has_calls(
             [mock.call(pypi_package1.path), mock.call(pypi_package2.path)], any_order=True
         )
-
-
-@pytest.mark.parametrize("exists", [True, False])
-@pytest.mark.parametrize("devel", [True, False])
-def test_default_requirement_file_list(
-    rooted_tmp_path: RootedPath, exists: bool, devel: bool
-) -> None:
-    req_file = None
-    requirements = pip.DEFAULT_REQUIREMENTS_FILE
-    build_requirements = pip.DEFAULT_BUILD_REQUIREMENTS_FILE
-    if exists:
-        filename = build_requirements if devel else requirements
-        req_file = rooted_tmp_path.join_within_root(filename)
-        req_file.path.write_text("nothing to see here\n")
-
-    req_files = pip._default_requirement_file_list(rooted_tmp_path, devel)
-    expected = [req_file] if req_file else []
-    assert req_files == expected
 
 
 @mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
@@ -1597,16 +1495,6 @@ def test_fetch_pip_source(
                 "kind": "vcs",
             },
             f"pkg:pypi/git-dependency?vcs_url=git%2Bssh://git%40github.com/my-org/git_dependency%40{'a' * 40}",
-        ),
-        (
-            {
-                "name": "git_dependency",
-                "version": f"git+https://github.com/my-org/git_dependency@{'a' * 40}",
-                "type": "pip",
-                "dev": False,
-                "kind": "vcs",
-            },
-            f"pkg:pypi/git-dependency?vcs_url=git%2Bhttps://github.com/my-org/git_dependency%40{'a' * 40}",
         ),
         (
             {

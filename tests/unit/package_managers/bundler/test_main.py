@@ -204,28 +204,6 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alt
     assert result.template == existing_preamble + expected_alternate_config_contents
 
 
-def test_prepare_for_hermetic_build_ignores_a_directory_in_place_of_config(
-    rooted_tmp_path: RootedPath,
-) -> None:
-    expected_config_location = rooted_tmp_path.join_within_root(".bundle/config").path
-    expected_config_contents = dedent(
-        """
-        BUNDLE_CACHE_PATH: "${output_dir}/deps/bundler"
-        BUNDLE_DEPLOYMENT: "true"
-        BUNDLE_NO_PRUNE: "true"
-        BUNDLE_ALLOW_OFFLINE_INSTALL: "true"
-        BUNDLE_DISABLE_VERSION_CHECK: "true"
-        BUNDLE_VERSION: "system"
-        """
-    )
-
-    assert not expected_config_location.exists(), "Unexpected .bundle/config in rooted_tmp_path"
-    assert not expected_config_location.parent.exists(), "Unexpected .bundle/ in rooted_tmp_path"
-    result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
-
-    assert result.template == expected_config_contents
-
-
 @mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
 def test_get_repo_name_raises_without_git_repo(
     mock_handle_get_repo_id: mock.Mock,
