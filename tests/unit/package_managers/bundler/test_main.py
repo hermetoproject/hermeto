@@ -11,71 +11,13 @@ from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
     _get_repo_name_from_origin_remote,
     _prepare_for_hermetic_build,
-    _resolve_bundler_package,
 )
 from hermeto.core.package_managers.bundler.parser import (
     GemDependency,
-    GitDependency,
     ParseResult,
     PathDependency,
 )
 from hermeto.core.rooted_path import RootedPath
-from tests.common_utils import GIT_REF
-
-
-@mock.patch("hermeto.core.package_managers.bundler.main._get_main_package_name_and_version")
-@mock.patch("hermeto.core.package_managers.bundler.main.parse_lockfile")
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.GemDependency.download_to")
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.GitDependency.download_to")
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.PathDependency.download_to")
-def test_resolve_bundler_package(
-    mock_path_dep_download_to: mock.Mock,
-    mock_git_dep_download_to: mock.Mock,
-    mock_gem_dep_download_to: mock.Mock,
-    mock_parse_lockfile: mock.Mock,
-    mock_get_main_package_name_and_version: mock.Mock,
-    rooted_tmp_path_repo: RootedPath,
-) -> None:
-    Repo(rooted_tmp_path_repo).create_remote("origin", "git@github.com:user/repo.git")
-
-    package_dir = rooted_tmp_path_repo
-    output_dir = rooted_tmp_path_repo.join_within_root("hermeto-output")
-    deps_dir = output_dir.join_within_root("deps", "bundler")
-
-    gem_dep = GemDependency(
-        name="my-gem-dep",
-        version="0.1.0",
-        source="https://rubygems.org",
-    )
-    git_dep = GitDependency(
-        name="my-git-dep",
-        version="0.1.0",
-        url="https://github.com/rubygems/example.git",
-        ref=GIT_REF,
-    )
-    path_dep = PathDependency(
-        name="my-path-dep",
-        version="0.1.0",
-        root=package_dir,
-        subpath="vendor",
-    )
-
-    deps = [gem_dep, git_dep, path_dep]
-
-    mock_parse_lockfile.return_value = deps
-    mock_get_main_package_name_and_version.return_value = ("name", None)
-
-    components, git_paths = _resolve_bundler_package(package_dir=package_dir, output_dir=output_dir)
-
-    mock_parse_lockfile.assert_called_once_with(package_dir, None)
-    mock_get_main_package_name_and_version.assert_called_once_with(package_dir, deps)
-    mock_gem_dep_download_to.assert_called_with(deps_dir)
-    mock_git_dep_download_to.assert_called_with(deps_dir)
-    mock_path_dep_download_to.assert_called_with(deps_dir)
-
-    assert len(components) == len(deps) + 1  # + 1 for the "main" package
-    assert len(git_paths) == 1  # since there is exactly one git dependency
-    assert deps_dir.path.exists()
 
 
 def test_get_main_package_name_and_version(rooted_tmp_path: RootedPath) -> None:
