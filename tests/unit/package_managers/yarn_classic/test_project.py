@@ -5,6 +5,7 @@ import pytest
 from pyarn import lockfile  # type: ignore
 
 from hermeto.core.errors import PackageRejected
+from hermeto.core.models.input import Mode
 from hermeto.core.package_managers.yarn_classic.main import _verify_repository
 from hermeto.core.package_managers.yarn_classic.project import (
     ConfigFile,
@@ -202,7 +203,7 @@ def test_pnp_installs_true(
 
     _setup_pnp_installs(rooted_tmp_path, pnp_kind)
     with pytest.raises(PackageRejected):
-        _verify_repository(project)
+        _verify_repository(project, Mode.STRICT)
 
 
 @pytest.mark.parametrize(
@@ -239,4 +240,4 @@ def test_pnp_installs_false(
 
     project = Project.from_source_dir(rooted_tmp_path)
 
-    _verify_repository(project)
+    _verify_repository(project, Mode.STRICT)

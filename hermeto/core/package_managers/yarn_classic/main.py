@@ -7,10 +7,10 @@ from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRejected
-from hermeto.core.models.input import Request
-from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
+from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.output import Annotation, Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.models.sbom import create_backend_annotation, spdx_now
 from hermeto.core.package_managers.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
@@ -50,6 +50,7 @@ class NotV1Lockfile(PackageRejected):
 def fetch_yarn_source(request: Request) -> RequestOutput:
     """Process all the yarn source directories in a request."""
     components: list[Component] = []
+    annotations: list[Annotation] = []
 
     def _ensure_mirror_dir_exists(output_dir: RootedPath) -> None:
         output_dir.join_within_root(MIRROR_DIR).path.mkdir(parents=True, exist_ok=True)
@@ -58,11 +59,15 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         package_path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(package_path)
 
-        _verify_repository(project)
+        lockfile_generated = _verify_repository(project, request.mode)
         _ensure_mirror_dir_exists(request.output_dir)
-        components.extend(_resolve_yarn_project(project, request.output_dir))
+        package_components = _resolve_yarn_project(project, request.output_dir, lockfile_generated)
 
-    annotations = []
+        if lockfile_generated:
+            _update_permissive_mode_annotation(annotations, package_components)
+
+        components.extend(package_components)
+
     if backend_annotation := create_backend_annotation(components, "yarn-classic"):
         annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
@@ -73,12 +78,36 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     )
 
 
-def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Component]:
+def _update_permissive_mode_annotation(
+    annotations: list[Annotation],
+    components: list[Component],
+) -> None:
+    """Update permissive mode SBOM annotation with subjects from the provided components."""
+    text = f"{APP_NAME}:permissive-mode:yarn-classic:generated-lockfile"
+    subjects = set(c.bom_ref for c in components)
+    for annotation in annotations:
+        if annotation.text == text:
+            annotation.subjects.update(subjects)
+            return
+
+    annotations.append(
+        Annotation(
+            subjects=subjects,
+            annotator={"organization": {"name": "red hat"}},
+            timestamp=spdx_now(),
+            text=text,
+        )
+    )
+
+
+def _resolve_yarn_project(
+    project: Project, output_dir: RootedPath, lockfile_generated: bool = False
+) -> list[Component]:
     """Process a request for a single yarn source directory."""
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
     _verify_corepack_yarn_version(project.source_dir, _get_prefetch_environment_variables())
-    _fetch_dependencies(project.source_dir, output_dir)
+    _fetch_dependencies(project.source_dir, output_dir, lockfile_generated)
     packages = resolve_packages(project, output_dir.join_within_root(MIRROR_DIR))
     _verify_no_offline_mirror_collisions(packages)
 
@@ -135,7 +164,9 @@ def _run_yarn_install(
     run_yarn_cmd(cmd, source_dir, env)
 
 
-def _fetch_dependencies(source_dir: RootedPath, output_dir: RootedPath) -> None:
+def _fetch_dependencies(
+    source_dir: RootedPath, output_dir: RootedPath, lockfile_generated: bool = False
+) -> None:
     """Fetch dependencies for the project.
 
     Install the project dependencies via a two-step process to overcome concurrency
@@ -147,7 +178,7 @@ def _fetch_dependencies(source_dir: RootedPath, output_dir: RootedPath) -> None:
     """
     # Populate the local cache with the project dependencies
     env = _get_prefetch_environment_variables()
-    _run_yarn_install(source_dir, env, frozen_lockfile=True)
+    _run_yarn_install(source_dir, env, frozen_lockfile=not lockfile_generated)
 
     # Populate the offline mirror from the local cache
     # Since the node_modules directory is already populated, we need to force a
@@ -211,18 +242,31 @@ def _reject_if_wrong_lockfile_version(project: Project) -> None:
         raise NotV1Lockfile(project.source_dir)
 
 
-def _reject_if_lockfile_is_missing(project: Project) -> None:
+def _verify_lockfile(project: Project, mode: Mode) -> bool:
     yarnlock_path = _get_path_to_yarn_lock(project)
+
     if not yarnlock_path.exists():
-        raise LockfileNotFound(
-            files=yarnlock_path,
-        )
+        if mode == Mode.PERMISSIVE:
+            log.warning(
+                f"yarn.lock is missing in {project.source_dir}. Continuing due to permissive mode."
+            )
 
+            return True  # no version-check
+        else:
+            raise LockfileNotFound(
+                files=yarnlock_path,
+                solution=f"yarn.lock not found in {project.source_dir}, run `yarn install` or use permissive mode",
+            )
 
-def _verify_repository(project: Project) -> None:
-    _reject_if_lockfile_is_missing(project)
+    # Check lockfile version
     _reject_if_wrong_lockfile_version(project)
+    return False
+
+
+def _verify_repository(project: Project, mode: Mode) -> bool:
+    lockfile_generated = _verify_lockfile(project, mode)
     _reject_if_pnp_install(project)
+    return lockfile_generated
 
 
 def _verify_corepack_yarn_version(source_dir: RootedPath, env: dict[str, str]) -> None:
