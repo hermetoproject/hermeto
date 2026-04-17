@@ -7,6 +7,7 @@
   - [Dealing with Yarn Zero-Installs](#dealing-with-yarn-zero-installs)
   - [Dealing with plugins](#dealing-with-plugins)
 - [Specifying packages to process](#specifying-packages-to-process)
+  - [Workspace focus](#workspace-focus)
   - [Controlling Yarn's behavior](#controlling-yarns-behavior)
   - [Downloading dependencies](#downloading-dependencies)
   - [Known pitfalls](#known-pitfalls)
@@ -114,6 +115,43 @@ or more simply by just invoking `hermeto fetch-deps yarn`.
 
 For complete example of how to pre-fetch dependencies, see
 [Example: Pre-fetch dependencies](#pre-fetch-dependencies).
+
+### Workspace focus
+
+For monorepo projects using [Yarn workspaces][], you can instruct Hermeto to
+fetch only the dependencies needed for specific workspaces rather than the
+entire project. This is done by specifying the `workspaces` field in the JSON
+input:
+
+```js
+{
+  "type": "yarn",
+  "path": ".",
+  // Only fetch dependencies for the "my-app" workspace
+  "workspaces": ["my-app"]
+}
+```
+
+Hermeto will fetch only the dependencies needed for the specified workspaces
+and their transitive workspace dependencies. Note that `devDependencies` are
+also included and will appear in the SBOM.
+
+You can specify multiple workspace names:
+
+```shell
+hermeto fetch-deps \
+  --source ./my-monorepo \
+  --output ./hermeto-output \
+  '{"type": "yarn", "workspaces": ["app-frontend", "lib-shared"]}'
+```
+
+> **NOTE**
+>
+> This feature requires **Yarn v4**. The workspace names must match the `name`
+> field in each workspace's `package.json`.
+
+When `workspaces` is not specified, Hermeto fetches dependencies for all
+workspaces.
 
 ### Controlling Yarn's behavior
 
@@ -269,5 +307,6 @@ podman build . \
 [project]: https://github.com/hermetoproject/doc-examples/tree/yarn-basic
 [yarn install]: https://yarnpkg.com/getting-started/usage/#installing-all-the-dependencies
 [Yarn protocols]: https://yarnpkg.com/protocols
+[Yarn workspaces]: https://yarnpkg.com/features/workspaces
 [yarn]: https://yarnpkg.com
 [ZIP archives]: https://yarnpkg.com/features/pnp/#packages-are-stored-inside-zip-archives-how-can-i-access-their-files

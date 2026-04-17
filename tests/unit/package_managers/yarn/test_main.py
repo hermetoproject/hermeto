@@ -23,12 +23,15 @@ from hermeto.core.package_managers.yarn.main import (
     _configure_yarn_version,
     _fetch_dependencies,
     _generate_environment_variables,
+    _resolve_yarn_project,
     _set_yarnrc_configuration,
+    _strip_workspace_scripts,
     _verify_corepack_yarn_version,
     _verify_yarnrc_paths,
     fetch_yarn_source,
 )
 from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
+from hermeto.core.package_managers.yarn.resolver import Package
 from hermeto.core.package_managers.yarn.utils import VersionsRange
 from hermeto.core.rooted_path import RootedPath
 
@@ -481,8 +484,9 @@ def test_fetch_yarn_source(
         mock.call(
             project,
             input_request.output_dir,
+            package.workspaces,
         )
-        for project in mock_project
+        for project, package in zip(mock_project, input_request.yarn_packages)
     ]
     mock_resolve_yarn.assert_has_calls(calls)
 
@@ -492,3 +496,69 @@ def test_fetch_yarn_source(
         build_config=BuildConfig(environment_variables=yarn_env_variables),
     )
     assert output == expected_output
+
+
+@mock.patch("hermeto.core.package_managers.yarn.main.run_yarn_cmd")
+def test_fetch_dependencies_with_workspaces(
+    mock_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    _fetch_dependencies(rooted_tmp_path, workspaces=["app-a", "lib-shared"])
+
+    mock_yarn_cmd.assert_called_once_with(
+        ["workspaces", "focus", "app-a", "lib-shared"], rooted_tmp_path
+    )
+
+
+@mock.patch("hermeto.core.package_managers.yarn.main._configure_yarn_version")
+def test_workspace_focus_rejected_for_yarn_v3(
+    mock_configure_version: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """Workspace focus is rejected when the project uses Yarn v3."""
+    mock_configure_version.return_value = semver.Version.parse("3.6.1")
+    project = mock.Mock(source_dir=rooted_tmp_path)
+
+    with pytest.raises(PackageRejected):
+        _resolve_yarn_project(project, rooted_tmp_path, workspaces=["app"])
+
+
+def test_strip_workspace_scripts(rooted_tmp_path: RootedPath) -> None:
+    """Scripts are removed only from workspace package.json files in the package list."""
+    import json
+
+    pkg_a_dir = rooted_tmp_path.join_within_root("packages", "app")
+    pkg_a_dir.path.mkdir(parents=True)
+    pkg_a_json = pkg_a_dir.join_within_root("package.json")
+    pkg_a_json.path.write_text(
+        json.dumps({"name": "app", "scripts": {"build": "tsc", "postinstall": "echo hi"}})
+    )
+
+    pkg_b_dir = rooted_tmp_path.join_within_root("packages", "unrelated")
+    pkg_b_dir.path.mkdir(parents=True)
+    pkg_b_json = pkg_b_dir.join_within_root("package.json")
+    pkg_b_json.path.write_text(
+        json.dumps({"name": "unrelated", "scripts": {"postinstall": "echo bad"}})
+    )
+
+    packages = [
+        Package(
+            raw_locator="app@workspace:packages/app",
+            version=None,
+            checksum=None,
+            cache_path=None,
+        ),
+        Package(
+            raw_locator="is-number@npm:7.0.0",
+            version="7.0.0",
+            checksum="abc",
+            cache_path="/cache/is-number.zip",
+        ),
+    ]
+
+    _strip_workspace_scripts(rooted_tmp_path, packages)
+
+    data_a = json.loads(pkg_a_json.path.read_text())
+    assert "scripts" not in data_a
+
+    # Workspace not in the package list is left untouched
+    data_b = json.loads(pkg_b_json.path.read_text())
+    assert data_b["scripts"] == {"postinstall": "echo bad"}

@@ -132,6 +132,15 @@ def test_yarn_packages(
             "Hello from first package!",
             id="yarn_e2e_multiple_packages",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="yarn/v4-workspace-focus",
+                packages=({"path": ".", "type": "yarn", "workspaces": ["app"]},),
+            ),
+            ["node", "packages/app/index.js"],
+            "workspace focus works!",
+            id="yarn_e2e_workspace_focus",
+        ),
     ],
 )
 def test_e2e_yarn(

@@ -9,14 +9,20 @@ from hermeto.core.errors import LockfileNotFound, PackageManagerError, PackageRe
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.package_managers.yarn.locators import WorkspaceLocator
 from hermeto.core.package_managers.yarn.project import (
+    PackageJson,
     Plugin,
     Project,
     YarnRc,
     get_semver_from_package_manager,
     get_semver_from_yarn_path,
 )
-from hermeto.core.package_managers.yarn.resolver import create_components, resolve_packages
+from hermeto.core.package_managers.yarn.resolver import (
+    Package,
+    create_components,
+    resolve_packages,
+)
 from hermeto.core.package_managers.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
@@ -35,7 +41,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
         path = request.source_dir.join_within_root(package.path)
         project = Project.from_source_dir(path)
 
-        components.extend(_resolve_yarn_project(project, request.output_dir))
+        components.extend(_resolve_yarn_project(project, request.output_dir, package.workspaces))
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "yarn"):
@@ -101,21 +107,38 @@ def _verify_repository(project: Project) -> None:
     _check_lockfile(project)
 
 
-def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Component]:
+def _resolve_yarn_project(
+    project: Project,
+    output_dir: RootedPath,
+    workspaces: list[str] | None = None,
+) -> list[Component]:
     """Process a request for a single yarn source directory.
 
     :param project: the directory to be processed.
     :param output_dir: the directory where the prefetched dependencies will be placed.
+    :param workspaces: optional list of workspace names to focus on (Yarn v4 only).
     :raises PackageManagerError: if fetching dependencies fails
     """
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
     version = _configure_yarn_version(project)
+
+    if workspaces and version < semver.Version.parse("4.0.0"):
+        raise PackageRejected(
+            f"Workspace focus requires Yarn v4 or later, but this project uses Yarn {version}",
+            solution="Either upgrade to Yarn v4 or remove the 'workspaces' field from the input.",
+        )
+
     _verify_repository(project)
 
     _set_yarnrc_configuration(project, output_dir, version)
-    packages = resolve_packages(project.source_dir)
-    _fetch_dependencies(project.source_dir)
+
+    packages = resolve_packages(project.source_dir, workspaces)
+
+    if workspaces:
+        _strip_workspace_scripts(project.source_dir, packages)
+
+    _fetch_dependencies(project.source_dir, workspaces)
 
     return create_components(packages, project, output_dir)
 
@@ -241,14 +264,44 @@ def _set_yarnrc_configuration(
     yarn_rc.write()
 
 
-def _fetch_dependencies(source_dir: RootedPath) -> None:
-    """Fetch dependencies using 'yarn install'.
+def _strip_workspace_scripts(source_dir: RootedPath, packages: list[Package]) -> None:
+    """Remove scripts from workspace package.json files.
+
+    yarn workspaces focus does not support --mode skip-build, and enableScripts: false
+    does not apply to workspace scripts (https://github.com/yarnpkg/berry/pull/4781).
+    Stripping the scripts field prevents lifecycle scripts from executing during focus.
+
+    :param source_dir: the project source directory.
+    :param packages: packages returned by ``resolve_packages``, used to find workspace paths.
+    """
+    for pkg in packages:
+        locator = pkg.parsed_locator
+        if not isinstance(locator, WorkspaceLocator):
+            continue
+        pkg_json_path = source_dir.join_within_root(locator.relpath, "package.json")
+        if not pkg_json_path.path.exists():
+            continue
+        pkg_json = PackageJson.from_file(pkg_json_path)
+        if "scripts" in pkg_json:
+            del pkg_json["scripts"]
+            pkg_json.write()
+
+
+def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = None) -> None:
+    """Fetch dependencies using 'yarn install' or 'yarn workspaces focus'.
+
+    When workspaces are specified, only the dependencies of those workspaces (and their
+    transitive workspace dependencies) are installed via 'yarn workspaces focus'.
 
     :param source_dir: the directory in which the yarn command will be called.
-    :raises PackageManagerError: if the 'yarn install' command fails.
+    :param workspaces: optional list of workspace names to focus on (Yarn v4 only).
+    :raises PackageManagerError: if the yarn command fails.
     """
     try:
-        run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
+        if workspaces:
+            run_yarn_cmd(["workspaces", "focus", *workspaces], source_dir)
+        else:
+            run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
     except PackageManagerError as e:
         # TODO: this follows a precedent set in resolver. Either a more robust way for
         # dealing with this must be found or a comment provided that such methods do not exist.

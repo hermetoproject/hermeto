@@ -141,36 +141,25 @@ class _YarnInfoEntry(pydantic.BaseModel):
     children: _YarnInfoChildren
 
 
-def resolve_packages(source_dir: RootedPath) -> list[Package]:
+def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None) -> list[Package]:
     """Fetch and parse package data from the 'yarn info' output.
+
+    When *workspaces* is provided, runs ``yarn workspace $name info`` for each
+    workspace and deduplicates the results. Otherwise, runs ``yarn info --all``
+    to report the full dependency graph.
 
     This function also performs validation to ensure that the current yarn project can be
     processed.
 
+    :param source_dir: the directory containing the yarn project.
+    :param workspaces: optional list of workspace names to scope the query to.
     :raises UnsupportedFeature: if an unsupported locator type is found in 'yarn info' output
     :raises PackageManagerError: if the 'yarn info' command fails.
     """
-    try:
-        # --all: report dependencies of all workspaces, not just the active workspace
-        # --recursive: report transitive dependencies, not just direct ones
-        # --cache: include info about the cache entry for each dependency
-        result = run_yarn_cmd(["info", "--all", "--recursive", "--cache", "--json"], source_dir)
-    except PackageManagerError as e:
-        if e.stderr and "isn't supported by any available resolver" in e.stderr:
-            raise UnsupportedFeature(
-                "Found an unsupported dependency, more details in the logs.",
-                solution=dedent(
-                    f"""
-                    Please note that {APP_NAME} disables all Yarn plugins, which might be needed for
-                    the correct processing of a dependency. This is done to avoid arbitrary code
-                    execution, which would affect the accuracy of the SBOM.
-                    """
-                ),
-            )
-        raise
-
-    # the result is not a valid json list, but a sequence of json objects separated by line breaks
-    packages = [Package.from_info_string(info) for info in result.splitlines()]
+    if workspaces:
+        packages = _resolve_workspace_packages(source_dir, workspaces)
+    else:
+        packages = _resolve_all_packages(source_dir)
 
     n_unsupported = 0
     for package in packages:
@@ -186,6 +175,54 @@ def resolve_packages(source_dir: RootedPath) -> list[Package]:
         )
 
     return packages
+
+
+def _get_packages_from_yarn_info(args: list[str], source_dir: RootedPath) -> list[Package]:
+    """Run a ``yarn info`` variant and return the parsed packages."""
+    try:
+        result = run_yarn_cmd(args, source_dir)
+    except PackageManagerError as e:
+        if e.stderr and "isn't supported by any available resolver" in e.stderr:
+            raise UnsupportedFeature(
+                "Found an unsupported dependency, more details in the logs.",
+                solution=dedent(
+                    f"""
+                    Please note that {APP_NAME} disables all Yarn plugins, which might be needed for
+                    the correct processing of a dependency. This is done to avoid arbitrary code
+                    execution, which would affect the accuracy of the SBOM.
+                    """
+                ),
+            )
+        raise
+
+    # the result is not a valid json list, but a sequence of json objects separated by line breaks
+    return [Package.from_info_string(info) for info in result.splitlines()]
+
+
+def _resolve_all_packages(source_dir: RootedPath) -> list[Package]:
+    # --all: report dependencies of all workspaces, not just the active workspace
+    # --recursive: report transitive dependencies, not just direct ones
+    # --cache: include info about the cache entry for each dependency
+    return _get_packages_from_yarn_info(
+        ["info", "--all", "--recursive", "--cache", "--json"], source_dir
+    )
+
+
+def _resolve_workspace_packages(source_dir: RootedPath, workspaces: list[str]) -> list[Package]:
+    seen: dict[str, Package] = {}
+
+    for ws_name in workspaces:
+        # Run info scoped to a single workspace (without --all), so yarn only reports
+        # the transitive dependencies of that workspace rather than the full project.
+        packages = _get_packages_from_yarn_info(
+            ["workspace", ws_name, "info", "--recursive", "--cache", "--json"], source_dir
+        )
+        # Deduplicate across workspaces: overlapping deps appear only once
+        for pkg in packages:
+            if pkg.raw_locator not in seen:
+                seen[pkg.raw_locator] = pkg
+
+    return list(seen.values())
 
 
 def create_components(

@@ -1,0 +1,126 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/app",
+        "pkg:npm/is-number@6.0.0",
+        "pkg:npm/is-number@7.0.0",
+        "pkg:npm/is-odd@3.0.1",
+        "pkg:npm/ms@2.1.3",
+        "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/shared",
+        "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/tooling"
+      ],
+      "text": "hermeto:backend:yarn",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/app",
+      "name": "app",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/app",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/is-number@6.0.0",
+      "name": "is-number",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/is-number@6.0.0",
+      "type": "library",
+      "version": "6.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/is-number@7.0.0",
+      "name": "is-number",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/is-number@7.0.0",
+      "type": "library",
+      "version": "7.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/is-odd@3.0.1",
+      "name": "is-odd",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/is-odd@3.0.1",
+      "type": "library",
+      "version": "3.0.1"
+    },
+    {
+      "bom-ref": "pkg:npm/ms@2.1.3",
+      "name": "ms",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "type": "library",
+      "version": "2.1.3"
+    },
+    {
+      "bom-ref": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/shared",
+      "name": "shared",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/shared",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/tooling",
+      "name": "tooling",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/tooling",
+      "type": "library",
+      "version": "1.0.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

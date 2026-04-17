@@ -12,7 +12,12 @@ from semver import Version
 
 from hermeto import APP_NAME
 from hermeto.core.constants import Mode
-from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    NotAGitRepo,
+    PackageManagerError,
+    PackageRejected,
+    UnsupportedFeature,
+)
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.yarn.locators import (
     Locator,
@@ -218,6 +223,20 @@ def test_resolve_packages(mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedP
 
     for package in packages:
         assert package.parsed_locator == parse_locator(package.raw_locator)
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.run_yarn_cmd")
+def test_resolve_packages_unsupported_resolver(
+    mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """Unsupported resolver errors are raised as UnsupportedFeature for all packages."""
+    mock_run_yarn_cmd.side_effect = PackageManagerError(
+        "yarn info failed",
+        stderr="foo@exec:./gen.js: isn't supported by any available resolver",
+    )
+
+    with pytest.raises(UnsupportedFeature):
+        resolve_packages(rooted_tmp_path)
 
 
 @mock.patch("hermeto.core.package_managers.yarn.resolver.run_yarn_cmd")
@@ -1269,3 +1288,59 @@ def test_path_patch_raises_without_repo_in_permissive_mode(
 
     with pytest.raises(PackageRejected):
         _ComponentResolver({}, [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
+
+
+@mock.patch("hermeto.core.package_managers.yarn.resolver.run_yarn_cmd")
+def test_resolve_packages_deduplicates_workspaces(
+    mock_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """Packages appearing in multiple workspace trees are deduplicated."""
+    shared_line = json.dumps(
+        {
+            "value": "shared@workspace:packages/shared",
+            "children": {
+                "Version": "1.0.0",
+                "Cache": {"Checksum": None, "Path": None},
+            },
+        }
+    )
+    app_only = json.dumps(
+        {
+            "value": "is-number@npm:7.0.0",
+            "children": {
+                "Version": "7.0.0",
+                "Cache": {"Checksum": "abc", "Path": "/cache/is-number.zip"},
+            },
+        }
+    )
+    lib_only = json.dumps(
+        {
+            "value": "left-pad@npm:1.3.0",
+            "children": {
+                "Version": "1.3.0",
+                "Cache": {"Checksum": "def", "Path": "/cache/left-pad.zip"},
+            },
+        }
+    )
+
+    mock_yarn_cmd.side_effect = [
+        f"{app_only}\n{shared_line}",
+        f"{lib_only}\n{shared_line}",
+    ]
+
+    result = resolve_packages(rooted_tmp_path, workspaces=["app", "lib"])
+
+    assert len(result) == 3
+    locators = [p.raw_locator for p in result]
+    assert locators == [
+        "is-number@npm:7.0.0",
+        "shared@workspace:packages/shared",
+        "left-pad@npm:1.3.0",
+    ]
+    assert mock_yarn_cmd.call_count == 2
+    mock_yarn_cmd.assert_any_call(
+        ["workspace", "app", "info", "--recursive", "--cache", "--json"], rooted_tmp_path
+    )
+    mock_yarn_cmd.assert_any_call(
+        ["workspace", "lib", "info", "--recursive", "--cache", "--json"], rooted_tmp_path
+    )

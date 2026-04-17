@@ -308,6 +308,11 @@ class TestPackageInput:
                 r"Extra inputs are not permitted",
                 id="pip_binary_unknown_field",
             ),
+            pytest.param(
+                {"type": "yarn", "workspaces": []},
+                r"'workspaces' must not be an empty list, omit the field instead",
+                id="yarn_empty_workspaces",
+            ),
         ],
     )
     def test_invalid_packages(self, input_data: dict[str, Any], expect_error: str) -> None:
