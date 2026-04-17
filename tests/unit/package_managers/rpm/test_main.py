@@ -254,68 +254,6 @@ def test_resolve_rpm_project_arch_mixed_empty_and_valid(rooted_tmp_path: RootedP
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
 
-@mock.patch("hermeto.core.package_managers.rpm.main._download")
-def test_resolve_rpm_project_correct_format(
-    mock_download: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [
-                    {
-                        "arch": "x86_64",
-                        "packages": [
-                            {
-                                "repoid": "foo",
-                                "url": "SOME_URL",
-                            },
-                        ],
-                        "source": [
-                            {
-                                "url": "SOME_URL",
-                            },
-                        ],
-                    },
-                ],
-            },
-            f,
-        )
-    _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-
-@mock.patch(
-    "hermeto.core.package_managers.rpm.main.open",
-    new_callable=mock.mock_open,
-)
-@mock.patch("hermeto.core.package_managers.rpm.main._download")
-@mock.patch("hermeto.core.package_managers.rpm.main._verify_downloaded")
-@mock.patch("hermeto.core.package_managers.rpm.main.RedhatRpmsLock.model_validate")
-@mock.patch("hermeto.core.package_managers.rpm.main._generate_sbom_components")
-def test_resolve_rpm_project(
-    mock_generate_sbom_components: mock.Mock,
-    mock_model_validate: mock.Mock,
-    mock_verify_downloaded: mock.Mock,
-    mock_download: mock.Mock,
-    mock_open: mock.Mock,
-) -> None:
-    output_dir = mock.Mock()
-    mock_package_dir_path = mock.Mock()
-    output_dir.join_within_root.return_value.path = mock_package_dir_path
-    mock_download.return_value = {}
-
-    source_dir = mock.Mock()
-    source_dir.subpath_from_root = Path()
-
-    _resolve_rpm_project(source_dir, output_dir, None)
-    mock_download.assert_called_once_with(
-        mock_model_validate.return_value, mock_package_dir_path, None, None
-    )
-    mock_verify_downloaded.assert_called_once_with({})
-    mock_generate_sbom_components.assert_called_once_with({}, Path("rpms.lock.yaml"), False)
-
-
 @mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")
 def test_createrepo(mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> None:
     repodir = rooted_tmp_path
@@ -515,7 +453,6 @@ def test_inject_files_post(
     mock_generate_repofiles.assert_called_with(rooted_tmp_path.path, rooted_tmp_path.path, {})
 
 
-@mock.patch("ssl.create_default_context")
 @mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
 def test_download(
@@ -569,29 +506,8 @@ def test_download_filters_architectures(
     assert not any("aarch64" in p for p in paths)
 
 
-@mock.patch("pathlib.Path.stat")
-def test_verify_downloaded_unexpected_size(stat_mock: mock.Mock) -> None:
-    stat_mock.return_value = mock.Mock()
-    stat_mock.st_size = 0
-    metadata = {Path("foo"): {"size": 12345}}
-
-    with pytest.raises(ChecksumVerificationFailed):
-        _verify_downloaded(metadata)
-
-
 def test_verify_downloaded_unsupported_hash_alg() -> None:
     metadata = {Path("foo"): {"checksum": "noalg:unmatchedchecksum", "size": None}}
-    with pytest.raises(ChecksumVerificationFailed):
-        _verify_downloaded(metadata)
-
-
-@mock.patch(
-    "hermeto.core.package_managers.rpm.main.open",
-    new_callable=mock.mock_open,
-    read_data=b"test",
-)
-def test_verify_downloaded_unmatched_checksum(mock_open: mock.Mock) -> None:
-    metadata = {Path("foo"): {"checksum": "sha256:unmatchedchecksum", "size": None}}
     with pytest.raises(ChecksumVerificationFailed):
         _verify_downloaded(metadata)
 

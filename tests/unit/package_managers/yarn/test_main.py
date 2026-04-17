@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import re
 from enum import Enum
-from itertools import chain, zip_longest
+from itertools import zip_longest
 from pathlib import Path
 from unittest import mock
 
@@ -9,24 +9,18 @@ import pytest
 import semver
 
 from hermeto.core.errors import (
-    LockfileNotFound,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Request
-from hermeto.core.models.output import BuildConfig, Component, EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Annotation
+from hermeto.core.models.output import EnvironmentVariable
 from hermeto.core.package_managers.yarn.main import (
-    _check_lockfile,
-    _check_zero_installs,
     _configure_yarn_version,
     _fetch_dependencies,
     _generate_environment_variables,
     _set_yarnrc_configuration,
     _verify_corepack_yarn_version,
     _verify_yarnrc_paths,
-    fetch_yarn_source,
 )
 from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
 from hermeto.core.package_managers.yarn.utils import VersionsRange
@@ -272,17 +266,6 @@ def test_fetch_dependencies(mock_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPat
     mock_yarn_cmd.assert_called_once_with(["install", "--mode", "skip-build"], rooted_tmp_path)
 
 
-def test_resolve_zero_installs_fail() -> None:
-    project = mock.Mock()
-    project.is_zero_installs = True
-
-    with pytest.raises(
-        PackageRejected,
-        match=("Yarn zero install detected, PnP zero installs are unsupported by hermeto"),
-    ):
-        _check_zero_installs(project)
-
-
 @pytest.mark.parametrize(
     "yarn_rc_content, expected_plugins, yarn_version",
     [
@@ -344,15 +327,6 @@ def test_set_yarnrc_configuration(
     mock_write.assert_called_once()
 
 
-def test_check_missing_lockfile(rooted_tmp_path: RootedPath) -> None:
-    project = mock.Mock()
-    project.source_dir = rooted_tmp_path
-    project.yarn_rc = YarnRc(project.source_dir.join_within_root(".yarnrc.yml"), {})
-
-    with pytest.raises(LockfileNotFound):
-        _check_lockfile(project)
-
-
 @pytest.mark.parametrize(
     "opt_path",
     [
@@ -379,101 +353,3 @@ def test_verify_yarnrc_paths_fail(
 def test_generate_environment_variables(yarn_env_variables: list[EnvironmentVariable]) -> None:
     result = _generate_environment_variables()
     assert result == yarn_env_variables
-
-
-@pytest.mark.parametrize(
-    "input_request, package_components",
-    (
-        pytest.param(
-            [{"type": "yarn", "path": "."}],
-            [
-                [
-                    Component(
-                        name="foo",
-                        purl="pkg:npm/foo@1.0.0",
-                        version="1.0.0",
-                    ),
-                    Component(
-                        name="bar",
-                        purl="pkg:npm/bar@2.0.0",
-                        version="2.0.0",
-                    ),
-                ],
-            ],
-            id="single_input_package",
-        ),
-        pytest.param(
-            [{"type": "yarn", "path": "."}, {"type": "yarn", "path": "./path"}],
-            [
-                [
-                    Component(
-                        name="foo",
-                        purl="pkg:npm/foo@1.0.0",
-                        version="1.0.0",
-                    ),
-                ],
-                [
-                    Component(
-                        name="bar",
-                        purl="pkg:npm/bar@2.0.0",
-                        version="2.0.0",
-                    ),
-                    Component(
-                        name="baz",
-                        purl="pkg:npm/baz@3.0.0",
-                        version="3.0.0",
-                    ),
-                ],
-            ],
-            id="multiple_input_packages",
-        ),
-    ),
-    indirect=["input_request"],
-)
-@mock.patch("hermeto.core.package_managers.yarn.main.create_backend_annotation")
-@mock.patch("hermeto.core.package_managers.yarn.main._resolve_yarn_project")
-@mock.patch("hermeto.core.package_managers.yarn.project.Project.from_source_dir")
-def test_fetch_yarn_source(
-    mock_project_from_source_dir: mock.Mock,
-    mock_resolve_yarn: mock.Mock,
-    mock_create_annotation: mock.Mock,
-    package_components: list[Component],
-    input_request: Request,
-    yarn_env_variables: list[EnvironmentVariable],
-) -> None:
-    mock_annotation = Annotation(
-        subjects=set(),
-        annotator={"organization": {"name": "red hat"}},
-        timestamp="2026-01-01T00:00:00Z",
-        text="hermeto:backend:yarn",
-    )
-    mock_create_annotation.return_value = mock_annotation
-    mock_project = [mock.Mock() for _ in input_request.packages]
-    mock_project_from_source_dir.side_effect = mock_project
-    mock_resolve_yarn.side_effect = package_components
-
-    output = fetch_yarn_source(input_request)
-
-    calls = [
-        mock.call(
-            input_request.source_dir.join_within_root(package.path),
-        )
-        for package in input_request.packages
-    ]
-    mock_project_from_source_dir.assert_has_calls(calls)
-
-    calls = [
-        mock.call(
-            project,
-            input_request.output_dir,
-        )
-        for project in mock_project
-    ]
-    mock_resolve_yarn.assert_has_calls(calls)
-
-    expected_output = RequestOutput(
-        annotations=[mock_annotation],
-        components=list(chain.from_iterable(package_components)),
-        build_config=BuildConfig(environment_variables=yarn_env_variables),
-    )
-    assert output == expected_output

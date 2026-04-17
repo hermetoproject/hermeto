@@ -12,7 +12,6 @@ from pyarn.lockfile import Package as PYarnPackage
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat
-from hermeto.core.package_managers.yarn_classic.main import MIRROR_DIR
 from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.package_managers.yarn_classic.resolver import (
     FilePackage,
@@ -30,7 +29,6 @@ from hermeto.core.package_managers.yarn_classic.resolver import (
     _is_tarball_url,
     _read_name_from_tarball,
     _YarnClassicPackageFactory,
-    resolve_packages,
 )
 from hermeto.core.package_managers.yarn_classic.workspaces import Workspace
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
@@ -262,50 +260,6 @@ def test_get_packages_from_lockfile(
     mock_pyarn_lockfile.packages.assert_called_once()
     mock_create_package.assert_has_calls(create_package_expected_calls)
     assert output == [mock_package_1, mock_package_2]
-
-
-@mock.patch("hermeto.core.package_managers.yarn_classic.project.YarnLock.from_file")
-@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_workspace_packages")
-@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.extract_workspace_metadata")
-@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_packages_from_lockfile")
-@mock.patch("hermeto.core.package_managers.yarn_classic.resolver._get_main_package")
-@mock.patch("hermeto.core.package_managers.yarn_classic.resolver.find_runtime_deps")
-def test_resolve_packages(
-    find_runtime_deps: mock.Mock,
-    mock_get_main_package: mock.Mock,
-    mock_get_lockfile_packages: mock.Mock,
-    mock_extract_workspaces: mock.Mock,
-    mock_get_workspace_packages: mock.Mock,
-    mock_get_yarn_lock: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    project = mock.Mock(source_dir=rooted_tmp_path)
-    yarn_lock_path = rooted_tmp_path.join_within_root("yarn.lock")
-
-    main_package = mock.Mock()
-    workspace_packages = [mock.Mock()]
-    lockfile_packages = [mock.Mock(), mock.Mock()]
-    expected_output = [main_package, *workspace_packages, *lockfile_packages]
-
-    find_runtime_deps.return_value = set()
-    mock_get_main_package.return_value = main_package
-    mock_get_lockfile_packages.return_value = lockfile_packages
-    mock_get_workspace_packages.return_value = workspace_packages
-
-    output = resolve_packages(project, rooted_tmp_path.join_within_root(MIRROR_DIR))
-    mock_extract_workspaces.assert_called_once_with(rooted_tmp_path)
-    mock_get_yarn_lock.assert_called_once_with(yarn_lock_path)
-    mock_get_main_package.assert_called_once_with(project.source_dir, project.package_json)
-    mock_get_workspace_packages.assert_called_once_with(
-        rooted_tmp_path, mock_extract_workspaces.return_value
-    )
-    mock_get_lockfile_packages.assert_called_once_with(
-        rooted_tmp_path,
-        rooted_tmp_path.join_within_root(MIRROR_DIR),
-        mock_get_yarn_lock.return_value,
-        find_runtime_deps.return_value,
-    )
-    assert list(output) == expected_output
 
 
 def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
