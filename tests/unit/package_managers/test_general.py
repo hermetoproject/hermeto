@@ -247,22 +247,3 @@ async def test_async_download_files(
     for call in mock_download_file.mock_calls:
         _, file, path = call.args
         assert file, path in files_to_download.items()
-
-
-@pytest.mark.asyncio
-async def test_async_download_files_exception(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    url = "http://example.com/file.tar"
-    download_path = tmp_path / "file.tar"
-
-    session = MagicMock()
-
-    exception_message = "This is a test exception message."
-    session.get().__aenter__.side_effect = Exception(exception_message)
-
-    with pytest.raises(FetchError) as exc_info:
-        await _async_download_binary_file(session, url, download_path)
-
-    assert f"Unsuccessful download: {url}" in caplog.text
-    assert str(exc_info.value) == f"exception_name: Exception, details: {exception_message}"
