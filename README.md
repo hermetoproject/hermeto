@@ -18,7 +18,6 @@ builds.
 - [Basic usage](#basic-usage)
 - [Configuration](#configuration)
 - [Package managers](#package-managers)
-- [Project status](#project-status)
 
 ## Goals
 
@@ -268,10 +267,6 @@ project successfully. If missing, you can easily generate one by running
 
 See docs/yarn.md for more details.
 
-## Project status
-
-Hermeto was derived from (but is not a direct fork of) [Cachito][].
-
 [^pip-download-example]: See for example this [python.org discussion][]
 
 [^2]: Hermeto expects to use a specific version of the `go` command
@@ -291,7 +286,6 @@ Hermeto was derived from (but is not a direct fork of) [Cachito][].
   to our gomod documentation for more details.
 
 [bundler]: https://bundler.io
-[Cachito]: https://github.com/containerbuildsystem/cachito
 [Cargo.lock]: https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
 [cargo]: https://doc.rust-lang.org/cargo
 [config.py]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/config.py

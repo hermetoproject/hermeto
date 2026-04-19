@@ -7,7 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos"
+        "pkg:rpm/centos/centos-stream-repos@9.0-36.el9?arch=noarch&repository_id=baseos"
       ],
       "text": "hermeto:backend:rpm",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -16,7 +16,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos",
+      "bom-ref": "pkg:rpm/centos/centos-stream-repos@9.0-36.el9?arch=noarch&repository_id=baseos",
       "name": "centos-stream-repos",
       "properties": [
         {
@@ -28,7 +28,7 @@
           "value": "rpms.lock.yaml"
         }
       ],
-      "purl": "pkg:rpm/centos/centos-stream-repos@9.0-28.el9?arch=noarch&repository_id=baseos",
+      "purl": "pkg:rpm/centos/centos-stream-repos@9.0-36.el9?arch=noarch&repository_id=baseos",
       "type": "library",
       "version": "9.0"
     }

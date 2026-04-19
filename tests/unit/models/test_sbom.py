@@ -220,12 +220,12 @@ class TestSbom:
                     "externalReferences": [
                         {
                             "type": "distribution",
-                            "url": "https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
+                            "url": "https://github.com/hermetoproject/hermeto/archive/refs/tags/0.2.0.tar.gz",
                         },
                     ],
-                    "name": "archive.zip",
+                    "name": "archive.tar.gz",
                     "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
-                    "purl": "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
+                    "purl": "pkg:generic/archive.tar.gz?checksum=sha256:69aafdd7dcf13ceaa0621be9341bba4a70ea635ef1a2578abc0ce7847e7ddc70&download_url=https://github.com/hermetoproject/hermeto/archive/refs/tags/0.2.0.tar.gz",
                     "type": "file",
                 },
             ],
@@ -243,12 +243,12 @@ class TestSbom:
                 downloadLocation="NOASSERTION",
             ),
             SPDXPackage(
-                SPDXID="SPDXRef-Package-archive.zip-965cfdf16e9275d1b3b562dee596de0474cdc751ba4c30715cfc3934fab3b300",
-                name="archive.zip",
+                SPDXID="SPDXRef-Package-archive.tar.gz-79a4600d16f01119acd459d5b79e6d6948fb219a31c60646b5088c0dabdb7388",
+                name="archive.tar.gz",
                 versionInfo=None,
                 externalRefs=[
                     SPDXPackageExternalRefPackageManagerPURL(
-                        referenceLocator="pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
+                        referenceLocator="pkg:generic/archive.tar.gz?checksum=sha256:69aafdd7dcf13ceaa0621be9341bba4a70ea635ef1a2578abc0ce7847e7ddc70&download_url=https://github.com/hermetoproject/hermeto/archive/refs/tags/0.2.0.tar.gz",
                         referenceType="purl",
                         referenceCategory="PACKAGE-MANAGER",
                     ),

@@ -310,7 +310,7 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
     if "ssh://" in url:
         list_url.append(url.replace("ssh://", "https://"))
 
-    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="hermeto-") as temp_dir:
         for url in list_url:
             log.debug("Cloning the Git repository from %s", url)
             try:

@@ -10,7 +10,6 @@ from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.pip.package_distributions import (
     WheelsFilter,
-    _parse_py_version,
     _process_prefer_binary_mode,
     _sdist_preference,
     process_package_distributions,
@@ -484,12 +483,6 @@ class TestWheelsFilter:
         with pytest.raises(ValueError):
             PipBinaryFilters(**filter_kwargs)
 
-    def test_parse_py_version_from_interpreter(self) -> None:
-        assert _parse_py_version("cp312") == 312
-        assert _parse_py_version("pp312") == 312
-        assert _parse_py_version("py3") == 3
-        assert _parse_py_version("py2.py3") == 3
-
     def test_filter_with_invalid_wheel_filename_is_skipped(self) -> None:
         filters = PipBinaryFilters()
         wheels_filter = WheelsFilter(filters)
@@ -552,6 +545,9 @@ class TestWheelsFilter:
             ),
             pytest.param(
                 "package-1.0.0-cp313-cp313-linux_x86_64.whl", False, id="higher_py_version"
+            ),
+            pytest.param(
+                "package-1.0.0-py38.py39.py310-none-any.whl", True, id="multi_version_tag_matches"
             ),
         ],
     )

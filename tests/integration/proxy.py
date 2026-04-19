@@ -20,17 +20,29 @@ from hermeto.core.models.sbom import (
     Component,
     ExternalReference,
 )
-from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_PORT
+from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_TLS_PORT
 
-TEST_NEXUS_PORT = int(os.getenv("NEXUS_PORT", str(DEFAULT_NEXUS_PORT)))
-_NEXUS_BASE_URL = f"http://{DEFAULT_NEXUS_HOST}:{TEST_NEXUS_PORT}"
+_NEXUS_BASE_URL = f"https://{DEFAULT_NEXUS_HOST}:{DEFAULT_NEXUS_TLS_PORT}"
 
 _PROXY_URL_ENV_PATTERN = re.compile(rf"^{APP_NAME}_([A-Z0-9_]+)__PROXY_URL$", re.IGNORECASE)
 DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_NPM__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/npm-proxy/",
+    f"{APP_NAME}_NPM__PROXY_LOGIN": "hermeto-user",
+    f"{APP_NAME}_NPM__PROXY_PASSWORD": "hermeto-pass",
+    f"{APP_NAME}_YARN__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/npm-proxy/",
+    f"{APP_NAME}_YARN__PROXY_LOGIN": "hermeto-user",
+    f"{APP_NAME}_YARN__PROXY_PASSWORD": "hermeto-pass",
 }
 
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url", "repository_url"})
+
+
+def is_local_nexus_enabled() -> bool:
+    """Return True when a local Nexus instance should be running."""
+    return (
+        os.getenv("HERMETO_TEST_LOCAL_NEXUS") == "1"
+        or os.getenv("HERMETO_TEST_LOCAL_NEXUS_PROXY") == "1"
+    )
 
 
 def is_local_nexus_proxy_enabled() -> bool:

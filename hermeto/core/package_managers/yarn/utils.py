@@ -23,6 +23,9 @@ def run_yarn_cmd(cmd: list[str], source_dir: RootedPath, env: dict[str, str] | N
     # process to the subprocess
     if "PATH" not in env and (self_path := os.environ.get("PATH")):
         env = env | {"PATH": self_path}
+    # Node.js does not use the OS trust store by default; enable it so that
+    # certificates added via update-ca-trust are respected.
+    env.setdefault("NODE_USE_SYSTEM_CA", "1")
     try:
         return run_cmd(cmd=["yarn", *cmd], params={"cwd": source_dir, "env": env})
     except subprocess.CalledProcessError as e:

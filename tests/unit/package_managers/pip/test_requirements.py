@@ -633,9 +633,9 @@ class TestPipRequirementsFile:
 
         # Mapping of the new URL value to be used in modified requirements
         new_urls = {
-            "cnr_server": "https://cachito/nexus/58c88.tar.gz",
-            "spam": "https://cachito/nexus/spam-123456.tar.gz",
-            "asn1crypto": "https://cachito/nexus/asn1crypto-1.3.0.tar.gz",
+            "cnr_server": "https://hermeto/nexus/58c88.tar.gz",
+            "spam": "https://hermeto/nexus/spam-123456.tar.gz",
+            "asn1crypto": "https://hermeto/nexus/asn1crypto-1.3.0.tar.gz",
         }
 
         # Mapping of the new hash values to be used in modified requirements
@@ -647,32 +647,32 @@ class TestPipRequirementsFile:
 
         expected_new_file = dedent(
             """\
-            cnr_server @ https://cachito/nexus/58c88.tar.gz#egg=cnr_server --hash=sha256:123
-            spam @ https://cachito/nexus/spam-123456.tar.gz --hash=sha256:45678
+            cnr_server @ https://hermeto/nexus/58c88.tar.gz#egg=cnr_server --hash=sha256:123
+            spam @ https://hermeto/nexus/spam-123456.tar.gz --hash=sha256:45678
             aiowsgi==0.7 --hash=sha256:90123
-            asn1crypto @ https://cachito/nexus/asn1crypto-1.3.0.tar.gz --hash=sha256:01234
+            asn1crypto @ https://hermeto/nexus/asn1crypto-1.3.0.tar.gz --hash=sha256:01234
             """
         )
 
         expected_attr_changes: dict[str, dict[str, Any]] = {
             "cnr_server": {
-                "download_line": "cnr_server @ https://cachito/nexus/58c88.tar.gz#egg=cnr_server",
-                "url": "https://cachito/nexus/58c88.tar.gz#egg=cnr_server",
+                "download_line": "cnr_server @ https://hermeto/nexus/58c88.tar.gz#egg=cnr_server",
+                "url": "https://hermeto/nexus/58c88.tar.gz#egg=cnr_server",
             },
             "spam": {
                 "hashes": ["sha256:45678"],
                 "options": [],
                 "kind": "url",
-                "download_line": "spam @ https://cachito/nexus/spam-123456.tar.gz",
-                "url": "https://cachito/nexus/spam-123456.tar.gz",
+                "download_line": "spam @ https://hermeto/nexus/spam-123456.tar.gz",
+                "url": "https://hermeto/nexus/spam-123456.tar.gz",
             },
             "aiowsgi": {"hashes": ["sha256:90123"]},
             "asn1crypto": {
-                "download_line": "asn1crypto @ https://cachito/nexus/asn1crypto-1.3.0.tar.gz",
+                "download_line": "asn1crypto @ https://hermeto/nexus/asn1crypto-1.3.0.tar.gz",
                 "hashes": ["sha256:01234"],
                 "kind": "url",
                 "version_specs": [],
-                "url": "https://cachito/nexus/asn1crypto-1.3.0.tar.gz",
+                "url": "https://hermeto/nexus/asn1crypto-1.3.0.tar.gz",
             },
         }
 
@@ -839,51 +839,51 @@ class TestPipRequirementsFile:
             (
                 "spam",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz"},
                 {
-                    "download_line": "spam @ https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "download_line": "spam @ https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                     "kind": "url",
-                    "url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                 },
             ),
             # url is modified to another url
             (
                 "https://github.com/monty/spam/archive/58c88.tar.gz#egg=spam",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam"
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam"
                     ),
                     "kind": "url",
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam",
                 },
             ),
             # vcs is modified to URL
             (
                 "git+https://github.com/monty/spam/archive/58c88.tar.gz#egg=spam",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam"
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam"
                     ),
                     "kind": "url",
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam",
                 },
             ),
             # Editable option, "-e", is dropped when setting url
             (
                 "git+https://github.com/monty/spam/archive/58c88.tar.gz#egg=spam",
                 ["-e"],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam"
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam"
                     ),
                     "kind": "url",
                     "options": [],
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam",
                 },
             ),
             # Editable option, "--e", is not dropped when url is not set
@@ -897,14 +897,14 @@ class TestPipRequirementsFile:
             (
                 "git+https://github.com/monty/spam/archive/58c88.tar.gz#egg=spam",
                 ["--editable"],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam"
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam"
                     ),
                     "kind": "url",
                     "options": [],
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam",
                 },
             ),
             # Editable option, "--editable", is not dropped when url is not set
@@ -921,26 +921,26 @@ class TestPipRequirementsFile:
                     '; python_version < "2.7"'
                 ),
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam "
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam "
                         '; python_version < "2.7"'
                     ),
                     "kind": "url",
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam",
                 },
             ),
             # Extras are cleared when setting a new URL
             (
                 "spam[SALTY]",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz"},
                 {
-                    "download_line": "spam @ https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "download_line": "spam @ https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                     "kind": "url",
                     "extras": [],
-                    "url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                 },
             ),
             # Extras are NOT cleared when a new URL is not set
@@ -954,12 +954,12 @@ class TestPipRequirementsFile:
             (
                 "spam==1.2.3",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz"},
                 {
-                    "download_line": "spam @ https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "download_line": "spam @ https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                     "kind": "url",
                     "version_specs": [],
-                    "url": "https://cachito.example.com/nexus/spam-1.2.3.tar.gz",
+                    "url": "https://hermeto.example.com/nexus/spam-1.2.3.tar.gz",
                 },
             ),
             # Version specs are NOT cleared when a new URL is not set
@@ -973,13 +973,13 @@ class TestPipRequirementsFile:
             (
                 "https://github.com/monty/spam/archive/58c88.tar.gz#egg=spam&spam=maps",
                 [],
-                {"url": "https://cachito.example.com/nexus/spam-58c88.tar.gz"},
+                {"url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz"},
                 {
                     "download_line": (
-                        "spam @ https://cachito.example.com/nexus/spam-58c88.tar.gz#"
+                        "spam @ https://hermeto.example.com/nexus/spam-58c88.tar.gz#"
                         "egg=spam&spam=maps"
                     ),
-                    "url": "https://cachito.example.com/nexus/spam-58c88.tar.gz#egg=spam&spam=maps",
+                    "url": "https://hermeto.example.com/nexus/spam-58c88.tar.gz#egg=spam&spam=maps",
                 },
             ),
         ),

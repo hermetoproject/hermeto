@@ -5,10 +5,8 @@ See also the [npm docs][]
 - [Specifying packages to process](#specifying-packages-to-process)
 - [Project files](#project-files)
   - [Dependencies](#dependencies)
-  - [Project example](#project-example)
 - [Using fetched dependencies](#using-fetched-dependencies)
   - [Changes made by the inject-files command](#changes-made-by-the-inject-files-command)
-  - [Updated project example](#updated-project-example)
 - [Full example walkthrough](#example)
 
 ## Specifying packages to process
@@ -135,234 +133,20 @@ see the [npm documentation][])
 
 </details>
 
-### Project example
-
-<details>
-  <summary>package.json</summary>
-
-```js
-{
-  "name": "npm-demo",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "react-dom": "^18.0.1",
-        "@types/react-dom": "^18.0.1",
-        "bitbucket-cachi2-npm-without-deps-second": "git+https://bitbucket.org/cachi-testing/cachi2-without-deps-second.git",
-        "cachito-npm-without-deps": "https://github.com/cachito-testing/cachito-npm-without-deps/raw/tarball/cachito-npm-without-deps-1.0.0.tgz",
-        "fecha": "file:fecha-4.2.3.tgz"
-  },
-  "workspaces": [
-    "foo"
-  ]
-}
-```
-
-</details>
-
-<details>
-    <summary>package-lock.json</summary>
-
-```js
-{
-  "name": "cachi2-npm-demo",
-  "version": "1.0.0",
-  "lockfileVersion": 3,
-  "requires": true,
-  "packages": {
-    "": {
-      "name": "cachi2-npm-demo",
-      "version": "1.0.0",
-      "license": "ISC",
-      "workspaces": [
-        "foo"
-      ],
-      "dependencies": {
-        "@types/react-dom": "^18.0.1",
-        "bitbucket-cachi2-npm-without-deps-second": "git+https://bitbucket.org/cachi-testing/cachi2-without-deps-second.git",
-        "cachito-npm-without-deps": "https://github.com/cachito-testing/cachito-npm-without-deps/raw/tarball/cachito-npm-without-deps-1.0.0.tgz",
-        "fecha": "file:fecha-4.2.3.tgz",
-        "react-dom": "^18.0.1"
-      }
-    },
-    "foo": {
-      "version": "1.0.0",
-      "license": "ISC",
-      "dependencies": {
-        "is-positive": "github:kevva/is-positive"
-      },
-      "devDependencies": {}
-    },
-    "node_modules/@types/prop-types": {
-      "version": "15.7.5",
-      "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.5.tgz",
-      "integrity": "sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w=="
-    },
-    "node_modules/@types/react": {
-      "version": "18.2.18",
-      "resolved": "https://registry.npmjs.org/@types/react/-/react-18.2.18.tgz",
-      "integrity": "sha512-da4NTSeBv/P34xoZPhtcLkmZuJ+oYaCxHmyHzwaDQo9RQPBeXV+06gEk2FpqEcsX9XrnNLvRpVh6bdavDSjtiQ==",
-      "dependencies": {
-        "@types/prop-types": "*",
-        "@types/scheduler": "*",
-        "csstype": "^3.0.2"
-      }
-    },
-    "node_modules/@types/react-dom": {
-      "version": "18.2.7",
-      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.2.7.tgz",
-      "integrity": "sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA==",
-      "dependencies": {
-        "@types/react": "*"
-      }
-    },
-    "node_modules/@types/scheduler": {
-      "version": "0.16.3",
-      "resolved": "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.3.tgz",
-      "integrity": "sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ=="
-    },
-    "node_modules/bitbucket-cachi2-npm-without-deps-second": {
-      "version": "2.0.0",
-      "resolved": "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982"
-    },
-    "node_modules/cachito-npm-without-deps": {
-      "version": "1.0.0",
-      "resolved": "https://github.com/cachito-testing/cachito-npm-without-deps/raw/tarball/cachito-npm-without-deps-1.0.0.tgz",
-      "integrity": "sha512-Q+cfkK1fnrNJqxiig/iVSZTe83OWLdxhuGa96k1IJJ5nkTxrhNyh6MUZ6YHKH8xitDgpIQSojuntctt2pB7+3g=="
-    },
-    "node_modules/csstype": {
-      "version": "3.1.2",
-      "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.1.2.tgz",
-      "integrity": "sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ=="
-    },
-    "node_modules/fecha": {
-      "version": "4.2.3",
-      "resolved": "file:fecha-4.2.3.tgz",
-      "integrity": "sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==",
-      "license": "MIT"
-    },
-    "node_modules/foo": {
-      "resolved": "foo",
-      "link": true
-    },
-    "node_modules/is-positive": {
-      "version": "3.1.0",
-      "resolved": "git+ssh://git@github.com/kevva/is-positive.git#97edff6f525f192a3f83cea1944765f769ae2678",
-      "license": "MIT",
-      "engines": {
-        "node": ">=0.10.0"
-      }
-    },
-    "node_modules/js-tokens": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
-      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
-    },
-    "node_modules/loose-envify": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
-      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
-      "dependencies": {
-        "js-tokens": "^3.0.0 || ^4.0.0"
-      },
-      "bin": {
-        "loose-envify": "cli.js"
-      }
-    },
-    "node_modules/react": {
-      "version": "18.2.0",
-      "resolved": "https://registry.npmjs.org/react/-/react-18.2.0.tgz",
-      "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
-      "peer": true,
-      "dependencies": {
-        "loose-envify": "^1.1.0"
-      },
-      "engines": {
-        "node": ">=0.10.0"
-      }
-    },
-    "node_modules/react-dom": {
-      "version": "18.2.0",
-      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz",
-      "integrity": "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==",
-      "dependencies": {
-        "loose-envify": "^1.1.0",
-        "scheduler": "^0.23.0"
-      },
-      "peerDependencies": {
-        "react": "^18.2.0"
-      }
-    },
-    "node_modules/scheduler": {
-      "version": "0.23.0",
-      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz",
-      "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",
-      "dependencies": {
-        "loose-envify": "^1.1.0"
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-  <summary>foo/package.json (workspace)</summary>
-
-```js
-{
-  "name": "foo",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-      "is-positive": "github:kevva/is-positive"
-  }
-}
-```
-
-</details>
-
 ## Using fetched dependencies
 
 See the [Example](#example) for a complete walkthrough of Hermeto usage.
 
-Hermeto downloads the npm dependencies as tar archives into the `deps/npm/`
-subpath of the output directory.
-
-1. Dependencies fetched from npm registries are placed directly to this
-   directory (array-flatten in the following example).
-2. Dependencies downloaded from other HTTPS URL are placed to subdirectory
-   `external-<tarball_name>` (bar-project in the following example).
-3. Dependencies retrieved from Git repository are placed to `host, namespace,
-   repo` subdirectories (foo-project in the following example).
+Hermeto downloads npm dependencies as tar archives into the `deps/npm/`
+subpath of the output directory. Registry dependencies are placed directly
+there (e.g. `accepts-1.3.8.tgz`). Dependencies from Git or other HTTPS URLs
+are placed in subdirectories as described in [Project files](#project-files).
 
 ```text
 hermeto-output/deps/npm
+├── accepts-1.3.8.tgz
 ├── array-flatten-1.1.1.tgz
-├── bitbucket.org
-│        └── foo-testing
-│             └── foo-project
-│                       └── foo-project-external-gitcommit-9e164b97043a2d91bbeb992f6cc68a3d1015086a.tgz
-├── body-parser-1.20.1.tgz
-├── bytes-3.1.2.tgz
-│   ...
-├── external-bar-project
-│        └── bar-project-external-sha512-43e71f90ad5YOLO.tgz
-│   ...
+├── ...
 ```
 
 In order for the `npm install` command to use the fetched dependencies instead
@@ -390,228 +174,38 @@ Hermeto command updates the following in the `package-lock.json` file
   archive and changing the integrity checksum, Hermeto deletes integrity items,
   which should not be there in the first place
 
-### Updated project example
+After running `inject-files`, `resolved` URLs in `package-lock.json` point to
+the output directory, for example:
 
-<details>
-  <summary>package.json</summary>
-
-```js
-{
-  "name": "cachi2-npm-demo",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "react-dom": "^18.0.1",
-    "@types/react-dom": "^18.0.1",
-    "bitbucket-cachi2-npm-without-deps-second": "",
-    "cachito-npm-without-deps": "",
-    "fecha": "file:fecha-4.2.3.tgz"
-  },
-  "workspaces": [
-    "foo"
-  ]
-}
+```diff
+-      "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",
++      "resolved": "file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz",
 ```
-
-</details>
-
-<details>
-  <summary>package-lock.json</summary>
-
-```js
-{
-  "name": "cachi2-npm-demo",
-  "version": "1.0.0",
-  "lockfileVersion": 3,
-  "requires": true,
-  "packages": {
-    "": {
-      "name": "cachi2-npm-demo",
-      "version": "1.0.0",
-      "license": "ISC",
-      "workspaces": [
-        "foo"
-      ],
-      "dependencies": {
-        "@types/react-dom": "^18.0.1",
-        "bitbucket-cachi2-npm-without-deps-second": "",
-        "cachito-npm-without-deps": "",
-        "fecha": "file:fecha-4.2.3.tgz",
-        "react-dom": "^18.0.1"
-      }
-    },
-    "foo": {
-      "version": "1.0.0",
-      "license": "ISC",
-      "dependencies": {
-        "is-positive": ""
-      },
-      "devDependencies": {}
-    },
-    "node_modules/@types/prop-types": {
-      "version": "15.7.5",
-      "resolved": "file:///tmp/deps/npm/types-prop-types-15.7.5.tgz",
-      "integrity": "sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w=="
-    },
-    "node_modules/@types/react": {
-      "version": "18.2.18",
-      "resolved": "file:///tmp/deps/npm/types-react-18.2.18.tgz",
-      "integrity": "sha512-da4NTSeBv/P34xoZPhtcLkmZuJ+oYaCxHmyHzwaDQo9RQPBeXV+06gEk2FpqEcsX9XrnNLvRpVh6bdavDSjtiQ==",
-      "dependencies": {
-        "@types/prop-types": "*",
-        "@types/scheduler": "*",
-        "csstype": "^3.0.2"
-      }
-    },
-    "node_modules/@types/react-dom": {
-      "version": "18.2.7",
-      "resolved": "file:///tmp/deps/npm/types-react-dom-18.2.7.tgz",
-      "integrity": "sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA==",
-      "dependencies": {
-        "@types/react": "*"
-      }
-    },
-    "node_modules/@types/scheduler": {
-      "version": "0.16.3",
-      "resolved": "file:///tmp/deps/npm/types-scheduler-0.16.3.tgz",
-      "integrity": "sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ=="
-    },
-    "node_modules/bitbucket-cachi2-npm-without-deps-second": {
-      "version": "2.0.0",
-      "resolved": "file:///tmp/deps/npm/bitbucket.org/cachi-testing/cachi2-without-deps-second/cachi2-without-deps-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz"
-    },
-    "node_modules/cachito-npm-without-deps": {
-      "version": "1.0.0",
-      "resolved": "file:///tmp/deps/npm/external-cachito-npm-without-deps/cachito-npm-without-deps-external-sha512-43e71f90ad5f9eb349ab18a283f8954994def373962ddc61b866bdea4d48249e67913c6b84dca1e8c519e981ca1fcc62b438292104a88ee9ed72db76a41efede.tgz",
-      "integrity": "sha512-Q+cfkK1fnrNJqxiig/iVSZTe83OWLdxhuGa96k1IJJ5nkTxrhNyh6MUZ6YHKH8xitDgpIQSojuntctt2pB7+3g=="
-    },
-    "node_modules/csstype": {
-      "version": "3.1.2",
-      "resolved": "file:///tmp/deps/npm/csstype-3.1.2.tgz",
-      "integrity": "sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ=="
-    },
-    "node_modules/fecha": {
-      "version": "4.2.3",
-      "resolved": "file:fecha-4.2.3.tgz",
-      "integrity": "sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==",
-      "license": "MIT"
-    },
-    "node_modules/foo": {
-      "resolved": "foo",
-      "link": true
-    },
-    "node_modules/is-positive": {
-      "version": "3.1.0",
-      "resolved": "file:///tmp/deps/npm/github.com/kevva/is-positive/is-positive-external-gitcommit-97edff6f525f192a3f83cea1944765f769ae2678.tgz",
-      "license": "MIT",
-      "engines": {
-        "node": ">=0.10.0"
-      }
-    },
-    "node_modules/js-tokens": {
-      "version": "4.0.0",
-      "resolved": "file:///tmp/deps/npm/js-tokens-4.0.0.tgz",
-      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
-    },
-    "node_modules/loose-envify": {
-      "version": "1.4.0",
-      "resolved": "file:///tmp/deps/npm/loose-envify-1.4.0.tgz",
-      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
-      "dependencies": {
-        "js-tokens": "^3.0.0 || ^4.0.0"
-      },
-      "bin": {
-        "loose-envify": "cli.js"
-      }
-    },
-    "node_modules/react": {
-      "version": "18.2.0",
-      "resolved": "file:///tmp/deps/npm/react-18.2.0.tgz",
-      "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
-      "peer": true,
-      "dependencies": {
-        "loose-envify": "^1.1.0"
-      },
-      "engines": {
-        "node": ">=0.10.0"
-      }
-    },
-    "node_modules/react-dom": {
-      "version": "18.2.0",
-      "resolved": "file:///tmp/deps/npm/react-dom-18.2.0.tgz",
-      "integrity": "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==",
-      "dependencies": {
-        "loose-envify": "^1.1.0",
-        "scheduler": "^0.23.0"
-      },
-      "peerDependencies": {
-        "react": "^18.2.0"
-      }
-    },
-    "node_modules/scheduler": {
-      "version": "0.23.0",
-      "resolved": "file:///tmp/deps/npm/scheduler-0.23.0.tgz",
-      "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",
-      "dependencies": {
-        "loose-envify": "^1.1.0"
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-  <summary>foo/package.json (workspace)</summary>
-
-```js
-{
-  "name": "foo",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-      "is-positive": ""
-  }
-}
-```
-
-</details>
 
 ### Example
 
-Let's build simple npm project [sample-nodejs-app][]. Get
-the repo if you want to try for yourself
+Let's build a [basic npm project][].
+
+Get the repo if you want to try for yourself:
 
 ```shell
-git clone https://github.com/cachito-testing/sample-nodejs-app.git
+git clone https://github.com/hermetoproject/doc-examples.git --branch=npm-basic && cd doc-examples
 ```
 
 #### Pre-fetch dependencies
 
-The steps for pre-fetching the dependencies is similar to before, but this time
-we will use the `npm` package manager type. The default behavior path of `.` is
-assumed.
+As mentioned above in
+[Specifying packages to process](#specifying-packages-to-process),
+Hermeto pre-fetches using the `fetch-deps` command.
 
-See [the npm documentation][] for more details about running Hermeto for
-pre-fetching npm dependencies.
+Sources can be fetched with
 
 ```shell
-hermeto fetch-deps --source ./sample-nodejs-app --output ./hermeto-output '{"type": "npm"}'
+hermeto fetch-deps npm
 ```
+
+The shorthand `npm` defaults `path` to `.`. You can pass a full JSON
+object if you need a custom source directory instead.
 
 #### Generate environment variables
 
@@ -646,33 +240,18 @@ diff --git a/package-lock.json b/package-lock.json
 
 #### Build the application image
 
-We will base the final application image on `node:18` base image. The base image
-build has `npm` pre-installed, so the final phase can use network isolation 🎉.
-
-```dockerfile
-FROM node:18
-
-COPY sample-nodejs-app/ /src/sample-nodejs-app
-WORKDIR /src/sample-nodejs-app
-
-# Run npm install command and list installed packages
-RUN . /tmp/hermeto.env && npm i && npm ls
-
-EXPOSE 9000
-
-CMD ["node", "index.js"]
-```
-
-We can then build the image as before while mounting the required Hermeto data!
+The repo already contains a `Containerfile` for this example. Build it while
+mounting the pre-fetched Hermeto data:
 
 ```shell
 podman build . \
   --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
   --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
   --network none \
-  --tag sample-nodejs-app
+  --tag npm-example
 ```
 
+[basic npm project]: https://github.com/hermetoproject/doc-examples/tree/npm-basic
 [bug]: https://github.com/npm/cli/issues/2846
 [npm]: https://www.npmjs.com
 [npm docs]: https://docs.npmjs.com
@@ -680,6 +259,4 @@ podman build . \
 [npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
 [package-lock.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json
 [package.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-json
-[sample-nodejs-app]: https://github.com/cachito-testing/sample-nodejs-app
-[the npm documentation]: npm.md
 [workspace]: https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true

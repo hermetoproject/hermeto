@@ -142,7 +142,6 @@ log = logging.getLogger(__name__)
         ),
         # Test the handling of missing checksums. Hermeto should report them via
         # hermeto:missing_hash:in_file properties in the SBOM.
-        # See also https://github.com/cachito-testing/gomod-multiple-modules/tree/missing-checksums
         pytest.param(
             utils.TestParameters(
                 branch="gomod/missing-checksums",

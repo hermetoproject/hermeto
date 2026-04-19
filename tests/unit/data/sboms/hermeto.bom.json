@@ -48,14 +48,14 @@
             "type": "library"
         },
         {
-            "name": "cachito-npm-without-deps",
+            "name": "npm-without-deps",
             "properties": [
                 {
                     "name": "hermeto:found_by",
                     "value": "hermeto"
                 }
             ],
-            "purl": "pkg:npm/cachito-npm-without-deps?vcs_url=git%2Bhttps://github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6",
+            "purl": "pkg:npm/npm-without-deps?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40b7dacdbf112ce0ea17a70f2f70f5be81",
             "type": "library"
         },
         {
@@ -166,7 +166,7 @@
             "type": "library"
         },
         {
-            "name": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+            "name": "github.com/hermetoproject/integration-tests/terminaltor",
             "properties": [
                 {
                     "name": "hermeto:found_by",
@@ -174,11 +174,11 @@
                 }
             ],
             "version": "v1.0.0",
-            "purl": "pkg:golang/github.com/cachito-testing/gomod-pandemonium/terminaltor@v1.0.0?type=module",
+            "purl": "pkg:golang/github.com/hermetoproject/integration-tests/terminaltor@v1.0.0?type=module",
             "type": "library"
         },
         {
-            "name": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+            "name": "github.com/hermetoproject/integration-tests/terminaltor",
             "properties": [
                 {
                     "name": "hermeto:found_by",
@@ -186,7 +186,7 @@
                 }
             ],
             "version": "v1.0.0",
-            "purl": "pkg:golang/github.com/cachito-testing/gomod-pandemonium/terminaltor@v1.0.0?type=package",
+            "purl": "pkg:golang/github.com/hermetoproject/integration-tests/terminaltor@v1.0.0?type=package",
             "type": "library"
         },
         {

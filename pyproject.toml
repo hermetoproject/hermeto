@@ -24,7 +24,6 @@ dependencies = [
   "packageurl-python",
   "packaging",
   "pyarn",
-  "pybuild-deps",
   "pydantic",
   "pydantic-settings",
   "pypi-simple",
@@ -46,6 +45,7 @@ dev = [
 test = [
   "filelock",
   "jsonschema",
+  "podman-compose",
   "pytest",
   "pytest-asyncio",
   "pytest-cov",

@@ -14,10 +14,10 @@
         "pkg:golang/encoding?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20211026214220-a5af4262860e?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20211026214220-a5af4262860e?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
         "pkg:golang/internal/abi?type=package",
         "pkg:golang/internal/asan?type=package",
         "pkg:golang/internal/bisect?type=package",
@@ -171,56 +171,56 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20211026214220-a5af4262860e?type=package",
-      "name": "github.com/cachito-testing/go-generate-imported/foobar",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
+      "name": "github.com/hermetoproject/integration-tests/foobar",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/foobar@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
       "type": "library",
-      "version": "v0.0.0-20211026214220-a5af4262860e"
+      "version": "v0.0.0-20260415150945-27ab4eeb7cc6"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20211026214220-a5af4262860e?type=package",
-      "name": "github.com/cachito-testing/go-generate-imported/internal/generate",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
+      "name": "github.com/hermetoproject/integration-tests/internal/generate",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/internal/generate@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
       "type": "library",
-      "version": "v0.0.0-20211026214220-a5af4262860e"
+      "version": "v0.0.0-20260415150945-27ab4eeb7cc6"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
-      "name": "github.com/cachito-testing/go-generate-imported",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=module",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=module",
       "type": "library",
-      "version": "v0.0.0-20211026214220-a5af4262860e"
+      "version": "v0.0.0-20260415150945-27ab4eeb7cc6"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
-      "name": "github.com/cachito-testing/go-generate-imported",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20211026214220-a5af4262860e?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150945-27ab4eeb7cc6?type=package",
       "type": "library",
-      "version": "v0.0.0-20211026214220-a5af4262860e"
+      "version": "v0.0.0-20260415150945-27ab4eeb7cc6"
     },
     {
       "bom-ref": "pkg:golang/internal/abi?type=package",

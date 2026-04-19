@@ -7,7 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:pypi/cachito-pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403fe2fc3cb8ffa36317cacbd9d356e35e17af2824"
+        "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a153cce6f320ffde46e3e47dd58d9ba91086cdca"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -16,15 +16,15 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:pypi/cachito-pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403fe2fc3cb8ffa36317cacbd9d356e35e17af2824",
-      "name": "cachito-pip-empty",
+      "bom-ref": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a153cce6f320ffde46e3e47dd58d9ba91086cdca",
+      "name": "pip-empty",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/cachito-pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403fe2fc3cb8ffa36317cacbd9d356e35e17af2824",
+      "purl": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40a153cce6f320ffde46e3e47dd58d9ba91086cdca",
       "type": "library",
       "version": "1.0.0"
     }

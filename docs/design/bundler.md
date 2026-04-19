@@ -611,4 +611,4 @@ PATH
 - proper support for plugins
 
 ### References
-This design doc was partially based on the original implementation done in [Cachito](https://github.com/containerbuildsystem/cachito/blob/master/cachito/workers/pkg_managers/rubygems.py). Since Hermeto has different design goals from Cachito, the implementation here will deviate from the original one, with a key difference being that Hermeto needs to provide a way to perform an [offline install](#providing-the-content-for-the-hermetic-build) from the local prefetched content.
+Hermeto needs to provide a way to perform an [offline install](#providing-the-content-for-the-hermetic-build) from the local prefetched content.

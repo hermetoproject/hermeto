@@ -97,14 +97,14 @@
       ]
     },
     {
-      "name": "cachito-npm-without-deps",
-      "SPDXID": "SPDXRef-Package-npm-cachito-npm-without-deps-72138119b55a065d",
-      "versionInfo": "git+https://github.com/cachito-testing/cachito-npm-without-deps.git#2f0ce1d7b1f8b35572d919428b965285a69583f6",
+      "name": "npm-without-deps",
+      "SPDXID": "SPDXRef-Package-npm-npm-without-deps-72138119b55a065d",
+      "versionInfo": "git+https://github.com/hermetoproject/integration-tests.git#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:npm/cachito-npm-without-deps@git+https://github.com/cachito-testing/cachito-npm-without-deps.git%232f0ce1d7b1f8b35572d919428b965285a69583f6"
+          "referenceLocator": "pkg:npm/npm-without-deps@git+https://github.com/hermetoproject/integration-tests.git%23b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81"
         }
       ]
     },
@@ -207,7 +207,7 @@
     },
     {
       "spdxElementId": "SPDXRef-DocumentRoot-File-",
-      "relatedSpdxElement": "SPDXRef-Package-npm-cachito-npm-without-deps-72138119b55a065d",
+      "relatedSpdxElement": "SPDXRef-Package-npm-npm-without-deps-72138119b55a065d",
       "relationshipType": "CONTAINS"
     },
     {

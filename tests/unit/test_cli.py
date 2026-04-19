@@ -19,6 +19,7 @@ import yaml
 
 import hermeto.core.config as config_file
 from hermeto import APP_NAME
+from hermeto.core.constants import Mode
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import (
     BuildConfig,
@@ -196,6 +197,17 @@ class TestTopLevelOpts:
     def test_mode_option_is_valid(self, mode: str) -> None:
         args = ["--mode", mode, "fetch-deps", "gomod"]
         with mock_fetch_deps():
+            invoke_expecting_sucess(app, args)
+
+    def test_mode_permissive_propagates_to_config(self) -> None:
+        args = ["--mode", "permissive", "fetch-deps", "gomod"]
+
+        def side_effect(request: Any) -> RequestOutput:
+            assert config_file.get_config().mode == Mode.PERMISSIVE
+            return RequestOutput.empty()
+
+        with mock.patch("hermeto.interface.cli.resolve_packages") as mock_resolve:
+            mock_resolve.side_effect = side_effect
             invoke_expecting_sucess(app, args)
 
     @pytest.mark.parametrize(
@@ -1055,12 +1067,12 @@ class TestMergeSboms:
         [
             [
                 "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
             ],
             [
                 "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod.bom.json",
-                "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
+                "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
             ],
         ],
     )
@@ -1077,15 +1089,15 @@ class TestMergeSboms:
             pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod.bom.json",
                 ],
                 id="merge_our_own_cyclonedx",
             ),
             pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod.bom.json",
-                    "./tests/unit/data/sboms/cachito_gomod_nodeps.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod.bom.json",
+                    "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
                 ],
                 id="merge_our_own_cyclonedx_more",
             ),

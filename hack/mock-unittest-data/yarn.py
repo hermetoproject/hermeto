@@ -20,15 +20,15 @@ def print_banner(content: str) -> None:
 
 
 def clone_repo(git_executable: str, tmpdir: Path) -> Path:
-    repo_dir = tmpdir / "cachi2-yarn-berry"
+    repo_dir = tmpdir / "integration-tests-yarn"
     subprocess.run(
         [
             git_executable,
             "clone",
-            "https://github.com/cachito-testing/cachi2-yarn-berry",
+            "https://github.com/hermetoproject/integration-tests",
             "--depth=1",
             "--single-branch",
-            "--branch=zero-installs",
+            "--branch=yarn/zero-installs",
             repo_dir,
         ],
         check=True,

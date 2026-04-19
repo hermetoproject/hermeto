@@ -875,13 +875,13 @@ def test_update_package_json_files(
     [
         (
             {
-                "https://github.com/cachito-testing/ms-1.0.0.tgz": {
+                "https://github.com/hermetoproject/ms-1.0.0.tgz": {
                     "name": "ms",
                     "version": "1.0.0",
                     "integrity": "sha512-YOLO1111==",
                 },
                 # Test handling package with the same name but different version and integrity
-                "https://github.com/cachito-testing/ms-2.0.0.tgz": {
+                "https://github.com/hermetoproject/ms-2.0.0.tgz": {
                     "name": "ms",
                     "version": "2.0.0",
                     "integrity": "sha512-YOLO2222==",
@@ -906,19 +906,19 @@ def test_update_package_json_files(
                     "name": "is-positive",
                 },
                 # The name of the package is different from the repo name, we expect the result archive to have the repo name in it
-                "git+ssh://git@gitlab.foo.bar.com/osbs/cachito-tests.git#c300503": {
+                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": {
                     "integrity": "sha512-FOOOOOOOOOYOLO==",
                     "name": "gitlab-hermeto-npm-without-deps-second",
                 },
             },
             {
-                "https://github.com/cachito-testing/ms-1.0.0.tgz": "external-ms/ms-external-sha256-YOLO1111.tgz",
-                "https://github.com/cachito-testing/ms-2.0.0.tgz": "external-ms/ms-external-sha256-YOLO2222.tgz",
+                "https://github.com/hermetoproject/ms-1.0.0.tgz": "external-ms/ms-external-sha256-YOLO1111.tgz",
+                "https://github.com/hermetoproject/ms-2.0.0.tgz": "external-ms/ms-external-sha256-YOLO2222.tgz",
                 "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": "bitbucket.org/cachi-testing/cachi2-without-deps-second/cachi2-without-deps-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz",
                 "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": "types-react-dom-18.0.11.tgz",
                 "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": "abbrev-2.0.0.tgz",
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": "github.com/kevva/is-positive/is-positive-external-gitcommit-97edff6f.tgz",
-                "git+ssh://git@gitlab.foo.bar.com/osbs/cachito-tests.git#c300503": "gitlab.foo.bar.com/osbs/cachito-tests/cachito-tests-external-gitcommit-c300503.tgz",
+                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": "gitlab.foo.bar.com/osbs/hermetoproject/integration-tests/hermetoproject/integration-tests-external-gitcommit-c300503.tgz",
             },
         ),
     ],
@@ -977,7 +977,7 @@ def test_npm_settings_rejects_proxy_urls_containing_credentials(
     [
         pytest.param(
             {
-                "https://github.com/cachito-testing/ms-1.0.0.tgz": {
+                "https://github.com/hermetoproject/integration-tests/ms-1.0.0.tgz": {
                     "name": "ms",
                     "version": "1.0.0",
                     "integrity": "completely-fake",
@@ -990,7 +990,7 @@ def test_npm_settings_rejects_proxy_urls_containing_credentials(
                     "integrity": "completely-fake",
                     "name": "is-positive",
                 },
-                "git+ssh://git@gitlab.foo.bar.com/osbs/cachito-tests.git#c300503": {
+                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": {
                     "integrity": "completely-fake",
                     "name": "gitlab-hermeto-npm-without-deps-second",
                 },

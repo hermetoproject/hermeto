@@ -382,12 +382,12 @@
             ]
         },
         {
-            "bom-ref": "pkg:npm/cachito-npm-without-deps%40git+https:/github.com/cachito-testing/cachito-npm-without-deps.git%232f0ce1d7b1f8b35572d919428b965285a69583f6?package-id=f381e97e072d545c",
+            "bom-ref": "pkg:npm/npm-without-deps%40git+https:/github.com/hermetoproject/integration-tests.git%23b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81?package-id=f381e97e072d545c",
             "type": "library",
-            "name": "cachito-npm-without-deps",
-            "version": "git+https://github.com/cachito-testing/cachito-npm-without-deps.git#2f0ce1d7b1f8b35572d919428b965285a69583f6",
-            "cpe": "cpe:2.3:a:cachito-npm-without-deps:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*",
-            "purl": "pkg:npm/cachito-npm-without-deps@git+https://github.com/cachito-testing/cachito-npm-without-deps.git%232f0ce1d7b1f8b35572d919428b965285a69583f6",
+            "name": "npm-without-deps",
+            "version": "git+https://github.com/hermetoproject/integration-tests.git#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81",
+            "cpe": "cpe:2.3:a:npm-without-deps:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*",
+            "purl": "pkg:npm/npm-without-deps@git+https://github.com/hermetoproject/integration-tests.git%23b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81",
             "properties": [
                 {
                     "name": "syft:package:foundBy",
@@ -403,63 +403,47 @@
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito-npm-without-deps:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm-without-deps:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm_without_deps:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm_without_deps:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm_without_deps:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm_without_deps:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito-npm-without:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm-without:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito-npm-without:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm-without:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm_without:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm_without:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm_without:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm_without:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito-npm:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito-npm:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:npm:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:*:npm-without-deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito_npm:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
-                },
-                {
-                    "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
-                },
-                {
-                    "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:cachito:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
-                },
-                {
-                    "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:*:cachito-npm-without-deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
-                },
-                {
-                    "name": "syft:cpe23",
-                    "value": "cpe:2.3:a:*:cachito_npm_without_deps:git\\+https\\:\\/\\/github.com\\/cachito-testing\\/cachito-npm-without-deps.git\\#2f0ce1d7b1f8b35572d919428b965285a69583f6:*:*:*:*:*:*:*"
+                    "value": "cpe:2.3:a:*:npm_without_deps:git\\+https\\:\\/\\/github.com\\/hermetoproject\\/integration-tests.git\\#b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81:*:*:*:*:*:*:*"
                 },
                 {
                     "name": "syft:location:0:path",
@@ -683,7 +667,7 @@
                 },
                 {
                     "name": "syft:metadata:mainModule",
-                    "value": "github.com/cachito-testing/gomod-pandemonium"
+                    "value": "github.com/hermetoproject/integration-tests"
                 }
             ]
         },
