@@ -95,7 +95,7 @@ async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
-    auth: str | None = None,
+    headers: dict[str, str] | None = None,
     ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
 ) -> None:
@@ -105,7 +105,7 @@ async def _async_download_binary_file(
     :param aiohttp_retry.RetryClient session: Aiohttp interface for making HTTP requests.
     :param str url: URL for file download
     :param str download_path: File path location
-    :param str auth: Optional Authorization header value.
+    :param headers: Optional headers dict for this request.
     :param int chunk_size: Chunk size param for Response.content.read()
     :raise FetchError: If download failed
     """
@@ -116,7 +116,6 @@ async def _async_download_binary_file(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
         )
 
-        headers = {"Authorization": auth} if auth is not None else None
         async with session.get(
             url,
             timeout=timeout,
@@ -145,14 +144,14 @@ async def async_download_files(
     files_to_download: Mapping[str, StrPath],
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
-    auth: str | None = None,
+    headers: Mapping[str, dict[str, str]] | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
-    :param files_to_download: Mapping of URLs and file paths to download.
+    :param files_to_download: Mapping of URLs to file paths to download.
     :param concurrency_limit: Max number of concurrent tasks (downloads).
     :param ssl_context: Optional SSL context for the requests.
-    :param auth: Optional Authorization header value.
+    :param headers: Optional per-URL headers mapping (URL -> headers dict).
     """
     trace_config = aiohttp.TraceConfig()
     max_retries = get_config().http.max_retries
@@ -201,7 +200,7 @@ async def async_download_files(
                         url,
                         download_path,
                         ssl_context=ssl_context,
-                        auth=auth,
+                        headers=headers.get(url) if headers else None,
                     )
                 )
             )

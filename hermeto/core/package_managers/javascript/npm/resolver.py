@@ -91,7 +91,16 @@ async def async_download_with_auth(
     """
     config = get_config()
     concurrency_limit = config.runtime.concurrency_limit
-    await async_download_files(files_with_auth, concurrency_limit, auth=auth)
+
+    def get_headers() -> dict[str, dict[str, str]] | None:
+        if auth is None:
+            return None
+
+        # NOTE: when present proxy auth is the same for all packages accessible
+        # through a proxy.
+        return {key: {"Authorization": auth} for key in files_with_auth.keys()}
+
+    await async_download_files(files_with_auth, concurrency_limit, headers=get_headers())
     await async_download_files(files_without_auth, concurrency_limit)
 
 

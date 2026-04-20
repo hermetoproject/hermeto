@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import logging
+import os
 import re
 from abc import ABC, abstractmethod
+from base64 import b64encode
 from collections import Counter
+from collections.abc import Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, Literal
+from string import Template
+from typing import Annotated, Any, Literal, Union
 from urllib.parse import urljoin, urlparse
 
 from packageurl import PackageURL
@@ -12,11 +17,15 @@ from pydantic import (
     AnyUrl,
     BaseModel,
     ConfigDict,
+    Discriminator,
     PlainSerializer,
+    Tag,
+    TypeAdapter,
     field_validator,
     model_validator,
 )
 from pydantic_core.core_schema import ValidationInfo
+from typing_extensions import override
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import PackageManagerError
@@ -25,11 +34,121 @@ from hermeto.core.rooted_path import RootedPath
 
 CHECKSUM_FORMAT = re.compile(r"^[a-zA-Z0-9]+:[a-zA-Z0-9]+$")
 
+log = logging.getLogger(__name__)
+
+
+class AbstractAuth(BaseModel, ABC):
+    """Abstract base class for artifact authentication."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    @abstractmethod
+    def to_headers(self) -> dict[str, str]:
+        """Return the authentication headers."""
+
+    @model_validator(mode="after")
+    def validate_headers(self) -> "AbstractAuth":
+        """Validate that the headers are not empty."""
+        if not self.to_headers():
+            raise ValueError("Headers cannot be empty")
+        return self
+
+    @classmethod
+    def _expand_env_vars(cls, value: str) -> str:
+        """Expand environment variables in the value.
+
+        Logs a warning when a referenced variable is set but empty.
+
+        :param value: the value to expand
+        :return: the expanded value
+        :raises ValueError: if the environment variable is not set
+        """
+        template = Template(value)
+        for match in template.pattern.finditer(value):
+            name = match.group("named") or match.group("braced")
+            if name is not None and name in os.environ and os.environ[name] == "":
+                log.warning(
+                    "Environment variable %s referenced in auth config is set but empty",
+                    name,
+                )
+        try:
+            return template.substitute(os.environ)
+        except KeyError as e:
+            raise ValueError(
+                f"Environment variable {e} referenced in auth config is not set"
+            ) from e
+
+
+class BasicAuth(AbstractAuth):
+    """Defines format of the basic auth section in the lockfile."""
+
+    username: str
+    password: str
+
+    @override
+    def to_headers(self) -> dict[str, str]:
+        encoded = b64encode(f"{self.username}:{self.password}".encode()).decode()
+        return {"Authorization": f"Basic {encoded}"}
+
+    @field_validator("username", "password")
+    @classmethod
+    def _expand_env_vars_in_fields(cls, value: str) -> str:
+        """Expand environment variables in the fields."""
+        return cls._expand_env_vars(value)
+
+
+class BearerAuth(AbstractAuth):
+    """Defines format of the bearer auth section in the lockfile."""
+
+    header: str | None = None
+    value: str
+
+    @override
+    def to_headers(self) -> dict[str, str]:
+        return {self.header or "Authorization": self.value}
+
+    @field_validator("value")
+    @classmethod
+    def _expand_env_vars_in_fields(cls, value: str) -> str:
+        """Expand environment variables in the fields."""
+        return cls._expand_env_vars(value)
+
+
+class LockfileArtifactAuth(BaseModel):
+    """Defines format of the auth section in the lockfile."""
+
+    basic: BasicAuth | None = None
+    bearer: BearerAuth | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _check_mutually_exclusive(cls, values: dict) -> dict:
+        if ("basic" not in values and "bearer" not in values) or (
+            "basic" in values and "bearer" in values
+        ):
+            raise ValueError("Exactly one of the auth types must be set")
+        return values
+
+    def get_headers(self) -> dict[str, str]:
+        """Return the headers for the artifact."""
+        auth = self.basic or self.bearer
+        # _check_mutually_exclusive guarantees one is set at runtime, but mypy
+        # still types auth as BasicAuth | BearerAuth | None.
+        return auth.to_headers() if auth else {}
+
 
 class LockfileMetadata(BaseModel):
     """Defines format of the metadata section in the lockfile."""
 
     version: Literal["1.0"]
+    model_config = ConfigDict(extra="forbid")
+
+
+class LockfileMetadataV2(BaseModel):
+    """Defines format of the metadata section in the lockfile, version 2.0."""
+
+    version: Literal["2.0"]
     model_config = ConfigDict(extra="forbid")
 
 
@@ -88,6 +207,10 @@ class LockfileArtifactBase(BaseModel, ABC):
 
         return self
 
+    def get_headers(self) -> dict[str, str]:
+        """Return the headers for the artifact."""
+        return {}
+
 
 class LockfileArtifactUrl(LockfileArtifactBase):
     """
@@ -123,6 +246,16 @@ class LockfileArtifactUrl(LockfileArtifactBase):
             external_references=[ExternalReference(url=url, type="distribution")],
         )
         return component
+
+
+class LockfileArtifactUrlV2(LockfileArtifactUrl):
+    """V2 URL artifact that supports optional authentication."""
+
+    auth: LockfileArtifactAuth | None = None
+
+    def get_headers(self) -> dict[str, str]:
+        """Return the headers for the artifact."""
+        return self.auth.get_headers() if self.auth else {}
 
 
 class LockfileArtifactMavenAttributes(BaseModel):
@@ -217,6 +350,31 @@ class LockfileArtifactMaven(LockfileArtifactBase):
         )
 
 
+class LockfileArtifactMavenV2(LockfileArtifactMaven):
+    """V2 Maven artifact that supports optional authentication."""
+
+    auth: LockfileArtifactAuth | None = None
+
+    def get_headers(self) -> dict[str, str]:
+        """Return the headers for the artifact."""
+        return self.auth.get_headers() if self.auth else {}
+
+
+def _validate_no_artifact_conflicts(
+    artifacts: Sequence[LockfileArtifactUrl | LockfileArtifactMaven],
+) -> None:
+    """Validate that all artifacts have unique filenames and download_urls."""
+    urls = Counter(a.download_url for a in artifacts)
+    filenames = Counter(a.filename for a in artifacts)
+    duplicate_urls = [str(u) for u, count in urls.most_common() if count > 1]
+    duplicate_filenames = [t for t, count in filenames.most_common() if count > 1]
+    if duplicate_urls or duplicate_filenames:
+        raise ValueError(
+            (f"Duplicate download_urls: {duplicate_urls}\n" if duplicate_urls else "")
+            + (f"Duplicate filenames: {duplicate_filenames}" if duplicate_filenames else "")
+        )
+
+
 class GenericLockfileV1(BaseModel):
     """Defines format of our generic lockfile, version 1.0."""
 
@@ -227,14 +385,41 @@ class GenericLockfileV1(BaseModel):
     @model_validator(mode="after")
     def no_artifact_conflicts(self) -> "GenericLockfileV1":
         """Validate that all artifacts have unique filenames and download_urls."""
-        urls = Counter(a.download_url for a in self.artifacts)
-        filenames = Counter(a.filename for a in self.artifacts)
-        duplicate_urls = [str(u) for u, count in urls.most_common() if count > 1]
-        duplicate_filenames = [t for t, count in filenames.most_common() if count > 1]
-        if duplicate_urls or duplicate_filenames:
-            raise ValueError(
-                (f"Duplicate download_urls: {duplicate_urls}\n" if duplicate_urls else "")
-                + (f"Duplicate filenames: {duplicate_filenames}" if duplicate_filenames else "")
-            )
-
+        _validate_no_artifact_conflicts(self.artifacts)
         return self
+
+
+class GenericLockfileV2(BaseModel):
+    """Defines format of our generic lockfile, version 2.0."""
+
+    metadata: LockfileMetadataV2
+    artifacts: list[LockfileArtifactUrlV2 | LockfileArtifactMavenV2]
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def no_artifact_conflicts(self) -> "GenericLockfileV2":
+        """Validate that all artifacts have unique filenames and download_urls."""
+        _validate_no_artifact_conflicts(self.artifacts)
+        return self
+
+
+def _get_lockfile_version(lockfile_data: Any) -> str | None:
+    """Get the version of the lockfile."""
+    if not isinstance(lockfile_data, dict) or "metadata" not in lockfile_data:
+        return None
+    metadata = lockfile_data["metadata"]
+    if not isinstance(metadata, dict) or "version" not in metadata:
+        return None
+    return str(metadata["version"])
+
+
+GenericLockfile = Annotated[
+    Union[
+        Annotated[GenericLockfileV1, Tag("1.0")],
+        Annotated[GenericLockfileV2, Tag("2.0")],
+    ],
+    Discriminator(_get_lockfile_version),
+]
+GenericLockfileAdapter: TypeAdapter[GenericLockfileV1 | GenericLockfileV2] = TypeAdapter(
+    GenericLockfile
+)

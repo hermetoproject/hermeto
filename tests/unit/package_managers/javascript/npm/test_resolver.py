@@ -444,7 +444,7 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
         if not files_to_download:
             continue
 
-        assert call.kwargs.get("auth") is None, "Found credentials where they should not be!"
+        assert call.kwargs.get("headers") is None, "Found credentials where they should not be!"
 
 
 @pytest.mark.parametrize(
@@ -506,7 +506,7 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
         if not files_to_download:
             continue
 
-        assert call.kwargs.get("auth") is not None, "Not found credentials where they should be!"
+        assert call.kwargs.get("headers") is not None, "Not found credentials where they should be!"
 
 
 @pytest.mark.parametrize(

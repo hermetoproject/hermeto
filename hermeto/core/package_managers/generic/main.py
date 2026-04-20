@@ -14,12 +14,15 @@ from hermeto.core.models.input import Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.general import async_download_files
-from hermeto.core.package_managers.generic.models import GenericLockfileV1
+from hermeto.core.package_managers.generic.models import GenericLockfile, GenericLockfileAdapter
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 DEFAULT_LOCKFILE_NAME = "artifacts.lock.yaml"
 DEFAULT_DEPS_DIR = "deps/generic"
+
+Url = str
+AuthHeaders = dict[str, str]
 
 
 def fetch_generic_source(request: Request) -> RequestOutput:
@@ -82,14 +85,24 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
 
     log.info(f"Reading generic lockfile: {lockfile_path}")
     lockfile = _load_lockfile(lockfile_path, output_dir)
-    to_download: dict[str, str | os.PathLike[str]] = {}
+    to_download: dict[Url, str | os.PathLike[str]] = {}
+    auth_headers: dict[Url, AuthHeaders] = {}
 
     for artifact in lockfile.artifacts:
         # create the parent directory for the artifact
         Path.mkdir(Path(artifact.filename).parent, parents=True, exist_ok=True)
-        to_download[str(artifact.download_url)] = artifact.filename
+        url = str(artifact.download_url)
+        to_download[url] = artifact.filename
+        if headers := artifact.get_headers():
+            auth_headers[url] = headers
 
-    asyncio.run(async_download_files(to_download, get_config().runtime.concurrency_limit))
+    asyncio.run(
+        async_download_files(
+            to_download,
+            get_config().runtime.concurrency_limit,
+            headers=auth_headers or None,
+        )
+    )
 
     # verify checksums
     for artifact in lockfile.artifacts:
@@ -97,7 +110,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     return [artifact.get_sbom_component() for artifact in lockfile.artifacts]
 
 
-def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfileV1:
+def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfile:
     """
     Load the generic lockfile from the given path.
 
@@ -114,16 +127,31 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
                 solution="Check correct 'yaml' syntax in the lockfile.",
             )
 
+        if lockfile_data is None:
+            raise InvalidLockfileFormat(
+                lockfile_path=lockfile_path,
+                err_details="Lockfile is empty",
+                solution=(
+                    "Ensure the lockfile contains valid YAML with "
+                    "'metadata' and 'artifacts' sections."
+                ),
+            )
+
         try:
-            lockfile = GenericLockfileV1.model_validate(
+            lockfile = GenericLockfileAdapter.validate_python(
                 lockfile_data, context={"output_dir": output_dir}
             )
         except ValidationError as e:
-            loc = e.errors()[0]["loc"]
-            msg = e.errors()[0]["msg"]
+            err = e.errors()[0]
+            if err["type"] == "union_tag_not_found":
+                err_details = "Missing required 'metadata.version' field"
+            elif err["type"] == "union_tag_invalid":
+                err_details = err["msg"]
+            else:
+                err_details = f"'{err['loc']}: {err['msg']}'"
             raise InvalidLockfileFormat(
                 lockfile_path=lockfile_path,
-                err_details=f"'{loc}: {msg}'",
+                err_details=err_details,
                 solution=(
                     "Check the correct format and whether any keys are missing in the lockfile."
                 ),
