@@ -4,6 +4,7 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
@@ -22,6 +23,11 @@ from hermeto.core.package_managers.generic.main import (
     _resolve_generic_lockfile,
     _resolve_lockfile_path,
     fetch_generic_source,
+)
+from hermeto.core.package_managers.generic.models import (
+    BasicAuth,
+    BearerAuth,
+    LockfileArtifactAuth,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -123,6 +129,83 @@ artifacts:
     - download_url: https://example.com/artifact
       filename: archive.zip
       checksum: md5:32112bed1914cfe3799600f962750b1d
+"""
+
+LOCKFILE_WITH_BASIC_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        basic:
+          username: user
+          password: passwd
+"""
+
+LOCKFILE_WITH_BEARER_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        bearer:
+          value: "Bearer secret123"
+"""
+
+LOCKFILE_WITH_CUSTOM_HEADER_BEARER_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        bearer:
+          header: X-Custom-Auth
+          value: secret123
+"""
+
+LOCKFILE_WITH_MIXED_AUTH = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/authed
+      filename: authed.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        basic:
+          username: user
+          password: passwd
+    - download_url: https://example.com/public
+      filename: public.zip
+      checksum: md5:32112bed1914cfe3799600f962750b1d
+"""
+
+LOCKFILE_V2_VALID = """
+metadata:
+    version: '2.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+    - download_url: https://example.com/more/complex/path/file.tar.gz?foo=bar#fragment
+      checksum: md5:32112bed1914cfe3799600f962750b1d
+"""
+
+LOCKFILE_V1_WITH_AUTH = """
+metadata:
+    version: '1.0'
+artifacts:
+    - download_url: https://example.com/artifact
+      filename: archive.zip
+      checksum: md5:3a18656e1cea70504b905836dee14db0
+      auth:
+        bearer:
+          value: my-token
 """
 
 
@@ -250,6 +333,11 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
             LOCKFILE_WRONG_CHECKSUM_FORMAT,
             InvalidLockfileFormat,
             id="wrong_checksum_format",
+        ),
+        pytest.param(
+            LOCKFILE_V1_WITH_AUTH,
+            InvalidLockfileFormat,
+            id="v1_rejects_auth",
         ),
     ],
 )
@@ -386,7 +474,266 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
     with open(lockfile_path, "w") as f:
         f.write(LOCKFILE_VALID)
 
-    assert (
-        _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump(exclude_none=True)
-        == expected_lockfile
+    assert _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump() == expected_lockfile
+
+
+def test_load_generic_lockfile_v2_valid(rooted_tmp_path: RootedPath) -> None:
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+    with open(lockfile_path, "w") as f:
+        f.write(LOCKFILE_WITH_BEARER_AUTH)
+
+    lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+    assert lockfile.metadata.version == "2.0"
+    assert lockfile.artifacts[0].auth is not None
+    assert lockfile.artifacts[0].auth.bearer is not None
+    assert lockfile.artifacts[0].auth.bearer.value == "Bearer secret123"
+
+
+class TestEnvVarExpansion:
+    """Tests for environment variable expansion in auth fields."""
+
+    @pytest.mark.parametrize(
+        ["env_vars", "value", "expected"],
+        [
+            pytest.param(
+                {"MY_TOKEN": "secret123"},
+                "Bearer $MY_TOKEN",
+                "Bearer secret123",
+                id="dollar_var_syntax",
+            ),
+            pytest.param(
+                {"MY_TOKEN": "secret123"},
+                "Bearer ${MY_TOKEN}",
+                "Bearer secret123",
+                id="braced_var_syntax",
+            ),
+            pytest.param(
+                {"TOKEN": "should_not_appear"},
+                "Bearer \\$TOKEN",
+                "Bearer $TOKEN",
+                id="escaped_dollar_sign",
+            ),
+            pytest.param(
+                {},
+                "no-expansion",
+                "no-expansion",
+                id="literal_no_expansion",
+            ),
+            pytest.param(
+                {"A": "first", "B": "second"},
+                "$A and ${B}",
+                "first and second",
+                id="multiple_vars_mixed_syntax",
+            ),
+            pytest.param(
+                {"TOKEN": "secret123"},
+                "Token:$TOKEN",
+                "Token:secret123",
+                id="no_space_before_var",
+            ),
+            pytest.param(
+                {"EMPTY_VAR": ""},
+                "Bearer $EMPTY_VAR",
+                "Bearer ",
+                id="empty_env_var",
+            ),
+        ],
     )
+    def test_expand_env_vars(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        env_vars: dict[str, str],
+        value: str,
+        expected: str,
+    ) -> None:
+        for name, val in env_vars.items():
+            monkeypatch.setenv(name, val)
+        auth = BearerAuth(value=value)
+        assert auth.value == expected
+
+    @pytest.mark.parametrize(
+        ["value", "missing_var"],
+        [
+            pytest.param("Bearer $NONEXISTENT_VAR", "NONEXISTENT_VAR", id="dollar_syntax"),
+            pytest.param("Bearer ${NONEXISTENT_VAR}", "NONEXISTENT_VAR", id="braced_syntax"),
+        ],
+    )
+    def test_unset_var_raises(self, value: str, missing_var: str) -> None:
+        with pytest.raises(ValidationError, match=f"{missing_var}.*is not set"):
+            BearerAuth(value=value)
+
+    def test_expansion_in_all_fields(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("USER", "admin")
+        monkeypatch.setenv("PASS", "s3cret")
+        auth = BasicAuth(username="$USER", password="$PASS")  # noqa: S106
+        assert auth.username == "admin"
+        assert auth.password == "s3cret"  # noqa: S105
+
+
+class TestLockfileArtifactAuth:
+    """Tests for LockfileArtifactAuth model."""
+
+    @pytest.mark.parametrize(
+        ["kwargs", "has_basic", "has_bearer"],
+        [
+            pytest.param(
+                {"basic": BasicAuth(username="user", password="passwd")},  # noqa: S106
+                True,
+                False,
+                id="basic_only",
+            ),
+            pytest.param(
+                {"bearer": BearerAuth(value="secret123")},
+                False,
+                True,
+                id="bearer_only",
+            ),
+        ],
+    )
+    def test_valid_combinations(
+        self, kwargs: dict[str, Any], has_basic: bool, has_bearer: bool
+    ) -> None:
+        auth = LockfileArtifactAuth(**kwargs)
+        assert (auth.basic is not None) == has_basic
+        assert (auth.bearer is not None) == has_bearer
+
+    def test_both_raises(self) -> None:
+        with pytest.raises(ValidationError, match="Exactly one of the auth types must be set"):
+            LockfileArtifactAuth(
+                basic=BasicAuth(username="user", password="passwd"),  # noqa: S106
+                bearer=BearerAuth(value="secret123"),
+            )
+
+    @pytest.mark.parametrize(
+        ["kwargs", "expected"],
+        [
+            pytest.param(
+                {"basic": BasicAuth(username="user", password="passwd")},  # noqa: S106
+                {"Authorization": "Basic dXNlcjpwYXNzd2Q="},
+                id="basic",
+            ),
+            pytest.param(
+                {"basic": BasicAuth(username="user@domain", password="p@ss:word!")},  # noqa: S106
+                {"Authorization": "Basic dXNlckBkb21haW46cEBzczp3b3JkIQ=="},
+                id="basic_special_chars",
+            ),
+            pytest.param(
+                {"bearer": BearerAuth(value="Bearer secret123")},
+                {"Authorization": "Bearer secret123"},
+                id="bearer_default_header",
+            ),
+            pytest.param(
+                {"bearer": BearerAuth(header="X-Token", value="secret123")},
+                {"X-Token": "secret123"},
+                id="bearer_custom_header",
+            ),
+        ],
+    )
+    def test_get_headers(self, kwargs: dict[str, Any], expected: dict[str, str]) -> None:
+        auth = LockfileArtifactAuth(**kwargs)
+        assert auth.get_headers() == expected
+
+    def test_raise_error_when_no_auth_type_set(self) -> None:
+        with pytest.raises(ValidationError, match="Exactly one of the auth types must be set"):
+            LockfileArtifactAuth()
+
+
+@pytest.mark.parametrize(
+    ["lockfile_content", "expected_url", "expected_headers"],
+    [
+        pytest.param(
+            LOCKFILE_WITH_BASIC_AUTH,
+            "https://example.com/artifact",
+            {"Authorization": "Basic dXNlcjpwYXNzd2Q="},
+            id="basic_auth",
+        ),
+        pytest.param(
+            LOCKFILE_WITH_BEARER_AUTH,
+            "https://example.com/artifact",
+            {"Authorization": "Bearer secret123"},
+            id="bearer_auth_default_header",
+        ),
+        pytest.param(
+            LOCKFILE_WITH_CUSTOM_HEADER_BEARER_AUTH,
+            "https://example.com/artifact",
+            {"X-Custom-Auth": "secret123"},
+            id="bearer_auth_custom_header",
+        ),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
+def test_resolve_generic_lockfile_with_auth(
+    mock_checksums: mock.Mock,
+    mock_download: mock.Mock,
+    mock_asyncio_run: mock.Mock,
+    lockfile_content: str,
+    expected_url: str,
+    expected_headers: dict[str, str],
+    rooted_tmp_path: RootedPath,
+) -> None:
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+    with open(lockfile_path, "w") as f:
+        f.write(lockfile_content)
+
+    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    assert mock_download.call_args.kwargs["headers"] == {expected_url: expected_headers}
+
+
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
+def test_resolve_generic_lockfile_mixed_auth(
+    mock_checksums: mock.Mock,
+    mock_download: mock.Mock,
+    mock_asyncio_run: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+    with open(lockfile_path, "w") as f:
+        f.write(LOCKFILE_WITH_MIXED_AUTH)
+
+    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    headers = mock_download.call_args.kwargs["headers"]
+    # Only the authed artifact should have headers
+    assert "https://example.com/authed" in headers
+    assert "https://example.com/public" not in headers
+
+
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
+def test_resolve_generic_lockfile_no_auth(
+    mock_checksums: mock.Mock,
+    mock_download: mock.Mock,
+    mock_asyncio_run: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+    with open(lockfile_path, "w") as f:
+        f.write(LOCKFILE_VALID)
+
+    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    assert mock_download.call_args.kwargs["headers"] is None
+
+
+@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
+def test_resolve_generic_lockfile_v2_no_auth(
+    mock_checksums: mock.Mock,
+    mock_download: mock.Mock,
+    mock_asyncio_run: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+    with open(lockfile_path, "w") as f:
+        f.write(LOCKFILE_V2_VALID)
+
+    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    assert mock_download.call_args.kwargs["headers"] is None
