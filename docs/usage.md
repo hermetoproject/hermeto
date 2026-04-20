@@ -27,25 +27,11 @@ Hermeto relies on git metadata when processing sources, it expects sources to
 be a valid git repository with "origin" remote defined. This is paramount
 for successful execution. If for some reason you don't have a git repository,
 e.g. you're trying to use Hermeto on an unpacked tarball, you may also get
-acceptable results by forcefully creating a git repository from it first.
-Make sure to set the remote as well.
+acceptable results by passing the global option `--mode permissive`, which will
+treat the input as a non-git tree and continue.
 
-<details>
-  <summary><em>Workaround to create a local-only git repository</em></summary>
-
-<!-- markdownlint-disable-next-line no-inline-html -->
-<pre>
-git init && git add -A && git commit -m "initial commit" && \
-git remote add origin https://github.com/someorg/somerepo
-</pre>
-
-<strong>WARNING!</strong>
-</br>This is not a substitute for having a proper repository and should be used
-only for testing!
-</details>
-
-Note however, that this is only good for smoke testing a scenario and there are
-no guarantees for any results without proper and correct git metadata, e.g. git tags.
+Note, however, that this is only good for smoke testing a scenario, and the accuracy
+of the SBOM will be reduced.
 
 ### Pre-fetch dependencies
 

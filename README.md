@@ -120,6 +120,7 @@ The permissive mode can currently suppress the following:
 - go `vendor` directory inconsistencies (See `docs/gomod.md` on vendoring
   information)
 - cargo manifest file `Cargo.toml` is out of sync with `Cargo.lock`
+- non-Git sources (e.g., unpacked tarballs)
 
 ### Settings
 
