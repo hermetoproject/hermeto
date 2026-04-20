@@ -95,7 +95,7 @@ async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
-    auth: str | None = None,
+    headers: dict[str, str] | None = None,
     ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
 ) -> None:
@@ -116,7 +116,6 @@ async def _async_download_binary_file(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
         )
 
-        headers = {"Authorization": auth} if auth is not None else None
         async with session.get(
             url,
             timeout=timeout,
@@ -145,13 +144,15 @@ async def async_download_files(
     files_to_download: Mapping[str, StrPath],
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
+    headers: Mapping[str, dict[str, str]] | None = None,
     auth: str | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
-    :param files_to_download: Mapping of URLs and file paths to download.
+    :param files_to_download: Mapping of URLs to file paths to download.
     :param concurrency_limit: Max number of concurrent tasks (downloads).
     :param ssl_context: Optional SSL context for the requests.
+    :param headers: Optional per-URL headers mapping (URL -> headers dict).
     :param auth: Optional Authorization header value.
     """
     trace_config = aiohttp.TraceConfig()
@@ -194,6 +195,8 @@ async def async_download_files(
                         t.cancel()
                     raise
 
+            auth_header = {"Authorization": auth} if auth else None
+
             tasks.add(
                 asyncio.create_task(
                     _async_download_binary_file(
@@ -201,7 +204,7 @@ async def async_download_files(
                         url,
                         download_path,
                         ssl_context=ssl_context,
-                        auth=auth,
+                        headers=headers.get(url, auth_header) if headers else auth_header,
                     )
                 )
             )
