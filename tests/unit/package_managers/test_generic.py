@@ -386,4 +386,7 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
     with open(lockfile_path, "w") as f:
         f.write(LOCKFILE_VALID)
 
-    assert _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump() == expected_lockfile
+    assert (
+        _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump(exclude_none=True)
+        == expected_lockfile
+    )
