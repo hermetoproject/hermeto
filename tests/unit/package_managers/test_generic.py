@@ -253,11 +253,9 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 def test_resolve_generic_lockfile_invalid(
-    mock_download: mock.Mock,
-    mock_asyncio_run: mock.Mock,
+    mock_async_download_files: mock.Mock,
     lockfile: str,
     expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
@@ -345,13 +343,11 @@ def test_resolve_generic_lockfile_invalid(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_valid(
     mock_checksums: mock.Mock,
-    mock_download: mock.Mock,
-    mock_asyncio_run: mock.Mock,
+    mock_async_download_files: mock.Mock,
     lockfile_content: str,
     expected_components: list[dict[str, Any]],
     rooted_tmp_path: RootedPath,

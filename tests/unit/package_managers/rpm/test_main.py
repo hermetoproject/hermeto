@@ -572,11 +572,10 @@ def test_inject_files_post(
     mock_generate_repofiles.assert_called_with(rooted_tmp_path.path, rooted_tmp_path.path, {})
 
 
-@mock.patch("ssl.create_default_context")
-@mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
 def test_download(
-    mock_async_download_files: mock.Mock, mock_asyncio: mock.Mock, rooted_tmp_path: RootedPath
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
 ) -> None:
     lock = RedhatRpmsLock.model_validate(yaml.safe_load(RPM_LOCK_FILE_DATA))
     _download(lock, rooted_tmp_path.path)
@@ -599,12 +598,12 @@ def test_download(
         5,
         ssl_context=None,
     )
-    mock_asyncio.assert_called_once()
 
 
-@mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
+@mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
 def test_download_filters_architectures(
-    mock_asyncio: mock.Mock, rooted_tmp_path: RootedPath
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
 ) -> None:
     """Test that _download only processes architectures matching the filter."""
     lock = RedhatRpmsLock.model_validate(
