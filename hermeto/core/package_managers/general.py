@@ -72,7 +72,7 @@ async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
-    auth: aiohttp.BasicAuth | None = None,
+    headers: dict[str, str] | None = None,
     ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
 ) -> None:
@@ -95,7 +95,7 @@ async def _async_download_binary_file(
         async with session.get(
             url,
             timeout=timeout,
-            auth=auth,
+            headers=headers,
             raise_for_status=True,
             ssl=ssl_context,
         ) as resp:
@@ -120,14 +120,14 @@ async def async_download_files(
     files_to_download: Mapping[str, StrPath],
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
-    auth: aiohttp.BasicAuth | None = None,
+    headers: Mapping[str, dict[str, str]] | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
-    :param files_to_download: Mapping of URLs and file paths to download.
+    :param files_to_download: Mapping of URLs to file paths to download.
     :param concurrency_limit: Max number of concurrent tasks (downloads).
     :param ssl_context: Optional SSL context for the requests.
-    :param auth: Optional authorization data for proxies.
+    :param headers: Optional per-URL headers mapping (URL -> headers dict).
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
@@ -171,7 +171,7 @@ async def async_download_files(
                         url,
                         download_path,
                         ssl_context=ssl_context,
-                        auth=auth,
+                        headers=headers.get(url) if headers else None,
                     )
                 )
             )
