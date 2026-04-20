@@ -246,6 +246,12 @@ could be to manually create an internal network (but you'll need root
 privileges): `sudo podman network create --internal isolated-network; sudo
 podman build --network isolated-network ...`.
 
+## Exit codes
+
+Hermeto uses a set of exit codes to signal different error conditions. These are
+internal only and serve informational purposes and hence may change in between
+releases, please do NOT depend on them!
+
 [buildah#4227]: https://github.com/containers/buildah/issues/4227
 [CycloneDX v1.6]: https://cyclonedx.org/docs/1.6/json
 [limited set]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13
