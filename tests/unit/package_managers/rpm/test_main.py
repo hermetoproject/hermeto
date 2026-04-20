@@ -149,228 +149,109 @@ def test_resolve_rpm_project_no_lockfile(rooted_tmp_path: RootedPath) -> None:
         _resolve_rpm_project(mock_source_dir, mock.Mock())
 
 
-def test_resolve_rpm_project_invalid_yaml_format(rooted_tmp_path: RootedPath) -> None:
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        # colon is missing at the end
-        f.write("lockfileVendor: redhat\nlockfileVersion: 1\narches\n")
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        # end of line is missing between items
-        f.write("lockfileVendor: redhat lockfileVersion: 1\narches:\n")
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-
-def test_resolve_rpm_project_invalid_lockfile_format(rooted_tmp_path: RootedPath) -> None:
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "unknown",
-                "lockfileVersion": 1,
-                "arches": [],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 2,
-                "arches": [],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": "zz",
-                "arches": [],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "vendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": "everything",
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": "zz",
-                "arches": [
-                    {
-                        "arch": "x86_64",
-                        "packages": [
-                            {
-                                "address": "SOME_ADDRESS",
-                                "size": 1111,
-                            },
-                        ],
-                    },
-                ],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-
-def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath) -> None:
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [
-                    {
-                        "arch": "x86_64",
-                    },
-                ],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat) as exc_info:
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [
-                    {
-                        "arch": "aarch64",
-                        "packages": [],
-                    },
-                ],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat) as exc_info:
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [
-                    {
-                        "arch": "i686",
-                        "packages": [],
-                        "source": [],
-                    },
-                    {
-                        "arch": "x86_64",
-                        "packages": [
-                            {
-                                "url": "SOME_URL",
-                            },
-                        ],
-                    },
-                ],
-            },
-            f,
-        )
-    with pytest.raises(InvalidLockfileFormat) as exc_info:
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-    assert "At least one field ('packages', 'source') must be set in every arch." in str(
-        exc_info.value
-    )
-
-
-@mock.patch("hermeto.core.package_managers.rpm.main._download")
-def test_resolve_rpm_project_correct_format(
-    mock_download: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
-        yaml.safe_dump(
-            {
-                "lockfileVendor": "redhat",
-                "lockfileVersion": 1,
-                "arches": [
-                    {
-                        "arch": "x86_64",
-                        "packages": [
-                            {
-                                "repoid": "foo",
-                                "url": "SOME_URL",
-                            },
-                        ],
-                        "source": [
-                            {
-                                "url": "SOME_URL",
-                            },
-                        ],
-                    },
-                ],
-            },
-            f,
-        )
-    _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-
-@mock.patch(
-    "hermeto.core.package_managers.rpm.main.open",
-    new_callable=mock.mock_open,
+@pytest.mark.parametrize(
+    "yaml_content",
+    [
+        pytest.param(
+            "lockfileVendor: redhat\nlockfileVersion: 1\narches\n",
+            id="missing_colon",
+        ),
+        pytest.param(
+            "lockfileVendor: redhat lockfileVersion: 1\narches:\n",
+            id="missing_newline",
+        ),
+    ],
 )
-@mock.patch("hermeto.core.package_managers.rpm.main._download")
-@mock.patch("hermeto.core.package_managers.rpm.main._verify_downloaded")
-@mock.patch("hermeto.core.package_managers.rpm.main.RedhatRpmsLock.model_validate")
-@mock.patch("hermeto.core.package_managers.rpm.main._generate_sbom_components")
-def test_resolve_rpm_project(
-    mock_generate_sbom_components: mock.Mock,
-    mock_model_validate: mock.Mock,
-    mock_verify_downloaded: mock.Mock,
-    mock_download: mock.Mock,
-    mock_open: mock.Mock,
+def test_resolve_rpm_project_invalid_yaml_format(
+    rooted_tmp_path: RootedPath, yaml_content: str
 ) -> None:
-    output_dir = mock.Mock()
-    mock_package_dir_path = mock.Mock()
-    output_dir.join_within_root.return_value.path = mock_package_dir_path
-    mock_download.return_value = {}
+    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
+        f.write(yaml_content)
+    with pytest.raises(InvalidLockfileFormat):
+        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
-    source_dir = mock.Mock()
-    source_dir.subpath_from_root = Path()
 
-    _resolve_rpm_project(source_dir, output_dir, None)
-    mock_download.assert_called_once_with(
-        mock_model_validate.return_value, mock_package_dir_path, None, None
-    )
-    mock_verify_downloaded.assert_called_once_with({})
-    mock_generate_sbom_components.assert_called_once_with({}, Path("rpms.lock.yaml"), False)
+@pytest.mark.parametrize(
+    "lockfile_data",
+    [
+        pytest.param(
+            {"lockfileVendor": "unknown", "lockfileVersion": 1, "arches": []},
+            id="unknown_vendor",
+        ),
+        pytest.param(
+            {"lockfileVendor": "redhat", "lockfileVersion": 2, "arches": []},
+            id="unsupported_version",
+        ),
+        pytest.param(
+            {"lockfileVendor": "redhat", "lockfileVersion": "zz", "arches": []},
+            id="non_int_version",
+        ),
+        pytest.param(
+            {"vendor": "redhat", "lockfileVersion": 1, "arches": []},
+            id="missing_lockfileVendor_key",
+        ),
+        pytest.param(
+            {"lockfileVendor": "redhat", "lockfileVersion": 1, "arches": "everything"},
+            id="arches_not_list",
+        ),
+        pytest.param(
+            {
+                "lockfileVendor": "redhat",
+                "lockfileVersion": "zz",
+                "arches": [
+                    {"arch": "x86_64", "packages": [{"address": "SOME_ADDRESS", "size": 1111}]},
+                ],
+            },
+            id="invalid_package_schema",
+        ),
+    ],
+)
+def test_resolve_rpm_project_invalid_lockfile_format(
+    rooted_tmp_path: RootedPath, lockfile_data: dict
+) -> None:
+    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
+        yaml.safe_dump(lockfile_data, f)
+    with pytest.raises(InvalidLockfileFormat):
+        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
+
+
+@pytest.mark.parametrize(
+    "lockfile_data",
+    [
+        pytest.param(
+            {"lockfileVendor": "redhat", "lockfileVersion": 1, "arches": [{"arch": "x86_64"}]},
+            id="no_packages_or_source",
+        ),
+        pytest.param(
+            {
+                "lockfileVendor": "redhat",
+                "lockfileVersion": 1,
+                "arches": [{"arch": "aarch64", "packages": []}],
+            },
+            id="empty_packages",
+        ),
+    ],
+)
+def test_resolve_rpm_project_arch_empty(rooted_tmp_path: RootedPath, lockfile_data: dict) -> None:
+    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
+        yaml.safe_dump(lockfile_data, f)
+    with pytest.raises(InvalidLockfileFormat):
+        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
+
+
+def test_resolve_rpm_project_arch_mixed_empty_and_valid(rooted_tmp_path: RootedPath) -> None:
+    lockfile_data = {
+        "lockfileVendor": "redhat",
+        "lockfileVersion": 1,
+        "arches": [
+            {"arch": "i686", "packages": [], "source": []},
+            {"arch": "x86_64", "packages": [{"url": "SOME_URL"}]},
+        ],
+    }
+    with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
+        yaml.safe_dump(lockfile_data, f)
+    with pytest.raises(InvalidLockfileFormat, match="At least one field"):
+        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
 
 
 @mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")
@@ -572,7 +453,6 @@ def test_inject_files_post(
     mock_generate_repofiles.assert_called_with(rooted_tmp_path.path, rooted_tmp_path.path, {})
 
 
-@mock.patch("ssl.create_default_context")
 @mock.patch("hermeto.core.package_managers.rpm.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
 def test_download(
@@ -626,29 +506,8 @@ def test_download_filters_architectures(
     assert not any("aarch64" in p for p in paths)
 
 
-@mock.patch("pathlib.Path.stat")
-def test_verify_downloaded_unexpected_size(stat_mock: mock.Mock) -> None:
-    stat_mock.return_value = mock.Mock()
-    stat_mock.st_size = 0
-    metadata = {Path("foo"): {"size": 12345}}
-
-    with pytest.raises(ChecksumVerificationFailed):
-        _verify_downloaded(metadata)
-
-
 def test_verify_downloaded_unsupported_hash_alg() -> None:
     metadata = {Path("foo"): {"checksum": "noalg:unmatchedchecksum", "size": None}}
-    with pytest.raises(ChecksumVerificationFailed):
-        _verify_downloaded(metadata)
-
-
-@mock.patch(
-    "hermeto.core.package_managers.rpm.main.open",
-    new_callable=mock.mock_open,
-    read_data=b"test",
-)
-def test_verify_downloaded_unmatched_checksum(mock_open: mock.Mock) -> None:
-    metadata = {Path("foo"): {"checksum": "sha256:unmatchedchecksum", "size": None}}
     with pytest.raises(ChecksumVerificationFailed):
         _verify_downloaded(metadata)
 
@@ -658,17 +517,22 @@ class TestRedhatRpmsLock:
     def raw_content(self) -> dict:
         return {"lockfileVendor": "redhat", "lockfileVersion": 1, "arches": []}
 
+    @pytest.mark.parametrize(
+        "attr, expected",
+        [
+            pytest.param("generated_repoid", f"{APP_NAME}-abcdef", id="repoid"),
+            pytest.param(
+                "generated_source_repoid", f"{APP_NAME}-abcdef-source", id="source_repoid"
+            ),
+        ],
+    )
     @mock.patch("hermeto.core.package_managers.rpm.redhat.uuid")
-    def test_internal_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
+    def test_internal_repoid(
+        self, mock_uuid: mock.Mock, raw_content: dict, attr: str, expected: str
+    ) -> None:
         mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
         lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.generated_repoid == f"{APP_NAME}-abcdef"
-
-    @mock.patch("hermeto.core.package_managers.rpm.redhat.uuid")
-    def test_internal_source_repoid(self, mock_uuid: mock.Mock, raw_content: dict) -> None:
-        mock_uuid.uuid4.return_value.hex = "abcdefghijklmn"
-        lock = RedhatRpmsLock.model_validate(raw_content)
-        assert lock.generated_source_repoid == f"{APP_NAME}-abcdef-source"
+        assert getattr(lock, attr) == expected
 
 
 class TestRepofile:

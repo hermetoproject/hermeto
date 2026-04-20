@@ -1009,52 +1009,36 @@ class TestMergeSboms:
     @pytest.mark.parametrize(
         "sbom_files_to_merge, pattern",
         [
-            ([], "Missing argument"),
-            (["./tests/unit/data/sboms/hermeto.bom.json"], "Need at least two"),
-            (
+            pytest.param([], "Missing argument", id="no_files"),
+            pytest.param(
+                ["./tests/unit/data/sboms/hermeto.bom.json"],
+                "Need at least two",
+                id="single_file",
+            ),
+            pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
                     "./tests/unit/data/sboms/hermeto.bom.json",
                 ],
                 "Need at least two",
+                id="same_file_twice",
             ),
-        ],
-    )
-    def test_a_user_sees_error_when_they_dont_provide_enough_unique_sboms_for_a_merge(
-        self,
-        sbom_files_to_merge: list[str],
-        pattern: str,
-    ) -> None:
-        result = invoke_expecting_invalid_usage(app, ["merge-sboms", *sbom_files_to_merge])
-        assert pattern in result.output
-
-    @pytest.mark.parametrize(
-        "sbom_files_to_merge, pattern",
-        [
-            (["./tests/unit/data/sboms/hermeto.bom.json", "./README.md"], "does not look like"),
-        ],
-    )
-    def test_a_user_sees_error_when_they_provide_a_non_json_file_for_a_merge(
-        self,
-        sbom_files_to_merge: list[str],
-        pattern: str,
-    ) -> None:
-        result = invoke_expecting_invalid_usage(app, ["merge-sboms", *sbom_files_to_merge])
-        assert pattern in result.output
-
-    @pytest.mark.parametrize(
-        "sbom_files_to_merge, pattern",
-        [
-            (
+            pytest.param(
+                ["./tests/unit/data/sboms/hermeto.bom.json", "./README.md"],
+                "does not look like",
+                id="non_json_file",
+            ),
+            pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
                     "./tests/unit/data/sboms/syft.bom.json",
                 ],
                 f"a valid {APP_NAME} SBOM",
+                id="non_hermeto_sbom",
             ),
         ],
     )
-    def test_a_user_sees_error_when_they_provide_a_non_hermeto_sbom_for_a_merge(
+    def test_merge_sboms_rejects_invalid_input(
         self,
         sbom_files_to_merge: list[str],
         pattern: str,
@@ -1084,13 +1068,14 @@ class TestMergeSboms:
         invoke_expecting_sucess(app, ["merge-sboms", *sbom_files_to_merge])
 
     @pytest.mark.parametrize(
-        "sbom_files_to_merge",
+        "sbom_files_to_merge, extra_args",
         [
             pytest.param(
                 [
                     "./tests/unit/data/sboms/hermeto.bom.json",
                     "./tests/unit/data/sboms/hermeto_gomod.bom.json",
                 ],
+                [],
                 id="merge_our_own_cyclonedx",
             ),
             pytest.param(
@@ -1099,7 +1084,24 @@ class TestMergeSboms:
                     "./tests/unit/data/sboms/hermeto_gomod.bom.json",
                     "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
                 ],
+                [],
                 id="merge_our_own_cyclonedx_more",
+            ),
+            pytest.param(
+                [
+                    "./tests/unit/data/sboms/hermeto.bom.spdx.json",
+                    "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
+                ],
+                ["--sbom-output-type", "spdx"],
+                id="spdx_format",
+            ),
+            pytest.param(
+                [
+                    "./tests/unit/data/sboms/hermeto.bom.json",
+                    "./tests/unit/data/sboms/syft.bom.spdx.json",
+                ],
+                ["--sbom-output-type", "spdx"],
+                id="merge_mixed_format",
             ),
         ],
     )
@@ -1107,55 +1109,12 @@ class TestMergeSboms:
         self,
         request: pytest.FixtureRequest,
         sbom_files_to_merge: list[str],
-    ) -> None:
-        prefix = f"{APP_NAME}-{Path(__file__).stem}-{request.node.callspec.id}-"
-        with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
-            invoke_expecting_sucess(app, ["merge-sboms", "-o", fp.name, *sbom_files_to_merge])
-            assert Path(fp.name).lstat().st_size > 0, "SBOM failed to be written to output file!"
-
-    @pytest.mark.parametrize(
-        "sbom_files_to_merge",
-        [
-            [
-                "./tests/unit/data/sboms/hermeto.bom.spdx.json",
-                "./tests/unit/data/sboms/something.simple0.100.0.spdx.pretty.json",
-            ],
-        ],
-    )
-    def test_a_user_can_successfully_save_sboms_merge_results_to_a_file_in_spdx_format(
-        self,
-        request: pytest.FixtureRequest,
-        sbom_files_to_merge: list[str],
+        extra_args: list[str],
     ) -> None:
         prefix = f"{APP_NAME}-{Path(__file__).stem}-{request.node.callspec.id}-"
         with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
             invoke_expecting_sucess(
                 app,
-                ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
-            )
-            assert Path(fp.name).lstat().st_size > 0, "SBOM failed to be written to output file!"
-
-    @pytest.mark.parametrize(
-        "sbom_files_to_merge",
-        [
-            pytest.param(
-                [
-                    "./tests/unit/data/sboms/hermeto.bom.json",
-                    "./tests/unit/data/sboms/syft.bom.spdx.json",
-                ],
-                id="merge_mixed_format",
-            ),
-        ],
-    )
-    def test_a_user_can_successfully_save_mixed_sboms_merge_results_to_a_file_in_spdx_format(
-        self,
-        request: pytest.FixtureRequest,
-        sbom_files_to_merge: list[str],
-    ) -> None:
-        prefix = f"{APP_NAME}-{Path(__file__).stem}-{request.node.callspec.id}-"
-        with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
-            invoke_expecting_sucess(
-                app,
-                ["merge-sboms", "-o", fp.name, "--sbom-output-type", "spdx", *sbom_files_to_merge],
+                ["merge-sboms", "-o", fp.name, *extra_args, *sbom_files_to_merge],
             )
             assert Path(fp.name).lstat().st_size > 0, "SBOM failed to be written to output file!"

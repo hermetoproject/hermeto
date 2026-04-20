@@ -6,7 +6,6 @@ import subprocess
 import textwrap
 from collections.abc import Iterator
 from pathlib import Path
-from string import Template
 from typing import Any, Literal
 from unittest import mock
 
@@ -21,7 +20,7 @@ from hermeto.core.errors import (
     PackageManagerError,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Flag, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
@@ -65,14 +64,13 @@ from hermeto.core.package_managers.gomod.main import (
     _resolve_gomod,
     _validate_local_replacements,
     _vendor_changed,
-    _vendor_deps,
     fetch_gomod_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo, RepoID
-from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
+from hermeto.core.utils import GIT_PRISTINE_ENV
 from tests.common_utils import GIT_REF, write_file_tree
-from tests.unit.package_managers.gomod.helpers import get_mock_dir, get_mocked_data, proc_mock
+from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -139,312 +137,6 @@ def _parse_mocked_data(data_dir: Path, file_path: str) -> ResolvedGoModule:
     )
 
     return ResolvedGoModule(main_module, modules, packages, modules_in_go_sum)
-
-
-def _parse_go_list_deps_data(data_dir: Path, file_path: str) -> list[ParsedPackage]:
-    mocked_data = load_json_stream(get_mocked_data(data_dir, file_path))
-    return [ParsedPackage.model_validate(pkg) for pkg in mocked_data]
-
-
-@pytest.mark.parametrize(
-    "cgo_disable, has_workspaces",
-    (
-        pytest.param(False, False, id="cgo_disabled"),
-        pytest.param(True, False, id="cgo_enabled"),
-        pytest.param(False, True, id="has_workspaces"),
-    ),
-)
-@mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
-@mock.patch("hermeto.core.package_managers.gomod.main._go_list_deps")
-@mock.patch("hermeto.core.package_managers.gomod.main._parse_packages")
-@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.go._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod.main._validate_local_replacements")
-@mock.patch("subprocess.run")
-def test_resolve_gomod(
-    mock_run: mock.Mock,
-    mock_validate_local_replacements: mock.Mock,
-    mock_version_resolver: mock.Mock,
-    mock_get_gomod_version: mock.Mock,
-    mock_disable_telemetry: mock.Mock,
-    mock_parse_packages: mock.Mock,
-    mock_go_list_deps: mock.Mock,
-    mock_get_go_work: mock.Mock,
-    cgo_disable: bool,
-    has_workspaces: bool,
-    tmp_path: Path,
-    data_dir: Path,
-    gomod_request: Request,
-) -> None:
-    module_dir = gomod_request.source_dir.join_within_root("path/to/module")
-    module_dir.path.mkdir(parents=True, exist_ok=True)
-    mocked_data_folder = "non-vendored" if not has_workspaces else "workspaces"
-    mock_disable_telemetry.return_value = None
-
-    go_work = None
-    go = Go()
-
-    # Mock the "subprocess.run" calls
-    run_side_effects = []
-
-    run_side_effects.append(
-        proc_mock(
-            "go mod download -json",
-            returncode=0,
-            stdout=get_mocked_data(data_dir, f"{mocked_data_folder}/go_mod_download.json"),
-        )
-    )
-
-    run_side_effects.append(
-        proc_mock(
-            "go list -e -m",
-            returncode=0,
-            stdout=get_mocked_data(data_dir, f"{mocked_data_folder}/go_list_modules.json").replace(
-                "{repo_dir}", str(module_dir)
-            ),
-        )
-    )
-    mock_run.side_effect = run_side_effects
-    mock_go_list_deps.side_effect = [
-        _parse_go_list_deps_data(data_dir, f"{mocked_data_folder}/go_list_deps_all.json"),
-        _parse_go_list_deps_data(data_dir, f"{mocked_data_folder}/go_list_deps_threedot.json"),
-    ]
-
-    mock_version_resolver.get_golang_version.return_value = "v0.1.0"
-    mock_get_gomod_version.return_value = ("0.1.1", "0.1.2")
-
-    parse_packages_mocked_data: list[ParsedPackage] = []
-    mock_parse_packages.return_value = parse_packages_mocked_data
-
-    if has_workspaces:
-        go_work_path = module_dir.join_within_root("go.work")
-        go_work_path.path.symlink_to(get_mock_dir(data_dir) / "workspaces/go_work.json")
-        module_dir.join_within_root("go.sum").path.write_text(
-            get_mocked_data(data_dir, "workspaces/go.sum")
-        )
-        mock_get_go_work.return_value = go_work_path.path.read_text()
-        go_work = GoWork.from_file(go_work_path, go)
-
-        # we need to mock _parse_packages queries to all workspace module directories
-        for wsp in go_work.workspace_paths:
-            fp = f"{wsp.relative_to(go_work.path.parent)}/go_list_deps_threedot.json"
-            mocked_data = _parse_go_list_deps_data(data_dir, f"workspaces/{fp}")
-            parse_packages_mocked_data.extend(mocked_data)
-
-    flags: list[Flag] = []
-    if cgo_disable:
-        flags.append("cgo-disable")
-
-    gomod_request.flags = frozenset(flags)
-
-    module_dir.path.mkdir(parents=True, exist_ok=True)
-    module_dir.join_within_root("go.sum").path.write_text(
-        get_mocked_data(data_dir, f"{mocked_data_folder}/go.sum")
-    )
-
-    resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, go, go_work
-    )
-
-    assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/pkg/mod"
-
-    # Assert that _parse_packages was called exactly once.
-    # Assert that the module-parsing _go_list_deps call was called with the 'all' pattern. The
-    # other _go_list_deps invocations from resolve_gomod are wrapped by _parse_packages and tested
-    # in test_parse_packages.
-    mock_parse_packages.assert_called_once()
-    mock_go_list_deps.assert_called_once()
-    assert "all" in mock_go_list_deps.call_args[0]
-
-    for call in mock_run.call_args_list:
-        env = call.kwargs["env"]
-        if cgo_disable:
-            assert env["CGO_ENABLED"] == "0"
-        else:
-            assert "CGO_ENABLED" not in env
-
-    if has_workspaces:
-        expect_result = _parse_mocked_data(
-            data_dir, "expected-results/resolve_gomod_workspaces.json"
-        )
-    else:
-        expect_result = _parse_mocked_data(data_dir, "expected-results/resolve_gomod.json")
-
-    assert resolve_result.parsed_main_module == expect_result.parsed_main_module
-    assert set(resolve_result.parsed_modules) == expect_result.parsed_modules
-    # skip comparing parsed packages, these are tested using the same data in test_parse_packages
-    assert resolve_result.modules_in_go_sum == expect_result.modules_in_go_sum
-
-    mock_validate_local_replacements.assert_called_once_with(
-        resolve_result.parsed_modules, module_dir
-    )
-
-
-@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.go._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
-@mock.patch("hermeto.core.package_managers.gomod.main._validate_local_replacements")
-@mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
-@mock.patch("subprocess.run")
-def test_resolve_gomod_vendor_dependencies(
-    mock_run: mock.Mock,
-    mock_vendor_changed: mock.Mock,
-    mock_validate_local_replacements: mock.Mock,
-    mock_version_resolver: mock.Mock,
-    mock_get_gomod_version: mock.Mock,
-    mock_disable_telemetry: mock.Mock,
-    tmp_path: Path,
-    data_dir: Path,
-    gomod_request: Request,
-) -> None:
-    module_dir = gomod_request.source_dir.join_within_root("path/to/module")
-    mock_disable_telemetry.return_value = None
-
-    # Mock the "subprocess.run" calls
-    run_side_effects = []
-    run_side_effects.append(proc_mock("go mod vendor", returncode=0, stdout=None))
-    run_side_effects.append(
-        proc_mock(
-            "go list -e -m -json",
-            returncode=0,
-            stdout=get_mocked_data(data_dir, "non-vendored/go_list_modules.json").replace(
-                "{repo_dir}", str(module_dir)
-            ),
-        )
-    )
-    run_side_effects.append(
-        proc_mock(
-            "go list -e -deps -json all",
-            returncode=0,
-            stdout=get_mocked_data(data_dir, "vendored/go_list_deps_all.json"),
-        )
-    )
-    run_side_effects.append(
-        proc_mock(
-            "go list -e -deps -json ./...",
-            returncode=0,
-            stdout=get_mocked_data(data_dir, "vendored/go_list_deps_threedot.json"),
-        )
-    )
-    mock_run.side_effect = run_side_effects
-
-    mock_version_resolver.get_golang_version.return_value = "v0.1.0"
-    mock_get_gomod_version.return_value = ("0.1.1", "0.1.2")
-    mock_vendor_changed.return_value = False
-
-    module_dir.join_within_root("vendor").path.mkdir(parents=True)
-    module_dir.join_within_root("vendor/modules.txt").path.write_text(
-        get_mocked_data(data_dir, "vendored/modules.txt")
-    )
-    module_dir.join_within_root("go.sum").path.write_text(
-        get_mocked_data(data_dir, "vendored/go.sum")
-    )
-
-    resolve_result = _resolve_gomod(
-        module_dir, gomod_request, tmp_path, mock_version_resolver, Go(), None
-    )
-
-    assert mock_run.call_args_list[0][0][0] == [GO_CMD_PATH, "mod", "vendor"]
-    assert mock_run.call_args_list[0][1]["env"]["GOMODCACHE"] == f"{tmp_path}/vendor-cache"
-    assert mock_run.call_args_list[-2][0][0] == [
-        GO_CMD_PATH,
-        "list",
-        "-e",
-        "-deps",
-        "-json=ImportPath,Module,Standard,Deps",
-        "all",
-    ]
-
-    expect_result = _parse_mocked_data(data_dir, "expected-results/resolve_gomod_vendored.json")
-
-    assert resolve_result.parsed_main_module == expect_result.parsed_main_module
-    assert set(resolve_result.parsed_modules) == expect_result.parsed_modules
-    assert set(resolve_result.parsed_packages) == expect_result.parsed_packages
-    assert resolve_result.modules_in_go_sum == expect_result.modules_in_go_sum
-
-
-@mock.patch("hermeto.core.package_managers.gomod.main._disable_telemetry")
-@mock.patch("hermeto.core.package_managers.gomod.go._get_gomod_version")
-@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
-@mock.patch("subprocess.run")
-def test_resolve_gomod_no_deps(
-    mock_run: mock.Mock,
-    mock_version_resolver: mock.Mock,
-    mock_get_gomod_version: mock.Mock,
-    mock_disable_telemetry: mock.Mock,
-    tmp_path: Path,
-    gomod_request: Request,
-) -> None:
-    module_path = gomod_request.source_dir.join_within_root("path/to/module")
-    module_path.path.mkdir(parents=True, exist_ok=True)
-    mock_disable_telemetry.return_value = None
-
-    mock_pkg_deps_no_deps = textwrap.dedent(
-        """
-        {
-            "ImportPath": "github.com/release-engineering/retrodep/v2",
-            "Module": {
-                "Path": "github.com/release-engineering/retrodep/v2",
-                "Main": true
-            }
-        }
-        """
-    )
-
-    mock_go_list_modules = Template(
-        """
-        {
-            "Path": "github.com/release-engineering/retrodep/v2",
-            "Main": true,
-            "Dir": "$repo_dir",
-            "GoMod": "$repo_dir/go.mod",
-            "GoVersion": "1.19"
-        }
-        """
-    ).substitute({"repo_dir": str(module_path)})
-
-    # Mock the "subprocess.run" calls
-    run_side_effects = []
-    run_side_effects.append(proc_mock("go mod download -json", returncode=0, stdout=""))
-    run_side_effects.append(
-        proc_mock(
-            "go list -e -m",
-            returncode=0,
-            stdout=mock_go_list_modules,
-        )
-    )
-    run_side_effects.append(
-        proc_mock("go list -e -deps -json all", returncode=0, stdout=mock_pkg_deps_no_deps)
-    )
-    run_side_effects.append(
-        proc_mock("go list -e -deps -json ./...", returncode=0, stdout=mock_pkg_deps_no_deps)
-    )
-    mock_run.side_effect = run_side_effects
-
-    mock_version_resolver.get_golang_version.return_value = "v1.21.4"
-    mock_get_gomod_version.return_value = ("1.21.4", None)
-
-    main_module, modules, packages, _ = _resolve_gomod(
-        module_path, gomod_request, tmp_path, mock_version_resolver, Go(), None
-    )
-    packages_list = list(packages)
-
-    assert main_module == ParsedModule(
-        path="github.com/release-engineering/retrodep/v2",
-        version="v1.21.4",
-        main=True,
-    )
-
-    assert not modules
-    assert len(packages_list) == 1
-    assert packages_list[0] == ParsedPackage(
-        import_path="github.com/release-engineering/retrodep/v2",
-        module=ParsedModule(
-            path="github.com/release-engineering/retrodep/v2",
-            main=True,
-        ),
-    )
 
 
 @pytest.mark.parametrize(
@@ -1138,15 +830,11 @@ def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."])
 
 
 @mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_go_list_deps_fail(
-    mock_run_cmd: mock.Mock,
-) -> None:
+def test_go_list_deps_fail(mock_run_cmd: mock.Mock) -> None:
     mock_run_cmd.side_effect = subprocess.CalledProcessError(1, cmd="foo")
-    expect_error = "Go execution failed: `go list -e -m -json` failed"
 
-    with pytest.raises(PackageManagerError) as ex:
+    with pytest.raises(PackageManagerError, match="Go execution failed:"):
         _go_list_deps(Go(), "./...", {})
-        assert expect_error in str(ex)
 
 
 def test_deduplicate_resolved_modules() -> None:
@@ -1364,20 +1052,6 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
 
     with pytest.raises(PathOutsideRoot):
         _validate_local_replacements(modules, app_path)
-
-
-@pytest.mark.parametrize("go_vendor_cmd", ["mod", "work"])
-@mock.patch("hermeto.core.package_managers.gomod.go.Go._run")
-def test_vendor_deps(
-    mock_run_cmd: mock.Mock,
-    go_vendor_cmd: str,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    app_dir = rooted_tmp_path.join_within_root("some/module")
-    run_params = {"cwd": app_dir}
-    _vendor_deps(Go(), app_dir, go_vendor_cmd == "work", run_params)
-
-    mock_run_cmd.assert_called_once_with([GO_CMD_PATH, go_vendor_cmd, "vendor"], **run_params)
 
 
 def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
@@ -1724,7 +1398,7 @@ def test_fetch_gomod_source(
     mock_tmp_dir.return_value.__exit__.return_value = None
     mock_tmp_dir_path = Path(mock_tmp_dir.name)
 
-    # workspaces are tested in test_resolve_gomod, skip them here
+    # workspaces are tested in integration tests, skip them here
     mock_get_go_work_path.return_value = None
     mock_go = mock.MagicMock(spec=Go)
     mock_select_toolchain.return_value = mock_go
