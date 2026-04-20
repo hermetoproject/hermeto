@@ -2,6 +2,11 @@
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.package_managers.javascript.pnpm.project import (
+    PnpmLock,
+    ensure_lockfile_version_is_supported,
+    parse_packages,
+)
 
 
 def fetch_pnpm_source(request: Request) -> RequestOutput:
@@ -14,7 +19,10 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
     deps_dir.mkdir(parents=True, exist_ok=True)
 
     for package in request.pnpm_packages:
-        pass
+        project_dir = request.source_dir.join_within_root(package.path)
+        lockfile = PnpmLock.from_dir(project_dir.path)
+        ensure_lockfile_version_is_supported(lockfile)
+        parse_packages(lockfile)
 
     if backend_annotation := create_backend_annotation(components, "x-pnpm"):
         annotations.append(backend_annotation)
