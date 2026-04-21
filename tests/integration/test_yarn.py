@@ -115,7 +115,6 @@ def test_yarn_packages(
             utils.TestParameters(
                 branch="yarn/e2e",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "berryscary"],
             "Hello, World!",
@@ -128,7 +127,6 @@ def test_yarn_packages(
                     {"path": "first-pkg", "type": "yarn"},
                     {"path": "second-pkg", "type": "yarn"},
                 ),
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],
             "Hello from first package!",

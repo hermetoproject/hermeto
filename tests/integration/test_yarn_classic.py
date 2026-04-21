@@ -62,7 +62,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_output="All dependencies fetched successfully",
             ),
             id="yarn_classic_lifecycle_scripts",
         ),
@@ -107,7 +106,6 @@ def test_yarn_classic_packages(
             utils.TestParameters(
                 branch="yarn-classic/e2e",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],
             "Hello world!",
@@ -120,7 +118,6 @@ def test_yarn_classic_packages(
                     {"path": "first-pkg", "type": "yarn"},
                     {"path": "second-pkg", "type": "yarn"},
                 ),
-                expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],
             "Hello from first package!",
