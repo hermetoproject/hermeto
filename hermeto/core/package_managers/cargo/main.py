@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, ClassVar, NamedTuple
 from urllib.parse import urlparse, urlunparse
 
 import tomlkit
@@ -15,14 +15,17 @@ import tomlkit.exceptions
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
+    ExitError,
     LockfileNotFound,
     NotAGitRepo,
     PackageManagerError,
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Mode, Request
+from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation, spdx_now
 from hermeto.core.rooted_path import RootedPath
@@ -43,6 +46,8 @@ class CargoVendorResult(NamedTuple):
 
 class PackageWithCorruptLockfileRejected(PackageRejected):
     """Package lock file does not match package config."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED
 
     def __init__(self, package_path: str) -> None:
         """Initialize the error."""
@@ -136,16 +141,17 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
 
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        _verify_lockfile_is_present(package_dir, request.mode)
+        _verify_lockfile_is_present(package_dir)
 
         vendor_result = _fetch_dependencies(package_dir, request)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
-        config_template = _swap_sources_directory_for_subsitution_slot(
-            vendor_result.config_template
-        )
-        project_files.append(_use_vendored_sources(package_dir, config_template))
-        package_components = _generate_sbom_components(package_dir)
+        if vendor_result.config_template:
+            config_template = _swap_sources_directory_for_subsitution_slot(
+                vendor_result.config_template
+            )
+            project_files.append(_use_vendored_sources(package_dir, config_template))
+        package_components = _generate_sbom_components(package_dir, request)
 
         if vendor_result.lockfile_was_generated:
             _update_permissive_mode_annotation(annotations, package_components)
@@ -203,7 +209,6 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendo
             cmd=cmd,
             params={"cwd": package_dir, "env": env},
             package_dir=package_dir.path,
-            mode=request.mode,
         )
 
 
@@ -232,8 +237,9 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     return name, version
 
 
-def _verify_lockfile_is_present(package_dir: RootedPath, mode: Mode) -> None:
+def _verify_lockfile_is_present(package_dir: RootedPath) -> None:
     """Verify that the Cargo.lock file is present in the package directory."""
+    mode = get_config().mode
     lockfile = package_dir.path / "Cargo.lock"
     if lockfile.exists():
         return
@@ -343,7 +349,7 @@ def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
 
 
 def _run_cmd_watching_out_for_lock_mismatch(
-    cmd: list, params: dict, package_dir: Path, mode: Mode
+    cmd: list, params: dict, package_dir: Path
 ) -> CargoVendorResult:
     warn_about_imminent_update_to_cargo_lock = (
         f"A mismatch between Cargo.lock and Cargo.toml was detected in {package_dir}. "
@@ -352,6 +358,7 @@ def _run_cmd_watching_out_for_lock_mismatch(
         f"is a violation of reproducibility and must be addressed by {package_dir.name} "
         "maintainers."
     )
+    mode = get_config().mode
     update_cargo_lock_cmd = ["cargo", "generate-lockfile"]
     try:
         stdout = run_cmd(cmd=cmd, params=params, suppress_errors=(mode == Mode.PERMISSIVE))
@@ -412,7 +419,7 @@ def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
     return result
 
 
-def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
+def _generate_sbom_components(package_dir: RootedPath, request: Request) -> list[Component]:
     """Generate SBOM components from Cargo.lock and for the main package."""
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
 
@@ -420,11 +427,22 @@ def _generate_sbom_components(package_dir: RootedPath) -> list[Component]:
     local_packages = _find_local_packages(package_dir)
     main_package_name, main_package_version = _resolve_main_package(package_dir)
 
+    # When cargo is invoked from pip for extracted sdists, the source directory is
+    # swapped to point at the output directory. Check if source_dir is inside output_dir
+    # to detect this scenario, where we can't expect a git repository (and flip the boolean
+    # for readbility).
+    source_is_outside_output = not request.source_dir.path.is_relative_to(request.output_dir.path)
+
+    # Missing git repo is tolerated in two independent cases:
+    # 1. PERMISSIVE mode: validation is relaxed
+    # 2. Nested PM (pip->cargo for sdists): source_dir is inside output_dir,
+    #    so missing git is expected even in STRICT mode
+    vcs_url = None
     try:
         vcs_url = get_repo_id(package_dir.root).as_vcs_url_qualifier()
     except NotAGitRepo:
-        # Could become invalid when directories are swapped for nested package managers
-        vcs_url = None
+        if get_config().mode != Mode.PERMISSIVE and source_is_outside_output:
+            raise
 
     components = []
 

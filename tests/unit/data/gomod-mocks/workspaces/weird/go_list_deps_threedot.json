@@ -1,7 +1,7 @@
 {
-	"ImportPath": "github.com/cachito-testing/gomod-pandemonium/weird",
+	"ImportPath": "github.com/hermetoproject/integration-tests/weird",
 	"Module": {
-		"Path": "github.com/cachito-testing/gomod-pandemonium/weird",
+		"Path": "github.com/hermetoproject/integration-tests/weird",
 		"Main": true,
 		"Dir": "{repo_dir}/weird",
 		"GoMod": "{repo_dir}/weird/go.mod",

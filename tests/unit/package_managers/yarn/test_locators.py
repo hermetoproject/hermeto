@@ -70,11 +70,11 @@ UNSUPPORTED_LOCATORS = [
     "holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
     # git deps
     "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
-    "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+    "is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
     # specific workspace of a git dep
     "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
     # patched git dep
-    "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+    "is-positive@patch:is-positive@git@github.com%3Akevva/is-positive.git%23commit=97edff6f525f192a3f83cea1944765f769ae2678#./.yarn/patches/is-positive-git@github.com-e0fce8c89c.patch::version=3.1.0&hash=51a91f&locator=berryscary%40workspace%3A.",
 ]
 
 ALL_LOCATORS = SUPPORTED_LOCATORS + UNSUPPORTED_LOCATORS
@@ -377,13 +377,13 @@ PARSED_LOCATORS_AND_REFERENCES = [
     (
         _ParsedLocator(
             scope=None,
-            name="ccto-wo-deps",
-            raw_reference="git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+            name="is-positive",
+            raw_reference="git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
         ),
         _ParsedReference(
             protocol="git@github.com:",
-            source="cachito-testing/cachito-npm-without-deps.git",
-            selector="commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+            source="kevva/is-positive.git",
+            selector="commit=97edff6f525f192a3f83cea1944765f769ae2678",
             params=None,
         ),
     ),
@@ -403,15 +403,15 @@ PARSED_LOCATORS_AND_REFERENCES = [
     (
         _ParsedLocator(
             scope=None,
-            name="ccto-wo-deps",
-            raw_reference="patch:ccto-wo-deps@git@github.com%3Acachito-testing/cachito-npm-without-deps.git%23commit=2f0ce1d7b1f8b35572d919428b965285a69583f6#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A.",
+            name="is-positive",
+            raw_reference="patch:is-positive@git@github.com%3Akevva/is-positive.git%23commit=97edff6f525f192a3f83cea1944765f769ae2678#./.yarn/patches/is-positive-git@github.com-e0fce8c89c.patch::version=3.1.0&hash=51a91f&locator=berryscary%40workspace%3A.",
         ),
         _ParsedReference(
             protocol="patch:",
-            source="ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
-            selector="./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch",
+            source="is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
+            selector="./.yarn/patches/is-positive-git@github.com-e0fce8c89c.patch",
             params={
-                "version": ["1.0.0"],
+                "version": ["3.1.0"],
                 "hash": ["51a91f"],
                 "locator": ["berryscary@workspace:."],
             },

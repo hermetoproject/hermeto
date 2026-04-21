@@ -1,0 +1,1373 @@
+{
+	"ImportPath": "internal/goarch",
+	"Standard": true
+}
+{
+	"ImportPath": "unsafe",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/abi",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/unsafeheader",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/cpu",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/bytealg",
+	"Standard": true,
+	"Deps": [
+		"internal/cpu",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/byteorder",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/chacha8rand",
+	"Standard": true,
+	"Deps": [
+		"internal/byteorder",
+		"internal/cpu",
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/coverage/rtcov",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/godebugs",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/goexperiment",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/goos",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/profilerecord",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/runtime/atomic",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/runtime/math",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch"
+	]
+}
+{
+	"ImportPath": "internal/runtime/strconv",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"internal/runtime/math"
+	]
+}
+{
+	"ImportPath": "internal/runtime/syscall",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/runtime/cgroup",
+	"Standard": true,
+	"Deps": [
+		"internal/bytealg",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/syscall",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/runtime/exithook",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"internal/runtime/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/runtime/gc",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch"
+	]
+}
+{
+	"ImportPath": "internal/asan",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/msan",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/race",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/runtime/sys",
+	"Standard": true,
+	"Deps": [
+		"internal/goarch",
+		"internal/goos"
+	]
+}
+{
+	"ImportPath": "internal/runtime/maps",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/goarch",
+		"internal/goos",
+		"internal/msan",
+		"internal/race",
+		"internal/runtime/math",
+		"internal/runtime/sys",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/stringslite",
+	"Standard": true,
+	"Deps": [
+		"internal/bytealg",
+		"internal/cpu",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/trace/tracev2",
+	"Standard": true
+}
+{
+	"ImportPath": "runtime",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/reflectlite",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"runtime",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "errors",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"runtime",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "cmp",
+	"Standard": true
+}
+{
+	"ImportPath": "internal/itoa",
+	"Standard": true
+}
+{
+	"ImportPath": "iter",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"runtime",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "math/bits",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "math",
+	"Standard": true,
+	"Deps": [
+		"internal/cpu",
+		"math/bits",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "unicode/utf8",
+	"Standard": true
+}
+{
+	"ImportPath": "strconv",
+	"Standard": true,
+	"Deps": [
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"math",
+		"math/bits",
+		"runtime",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "sync/atomic",
+	"Standard": true,
+	"Deps": [
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/sync",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/goarch",
+		"internal/race",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/synctest",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/goarch",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "sync",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"runtime",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "unicode",
+	"Standard": true
+}
+{
+	"ImportPath": "reflect",
+	"Standard": true,
+	"Deps": [
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math",
+		"math/bits",
+		"runtime",
+		"strconv",
+		"sync",
+		"sync/atomic",
+		"unicode",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "slices",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"iter",
+		"math/bits",
+		"runtime",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/fmtsort",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math",
+		"math/bits",
+		"reflect",
+		"runtime",
+		"slices",
+		"strconv",
+		"sync",
+		"sync/atomic",
+		"unicode",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "io",
+	"Standard": true,
+	"Deps": [
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"runtime",
+		"sync",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/oserror",
+	"Standard": true,
+	"Deps": [
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"runtime",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "path",
+	"Standard": true,
+	"Deps": [
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"runtime",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/bisect",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"runtime",
+		"sync",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/godebug",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"runtime",
+		"sync",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "syscall",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math/bits",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "time",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math/bits",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "io/fs",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"iter",
+		"math/bits",
+		"path",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/filepathlite",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"io/fs",
+		"iter",
+		"math/bits",
+		"path",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/syscall/unix",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math/bits",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/poll",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/syscall/unix",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"iter",
+		"math/bits",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/syscall/execenv",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"iter",
+		"math/bits",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "internal/testlog",
+	"Standard": true,
+	"Deps": [
+		"internal/abi",
+		"internal/asan",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/goarch",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/msan",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/trace/tracev2",
+		"runtime",
+		"sync",
+		"sync/atomic",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "os",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/filepathlite",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/poll",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/syscall/execenv",
+		"internal/syscall/unix",
+		"internal/testlog",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"io/fs",
+		"iter",
+		"math/bits",
+		"path",
+		"runtime",
+		"slices",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "fmt",
+	"Standard": true,
+	"Deps": [
+		"cmp",
+		"errors",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/filepathlite",
+		"internal/fmtsort",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/poll",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/syscall/execenv",
+		"internal/syscall/unix",
+		"internal/testlog",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"io/fs",
+		"iter",
+		"math",
+		"math/bits",
+		"os",
+		"path",
+		"reflect",
+		"runtime",
+		"slices",
+		"strconv",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unicode",
+		"unicode/utf8",
+		"unsafe"
+	]
+}
+{
+	"ImportPath": "golang.org/x/example/hello/reverse",
+	"Module": {
+		"Path": "golang.org/x/example/hello",
+		"Version": "v0.0.0-20231013143937-1d6d2400d402",
+		"GoVersion": "1.19"
+	}
+}
+{
+	"ImportPath": "example.com/hiii",
+	"Module": {
+		"Path": "example.com/hiii",
+		"Main": true,
+		"Dir": "{repo_dir}/hi/hiii",
+		"GoMod": "{repo_dir}/hi/hiii/go.mod",
+		"GoVersion": "1.22.0"
+	},
+	"Deps": [
+		"cmp",
+		"errors",
+		"fmt",
+		"golang.org/x/example/hello/reverse",
+		"internal/abi",
+		"internal/asan",
+		"internal/bisect",
+		"internal/bytealg",
+		"internal/byteorder",
+		"internal/chacha8rand",
+		"internal/coverage/rtcov",
+		"internal/cpu",
+		"internal/filepathlite",
+		"internal/fmtsort",
+		"internal/goarch",
+		"internal/godebug",
+		"internal/godebugs",
+		"internal/goexperiment",
+		"internal/goos",
+		"internal/itoa",
+		"internal/msan",
+		"internal/oserror",
+		"internal/poll",
+		"internal/profilerecord",
+		"internal/race",
+		"internal/reflectlite",
+		"internal/runtime/atomic",
+		"internal/runtime/cgroup",
+		"internal/runtime/exithook",
+		"internal/runtime/gc",
+		"internal/runtime/maps",
+		"internal/runtime/math",
+		"internal/runtime/strconv",
+		"internal/runtime/sys",
+		"internal/runtime/syscall",
+		"internal/stringslite",
+		"internal/sync",
+		"internal/synctest",
+		"internal/syscall/execenv",
+		"internal/syscall/unix",
+		"internal/testlog",
+		"internal/trace/tracev2",
+		"internal/unsafeheader",
+		"io",
+		"io/fs",
+		"iter",
+		"math",
+		"math/bits",
+		"os",
+		"path",
+		"reflect",
+		"runtime",
+		"slices",
+		"strconv",
+		"sync",
+		"sync/atomic",
+		"syscall",
+		"time",
+		"unicode",
+		"unicode/utf8",
+		"unsafe"
+	]
+}

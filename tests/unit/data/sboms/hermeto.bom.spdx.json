@@ -72,13 +72,13 @@
       ]
     },
     {
-      "name": "cachito-npm-without-deps",
-      "SPDXID": "SPDXRef-Package-npm-cachito-npm-without-deps-563e3658e3eb288e",
+      "name": "npm-without-deps",
+      "SPDXID": "SPDXRef-Package-npm-without-deps-73e82f6f4f5f7f9c2b72ac133db69f9464e2718b7c439eea88cc18c18cbdb447",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:npm/cachito-npm-without-deps?vcs_url=git%2Bhttps://github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6"
+          "referenceLocator": "pkg:npm/npm-without-deps?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81"
         }
       ]
     },
@@ -106,14 +106,14 @@
       ]
     },
     {
-      "name": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
-      "SPDXID": "SPDXRef-Package-go-module-github.com-cachito-testing-gomod-pandemonium-terminaltor-d85aa69f7b0304e3",
+      "name": "github.com/hermetoproject/integration-tests/terminaltor",
+      "SPDXID": "SPDXRef-Package-github.com-hermetoproject-integration-tests-terminaltor-v1.0.0-1da55fa2657f67fb158696c0aa6a265b668f1a794cf752b164b205306e6a6a33",
       "versionInfo": "v1.0.0",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:golang/github.com/cachito-testing/gomod-pandemonium/terminaltor@v1.0.0?type=module"
+          "referenceLocator": "pkg:golang/github.com/hermetoproject/integration-tests/terminaltor@v1.0.0?type=module"
         }
       ]
     },

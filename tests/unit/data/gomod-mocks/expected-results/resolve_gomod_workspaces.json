@@ -1,6 +1,6 @@
 {
   "main_module": {
-    "path": "github.com/cachito-testing/gomod-pandemonium",
+    "path": "github.com/hermetoproject/integration-tests",
     "version": "v0.1.0",
     "main": true,
     "replace": null
@@ -9,6 +9,18 @@
     {
       "path": "github.com/Masterminds/semver",
       "version": "v1.4.2",
+      "main": false,
+      "replace": null
+    },
+    {
+      "path": "github.com/go-logr/logr",
+      "version": "v1.2.3",
+      "main": false,
+      "replace": null
+    },
+    {
+      "path": "github.com/google/go-cmp",
+      "version": "v0.5.9",
       "main": false,
       "replace": null
     },
@@ -46,28 +58,11 @@
       "path": "github.com/release-engineering/retrodep/v2",
       "version": "v2.1.0",
       "main": false,
-      "replace": {
-        "path": "github.com/cachito-testing/retrodep/v2",
-        "version": "v2.1.1",
-        "main": false,
-        "replace": null
-      }
+      "replace": null
     },
     {
       "path": "golang.org/x/tools",
       "version": "v0.7.0",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/go-logr/logr",
-      "version": "v1.2.3",
-      "main": false,
-      "replace": null
-    },
-    {
-      "path": "github.com/google/go-cmp",
-      "version": "v0.5.9",
       "main": false,
       "replace": null
     },
@@ -100,28 +95,6 @@
       "version": "v3.0.1",
       "main": false,
       "replace": null
-    },
-    {
-      "path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
-      "version": null,
-      "main": false,
-      "replace": {
-        "path": "./terminaltor",
-        "version": null,
-        "main": false,
-        "replace": null
-      }
-    },
-    {
-      "path": "github.com/cachito-testing/gomod-pandemonium/weird",
-      "version": null,
-      "main": false,
-      "replace": {
-        "path": "./weird",
-        "version": null,
-        "main": false,
-        "replace": null
-      }
     },
     {
       "path": "github.com/Azure/go-ansiterm",
@@ -272,6 +245,28 @@
       "version": "v1.0.0-20180628173108-788fd7840127",
       "main": false,
       "replace": null
+    },
+    {
+      "path": "github.com/hermetoproject/integration-tests/terminaltor",
+      "version": null,
+      "main": false,
+      "replace": {
+        "path": "./terminaltor",
+        "version": null,
+        "main": false,
+        "replace": null
+      }
+    },
+    {
+      "path": "github.com/hermetoproject/integration-tests/weird",
+      "version": null,
+      "main": false,
+      "replace": {
+        "path": "./weird",
+        "version": null,
+        "main": false,
+        "replace": null
+      }
     }
   ],
   "packages": [
@@ -346,7 +341,12 @@
       "module": null
     },
     {
-      "import_path": "internal/runtime/exithook",
+      "import_path": "internal/runtime/math",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/strconv",
       "standard": true,
       "module": null
     },
@@ -356,17 +356,52 @@
       "module": null
     },
     {
+      "import_path": "internal/runtime/cgroup",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/exithook",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/gc",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/asan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/msan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/race",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/sys",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/maps",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "internal/stringslite",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "runtime/internal/math",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "runtime/internal/sys",
+      "import_path": "internal/trace/tracev2",
       "standard": true,
       "module": null
     },
@@ -392,11 +427,6 @@
     },
     {
       "import_path": "internal/itoa",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/race",
       "standard": true,
       "module": null
     },
@@ -427,6 +457,16 @@
     },
     {
       "import_path": "sync/atomic",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/sync",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/synctest",
       "standard": true,
       "module": null
     },
@@ -477,16 +517,6 @@
     },
     {
       "import_path": "internal/godebug",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/asan",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/msan",
       "standard": true,
       "module": null
     },
@@ -581,20 +611,20 @@
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+      "import_path": "github.com/hermetoproject/integration-tests/terminaltor",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+        "path": "github.com/hermetoproject/integration-tests/terminaltor",
         "version": null,
         "main": true,
         "replace": null
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/where-was-i-built",
+      "import_path": "github.com/hermetoproject/integration-tests/where-was-i-built",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium",
+        "path": "github.com/hermetoproject/integration-tests",
         "version": null,
         "main": true,
         "replace": null
@@ -616,7 +646,102 @@
       "module": null
     },
     {
-      "import_path": "crypto/internal/alias",
+      "import_path": "crypto/internal/fips140deps/godebug",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/alias",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140deps/byteorder",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140deps/cpu",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/impl",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/sha256",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/subtle",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/sha3",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/sha512",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/hmac",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/check",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/aes",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/sysrand",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/entropy",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "math/rand/v2",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/randutil",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/drbg",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/aes/gcm",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140only",
       "standard": true,
       "module": null
     },
@@ -726,17 +851,7 @@
       "module": null
     },
     {
-      "import_path": "math/rand/v2",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/concurrent",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/weak",
+      "import_path": "weak",
       "standard": true,
       "module": null
     },
@@ -807,12 +922,7 @@
         "path": "github.com/release-engineering/retrodep/v2",
         "version": "v2.1.0",
         "main": false,
-        "replace": {
-          "path": "github.com/cachito-testing/retrodep/v2",
-          "version": "v2.1.1",
-          "main": false,
-          "replace": null
-        }
+        "replace": null
       }
     },
     {
@@ -851,11 +961,6 @@
       "module": null
     },
     {
-      "import_path": "go/internal/typeparams",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "go/parser",
       "standard": true,
       "module": null
@@ -882,6 +987,11 @@
     },
     {
       "import_path": "internal/platform",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/syslist",
       "standard": true,
       "module": null
     },
@@ -926,11 +1036,6 @@
       "module": null
     },
     {
-      "import_path": "crypto/internal/randutil",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "math/rand",
       "standard": true,
       "module": null
@@ -956,22 +1061,22 @@
       "module": null
     },
     {
-      "import_path": "crypto/internal/edwards25519/field",
+      "import_path": "crypto/internal/fips140/nistec/fiat",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "crypto/internal/nistec/fiat",
+      "import_path": "crypto/internal/fips140/nistec",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "embed",
+      "import_path": "crypto/internal/fips140/ecdh",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "crypto/internal/nistec",
+      "import_path": "crypto/internal/fips140/edwards25519/field",
       "standard": true,
       "module": null
     },
@@ -986,17 +1091,42 @@
       "module": null
     },
     {
-      "import_path": "crypto/internal/bigmod",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "crypto/internal/boring/bbig",
       "standard": true,
       "module": null
     },
     {
+      "import_path": "crypto/internal/fips140/bigmod",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/ecdsa",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140cache",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/sha3",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140hash",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "crypto/sha512",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/saferio",
       "standard": true,
       "module": null
     },
@@ -1021,7 +1151,12 @@
       "module": null
     },
     {
-      "import_path": "crypto/internal/edwards25519",
+      "import_path": "crypto/internal/fips140/edwards25519",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/ed25519",
       "standard": true,
       "module": null
     },
@@ -1031,7 +1166,32 @@
       "module": null
     },
     {
+      "import_path": "crypto/internal/fips140/hkdf",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/hkdf",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "crypto/hmac",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/mlkem",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/tls12",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/internal/fips140/tls13",
       "standard": true,
       "module": null
     },
@@ -1061,22 +1221,7 @@
       "module": null
     },
     {
-      "import_path": "vendor/golang.org/x/crypto/hkdf",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "crypto/internal/hpke",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "vendor/golang.org/x/crypto/sha3",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "crypto/internal/mlkem768",
       "standard": true,
       "module": null
     },
@@ -1091,12 +1236,27 @@
       "module": null
     },
     {
+      "import_path": "crypto/internal/fips140/rsa",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "crypto/rsa",
       "standard": true,
       "module": null
     },
     {
       "import_path": "crypto/sha1",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/fips140",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "crypto/tls/internal/fips140tls",
       "standard": true,
       "module": null
     },
@@ -1112,6 +1272,11 @@
     },
     {
       "import_path": "encoding/pem",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "maps",
       "standard": true,
       "module": null
     },
@@ -1176,11 +1341,6 @@
       "module": null
     },
     {
-      "import_path": "maps",
-      "standard": true,
-      "module": null
-    },
-    {
       "import_path": "mime",
       "standard": true,
       "module": null
@@ -1211,6 +1371,11 @@
       "module": null
     },
     {
+      "import_path": "net/http/internal/httpcommon",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "net/http",
       "standard": true,
       "module": null
@@ -1232,19 +1397,14 @@
         "path": "github.com/release-engineering/retrodep/v2",
         "version": "v2.1.0",
         "main": false,
-        "replace": {
-          "path": "github.com/cachito-testing/retrodep/v2",
-          "version": "v2.1.1",
-          "main": false,
-          "replace": null
-        }
+        "replace": null
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium",
+      "import_path": "github.com/hermetoproject/integration-tests",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium",
+        "path": "github.com/hermetoproject/integration-tests",
         "version": null,
         "main": true,
         "replace": null
@@ -1321,7 +1481,12 @@
       "module": null
     },
     {
-      "import_path": "internal/runtime/exithook",
+      "import_path": "internal/runtime/math",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/strconv",
       "standard": true,
       "module": null
     },
@@ -1331,17 +1496,52 @@
       "module": null
     },
     {
+      "import_path": "internal/runtime/cgroup",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/exithook",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/gc",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/asan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/msan",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/race",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/sys",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/runtime/maps",
+      "standard": true,
+      "module": null
+    },
+    {
       "import_path": "internal/stringslite",
       "standard": true,
       "module": null
     },
     {
-      "import_path": "runtime/internal/math",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "runtime/internal/sys",
+      "import_path": "internal/trace/tracev2",
       "standard": true,
       "module": null
     },
@@ -1367,11 +1567,6 @@
     },
     {
       "import_path": "internal/itoa",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/race",
       "standard": true,
       "module": null
     },
@@ -1402,6 +1597,16 @@
     },
     {
       "import_path": "sync/atomic",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/sync",
+      "standard": true,
+      "module": null
+    },
+    {
+      "import_path": "internal/synctest",
       "standard": true,
       "module": null
     },
@@ -1452,16 +1657,6 @@
     },
     {
       "import_path": "internal/godebug",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/asan",
-      "standard": true,
-      "module": null
-    },
-    {
-      "import_path": "internal/msan",
       "standard": true,
       "module": null
     },
@@ -1556,20 +1751,20 @@
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+      "import_path": "github.com/hermetoproject/integration-tests/terminaltor",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+        "path": "github.com/hermetoproject/integration-tests/terminaltor",
         "version": null,
         "main": true,
         "replace": null
       }
     },
     {
-      "import_path": "github.com/cachito-testing/gomod-pandemonium/weird",
+      "import_path": "github.com/hermetoproject/integration-tests/weird",
       "standard": false,
       "module": {
-        "path": "github.com/cachito-testing/gomod-pandemonium/weird",
+        "path": "github.com/hermetoproject/integration-tests/weird",
         "version": null,
         "main": true,
         "replace": null
@@ -1578,132 +1773,44 @@
   ],
   "modules_in_go_sum": [
     [
-      "github.com/Azure/go-ansiterm",
-      "v0.0.0-20210617225240-d185dfc1b5a1"
+      "github.com/chzyer/logex",
+      "v1.1.10"
     ],
     [
-      "github.com/Masterminds/semver",
-      "v1.4.2"
+      "github.com/chzyer/readline",
+      "v0.0.0-20180603132655-2972be24d48e"
     ],
     [
-      "github.com/Microsoft/go-winio",
-      "v0.6.0"
+      "github.com/chzyer/test",
+      "v0.0.0-20180213035817-a1ea475d72b1"
     ],
     [
-      "github.com/cachito-testing/gomod-pandemonium/terminaltor",
-      "v1.0.0"
+      "github.com/ianlancetaylor/demangle",
+      "v0.0.0-20200824232613-28f6c0f3b639"
     ],
     [
-      "github.com/cachito-testing/gomod-pandemonium/weird",
-      "v0.0.0-20230417073518-0c6890c3280a"
-    ],
-    [
-      "github.com/cachito-testing/retrodep/v2",
-      "v2.1.1"
-    ],
-    [
-      "github.com/creack/pty",
-      "v1.1.18"
-    ],
-    [
-      "github.com/davecgh/go-spew",
+      "github.com/kr/pty",
       "v1.1.1"
     ],
     [
-      "github.com/go-logr/logr",
-      "v1.2.3"
+      "github.com/sirupsen/logrus",
+      "v1.7.0"
     ],
     [
-      "github.com/go-task/slim-sprig",
-      "v0.0.0-20230315185526-52ccab3ef572"
-    ],
-    [
-      "github.com/golang/protobuf",
-      "v1.5.3"
-    ],
-    [
-      "github.com/google/go-cmp",
-      "v0.5.9"
-    ],
-    [
-      "github.com/google/pprof",
-      "v0.0.0-20210407192527-94a9f03dee38"
-    ],
-    [
-      "github.com/kr/pretty",
+      "github.com/stretchr/objx",
       "v0.1.0"
     ],
     [
-      "github.com/kr/text",
-      "v0.1.0"
+      "github.com/yuin/goldmark",
+      "v1.4.13"
     ],
     [
-      "github.com/moby/term",
-      "v0.0.0-20221205130635-1aeaba878587"
+      "golang.org/x/crypto",
+      "v0.0.0-20190308221718-c2843e01d9a2"
     ],
     [
-      "github.com/onsi/ginkgo/v2",
-      "v2.9.2"
-    ],
-    [
-      "github.com/onsi/gomega",
-      "v1.27.4"
-    ],
-    [
-      "github.com/op/go-logging",
-      "v0.0.0-20160315200505-970db520ece7"
-    ],
-    [
-      "github.com/pkg/errors",
-      "v0.8.1"
-    ],
-    [
-      "github.com/pmezard/go-difflib",
-      "v1.0.0"
-    ],
-    [
-      "github.com/stretchr/testify",
-      "v1.6.1"
-    ],
-    [
-      "golang.org/x/mod",
-      "v0.9.0"
-    ],
-    [
-      "golang.org/x/net",
-      "v0.8.0"
-    ],
-    [
-      "golang.org/x/sync",
-      "v0.1.0"
-    ],
-    [
-      "golang.org/x/sys",
+      "golang.org/x/term",
       "v0.6.0"
-    ],
-    [
-      "golang.org/x/text",
-      "v0.8.0"
-    ],
-    [
-      "golang.org/x/tools",
-      "v0.7.0"
-    ],
-    [
-      "google.golang.org/protobuf",
-      "v1.28.0"
-    ],
-    [
-      "gopkg.in/check.v1",
-      "v1.0.0-20180628173108-788fd7840127"
-    ],
-    [
-      "gopkg.in/yaml.v2",
-      "v2.2.2"
-    ],
-    [
-      "gopkg.in/yaml.v3",
-      "v3.0.1"
     ]
   ]
 }

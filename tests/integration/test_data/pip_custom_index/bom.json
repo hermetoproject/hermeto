@@ -7,8 +7,8 @@
         }
       },
       "subjects": [
-        "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4055376bc13904c2f450aac6ee89969d539c8d9f05",
-        "pkg:pypi/requests@2.32.3?repository_url=http://127.0.0.1:8080/simple/"
+        "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405beb7c5e0f2e050539b0fe70a30512d777f3c558",
+        "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -17,7 +17,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4055376bc13904c2f450aac6ee89969d539c8d9f05",
+      "bom-ref": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405beb7c5e0f2e050539b0fe70a30512d777f3c558",
       "name": "integration-tests",
       "properties": [
         {
@@ -25,11 +25,11 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4055376bc13904c2f450aac6ee89969d539c8d9f05",
+      "purl": "pkg:pypi/integration-tests?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405beb7c5e0f2e050539b0fe70a30512d777f3c558",
       "type": "library"
     },
     {
-      "bom-ref": "pkg:pypi/requests@2.32.3?repository_url=http://127.0.0.1:8080/simple/",
+      "bom-ref": "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple",
       "name": "requests",
       "properties": [
         {
@@ -41,7 +41,7 @@
           "value": "true"
         }
       ],
-      "purl": "pkg:pypi/requests@2.32.3?repository_url=http://127.0.0.1:8080/simple/",
+      "purl": "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple",
       "type": "library",
       "version": "2.32.3"
     }

@@ -11,8 +11,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -31,7 +31,6 @@
         "pkg:golang/internal/godebugs?type=package",
         "pkg:golang/internal/goexperiment?type=package",
         "pkg:golang/internal/goos?type=package",
-        "pkg:golang/internal/itoa?type=package",
         "pkg:golang/internal/msan?type=package",
         "pkg:golang/internal/oserror?type=package",
         "pkg:golang/internal/poll?type=package",
@@ -41,12 +40,14 @@
         "pkg:golang/internal/runtime/atomic?type=package",
         "pkg:golang/internal/runtime/cgroup?type=package",
         "pkg:golang/internal/runtime/exithook?type=package",
+        "pkg:golang/internal/runtime/gc/scan?type=package",
         "pkg:golang/internal/runtime/gc?type=package",
         "pkg:golang/internal/runtime/maps?type=package",
         "pkg:golang/internal/runtime/math?type=package",
-        "pkg:golang/internal/runtime/strconv?type=package",
+        "pkg:golang/internal/runtime/pprof/label?type=package",
         "pkg:golang/internal/runtime/sys?type=package",
-        "pkg:golang/internal/runtime/syscall?type=package",
+        "pkg:golang/internal/runtime/syscall/linux?type=package",
+        "pkg:golang/internal/strconv?type=package",
         "pkg:golang/internal/stringslite?type=package",
         "pkg:golang/internal/sync?type=package",
         "pkg:golang/internal/synctest?type=package",
@@ -94,8 +95,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -114,7 +115,6 @@
         "pkg:golang/internal/godebugs?type=package",
         "pkg:golang/internal/goexperiment?type=package",
         "pkg:golang/internal/goos?type=package",
-        "pkg:golang/internal/itoa?type=package",
         "pkg:golang/internal/msan?type=package",
         "pkg:golang/internal/oserror?type=package",
         "pkg:golang/internal/poll?type=package",
@@ -124,12 +124,14 @@
         "pkg:golang/internal/runtime/atomic?type=package",
         "pkg:golang/internal/runtime/cgroup?type=package",
         "pkg:golang/internal/runtime/exithook?type=package",
+        "pkg:golang/internal/runtime/gc/scan?type=package",
         "pkg:golang/internal/runtime/gc?type=package",
         "pkg:golang/internal/runtime/maps?type=package",
         "pkg:golang/internal/runtime/math?type=package",
-        "pkg:golang/internal/runtime/strconv?type=package",
+        "pkg:golang/internal/runtime/pprof/label?type=package",
         "pkg:golang/internal/runtime/sys?type=package",
-        "pkg:golang/internal/runtime/syscall?type=package",
+        "pkg:golang/internal/runtime/syscall/linux?type=package",
+        "pkg:golang/internal/strconv?type=package",
         "pkg:golang/internal/stringslite?type=package",
         "pkg:golang/internal/sync?type=package",
         "pkg:golang/internal/synctest?type=package",
@@ -218,30 +220,30 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=module",
-      "name": "github.com/cachito-testing/gomod-vendor-check-fail",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
       "type": "library",
-      "version": "v0.0.0-20210729213647-8553df649870"
+      "version": "v0.0.0-20260415150954-f802197aba69"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=package",
-      "name": "github.com/cachito-testing/gomod-vendor-check-fail",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210729213647-8553df649870?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
       "type": "library",
-      "version": "v0.0.0-20210729213647-8553df649870"
+      "version": "v0.0.0-20260415150954-f802197aba69"
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
@@ -463,18 +465,6 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/itoa?type=package",
-      "name": "internal/itoa",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/internal/itoa?type=package",
-      "type": "library"
-    },
-    {
       "bom-ref": "pkg:golang/internal/msan?type=package",
       "name": "internal/msan",
       "properties": [
@@ -583,6 +573,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/gc/scan?type=package",
+      "name": "internal/runtime/gc/scan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/gc/scan?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/internal/runtime/gc?type=package",
       "name": "internal/runtime/gc",
       "properties": [
@@ -619,15 +621,15 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/runtime/strconv?type=package",
-      "name": "internal/runtime/strconv",
+      "bom-ref": "pkg:golang/internal/runtime/pprof/label?type=package",
+      "name": "internal/runtime/pprof/label",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/internal/runtime/strconv?type=package",
+      "purl": "pkg:golang/internal/runtime/pprof/label?type=package",
       "type": "library"
     },
     {
@@ -643,15 +645,27 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/runtime/syscall?type=package",
-      "name": "internal/runtime/syscall",
+      "bom-ref": "pkg:golang/internal/runtime/syscall/linux?type=package",
+      "name": "internal/runtime/syscall/linux",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/internal/runtime/syscall?type=package",
+      "purl": "pkg:golang/internal/runtime/syscall/linux?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/internal/strconv?type=package",
+      "name": "internal/strconv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/strconv?type=package",
       "type": "library"
     },
     {

@@ -13,9 +13,9 @@ from hermeto.core.models.output import BuildConfig
 @pytest.mark.parametrize(
     "filename, expect_format",
     [
-        ("cachito.env", EnvFormat.env),
-        ("cachito.sh", EnvFormat.env),
-        ("cachito.json", EnvFormat.json),
+        ("hermeto.env", EnvFormat.env),
+        ("hermeto.sh", EnvFormat.env),
+        ("hermeto.json", EnvFormat.json),
     ],
 )
 def test_format_based_on_suffix(filename: str, expect_format: EnvFormat) -> None:

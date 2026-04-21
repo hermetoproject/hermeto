@@ -22,30 +22,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="Hermeto container image reference; build local image if not set (env: HERMETO_TEST_IMAGE)",
     )
     group.addoption(
-        "--hermeto-local-pypiserver",
-        action="store_true",
-        default=os.getenv("HERMETO_TEST_LOCAL_PYPISERVER") == "1",
-        help="Start local pypiserver for pip tests (env: HERMETO_TEST_LOCAL_PYPISERVER=1)",
-    )
-    group.addoption(
-        "--hermeto-pypiserver-port",
-        action="store",
-        default=os.getenv("HERMETO_TEST_PYPISERVER_PORT", "8080"),
-        help="Port for local pypiserver (env: HERMETO_TEST_PYPISERVER_PORT)",
-    )
-    group.addoption(
-        "--hermeto-local-dnf-server",
-        action="store_true",
-        default=os.getenv("HERMETO_TEST_LOCAL_DNF_SERVER") == "1",
-        help="Start local DNF server for RPM tests (env: HERMETO_TEST_LOCAL_DNF_SERVER=1)",
-    )
-    group.addoption(
-        "--hermeto-dnfserver-ssl-port",
-        action="store",
-        default=os.getenv("HERMETO_TEST_DNFSERVER_SSL_PORT", "8443"),
-        help="SSL port for local DNF server (env: HERMETO_TEST_DNFSERVER_SSL_PORT)",
-    )
-    group.addoption(
         "--hermeto-generate-test-data",
         action="store_true",
         default=os.getenv("HERMETO_TEST_GENERATE_DATA") == "1",
@@ -57,6 +33,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=os.getenv("HERMETO_TEST_CONTAINER_ENGINE", "podman"),
         choices=("podman", "buildah"),
         help="Container engine: podman or buildah (env: HERMETO_TEST_CONTAINER_ENGINE)",
+    )
+    group.addoption(
+        "--hermeto-local-nexus",
+        action="store_true",
+        default=os.getenv("HERMETO_TEST_LOCAL_NEXUS") == "1",
+        help="Start local Nexus for source tests (env: HERMETO_TEST_LOCAL_NEXUS=1)",
     )
     group.addoption(
         "--hermeto-local-nexus-proxy",

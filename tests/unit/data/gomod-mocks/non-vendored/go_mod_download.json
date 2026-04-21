@@ -1,200 +1,30 @@
 {
-	"Path": "github.com/Microsoft/go-winio",
-	"Version": "v0.6.0",
-	"Info": "{gomodcache_dir}/cache/download/github.com/!microsoft/go-winio/@v/v0.6.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/!microsoft/go-winio/@v/v0.6.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/!microsoft/go-winio/@v/v0.6.0.zip",
-	"Dir": "{gomodcache_dir}/github.com/!microsoft/go-winio@v0.6.0",
-	"Sum": "h1:slsWYD/zyx7lCXoZVlvQrj0hPTM1HI4+v1sIda2yDvg=",
-	"GoModSum": "h1:cTAf44im0RAYeL23bpB+fzCyDH2MJiz2BO69KH/soAE="
-}
-{
-	"Path": "github.com/onsi/ginkgo/v2",
-	"Version": "v2.9.2",
-	"Info": "{gomodcache_dir}/cache/download/github.com/onsi/ginkgo/v2/@v/v2.9.2.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/onsi/ginkgo/v2/@v/v2.9.2.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/onsi/ginkgo/v2/@v/v2.9.2.zip",
-	"Dir": "{gomodcache_dir}/github.com/onsi/ginkgo/v2@v2.9.2",
-	"Sum": "h1:BA2GMJOtfGAfagzYtrAlufIP0lq6QERkFmHLMLPwFSU=",
-	"GoModSum": "h1:WHcJJG2dIlcCqVfBAwUCrJxSPFb6v4azBwgxeMeDuts="
-}
-{
-	"Path": "github.com/onsi/gomega",
-	"Version": "v1.27.4",
-	"Info": "{gomodcache_dir}/cache/download/github.com/onsi/gomega/@v/v1.27.4.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/onsi/gomega/@v/v1.27.4.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/onsi/gomega/@v/v1.27.4.zip",
-	"Dir": "{gomodcache_dir}/github.com/onsi/gomega@v1.27.4",
-	"Sum": "h1:Z2AnStgsdSayCMDiCU42qIz+HLqEPcgiOCXjAU/w+8E=",
-	"GoModSum": "h1:riYq/GJKh8hhoM01HN6Vmuy93AarCXCBGpvFDK3q3fQ="
-}
-{
-	"Path": "github.com/cachito-testing/retrodep/v2",
-	"Version": "v2.1.1",
-	"Info": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/cachito-testing/retrodep/v2/@v/v2.1.1.zip",
-	"Dir": "{gomodcache_dir}/github.com/cachito-testing/retrodep/v2@v2.1.1",
-	"Sum": "h1:inziEuX1Zo/BJv1pgZ2tRPltfQVJaVpRmIlsomaKMb0=",
-	"GoModSum": "h1:1ktnevkSAzwQww4E/ICy2dlIouSNdvozRVgq6Umkt/E="
-}
-{
-	"Path": "github.com/Azure/go-ansiterm",
-	"Version": "v0.0.0-20210617225240-d185dfc1b5a1",
-	"Info": "{gomodcache_dir}/cache/download/github.com/!azure/go-ansiterm/@v/v0.0.0-20210617225240-d185dfc1b5a1.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/!azure/go-ansiterm/@v/v0.0.0-20210617225240-d185dfc1b5a1.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/!azure/go-ansiterm/@v/v0.0.0-20210617225240-d185dfc1b5a1.zip",
-	"Dir": "{gomodcache_dir}/github.com/!azure/go-ansiterm@v0.0.0-20210617225240-d185dfc1b5a1",
-	"Sum": "h1:UQHMgLO+TxOElx5B5HZ4hJQsoJ/PvUvKRhJHDQXO8P8=",
-	"GoModSum": "h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E="
-}
-{
-	"Path": "github.com/Masterminds/semver",
-	"Version": "v1.4.2",
-	"Info": "{gomodcache_dir}/cache/download/github.com/!masterminds/semver/@v/v1.4.2.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/!masterminds/semver/@v/v1.4.2.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/!masterminds/semver/@v/v1.4.2.zip",
-	"Dir": "{gomodcache_dir}/github.com/!masterminds/semver@v1.4.2",
-	"Sum": "h1:WBLTQ37jOCzSLtXNdoo8bNM8876KhNqOKvrlGITgsTc=",
-	"GoModSum": "h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y="
-}
-{
-	"Path": "github.com/go-logr/logr",
-	"Version": "v1.2.3",
-	"Info": "{gomodcache_dir}/cache/download/github.com/go-logr/logr/@v/v1.2.3.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/go-logr/logr/@v/v1.2.3.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/go-logr/logr/@v/v1.2.3.zip",
-	"Dir": "{gomodcache_dir}/github.com/go-logr/logr@v1.2.3",
-	"Sum": "h1:2DntVwHkVopvECVRSlL5PSo9eG+cAkDCuckLubN+rq0=",
-	"GoModSum": "h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A="
-}
-{
-	"Path": "github.com/go-task/slim-sprig",
-	"Version": "v0.0.0-20230315185526-52ccab3ef572",
-	"Info": "{gomodcache_dir}/cache/download/github.com/go-task/slim-sprig/@v/v0.0.0-20230315185526-52ccab3ef572.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/go-task/slim-sprig/@v/v0.0.0-20230315185526-52ccab3ef572.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/go-task/slim-sprig/@v/v0.0.0-20230315185526-52ccab3ef572.zip",
-	"Dir": "{gomodcache_dir}/github.com/go-task/slim-sprig@v0.0.0-20230315185526-52ccab3ef572",
-	"Sum": "h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=",
-	"GoModSum": "h1:9Pwr4B2jHnOSGXyyzV8ROjYa2ojvAY6HCGYYfMoC3Ls="
-}
-{
-	"Path": "github.com/google/go-cmp",
-	"Version": "v0.5.9",
-	"Info": "{gomodcache_dir}/cache/download/github.com/google/go-cmp/@v/v0.5.9.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/google/go-cmp/@v/v0.5.9.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/google/go-cmp/@v/v0.5.9.zip",
-	"Dir": "{gomodcache_dir}/github.com/google/go-cmp@v0.5.9",
-	"Sum": "h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=",
-	"GoModSum": "h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY="
-}
-{
-	"Path": "github.com/google/pprof",
-	"Version": "v0.0.0-20210407192527-94a9f03dee38",
-	"Info": "{gomodcache_dir}/cache/download/github.com/google/pprof/@v/v0.0.0-20210407192527-94a9f03dee38.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/google/pprof/@v/v0.0.0-20210407192527-94a9f03dee38.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/google/pprof/@v/v0.0.0-20210407192527-94a9f03dee38.zip",
-	"Dir": "{gomodcache_dir}/github.com/google/pprof@v0.0.0-20210407192527-94a9f03dee38",
-	"Sum": "h1:yAJXTCF9TqKcTiHJAE8dj7HMvPfh66eeA2JYW7eFpSE=",
-	"GoModSum": "h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE="
-}
-{
-	"Path": "github.com/moby/term",
-	"Version": "v0.0.0-20221205130635-1aeaba878587",
-	"Info": "{gomodcache_dir}/cache/download/github.com/moby/term/@v/v0.0.0-20221205130635-1aeaba878587.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/moby/term/@v/v0.0.0-20221205130635-1aeaba878587.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/moby/term/@v/v0.0.0-20221205130635-1aeaba878587.zip",
-	"Dir": "{gomodcache_dir}/github.com/moby/term@v0.0.0-20221205130635-1aeaba878587",
-	"Sum": "h1:HfkjXDfhgVaN5rmueG8cL8KKeFNecRCXFhaJ2qZ5SKA=",
-	"GoModSum": "h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y="
-}
-{
-	"Path": "github.com/op/go-logging",
-	"Version": "v0.0.0-20160315200505-970db520ece7",
-	"Info": "{gomodcache_dir}/cache/download/github.com/op/go-logging/@v/v0.0.0-20160315200505-970db520ece7.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/op/go-logging/@v/v0.0.0-20160315200505-970db520ece7.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/op/go-logging/@v/v0.0.0-20160315200505-970db520ece7.zip",
-	"Dir": "{gomodcache_dir}/github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7",
-	"Sum": "h1:lDH9UUVJtmYCjyT0CI4q8xvlXPxeZ0gYCVvWbmPlp88=",
-	"GoModSum": "h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk="
-}
-{
-	"Path": "github.com/pkg/errors",
-	"Version": "v0.8.1",
-	"Info": "{gomodcache_dir}/cache/download/github.com/pkg/errors/@v/v0.8.1.info",
-	"GoMod": "{gomodcache_dir}/cache/download/github.com/pkg/errors/@v/v0.8.1.mod",
-	"Zip": "{gomodcache_dir}/cache/download/github.com/pkg/errors/@v/v0.8.1.zip",
-	"Dir": "{gomodcache_dir}/github.com/pkg/errors@v0.8.1",
-	"Sum": "h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=",
-	"GoModSum": "h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0="
-}
-{
-	"Path": "golang.org/x/mod",
-	"Version": "v0.9.0",
-	"Info": "{gomodcache_dir}/cache/download/golang.org/x/mod/@v/v0.9.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/mod/@v/v0.9.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/mod/@v/v0.9.0.zip",
-	"Dir": "{gomodcache_dir}/golang.org/x/mod@v0.9.0",
-	"Sum": "h1:KENHtAZL2y3NLMYZeHY9DW8HW8V+kQyJsY/V9JlKvCs=",
-	"GoModSum": "h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs="
-}
-{
-	"Path": "golang.org/x/net",
-	"Version": "v0.8.0",
-	"Info": "{gomodcache_dir}/cache/download/golang.org/x/net/@v/v0.8.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/net/@v/v0.8.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/net/@v/v0.8.0.zip",
-	"Dir": "{gomodcache_dir}/golang.org/x/net@v0.8.0",
-	"Sum": "h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=",
-	"GoModSum": "h1:QVkue5JL9kW//ek3r6jTKnTFis1tRmNAW2P1shuFdJc="
-}
-{
-	"Path": "golang.org/x/sys",
-	"Version": "v0.6.0",
-	"Info": "{gomodcache_dir}/cache/download/golang.org/x/sys/@v/v0.6.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/sys/@v/v0.6.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/sys/@v/v0.6.0.zip",
-	"Dir": "{gomodcache_dir}/golang.org/x/sys@v0.6.0",
-	"Sum": "h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=",
-	"GoModSum": "h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg="
+	"Path": "rsc.io/quote",
+	"Version": "v1.5.2",
+	"Info": "{gomodcache_dir}/cache/download/rsc.io/quote/@v/v1.5.2.info",
+	"GoMod": "{gomodcache_dir}/cache/download/rsc.io/quote/@v/v1.5.2.mod",
+	"Zip": "{gomodcache_dir}/cache/download/rsc.io/quote/@v/v1.5.2.zip",
+	"Dir": "{gomodcache_dir}/rsc.io/quote@v1.5.2",
+	"Sum": "h1:w5fcysjrx7yqtD/aO+QwRjYZOKnaM9Uh2b40tElTs3Y=",
+	"GoModSum": "h1:LzX7hefJvL54yjefDEDHNONDjII0t9xZLPXsUe+TKr0="
 }
 {
 	"Path": "golang.org/x/text",
-	"Version": "v0.8.0",
-	"Info": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.8.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.8.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.8.0.zip",
-	"Dir": "{gomodcache_dir}/golang.org/x/text@v0.8.0",
-	"Sum": "h1:57P1ETyNKtuIjB4SRd15iJxuhj8Gc416Y78H3qgMh68=",
-	"GoModSum": "h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8="
+	"Version": "v0.0.0-20170915032832-14c0d48ead0c",
+	"Info": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.0.0-20170915032832-14c0d48ead0c.info",
+	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.0.0-20170915032832-14c0d48ead0c.mod",
+	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/text/@v/v0.0.0-20170915032832-14c0d48ead0c.zip",
+	"Dir": "{gomodcache_dir}/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c",
+	"Sum": "h1:qgOY6WgZOaTkIIMiVjBQcw93ERBE4m30iBm00nkL0i8=",
+	"GoModSum": "h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ="
 }
 {
-	"Path": "golang.org/x/tools",
-	"Version": "v0.7.0",
-	"Info": "{gomodcache_dir}/cache/download/golang.org/x/tools/@v/v0.7.0.info",
-	"GoMod": "{gomodcache_dir}/cache/download/golang.org/x/tools/@v/v0.7.0.mod",
-	"Zip": "{gomodcache_dir}/cache/download/golang.org/x/tools/@v/v0.7.0.zip",
-	"Dir": "{gomodcache_dir}/golang.org/x/tools@v0.7.0",
-	"Sum": "h1:W4OVu8VVOaIO0yzWMNdepAulS7YfoS3Zabrm8DOXXU4=",
-	"GoModSum": "h1:4pg6aUX35JBAogB10C9AtvVL+qowtN4pT3CGSQex14s="
-}
-{
-	"Path": "gopkg.in/yaml.v2",
-	"Version": "v2.2.2",
-	"Info": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v2/@v/v2.2.2.info",
-	"GoMod": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v2/@v/v2.2.2.mod",
-	"Zip": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v2/@v/v2.2.2.zip",
-	"Dir": "{gomodcache_dir}/gopkg.in/yaml.v2@v2.2.2",
-	"Sum": "h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=",
-	"GoModSum": "h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI="
-}
-{
-	"Path": "gopkg.in/yaml.v3",
-	"Version": "v3.0.1",
-	"Info": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.info",
-	"GoMod": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.mod",
-	"Zip": "{gomodcache_dir}/cache/download/gopkg.in/yaml.v3/@v/v3.0.1.zip",
-	"Dir": "{gomodcache_dir}/gopkg.in/yaml.v3@v3.0.1",
-	"Sum": "h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=",
-	"GoModSum": "h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM="
+	"Path": "rsc.io/sampler",
+	"Version": "v1.3.0",
+	"Info": "{gomodcache_dir}/cache/download/rsc.io/sampler/@v/v1.3.0.info",
+	"GoMod": "{gomodcache_dir}/cache/download/rsc.io/sampler/@v/v1.3.0.mod",
+	"Zip": "{gomodcache_dir}/cache/download/rsc.io/sampler/@v/v1.3.0.zip",
+	"Dir": "{gomodcache_dir}/rsc.io/sampler@v1.3.0",
+	"Sum": "h1:7uVkIFmeBqHfdjD+gZwtXXI+RODJ2Wc4O7MPEh/QiW4=",
+	"GoModSum": "h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA="
 }

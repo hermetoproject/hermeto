@@ -11,9 +11,11 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/context?type=package",
         "pkg:golang/crypto/cipher?type=package",
+        "pkg:golang/crypto/fips140?type=package",
         "pkg:golang/crypto/internal/boring/sig?type=package",
         "pkg:golang/crypto/internal/boring?type=package",
-        "pkg:golang/crypto/internal/entropy?type=package",
+        "pkg:golang/crypto/internal/constanttime?type=package",
+        "pkg:golang/crypto/internal/entropy/v1.0.0?type=package",
         "pkg:golang/crypto/internal/fips140/aes/gcm?type=package",
         "pkg:golang/crypto/internal/fips140/aes?type=package",
         "pkg:golang/crypto/internal/fips140/alias?type=package",
@@ -28,8 +30,10 @@
         "pkg:golang/crypto/internal/fips140deps/byteorder?type=package",
         "pkg:golang/crypto/internal/fips140deps/cpu?type=package",
         "pkg:golang/crypto/internal/fips140deps/godebug?type=package",
+        "pkg:golang/crypto/internal/fips140deps/time?type=package",
         "pkg:golang/crypto/internal/fips140only?type=package",
         "pkg:golang/crypto/internal/impl?type=package",
+        "pkg:golang/crypto/internal/rand?type=package",
         "pkg:golang/crypto/internal/randutil?type=package",
         "pkg:golang/crypto/internal/sysrand?type=package",
         "pkg:golang/crypto/md5?type=package",
@@ -68,7 +72,6 @@
         "pkg:golang/internal/godebugs?type=package",
         "pkg:golang/internal/goexperiment?type=package",
         "pkg:golang/internal/goos?type=package",
-        "pkg:golang/internal/itoa?type=package",
         "pkg:golang/internal/msan?type=package",
         "pkg:golang/internal/nettrace?type=package",
         "pkg:golang/internal/oserror?type=package",
@@ -79,13 +82,15 @@
         "pkg:golang/internal/runtime/atomic?type=package",
         "pkg:golang/internal/runtime/cgroup?type=package",
         "pkg:golang/internal/runtime/exithook?type=package",
+        "pkg:golang/internal/runtime/gc/scan?type=package",
         "pkg:golang/internal/runtime/gc?type=package",
         "pkg:golang/internal/runtime/maps?type=package",
         "pkg:golang/internal/runtime/math?type=package",
-        "pkg:golang/internal/runtime/strconv?type=package",
+        "pkg:golang/internal/runtime/pprof/label?type=package",
         "pkg:golang/internal/runtime/sys?type=package",
-        "pkg:golang/internal/runtime/syscall?type=package",
+        "pkg:golang/internal/runtime/syscall/linux?type=package",
         "pkg:golang/internal/singleflight?type=package",
+        "pkg:golang/internal/strconv?type=package",
         "pkg:golang/internal/stringslite?type=package",
         "pkg:golang/internal/sync?type=package",
         "pkg:golang/internal/synctest?type=package",
@@ -178,6 +183,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/fips140?type=package",
+      "name": "crypto/fips140",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/fips140?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/crypto/internal/boring/sig?type=package",
       "name": "crypto/internal/boring/sig",
       "properties": [
@@ -202,15 +219,27 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/crypto/internal/entropy?type=package",
-      "name": "crypto/internal/entropy",
+      "bom-ref": "pkg:golang/crypto/internal/constanttime?type=package",
+      "name": "crypto/internal/constanttime",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/crypto/internal/entropy?type=package",
+      "purl": "pkg:golang/crypto/internal/constanttime?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/crypto/internal/entropy/v1.0.0?type=package",
+      "name": "crypto/internal/entropy/v1.0.0",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/entropy/v1.0.0?type=package",
       "type": "library"
     },
     {
@@ -382,6 +411,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140deps/time?type=package",
+      "name": "crypto/internal/fips140deps/time",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140deps/time?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/crypto/internal/fips140only?type=package",
       "name": "crypto/internal/fips140only",
       "properties": [
@@ -403,6 +444,18 @@
         }
       ],
       "purl": "pkg:golang/crypto/internal/impl?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/crypto/internal/rand?type=package",
+      "name": "crypto/internal/rand",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/rand?type=package",
       "type": "library"
     },
     {
@@ -869,18 +922,6 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/itoa?type=package",
-      "name": "internal/itoa",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/internal/itoa?type=package",
-      "type": "library"
-    },
-    {
       "bom-ref": "pkg:golang/internal/msan?type=package",
       "name": "internal/msan",
       "properties": [
@@ -1001,6 +1042,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/internal/runtime/gc/scan?type=package",
+      "name": "internal/runtime/gc/scan",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/runtime/gc/scan?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/internal/runtime/gc?type=package",
       "name": "internal/runtime/gc",
       "properties": [
@@ -1037,15 +1090,15 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/runtime/strconv?type=package",
-      "name": "internal/runtime/strconv",
+      "bom-ref": "pkg:golang/internal/runtime/pprof/label?type=package",
+      "name": "internal/runtime/pprof/label",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/internal/runtime/strconv?type=package",
+      "purl": "pkg:golang/internal/runtime/pprof/label?type=package",
       "type": "library"
     },
     {
@@ -1061,15 +1114,15 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/runtime/syscall?type=package",
-      "name": "internal/runtime/syscall",
+      "bom-ref": "pkg:golang/internal/runtime/syscall/linux?type=package",
+      "name": "internal/runtime/syscall/linux",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/internal/runtime/syscall?type=package",
+      "purl": "pkg:golang/internal/runtime/syscall/linux?type=package",
       "type": "library"
     },
     {
@@ -1082,6 +1135,18 @@
         }
       ],
       "purl": "pkg:golang/internal/singleflight?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/internal/strconv?type=package",
+      "name": "internal/strconv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/internal/strconv?type=package",
       "type": "library"
     },
     {

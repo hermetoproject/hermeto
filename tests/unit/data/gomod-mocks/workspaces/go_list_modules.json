@@ -1,19 +1,19 @@
 {
-	"Path": "github.com/cachito-testing/gomod-pandemonium",
+	"Path": "github.com/hermetoproject/integration-tests",
 	"Main": true,
 	"Dir": "{repo_dir}",
 	"GoMod": "{repo_dir}/go.mod",
 	"GoVersion": "1.22.0"
 }
 {
-	"Path": "github.com/cachito-testing/gomod-pandemonium/terminaltor",
+	"Path": "github.com/hermetoproject/integration-tests/terminaltor",
 	"Main": true,
 	"Dir": "{repo_dir}/terminaltor",
 	"GoMod": "{repo_dir}/terminaltor/go.mod",
 	"GoVersion": "1.22.0"
 }
 {
-	"Path": "github.com/cachito-testing/gomod-pandemonium/weird",
+	"Path": "github.com/hermetoproject/integration-tests/weird",
 	"Main": true,
 	"Dir": "{repo_dir}/weird",
 	"GoMod": "{repo_dir}/weird/go.mod",

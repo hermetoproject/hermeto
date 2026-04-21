@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from hermeto.core.errors import ExitError
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -18,7 +20,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output="PackageRejected: Yarn zero install detected, PnP zero installs are unsupported by hermeto",
             ),
             id="yarn_zero_installs",
@@ -29,7 +31,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_UNSUPPORTED_FEATURE,
                 expected_output="UnsupportedFeature: Found 8 unsupported dependencies, more details in the logs.",
             ),
             id="yarn_disallowed_protocols",
@@ -38,7 +40,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="yarn/correct-version-is-installed-by-corepack",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_exit_code=0,
                 expected_output="Processing the request using yarn@3.6.1",
             ),
             id="yarn_correct_version_is_installed_by_corepack",
@@ -47,7 +48,6 @@ log = logging.getLogger(__name__)
             utils.TestParameters(
                 branch="yarn/v4",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_exit_code=0,
                 expected_output="Processing the request using yarn@4.5.2",
             ),
             id="yarn_v4",
@@ -58,7 +58,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=ExitError.ERR_PACKAGE_MANAGER,
                 expected_output="The lockfile would have been modified by this install, which is explicitly forbidden.",
             ),
             id="yarn_immutable_installs",
@@ -69,7 +69,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=1,
+                expected_error=ExitError.ERR_PACKAGE_MANAGER,
                 expected_output="typescript@npm:5.3.3: The remote archive doesn't match the expected checksum",
             ),
             id="yarn_incorrect_checksum",
@@ -80,7 +80,7 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 check_deps_checksums=False,
-                expected_exit_code=2,
+                expected_error=ExitError.ERR_LOCKFILE_NOT_FOUND,
                 expected_output="Required files not found:",
             ),
             id="yarn_missing_lockfile",
@@ -115,7 +115,6 @@ def test_yarn_packages(
             utils.TestParameters(
                 branch="yarn/e2e",
                 packages=({"path": ".", "type": "yarn"},),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "berryscary"],
@@ -129,7 +128,6 @@ def test_yarn_packages(
                     {"path": "first-pkg", "type": "yarn"},
                     {"path": "second-pkg", "type": "yarn"},
                 ),
-                expected_exit_code=0,
                 expected_output="All dependencies fetched successfully",
             ),
             ["yarn", "node", "index.js"],

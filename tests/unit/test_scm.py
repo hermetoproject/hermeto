@@ -30,6 +30,14 @@ class TestRepoID:
                 "https://student:password@github.com/student/repo.git",
                 "https://github.com/student/repo.git",
             ),
+            (
+                "https://my-token@github.com/org/repo.git",
+                "https://github.com/org/repo.git",
+            ),
+            (
+                "https://my-token@github.enterprise.corp:8443/org/repo.git",
+                "https://github.enterprise.corp:8443/org/repo.git",
+            ),
             # unsupported
             (
                 "./foo:bar",
@@ -49,6 +57,7 @@ class TestRepoID:
 
         if isinstance(expect_result, str):
             repo_id = get_repo_id(golang_repo_path)
+            assert repo_id is not None
             assert repo_id.origin_url == expect_result
             assert repo_id.parsed_origin_url == urlsplit(expect_result)
             assert repo_id.commit_id == expect_commit_id

@@ -195,11 +195,11 @@ YARN_ENABLE_IMMUTABLE_CACHE=false
 ### Example
 
 For the Yarn example let's use the same sample Node.js [project][], but
-this time modified to use Yarn as the package manager. Get the repo if you want
-to try for yourself
+this time modified to use Yarn as the package manager. Get the repo if you
+want to try for yourself:
 
 ```shell
-git clone -b yarn https://github.com/cachito-testing/sample-nodejs-app.git
+git clone https://github.com/hermetoproject/doc-examples.git --branch=yarn-basic && cd doc-examples
 ```
 
 #### Pre-fetch dependencies
@@ -209,16 +209,16 @@ examples, this time using the Yarn package manager. Like with the previous
 examples the default path for the package we assume is `.`.
 
 See [the Yarn documentation][] for more details about running Hermeto for
-pre-fetching yarn dependencies.
+pre-fetching Yarn dependencies.
 
 ```shell
-hermeto fetch-deps --source ./sample-yarn-app --output ./hermeto-output '{"type": "yarn"}'
+hermeto fetch-deps --output ./hermeto-output '{"type": "yarn"}'
 ```
 
 OR more simply (without the need of a JSON formatted argument) just
 
 ```shell
-hermeto fetch-deps --source ./sample-yarn-app --output ./hermeto-output yarn
+hermeto fetch-deps --output ./hermeto-output yarn
 ```
 
 #### Generate environment variables
@@ -243,38 +243,18 @@ hermetic build, however that might change in the future.
 
 #### Build the application image
 
-Yarn is installed using a Node.js tool called
-[Corepack][] which has been shipped
-by Node.js by default since v16.9.0 and v14.19.0. Therefore, we'll use the
-`node:18` base image in our example which definitely has Corepack and we can
-start using Yarn right away.
-
-```dockerfile
-FROM node:18
-
-COPY sample-yarn-app/ /src/sample-yarn-app
-WORKDIR /src/sample-yarn-app
-
-# Run yarn install command and list installed packages
-RUN . /tmp/hermeto.env && yarn install
-
-EXPOSE 9000
-
-CMD ["yarn", "run", "start"]
-```
-
-We can then build the image as before while mounting the required Hermeto data!
+The repo already contains a `Containerfile` for this example. Build it while
+mounting the pre-fetched Hermeto data:
 
 ```shell
 podman build . \
   --volume "$(realpath ./hermeto-output)":/tmp/hermeto-output:Z \
   --volume "$(realpath ./hermeto.env)":/tmp/hermeto.env:Z \
   --network none \
-  --tag sample-nodejs-app
+  --tag yarn-example
 ```
 
 [configuration settings]: https://yarnpkg.com/configuration/yarnrc
-[Corepack]: https://nodejs.org/api/corepack.html#corepack
 [Exec protocol]: https://yarnpkg.com/protocol/exec
 [exec]: https://v3.yarnpkg.com/features/plugins#official-plugins
 [Git/GitHub protocol]: https://yarnpkg.com/protocol/git
@@ -282,11 +262,11 @@ podman build . \
 [package.json]: https://yarnpkg.com/configuration/manifest
 [PnP Zero-Installs]: https://yarnpkg.com/features/caching#zero-installs
 [PnP]: https://yarnpkg.com/features/pnp
-[project]: https://github.com/cachito-testing/sample-nodejs-app/tree/yarn
 [the Yarn documentation]: yarn.md
 [unplugged dependencies]: https://yarnpkg.com/advanced/lexicon#unplugged-package
 [Yarn API docs]: https://yarnpkg.com/api
 [Yarn Classic]: https://hermetoproject.github.io/hermeto/yarn_classic
+[project]: https://github.com/hermetoproject/doc-examples/tree/yarn-basic
 [yarn install]: https://yarnpkg.com/getting-started/usage/#installing-all-the-dependencies
 [Yarn protocols]: https://yarnpkg.com/protocols
 [yarn]: https://yarnpkg.com

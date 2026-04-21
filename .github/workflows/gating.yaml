@@ -20,28 +20,30 @@ jobs:
       image: python:${{ matrix.python-version }}-slim
 
     steps:
-    - name: Install dependencies
-      run: |
-        # We need to install git inside the container otherwise the checkout action will use Git
-        # REST API and the .git directory won't be present which fails due to setuptools-scm
-        apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
-        pip install --upgrade pip nox
+      - name: Install dependencies
+        run: |
+          # We need to install git inside the container otherwise the checkout action will use Git
+          # REST API and the .git directory won't be present which fails due to setuptools-scm.
+          # We also need to install curl and gpg to download and verify the codecov token.
+          apt-get update && apt-get install --no-install-recommends --no-install-suggests -y curl git gpg
 
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
+          pip install --upgrade pip nox
 
-    - name: Test with nox
-      run: |
-        # Disable Git's safe.directory mechanism as some unit tests do clone repositories
-        git config --global --add safe.directory '*'
-        nox -s python-${{ matrix.python-version }}
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Upload coverage reports to Codecov
-      if: matrix.python-version == '3.12'
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Test with nox
+        run: |
+          # Disable Git's safe.directory mechanism as some unit tests do clone repositories
+          git config --global --add safe.directory '*'
+          nox -s "python-${{ matrix.python-version }}"
+
+      - name: Upload coverage reports to Codecov
+        if: matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   linters:
     name: Linters
@@ -53,32 +55,37 @@ jobs:
       image: python:3.10-slim
 
     steps:
-    - name: Install dependencies
-      run: |
-        # We need to install git inside the container otherwise the checkout action will use Git
-        # REST API and the .git directory won't be present which fails due to setuptools-scm
-        apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
-        pip install --upgrade pip nox
+      - name: Install dependencies
+        run: |
+          # We need to install git inside the container otherwise the checkout action will use Git
+          # REST API and the .git directory won't be present which fails due to setuptools-scm
+          apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
+          pip install --upgrade pip nox
 
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Run linters
-      run: nox -s lint
+      - name: Run linters
+        run: nox -s lint
 
   hadolint:
     name: Hadolint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: hadolint/hadolint-action@v3.3.0
-      with:
-        dockerfile: Dockerfile
-        # Ignore list:
-        # * DL3041 - Specify version with dnf install -y <package>-<version>
-        ignore: DL3041
-        failure-threshold: warning
+      - uses: actions/checkout@v6
+      - uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: Dockerfile
+          # Ignore list:
+          # * DL3041 - Specify version with dnf install -y <package>-<version>
+          ignore: DL3041
+          failure-threshold: warning
+      - uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: tests/integration/Containerfile.test
+          ignore: DL3006
+          failure-threshold: warning
 
   markdownlint:
     name: Markdownlint
@@ -91,9 +98,9 @@ jobs:
       - uses: tj-actions/changed-files@v47
         id: changed-files
         with:
-          files: '**/*.md'
+          files: "**/*.md"
           separator: ","
-      - uses: DavidAnson/markdownlint-cli2-action@v22
+      - uses: DavidAnson/markdownlint-cli2-action@v23
         if: steps.changed-files.outputs.any_changed == 'true'
         with:
           globs: ${{ steps.changed-files.outputs.all_changed_files }}
@@ -117,76 +124,62 @@ jobs:
 
       - name: Install required packages
         run: |
-          sudo apt-get update
-          sudo apt-get install createrepo-c
           python3 -m venv /var/tmp/venv
-          /var/tmp/venv/bin/pip3 install --upgrade pip nox
+          /var/tmp/venv/bin/pip3 install --upgrade pip nox podman-compose requests typer tenacity
 
       - name: add checkout action...
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: PyPI test server start
+      - name: Start Nexus test server
         run: |
-          tests/pypiserver/start.sh &
+          /var/tmp/venv/bin/podman-compose -f tests/nexusserver/docker-compose.yml up -d
+          /var/tmp/venv/bin/python tests/nexusserver/configure.py
 
-          # Testing basic HTTP request
+          # Verify basic TLS
           status=$(curl -sSI \
                         --output /dev/null \
-                        --write-out %{http_code} \
+                        --write-out "%{http_code}" \
                         --retry-delay 1 \
-                        --retry 60 \
+                        --retry 30 \
                         --retry-all-errors \
-                        http://127.0.0.1:8080)
-          [[ ${status} == "200" ]] || exit 1
+                        -u hermeto-user:hermeto-pass \
+                        --cacert tests/certificates/CA.crt \
+                        https://127.0.0.1:8443/service/rest/v1/status)
+          [[ "${status}" == "200" ]] || exit 1
 
-      - name: DNF test server start
-        run: |
-          tests/dnfserver/start.sh &
-
-          # Testing basic HTTP request
+          # Verify mTLS rejects unauthenticated access
           status=$(curl -sSI \
                         --output /dev/null \
-                        --write-out %{http_code} \
-                        --retry-delay 1 \
-                        --retry 60 \
-                        --retry-all-errors \
-                        http://127.0.0.1:8081)
-          [[ ${status} == "200" ]] || exit 1
+                        --write-out "%{http_code}" \
+                        --cacert tests/certificates/CA.crt \
+                        https://127.0.0.1:8444/service/rest/v1/status)
+          [[ "${status}" != "200" ]] || exit 1
 
-          # Testing expected error on unauthenticated TLS access
-          status=$(curl -ssI \
-                        --output /dev/null \
-                        --write-out %{http_code} \
-                        --insecure \
-                        https://127.0.0.1:8443)
-          [[ ${status} == "400" ]] || exit 1
-
-          # Testing TLS client authentication
+          # Verify mTLS with client certificate
           status=$(curl -sSI \
                         --output /dev/null \
-                        --write-out %{http_code} \
-                        --cacert tests/dnfserver/certificates/CA.crt \
-                        --key tests/dnfserver/certificates/client.key \
-                        --cert tests/dnfserver/certificates/client.crt \
-                        https://127.0.0.1:8443/pkg/redhat-release-9.4-0.5.el9.x86_64.rpm)
-          [[ ${status} == "200" ]] || exit 1
+                        --write-out "%{http_code}" \
+                        --cacert tests/certificates/CA.crt \
+                        --key tests/certificates/client.key \
+                        --cert tests/certificates/client.crt \
+                        https://127.0.0.1:8444/service/rest/v1/status)
+          [[ "${status}" == "200" ]] || exit 1
 
       - name: Build container image
         run: |
-          podman build -t hermeto:${{ github.sha }} .
+          podman build -t "hermeto:${{ github.sha }}" .
 
       - name: Check image created and application version
         run: |
           podman images | grep 'hermeto'
-          podman run -t hermeto:${{ github.sha }} --version
+          podman run -t "hermeto:${{ github.sha }}" --version
 
       - name: Run integration tests on built image
         env:
           HERMETO_TEST_IMAGE: localhost/hermeto:${{ github.sha }}
-          HERMETO_TEST_LOCAL_PYPISERVER: '1'
-          HERMETO_TEST_LOCAL_DNF_SERVER: '1'
+          HERMETO_TEST_LOCAL_NEXUS: "1"
         run: |
           git config --global --add safe.directory "*"
           /var/tmp/venv/bin/nox -s integration-tests -- -n auto

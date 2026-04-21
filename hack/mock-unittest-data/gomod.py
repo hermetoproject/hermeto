@@ -12,7 +12,7 @@ from tempfile import TemporaryDirectory
 from yarn import print_banner
 
 
-PANDEMO_DIR = "gomod-pandemonium"
+INTEGRATION_TESTS_DIR = "integration-tests"
 
 
 def mkdir_with_parents(dirname):
@@ -36,30 +36,32 @@ def write_to_file(where, what, mocked_data_dir, **subprocess_kwargs):
         run(what, stdout=f, **subprocess_kwargs)
 
 
-def replace_paths_with_placeholder(pandemo_dir, gomodcache, mocked_data_dir):
+def replace_paths_with_placeholder(integration_tests_dir, gomodcache, mocked_data_dir):
     subdirs_of_interest = ("non-vendored", "vendored", "workspaces")
     fs_objects_to_check = [(mocked_data_dir/x).glob("**/*") for x in subdirs_of_interest]
     files_to_update = [o for o in chain.from_iterable(fs_objects_to_check) if o.is_file()]
     for fpath in files_to_update:
         data = fpath.read_text()
         data = data.replace(str(gomodcache), "{gomodcache_dir}")
-        data = data.replace(str(pandemo_dir), "{repo_dir}")
+        data = data.replace(str(integration_tests_dir), "{repo_dir}")
         fpath.write_text(data)
 
 
-def update_workspaces(redirect_to_file, pandemo_dir, mocked_data_dir):
+def update_workspaces(redirect_to_file, integration_tests_dir, mocked_data_dir):
     with open(f"{mocked_data_dir}/workspaces/go_work.json") as f:
         d_paths = [v['DiskPath'] for v in json.loads(f.read())['Use']]
-        paths = [Path(f"{pandemo_dir}")/p.removeprefix("./") for p in d_paths if p != '.']
+        paths = [Path(f"{integration_tests_dir}")/p.removeprefix("./") for p in d_paths if p != '.']
 
     for p in paths:
         print(f"preparing per-workspace directory {p}")
-        mkdir_with_parents(f"{mocked_data_dir}/workspaces/{p.name}")
+        rel_path = p.relative_to(integration_tests_dir)
+        workspace_mock_path = f"{mocked_data_dir}/workspaces/{rel_path}"
+        mkdir_with_parents(workspace_mock_path)
         if (gosum:=Path(p)/"go.sum").exists():
-            print(f"generating {mocked_data_dir}/workspaces/{p.name}/go.sum")
-            copyfile(gosum, Path(f"{mocked_data_dir}/workspaces/{p.name}/go.sum"))
+            print(f"generating {workspace_mock_path}/go.sum")
+            copyfile(gosum, Path(f"{workspace_mock_path}/go.sum"))
         redirect_to_file(
-            where=f"workspaces/{p.name}/go_list_deps_threedot.json",
+            where=f"workspaces/{rel_path}/go_list_deps_threedot.json",
             what="go list -deps -json=ImportPath,Module,Standard,Deps ./...",
             cwd=p
         )
@@ -85,18 +87,16 @@ def main() -> None:
     generate_auxiliary_dirs(mocked_data_dir)
     with TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
-        pandemo_dir = tmpdir / PANDEMO_DIR
+        integration_tests_dir = tmpdir / INTEGRATION_TESTS_DIR
         gomodcache = tmpdir / "hermeto-mock-gomodcache"
 
         subprocess_kwargs = {
             "env": environ | {"GOMODCACHE": str(gomodcache)},
-            "cwd": pandemo_dir
+            "cwd": integration_tests_dir
         }
 
-        run(f"git clone https://github.com/cachito-testing/gomod-pandemonium {pandemo_dir}")
-        run("git switch go-1.22-workspaces", **subprocess_kwargs)
-        print(f"generating {mocked_data_dir}/workspaces/go.sum")
-        copyfile(pandemo_dir/"go.sum", Path(f"{mocked_data_dir}/workspaces/go.sum"))
+        run(f"git clone https://github.com/hermetoproject/integration-tests {integration_tests_dir}")
+        run("git switch gomod/go-1.22-workspaces", **subprocess_kwargs)
         redirect_to_file = partial(
             write_to_file, mocked_data_dir=mocked_data_dir, **subprocess_kwargs
         )
@@ -111,14 +111,19 @@ def main() -> None:
             what="go list -deps -json=ImportPath,Module,Standard,Deps ./..."
         )
         redirect_to_file(where="workspaces/go_work.json", what="go work edit -json")
-
+        if (go_work_sum := integration_tests_dir / "go.work.sum").exists():
+            print(f"generating {mocked_data_dir}/workspaces/go.sum")
+            copyfile(go_work_sum, Path(f"{mocked_data_dir}/workspaces/go.sum"))
         update_workspaces(
             redirect_to_file=redirect_to_file,
-            pandemo_dir=pandemo_dir,
+            integration_tests_dir=integration_tests_dir,
             mocked_data_dir=mocked_data_dir
         )
         run("git restore .", **subprocess_kwargs)
-        run("git switch main", **subprocess_kwargs)
+        run("git switch gomod/with-deps", **subprocess_kwargs)
+        redirect_to_file = partial(
+            write_to_file, mocked_data_dir=mocked_data_dir, **subprocess_kwargs
+        )
         redirect_to_file(where="non-vendored/go_list_modules.json", what="go list -m -json")
         redirect_to_file(where="non-vendored/go_mod_download.json", what="go mod download -json")
         redirect_to_file(
@@ -130,12 +135,12 @@ def main() -> None:
             what="go list -deps -json=ImportPath,Module,Standard,Deps ./..."
         )
         print(f"generating {mocked_data_dir}/non-vendored/go.sum")
-        copyfile(pandemo_dir/"go.sum", Path(f"{mocked_data_dir}/non-vendored/go.sum"))
+        copyfile(integration_tests_dir/"go.sum", Path(f"{mocked_data_dir}/non-vendored/go.sum"))
         print(f"generating {mocked_data_dir}/vendored/modules.txt")
         run("go mod vendor", **subprocess_kwargs)
         run("go mod tidy", **subprocess_kwargs)
         copyfile(
-            pandemo_dir/"vendor/modules.txt",
+            integration_tests_dir/"vendor/modules.txt",
             Path(f"{mocked_data_dir}/vendored/modules.txt")
         )
         redirect_to_file(
@@ -147,8 +152,8 @@ def main() -> None:
             what="go list -deps -json=ImportPath,Module,Standard,Deps ./..."
         )
         print(f"generating {mocked_data_dir}/vendored/go.sum")
-        copyfile(pandemo_dir/"go.sum", Path(f"{mocked_data_dir}/vendored/go.sum"))
-        replace_paths_with_placeholder(pandemo_dir, gomodcache, mocked_data_dir)
+        copyfile(integration_tests_dir/"go.sum", Path(f"{mocked_data_dir}/vendored/go.sum"))
+        replace_paths_with_placeholder(integration_tests_dir, gomodcache, mocked_data_dir)
         warn_about_potential_manual_intervention(mocked_data_dir)
 
 

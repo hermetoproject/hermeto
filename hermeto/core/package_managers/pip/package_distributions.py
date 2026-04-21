@@ -105,7 +105,7 @@ def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:
     # Higher number = higher preference
     yanked_pref = 0 if sdist_pkg.is_yanked else 1
 
-    filename = sdist_pkg.name
+    filename = sdist_pkg.path.name
     if filename.endswith(".tar.gz"):
         filetype_pref = 2
     elif filename.endswith(".zip"):
@@ -368,26 +368,32 @@ class WheelsFilter(BinaryPackageFilter):
             or any(impl in interpreter for impl in self.py_impl)
         )
 
-        wheel_py_version = _parse_py_version(interpreter)
-        compatible_py_version = (
-            self.py_version is None
-            or wheel_py_version == self.py_version
-            or (wheel_py_version < self.py_version and abi in ("abi3", "none"))
+        wheel_py_versions = _parse_py_versions(interpreter)
+        compatible_py_version = self.py_version is None or any(
+            v == self.py_version or (v < self.py_version and abi in ("abi3", "none"))
+            for v in wheel_py_versions
         )
 
         return compatible_py_impl and compatible_py_version
 
 
-def _parse_py_version(interpreter: str) -> int:
-    """
-    >>> _parse_py_version("cp312")
-    312
-    >>> _parse_py_version("pp312")
-    312
-    >>> _parse_py_version("py3")
-    3
-    >>> _parse_py_version("py2.py3")
-    3
+def _parse_py_versions(interpreter: str) -> list[int]:
+    """Parse all Python version numbers from a wheel interpreter tag.
+
+    Supports multi-version compressed tags per PEP 425 (e.g. py38.py39.py310).
+    Some real-world packages on PyPI use these compressed tags, for example
+    semgrep (https://pypi.org/simple/semgrep/).
+
+    >>> _parse_py_versions("cp312")
+    [312]
+    >>> _parse_py_versions("pp312")
+    [312]
+    >>> _parse_py_versions("py3")
+    [3]
+    >>> _parse_py_versions("py2.py3")
+    [2, 3]
+    >>> _parse_py_versions("py38.py39.py310")
+    [38, 39, 310]
     """
     parts = interpreter.split(".")
     versions = []
@@ -400,4 +406,4 @@ def _parse_py_version(interpreter: str) -> int:
     if not versions:
         raise RuntimeError(f"Invalid wheel interpreter: {interpreter}")
 
-    return max(versions)
+    return versions

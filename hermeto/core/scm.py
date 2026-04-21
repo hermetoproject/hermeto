@@ -267,11 +267,22 @@ def get_repo_for_path(repo_root: Path, target_path: Path) -> tuple[GitRepo, Path
 def _canonicalize_origin_url(url: str) -> str:
     if "://" in url:
         parsed: ParseResult = urlparse(url)
-        cleaned_netloc = parsed.netloc.replace(
-            f"{parsed.username}:{parsed.password}@",
-            "",
-        )
-        return parsed._replace(netloc=cleaned_netloc).geturl()
+        if parsed.scheme == "ssh":
+            return url
+
+        if parsed.scheme in ("https", "http"):
+            if parsed.username or parsed.password:
+                log.warning(
+                    "Credentials detected in git remote origin URL for host '%s'. "
+                    "They will be stripped before the URL is written to the SBOM. "
+                    "Consider removing credentials from your remote URL.",
+                    parsed.hostname,
+                )
+            host = parsed.hostname or ""
+            port = f":{parsed.port}" if parsed.port else ""
+            cleaned_netloc = f"{host}{port}"
+            return parsed._replace(netloc=cleaned_netloc).geturl()
+        return url
     # scp-style is "only recognized if there are no slashes before the first colon"
     elif re.match("^[^/]*:", url):
         parts = url.split("@", 1)
@@ -299,7 +310,7 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
     if "ssh://" in url:
         list_url.append(url.replace("ssh://", "https://"))
 
-    with tempfile.TemporaryDirectory(prefix="cachito-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="hermeto-") as temp_dir:
         for url in list_url:
             log.debug("Cloning the Git repository from %s", url)
             try:
