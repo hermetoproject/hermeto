@@ -2,7 +2,6 @@
 import re
 from enum import Enum
 from itertools import chain, zip_longest
-from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -25,7 +24,6 @@ from hermeto.core.package_managers.yarn.main import (
     _generate_environment_variables,
     _set_yarnrc_configuration,
     _verify_corepack_yarn_version,
-    _verify_yarnrc_paths,
     fetch_yarn_source,
 )
 from hermeto.core.package_managers.yarn.project import PackageJson, Plugin, YarnRc
@@ -335,28 +333,20 @@ def test_set_yarnrc_configuration(
         "unsafeHttpWhitelist": [],
         "pnpMode": "strict",
         "plugins": expected_plugins,
+        "installStatePath": "./.yarn/install-state.gz",
+        "pnpUnpluggedFolder": "./.yarn/unplugged",
+        "patchFolder": "./.yarn/patches",
+        "virtualFolder": "./.yarn/__virtual__",
     }
+
+    if yarn_version in VersionsRange("3.0.0", "4.0.0-rc1"):
+        expected_data["pnpDataPath"] = "./.pnp.data.json"
 
     if yarn_version in VersionsRange("4.0.0-rc1", "5.0.0"):
         expected_data["enableConstraintsChecks"] = False
 
     assert yarn_rc.data == expected_data
     mock_write.assert_called_once()
-
-
-@mock.patch("hermeto.core.package_managers.yarn.main.get_semver_from_package_manager")
-def test_verify_yarnrc_paths(
-    mock_get_semver: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    output_dir = rooted_tmp_path.join_within_root("output")
-    yarn_rc = YarnRc(rooted_tmp_path.join_within_root(".yarnrc.yml"), {})
-    project = mock.Mock()
-    project.yarn_rc = yarn_rc
-    project.package_json = mock.MagicMock()
-
-    _set_yarnrc_configuration(project, output_dir, semver.Version.parse("3.0.0"))
-    _verify_yarnrc_paths(project)
 
 
 def test_check_missing_lockfile(rooted_tmp_path: RootedPath) -> None:
@@ -366,29 +356,6 @@ def test_check_missing_lockfile(rooted_tmp_path: RootedPath) -> None:
 
     with pytest.raises(LockfileNotFound):
         _check_lockfile(project)
-
-
-@pytest.mark.parametrize(
-    "opt_path",
-    [
-        pytest.param("/custom/path", id="installStatePath"),
-        pytest.param("/custom/path", id="patchFolder"),
-        pytest.param("/custom/path", id="pnpDataPath"),
-        pytest.param("/custom/path", id="pnpUnpluggedFolder"),
-        pytest.param("/custom/path", id="virtualFolder"),
-    ],
-)
-def test_verify_yarnrc_paths_fail(
-    request: pytest.FixtureRequest, tmp_path: Path, opt_path: str
-) -> None:
-    project = mock.Mock()
-    project.source_dir = tmp_path
-    project.yarn_rc = YarnRc(
-        RootedPath(tmp_path / ".yarnrc.yml"), {request.node.callspec.id: opt_path}
-    )
-
-    with pytest.raises(PackageRejected):
-        _verify_yarnrc_paths(project)
 
 
 def test_generate_environment_variables(yarn_env_variables: list[EnvironmentVariable]) -> None:

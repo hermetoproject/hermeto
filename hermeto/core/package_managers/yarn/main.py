@@ -48,33 +48,6 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     )
 
 
-def _verify_yarnrc_paths(project: Project) -> None:
-    paths_conf_opts = {
-        # pnpDataPath is only configurable in Yarn v3
-        project.yarn_rc.get("pnpDataPath"): "pnpDataPath",
-        project.yarn_rc.get("pnpUnpluggedFolder"): "pnpUnpluggedFolder",
-        project.yarn_rc.get("installStatePath"): "installStatePath",
-        project.yarn_rc.get("patchFolder"): "patchFolder",
-        project.yarn_rc.get("virtualFolder"): "virtualFolder",
-    }
-
-    for path in paths_conf_opts:
-        if path is not None:
-            try:
-                project.source_dir.join_within_root(path)
-            except Exception:
-                raise PackageRejected(
-                    (
-                        f"YarnRC '{paths_conf_opts[path]}={path}' property: path points "
-                        "outside of the source directory"
-                    ),
-                    solution=(
-                        "Make sure that all Yarn RC configuration options specifying a path "
-                        "point to a relative location inside the main repository"
-                    ),
-                )
-
-
 def _check_zero_installs(project: Project) -> None:
     if project.is_zero_installs:
         raise PackageRejected(
@@ -96,7 +69,6 @@ def _check_lockfile(project: Project) -> None:
 
 
 def _verify_repository(project: Project) -> None:
-    _verify_yarnrc_paths(project)
     _check_zero_installs(project)
     _check_lockfile(project)
 
@@ -223,6 +195,13 @@ def _set_yarnrc_configuration(
     yarn_rc["enableScripts"] = False
     yarn_rc["enableGlobalCache"] = True
     yarn_rc["globalFolder"] = str(output_dir.join_within_root("deps", "yarn"))
+    yarn_rc["installStatePath"] = "./.yarn/install-state.gz"
+    yarn_rc["pnpUnpluggedFolder"] = "./.yarn/unplugged"
+    yarn_rc["patchFolder"] = "./.yarn/patches"
+    yarn_rc["virtualFolder"] = "./.yarn/__virtual__"
+    # pnpDataPath is only configurable in Yarn v3
+    if version in VersionsRange("3.0.0", "4.0.0-rc1"):
+        yarn_rc["pnpDataPath"] = "./.pnp.data.json"
 
     config = get_config()
     if (proxy_url := config.yarn.proxy_url) is not None:
