@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 import sys
 import tarfile
 from pathlib import Path
@@ -11,6 +12,13 @@ from hermeto.core.rooted_path import RootedPath
 from hermeto.core.type_aliases import StrPath
 
 FileContents = str
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _clean_git_env() -> None:
+    """Strip selected GIT_ env vars that leak from outer git operations."""
+    for var in ("GIT_DIR",):
+        os.environ.pop(var, None)
 
 
 def _create_git_repo(path: Path, files: dict[StrPath, FileContents] | None = None) -> git.Repo:
