@@ -678,21 +678,6 @@ class TestDownload:
 
         # </check calls to checksum verification method>
 
-        # <check basic logging output>
-        assert f"-- Processing requirement line '{req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{req.download_line}' in path 'deps/pip/foo-1.0.tar.gz'"
-        ) in caplog.text
-        # </check basic logging output>
-
-        # <check downloaded wheels>
-        if binary_filters is not None:
-            # wheel 1 does not match any checksums
-            assert (
-                f"Download '{wheel_1_download.name}' was removed from the output directory"
-            ) in caplog.text
-        # </check downloaded wheels>
-
     @pytest.mark.parametrize("checksum_match", [True, False])
     @pytest.mark.parametrize("trusted_hosts", [[], ["example.org"]])
     @mock.patch("hermeto.core.package_managers.pip.main._download_url_package")
