@@ -53,6 +53,8 @@ log = logging.getLogger(__name__)
 DEFAULT_BUILD_REQUIREMENTS_FILE = "requirements-build.txt"
 DEFAULT_REQUIREMENTS_FILE = "requirements.txt"
 
+PyPIArtifact = tuple[PipRequirement, DistributionPackageInfo]
+
 
 def fetch_pip_source(request: Request) -> RequestOutput:
     """Resolve and fetch pip dependencies for the given request."""
@@ -321,33 +323,30 @@ def _process_req(
     return download_info
 
 
-def _process_pypi_req(
-    req: PipRequirement,
+def _process_pypi_reqs(
     requirements_file: PipRequirementsFile,
-    index_url: str,
     pip_deps_dir: RootedPath,
-    binary_filters: PipBinaryFilters | None = None,
+    pypi_artifacts: list[PyPIArtifact],
 ) -> list[dict[str, Any]]:
     download_infos: list[dict[str, Any]] = []
 
-    artifacts: list[DistributionPackageInfo] = process_package_distributions(
-        req, pip_deps_dir, binary_filters, index_url
-    )
+    files: dict[str, Path] = {}
+    for _, dpi in pypi_artifacts:
+        if not dpi.path.exists():
+            files[dpi.url] = dpi.path
 
-    files = {dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()}
     asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
-    for artifact in artifacts:
+    for req, dpi in pypi_artifacts:
         download_infos.append(
             _process_req(
                 req,
                 requirements_file,
                 pip_deps_dir,
-                artifact.download_info,
-                dpi=artifact,
+                dpi.download_info,
+                dpi=dpi,
             )
         )
-
     return download_infos
 
 
@@ -415,17 +414,18 @@ def _download_dependencies(
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
     pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
+    pypi_artifacts: list[PyPIArtifact] = []
     for req in requirements_file.requirements:
         log.info("-- Processing requirement line '%s'", req.download_line)
         if req.kind == "pypi":
-            download_infos: list[dict[str, Any]] = _process_pypi_req(
+            dpis: list[DistributionPackageInfo] = process_package_distributions(
                 req,
-                requirements_file=requirements_file,
-                index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
-                pip_deps_dir=pip_deps_dir,
-                binary_filters=binary_filters,
+                pip_deps_dir,
+                binary_filters,
+                options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
             )
-            processed.extend(download_infos)
+            pypi_artifacts.extend([(req, dpi) for dpi in dpis])
+
         elif req.kind == "vcs":
             download_info = _process_vcs_req(
                 req,
@@ -446,6 +446,9 @@ def _download_dependencies(
             raise RuntimeError(f"Unexpected requirement kind: '{req.kind!r}'")
 
         log.info("-- Finished processing requirement line '%s'\n", req.download_line)
+
+    pypi_download_infos = _process_pypi_reqs(requirements_file, pip_deps_dir, pypi_artifacts)
+    processed.extend(pypi_download_infos)
 
     return processed
 
