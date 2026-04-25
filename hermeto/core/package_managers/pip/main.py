@@ -275,7 +275,7 @@ def _process_req(
     pip_deps_dir: RootedPath,
     download_info: dict[str, Any],
     dpi: DistributionPackageInfo | None = None,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     download_info["kind"] = req.kind
     download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
     download_info["missing_req_file_checksum"] = True
@@ -283,19 +283,22 @@ def _process_req(
 
     def _checksum_must_match_or_path_unlink(
         path: Path, checksum_info: Iterable[ChecksumInfo]
-    ) -> None:
+    ) -> bool:
         try:
             # returns None, raises PackageRejected on failure
             must_match_any_checksum(path, checksum_info)
+            return True
         except PackageRejected:
-            path.unlink()
+            path.unlink(missing_ok=True)
             log.warning("Download '%s' was removed from the output directory", path.name)
+            return False
 
     if dpi:
         if dpi.req_file_checksums:
             download_info["missing_req_file_checksum"] = False
         if dpi.checksums_to_match:
-            _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match)
+            if not _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match):
+                return None
         if dpi.package_type == "sdist":
             _check_metadata_in_sdist(dpi.path)
         download_info["package_type"] = dpi.package_type
@@ -308,9 +311,10 @@ def _process_req(
             hashes = req.hashes
             if hashes:
                 download_info["missing_req_file_checksum"] = False
-                _checksum_must_match_or_path_unlink(
+                if not _checksum_must_match_or_path_unlink(
                     download_info["path"], list(map(ChecksumInfo.from_hash, hashes))
-                )
+                ):
+                    return None
 
     log.debug(
         "Successfully processed '%s' in path '%s'",
@@ -338,22 +342,22 @@ def _process_pypi_req(
     asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
     for artifact in artifacts:
-        download_infos.append(
-            _process_req(
-                req,
-                requirements_file,
-                pip_deps_dir,
-                artifact.download_info,
-                dpi=artifact,
-            )
+        res = _process_req(
+            req,
+            requirements_file,
+            pip_deps_dir,
+            artifact.download_info,
+            dpi=artifact,
         )
+        if res is not None:
+            download_infos.append(res)
 
     return download_infos
 
 
 def _process_vcs_req(
     req: PipRequirement, pip_deps_dir: RootedPath, **kwargs: Any
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     return _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
@@ -364,13 +368,15 @@ def _process_vcs_req(
 
 def _process_url_req(
     req: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str], **kwargs: Any
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     result = _process_req(
         req,
         pip_deps_dir=pip_deps_dir,
         download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
         **kwargs,
     )
+    if result is None:
+        return None
     parsed_url = urlparse.urlparse(req.url)
     if parsed_url.path.endswith(WHEEL_FILE_EXTENSION):
         result["package_type"] = "wheel"
@@ -432,7 +438,8 @@ def _download_dependencies(
                 requirements_file=requirements_file,
                 pip_deps_dir=pip_deps_dir,
             )
-            processed.append(download_info)
+            if download_info is not None:
+                processed.append(download_info)
         elif req.kind == "url":
             download_info = _process_url_req(
                 req,
@@ -440,7 +447,8 @@ def _download_dependencies(
                 pip_deps_dir=pip_deps_dir,
                 trusted_hosts=trusted_hosts,
             )
-            processed.append(download_info)
+            if download_info is not None:
+                processed.append(download_info)
         else:
             # Should not happen
             raise RuntimeError(f"Unexpected requirement kind: '{req.kind!r}'")

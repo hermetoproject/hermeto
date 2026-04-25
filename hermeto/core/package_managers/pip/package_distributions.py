@@ -370,7 +370,8 @@ class WheelsFilter(BinaryPackageFilter):
 
         wheel_py_versions = _parse_py_versions(interpreter)
         compatible_py_version = self.py_version is None or any(
-            v == self.py_version or (v < self.py_version and abi in ("abi3", "none"))
+            str(v)[0] == str(self.py_version)[0]
+            and (v == self.py_version or (v < self.py_version and abi in ("abi3", "none")))
             for v in wheel_py_versions
         )
 
