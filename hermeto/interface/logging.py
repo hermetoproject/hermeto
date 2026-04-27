@@ -44,10 +44,18 @@ class EnforcingModeLoggerAdapter(logging.LoggerAdapter):
             self.error(msg, *args, **kwargs)
 
 
+class SuppressConsoleFilter(logging.Filter):
+    """Filter that prevents logs marked with suppress_console from reaching the console."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return not getattr(record, "suppress_console", False)
+
+
 def setup_logging(level: LogLevel, additional_modules: Iterable[str] = ()) -> None:
     """Set up logging. By default, enables only the application root logger."""
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    handler.addFilter(SuppressConsoleFilter())
 
     for module in ["hermeto", *additional_modules]:
         logger = logging.getLogger(module)
