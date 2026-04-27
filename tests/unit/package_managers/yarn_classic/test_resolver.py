@@ -26,7 +26,6 @@ from hermeto.core.package_managers.yarn_classic.resolver import (
     _get_main_package,
     _get_packages_from_lockfile,
     _get_workspace_packages,
-    _is_from_npm_registry,
     _is_git_url,
     _is_tarball_url,
     _read_name_from_tarball,
@@ -96,21 +95,6 @@ def test_is_git_url_can_parse_correct_git_urls(url: str) -> None:
 @pytest.mark.parametrize("url", INVALID_GIT_URLS)
 def test_is_git_url_rejects_incorrect_git_urls(url: str) -> None:
     assert not _is_git_url(url)
-
-
-@pytest.mark.parametrize(
-    "url",
-    [
-        "https://registry.npmjs.org/chai/-/chai-4.2.0.tgz",
-        "https://registry.yarnpkg.com/chai/-/chai-4.2.0.tgz",
-    ],
-)
-def test_is_from_npm_registry_can_parse_correct_registry_urls(url: str) -> None:
-    assert _is_from_npm_registry(url)
-
-
-def test_is_from_npm_registry_can_parse_incorrect_registry_urls() -> None:
-    assert not _is_from_npm_registry("https://example.org/fecha.tar.gz")
 
 
 @mock.patch("hermeto.core.package_managers.yarn_classic.resolver._read_name_from_tarball")

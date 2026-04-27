@@ -4,11 +4,11 @@ from urllib.parse import urlparse
 
 from hermeto.core.errors import UnexpectedFormat
 
-# Known CNAMEs for the official npm registry server.
-# In rare cases, package-lock.json may contain resolved urls with the yarn CNAME.
+# In rare cases, package-lock.json may contain resolved urls from the Yarn registry.
 # This most likely happens when converting a yarn.lock to package-lock.json
 # ("importing" one with npm or "exporting" with yarn).
-NPM_REGISTRY_CNAMES = ("registry.npmjs.org", "registry.yarnpkg.com")
+NPM_REGISTRY_URL = "https://registry.npmjs.org"
+YARN_REGISTRY_URL = "https://registry.yarnpkg.com"
 
 NormalizedUrl = NewType("NormalizedUrl", str)
 
@@ -20,12 +20,17 @@ def normalize_resolved_url(resolved_url: str) -> NormalizedUrl:
     return NormalizedUrl(resolved_url)
 
 
+def is_from_npm_registry(url: str) -> bool:
+    """Return True if a package URL is from the NPM or Yarn registry."""
+    return urlparse(url).hostname in ("registry.npmjs.org", "registry.yarnpkg.com")
+
+
 def classify_resolved_url(
     resolved_url: NormalizedUrl,
 ) -> Literal["registry", "git", "file", "https"]:
     """Classify a normalized npm resolved URL by source type."""
     url = urlparse(resolved_url)
-    if url.hostname in NPM_REGISTRY_CNAMES:
+    if is_from_npm_registry(resolved_url):
         return "registry"
     if url.scheme == "git" or url.scheme.startswith("git+"):
         return "git"

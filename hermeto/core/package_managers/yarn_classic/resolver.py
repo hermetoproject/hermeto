@@ -18,7 +18,7 @@ from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.package_managers.general import get_vcs_qualifiers
-from hermeto.core.package_managers.npm import NPM_REGISTRY_CNAMES
+from hermeto.core.package_managers.npm import YARN_REGISTRY_URL, is_from_npm_registry
 from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
 from hermeto.core.package_managers.yarn_classic.utils import (
     find_runtime_deps,
@@ -40,8 +40,6 @@ GIT_PATTERN_MATCHERS = (
     re.compile(r"^https?:.+\.git$"),
     re.compile(r"^https?:.+\.git#.+"),
 )
-
-YARN_REGISTRY_URL = "https://registry.yarnpkg.com"
 
 
 @dataclass
@@ -193,7 +191,7 @@ class _YarnClassicPackageFactory:
         package_id = f"{package.name}@{package.version}"
         dev = package_id not in self._runtime_deps
 
-        if _is_from_npm_registry(package.url):
+        if is_from_npm_registry(package.url):
             # registry packages should already have the correct name
             return RegistryPackage(
                 name=package.name,
@@ -303,11 +301,6 @@ def _is_git_url(url: str) -> bool:
         return len(path_segments) == 2
 
     return False
-
-
-def _is_from_npm_registry(url: str) -> bool:
-    """Return True if a package URL is from the NPM or Yarn registry."""
-    return urlparse(url).hostname in NPM_REGISTRY_CNAMES
 
 
 def _get_packages_from_lockfile(

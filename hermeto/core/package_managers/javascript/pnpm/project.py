@@ -8,8 +8,7 @@ import yaml
 from semver import Version
 
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
-
-NPM_REGISTRY_URL = "https://registry.npmjs.org"
+from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
 
 
 class PnpmLock(UserDict):
