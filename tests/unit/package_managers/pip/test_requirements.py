@@ -4,6 +4,7 @@ from textwrap import dedent
 from typing import Any
 
 import pytest
+from packaging.requirements import Requirement
 
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
 from hermeto.core.package_managers.pip.requirements import PipRequirement, PipRequirementsFile
@@ -567,11 +568,7 @@ class TestPipRequirementsFile:
                 "cnr_server@foo@https://github.com/quay/appr/archive/58c88e49.tar.gz",
                 "Unable to extract scheme from direct access requirement",
             ),
-            # Valid format but we don't support it
-            (
-                "pip @ file:///localbuilds/pip-1.3.1.zip",
-                UnsupportedFeature("Direct references with 'file' scheme are not supported"),
-            ),
+            # Valid format but we don't support it (actually file is now supported for internal rewrites)
             (
                 "file:///localbuilds/pip-1.3.1.zip",
                 UnsupportedFeature("Direct references with 'file' scheme are not supported"),
@@ -1001,13 +998,33 @@ class TestPipRequirementsFile:
         self._assert_pip_requirement(new_requirement, expected_changes)
 
     def test_invalid_kind_for_url(self) -> None:
-        """Test extracting URL from a requirement that does not have one."""
-        requirement = PipRequirement()
-        requirement.download_line = "aiowsgi==0.7"
-        requirement.kind = "pypi"
+        """Test that a PyPI requirement has no URL."""
+        requirement = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert requirement.kind == "pypi"
+        assert requirement.url is None
 
-        with pytest.raises(ValueError, match="Cannot extract URL from pypi requirement"):
-            _ = requirement.url
+    def test_pip_requirement_is_packaging_requirement_subclass(self) -> None:
+        """Test that PipRequirement is a proper subclass of packaging.Requirement."""
+        req = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert isinstance(req, Requirement)
+        assert isinstance(req, PipRequirement)
+
+    def test_pip_requirement_inherits_packaging_fields(self) -> None:
+        """Test that properties derived from packaging.Requirement work correctly."""
+        req = PipRequirement.from_line('aiowsgi[spam,bacon]==0.7; python_version < "3"', [])
+
+        # raw_package and package are properties derived from self.name
+        assert req.raw_package == "aiowsgi"
+        assert req.package == "aiowsgi"
+
+        # version_specs is a property derived from self.specifier
+        assert ("==", "0.7") in req.version_specs
+
+        # environment_marker is a property derived from self.marker
+        assert req.environment_marker == 'python_version < "3"'
+
+        # extras is inherited directly from packaging.Requirement
+        assert req.extras == {"spam", "bacon"}
 
     def _assert_pip_requirement(self, pip_requirement: Any, expected_requirement: Any) -> None:
         for attr, default_value in self.PIP_REQUIREMENT_ATTRS.items():
