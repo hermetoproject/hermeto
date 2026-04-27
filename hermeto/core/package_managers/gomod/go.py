@@ -8,12 +8,12 @@ import subprocess
 import tempfile
 from collections import UserDict
 from collections.abc import Iterable
-from functools import cache, cached_property, total_ordering
+from functools import cached_property, total_ordering
 from pathlib import Path
 from typing import Any, Sequence
 
 import pydantic
-from packaging import version
+import semver
 from pydantic.alias_generators import to_pascal
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
@@ -48,28 +48,28 @@ class _ParsedModel(pydantic.BaseModel):
     )
 
 
-class GoVersion(version.Version):
-    """packaging.version.Version wrapper handling Go version/release reporting aspects.
+class GoVersion(semver.Version):
+    """semver.Version wrapper handling Go version/release reporting aspects.
 
     >>> v = GoVersion("1.21")
-    >>> v.major, v.minor, v.micro
+    >>> v.major, v.minor, v.patch
     (1, 21, 0)
 
     >>> v = GoVersion("go1.21.4")
-    >>> v.major, v.minor, v.micro
+    >>> v.major, v.minor, v.patch
     (1, 21, 4)
 
     >>> v = GoVersion("go1.25.7-asdf-xyz")
-    >>> v.major, v.minor, v.micro
+    >>> v.major, v.minor, v.patch
     (1, 25, 7)
 
     >>> v = GoVersion("1.21")
-    >>> str(v.to_language_version())
-    '1.21'
+    >>> str(v)
+    '1.21.0'
 
     >>> v = GoVersion("go1.22.1")
-    >>> str(v.to_language_version())
-    '1.22'
+    >>> str(v)
+    '1.22.1'
 
     >>> GoVersion("1.21") < GoVersion("1.22")
     True
@@ -97,24 +97,13 @@ class GoVersion(version.Version):
                             Note we also accept standard Go release strings prefixed with 'go'
         """
         ver = version_str if not version_str.startswith("go") else version_str[2:]
-        # Strip vendor-specific suffixes introduced by a dash, e.g. "1.21.0-asdf"
-        ver = ver.split("-", 1)[0]
-        super().__init__(ver)
+        parsed = semver.Version.parse(ver, optional_minor_and_patch=True)
+        super().__init__(parsed.major, parsed.minor, parsed.patch)
 
     @classmethod
     def max(cls) -> "GoVersion":
         """Instantiate and return a GoVersion object with the maximum supported version of Go."""
         return cls(cls.MAX_VERSION)
-
-    @cache
-    def to_language_version(self) -> version.Version:
-        """
-        Language version for the given Go version.
-
-        Go differentiates between Go language versions (major, minor) and toolchain versions (major,
-        minor, micro).
-        """
-        return version.Version(f"{self.major}.{self.minor}")
 
 
 @total_ordering
@@ -436,7 +425,7 @@ def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go
     else:
         target_version = go_mod_toolchain_version
 
-    if target_version.to_language_version() > go_max_version.to_language_version():
+    if target_version > go_max_version:
         raise PackageManagerError(
             f"Required/recommended Go toolchain version '{target_version}' is not supported yet.",
             solution=(
