@@ -43,22 +43,61 @@ def test_standard_package_with_name_and_version(rooted_tmp_path: RootedPath) -> 
     assert version == "1.2.3"
 
 
-def test_virtual_workspace_with_workspace_package_version(rooted_tmp_path: RootedPath) -> None:
-    write_cargo_toml(
-        rooted_tmp_path,
-        """
-        [workspace]
-        members = ["a", "b", "c"]
+@pytest.mark.parametrize(
+    "toml_content, expected_name, expected_version",
+    [
+        pytest.param(
+            """
+            [workspace]
+            members = ["a", "b", "c"]
 
-        [workspace.package]
-        version = "1.2.3"
-        """,
-    )
+            [workspace.package]
+            version = "1.2.3"
+            """,
+            None,
+            "1.2.3",
+            id="workspace_package_version",
+        ),
+        pytest.param(
+            """
+            [workspace.package]
+            version = "2.5.0"
 
-    expected_name = rooted_tmp_path.path.name
+            [package]
+            name = "inherited-pkg"
+            version.workspace = true
+            """,
+            "inherited-pkg",
+            "2.5.0",
+            id="workspace_inheritance_shorthand",
+        ),
+        pytest.param(
+            """
+            [workspace]
+            members = ["a"]
+
+            [package]
+            name = "orphaned-pkg"
+            version.workspace = true
+            """,
+            "orphaned-pkg",
+            None,
+            id="workspace_inheritance_missing_root_version",
+        ),
+    ],
+)
+def test_virtual_workspace_with_workspace_package_version(
+    rooted_tmp_path: RootedPath,
+    toml_content: str,
+    expected_name: str | None,
+    expected_version: str | None,
+) -> None:
+    write_cargo_toml(rooted_tmp_path, toml_content)
+
     name, version = _resolve_main_package(rooted_tmp_path)
-    assert name == expected_name
-    assert version == "1.2.3"
+
+    assert name == (expected_name or rooted_tmp_path.path.name)
+    assert version == expected_version
 
 
 def test_virtual_workspace_without_workspace_version(rooted_tmp_path: RootedPath) -> None:

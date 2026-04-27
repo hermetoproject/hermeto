@@ -223,17 +223,16 @@ def _resolve_main_package(package_dir: RootedPath) -> tuple[str, str | None]:
     parsed_toml = _parse_toml_project_file(package_dir.path / "Cargo.toml")
 
     package_info = parsed_toml.get("package", {})
-    workspace_info = parsed_toml.get("workspace", {})
+    workspace_package_info = parsed_toml.get("workspace", {}).get("package", {})
 
     # use default values if the project is a virtual workspace without any package information
     name = package_info.get("name", package_dir.path.stem)
-    version = package_info.get("version", None)
+    version = package_info.get("version")
 
     # check for a workspace package version
     # https://doc.rust-lang.org/cargo/reference/workspaces.html#the-package-table
-    if version is None:
-        version = workspace_info.get("package", {}).get("version")
-
+    if isinstance(version, dict) or version is None:
+        version = workspace_package_info.get("version")
     return name, version
 
 
