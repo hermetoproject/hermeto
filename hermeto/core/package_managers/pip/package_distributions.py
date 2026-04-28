@@ -369,11 +369,21 @@ class WheelsFilter(BinaryPackageFilter):
         )
 
         wheel_py_versions = _parse_py_versions(interpreter)
-        compatible_py_version = self.py_version is None or any(
-            str(v)[0] == str(self.py_version)[0]
-            and (v == self.py_version or (v < self.py_version and abi in ("abi3", "none")))
-            for v in wheel_py_versions
+
+        is_same_major_ver = lambda other, this: str(other)[0] == str(this)[0]
+        is_versions_match = lambda other, this: other == this
+        is_compatible_abi = lambda abi: abi in ("abi3", "none")
+        is_version_superseded = lambda other, this: (other < this) and is_compatible_abi(abi)
+        is_compatible_candidate = lambda other, this: is_same_major_ver(other, this) and (
+            is_versions_match(other, this) or is_version_superseded(other, this)
         )
+
+        this = self.py_version
+        some_candidate_is_compatible = any(
+            is_compatible_candidate(v, this) for v in wheel_py_versions
+        )
+
+        compatible_py_version = self.py_version is None or some_candidate_is_compatible
 
         return compatible_py_impl and compatible_py_version
 
