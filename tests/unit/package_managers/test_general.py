@@ -180,7 +180,7 @@ async def test_async_download_binary_file(
     assert session.get.call_args == mock.call(
         url,
         timeout=aiohttp.ClientTimeout(total=None, connect=30, sock_read=300),
-        auth=None,
+        headers=None,
         raise_for_status=True,
         ssl=None,
     )

@@ -78,13 +78,19 @@ async def _async_download_tar(files_to_download_list: list[dict[str, dict[str, A
     ftdl = [e for e in files_to_download_list if e]
     if not ftdl:
         return
+
     # NOTE: when present proxy auth is the same for all packages accessible
     # through a proxy.
-    auth = lambda ftd: next(iter(ftd.values()))["proxy_auth"]
+    def headers(ftd: dict[str, dict[str, Any]]) -> dict[str, dict[str, str]] | None:
+        auth = next(iter(ftd.values()))["proxy_auth"]
+        if not auth:
+            return None
+        return {it["fetch_url"]: {"Authorization": auth.encode()} for it in ftd.values()}
+
     ftd = lambda ftd: {it["fetch_url"]: it["download_path"] for it in ftd.values()}
     adf = partial(async_download_files, concurrency_limit=get_config().runtime.concurrency_limit)
 
-    await asyncio.gather(*[adf(files_to_download=ftd(f), auth=auth(f)) for f in ftdl])
+    await asyncio.gather(*[adf(files_to_download=ftd(f), headers=headers(f)) for f in ftdl])
 
 
 def _get_npm_dependencies(

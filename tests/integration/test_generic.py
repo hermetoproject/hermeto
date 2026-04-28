@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 from pathlib import Path
 
 import pytest
@@ -102,4 +103,73 @@ def test_e2e_generic(
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+    )
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        pytest.param(
+            utils.TestParameters(
+                branch="generic/e2e-basic-auth",
+                packages=({"path": ".", "type": "generic"},),
+                check_output=True,
+                check_deps_checksums=True,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="generic_e2e_basic_auth",
+            marks=pytest.mark.skipif(
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="HERMETO_TEST_LOCAL_NEXUS!=1",
+            ),
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="generic/e2e-bearer-auth",
+                packages=({"path": ".", "type": "generic"},),
+                check_output=True,
+                check_deps_checksums=True,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="generic_e2e_bearer_auth",
+            marks=pytest.mark.skipif(
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="HERMETO_TEST_LOCAL_NEXUS!=1",
+            ),
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="generic/e2e-auth-wrong-creds",
+                packages=({"path": ".", "type": "generic"},),
+                check_output=False,
+                check_deps_checksums=False,
+                expected_error=ExitError.ERR_FETCH,
+                expected_output="401",
+            ),
+            id="generic_e2e_auth_wrong_creds",
+            marks=pytest.mark.skipif(
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="HERMETO_TEST_LOCAL_NEXUS!=1",
+            ),
+        ),
+    ],
+)
+def test_generic_auth(
+    test_params: utils.TestParameters,
+    hermeto_image: utils.HermetoImage,
+    tmp_path: Path,
+    test_repo_dir: Path,
+    test_data_dir: Path,
+    request: pytest.FixtureRequest,
+) -> None:
+    """
+    Test generic fetcher with authentication from the lockfile.
+
+    :param test_params: Test case arguments
+    :param tmp_path: Temp directory for pytest
+    """
+    test_case = request.node.callspec.id
+
+    utils.fetch_deps_and_check_output(
+        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
     )

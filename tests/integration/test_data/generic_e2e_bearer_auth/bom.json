@@ -1,0 +1,47 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:generic/six-1.17.0-py2.py3-none-any.whl?checksum=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274&download_url=https://127.0.0.1:8443/repository/pypi-proxy/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl"
+      ],
+      "text": "hermeto:backend:generic",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:generic/six-1.17.0-py2.py3-none-any.whl?checksum=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274&download_url=https://127.0.0.1:8443/repository/pypi-proxy/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://127.0.0.1:8443/repository/pypi-proxy/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl"
+        }
+      ],
+      "name": "six-1.17.0-py2.py3-none-any.whl",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:generic/six-1.17.0-py2.py3-none-any.whl?checksum=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274&download_url=https://127.0.0.1:8443/repository/pypi-proxy/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl",
+      "type": "file"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
