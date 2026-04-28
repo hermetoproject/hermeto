@@ -5,6 +5,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, ClassVar
 
+from more_itertools import all_equal
+
 from hermeto import APP_NAME
 from hermeto.core.errors import (
     ExitError,
@@ -267,7 +269,7 @@ def _verify_no_offline_mirror_collisions(packages: Iterable[YarnClassicPackage])
         tarball_collisions[tarball_name].append(p)
 
     for tarball_name, packages in tarball_collisions.items():
-        if all(pkg == packages[0] for pkg in packages):
+        if all_equal(packages):
             continue
 
         raise PackageManagerError(

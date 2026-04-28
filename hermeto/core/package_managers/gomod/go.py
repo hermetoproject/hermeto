@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import pydantic
+from more_itertools import first
 from packaging import version
 from pydantic.alias_generators import to_pascal
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -464,7 +465,7 @@ def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go
             log.debug("Installing Go toolchain version '%s'", target_version)
             release_str = f"go{str(target_version)}"
             try:
-                work_toolchain = next(iter(installed_toolchains))
+                work_toolchain = first(installed_toolchains)
                 go = Go.from_missing_toolchain(release_str, work_toolchain.binary)
                 log.debug("Using Go toolchain version '%s'", go.version)
             except Exception as ex:
