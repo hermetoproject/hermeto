@@ -94,10 +94,10 @@
         "pkg:golang/fmt?type=package",
         "pkg:golang/github.com/Masterminds/semver@v1.4.2?type=module",
         "pkg:golang/github.com/Masterminds/semver@v1.4.2?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
+        "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
         "pkg:golang/github.com/kr/pretty@v0.1.0?type=module",
         "pkg:golang/github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7?type=module",
         "pkg:golang/github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7?type=package",
@@ -1287,7 +1287,7 @@
       "version": "v1.4.2"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "name": "github.com/release-engineering/retrodep/v2/retrodep/glide",
       "properties": [
         {
@@ -1295,12 +1295,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep/glide@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "type": "library",
       "version": "v2.0.0-20230109085255-c3496edd5d45"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "name": "github.com/release-engineering/retrodep/v2/retrodep",
       "properties": [
         {
@@ -1308,12 +1308,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/retrodep@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "type": "library",
       "version": "v2.0.0-20230109085255-c3496edd5d45"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "name": "github.com/release-engineering/retrodep/v2",
       "properties": [
         {
@@ -1321,12 +1321,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "type": "library",
       "version": "v2.0.0-20230109085255-c3496edd5d45"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "name": "github.com/release-engineering/retrodep/v2",
       "properties": [
         {
@@ -1334,7 +1334,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v2.0.0-20230109085255-c3496edd5d45?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c3496edd5d45523a1ed300de1575a212b86d00d3",
       "type": "library",
       "version": "v2.0.0-20230109085255-c3496edd5d45"
     },

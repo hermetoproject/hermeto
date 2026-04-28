@@ -94,13 +94,13 @@
         "pkg:golang/github.com/davecgh/go-spew@v1.1.1?type=module",
         "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=module",
         "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
+        "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
         "pkg:golang/github.com/labstack/gommon/bytes@v0.4.2?type=package",
         "pkg:golang/github.com/labstack/gommon/color@v0.4.2?type=package",
         "pkg:golang/github.com/labstack/gommon/log@v0.4.2?type=package",
@@ -1307,7 +1307,7 @@
       "version": "v3.2.2+incompatible"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "github.com/labstack/echo/v4/middleware",
       "properties": [
         {
@@ -1315,12 +1315,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo/middleware@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v4.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "github.com/labstack/echo/v4",
       "properties": [
         {
@@ -1328,12 +1328,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v4.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "github.com/labstack/echo/v4",
       "properties": [
         {
@@ -1341,12 +1341,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/echo@v4.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v4.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "example.com/hello",
       "properties": [
         {
@@ -1354,12 +1354,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v0.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "example.com/hello",
       "properties": [
         {
@@ -1367,12 +1367,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii/hello@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v0.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "example.com/hiii",
       "properties": [
         {
@@ -1380,12 +1380,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v0.0.0-20240626062917-5aabb6779a32"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "name": "example.com/hiii",
       "properties": [
         {
@@ -1393,7 +1393,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/hi/hiii@v0.0.0-20240626062917-5aabb6779a32?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%405aabb6779a3263103d77f2829cdc8d083fe7e1c5",
       "type": "library",
       "version": "v0.0.0-20240626062917-5aabb6779a32"
     },

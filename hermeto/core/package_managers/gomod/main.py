@@ -127,6 +127,8 @@ class Module(NamedTuple):
         had a checksum for this module but didn't
     proxy: the list of custom proxy URLs used to fetch this module, or None if the module was
         fetched directly from VCS or only via the canonical Go proxy (proxy.golang.org).
+    vcs_url: the VCS URL qualifier for modules sourced from the local git repository, or None
+        for modules fetched from a remote source.
     """
 
     name: str
@@ -136,15 +138,19 @@ class Module(NamedTuple):
     main: bool = False
     missing_hash_in_file: Path | None = None
     proxy: list[str] | None = None
+    vcs_url: str | None = None
 
     @property
     def purl(self) -> str:
         """Get the purl for this module."""
+        qualifiers: dict[str, str] = {"type": "module"}
+        if self.vcs_url:
+            qualifiers["vcs_url"] = self.vcs_url
         purl = PackageURL(
             type="golang",
             name=self.real_path,
             version=self.version,
-            qualifiers={"type": "module"},
+            qualifiers=qualifiers,
         )
         return purl.to_string()
 
@@ -200,11 +206,14 @@ class Package(NamedTuple):
     @property
     def purl(self) -> str:
         """Get the purl for this package."""
+        qualifiers: dict[str, str] = {"type": "package"}
+        if self.module.vcs_url:
+            qualifiers["vcs_url"] = self.module.vcs_url
         purl = PackageURL(
             type="golang",
             name=self.real_path,
             version=self.module.version,
-            qualifiers={"type": "package"},
+            qualifiers=qualifiers,
         )
         return purl.to_string()
 
@@ -323,6 +332,7 @@ def _create_modules_from_parsed_data(
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
             proxy=proxy,
+            vcs_url=main_module.vcs_url if version_or_path.startswith(".") else None,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
@@ -569,11 +579,17 @@ def _create_main_module_from_parsed_data(
         # Should not happen, since the version is always resolved from the Git repo
         raise RuntimeError(f"Version was not identified for main module at {resolved_subpath}")
 
+    if repo_name is not None:
+        vcs_url = get_repo_id(main_module_dir).as_vcs_url_qualifier()
+    else:
+        vcs_url = None
+
     return Module(
         name=parsed_main_module.path,
         original_name=parsed_main_module.path,
         version=parsed_main_module.version,
         real_path=resolved_path,
+        vcs_url=vcs_url,
     )
 
 
