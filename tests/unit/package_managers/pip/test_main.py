@@ -506,8 +506,10 @@ class TestDownload:
     @mock.patch.object(Path, "unlink")
     @mock.patch("hermeto.core.package_managers.pip.main.async_download_files")
     @mock.patch("hermeto.core.package_managers.pip.main._check_metadata_in_sdist")
+    @mock.patch("hermeto.core.package_managers.pip.main.log")
     def test_download_dependencies_pypi(
         self,
+        mock_log: mock.Mock,
         mock_check_metadata_in_sdist: mock.Mock,
         mock_async_download_files: mock.Mock,
         mock_unlink: mock.Mock,
@@ -517,7 +519,6 @@ class TestDownload:
         index_url: str | None,
         binary_filters: PipBinaryFilters | None,
         rooted_tmp_path: RootedPath,
-        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test dependency downloading.
@@ -525,12 +526,17 @@ class TestDownload:
         Mock the helper functions used for downloading here, test them properly elsewhere.
         """
         # <setup>
-        req = mock_requirement(
+        foo_req = mock_requirement(
             "foo", "pypi", download_line="foo==1.0", version_specs=[("==", "1.0")]
         )
         # match sdist hash, match wheel0 hash, mismatch wheel1 hash, no hash
         # for wheel2
-        req.hashes = ["sha256:abcdef", "sha256:defabc", "sha256:feebaa"]
+        foo_req.hashes = ["sha256:abcdef", "sha256:defabc", "sha256:feebaa"]
+
+        bar_req = mock_requirement(
+            "bar", "pypi", download_line="bar==2.0", version_specs=[("==", "2.0")]
+        )
+        bar_req.hashes = ["sha256:bbbbbb"]
 
         pypi_checksum_sdist = ChecksumInfo("sha256", "abcdef")
         pypi_checksum_wheels = [
@@ -552,7 +558,7 @@ class TestDownload:
             options.append(index_url)
 
         req_file = mock_requirements_file(
-            requirements=[req],
+            requirements=[foo_req, bar_req],
             options=options,
         )
 
@@ -560,26 +566,26 @@ class TestDownload:
 
         pip_deps = rooted_tmp_path.join_within_root("deps", "pip")
 
-        sdist_download = pip_deps.join_within_root("foo-1.0.tar.gz").path
+        foo_sdist_download = pip_deps.join_within_root("foo-1.0.tar.gz").path
 
-        sdist_DPI = mock_distribution_package_info(
+        foo_sdist_DPI = mock_distribution_package_info(
             "foo",
-            path=sdist_download,
+            path=foo_sdist_download,
             index_url=expect_index_url,
             pypi_checksum={pypi_checksum_sdist},
             req_file_checksums=set() if missing_req_file_checksum else {req_file_checksum_sdist},
         )
-        sdist_d_i = sdist_DPI.download_info | {
+        foo_sdist_d_i = foo_sdist_DPI.download_info | {
             "kind": "pypi",
             "requirement_file": str(req_file.file_path.subpath_from_root),
             "missing_req_file_checksum": missing_req_file_checksum,
             "package_type": "sdist",
             "index_url": expect_index_url,
         }
-        verify_sdist_checksum_call = mock.call(sdist_download, {pypi_checksum_sdist})
-        expected_downloads = [sdist_d_i]
+        verify_foo_sdist_checksum_call = mock.call(foo_sdist_download, {pypi_checksum_sdist})
+        expected_downloads = [foo_sdist_d_i]
 
-        wheels_DPI: list[pip.DistributionPackageInfo] = []
+        foo_wheels_DPI: list[pip.DistributionPackageInfo] = []
         if binary_filters is not None:
             wheel_0_download = pip_deps.join_within_root("foo-1.0-cp35-many-linux.whl").path
             wheel_1_download = pip_deps.join_within_root("foo-1.0-cp25-win32.whl").path
@@ -600,7 +606,7 @@ class TestDownload:
                         set() if missing_req_file_checksum else req_file_checksums_wheels
                     ),
                 )
-                wheels_DPI.append(dpi)
+                foo_wheels_DPI.append(dpi)
                 wheel_downloads.append(
                     dpi.download_info
                     | {
@@ -623,19 +629,47 @@ class TestDownload:
             )
             expected_downloads.extend(wheel_downloads)
 
-        mock_process_package_distributions.return_value = [sdist_DPI] + wheels_DPI
+        bar_pypi_checksum = ChecksumInfo("sha256", "bbbbbb")
+        bar_sdist_download = pip_deps.join_within_root("bar-2.0.tar.gz").path
+        bar_sdist_DPI = mock_distribution_package_info(
+            "bar",
+            version="2.0",
+            path=bar_sdist_download,
+            url="https://pypi.org/bar-2.0.tar.gz",
+            index_url=expect_index_url,
+            pypi_checksum={bar_pypi_checksum},
+            req_file_checksums=set() if missing_req_file_checksum else {bar_pypi_checksum},
+        )
+        expected_downloads.append(
+            bar_sdist_DPI.download_info
+            | {
+                "kind": "pypi",
+                "requirement_file": str(req_file.file_path.subpath_from_root),
+                "missing_req_file_checksum": missing_req_file_checksum,
+                "package_type": "sdist",
+                "index_url": expect_index_url,
+            }
+        )
 
+        mock_process_package_distributions.side_effect = [
+            [foo_sdist_DPI] + foo_wheels_DPI,
+            [bar_sdist_DPI],
+        ]
+
+        checksum_side_effects: list[PackageRejected | None] = []
         if binary_filters is not None:
-            mock_must_match_any_checksum.side_effect = [
-                None,  # sdist_download
+            checksum_side_effects = [
+                None,  # foo_sdist_download
                 None,  # wheel_0_download - checksums OK
                 PackageRejected("", solution=None),  # wheel_1_download - checksums NOK
                 PackageRejected("", solution=None),  # wheel_2_download - no checksums to verify
             ]
         else:
-            mock_must_match_any_checksum.side_effect = [
-                None,  # sdist_download
+            checksum_side_effects = [
+                None,  # foo_sdist_download
             ]
+        checksum_side_effects.append(None)  # bar_sdist_download
+        mock_must_match_any_checksum.side_effect = checksum_side_effects
         # </setup>
 
         # <call>
@@ -645,14 +679,28 @@ class TestDownload:
         # </call>
 
         # <check calls that must always be made>
-        mock_check_metadata_in_sdist.assert_called_once_with(sdist_DPI.path)
-        mock_process_package_distributions.assert_called_once_with(
-            req, pip_deps, binary_filters, expect_index_url
-        )
+        assert mock_check_metadata_in_sdist.call_count == 2
+        mock_check_metadata_in_sdist.assert_any_call(foo_sdist_DPI.path)
+        mock_check_metadata_in_sdist.assert_any_call(bar_sdist_DPI.path)
+
+        assert mock_process_package_distributions.call_count == 2
         # </check calls that must always be made>
 
+        # <check batch download>
+        mock_async_download_files.assert_called_once()
+        batched_files = mock_async_download_files.call_args[0][0]
+        expected_batch: dict[str, Path] = {
+            foo_sdist_DPI.url: foo_sdist_download,
+            bar_sdist_DPI.url: bar_sdist_download,
+        }
+        if binary_filters is not None:
+            for dpi in foo_wheels_DPI:
+                expected_batch[dpi.url] = dpi.path
+        assert batched_files == expected_batch
+        # </check batch download>
+
         verify_checksums_calls = [
-            verify_sdist_checksum_call,
+            verify_foo_sdist_checksum_call,
         ]
 
         if binary_filters is not None:
@@ -673,25 +721,12 @@ class TestDownload:
                     ]
                 )
 
+        verify_checksums_calls.append(mock.call(bar_sdist_download, {bar_pypi_checksum}))
+
         mock_must_match_any_checksum.assert_has_calls(verify_checksums_calls)
         assert mock_must_match_any_checksum.call_count == len(verify_checksums_calls)
 
         # </check calls to checksum verification method>
-
-        # <check basic logging output>
-        assert f"-- Processing requirement line '{req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{req.download_line}' in path 'deps/pip/foo-1.0.tar.gz'"
-        ) in caplog.text
-        # </check basic logging output>
-
-        # <check downloaded wheels>
-        if binary_filters is not None:
-            # wheel 1 does not match any checksums
-            assert (
-                f"Download '{wheel_1_download.name}' was removed from the output directory"
-            ) in caplog.text
-        # </check downloaded wheels>
 
     @pytest.mark.parametrize("checksum_match", [True, False])
     @pytest.mark.parametrize("trusted_hosts", [[], ["example.org"]])

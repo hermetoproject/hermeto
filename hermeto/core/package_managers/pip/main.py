@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import functools
 import logging
 import tarfile
 import zipfile
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 from urllib import parse as urlparse
 
 import pypi_simple
@@ -52,6 +53,11 @@ log = logging.getLogger(__name__)
 
 DEFAULT_BUILD_REQUIREMENTS_FILE = "requirements-build.txt"
 DEFAULT_REQUIREMENTS_FILE = "requirements.txt"
+
+
+class _PyPIArtifact(NamedTuple):
+    requirement: PipRequirement
+    dpi: DistributionPackageInfo
 
 
 def fetch_pip_source(request: Request) -> RequestOutput:
@@ -321,34 +327,19 @@ def _process_req(
     return download_info
 
 
-def _process_pypi_req(
-    req: PipRequirement,
+def _process_pypi_reqs(
     requirements_file: PipRequirementsFile,
-    index_url: str,
     pip_deps_dir: RootedPath,
-    binary_filters: PipBinaryFilters | None = None,
+    pypi_artifacts: list[_PyPIArtifact],
 ) -> list[dict[str, Any]]:
-    download_infos: list[dict[str, Any]] = []
+    files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
+    if files:
+        asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
-    artifacts: list[DistributionPackageInfo] = process_package_distributions(
-        req, pip_deps_dir, binary_filters, index_url
-    )
-
-    files = {dpi.url: dpi.path for dpi in artifacts if not dpi.path.exists()}
-    asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
-
-    for artifact in artifacts:
-        download_infos.append(
-            _process_req(
-                req,
-                requirements_file,
-                pip_deps_dir,
-                artifact.download_info,
-                dpi=artifact,
-            )
-        )
-
-    return download_infos
+    return [
+        _process_req(req, requirements_file, pip_deps_dir, dpi.download_info, dpi=dpi)
+        for req, dpi in pypi_artifacts
+    ]
 
 
 def _process_vcs_req(
@@ -376,6 +367,16 @@ def _process_url_req(
         result["package_type"] = "wheel"
 
     return result
+
+
+async def _resolve_pypi_distributions(
+    reqs: list[PipRequirement],
+    resolve_callback: Callable[[PipRequirement], list[DistributionPackageInfo]],
+) -> list[list[DistributionPackageInfo]]:
+    """Resolve PyPI distributions for all requirements concurrently."""
+    loop = asyncio.get_running_loop()
+    tasks = [loop.run_in_executor(None, resolve_callback, req) for req in reqs]
+    return await asyncio.gather(*tasks)
 
 
 def _download_dependencies(
@@ -415,17 +416,12 @@ def _download_dependencies(
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
     pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
+    pypi_reqs: list[PipRequirement] = []
     for req in requirements_file.requirements:
         log.info("-- Processing requirement line '%s'", req.download_line)
         if req.kind == "pypi":
-            download_infos: list[dict[str, Any]] = _process_pypi_req(
-                req,
-                requirements_file=requirements_file,
-                index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
-                pip_deps_dir=pip_deps_dir,
-                binary_filters=binary_filters,
-            )
-            processed.extend(download_infos)
+            pypi_reqs.append(req)
+            continue
         elif req.kind == "vcs":
             download_info = _process_vcs_req(
                 req,
@@ -445,7 +441,22 @@ def _download_dependencies(
             # Should not happen
             raise RuntimeError(f"Unexpected requirement kind: '{req.kind!r}'")
 
-        log.info("-- Finished processing requirement line '%s'\n", req.download_line)
+        log.info("-- Finished processing requirement line '%s'", req.download_line)
+
+    pypi_artifacts: list[_PyPIArtifact] = []
+    if pypi_reqs:
+        resolve_callback = functools.partial(
+            process_package_distributions,
+            pip_deps_dir=pip_deps_dir,
+            binary_filters=binary_filters,
+            index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
+        )
+        pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
+        reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
+        pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
+        processed.extend(_process_pypi_reqs(requirements_file, pip_deps_dir, pypi_artifacts))
+        for req in pypi_reqs:
+            log.info("-- Finished processing requirement line '%s'", req.download_line)
 
     return processed
 
