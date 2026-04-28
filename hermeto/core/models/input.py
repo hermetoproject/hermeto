@@ -110,7 +110,9 @@ PackageManagerType = Literal[
     "pip",
     "rpm",
     "yarn",
-    # Add experimental package managers here with x- prefix, e.g. "x-foo"
+    # Add experimental package managers (or package managers whose implementation is in progress)
+    # here with an x- prefix (e.g. "x-foo"):
+    "x-pnpm",
 ]
 
 
@@ -330,6 +332,12 @@ class PipPackageInput(_PackageInputBase):
         return self
 
 
+class PnpmPackageInput(_PackageInputBase):
+    """Accepted input for a pnpm package."""
+
+    type: Literal["x-pnpm"]
+
+
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     """Global package manager extra options model.
 
@@ -413,6 +421,7 @@ PackageInput = Annotated[
     | GomodPackageInput
     | NpmPackageInput
     | PipPackageInput
+    | PnpmPackageInput
     | RpmPackageInput
     | YarnPackageInput,
     # https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
@@ -515,6 +524,11 @@ class Request(pydantic.BaseModel):
     def pip_packages(self) -> list[PipPackageInput]:
         """Get the pip packages specified for this request."""
         return self._packages_by_type(PipPackageInput)
+
+    @property
+    def pnpm_packages(self) -> list[PnpmPackageInput]:
+        """Get the pnpm packages specified for this request."""
+        return self._packages_by_type(PnpmPackageInput)
 
     @property
     def rpm_packages(self) -> list[RpmPackageInput]:
