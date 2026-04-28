@@ -495,7 +495,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-pnpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-maven', 'x-pnpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -504,7 +504,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-pnpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-maven', 'x-pnpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -513,7 +513,7 @@ class TestFetchDeps:
                 [
                     "Error: InvalidInput: 1 validation error for user input",
                     "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-pnpm', 'yarn'",
+                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'x-maven', 'x-pnpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),

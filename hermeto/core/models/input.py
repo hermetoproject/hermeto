@@ -112,6 +112,7 @@ PackageManagerType = Literal[
     "yarn",
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
+    "x-maven",
     "x-pnpm",
 ]
 
@@ -294,6 +295,12 @@ class GomodPackageInput(_PackageInputBase):
     type: Literal["gomod"]
 
 
+class MavenPackageInput(_PackageInputBase):
+    """Accepted input for a maven package."""
+
+    type: Literal["x-maven"]
+
+
 class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
@@ -419,6 +426,7 @@ PackageInput = Annotated[
     | CargoPackageInput
     | GenericPackageInput
     | GomodPackageInput
+    | MavenPackageInput
     | NpmPackageInput
     | PipPackageInput
     | PnpmPackageInput
@@ -514,6 +522,11 @@ class Request(pydantic.BaseModel):
     def gomod_packages(self) -> list[GomodPackageInput]:
         """Get the gomod packages specified for this request."""
         return self._packages_by_type(GomodPackageInput)
+
+    @property
+    def maven_packages(self) -> list[MavenPackageInput]:
+        """Get the maven packages specified for this request."""
+        return self._packages_by_type(MavenPackageInput)
 
     @property
     def npm_packages(self) -> list[NpmPackageInput]:

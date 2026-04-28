@@ -157,6 +157,7 @@ Any settings specified will override the default values present in the
 | [cargo](#cargo)             | Rust       |
 | [generic](#generic-fetcher) | N/A        |
 | [gomod](#gomod)             | Go         |
+| [maven](#maven)             | Java       |
 | [npm](#npm)                 | JavaScript |
 | [pip](#pip)                 | Python     |
 | [rpm](#rpm)                 | RPM        |
@@ -221,6 +222,16 @@ added benefit of downloading fewer dependencies (as noted in the changelog), in
 some cases drastically so.
 
 See docs/gomod.md for more details.
+
+### [maven][]
+
+Hermeto supports Maven by reading `lockfile.json` in the project directory. To generate
+this file, you can use the [maven-lockfile][] plugin, which records resolved dependencies,
+plugins, and parent POM graphs. Hermeto downloads those artifacts into a local repository
+layout and writes Maven settings so the build can run offline against that cache
+only.
+
+:warning: This feature is experimental and may change without prior notice.
 
 ### [npm][]
 
@@ -305,6 +316,8 @@ See docs/yarn.md for more details.
 [hermetic]: https://slsa.dev/spec/v0.1/requirements#hermetic
 [hermeto container status]: https://github.com/hermetoproject/hermeto/pkgs/container/hermeto/versions?filters%5Bversion_type%5D=tagged
 [hermeto coverage status]: https://codecov.io/github/hermetoproject/hermeto
+[maven]: https://maven.apache.org
+[maven-lockfile]: https://github.com/chains-project/maven-lockfile
 [npm install]: https://docs.npmjs.com/cli/v9/commands/npm-install?v=true
 [npm]: https://docs.npmjs.com
 [package-lock.json]: https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json
