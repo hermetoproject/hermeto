@@ -52,8 +52,9 @@ hermeto fetch-deps \
 - `--output` the path to the directory where Hermeto will write all output
   `[default: ./hermeto-output]`
 - `--sbom-output-type` the format of generated SBOM, supported values are
-  `cyclonedx` (outputs [CycloneDX v1.6][]) and `spdx` (outputs [SPDX v2.3][])
-  `[default: cyclonedx]`
+  `cyclonedx` (outputs [CycloneDX v1.6][]) and `spdx` (outputs [SPDX v2.3][]).
+  See [SBOM documentation](sbom.md) for structure, custom fields, and format
+  mapping. `[default: cyclonedx]`
 - `{JSON}` specifies a *package* (a directory) within the repository to process
 
 Note that Hermeto does not auto-detect which package managers your project uses.
@@ -145,7 +146,8 @@ hermeto merge-sboms <hermeto_sbom_1.json> ... <hermeto_sbom_n.json>
 
 The subcommand expects at least two SBOMs, all produced by Hermeto, and will
 exit with error otherwise. The reason for this is that Hermeto supports a
-[limited set][] of component [properties][], and it validates that no other
+[limited set][] of component [properties][]
+(documented in [SBOM documentation](sbom.md)), and it validates that no other
 properties exist in the SBOM. By default the result of a merge will be printed
 to stdout. To save it to a file use `-o` option
 
