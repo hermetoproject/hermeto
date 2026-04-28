@@ -19,6 +19,7 @@ class PropertyEnum(str, Enum):
     PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
     PROP_FOUND_BY = f"{APP_NAME}:found_by"
+    PROP_MAVEN_SCOPE = f"{APP_NAME}:maven:scope"
     PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
     PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
     PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
@@ -42,6 +43,7 @@ class PropertySet:
 
     bundler_package_binary: bool = False
     found_by: str | None = None
+    maven_scope: str = ""
     missing_hash_in_file: frozenset[str] = field(default_factory=frozenset)
     npm_bundled: bool = False
     npm_development: bool = False
@@ -55,6 +57,7 @@ class PropertySet:
         """Convert a list of SBOM component properties to a PropertySet."""
         bundler_package_binary = False
         found_by = None
+        maven_scope = ""
         missing_hash_in_file = []
         npm_bundled = False
         npm_development = False
@@ -72,6 +75,8 @@ class PropertySet:
                 npm_development = True
             elif prop.name == PropertyEnum.PROP_FOUND_BY:
                 found_by = prop.value
+            elif prop.name == PropertyEnum.PROP_MAVEN_SCOPE:
+                maven_scope = prop.value
             elif prop.name == PropertyEnum.PROP_MISSING_HASH_IN_FILE:
                 missing_hash_in_file.append(prop.value)
             elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BINARY:
@@ -88,6 +93,7 @@ class PropertySet:
         return cls(
             bundler_package_binary,
             found_by,
+            maven_scope,
             frozenset(missing_hash_in_file),
             npm_bundled,
             npm_development,
@@ -104,10 +110,14 @@ class PropertySet:
             props.append(Property(name=PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY, value="true"))
         if self.found_by:
             props.append(Property(name=PropertyEnum.PROP_FOUND_BY, value=self.found_by))
+        if self.maven_scope:
+            props.append(Property(name=PropertyEnum.PROP_MAVEN_SCOPE, value=self.maven_scope))
+
         props.extend(
             Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value=filepath)
             for filepath in self.missing_hash_in_file
         )
+
         if self.npm_bundled:
             props.append(Property(name=PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED, value="true"))
         if self.npm_development:
@@ -135,6 +145,7 @@ class PropertySet:
         return cls(
             bundler_package_binary=self.bundler_package_binary or other.bundler_package_binary,
             found_by=self.found_by or other.found_by,
+            maven_scope=self.maven_scope or other.maven_scope,
             missing_hash_in_file=self.missing_hash_in_file | other.missing_hash_in_file,
             npm_bundled=self.npm_bundled and other.npm_bundled,
             npm_development=self.npm_development and other.npm_development,
