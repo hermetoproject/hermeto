@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import logging
 from pathlib import Path
 
 import pytest
 
 from . import utils
-
-log = logging.getLogger(__name__)
 
 
 def test_help(hermeto_image: utils.HermetoImage, tmp_path: Path) -> None:

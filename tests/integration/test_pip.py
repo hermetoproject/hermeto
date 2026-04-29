@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import logging
 import os
 from pathlib import Path
 
@@ -9,8 +8,6 @@ from hermeto import APP_NAME
 from hermeto.core.errors import ExitError
 
 from . import utils
-
-log = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize(
