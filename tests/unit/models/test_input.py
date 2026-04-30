@@ -20,6 +20,7 @@ from hermeto.core.models.input import (
     Request,
     RpmPackageInput,
     SSLOptions,
+    _simplify_location,
     _validate_binary_filter_format,
     parse_user_input,
 )
@@ -27,9 +28,32 @@ from hermeto.core.rooted_path import RootedPath
 
 
 def test_parse_user_input() -> None:
-    expect_error = re.compile(r"1 validation error for user input\ntype\n  Input should be 'gomod'")
+    # Single error: no header, just the message directly
+    expect_error = re.compile(r"type\n  Input should be 'gomod'")
     with pytest.raises(InvalidInput, match=expect_error):
         parse_user_input(GomodPackageInput.model_validate, {"type": "go-package"})
+
+
+class TestSimplifyLocation:
+    """Test the _simplify_location helper."""
+
+    @pytest.mark.parametrize(
+        "loc, expected",
+        [
+            pytest.param(("packages", 0, "gomod", "path"), "path", id="strips_packages_index_type"),
+            pytest.param(("packages", 0, "gomod", "what"), "what", id="strips_unknown_field"),
+            pytest.param(("packages", 0), "", id="no_meaningful_subfield"),
+            pytest.param(("packages",), "", id="packages_only"),
+            pytest.param(("what",), "what", id="top_level_field"),
+            pytest.param(
+                ("packages", 0, "pip", "requirements_files", 0),
+                "requirements_files -> 0",
+                id="nested_list_field",
+            ),
+        ],
+    )
+    def test_simplify_location(self, loc: tuple[str | int, ...], expected: str) -> None:
+        assert _simplify_location(loc) == expected
 
 
 class TestPackageInput:

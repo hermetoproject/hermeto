@@ -493,27 +493,21 @@ class TestFetchDeps:
             (
                 "idk",
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Error: InvalidInput: Unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '[{"type": "idk"}]',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Error: InvalidInput: Unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '{"packages": [{"type": "idk"}]}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
+                    "Error: InvalidInput: Unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'rpm', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -521,17 +515,14 @@ class TestFetchDeps:
             (
                 "{}",
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Unable to extract tag using discriminator 'type'",
+                    "Error: InvalidInput: Unable to extract tag using discriminator 'type'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '[{"type": "gomod"}, {}]',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 1",
+                    "Error: InvalidInput: 2 validation errors for user input",
                     "Unable to extract tag using discriminator 'type'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -539,8 +530,6 @@ class TestFetchDeps:
             (
                 '{"packages": [{}]}',
                 [
-                    "1 validation error for user input",
-                    "packages -> 0",
                     "Unable to extract tag using discriminator 'type'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -549,8 +538,7 @@ class TestFetchDeps:
             (
                 '{"type": "gomod", "path": "/absolute"}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> path",
+                    "Error: InvalidInput: path",
                     "Value error, path must be relative: /absolute",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -558,9 +546,8 @@ class TestFetchDeps:
             (
                 '{"type": "gomod", "path": "weird/../subpath"}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> path",
-                    "Value error, path contains ..: weird/../subpath",
+                    "Error: InvalidInput: path",
+                    "Value error, path contains ..",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -586,8 +573,7 @@ class TestFetchDeps:
             (
                 '{"type": "gomod", "what": "dunno"}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> what",
+                    "Error: InvalidInput: what",
                     "Extra inputs are not permitted",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -596,35 +582,28 @@ class TestFetchDeps:
             (
                 '{"packages": "gomod"}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
-                    "Input should be a valid list",
+                    "Error: InvalidInput: Input should be a valid list",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '{"packages": {"type":"gomod"}}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
-                    "Input should be a valid list",
+                    "Error: InvalidInput: Input should be a valid list",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '{"packages": ["gomod"]}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Input should be a valid dictionary or object to extract fields from",
+                    "Error: InvalidInput: Input should be a valid dictionary or object to extract fields from",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
             (
                 '{"packages": [{"type": "gomod"}], "what": "dunno"}',
                 [
-                    "Error: InvalidInput: 1 validation error for user input",
-                    "what",
+                    "Error: InvalidInput: what",
                     "Extra inputs are not permitted",
                 ],
                 ExitError.ERR_INVALID_INPUT,

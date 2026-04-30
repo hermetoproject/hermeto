@@ -67,21 +67,56 @@ def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
         raise InvalidInput(_present_user_input_error(e)) from e
 
 
+_KNOWN_BACKEND_TYPES = {
+    "bundler",
+    "cargo",
+    "generic",
+    "gomod",
+    "npm",
+    "pip",
+    "rpm",
+    "yarn",
+}
+
+
+def _simplify_location(loc: tuple[str | int, ...]) -> str:
+    """Strip pydantic-internal prefixes from an error location, keeping only meaningful parts.
+
+    Removes leading 'packages', numeric indices, and discriminated-union type names
+    so that users see the field name rather than the full internal path.
+
+    Examples:
+        ("packages", 0, "gomod", "path") -> "path"
+        ("packages", 0, "gomod", "what") -> "what"
+        ("packages", 0)                  -> ""   (no meaningful sub-field)
+        ("packages",)                    -> ""   (no meaningful sub-field)
+        ("what",)                        -> "what"
+    """
+    parts = [str(p) for p in loc]
+    # Remove leading "packages" and any numeric index that follows it
+    while parts and (parts[0] == "packages" or parts[0].isdigit()):
+        parts.pop(0)
+    # Remove discriminated-union type name if it is the next remaining part
+    if parts and parts[0] in _KNOWN_BACKEND_TYPES:
+        parts.pop(0)
+    return " -> ".join(parts)
+
+
 def _present_user_input_error(validation_error: pydantic.ValidationError) -> str:
-    """Make a slightly nicer representation of a pydantic.ValidationError.
+    """Make a user-friendly representation of a pydantic.ValidationError.
 
     Compared to pydantic's default message:
     - don't show the model name, just say "user input"
     - don't show the underlying error type (e.g. "type=value_error.const")
+    - strip internal pydantic location prefixes (package indices, union type names)
+    - rewrite pydantic jargon into plain language
+    - for a single error, omit the noisy header line
     """
     errors = validation_error.errors()
     n_errors = len(errors)
 
     def show_error(error: "ErrorDict") -> str:
-        location = " -> ".join(map(str, error["loc"]))
-        if error.get("type") != "union_tag_invalid":
-            message = error["msg"]
-        else:
+        if error.get("type") == "union_tag_invalid":
             # Handle regular union tag errors (i.e. errors which stem from
             # a missing package manager implementation). Errors in experimental
             # package managers are handled elsewhere.
@@ -89,14 +124,19 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
             raw = ctx.get("expected_tags", "")
             expected = [t.strip(" '") for t in raw.split(",")]
             quoted = ", ".join(f"'{t}'" for t in sorted(expected))
-            message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
+            tag = ctx.get("tag", "<unknown>")
+            return f"Unknown package manager '{tag}'. Valid options are: {quoted}"
 
-        if location != "__root__":
+        location = _simplify_location(error["loc"])
+        message = error["msg"]
+        if location:
             message = f"{location}\n  {message}"
-
         return message
 
-    header = f"{n_errors} validation error{'' if n_errors == 1 else 's'} for user input"
+    if n_errors == 1:
+        return show_error(errors[0])
+
+    header = f"{n_errors} validation errors for user input"
     details = "\n".join(map(show_error, errors))
     return f"{header}\n{details}"
 
