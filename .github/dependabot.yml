@@ -36,6 +36,8 @@ updates:
       interval: "monthly"
     ignore:
       - dependency-name: "pydantic-core"
+      - dependency-name: "createrepo-c"
+        versions: [">=1.2.2"]
     groups:
       minor-and-patch:
         update-types:
