@@ -150,27 +150,33 @@ nox
 
 Observe the following guidelines when submitting a pull request for review
 
-* Write clear and informative *commit messages*. If you want to provide further context, use the PR's description
-* [Sign off on](https://developercertificate.org) all commits
+**Do:**
+
+* Write clear and informative *commit messages*, explain the "WHY"
+* Use PR description to provide further explanation or context about the PR topic
+* Sign off all your commits ([DCO](https://developercertificate.org))
 * Use your full name and a valid, deliverable email address for commit
   authorship. The notion of a "known identity" is open to interpretation. We simply require a real full name
-  rather than a pseudonym or handle (sorry, no anonymous contributions). The same applies to the
-  [DCO sign-off](https://developercertificate.org) which is required on all commits. If you set
+  rather than a pseudonym or handle (sorry, no anonymous contributions). The same applies to your DCO sign-off. If you set
   your `user.name` and `user.email` git configuration options, you can sign your commits
   automatically with `git commit -s`
-* Please use the PR's description to provide further explanation of the pull request's title
-* Split changes into multiple commits such that each commit addresses a clear and concise problem
-* Avoid PRs which are too large — split the work into multiple PRs if necessary
-* Amend existing commits rather than add new commits to fix issues introduced in the same pull request
-* Keep your branch up-to-date using `rebase` — we don't use merge commits
-* Verify the coding standards by running the configured linters
-* Ensure that every single commit passes CI — this is mandatory
-* Feel free to use Github comments to clarify implementation points and consider adding the same comments to the code
-* Feel free to use diagrams, sample code, or links to specific parts of external documentation — they are highly encouraged
-* Please respond to inline comments made in pull requests: it makes it easier to track what has been done and
-  what has not and speeds up review process. "Done" is often enough to indicate that you have reacted to
-  a comment
-* For trivial reviewers' requests it is ok to implement it, respond with "Done" and resolve the thread.
+* Split changes into several self-contained commits
+* Rebase frequently
+* Amend existing commits rather than add fixup commits during review
+* Run linters & unit tests before opening a PR
+* Ensure every single commit passes CI
+
+**Don't:**
+
+* Use gitmojis anywhere, they only add noise
+* Squash all changes into a single massive commit unless it is a simple or self-contained change
+
+**Tips:**
+
+* Use GitHub comments to further clarify background for the implementation if needed
+* Use diagrams, sample code, and links to specific parts of external documentation
+* Respond to review comments - responding with "Done" is often enough to indicate that a thread can be resolved
+* Resolve trivial (e.g. nitpicks) review threads yourself, leave the rest to the reviewers
 
 ### Error message guidelines
 
