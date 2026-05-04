@@ -62,6 +62,14 @@ class PnpmPackage:
     url: str
     integrity: str | None = None  # git and URL dependencies don't have an integrity field
 
+    @property
+    def tarball_filename(self) -> str:
+        """Return the tarball filename."""
+        if self.scope:
+            return f"{self.scope}-{self.name}-{self.version}.tgz"
+
+        return f"{self.name}-{self.version}.tgz"
+
 
 def _ensure_lockfile_version_is_supported(lockfile: PnpmLock) -> None:
     """Ensure Hermeto supports the lockfile version in the pnpm-lock.yaml file."""
