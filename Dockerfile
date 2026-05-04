@@ -48,11 +48,11 @@ FROM base
 LABEL maintainer="Red Hat"
 
 # copy Go SDK and Node.js installation from official images
-COPY --from=golang /usr/local/go /usr/local/go
-COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=rust /usr/local/rustup/toolchains/*/bin/cargo /usr/bin/cargo
-COPY --from=builder /venv /venv
+COPY --link --from=golang /usr/local/go /usr/local/go
+COPY --link --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
+COPY --link --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --link --from=rust /usr/local/rustup/toolchains/*/bin/cargo /usr/bin/cargo
+COPY --link --from=builder /venv /venv
 
 # link corepack, yarn, and go to standard PATH location
 RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
