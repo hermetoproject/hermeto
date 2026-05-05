@@ -65,13 +65,17 @@ def _clone_repo_pack_archive(
     return download_path
 
 
-def _patch_url_to_point_to_a_proxy(url: NormalizedUrl, proxy_url: ProxyUrl) -> NormalizedUrl:
-    # Convert 'https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz'
-    # to '<proxyaddress>/accepts/-/accepts-1.3.8.tgz'.
-    s_proxy_url = str(proxy_url)  # mypy becomes really upset when "proxy_url" gets reused here
-    s_proxy_url = s_proxy_url if s_proxy_url[-1] == "/" else s_proxy_url + "/"
-    url_path = urlparse(url).path[1:]  # Don't need the leading / anymore
-    return NormalizedUrl(s_proxy_url + url_path)
+def patch_url_to_point_to_proxy(url: str, proxy_url: ProxyUrl) -> str:
+    """
+    >>> patch_url_to_point_to_proxy('https://registry.npmjs.org/foo/-/foo-1.0.0.tgz', 'http://proxy.com/npm/registry')
+    'http://proxy.com/npm/registry/foo/-/foo-1.0.0.tgz'
+    >>> patch_url_to_point_to_proxy('https://registry.npmjs.org/foo/-/foo-1.0.0.tgz', 'http://proxy.com/npm/registry/')
+    'http://proxy.com/npm/registry/foo/-/foo-1.0.0.tgz'
+    """
+    str_proxy_url = str(proxy_url)
+    str_proxy_url = str_proxy_url if str_proxy_url[-1] == "/" else str_proxy_url + "/"
+    url_path = urlparse(url).path.removeprefix("/")
+    return str_proxy_url + url_path
 
 
 async def _async_download_tar(files_to_download_list: list[dict[str, dict[str, Any]]]) -> None:
@@ -121,7 +125,9 @@ def _get_npm_dependencies(
                 )
                 download_paths[url] = download_dir.join_within_root(archive_name)
                 if config.npm.proxy_url is not None:
-                    fetch_url = _patch_url_to_point_to_a_proxy(url, config.npm.proxy_url)
+                    fetch_url = NormalizedUrl(
+                        patch_url_to_point_to_proxy(url, config.npm.proxy_url)
+                    )
                     if config.npm.proxy_login and config.npm.proxy_password:
                         proxy_auth = aiohttp.BasicAuth(
                             config.npm.proxy_login,
