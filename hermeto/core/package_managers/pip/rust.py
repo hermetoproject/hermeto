@@ -119,9 +119,9 @@ def _config_data() -> str:
     return dedent(
         """
         [source.crates-io]
-        replace-with = "local"
+        replace-with = "vendored-sources"
 
-        [source.local]
+        [source.vendored-sources]
         directory = "${output_dir}/deps/cargo"
         """
     )
