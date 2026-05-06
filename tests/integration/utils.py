@@ -1,16 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import functools
-import hashlib
 import json
 import logging
 import os
-import shutil
-import sys
 import tempfile
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from tarfile import ExtractError, TarFile
 from typing import Any
 
 import jsonschema
@@ -225,98 +221,10 @@ def _build_image(flags: list[str], tag: str, context_dir: StrPath = ".") -> Cont
     return ContainerImage(tag)
 
 
-def _calculate_files_checksums_in_dir(root_dir: Path) -> dict:
-    """
-    Calculate files sha256sum in provided directory.
-
-    Method lists all files in provided directory and calculates their checksums.
-    :param root_dir: path to root directory
-    :return: Dictionary with relative paths to files in dir and their checksums
-    :rtype: Dict
-    """
-    files_checksums = {}
-
-    for dir_, _, files in os.walk(root_dir):
-        rel_dir = Path(dir_).relative_to(root_dir)
-        for file_name in files:
-            rel_file = rel_dir.joinpath(file_name).as_posix()
-            if "-gitcommit-" in file_name:
-                files_checksums[rel_file] = _get_git_commit_from_tarball(
-                    root_dir.joinpath(rel_file)
-                )
-            elif "/sumdb/sum.golang.org/lookup/" in rel_file:
-                files_checksums[rel_file] = "unstable"
-            elif "/sumdb/sum.golang.org/tile/" in rel_file:
-                # drop altogether - even the filenames are unstable, not just the checksums
-                pass
-            else:
-                files_checksums[rel_file] = _calculate_sha256sum(root_dir.joinpath(rel_file))
-    return files_checksums
-
-
-def _get_git_commit_from_tarball(tarball: Path) -> str:
-    with TarFile.open(tarball, "r:gz") as tarfile:
-        extract_path = str(tarball).replace(".tar.gz", "").replace(".tgz", "")
-        _safe_extract(tarfile, extract_path)
-
-    repo = GitRepo(path=f"{extract_path}/app")
-    commit = f"gitcommit:{repo.commit().hexsha}"
-
-    shutil.rmtree(extract_path)
-
-    return commit
-
-
-def _calculate_sha256sum(file: Path) -> str:
-    """
-    Calculate sha256sum of file.
-
-    :param file: path to file
-    :return: file's sha256sum
-    :rtype: str
-    """
-    sha256_hash = hashlib.sha256()
-    with open(file, "rb") as f:
-        # Read and update hash string value in blocks of 4K
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return f"sha256:{sha256_hash.hexdigest()}"
-
-
 def _load_json_or_yaml(file: Path) -> dict[str, Any]:
     """Load JSON or YAML file and return dict."""
     with open(file) as f:
         return yaml.safe_load(f)
-
-
-def _safe_extract(tar: TarFile, path: str = ".", *, numeric_owner: bool = False) -> None:
-    """
-    CVE-2007-4559 replacement for extract() or extractall().
-
-    By using extract() or extractall() on a tarfile object without sanitizing input,
-    a maliciously crafted .tar file could perform a directory path traversal attack.
-    The patch essentially checks to see if all tarfile members will be
-    extracted safely and throws an exception otherwise.
-
-    :param tarfile tar: the tarfile to be extracted.
-    :param str path: specifies a different directory to extract to.
-    :param numeric_owner: if True, only the numbers for user/group names are used and not the names.
-    :raise ExtractError: if there is a Traversal Path Attempt in the Tar File.
-    """
-    abs_path = Path(path).resolve()
-    for member in tar.getmembers():
-        member_path = Path(path).joinpath(member.name)
-        abs_member_path = member_path.resolve()
-
-        if not abs_member_path.is_relative_to(abs_path):
-            raise ExtractError("Attempted Path Traversal in Tar File")
-
-    # This 'if' block is to deal with deprectaion warning for unfiltered tar
-    # extraction in 3.12.
-    if sys.version_info >= (3, 12):
-        tar.extractall(path, numeric_owner=numeric_owner, filter="fully_trusted")
-    else:
-        tar.extractall(path, numeric_owner=numeric_owner)
 
 
 def _json_serialize(data: dict[str, Any]) -> str:
