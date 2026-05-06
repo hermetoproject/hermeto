@@ -52,7 +52,6 @@ log = logging.getLogger(__name__)
                 branch="gomod/wrong-vendor-fails-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
@@ -67,7 +66,6 @@ log = logging.getLogger(__name__)
                 branch="gomod/wrong-vendor-in-submodule-fails-vendor-check",
                 packages=({"path": "integration-tests", "type": "gomod"},),
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "
@@ -90,7 +88,6 @@ log = logging.getLogger(__name__)
                 branch="gomod/empty-vendor-fails-vendor-check",
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output=(
                     "PackageRejected: The content of the vendor directory is not "

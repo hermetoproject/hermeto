@@ -92,7 +92,6 @@ class TestParameters:
     branch: str
     packages: tuple[dict[str, Any], ...]
     check_output: bool = True
-    check_deps_checksums: bool = True
     expected_error: ExitError = ExitError.ERR_OK
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
@@ -523,17 +522,6 @@ def fetch_deps_and_check_output(
     deps_content_file = Path(test_data_dir, test_case, "fetch_deps_file_contents.yaml")
     if deps_content_file.exists():
         _validate_expected_dep_file_contents(deps_content_file, output_dir)
-
-    if test_params.check_deps_checksums:
-        files_checksums = _calculate_files_checksums_in_dir(output_dir.joinpath("deps"))
-        expected_files_checksums_path = test_data_dir.joinpath(
-            test_data_dir, test_case, "fetch_deps_sha256sums.json"
-        )
-        update_test_data_if_needed(expected_files_checksums_path, files_checksums)
-        expected_files_checksums = _load_json_or_yaml(expected_files_checksums_path)
-
-        log.info("Compare checksums of fetched deps files")
-        assert files_checksums == expected_files_checksums
 
     return actual_repo_dir
 

@@ -53,7 +53,6 @@ log = logging.getLogger(__name__)
                 branch="pip/local-path",
                 packages=({"path": ".", "type": "pip"},),
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_UNSUPPORTED_FEATURE,
                 expected_output=(
                     "UnsupportedFeature: Direct references with 'file' scheme are not supported, "
@@ -92,7 +91,6 @@ log = logging.getLogger(__name__)
                 branch="pip/no-sdists",
                 packages=({"path": ".", "type": "pip"},),
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_PACKAGE_REJECTED,
                 expected_output="Error: PackageRejected: No distributions found",
             ),
@@ -116,7 +114,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "pip"},),
                 global_flags=["--mode", "permissive"],
                 check_output=False,
-                check_deps_checksums=False,
             ),
             id="pip_rust_extension_lock_and_config_mismatch_permissive",
         ),
@@ -126,7 +123,6 @@ log = logging.getLogger(__name__)
                 packages=({"path": ".", "type": "pip"},),
                 global_flags=["--mode", "strict"],
                 check_output=False,
-                check_deps_checksums=False,
                 expected_error=ExitError.ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED,
                 expected_output="PackageWithCorruptLockfileRejected",
             ),
@@ -137,7 +133,6 @@ log = logging.getLogger(__name__)
                 branch="pip/rust_dependency_unusual_cargo_toml_location",
                 packages=({"path": ".", "type": "pip"},),
                 check_output=False,
-                check_deps_checksums=False,
             ),
             id="pip_rust_dependency_unusual_cargo_toml_location",
         ),
@@ -211,7 +206,6 @@ def test_pip_packages(
                 packages=(({"type": "pip"}, {"type": "rpm"})),
                 flags=[],
                 check_output=True,
-                check_deps_checksums=False,
             ),
             # Invocation will fail if there was a failure to build the dependencies.
             ["python3", "/app/src/test_package_cachi2/main.py"],
