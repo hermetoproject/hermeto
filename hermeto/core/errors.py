@@ -36,6 +36,8 @@ class ExitError(IntEnum):
     ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED = 20
     ERR_UNSATISFIABLE_ARCHITECTURE_FILTER = 21
     ERR_NOT_V1_LOCKFILE = 22
+    ERR_UNPINNED_PACKAGE = 23
+    ERR_INVALID_VCS_REFERENCE = 24
 
 
 class ErrorRegistryMeta(type):
@@ -169,6 +171,22 @@ class PackageRejected(UsageError):
         :param solution: politely suggest a potential solution to the user
         """
         super().__init__(reason, solution=solution)
+
+
+class UnpinnedPackage(PackageRejected):
+    """A package requirement is not pinned to an exact version."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_UNPINNED_PACKAGE
+
+
+class InvalidVCSReference(PackageRejected):
+    """A VCS requirement does not have a valid reference."""
+
+    _exit_error: ClassVar[ExitError] = ExitError.ERR_INVALID_VCS_REFERENCE
+
+
+class UnrecognizedFileExtension(PackageRejected):
+    """A URL requirement has an unrecognized file extension."""
 
 
 class NotAGitRepo(PackageRejected):
