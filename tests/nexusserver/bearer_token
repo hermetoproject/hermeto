@@ -1,0 +1,1 @@
+set $bearer_token "SecretToken";
