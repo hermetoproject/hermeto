@@ -184,13 +184,18 @@ def main(  # noqa: D103 -- docstring becomes part of --help message
         case_sensitive=False,
         help="Set log level.",
     ),
+    color: bool | None = typer.Option(
+        None,
+        "--color/--no-color",
+        help="Force colored log output on or off (default: auto - terminal is a TTY).",
+    ),
     mode: Mode = typer.Option(  # noqa: ARG001
         Mode.STRICT,
         "--mode",
         help="Treat input requirements violations as errors or warnings (may affect SBOM accuracy).",
     ),
 ) -> None:
-    setup_logging(log_level)
+    setup_logging(log_level, color=color)
     if config_file:
         config = set_config(config_file)
     else:
