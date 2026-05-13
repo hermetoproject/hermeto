@@ -28,7 +28,7 @@ from hermeto.core.resolver import (
     resolve_packages,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.interface.logging import LogLevel, setup_logging
+from hermeto.interface.logging import ColorMode, LogLevel, setup_logging
 
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 log = logging.getLogger(__name__)
@@ -184,13 +184,19 @@ def main(  # noqa: D103 -- docstring becomes part of --help message
         case_sensitive=False,
         help="Set log level.",
     ),
+    log_color: ColorMode = typer.Option(
+        ColorMode.AUTO.value,
+        "--log-color",
+        case_sensitive=False,
+        help="Control colored log output (auto, on, off).",
+    ),
     mode: Mode = typer.Option(  # noqa: ARG001
         Mode.STRICT,
         "--mode",
         help="Treat input requirements violations as errors or warnings (may affect SBOM accuracy).",
     ),
 ) -> None:
-    setup_logging(log_level)
+    setup_logging(log_level, color_mode=log_color)
     if config_file:
         config = set_config(config_file)
     else:
