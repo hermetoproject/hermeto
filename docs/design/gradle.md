@@ -27,7 +27,7 @@ procedure:
 
 1. **Enable version locking**: there are two mechanisms that must be set to [lock versions](https://docs.gradle.org/current/userguide/dependency_locking.html)
    for dependencies as well as plugins.
-   - `buildscript`: the configuration classpath must be set to activate locking. This must be done
+   - `buildscript`: Set the configuration classpath to activate locking. This must be done
      after all `import` statements and before any `plugin` declaration in the `build.gradle[.kts]` file.
      Adding this block will lock versions for all plugins (and their dependencies).
 
@@ -43,7 +43,7 @@ procedure:
      }
      ```
 
-    - `dependencyLocking`: this should be applied before the `dependencies` declaration in the
+    - `dependencyLocking`: Apply this before the `dependencies` declaration in the
       `build.[gradle|kts]` file.
     
     ```groovy
