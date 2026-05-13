@@ -238,6 +238,7 @@ def _download_pypi_packages(
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
+    index_url: str,
 ) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
     if files:
@@ -260,7 +261,7 @@ def _download_pypi_packages(
             missing_req_file_checksum=missing_req_file_checksum,
             package_type=dpi.package_type,
             version=dpi.version,
-            index_url=dpi.index_url,
+            index_url=index_url,
         )
         log.debug(
             "Successfully processed '%s' in path '%s'",
@@ -375,16 +376,22 @@ def _resolve_and_download_pypi_packages(
     index_url: str,
 ) -> list[PyPIPackage]:
     """Resolve and download all PyPI packages."""
+    config = get_config()
+    proxy_url = str(config.pip.proxy_url) if config.pip.proxy_url is not None else None
+    query_url = proxy_url if proxy_url is not None else index_url
+
     resolve_callback = functools.partial(
         process_package_distributions,
         pip_deps_dir=pip_deps_dir,
         binary_filters=binary_filters,
-        index_url=index_url,
+        index_url=query_url,
     )
     pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
     reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
     pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
-    return _download_pypi_packages(requirements_file, pip_deps_dir, pypi_artifacts)
+    return _download_pypi_packages(
+        requirements_file, pip_deps_dir, pypi_artifacts, index_url=index_url
+    )
 
 
 def _download_dependencies(

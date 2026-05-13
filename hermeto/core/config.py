@@ -120,7 +120,7 @@ class ProxyMixin(BaseModel):
         return self
 
 
-class PipSettings(BaseModel, extra="forbid"):
+class PipSettings(ProxyMixin, extra="forbid"):
     """Settings for Pip."""
 
     # This setting exists for legacy use-cases only and must not be relied upon

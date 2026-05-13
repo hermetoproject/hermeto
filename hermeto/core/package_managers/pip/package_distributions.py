@@ -39,7 +39,6 @@ class DistributionPackageInfo:
     package_type: Literal["sdist", "wheel"]
     path: Path
     url: str
-    index_url: str
     is_yanked: bool
 
     # PyPi only returns a single checksum for a given download artifact
@@ -214,7 +213,6 @@ def process_package_distributions(
             cast(Literal["sdist", "wheel"], package.package_type),
             pip_deps_dir.join_within_root(package.filename).path,
             package.url,
-            index_url,
             package.is_yanked,
             pypi_checksums,
             req_file_checksums,

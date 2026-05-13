@@ -6,7 +6,6 @@ from textwrap import dedent
 from typing import Any, Literal
 from unittest import mock
 
-import pypi_simple
 import pytest
 from git import Repo
 
@@ -40,7 +39,6 @@ def mock_distribution_package_info(
     package_type: Literal["sdist", "wheel"] = "sdist",
     path: Path = Path(""),
     url: str = "",
-    index_url: str = pypi_simple.PYPI_SIMPLE_ENDPOINT,
     is_yanked: bool = False,
     pypi_checksum: Collection[ChecksumInfo] = (),
     req_file_checksums: Collection[ChecksumInfo] = (),
@@ -51,7 +49,6 @@ def mock_distribution_package_info(
         package_type=package_type,
         path=path,
         url=url,
-        index_url=index_url,
         is_yanked=is_yanked,
         pypi_checksums=set(pypi_checksum),
         req_file_checksums=set(req_file_checksums),
