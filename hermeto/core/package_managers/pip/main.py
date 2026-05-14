@@ -275,63 +275,17 @@ def _get_pip_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
     return name, version
 
 
-def _process_req(
-    req: PipRequirement,
-    requirements_file: PipRequirementsFile,
-    pip_deps_dir: RootedPath,
-    download_info: dict[str, Any],
-    dpi: DistributionPackageInfo | None = None,
-) -> dict[str, Any] | None:
-    download_info["kind"] = req.kind
-    download_info["requirement_file"] = str(requirements_file.file_path.subpath_from_root)
-    download_info["missing_req_file_checksum"] = True
-    download_info["package_type"] = ""
-
-    def _checksum_must_match_or_path_unlink(
-        path: Path, checksum_info: Iterable[ChecksumInfo]
-    ) -> bool:
-        try:
-            # returns None, raises PackageRejected on failure
-            must_match_any_checksum(path, checksum_info)
-            return True
-        except PackageRejected:
-            path.unlink(missing_ok=True)
-            log.warning("Download '%s' was removed from the output directory", path.name)
-            return False
-
-    if dpi:
-        if dpi.req_file_checksums:
-            download_info["missing_req_file_checksum"] = False
-        if dpi.checksums_to_match:
-            if not _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match):
-                return None
-        if dpi.package_type == "sdist":
-            _check_metadata_in_sdist(dpi.path)
-        download_info["package_type"] = dpi.package_type
-        download_info["index_url"] = dpi.index_url
-    elif req.kind == "vcs":
-        # `missing_req_file_checksum` is *always* True for VCS deps
-        pass
-    else:
-        if req.kind == "url":
-            hashes = req.hashes
-            if hashes:
-                download_info["missing_req_file_checksum"] = False
-                if not _checksum_must_match_or_path_unlink(
-                    download_info["path"], list(map(ChecksumInfo.from_hash, hashes))
-                ):
-                    return None
-
-    log.debug(
-        "Successfully processed '%s' in path '%s'",
-        req.download_line,
-        download_info["path"].relative_to(pip_deps_dir.root),
-    )
-
-    return download_info
+def _checksum_must_match_or_path_unlink(path: Path, checksum_info: Iterable[ChecksumInfo]) -> bool:
+    try:
+        must_match_any_checksum(path, checksum_info)
+        return True
+    except PackageRejected:
+        path.unlink(missing_ok=True)
+        log.warning("Download '%s' was removed from the output directory", path.name)
+        return False
 
 
-def _process_pypi_reqs(
+def _download_pypi_packages(
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
@@ -341,42 +295,119 @@ def _process_pypi_reqs(
         log.info("Downloading %d PyPI artifacts", len(files))
         asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
-    download_infos = []
+    result: list[dict[str, Any]] = []
     for req, dpi in pypi_artifacts:
-        res = _process_req(req, requirements_file, pip_deps_dir, dpi.download_info, dpi=dpi)
-        if res is not None:
-            download_infos.append(res)
+        missing_req_file_checksum = not bool(dpi.req_file_checksums)
+        if dpi.checksums_to_match:
+            if not _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match):
+                continue
+        if dpi.package_type == "sdist":
+            _check_metadata_in_sdist(dpi.path)
 
-    return download_infos
-
-
-def _process_vcs_req(
-    req: PipRequirement, pip_deps_dir: RootedPath, **kwargs: Any
-) -> dict[str, Any] | None:
-    return _process_req(
-        req,
-        pip_deps_dir=pip_deps_dir,
-        download_info=_download_vcs_package(req, pip_deps_dir),
-        **kwargs,
-    )
-
-
-def _process_url_req(
-    req: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str], **kwargs: Any
-) -> dict[str, Any] | None:
-    result = _process_req(
-        req,
-        pip_deps_dir=pip_deps_dir,
-        download_info=_download_url_package(req, pip_deps_dir, trusted_hosts),
-        **kwargs,
-    )
-    if result is None:
-        return None
-    parsed_url = urlparse.urlparse(req.url)
-    if parsed_url.path.endswith(WHEEL_FILE_EXTENSION):
-        result["package_type"] = "wheel"
-
+        download_info: dict[str, Any] = {
+            "package": dpi.name,
+            "path": dpi.path,
+            "kind": "pypi",
+            "requirement_file": str(requirements_file.file_path.subpath_from_root),
+            "missing_req_file_checksum": missing_req_file_checksum,
+            "package_type": dpi.package_type,
+            "version": dpi.version,
+            "index_url": dpi.index_url,
+        }
+        log.debug(
+            "Successfully processed '%s' in path '%s'",
+            req.download_line,
+            download_info["path"].relative_to(pip_deps_dir.root),
+        )
+        result.append(download_info)
     return result
+
+
+def _download_vcs_package(
+    req: PipRequirement,
+    requirements_file: PipRequirementsFile,
+    pip_deps_dir: RootedPath,
+) -> dict[str, Any]:
+    """Fetch a Python package from VCS (only git is supported)."""
+    git_info = extract_git_info(req.url)
+
+    download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(req))
+    download_to.path.parent.mkdir(exist_ok=True, parents=True)
+
+    clone_as_tarball(git_info["url"], git_info["ref"], to_path=download_to.path)
+
+    download_info: dict[str, Any] = {
+        "package": req.package,
+        "path": download_to.path,
+        "kind": "vcs",
+        "requirement_file": str(requirements_file.file_path.subpath_from_root),
+        "missing_req_file_checksum": True,
+        "package_type": "",
+        **git_info,
+    }
+    log.debug(
+        "Successfully processed '%s' in path '%s'",
+        req.download_line,
+        download_info["path"].relative_to(pip_deps_dir.root),
+    )
+    return download_info
+
+
+def _download_url_package(
+    req: PipRequirement,
+    requirements_file: PipRequirementsFile,
+    pip_deps_dir: RootedPath,
+    trusted_hosts: set[str],
+) -> dict[str, Any] | None:
+    """Download a Python package from a URL.
+
+    :param trusted_hosts: if host (or host:port) is trusted, do not verify SSL
+    """
+    parsed_url = urlparse.urlparse(req.url)
+
+    download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(req))
+    download_to.path.parent.mkdir(exist_ok=True, parents=True)
+
+    if parsed_url.port is not None and f"{parsed_url.hostname}:{parsed_url.port}" in trusted_hosts:
+        log.debug(
+            "Disabling SSL verification, %s:%s is a --trusted-host",
+            parsed_url.hostname,
+            parsed_url.port,
+        )
+        insecure = True
+    elif parsed_url.hostname in trusted_hosts:
+        log.debug("Disabling SSL verification, %s is a --trusted-host", parsed_url.hostname)
+        insecure = True
+    else:
+        insecure = False
+
+    download_binary_file(req.url, download_to.path, insecure=insecure)
+
+    hashes = req.hashes
+    missing_req_file_checksum = True
+    if hashes:
+        missing_req_file_checksum = False
+        if not _checksum_must_match_or_path_unlink(
+            download_to.path, list(map(ChecksumInfo.from_hash, hashes))
+        ):
+            return None
+
+    download_info: dict[str, Any] = {
+        "package": req.package,
+        "path": download_to.path,
+        "kind": "url",
+        "requirement_file": str(requirements_file.file_path.subpath_from_root),
+        "missing_req_file_checksum": missing_req_file_checksum,
+        "package_type": "wheel" if parsed_url.path.endswith(WHEEL_FILE_EXTENSION) else "",
+        "original_url": req.url,
+        "checksum": req.hashes[0],
+    }
+    log.debug(
+        "Successfully processed '%s' in path '%s'",
+        req.download_line,
+        download_info["path"].relative_to(pip_deps_dir.root),
+    )
+    return download_info
 
 
 async def _resolve_pypi_distributions(
@@ -433,19 +464,10 @@ def _download_dependencies(
             pypi_reqs.append(req)
             continue
         elif req.kind == "vcs":
-            download_info = _process_vcs_req(
-                req,
-                requirements_file=requirements_file,
-                pip_deps_dir=pip_deps_dir,
-            )
-            if download_info is not None:
-                processed.append(download_info)
+            processed.append(_download_vcs_package(req, requirements_file, pip_deps_dir))
         elif req.kind == "url":
-            download_info = _process_url_req(
-                req,
-                requirements_file=requirements_file,
-                pip_deps_dir=pip_deps_dir,
-                trusted_hosts=trusted_hosts,
+            download_info = _download_url_package(
+                req, requirements_file, pip_deps_dir, trusted_hosts
             )
             if download_info is not None:
                 processed.append(download_info)
@@ -466,68 +488,9 @@ def _download_dependencies(
         pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
         reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
         pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
-        processed.extend(_process_pypi_reqs(requirements_file, pip_deps_dir, pypi_artifacts))
+        processed.extend(_download_pypi_packages(requirements_file, pip_deps_dir, pypi_artifacts))
 
     return processed
-
-
-def _download_vcs_package(requirement: PipRequirement, pip_deps_dir: RootedPath) -> dict[str, Any]:
-    """
-    Fetch the source for a Python package from VCS (only git is supported).
-
-    :param PipRequirement requirement: VCS requirement from a requirements.txt file
-    :param RootedPath pip_deps_dir: The deps/pip directory in an application request bundle
-
-    :return: Dict with package name, download path and git info
-    """
-    git_info = extract_git_info(requirement.url)
-
-    download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(requirement))
-    download_to.path.parent.mkdir(exist_ok=True, parents=True)
-
-    clone_as_tarball(git_info["url"], git_info["ref"], to_path=download_to.path)
-
-    return {
-        "package": requirement.package,
-        "path": download_to.path,
-        **git_info,
-    }
-
-
-def _download_url_package(
-    requirement: PipRequirement, pip_deps_dir: RootedPath, trusted_hosts: set[str]
-) -> dict[str, Any]:
-    """
-    Download a Python package from a URL.
-
-    :param PipRequirement requirement: URL requirement from a requirements.txt file
-    :param RootedPath pip_deps_dir: The deps/pip directory in an application request bundle
-    :param set[str] trusted_hosts: If host (or host:port) is trusted, do not verify SSL
-
-    :return: Dict with package name, download path, original URL and URL with hash
-    """
-    url = urlparse.urlparse(requirement.url)
-
-    download_to = pip_deps_dir.join_within_root(_get_external_requirement_filepath(requirement))
-    download_to.path.parent.mkdir(exist_ok=True, parents=True)
-
-    if url.port is not None and f"{url.hostname}:{url.port}" in trusted_hosts:
-        log.debug("Disabling SSL verification, %s:%s is a --trusted-host", url.hostname, url.port)
-        insecure = True
-    elif url.hostname in trusted_hosts:
-        log.debug("Disabling SSL verification, %s is a --trusted-host", url.hostname)
-        insecure = True
-    else:
-        insecure = False
-
-    download_binary_file(requirement.url, download_to.path, insecure=insecure)
-
-    return {
-        "package": requirement.package,
-        "path": download_to.path,
-        "original_url": requirement.url,
-        "checksum": requirement.hashes[0],
-    }
 
 
 def _download_from_requirement_files(

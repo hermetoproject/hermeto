@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pypi_simple
 import requests
@@ -84,15 +84,6 @@ class DistributionPackageInfo:
             or len(self.pypi_checksums) == 0
             or len(self.req_file_checksums) == 0
         )
-
-    @property
-    def download_info(self) -> dict[str, Any]:
-        """Only necessary attributes to process download information."""
-        return {
-            "package": self.name,
-            "version": self.version,
-            "path": self.path,
-        }
 
 
 def _sdist_preference(sdist_pkg: DistributionPackageInfo) -> tuple[int, int]:

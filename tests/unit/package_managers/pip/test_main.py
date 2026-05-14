@@ -227,12 +227,17 @@ class TestDownload:
         vcs_url = f"git+https://github.com/spam/eggs@{GIT_REF}"
 
         req = mock_requirement("eggs", "vcs", url=vcs_url, download_line=f"eggs @ {vcs_url}")
+        req_file = mock_requirements_file(requirements=[req])
 
-        download_info = pip._download_vcs_package(req, rooted_tmp_path)
+        download_info = pip._download_vcs_package(req, req_file, rooted_tmp_path)
 
         assert download_info == {
             "package": "eggs",
             "path": rooted_tmp_path.join_within_root(f"eggs-gitcommit-{GIT_REF}.tar.gz").path,
+            "kind": "vcs",
+            "requirement_file": str(req_file.file_path.subpath_from_root),
+            "missing_req_file_checksum": True,
+            "package_type": "",
             "url": "https://github.com/spam/eggs",
             "ref": GIT_REF,
             "namespace": "spam",
@@ -240,10 +245,8 @@ class TestDownload:
             "host": "github.com",
         }
 
-        download_path = download_info["path"]
-
         mock_clone_as_tarball.assert_called_once_with(
-            "https://github.com/spam/eggs", GIT_REF, to_path=download_path
+            "https://github.com/spam/eggs", GIT_REF, to_path=download_info["path"]
         )
 
     @pytest.mark.parametrize(
@@ -258,10 +261,15 @@ class TestDownload:
             ("example.org:443", ["example.org"], True),
         ],
     )
+    @mock.patch(
+        "hermeto.core.package_managers.pip.main._checksum_must_match_or_path_unlink",
+        return_value=True,
+    )
     @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
     def test_download_url_package(
         self,
         mock_download_file: Any,
+        mock_checksum: Any,
         host_in_url: bool,
         trusted_hosts: list[str],
         host_is_trusted: bool,
@@ -277,9 +285,11 @@ class TestDownload:
             download_line=f"foo @ {original_url}",
             hashes=["sha256:abcdef"],
         )
+        req_file = mock_requirements_file(requirements=[req])
 
         download_info = pip._download_url_package(
             req,
+            req_file,
             rooted_tmp_path,
             set(trusted_hosts),
         )
@@ -287,14 +297,53 @@ class TestDownload:
         assert download_info == {
             "package": "foo",
             "path": rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path,
+            "kind": "url",
+            "requirement_file": str(req_file.file_path.subpath_from_root),
+            "missing_req_file_checksum": False,
+            "package_type": "",
             "original_url": original_url,
             "checksum": "sha256:abcdef",
         }
 
-        download_path = download_info["path"]
         mock_download_file.assert_called_once_with(
-            original_url, download_path, insecure=host_is_trusted
+            original_url, download_info["path"], insecure=host_is_trusted
         )
+
+    @pytest.mark.parametrize(
+        "url_path, expected_type",
+        [
+            pytest.param("/pkg-1.0-py3-none-any.whl", "wheel", id="wheel"),
+            pytest.param("/pkg-1.0-py3-none-any.whl#sha256=abc", "wheel", id="wheel_with_fragment"),
+            pytest.param(
+                "/pkg-1.0-py3-none-any.whl?v=1#sha256=abc", "wheel", id="wheel_with_query"
+            ),
+            pytest.param("/pkg-1.0.tar.gz", "", id="sdist"),
+        ],
+    )
+    @mock.patch(
+        "hermeto.core.package_managers.pip.main._checksum_must_match_or_path_unlink",
+        return_value=True,
+    )
+    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
+    def test_download_url_package_identifies_wheel_from_url(
+        self,
+        mock_download_file: Any,
+        mock_checksum: Any,
+        url_path: str,
+        expected_type: str,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Wheel detection works even when the URL contains fragments or query strings."""
+        url = f"https://example.org{url_path}"
+        req = mock_requirement(
+            "foo", "url", url=url, download_line=f"foo @ {url}", hashes=["sha256:abcdef"]
+        )
+        req_file = mock_requirements_file(requirements=[req])
+
+        result = pip._download_url_package(req, req_file, rooted_tmp_path, set())
+
+        assert result is not None
+        assert result["package_type"] == expected_type
 
     def test_ignored_and_rejected_options(self, caplog: pytest.LogCaptureFixture) -> None:
         """
@@ -958,30 +1007,3 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
 
     with pytest.raises(PackageWithCorruptLockfileRejected):
         pip.fetch_pip_source(request)
-
-
-@pytest.mark.parametrize(
-    ("test_url", "expected_type"),
-    [
-        ("https://example.com/pkg-1.0-py3-none-any.whl", "wheel"),
-        ("https://example.com/pkg-1.0-py3-none-any.whl#sha256=08695f5ad7", "wheel"),
-        ("https://example.com/pkg-1.0-py3-none-any.whl?v=1.0#sha256=08695f5ad7", "wheel"),
-        ("https://example.com/pkg-1.0.tar.gz", ""),
-        ("https://example.com/pkg-1.0.tar.gz#sha256=08695f5ad7", ""),
-        ("https://example.com/pkg-1.0.tar.gz?v=1.0#sha256=08695f5ad7", ""),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.pip.main._download_url_package")
-@mock.patch("hermeto.core.package_managers.pip.main._process_req")
-def test_process_url_req(
-    mock_process_req: mock.Mock,
-    mock_download_url_package: mock.Mock,
-    test_url: str,
-    expected_type: str,
-) -> None:
-    """Ensure wheel packages are correctly identified even with URL fragments."""
-    req = mock_requirement("pkg", "url", url=test_url)
-    mock_process_req.return_value = {"package_type": ""}
-    result = pip._process_url_req(req, pip_deps_dir=mock.Mock(), trusted_hosts=set())
-    assert result is not None
-    assert result.get("package_type") == expected_type
