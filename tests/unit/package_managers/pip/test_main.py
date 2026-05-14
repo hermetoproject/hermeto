@@ -27,6 +27,7 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
+from hermeto.core.package_managers.pip.packages import PipPackageInfo, URLPackage, VCSPackage
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -229,24 +230,21 @@ class TestDownload:
         req = mock_requirement("eggs", "vcs", url=vcs_url, download_line=f"eggs @ {vcs_url}")
         req_file = mock_requirements_file(requirements=[req])
 
-        download_info = pip._download_vcs_package(req, req_file, rooted_tmp_path)
+        result = pip._download_vcs_package(req, req_file, rooted_tmp_path)
 
-        assert download_info == {
-            "package": "eggs",
-            "path": rooted_tmp_path.join_within_root(f"eggs-gitcommit-{GIT_REF}.tar.gz").path,
-            "kind": "vcs",
-            "requirement_file": str(req_file.file_path.subpath_from_root),
-            "missing_req_file_checksum": True,
-            "package_type": "",
-            "url": "https://github.com/spam/eggs",
-            "ref": GIT_REF,
-            "namespace": "spam",
-            "repo": "eggs",
-            "host": "github.com",
-        }
+        assert isinstance(result, VCSPackage)
+        assert result.name == "eggs"
+        assert (
+            result.path == rooted_tmp_path.join_within_root(f"eggs-gitcommit-{GIT_REF}.tar.gz").path
+        )
+        assert result.requirement_file == str(req_file.file_path.subpath_from_root)
+        assert result.missing_req_file_checksum is True
+        assert result.package_type == ""
+        assert result.url == "https://github.com/spam/eggs"
+        assert result.ref == GIT_REF
 
         mock_clone_as_tarball.assert_called_once_with(
-            "https://github.com/spam/eggs", GIT_REF, to_path=download_info["path"]
+            "https://github.com/spam/eggs", GIT_REF, to_path=result.path
         )
 
     @pytest.mark.parametrize(
@@ -287,26 +285,24 @@ class TestDownload:
         )
         req_file = mock_requirements_file(requirements=[req])
 
-        download_info = pip._download_url_package(
+        result = pip._download_url_package(
             req,
             req_file,
             rooted_tmp_path,
             set(trusted_hosts),
         )
 
-        assert download_info == {
-            "package": "foo",
-            "path": rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path,
-            "kind": "url",
-            "requirement_file": str(req_file.file_path.subpath_from_root),
-            "missing_req_file_checksum": False,
-            "package_type": "",
-            "original_url": original_url,
-            "checksum": "sha256:abcdef",
-        }
+        assert isinstance(result, URLPackage)
+        assert result.name == "foo"
+        assert result.path == rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path
+        assert result.requirement_file == str(req_file.file_path.subpath_from_root)
+        assert result.missing_req_file_checksum is False
+        assert result.package_type == ""
+        assert result.original_url == original_url
+        assert result.checksum == "sha256:abcdef"
 
         mock_download_file.assert_called_once_with(
-            original_url, download_info["path"], insecure=host_is_trusted
+            original_url, result.path, insecure=host_is_trusted
         )
 
     @pytest.mark.parametrize(
@@ -342,8 +338,8 @@ class TestDownload:
 
         result = pip._download_url_package(req, req_file, rooted_tmp_path, set())
 
-        assert result is not None
-        assert result["package_type"] == expected_type
+        assert isinstance(result, URLPackage)
+        assert result.package_type == expected_type
 
     def test_ignored_and_rejected_options(self, caplog: pytest.LogCaptureFixture) -> None:
         """
@@ -764,80 +760,6 @@ def test_replace_external_requirements(
 
 
 @pytest.mark.parametrize(
-    "dependency, expected_purl",
-    [
-        (
-            {
-                "name": "pypi_package",
-                "version": "1.0.0",
-                "type": "pip",
-                "dev": False,
-                "kind": "pypi",
-                "index_url": pypi_simple.PYPI_SIMPLE_ENDPOINT,
-            },
-            "pkg:pypi/pypi-package@1.0.0",
-        ),
-        (
-            {
-                "name": "mypypi_package",
-                "version": "2.0.0",
-                "type": "pip",
-                "dev": False,
-                "kind": "pypi",
-                "index_url": CUSTOM_PYPI_ENDPOINT,
-            },
-            f"pkg:pypi/mypypi-package@2.0.0?repository_url={CUSTOM_PYPI_ENDPOINT}",
-        ),
-        (
-            {
-                "name": "git_dependency",
-                "version": f"git+https://github.com/my-org/git_dependency@{'a' * 40}",
-                "type": "pip",
-                "dev": False,
-                "kind": "vcs",
-            },
-            f"pkg:pypi/git-dependency?vcs_url=git%2Bhttps://github.com/my-org/git_dependency%40{'a' * 40}",
-        ),
-        (
-            {
-                "name": "Git_dependency",
-                "version": f"git+file:///github.com/my-org/git_dependency@{'a' * 40}",
-                "type": "pip",
-                "dev": False,
-                "kind": "vcs",
-            },
-            f"pkg:pypi/git-dependency?vcs_url=git%2Bfile:///github.com/my-org/git_dependency%40{'a' * 40}",
-        ),
-        (
-            {
-                "name": "git_dependency",
-                "version": f"git+ssh://git@github.com/my-org/git_dependency@{'a' * 40}",
-                "type": "pip",
-                "dev": False,
-                "kind": "vcs",
-            },
-            f"pkg:pypi/git-dependency?vcs_url=git%2Bssh://git%40github.com/my-org/git_dependency%40{'a' * 40}",
-        ),
-        (
-            {
-                "name": "https_dependency",
-                "version": f"https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz",
-                "type": "pip",
-                "dev": False,
-                "kind": "url",
-                "checksum": "sha256:de526c1",
-            },
-            f"pkg:pypi/https-dependency?checksum=sha256:de526c1&download_url=https://github.com/my-org/https_dependency/{'a' * 40}/file.tar.gz",
-        ),
-    ],
-)
-def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: str) -> None:
-    purl = pip._generate_purl_dependency(dependency)
-
-    assert purl == expected_purl
-
-
-@pytest.mark.parametrize(
     "subpath, expected_purl",
     [
         (
@@ -854,7 +776,14 @@ def test_generate_purl_dependencies(dependency: dict[str, Any], expected_purl: s
 def test_generate_purl_main_package(
     mock_git_repo: Any, subpath: Path, expected_purl: str, rooted_tmp_path: RootedPath
 ) -> None:
-    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+    package = PipPackageInfo(
+        name="foo",
+        version="1.0.0",
+        requires=[],
+        build_requires=[],
+        requirements=[],
+        packages_containing_rust_code=[],
+    )
 
     mocked_repo = mock.Mock()
     mocked_repo.remote.return_value.url = "ssh://git@github.com/my-org/my-repo"
@@ -890,7 +819,14 @@ def test_generate_purl_main_package_permissive_mode_without_vcs_url(
 ) -> None:
     mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
     mock_get_config.return_value.mode = Mode.PERMISSIVE
-    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+    package = PipPackageInfo(
+        name="foo",
+        version="1.0.0",
+        requires=[],
+        build_requires=[],
+        requirements=[],
+        packages_containing_rust_code=[],
+    )
 
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
 
@@ -906,7 +842,14 @@ def test_generate_purl_main_package_strict_mode_raises_without_git_repo(
 ) -> None:
     mock_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
     mock_get_config.return_value.mode = Mode.STRICT
-    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+    package = PipPackageInfo(
+        name="foo",
+        version="1.0.0",
+        requires=[],
+        build_requires=[],
+        requirements=[],
+        packages_containing_rust_code=[],
+    )
 
     with pytest.raises(NotAGitRepo):
         pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root("."))
@@ -942,7 +885,14 @@ def test_generate_purl_main_package_permissive_mode_with_vcs_url(
     mock_git_repo.return_value = mocked_repo
 
     mock_get_config.return_value.mode = Mode.PERMISSIVE
-    package = {"name": "foo", "version": "1.0.0", "type": "pip"}
+    package = PipPackageInfo(
+        name="foo",
+        version="1.0.0",
+        requires=[],
+        build_requires=[],
+        requirements=[],
+        packages_containing_rust_code=[],
+    )
 
     purl = pip._generate_purl_main_package(package, rooted_tmp_path.join_within_root(subpath))
 
@@ -991,12 +941,14 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
     )
     mock_verify_lockfile_present.return_value = None
 
-    resolved = {
-        "package": {"name": "foo", "version": "1.0", "type": "pip"},
-        "dependencies": [],
-        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
-        "requirements": [],
-    }
+    resolved = PipPackageInfo(
+        name="foo",
+        version="1.0",
+        requires=[],
+        build_requires=[],
+        requirements=[],
+        packages_containing_rust_code=[CargoPackageInput(type="cargo", path=".")],
+    )
 
     mock_resolve_pip.return_value = resolved
 

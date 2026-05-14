@@ -5,13 +5,13 @@ import logging
 import shutil
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
 
 import tomlkit
 
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.package_managers.cargo import fetch_cargo_source
+from hermeto.core.package_managers.pip.packages import PipPackage
 from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
 from hermeto.core.package_managers.pip.requirements import WHEEL_FILE_EXTENSION
 from hermeto.core.rooted_path import RootedPath
@@ -67,25 +67,24 @@ def _get_rust_root_dir(source_dir: Path) -> Path | None:
     return None
 
 
-def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[CargoPackageInput]:
+def filter_packages_with_rust_code(packages: list[PipPackage]) -> list[CargoPackageInput]:
     """Filter packages that contain Rust code from a list of pip packages."""
     packages_containing_rust_code = []
 
     for p in packages:
         # File name and package name may differ e.g. when there is a hyphen in
         # package name it might be replaced by an underscore in a file name.
-        package_path: Path | None = p.get("path")
-        if package_path is None or package_path.suffix == WHEEL_FILE_EXTENSION:
+        if p.path.suffix == WHEEL_FILE_EXTENSION:
             continue
 
-        filename = Path(package_path.name)
+        filename = Path(p.path.name)
         extract_filter = "data" if filename.suffix != ".zip" else None
         while filename.suffix in (".zip", ".tar", ".gz", ".tgz"):
             filename = filename.with_suffix("")
 
-        pip_deps_dir = package_path.parent
+        pip_deps_dir = p.path.parent
         extract_dir = pip_deps_dir / filename
-        shutil.unpack_archive(package_path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
+        shutil.unpack_archive(p.path, extract_dir=extract_dir, filter=extract_filter)  # type: ignore[arg-type]
 
         # The unpacked URL/VCS package may have an arbitrary directory name that we cannot control.
         # Therefore, it is inside a predictable directory derived from the package name.

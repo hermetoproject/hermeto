@@ -19,7 +19,6 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
-from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.general import (
     async_download_files,
@@ -30,6 +29,13 @@ from hermeto.core.package_managers.general import (
 from hermeto.core.package_managers.pip.package_distributions import (
     DistributionPackageInfo,
     process_package_distributions,
+)
+from hermeto.core.package_managers.pip.packages import (
+    PipPackage,
+    PipPackageInfo,
+    PyPIPackage,
+    URLPackage,
+    VCSPackage,
 )
 from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
 from hermeto.core.package_managers.pip.requirements import (
@@ -79,44 +85,18 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             package.requirements_build_files,
             package.binary,
         )
-        purl = _generate_purl_main_package(info["package"], package_path)
-        components.append(
-            Component(name=info["package"]["name"], version=info["package"]["version"], purl=purl)
-        )
+        purl = _generate_purl_main_package(info, package_path)
+        components.append(Component(name=info.name, version=info.version, purl=purl))
 
-        for dependency in info["dependencies"]:
-            purl = _generate_purl_dependency(dependency)
-            version = dependency["version"] if dependency["kind"] == "pypi" else None
+        for dep in info.requires:
+            components.append(dep.to_component(build_dependency=False))
+        for dep in info.build_requires:
+            components.append(dep.to_component(build_dependency=True))
 
-            missing_hash_in_file: frozenset = frozenset()
-            if dependency["missing_req_file_checksum"]:
-                missing_hash_in_file = frozenset({dependency["requirement_file"]})
-
-            pip_package_binary = False
-            if dependency["package_type"] == "wheel":
-                pip_package_binary = True
-
-            pip_build_dependency = False
-            if dependency["build_dependency"] is True:
-                pip_build_dependency = True
-
-            components.append(
-                Component(
-                    name=dependency["name"],
-                    version=version,
-                    purl=purl,
-                    properties=PropertySet(
-                        missing_hash_in_file=missing_hash_in_file,
-                        pip_package_binary=pip_package_binary,
-                        pip_build_dependency=pip_build_dependency,
-                    ).to_properties(),
-                )
-            )
-
-        replaced_requirements_files = map(_replace_external_requirements, info["requirements"])
+        replaced_requirements_files = map(_replace_external_requirements, info.requirements)
         project_files.extend(filter(None, replaced_requirements_files))
         # each package can have Rust dependencies
-        packages_containing_rust_code += info["packages_containing_rust_code"]
+        packages_containing_rust_code += info.packages_containing_rust_code
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "pip"):
@@ -132,11 +112,11 @@ def fetch_pip_source(request: Request) -> RequestOutput:
     return pip_packages + cargo_packages
 
 
-def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPath) -> str:
+def _generate_purl_main_package(package: PipPackageInfo, package_path: RootedPath) -> str:
     """Get the purl for this package."""
     type = "pypi"
-    name = package["name"]
-    version = package["version"]
+    name = package.name
+    version = package.version
     try:
         qualifiers = get_vcs_qualifiers(package_path.root)
     except NotAGitRepo:
@@ -156,37 +136,6 @@ def _generate_purl_main_package(package: dict[str, Any], package_path: RootedPat
         version=version,
         qualifiers=qualifiers,
         subpath=subpath,
-    )
-
-    return purl.to_string()
-
-
-def _generate_purl_dependency(package: dict[str, Any]) -> str:
-    """Get the purl for this dependency."""
-    type = "pypi"
-    name = package["name"]
-    dependency_kind = package.get("kind", None)
-    version = None
-    qualifiers: dict[str, str] | None = None
-
-    if dependency_kind == "pypi":
-        version = package["version"]
-        index_url = package["index_url"]
-        if index_url.rstrip("/") != pypi_simple.PYPI_SIMPLE_ENDPOINT.rstrip("/"):
-            qualifiers = {"repository_url": index_url}
-    elif dependency_kind == "vcs":
-        qualifiers = {"vcs_url": package["version"]}
-    elif dependency_kind == "url":
-        qualifiers = {"download_url": package["version"], "checksum": package["checksum"]}
-    else:
-        # Should not happen
-        raise RuntimeError(f"Unexpected requirement kind: {dependency_kind}")
-
-    purl = PackageURL(
-        type=type,
-        name=name,
-        version=version,
-        qualifiers=qualifiers,
     )
 
     return purl.to_string()
@@ -289,13 +238,13 @@ def _download_pypi_packages(
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
-) -> list[dict[str, Any]]:
+) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
     if files:
         log.info("Downloading %d PyPI artifacts", len(files))
         asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
 
-    result: list[dict[str, Any]] = []
+    result: list[PyPIPackage] = []
     for req, dpi in pypi_artifacts:
         missing_req_file_checksum = not bool(dpi.req_file_checksums)
         if dpi.checksums_to_match:
@@ -304,22 +253,21 @@ def _download_pypi_packages(
         if dpi.package_type == "sdist":
             _check_metadata_in_sdist(dpi.path)
 
-        download_info: dict[str, Any] = {
-            "package": dpi.name,
-            "path": dpi.path,
-            "kind": "pypi",
-            "requirement_file": str(requirements_file.file_path.subpath_from_root),
-            "missing_req_file_checksum": missing_req_file_checksum,
-            "package_type": dpi.package_type,
-            "version": dpi.version,
-            "index_url": dpi.index_url,
-        }
+        dep = PyPIPackage(
+            name=dpi.name,
+            path=dpi.path,
+            requirement_file=str(requirements_file.file_path.subpath_from_root),
+            missing_req_file_checksum=missing_req_file_checksum,
+            package_type=dpi.package_type,
+            version=dpi.version,
+            index_url=dpi.index_url,
+        )
         log.debug(
             "Successfully processed '%s' in path '%s'",
             req.download_line,
-            download_info["path"].relative_to(pip_deps_dir.root),
+            dep.path.relative_to(pip_deps_dir.root),
         )
-        result.append(download_info)
+        result.append(dep)
     return result
 
 
@@ -327,7 +275,7 @@ def _download_vcs_package(
     req: PipRequirement,
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
-) -> dict[str, Any]:
+) -> VCSPackage:
     """Fetch a Python package from VCS (only git is supported)."""
     git_info = extract_git_info(req.url)
 
@@ -336,21 +284,21 @@ def _download_vcs_package(
 
     clone_as_tarball(git_info["url"], git_info["ref"], to_path=download_to.path)
 
-    download_info: dict[str, Any] = {
-        "package": req.package,
-        "path": download_to.path,
-        "kind": "vcs",
-        "requirement_file": str(requirements_file.file_path.subpath_from_root),
-        "missing_req_file_checksum": True,
-        "package_type": "",
-        **git_info,
-    }
+    dep = VCSPackage(
+        name=req.package,
+        path=download_to.path,
+        requirement_file=str(requirements_file.file_path.subpath_from_root),
+        missing_req_file_checksum=True,
+        package_type="",
+        url=git_info["url"],
+        ref=git_info["ref"],
+    )
     log.debug(
         "Successfully processed '%s' in path '%s'",
         req.download_line,
-        download_info["path"].relative_to(pip_deps_dir.root),
+        dep.path.relative_to(pip_deps_dir.root),
     )
-    return download_info
+    return dep
 
 
 def _download_url_package(
@@ -358,7 +306,7 @@ def _download_url_package(
     requirements_file: PipRequirementsFile,
     pip_deps_dir: RootedPath,
     trusted_hosts: set[str],
-) -> dict[str, Any] | None:
+) -> URLPackage | None:
     """Download a Python package from a URL.
 
     :param trusted_hosts: if host (or host:port) is trusted, do not verify SSL
@@ -392,22 +340,21 @@ def _download_url_package(
         ):
             return None
 
-    download_info: dict[str, Any] = {
-        "package": req.package,
-        "path": download_to.path,
-        "kind": "url",
-        "requirement_file": str(requirements_file.file_path.subpath_from_root),
-        "missing_req_file_checksum": missing_req_file_checksum,
-        "package_type": "wheel" if parsed_url.path.endswith(WHEEL_FILE_EXTENSION) else "",
-        "original_url": req.url,
-        "checksum": req.hashes[0],
-    }
+    dep = URLPackage(
+        name=req.package,
+        path=download_to.path,
+        requirement_file=str(requirements_file.file_path.subpath_from_root),
+        missing_req_file_checksum=missing_req_file_checksum,
+        package_type="wheel" if parsed_url.path.endswith(WHEEL_FILE_EXTENSION) else "",
+        original_url=req.url,
+        checksum=req.hashes[0],
+    )
     log.debug(
         "Successfully processed '%s' in path '%s'",
         req.download_line,
-        download_info["path"].relative_to(pip_deps_dir.root),
+        dep.path.relative_to(pip_deps_dir.root),
     )
-    return download_info
+    return dep
 
 
 async def _resolve_pypi_distributions(
@@ -424,20 +371,18 @@ def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
     binary_filters: PipBinaryFilters | None = None,
-) -> list[dict[str, Any]]:
+) -> list[PipPackage]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
 
     :param output_dir: the root output directory for this request
     :param requirements_file: A requirements.txt file
     :param binary_filters: process wheels?
-    :return: Info about downloaded packages; all items will contain "kind" and "path" keys
-        (and more based on kind, see _download_*_package functions for more details)
-    :rtype: list[dict]
+    :return: list of PipPackage instances for each downloaded package
     """
     options: dict[str, Any] = process_requirements_options(requirements_file.options)
     trusted_hosts = set(options["trusted_hosts"])
-    processed: list[dict[str, Any]] = []
+    processed: list[PipPackage] = []
 
     if options["require_hashes"]:
         log.info("Global --require-hashes option used, will require hashes")
@@ -497,18 +442,17 @@ def _download_from_requirement_files(
     output_dir: RootedPath,
     files: list[RootedPath],
     binary_filters: PipBinaryFilters | None = None,
-) -> list[dict[str, Any]]:
+) -> list[PipPackage]:
     """
     Download dependencies listed in the requirement files.
 
     :param output_dir: the root output directory for this request
     :param files: list of absolute paths to pip requirements files
     :param binary_filters: process wheels?
-    :return: Info about downloaded packages; see download_dependencies return docs for further
-        reference
+    :return: list of PipPackage instances for each downloaded package
     :raises PackageRejected: If requirement file does not exist
     """
-    requirements: list[dict[str, Any]] = []
+    requirements: list[PipPackage] = []
     for req_file in files:
         if not req_file.path.exists():
             raise LockfileNotFound(
@@ -541,23 +485,11 @@ def _resolve_pip(
     requirement_files: list[Path] | None = None,
     build_requirement_files: list[Path] | None = None,
     binary_filters: PipBinaryFilters | None = None,
-) -> dict[str, Any]:
-    """
-    Resolve and fetch pip dependencies for the given pip application.
+) -> PipPackageInfo:
+    """Resolve and fetch pip dependencies for the given pip application.
 
-    :param app_path: the full path to the application source code
-    :param output_dir: the root output directory for this request
-    :param list requirement_files: a list of str representing paths to the Python requirement files
-        to be used to compile a list of dependencies to be fetched
-    :param list build_requirement_files: a list of str representing paths to the Python build
-        requirement files to be used to compile a list of build dependencies to be fetched
-    :param binary_filters: process wheels?
-    :return: a dictionary that has the following keys:
-        ``package`` which is the dict representing the main Package,
-        ``dependencies`` which is a list of dicts representing the package Dependencies
-        ``requirements`` which is a list of absolute paths for the processed requirement files
     :raises PackageRejected | UnsupportedFeature: if the package is not compatible with our
-    requirements/expectations
+        requirements/expectations
     """
     pkg_name, pkg_version = _get_pip_metadata(package_path)
 
@@ -594,48 +526,20 @@ def _resolve_pip(
         output_dir, resolved_build_req_files, binary_filters
     )
 
+    all_deps = requires + build_requires
     if get_config().pip.ignore_dependencies_crates:
         packages_containing_rust_code = []
     else:
-        packages_containing_rust_code = filter_packages_with_rust_code(requires + build_requires)
+        packages_containing_rust_code = filter_packages_with_rust_code(all_deps)
 
-    # Mark all build dependencies as such
-    for dependency in build_requires:
-        dependency["build_dependency"] = True
-
-    def _version(dep: dict[str, Any]) -> str:
-        if dep["kind"] == "pypi":
-            version = dep["version"]
-        elif dep["kind"] == "vcs":
-            # Version is "git+" followed by the URL used to fetch from git
-            version = f"git+{dep['url']}@{dep['ref']}"
-        else:
-            # Version is the original URL for URL dependencies
-            version = dep["original_url"]
-        return version
-
-    dependencies = [
-        {
-            "name": dep["package"],
-            "version": _version(dep),
-            "checksum": dep.get("checksum"),
-            "index_url": dep.get("index_url"),
-            "type": "pip",
-            "build_dependency": dep.get("build_dependency", False),
-            "kind": dep["kind"],
-            "requirement_file": dep["requirement_file"],
-            "missing_req_file_checksum": dep["missing_req_file_checksum"],
-            "package_type": dep["package_type"],
-        }
-        for dep in (requires + build_requires)
-    ]
-
-    return {
-        "package": {"name": pkg_name, "version": pkg_version, "type": "pip"},
-        "dependencies": dependencies,
-        "requirements": [*resolved_req_files, *resolved_build_req_files],
-        "packages_containing_rust_code": packages_containing_rust_code,
-    }
+    return PipPackageInfo(
+        name=pkg_name,
+        version=pkg_version,
+        requires=requires,
+        build_requires=build_requires,
+        requirements=[*resolved_req_files, *resolved_build_req_files],
+        packages_containing_rust_code=packages_containing_rust_code,
+    )
 
 
 def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
