@@ -428,7 +428,7 @@ def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath)
              name=Packages unaffiliated with an official repository
              baseurl=file://{output_dir}/hermeto-repo
              gpgcheck=1
-             sslverify=False
+sslverify=True
              timeout=4
              """,
             id="dnf_repo_options",
