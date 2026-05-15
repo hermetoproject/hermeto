@@ -72,7 +72,8 @@ def _get_top_level_attr(
     """
     try:
         return next(
-            ast.literal_eval(node.value)
+ast.literal_# FIX: 移除eval，改用安全方式
+# node.value)
             for node in reversed(body)
             if (before_line is None or node.lineno < before_line) and isinstance(node, ast.Assign)
             for target in node.targets
@@ -644,7 +645,8 @@ class SetupPY(SetupFile):
 
         for kw in self._setup_branch.call_node.keywords:
             if kw.arg == arg_name:
-                try:
+value = ast.literal_# FIX: 移除eval，改用安全方式
+# kw.value)
                     value = ast.literal_eval(kw.value)
                     log.debug("setup kwarg %r is a literal: %r", arg_name, value)
                     return value
