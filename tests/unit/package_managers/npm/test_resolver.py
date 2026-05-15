@@ -647,17 +647,17 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
 def test_clone_repo_pack_archive(
     mock_clone_as_tarball: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
-    vcs = NormalizedUrl("git+ssh://bitbucket.org/cachi-testing/cachi2-without-deps.git#9e164b9")
+    vcs = NormalizedUrl("git+ssh://bitbucket.org/example-org/example-repo.git#9e164b9")
     download_path = _clone_repo_pack_archive(vcs, rooted_tmp_path)
     expected_path = rooted_tmp_path.join_within_root(
         "bitbucket.org",
-        "cachi-testing",
-        "cachi2-without-deps",
-        "cachi2-without-deps-external-gitcommit-9e164b9.tgz",
+        "example-org",
+        "example-repo",
+        "example-repo-external-gitcommit-9e164b9.tgz",
     )
     assert download_path.path.parent.is_dir()
     mock_clone_as_tarball.assert_called_once_with(
-        "ssh://bitbucket.org/cachi-testing/cachi2-without-deps.git", "9e164b9", expected_path.path
+        "ssh://bitbucket.org/example-org/example-repo.git", "9e164b9", expected_path.path
     )
 
 
@@ -896,9 +896,9 @@ def test_update_package_json_files(
                     "version": "2.0.0",
                     "integrity": "sha512-YOLO33333==",
                 },
-                "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": {
+                "git+ssh://git@bitbucket.org/example-org/example-repo-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": {
                     "version": "2.0.0",
-                    "name": "cachi2-without-deps-second",
+                    "name": "example-repo-second",
                 },
                 # Test short representation of git reference
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": {
@@ -914,7 +914,7 @@ def test_update_package_json_files(
             {
                 "https://github.com/hermetoproject/ms-1.0.0.tgz": "external-ms/ms-external-sha256-YOLO1111.tgz",
                 "https://github.com/hermetoproject/ms-2.0.0.tgz": "external-ms/ms-external-sha256-YOLO2222.tgz",
-                "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": "bitbucket.org/cachi-testing/cachi2-without-deps-second/cachi2-without-deps-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz",
+                "git+ssh://git@bitbucket.org/example-org/example-repo-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": "bitbucket.org/example-org/example-repo-second/example-repo-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz",
                 "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": "types-react-dom-18.0.11.tgz",
                 "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": "abbrev-2.0.0.tgz",
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": "github.com/kevva/is-positive/is-positive-external-gitcommit-97edff6f.tgz",
@@ -982,9 +982,9 @@ def test_npm_settings_rejects_proxy_urls_containing_credentials(
                     "version": "1.0.0",
                     "integrity": "completely-fake",
                 },
-                "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": {
+                "git+ssh://git@bitbucket.org/example-org/example-repo-second.git#09992d418fc44a2895b7a9ff27c4e32d6f74a982": {
                     "version": "2.0.0",
-                    "name": "cachi2-without-deps-second",
+                    "name": "example-repo-second",
                 },
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": {
                     "integrity": "completely-fake",

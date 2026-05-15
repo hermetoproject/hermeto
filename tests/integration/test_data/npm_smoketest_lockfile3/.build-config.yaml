@@ -45,8 +45,7 @@ project_files:
       },
       "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
-        "dateformat": "^5.0.3",
-        "bitbucket-cachi2-npm-without-deps": ""
+        "dateformat": "^5.0.3"
       }
     }
 - abspath: ${test_case_tmp_path}/eggs-packages/eggs/package.json
@@ -120,7 +119,6 @@ project_files:
           ],
           "dependencies": {
             "@types/react-dom": "^18.0.1",
-            "bitbucket-cachi2-npm-without-deps-second": "",
             "debug": "",
             "express": "^4.18.2",
             "fecha": "file:fecha-4.2.3.tgz",
@@ -141,7 +139,6 @@ project_files:
           "version": "1.0.0",
           "license": "ISC",
           "dependencies": {
-            "bitbucket-cachi2-npm-without-deps": "",
             "dateformat": "^5.0.3"
           }
         },
@@ -215,14 +212,6 @@ project_files:
         "node_modules/bar": {
           "resolved": "bar",
           "link": true
-        },
-        "node_modules/bitbucket-cachi2-npm-without-deps": {
-          "version": "1.0.0",
-          "resolved": "file://${output_dir}/deps/npm/bitbucket.org/cachi-testing/cachi2-without-deps/cachi2-without-deps-external-gitcommit-9e164b97043a2d91bbeb992f6cc68a3d1015086a.tgz"
-        },
-        "node_modules/bitbucket-cachi2-npm-without-deps-second": {
-          "version": "2.0.0",
-          "resolved": "file://${output_dir}/deps/npm/bitbucket.org/cachi-testing/cachi2-without-deps-second/cachi2-without-deps-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz"
         },
         "node_modules/body-parser": {
           "version": "1.20.1",
@@ -904,7 +893,6 @@ project_files:
         "sax": "0.1.1",
         "is-positive": "",
         "npm-without-deps": "",
-        "bitbucket-cachi2-npm-without-deps-second": "",
         "fecha": "file:fecha-4.2.3.tgz"
       }
     }

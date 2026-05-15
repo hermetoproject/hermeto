@@ -14,9 +14,7 @@
         "pkg:npm/abbrev@2.0.0",
         "pkg:npm/accepts@1.3.8",
         "pkg:npm/array-flatten@1.1.1",
-        "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#bar",
-        "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps-second.git%4009992d418fc44a2895b7a9ff27c4e32d6f74a982",
-        "pkg:npm/bitbucket-cachi2-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps.git%409e164b97043a2d91bbeb992f6cc68a3d1015086a",
+        "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#bar",
         "pkg:npm/body-parser@1.20.1",
         "pkg:npm/bytes@3.1.2",
         "pkg:npm/call-bind@1.0.2",
@@ -32,14 +30,14 @@
         "pkg:npm/depd@2.0.0",
         "pkg:npm/destroy@1.2.0",
         "pkg:npm/ee-first@1.1.1",
-        "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#eggs-packages/eggs",
+        "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#eggs-packages/eggs",
         "pkg:npm/encodeurl@1.0.2",
         "pkg:npm/escape-html@1.0.3",
         "pkg:npm/etag@1.8.1",
         "pkg:npm/express@4.18.2",
-        "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#fecha-4.2.3.tgz",
+        "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#fecha-4.2.3.tgz",
         "pkg:npm/finalhandler@1.2.0",
-        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#foo",
+        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#foo",
         "pkg:npm/forwarded@0.2.0",
         "pkg:npm/fresh@0.5.2",
         "pkg:npm/function-bind@1.1.1",
@@ -60,9 +58,9 @@
         "pkg:npm/ms@2.0.0",
         "pkg:npm/ms@2.1.3",
         "pkg:npm/negotiator@0.6.3",
-        "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#baz",
+        "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#baz",
         "pkg:npm/npm-without-deps@1.0.0?checksum=sha512:8c1abf64841a445eb384c5aa5c26c3a51d54c876db62777a3b5fc3e4debd29e2bf68e4b74fe6fbc322a1d0c4cf02fd2668a5df73aebd4118c54931d18ca086a1&download_url=https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz",
-        "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb",
+        "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb",
         "pkg:npm/object-inspect@1.12.3",
         "pkg:npm/on-finished@2.4.1",
         "pkg:npm/parseurl@1.3.3",
@@ -78,7 +76,7 @@
         "pkg:npm/serve-static@1.15.0",
         "pkg:npm/setprototypeof@1.2.0",
         "pkg:npm/side-channel@1.0.4",
-        "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#spam-packages/spam",
+        "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#spam-packages/spam",
         "pkg:npm/statuses@2.0.1",
         "pkg:npm/toidentifier@1.0.1",
         "pkg:npm/type-is@1.6.18",
@@ -185,7 +183,7 @@
       "version": "1.1.1"
     },
     {
-      "bom-ref": "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#bar",
+      "bom-ref": "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#bar",
       "name": "bar",
       "properties": [
         {
@@ -193,33 +191,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#bar",
-      "type": "library",
-      "version": "1.0.0"
-    },
-    {
-      "bom-ref": "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps-second.git%4009992d418fc44a2895b7a9ff27c4e32d6f74a982",
-      "name": "bitbucket-cachi2-npm-without-deps-second",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps-second.git%4009992d418fc44a2895b7a9ff27c4e32d6f74a982",
-      "type": "library",
-      "version": "2.0.0"
-    },
-    {
-      "bom-ref": "pkg:npm/bitbucket-cachi2-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps.git%409e164b97043a2d91bbeb992f6cc68a3d1015086a",
-      "name": "bitbucket-cachi2-npm-without-deps",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:npm/bitbucket-cachi2-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40bitbucket.org/cachi-testing/cachi2-without-deps.git%409e164b97043a2d91bbeb992f6cc68a3d1015086a",
+      "purl": "pkg:npm/bar@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#bar",
       "type": "library",
       "version": "1.0.0"
     },
@@ -419,7 +391,7 @@
       "version": "1.1.1"
     },
     {
-      "bom-ref": "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#eggs-packages/eggs",
+      "bom-ref": "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#eggs-packages/eggs",
       "name": "eggs",
       "properties": [
         {
@@ -427,7 +399,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#eggs-packages/eggs",
+      "purl": "pkg:npm/eggs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#eggs-packages/eggs",
       "type": "library",
       "version": "1.0.0"
     },
@@ -484,7 +456,7 @@
       "version": "4.18.2"
     },
     {
-      "bom-ref": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#fecha-4.2.3.tgz",
+      "bom-ref": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#fecha-4.2.3.tgz",
       "name": "fecha",
       "properties": [
         {
@@ -492,7 +464,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#fecha-4.2.3.tgz",
+      "purl": "pkg:npm/fecha@4.2.3?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#fecha-4.2.3.tgz",
       "type": "library",
       "version": "4.2.3"
     },
@@ -510,7 +482,7 @@
       "version": "1.2.0"
     },
     {
-      "bom-ref": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#foo",
+      "bom-ref": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#foo",
       "name": "foo",
       "properties": [
         {
@@ -518,7 +490,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#foo",
+      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#foo",
       "type": "library",
       "version": "1.0.0"
     },
@@ -783,7 +755,7 @@
       "version": "0.6.3"
     },
     {
-      "bom-ref": "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#baz",
+      "bom-ref": "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#baz",
       "name": "not-baz",
       "properties": [
         {
@@ -791,7 +763,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#baz",
+      "purl": "pkg:npm/not-baz@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#baz",
       "type": "library",
       "version": "1.0.0"
     },
@@ -809,7 +781,7 @@
       "version": "1.0.0"
     },
     {
-      "bom-ref": "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb",
+      "bom-ref": "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb",
       "name": "npm_test",
       "properties": [
         {
@@ -817,7 +789,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb",
+      "purl": "pkg:npm/npm_test@1.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb",
       "type": "library",
       "version": "1.1.0"
     },
@@ -1017,7 +989,7 @@
       "version": "1.0.4"
     },
     {
-      "bom-ref": "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#spam-packages/spam",
+      "bom-ref": "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#spam-packages/spam",
       "name": "spam",
       "properties": [
         {
@@ -1025,7 +997,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f5409710fe8af4d70b1fa925fcb05a2f6ceb38bb#spam-packages/spam",
+      "purl": "pkg:npm/spam@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403c28dbc3e5126aebac74b0fab369391837559cbb#spam-packages/spam",
       "type": "library",
       "version": "1.0.0"
     },

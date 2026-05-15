@@ -40,7 +40,7 @@ SUPPORTED_LOCATORS = [
     "strip-ansi-tarball@file:../../external-packages/strip-ansi-4.0.0.tgz::locator=the-answer%40workspace%3Apackages%2Fthe-answer",
     "strip-ansi-tarball@file:external-packages/strip-ansi-4.0.0.tgz::locator=berryscary%40workspace%3A.",
     # https dep
-    "c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+    "c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
     # optional custom patch for a registry dep
     "left-pad@npm:1.3.0",
     "left-pad@patch:left-pad@npm%3A1.3.0#~./my-patches/left-pad.patch::version=1.3.0&hash=629bda&locator=berryscary%40workspace%3A.",
@@ -69,7 +69,7 @@ UNSUPPORTED_LOCATORS = [
     # exec dep
     "holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
     # git deps
-    "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
+    "c2-wo-deps@https://bitbucket.org/example-org/example-repo.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
     "is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
     # specific workspace of a git dep
     "npm-lifecycle-scripts@https://github.com/chmeliik/js-lifecycle-scripts.git#workspace=my-workspace&commit=0e786c88d5aca79a68428dadaed4b096bf2ae3e0",
@@ -181,12 +181,12 @@ PARSED_LOCATORS_AND_REFERENCES = [
         _ParsedLocator(
             scope=None,
             name="c2-wo-deps-2",
-            raw_reference="https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+            raw_reference="https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
         ),
         _ParsedReference(
             protocol="https:",
             source=None,
-            selector="//bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+            selector="//bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
             params=None,
         ),
     ),
@@ -365,11 +365,11 @@ PARSED_LOCATORS_AND_REFERENCES = [
         _ParsedLocator(
             scope=None,
             name="c2-wo-deps",
-            raw_reference="https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
+            raw_reference="https://bitbucket.org/example-org/example-repo.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
         ),
         _ParsedReference(
             protocol="https:",
-            source="//bitbucket.org/cachi-testing/cachi2-without-deps.git",
+            source="//bitbucket.org/example-org/example-repo.git",
             selector="commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a",
             params=None,
         ),
@@ -451,7 +451,7 @@ PARSED_SUPPORTED_LOCATORS = [
         locator=WorkspaceLocator(scope=None, name="berryscary", relpath=Path(".")),
     ),
     HttpsLocator(
-        url="https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
+        url="https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
     ),
     NpmLocator(scope=None, name="left-pad", version="1.3.0"),
     PatchLocator(

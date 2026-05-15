@@ -757,7 +757,6 @@ project_files:
           "version": "1.0.0",
           "license": "ISC",
           "dependencies": {
-            "bitbucket-cachi2-npm-without-deps-second": "",
             "debug": "",
             "express": "^4.18.2",
             "sax": "0.1.1"
@@ -779,10 +778,6 @@ project_files:
           "version": "1.1.1",
           "resolved": "file://${output_dir}/deps/npm/array-flatten-1.1.1.tgz",
           "integrity": "sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg=="
-        },
-        "node_modules/bitbucket-cachi2-npm-without-deps-second": {
-          "version": "2.0.0",
-          "resolved": "file://${output_dir}/deps/npm/bitbucket.org/cachi-testing/cachi2-without-deps-second/cachi2-without-deps-second-external-gitcommit-09992d418fc44a2895b7a9ff27c4e32d6f74a982.tgz"
         },
         "node_modules/body-parser": {
           "version": "1.20.1",
@@ -1446,7 +1441,6 @@ project_files:
       "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "description": "",
       "dependencies": {
-        "bitbucket-cachi2-npm-without-deps-second": "",
         "debug": "",
         "express": "^4.18.2",
         "sax": "0.1.1"

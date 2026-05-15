@@ -30,13 +30,13 @@ def test_is_from_npm_registry_can_parse_incorrect_registry_urls() -> None:
     "vcs, expected",
     [
         (
-            (f"git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git#{GIT_REF}"),
+            (f"git+ssh://git@bitbucket.org/example-org/example-repo.git#{GIT_REF}"),
             {
-                "url": "ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git",
+                "url": "ssh://git@bitbucket.org/example-org/example-repo.git",
                 "ref": GIT_REF,
                 "host": "bitbucket.org",
-                "namespace": "cachi-testing",
-                "repo": "cachi2-without-deps",
+                "namespace": "example-org",
+                "repo": "example-repo",
             },
         ),
     ],
@@ -46,10 +46,9 @@ def test_extract_git_info_npm(vcs: NormalizedUrl, expected: dict[str, str]) -> N
 
 
 def test_extract_git_info_with_missing_ref() -> None:
-    vcs = NormalizedUrl("git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git")
+    vcs = NormalizedUrl("git+ssh://git@bitbucket.org/example-org/example-repo.git")
     expected_error = (
-        "ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git "
-        "is not valid VCS url. ref is missing."
+        "ssh://git@bitbucket.org/example-org/example-repo.git is not valid VCS url. ref is missing."
     )
     with pytest.raises(UnexpectedFormat, match=expected_error):
         extract_git_info_npm(vcs)
@@ -64,8 +63,8 @@ def test_extract_git_info_with_missing_ref() -> None:
         ),
         ("github:kevva/is-positive", "git+ssh://git@github.com/kevva/is-positive.git"),
         (
-            "bitbucket:cachi-testing/cachi2-without-deps#9e164b9",
-            "git+ssh://git@bitbucket.org/cachi-testing/cachi2-without-deps.git#9e164b9",
+            "bitbucket:example-org/example-repo#9e164b9",
+            "git+ssh://git@bitbucket.org/example-org/example-repo.git#9e164b9",
         ),
         ("gitlab:foo/bar#YOLO", "git+ssh://git@gitlab.com/foo/bar.git#YOLO"),
     ],

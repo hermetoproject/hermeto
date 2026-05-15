@@ -74,7 +74,7 @@ YARN_INFO_OUTPUTS = [
         },
     },
     {
-        "value": "c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+        "value": "c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
         "children": {
             "Version": "2.0.0",
             "Cache": {
@@ -164,7 +164,7 @@ EXPECT_PACKAGES = [
     ),
     Package(raw_locator="berryscary@workspace:.", version=None, checksum=None, cache_path=None),
     Package(
-        raw_locator="c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+        raw_locator="c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
         version="2.0.0",
         checksum="b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d",
         cache_path="{repo_dir}/.yarn/cache/c2-wo-deps-2-https-4261b189d8-b194fd1f4a.zip",
@@ -549,27 +549,27 @@ def mock_project(project_dir: RootedPath) -> Project:
         pytest.param(
             MockedPackage(
                 Package(
-                    raw_locator="@hermeto/c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+                    raw_locator="@hermeto/c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
                     version="2.0.0",
                     checksum="b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d",
                     cache_path="cache/directory/c2-wo-deps-2-https-4261b189d8-b194fd1f4a.zip",
                 ),
                 is_hardlink=True,
                 packjson_path="node_modules/@hermeto/c2-wo-deps-2/package.json",
-                packjson_content=json.dumps({"name": "bitbucket-cachi2-npm-without-deps-second"}),
+                packjson_content=json.dumps({"name": "bitbucket-example-repo-second"}),
             ),
             Component(
-                name="bitbucket-cachi2-npm-without-deps-second",
+                name="bitbucket-example-repo-second",
                 version="2.0.0",
                 purl=(
-                    "pkg:npm/bitbucket-cachi2-npm-without-deps-second@2.0.0"
+                    "pkg:npm/bitbucket-example-repo-second@2.0.0"
                     "?checksum=sha512:b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d"
-                    "&download_url=https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
+                    "&download_url=https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
                 ),
             ),
             [
                 (
-                    "@hermeto/c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz: "
+                    "@hermeto/c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz: "
                     "reading package name from cache/directory/c2-wo-deps-2-https-4261b189d8-b194fd1f4a.zip"
                 ),
             ],
@@ -918,7 +918,7 @@ def test_create_components_patched_packages_with_multiple_paths(
         pytest.param(
             MockedPackage(
                 Package(
-                    raw_locator="@hermeto/c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
+                    raw_locator="@hermeto/c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz",
                     version="2.0.0",
                     checksum="b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d",
                     cache_path=None,
@@ -927,7 +927,7 @@ def test_create_components_patched_packages_with_multiple_paths(
             ),
             (
                 "Failed to resolve the name and version for "
-                "@hermeto/c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz: "
+                "@hermeto/c2-wo-deps-2@https://bitbucket.org/example-org/example-repo-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz: "
                 "expected a zip archive in the cache but 'yarn info' says there is none"
             ),
             id="https_no_cache_path",
