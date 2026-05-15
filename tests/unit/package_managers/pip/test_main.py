@@ -625,7 +625,11 @@ class TestDownload:
             verify_wheel2_checksum_call = mock.call(
                 wheel_2_download, {ChecksumInfo("sha256", "cbafed")}
             )
-            expected_downloads.extend(wheel_downloads)
+            # wheel_0 is OK, wheel_1 is skipped due to mismatch
+            # wheel_2 is skipped if missing_req_file_checksum is True, else it succeeds
+            expected_downloads.append(wheel_downloads[0])
+            if not missing_req_file_checksum:
+                expected_downloads.append(wheel_downloads[2])
 
         bar_pypi_checksum = ChecksumInfo("sha256", "bbbbbb")
         bar_sdist_download = pip_deps.join_within_root("bar-2.0.tar.gz").path
@@ -660,8 +664,9 @@ class TestDownload:
                 None,  # foo_sdist_download
                 None,  # wheel_0_download - checksums OK
                 PackageRejected("", solution=None),  # wheel_1_download - checksums NOK
-                PackageRejected("", solution=None),  # wheel_2_download - no checksums to verify
             ]
+            if missing_req_file_checksum:
+                checksum_side_effects.append(PackageRejected("", solution=None))  # wheel_2_download
         else:
             checksum_side_effects = [
                 None,  # foo_sdist_download
@@ -802,9 +807,12 @@ class TestDownload:
 
         # <call>
         found_download = pip._download_dependencies(rooted_tmp_path, req_file, None)
-        expected_download = [
-            url_download_info | {"kind": "url"},
-        ]
+        if not checksum_match:
+            expected_download = []
+        else:
+            expected_download = [
+                url_download_info | {"kind": "url"},
+            ]
         assert found_download == expected_download
         assert pip_deps.path.is_dir()
         # </call>
@@ -828,10 +836,11 @@ class TestDownload:
 
         # <check basic logging output>
         assert f"-- Processing requirement line '{url_req.download_line}'" in caplog.text
-        assert (
-            f"Successfully processed '{url_req.download_line}' in path 'deps/pip/external-bar/"
-            f"bar-external-sha256-654321.tar.gz'"
-        ) in caplog.text
+        if checksum_match:
+            assert (
+                f"Successfully processed '{url_req.download_line}' in path 'deps/pip/external-bar/"
+                f"bar-external-sha256-654321.tar.gz'"
+            ) in caplog.text
         # </check basic logging output>
 
     @mock.patch("hermeto.core.package_managers.pip.main._download_vcs_package")
@@ -1797,4 +1806,5 @@ def test_process_url_req(
     req = mock_requirement("pkg", "url", url=test_url)
     mock_process_req.return_value = {"package_type": ""}
     result = pip._process_url_req(req, pip_deps_dir=mock.Mock(), trusted_hosts=set())
+    assert result is not None
     assert result.get("package_type") == expected_type
