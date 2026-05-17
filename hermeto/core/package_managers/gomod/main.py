@@ -575,6 +575,7 @@ def _create_main_module_from_parsed_data(
         original_name=parsed_main_module.path,
         version=parsed_main_module.version,
         real_path=resolved_path,
+        main=True,
     )
 
 
