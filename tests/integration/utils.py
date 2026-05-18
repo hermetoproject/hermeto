@@ -516,9 +516,13 @@ def _replace_tmp_path_with_placeholder(
     project_files: list[dict[str, str]], test_repo_dir: Path
 ) -> None:
     for item in project_files:
+        # bundler config file is created in the output directory
         if "bundler" in item["abspath"]:
-            # special case for bundler, as it is not a real project file
             item["abspath"] = "${test_case_tmp_path}/hermeto-output/bundler/config_override/config"
+            continue
+        # maven settings.xml file is created in the output directory
+        elif "settings.xml" in item["abspath"]:
+            item["abspath"] = "${test_case_tmp_path}/hermeto-output/settings.xml"
             continue
 
         # Walking up is necessary when one package manager triggers another one

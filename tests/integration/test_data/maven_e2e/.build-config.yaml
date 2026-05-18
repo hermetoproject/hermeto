@@ -1,0 +1,30 @@
+environment_variables:
+- name: MAVEN_ARGS
+  value: -s ${output_dir}/settings.xml
+project_files:
+- abspath: ${test_case_tmp_path}/hermeto-output/settings.xml
+  template: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+      <localRepository>${output_dir}/deps/maven</localRepository>
+      <offline>true</offline>
+      <mirrors>
+        <mirror>
+          <id>hermeto-local</id>
+          <mirrorOf>*</mirrorOf>
+          <url>file://${output_dir}/deps/maven</url>
+        </mirror>
+      </mirrors>
+      <profiles>
+        <profile>
+          <activation>
+            <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+            <maven.test.skip>true</maven.test.skip>
+          </properties>
+        </profile>
+      </profiles>
+    </settings>
