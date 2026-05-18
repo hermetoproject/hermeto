@@ -1023,8 +1023,12 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
-    for call in mock_async_download_files.mock_calls:
-        assert call.kwargs["auth"] is None, "Found credentials where they should not be!"
+    for call in mock_async_download_files.call_args_list:
+        files_to_download = call.args[0] if call.args else {}
+        if not files_to_download:
+            continue
+
+        assert call.kwargs.get("auth") is None, "Found credentials where they should not be!"
 
 
 @pytest.mark.parametrize(
@@ -1081,9 +1085,12 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
-    msg = "Not found credentials where they should be!"
-    for call in mock_async_download_files.mock_calls:
-        assert call.kwargs["auth"] is not None, msg
+    for call in mock_async_download_files.call_args_list:
+        files_to_download = call.args[0] if call.args else {}
+        if not files_to_download:
+            continue
+
+        assert call.kwargs.get("auth") is not None, "Not found credentials where they should be!"
 
 
 @pytest.mark.parametrize(
@@ -1117,6 +1124,7 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
     ],
 )
 @mock.patch("hermeto.core.package_managers.npm.resolver.async_download_files")
+@mock.patch("hermeto.core.package_managers.npm.resolver.patch_url_to_point_to_proxy")
 @mock.patch("hermeto.core.package_managers.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
 @mock.patch("hermeto.core.package_managers.npm.resolver.clone_as_tarball")
@@ -1126,6 +1134,7 @@ def test_npm_proxy_url_gets_substituted_for_registry_hosts(
     mock_clone_as_tarball: mock.Mock,
     mock_from_sri: mock.Mock,
     mock_must_match_any_checksum: mock.Mock,
+    mock_patch_url_to_point_to_proxy: mock.Mock,
     mock_async_download_files: mock.Mock,
     rooted_tmp_path: RootedPath,
     deps_to_download: dict[str, dict[str, str | None]],
@@ -1141,7 +1150,7 @@ def test_npm_proxy_url_gets_substituted_for_registry_hosts(
 
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
-    msg = "Proxy URL was not substituted!"
-    for call in mock_async_download_files.mock_calls:
-        location = next(iter(call.kwargs["files_to_download"].keys()))
-        assert location.startswith(proxy_url), msg
+    assert mock_patch_url_to_point_to_proxy.call_count == len(deps_to_download)
+    for patch_call in mock_patch_url_to_point_to_proxy.call_args_list:
+        assert patch_call.args[0] in deps_to_download
+        assert str(patch_call.args[1]) == proxy_url

@@ -3,7 +3,6 @@ import asyncio
 import copy
 import json
 import logging
-from functools import partial
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -78,17 +77,22 @@ def patch_url_to_point_to_proxy(url: str, proxy_url: ProxyUrl) -> str:
     return str_proxy_url + url_path
 
 
-async def _async_download_tar(files_to_download_list: list[dict[str, dict[str, Any]]]) -> None:
-    ftdl = [e for e in files_to_download_list if e]
-    if not ftdl:
-        return
-    # NOTE: when present proxy auth is the same for all packages accessible
-    # through a proxy.
-    auth = lambda ftd: next(iter(ftd.values()))["proxy_auth"]
-    ftd = lambda ftd: {it["fetch_url"]: it["download_path"] for it in ftd.values()}
-    adf = partial(async_download_files, concurrency_limit=get_config().runtime.concurrency_limit)
+async def async_download_with_auth(
+    files_without_auth: dict[str, Path],
+    files_with_auth: dict[str, Path],
+    auth: aiohttp.BasicAuth | None,
+) -> None:
+    """
+    Asynchronous function to download files with and without (proxy) authentication.
 
-    await asyncio.gather(*[adf(files_to_download=ftd(f), auth=auth(f)) for f in ftdl])
+    :param files_without_auth: Mapping of URLs and file paths to download without authentication.
+    :param files_with_auth: Mapping of URLs and file paths to download with authentication.
+    :param auth: Authentication data for all files to download with authentication.
+    """
+    config = get_config()
+    concurrency_limit = config.runtime.concurrency_limit
+    await async_download_files(files_with_auth, concurrency_limit, auth=auth)
+    await async_download_files(files_without_auth, concurrency_limit)
 
 
 def _get_npm_dependencies(
@@ -107,6 +111,11 @@ def _get_npm_dependencies(
     files_to_download: dict[str, dict[str, Any]] = {}
     download_paths = {}
     config = get_config()
+    npm_proxy_basic_auth = (
+        aiohttp.BasicAuth(config.npm.proxy_login, config.npm.proxy_password)
+        if config.npm.proxy_login and config.npm.proxy_password
+        else None
+    )
 
     for url, info in deps_to_download.items():
         url = normalize_resolved_url(url)
@@ -128,11 +137,8 @@ def _get_npm_dependencies(
                     fetch_url = NormalizedUrl(
                         patch_url_to_point_to_proxy(url, config.npm.proxy_url)
                     )
-                    if config.npm.proxy_login and config.npm.proxy_password:
-                        proxy_auth = aiohttp.BasicAuth(
-                            config.npm.proxy_login,
-                            config.npm.proxy_password,
-                        )
+                    if npm_proxy_basic_auth is not None:
+                        proxy_auth = npm_proxy_basic_auth
             else:  # dep_type == "https"
                 if info["integrity"]:
                     algorithm, digest = ChecksumInfo.from_sri(info["integrity"])
@@ -160,10 +166,17 @@ def _get_npm_dependencies(
                 "proxy_auth": proxy_auth,
             }
 
-    files_with_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is not None}
-    files_without_auth = {k: v for k, v in files_to_download.items() if v["proxy_auth"] is None}
-
-    asyncio.run(_async_download_tar([files_with_auth, files_without_auth]))
+    files_with_auth = {
+        str(f["fetch_url"]): f["download_path"]
+        for f in files_to_download.values()
+        if f["proxy_auth"] is not None
+    }
+    files_without_auth = {
+        str(f["fetch_url"]): f["download_path"]
+        for f in files_to_download.values()
+        if f["proxy_auth"] is None
+    }
+    asyncio.run(async_download_with_auth(files_without_auth, files_with_auth, npm_proxy_basic_auth))
 
     # Check integrity of downloaded packages
     for url, item in files_to_download.items():
