@@ -6,7 +6,6 @@ import shutil
 from collections.abc import Iterable
 from functools import reduce
 from pathlib import Path
-from textwrap import dedent
 from typing import Any
 
 import tomlkit
@@ -116,18 +115,6 @@ def filter_packages_with_rust_code(packages: list[dict[str, Any]]) -> list[Cargo
         )
 
     return packages_containing_rust_code
-
-
-def _config_data() -> str:
-    return dedent(
-        """
-        [source.crates-io]
-        replace-with = "vendored-sources"
-
-        [source.vendored-sources]
-        directory = "${output_dir}/deps/cargo"
-        """
-    )
 
 
 def _config_path(request: Request) -> Path:
