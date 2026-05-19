@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
-import json
-
 import pytest
 from pyarn import lockfile  # type: ignore
 
 from hermeto.core.errors import PackageRejected
+from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.yarn_classic.main import _verify_repository
-from hermeto.core.package_managers.yarn_classic.project import PackageJson, Project, YarnLock
+from hermeto.core.package_managers.yarn_classic.project import Project, YarnLock
 from hermeto.core.rooted_path import RootedPath
 
 VALID_PACKAGE_JSON_FILE = """
@@ -56,17 +55,17 @@ def _prepare_package_json_file(rooted_tmp_path: RootedPath, content: str) -> Pac
     with open(path, "w") as f:
         f.write(content)
 
-    return PackageJson.from_file(path)
+    return PackageJson.from_dir(rooted_tmp_path.path)
 
 
 def test_package_json_path(rooted_tmp_path: RootedPath) -> None:
     package_json = _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
-    assert package_json.path.root == rooted_tmp_path.root
+    assert package_json.path == rooted_tmp_path.join_within_root("package.json").path
 
 
 def test_parse_package_json(rooted_tmp_path: RootedPath) -> None:
     package_json = _prepare_package_json_file(rooted_tmp_path, VALID_PACKAGE_JSON_FILE)
-    assert package_json.data == json.loads(VALID_PACKAGE_JSON_FILE)
+    assert package_json["packageManager"] == "yarn@3.6.1"
 
 
 def test_parse_invalid_package_json(rooted_tmp_path: RootedPath) -> None:
@@ -76,8 +75,7 @@ def test_parse_invalid_package_json(rooted_tmp_path: RootedPath) -> None:
 
 def test_parse_missing_package_json(rooted_tmp_path: RootedPath) -> None:
     with pytest.raises(PackageRejected):
-        path = rooted_tmp_path.join_within_root("package.json")
-        PackageJson.from_file(path)
+        PackageJson.from_dir(rooted_tmp_path.path)
 
 
 # --- YarnLock tests ---

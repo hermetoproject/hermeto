@@ -217,9 +217,9 @@ class _YarnClassicPackageFactory:
                     dev=dev,
                 )
 
-            package_json_path = path.join_within_root("package.json")
+            package_json_path = path.path.joinpath("package.json")
             # package.json is not required for link packages
-            if package_json_path.path.exists():
+            if package_json_path.exists():
                 real_name = _read_name_from_package_json(package_json_path)
             else:
                 real_name = package.name
@@ -319,7 +319,7 @@ def _get_main_package(source_dir: RootedPath, package_json: PackageJson) -> Work
     """Return a WorkspacePackage for the main package in package.json."""
     if "name" not in package_json.data:
         raise PackageRejected(
-            f"The package.json file located at {package_json.path.path} is missing the name field",
+            f"The package.json file located at {package_json.path} is missing the name field",
             solution="Ensure the package.json file has a valid name.",
         )
     return WorkspacePackage(
@@ -379,7 +379,7 @@ def _read_name_from_tarball(tarball_path: RootedPath) -> str:
         return name
 
 
-def _read_name_from_package_json(path: RootedPath) -> str:
+def _read_name_from_package_json(path: Path) -> str:
     """Read the package name from a package.json file."""
     package_json = PackageJson.from_file(path)
 

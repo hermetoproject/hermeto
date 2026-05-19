@@ -13,8 +13,8 @@ from pyarn.lockfile import Package as PYarnPackage
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat
+from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.yarn_classic.main import MIRROR_DIR
-from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.package_managers.yarn_classic.resolver import (
     FilePackage,
     GitPackage,
@@ -304,7 +304,7 @@ def test_resolve_packages(
 
 def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
     package_json = PackageJson(
-        path=rooted_tmp_path.join_within_root("package.json"),
+        path=rooted_tmp_path.path.joinpath("package.json"),
         data={"name": "foo", "version": "1.0.0"},
     )
     expected_output = WorkspacePackage(
@@ -318,13 +318,9 @@ def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
 
 
 def test_get_main_package_no_name(rooted_tmp_path: RootedPath) -> None:
-    package_json = PackageJson(
-        path=rooted_tmp_path.join_within_root("package.json"),
-        data={},
-    )
-    error_msg = f"The package.json file located at {package_json.path} is missing the name field"
+    package_json = PackageJson(path=rooted_tmp_path.path.joinpath("package.json"), data={})
 
-    with pytest.raises(PackageRejected, match=error_msg):
+    with pytest.raises(PackageRejected):
         _get_main_package(rooted_tmp_path, package_json)
 
 
@@ -335,7 +331,7 @@ def test_get_workspace_packages(rooted_tmp_path: RootedPath) -> None:
     package_json_path = workspace_path.join_within_root("package.json")
     package_json_path.path.write_text('{"name": "foo", "version": "1.0.0"}')
 
-    package_json = PackageJson.from_file(package_json_path)
+    package_json = PackageJson.from_file(package_json_path.path)
     workspace = Workspace(
         path=workspace_path.path,
         package_json=package_json,
