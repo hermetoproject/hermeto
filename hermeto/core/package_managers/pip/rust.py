@@ -4,9 +4,12 @@
 import logging
 import shutil
 from collections.abc import Iterable
+from functools import reduce
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
+
+import tomlkit
 
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
@@ -131,6 +134,29 @@ def _config_path(request: Request) -> Path:
     return request.output_dir.join_within_root(".cargo/config.toml").path
 
 
+def _merge_cargo_config_files(project_files: list[ProjectFile]) -> str:
+    """
+    Merge cargo config project files into a single TOML template.
+
+    Each cargo config file may contain git dependencies, so the final template must be dynamically
+    generated from all Rust extensions in the Python project. Currently, the cargo backend only
+    produces config files (no other project files).
+    """
+
+    def deep_merge(this: dict[str, Any], other: dict[str, Any]) -> dict[str, Any]:
+        """Merge two dictionaries recursively."""
+        for key, value in other.items():
+            if key in this and isinstance(this[key], dict) and isinstance(value, dict):
+                this[key] = deep_merge(this[key], value)
+            else:
+                this[key] = value
+
+        return this
+
+    result = reduce(deep_merge, [dict(tomlkit.parse(pf.template)) for pf in project_files])
+    return tomlkit.dumps(result)
+
+
 def find_and_fetch_rust_dependencies(
     request: Request, packages_containing_rust_code: list[CargoPackageInput]
 ) -> RequestOutput:
@@ -155,10 +181,11 @@ def find_and_fetch_rust_dependencies(
         )
         result = fetch_cargo_source(cargo_request)
 
+        template = _merge_cargo_config_files(result.build_config.project_files)
         # A config pointing to deps/cargo directory and an environment variable
         # poiting to the config are necessary for pip to be able to build the extension.
         ev = [EnvironmentVariable(name="CARGO_HOME", value="${output_dir}/.cargo")]
-        pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
+        pf = [ProjectFile(abspath=_config_path(request), template=template)]
 
         remove_extracted(packages_containing_rust_code)
         return result + RequestOutput.from_obj_list([], ev, pf)
