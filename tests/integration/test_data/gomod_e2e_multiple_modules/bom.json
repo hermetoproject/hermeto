@@ -11,11 +11,11 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module",
+        "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
+        "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
+        "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
+        "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -141,7 +141,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "name": "github.com/hermetoproject/integration-tests/eggs-module",
       "properties": [
         {
@@ -149,12 +149,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "type": "library",
       "version": "v0.0.0-20260311161342-30959439437a"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "name": "github.com/hermetoproject/integration-tests/eggs-module",
       "properties": [
         {
@@ -162,12 +162,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "type": "library",
       "version": "v0.0.0-20260311161342-30959439437a"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "name": "github.com/hermetoproject/integration-tests/spam-module",
       "properties": [
         {
@@ -175,12 +175,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "type": "library",
       "version": "v0.0.0-20260311161342-30959439437a"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "name": "github.com/hermetoproject/integration-tests/spam-module",
       "properties": [
         {
@@ -188,12 +188,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161342-30959439437a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "type": "library",
       "version": "v0.0.0-20260311161342-30959439437a"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
@@ -201,7 +201,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161342-30959439437a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4030959439437a299d12b082ab1738e6ea64c2979c",
       "type": "library",
       "version": "v0.0.0-20260311161342-30959439437a"
     },

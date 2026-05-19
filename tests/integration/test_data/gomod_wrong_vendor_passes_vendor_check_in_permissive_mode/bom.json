@@ -11,8 +11,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -95,8 +95,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
+        "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -220,7 +220,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
       "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
@@ -228,12 +228,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
       "type": "library",
       "version": "v0.0.0-20260415150954-f802197aba69"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
       "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
@@ -241,7 +241,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260415150954-f802197aba69?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f802197aba692332c20332e181c0d6b929f22f8d",
       "type": "library",
       "version": "v0.0.0-20260415150954-f802197aba69"
     },
