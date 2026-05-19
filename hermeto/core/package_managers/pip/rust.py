@@ -8,6 +8,8 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any
 
+import tomlkit
+
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.package_managers.cargo import fetch_cargo_source
@@ -131,6 +133,21 @@ def _config_path(request: Request) -> Path:
     return request.output_dir.join_within_root(".cargo/config.toml").path
 
 
+def _merge_cargo_config_files(project_files: list[ProjectFile]) -> str:
+    """
+    Merge cargo config project files into a single TOML template.
+
+    Each cargo config file may contain git dependencies, so the final template must be dynamically
+    generated from all Rust extensions in the Python project. Currently, the cargo backend only
+    produces config files (no other project files).
+    """
+    all_sources = {}
+    for pf in project_files:
+        all_sources.update(tomlkit.parse(pf.template).get("source", {}))
+
+    return tomlkit.dumps({"source": all_sources})
+
+
 def find_and_fetch_rust_dependencies(
     request: Request, packages_containing_rust_code: list[CargoPackageInput]
 ) -> RequestOutput:
@@ -155,10 +172,11 @@ def find_and_fetch_rust_dependencies(
         )
         result = fetch_cargo_source(cargo_request)
 
+        template = _merge_cargo_config_files(result.build_config.project_files)
         # A config pointing to deps/cargo directory and an environment variable
         # poiting to the config are necessary for pip to be able to build the extension.
         ev = [EnvironmentVariable(name="CARGO_HOME", value="${output_dir}/.cargo")]
-        pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
+        pf = [ProjectFile(abspath=_config_path(request), template=template)]
 
         remove_extracted(packages_containing_rust_code)
         return RequestOutput.from_obj_list(
