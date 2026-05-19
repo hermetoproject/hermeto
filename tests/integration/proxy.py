@@ -32,6 +32,9 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_YARN__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/npm-proxy/",
     f"{APP_NAME}_YARN__PROXY_LOGIN": "hermeto-user",
     f"{APP_NAME}_YARN__PROXY_PASSWORD": "hermeto-pass",
+    f"{APP_NAME}_GOMOD__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/go-proxy/",
+    f"{APP_NAME}_GOMOD__PROXY_LOGIN": "hermeto-user",
+    f"{APP_NAME}_GOMOD__PROXY_PASSWORD": "hermeto-pass",
 }
 
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url", "repository_url"})
@@ -138,6 +141,23 @@ def _strip_proxy_refs(
         del component_raw["externalReferences"]
 
 
+def should_skip_this_component(component: Component) -> bool:
+    """Determine if a component should be ignored.
+
+    Returns a disjunction of all conditions which could be met to skip
+    a check of proxy URL presence."""
+    skip_conditions = (
+        (  # skip condition for go mod:
+            component.purl.startswith("pkg:golang")
+            and (
+                (component.version is None and component.external_references is None)
+                or "vcs_url" in component.purl
+            )
+        ),
+    )
+    return any(skip_conditions)
+
+
 def validate_and_strip_proxy_refs(
     sbom: dict[str, Any], backend_proxy_urls: Mapping[str, str]
 ) -> dict[str, Any]:
@@ -148,6 +168,9 @@ def validate_and_strip_proxy_refs(
 
     for component_raw in sbom_copy.get("components", []):
         component = Component(**component_raw)
+
+        if should_skip_this_component(component):
+            continue
 
         proxy_refs, non_proxy_refs = _partition_proxy_external_refs(component)
         actual_proxy_urls = set(ref.url for ref in proxy_refs)

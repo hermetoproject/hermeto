@@ -1547,6 +1547,7 @@ def test_missing_gomod_file(
 @pytest.mark.parametrize(
     "gomod_input_packages, packages_output_by_path, expect_components",
     (
+        # First scenario
         (
             [{"type": "gomod", "path": "."}],
             {
@@ -1615,6 +1616,7 @@ def test_missing_gomod_file(
                 ),
             ],
         ),
+        # Second scenario
         (
             [{"type": "gomod", "path": "."}, {"type": "gomod", "path": "./path"}],
             {

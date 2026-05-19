@@ -4,11 +4,14 @@ import os
 import re
 import shutil
 import tempfile
+import urllib
 from collections.abc import Iterable, Iterator
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from textwrap import dedent
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 
@@ -218,6 +221,7 @@ class Package(NamedTuple):
             name=self.name,
             version=self.module.version,
             purl=self.purl,
+            external_references=self.module.to_component().external_references,
         )
 
 
@@ -250,6 +254,8 @@ class StandardPackage(NamedTuple):
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
+        # Note, these copmonents come from the standard lib, they lack version, they
+        # are not collected from a repository and are not present in the output directory.
         return Component(name=self.name, purl=self.purl)
 
 
@@ -769,6 +775,12 @@ def _resolve_gomod(
 
     if "cgo-disable" in request.flags:
         go_vars["CGO_ENABLED"] = "0"
+
+    temp_netrc_dir = None
+    if config.gomod.proxy_login is not None:
+        # tmpdir for netrc must be returned to keep it in scope for the duration of _resolve_gomod()
+        path_to_netrc, temp_netrc_dir = inject_netrc(prepare_netrc_contents())
+        go_vars["NETRC"] = path_to_netrc
 
     env = _go_exec_env(**go_vars)
     run_params = {"env": env, "cwd": app_dir}
@@ -1447,3 +1459,24 @@ def _vendor_changed(context_dir: RootedPath) -> bool:
         repo.git.reset("--", context_relative_path)
 
     return False
+
+
+def prepare_netrc_contents() -> str:
+    """Prepare .netrc contents."""
+    config = get_config()
+    # it should be `machine foo.bar.baz` in netrc, but is
+    # set to https://foo.bar.baz/repository/go-proxy/ via a variable.
+    machine = urllib.parse.urlparse(config.gomod.proxy_url).netloc
+    return dedent(
+        f"""machine {machine}
+        login {config.gomod.proxy_login}
+        password {config.gomod.proxy_password}"""
+    )
+
+
+def inject_netrc(netrc_stuff: str) -> tuple[str, TemporaryDirectory[str]]:
+    """Inject a temporary .netrc."""
+    tmpdir = TemporaryDirectory()
+    netrc = Path(tmpdir.name) / ".netrc"
+    netrc.write_text(netrc_stuff)
+    return str(netrc), tmpdir
