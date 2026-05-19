@@ -76,56 +76,93 @@ def test_virtual_workspace_without_workspace_version(rooted_tmp_path: RootedPath
     assert version is None
 
 
+# This is something I wanted to try for a long time. Long parameter lists in
+# tests are hard to comprehend, tables are much better for that.  My initial
+# plan was to use standalone .md files with doctests which turned out to be too
+# cumbersome: resulting "examples" became really hard to follow real fast.
+# Gherkin-based test cases do not cut it either (or I cannot figure out how to
+# use the language correctly). As always in such cases I tried to invent my own
+# ad-hoc format.  What I got so far is a (for now) rigidly formatted table (see
+# parameters section in test_cargo_package_purl_generation() below) each visual
+# line group in which represents a test case. It is not pretty as it is now:
+# turns out some entries in such tables could be a mouthful, borders undulate
+# and I do not have a good idea of what to do about that. Maybe untabulate()
+# could accept **kwargs to substitute at least the longest fields in the table
+# (however that would defeat the goal of a visually compact and uninterrupted
+# test case description). The helper itself is essentially a MWP, a stream of
+# conciousness with a lot to improve, I would prefer to get some feedback on
+# the approach first and then polish it and separate into logical pieces.  This
+# location is pretty random, if the idea is appreciated then I'll look for a
+# better place for the helper.
+def untabulate(table: str) -> tuple:
+    # ruff is upset about name 'l' which is local to the next line
+    lines = [ls for l in table.split("\n") if (ls := l.strip())]  # noqa: E741
+    header, separator, raw_examples = lines[0], lines[1], lines[2:]
+    # Want to preserve empty spaces from the table, thus no stripping before filtering
+    examples = [[k.strip() for k in e.split("|") if k] for e in raw_examples]
+    fields = [fs for f in header.split("|") if (fs := f.strip())]
+    if not fields[0] == "id":
+        raise ValueError("id must be present in the table and specified for every test case")
+    if not (set(separator) <= set("+-|")):
+        raise ValueError(
+            f"Separator must consist of +-| symbols only, no idea how to interpret this: {separator}"
+        )
+    all_results = []
+    # mypy is ridiculous
+    current_result: dict = dict(zip(fields, [list() for _ in fields]))
+    while examples:
+        current_line = examples.pop(0)
+        id_, rest_of_line = current_line[0], current_line[1:]
+        if id_:
+            if current_result["id"]:
+                all_results.append(current_result)
+            current_result = dict()
+            current_result["id"] = id_  # type: ignore
+            for fn, val in zip(fields[1:], rest_of_line):
+                current_result[fn] = [val]
+        else:
+            for fn, val in zip(fields[1:], rest_of_line):
+                current_result[fn].append(val)
+    all_results.append(current_result)  # the last result after hitting the last line of the table
+
+    for r in all_results:
+        for k, v in r.items():
+            if isinstance(v, list):
+                # because of course ruff was going to get spooked by eval
+                r[k] = eval("".join(v))  # noqa: S307
+
+    ready_params = []
+    for r in all_results:
+        id_ = r.pop("id")  # type: ignore
+        interm = [r[f] for f in fields[1:]]
+        ready_params.append(pytest.param(*interm, id=id_))
+    # id is a special field
+    return ",".join(fields[1:]), ready_params
+
+
 @pytest.mark.parametrize(
-    "pkg, expected_purl",
-    [
-        pytest.param(
-            {
-                "name": "foo",
-                "version": "0.1.0",
-            },
-            "pkg:cargo/foo@0.1.0",
-            id="simple_package",
-        ),
-        pytest.param(
-            {
-                "name": "foo",
-                "version": "0.1.0",
-                "source": "registry+https://github.com/rust-lang/crates.io-index",
-                "checksum": "abc123",
-            },
-            "pkg:cargo/foo@0.1.0?checksum=abc123",
-            id="package_with_registry_source_and_checksum",
-        ),
-        pytest.param(
-            {
-                "name": "foo",
-                "version": "0.1.0",
-                "source": "git+https://github.com/rust-random/rand?rev=abc123#abc123",
-            },
-            "pkg:cargo/foo@0.1.0?vcs_url=git%2Bhttps://github.com/rust-random/rand%40abc123",
-            id="package_with_git_source",
-        ),
-        pytest.param(
-            {
-                "name": "foo",
-                "version": "0.1.0",
-                "source": "registry+https://my-registry.example.com/index",
-            },
-            "pkg:cargo/foo@0.1.0?repository_url=https://my-registry.example.com/index",
-            id="package_with_alternate_registry",
-        ),
-        pytest.param(
-            {
-                "name": "foo",
-                "version": "0.1.0",
-                "source": "registry+https://my-crates.io-mirror.example.com/index",
-                "checksum": "abc123",
-            },
-            "pkg:cargo/foo@0.1.0?checksum=abc123",
-            id="package_with_crates_io_in_subdomain_no_repository_url",
-        ),
-    ],
+    *untabulate(
+        """
+| id                                        | pkg                                                               | expected_purl                         |
++-------------------------------------------+-------------------------------------------------------------------+---------------------------------------+
+| simple_package                            |{"name": "foo",                                                    | "pkg:cargo/foo@0.1.0"                 |
+|                                           | "version": "0.1.0"}                                               |                                       |
+| package_with_registry_source_and_checksum |{"name": "foo",                                                    | "pkg:cargo/foo@0.1.0?checksum=abc123" |
+|                                           | "version": "0.1.0",                                               |                                       |
+|                                           | "source": "registry+https://github.com/rust-lang/crates.io-index",|                                       |
+|                                           | "checksum": "abc123"}                                             |                                       |
+|                                           |                                                                   |                                       |
+| package_with_git_source                   |{"name": "foo", "version": "0.1.0",                                | "pkg:cargo/foo@0.1.0?vcs_url=git%2Bhttps://github.com/rust-random/rand%40abc123"|
+|                                           | "source": "git+https://github.com/rust-random/rand?rev=abc123#abc123"}|                                   |
+|                                           |                                                                   |                                       |
+| package_with_alternate_registry           |{"name": "foo","version": "0.1.0",                                 | "pkg:cargo/foo@0.1.0?repository_url=https://my-registry.example.com/index" |
+|                                           | "source": "registry+https://my-registry.example.com/index"}       |
+|                                           |                                                                   |                                       |
+| package_with_crates_io_in_subdomain_no_repository_url |{"name": "foo","version": "0.1.0",                     | "pkg:cargo/foo@0.1.0?checksum=abc123" |
+|                                           | "source": "registry+https://my-crates.io-mirror.example.com/index",|                                      |
+|                                           | "checksum": "abc123"}                                             |                                       |
+"""
+    )
 )
 def test_cargo_package_purl_generation(pkg: dict[str, Any], expected_purl: str) -> None:
     package = CargoPackage(**pkg)
