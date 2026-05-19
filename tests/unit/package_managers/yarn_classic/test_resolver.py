@@ -304,8 +304,8 @@ def test_resolve_packages(
 
 def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
     package_json = PackageJson(
-        _path=rooted_tmp_path.join_within_root("package.json"),
-        _data={"name": "foo", "version": "1.0.0"},
+        path=rooted_tmp_path.join_within_root("package.json"),
+        data={"name": "foo", "version": "1.0.0"},
     )
     expected_output = WorkspacePackage(
         name="foo",
@@ -319,12 +319,10 @@ def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
 
 def test_get_main_package_no_name(rooted_tmp_path: RootedPath) -> None:
     package_json = PackageJson(
-        _path=rooted_tmp_path.join_within_root("package.json"),
-        _data={},
+        path=rooted_tmp_path.join_within_root("package.json"),
+        data={},
     )
-    error_msg = (
-        f"The package.json file located at {package_json._path.path} is missing the name field"
-    )
+    error_msg = f"The package.json file located at {package_json.path} is missing the name field"
 
     with pytest.raises(PackageRejected, match=error_msg):
         _get_main_package(rooted_tmp_path, package_json)

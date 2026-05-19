@@ -317,7 +317,7 @@ def _get_packages_from_lockfile(
 
 def _get_main_package(source_dir: RootedPath, package_json: PackageJson) -> WorkspacePackage:
     """Return a WorkspacePackage for the main package in package.json."""
-    if "name" not in package_json._data:
+    if "name" not in package_json.data:
         raise PackageRejected(
             f"The package.json file located at {package_json.path.path} is missing the name field",
             solution="Ensure the package.json file has a valid name.",

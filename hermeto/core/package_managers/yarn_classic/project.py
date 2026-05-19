@@ -7,8 +7,6 @@ the dependencies should be implemented in other modules.
 """
 
 import json
-import logging
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
@@ -17,40 +15,13 @@ from pyarn import lockfile  # type: ignore
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.rooted_path import RootedPath
 
-log = logging.getLogger(name=__name__)
-
 
 @dataclass
-class _CommonConfigFile(ABC):
-    """A base class for representing a config file.
+class PackageJson:
+    """A package.json file."""
 
-    :param path: the path to the config file, relative to the request source dir
-    :param data: the raw data for the config file content
-    """
-
-    _path: RootedPath
-    _data: dict[str, Any]
-
-    @property
-    def data(self) -> dict[str, Any]:
-        return self._data
-
-    @property
-    def path(self) -> RootedPath:
-        return self._path
-
-    @classmethod
-    @abstractmethod
-    def from_file(cls, path: RootedPath) -> "_CommonConfigFile":
-        """Construct a ConfigFile instance."""
-
-
-class PackageJson(_CommonConfigFile):
-    """A package.json file.
-
-    This class abstracts the underlying attributes and only exposes what
-    is relevant for the request processing.
-    """
+    path: RootedPath
+    data: dict[str, Any]
 
     @property
     def install_config(self) -> dict[str, Any]:
@@ -84,12 +55,11 @@ class PackageJson(_CommonConfigFile):
 
 
 @dataclass
-class YarnLock(_CommonConfigFile):
-    """A yarn.lock file.
+class YarnLock:
+    """A yarn.lock file."""
 
-    This class abstracts the underlying attributes.
-    """
-
+    path: RootedPath
+    data: dict[str, Any]
     yarn_lockfile: lockfile.Lockfile
 
     @classmethod
