@@ -1580,7 +1580,7 @@ def test_missing_gomod_file(
             [
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/my-org/my-repo.git%40abc123",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1598,7 +1598,7 @@ def test_missing_gomod_file(
                 ),
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package&vcs_url=git%2Bhttps://github.com/my-org/my-repo.git%40abc123",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1642,12 +1642,12 @@ def test_missing_gomod_file(
             [
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/my-org/my-repo.git%40abc123",
                     version="v1.0.0",
                 ),
                 Component(
                     name="github.com/my-org/my-repo/path",
-                    purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/my-org/my-repo.git%40abc123",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1677,7 +1677,9 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod.main._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
 @mock.patch("hermeto.core.package_managers.gomod.main.create_backend_annotation")
+@mock.patch("hermeto.core.package_managers.gomod.main.get_repo_id")
 def test_fetch_gomod_source(
+    mock_get_repo_id: mock.Mock,
     mock_create_annotation: mock.Mock,
     mock_vendor_changed: mock.Mock,
     mock_get_go_work_path: mock.Mock,
@@ -1718,6 +1720,12 @@ def test_fetch_gomod_source(
     mock_find_missing_gomod_files.return_value = []
     mock_get_repository_name.return_value = "github.com/my-org/my-repo"
     mock_vendor_changed.return_value = False
+
+    mock_repo_id = mock.Mock()
+    mock_repo_id.as_vcs_url_qualifier.return_value = (
+        "git+https://github.com/my-org/my-repo.git@abc123"
+    )
+    mock_get_repo_id.return_value = mock_repo_id
 
     mock_tmp_dir.name = "tmpdir"
     mock_tmp_dir.return_value.__enter__.return_value = mock_tmp_dir
