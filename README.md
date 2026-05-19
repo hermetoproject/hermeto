@@ -145,6 +145,7 @@ Any settings specified will override the default values present in the
 - `http.read_timeout` read timeout (seconds) for HTTP requests (default: 300).
   Long-running downloads can take arbitrarily long as long as bytes keep
   flowing.
+- `http.max_retries` maximum number of retries for HTTP requests (default: 5)
 - `http.timeout` (deprecated) automatically migrated to `http.read_timeout`.
 - `runtime.concurrency_limit` max concurrent operations.
 - `runtime.subprocess_timeout` timeout (seconds) for subprocess commands.

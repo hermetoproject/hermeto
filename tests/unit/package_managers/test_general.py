@@ -10,6 +10,7 @@ import aiohttp
 import aiohttp_retry
 import pytest
 import requests
+from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase, HTTPBasicAuth
 
 from hermeto.core.config import get_config
@@ -17,9 +18,9 @@ from hermeto.core.errors import FetchError
 from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
     _async_download_binary_file,
+    _get_pkg_requests_session,
     async_download_files,
     download_binary_file,
-    pkg_requests_session,
 )
 from tests.common_utils import GIT_REF
 
@@ -27,35 +28,55 @@ from tests.common_utils import GIT_REF
 @pytest.mark.parametrize("auth", [None, HTTPBasicAuth("user", "password")])
 @pytest.mark.parametrize("insecure", [True, False])
 @pytest.mark.parametrize("chunk_size", [1024, 2048])
-@mock.patch.object(pkg_requests_session, "get")
 def test_download_binary_file(
-    mock_get: Any, auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
+    auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
 ) -> None:
     config = get_config()
     timeout = (config.http.connect_timeout, config.http.read_timeout)
     url = "http://example.org/example.tar.gz"
     content = b"file content"
 
-    mock_response = mock_get.return_value
+    mock_session = mock.MagicMock()
+    mock_response = mock_session.get.return_value
+    mock_response.raise_for_status.return_value = None
     mock_response.iter_content.return_value = [content]
 
-    download_path = tmp_path.joinpath("example.tar.gz")
-    download_binary_file(
-        url, str(download_path), auth=auth, insecure=insecure, chunk_size=chunk_size
-    )
+    with mock.patch(
+        "hermeto.core.package_managers.general._get_pkg_requests_session",
+        return_value=mock_session,
+    ):
+        download_path = tmp_path.joinpath("example.tar.gz")
+        download_binary_file(
+            url, str(download_path), auth=auth, insecure=insecure, chunk_size=chunk_size
+        )
 
     assert download_path.read_bytes() == content
-    mock_get.assert_called_with(url, stream=True, verify=not insecure, auth=auth, timeout=timeout)
+    mock_session.get.assert_called_once_with(
+        url, stream=True, verify=not insecure, auth=auth, timeout=timeout
+    )
     mock_response.iter_content.assert_called_with(chunk_size=chunk_size)
 
 
-@mock.patch.object(pkg_requests_session, "get")
-def test_download_binary_file_failed(mock_get: Any) -> None:
-    mock_get.side_effect = [requests.RequestException("Something went wrong")]
-
-    expected = "Could not download http://example.org/example.tar.gz: Something went wrong"
-    with pytest.raises(FetchError, match=expected):
+@mock.patch("hermeto.core.package_managers.general._get_pkg_requests_session")
+def test_download_binary_file_failed(mock_get_pkg_requests_session: MagicMock) -> None:
+    mock_get_pkg_requests_session.return_value.get.side_effect = requests.RequestException()
+    with pytest.raises(FetchError, match="Could not download http://example.org/example.tar.gz"):
         download_binary_file("http://example.org/example.tar.gz", "/example.tar.gz")
+
+
+def test_max_retries_propagated_to_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that max_retries config value is propagated to the requests session."""
+    monkeypatch.setenv("HERMETO_HTTP__MAX_RETRIES", "7")
+    monkeypatch.setattr("hermeto.core.package_managers.general._pkg_requests_session", None)
+
+    monkeypatch.setattr("hermeto.core.config.config", None)
+    config = get_config()
+    assert config.http.max_retries == 7
+
+    session = _get_pkg_requests_session()
+    adapter = session.get_adapter("https://example.com")
+    assert isinstance(adapter, HTTPAdapter)
+    assert adapter.max_retries.total == 7
 
 
 @pytest.mark.parametrize(
