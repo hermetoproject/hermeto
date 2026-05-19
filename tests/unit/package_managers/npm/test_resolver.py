@@ -1024,7 +1024,7 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
     _get_npm_dependencies(rooted_tmp_path, deps_to_download)
 
     for call in mock_async_download_files.mock_calls:
-        assert call.kwargs["auth"] is None, "Found credentials where they should not be!"
+        assert call.kwargs["headers"] is None, "Found credentials where they should not be!"
 
 
 @pytest.mark.parametrize(
@@ -1083,7 +1083,7 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
 
     msg = "Not found credentials where they should be!"
     for call in mock_async_download_files.mock_calls:
-        assert call.kwargs["auth"] is not None, msg
+        assert call.kwargs["headers"] is not None, msg
 
 
 @pytest.mark.parametrize(
