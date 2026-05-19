@@ -147,6 +147,7 @@ class HttpSettings(BaseModel, extra="forbid"):
 
     connect_timeout: int = 30
     read_timeout: int = 300
+    max_retries: int = 5
 
 
 class RuntimeSettings(BaseModel, extra="forbid"):
