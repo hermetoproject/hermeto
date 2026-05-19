@@ -278,10 +278,12 @@ def _strip_workspace_scripts(source_dir: RootedPath, packages: list[Package]) ->
         locator = pkg.parsed_locator
         if not isinstance(locator, WorkspaceLocator):
             continue
-        pkg_json_path = source_dir.join_within_root(locator.relpath, "package.json")
-        if not pkg_json_path.path.exists():
+
+        try:
+            pkg_json = PackageJson.from_dir(source_dir.path.joinpath(locator.relpath))
+        except LockfileNotFound:
             continue
-        pkg_json = PackageJson.from_file(pkg_json_path)
+
         if "scripts" in pkg_json:
             del pkg_json["scripts"]
             pkg_json.write()
