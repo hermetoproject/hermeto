@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections.abc import Generator, Iterable
+from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 from typing import Any
-
-import pydantic
 
 from hermeto.core.package_managers.yarn_classic.project import PackageJson
 from hermeto.core.rooted_path import RootedPath
@@ -13,7 +12,8 @@ from hermeto.core.rooted_path import RootedPath
 log = logging.getLogger(__name__)
 
 
-class Workspace(pydantic.BaseModel):
+@dataclass
+class Workspace:
     """
     Workspace model.
 
@@ -25,12 +25,9 @@ class Workspace(pydantic.BaseModel):
     path: Path
     package_json: PackageJson
 
-    @pydantic.field_validator("package_json")
-    @classmethod
-    def _ensure_package_is_named(cls, package_json: PackageJson) -> PackageJson:
-        if "name" not in package_json.data:
+    def __post_init__(self) -> None:
+        if self.package_json.data.get("name") is None:
             raise ValueError("Workspaces must contain 'name' field.")
-        return package_json
 
 
 def ensure_no_path_leads_out(
