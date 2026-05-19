@@ -55,7 +55,7 @@ from hermeto.core.package_managers.gomod.go import (
 )
 from hermeto.core.package_managers.gomod.utils import _clean_go_modcache, _go_exec_env
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
+from hermeto.core.scm import GitRepo, RepoID, get_repo_for_path, get_repo_id
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
@@ -127,6 +127,8 @@ class Module(NamedTuple):
         had a checksum for this module but didn't
     proxy: the list of custom proxy URLs used to fetch this module, or None if the module was
         fetched directly from VCS or only via the canonical Go proxy (proxy.golang.org).
+    repo_id: optional RepoID to carry data necessary to construct vcs_url
+    local_replace: a flag to mark Modules which were obtained via a replace with a local path.
     """
 
     name: str
@@ -136,6 +138,8 @@ class Module(NamedTuple):
     main: bool = False
     missing_hash_in_file: Path | None = None
     proxy: list[str] | None = None
+    repo_id: RepoID | None = None
+    local_replace: bool = False
 
     @property
     def purl(self) -> str:
@@ -144,7 +148,7 @@ class Module(NamedTuple):
             type="golang",
             name=self.real_path,
             version=self.version,
-            qualifiers={"type": "module"},
+            qualifiers={"type": "module"} | _vcs_url_if_needed(self),
         )
         return purl.to_string()
 
@@ -204,13 +208,24 @@ class Package(NamedTuple):
             type="golang",
             name=self.real_path,
             version=self.module.version,
-            qualifiers={"type": "package"},
+            qualifiers={"type": "package"} | _vcs_url_if_needed(self.module),
         )
         return purl.to_string()
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
         return Component(name=self.name, version=self.module.version, purl=self.purl)
+
+
+def _vcs_url_if_needed(module: Module) -> dict:
+    """Determine whether a vcs_url qualifier is necessary and provide one."""
+    if (module.main or module.local_replace) and (module.repo_id is not None):
+        # The main module is always consumed from a local filesystem and it is always
+        # a clone of a repository, thus adding vcs_url to it.
+        # Local replaces need a vcs_url as well and are supposed to be consumed from the file
+        # system too.
+        return {"vcs_url": module.repo_id.as_vcs_url_qualifier()}
+    return dict()
 
 
 class StandardPackage(NamedTuple):
@@ -296,6 +311,7 @@ def _create_modules_from_parsed_data(
         original_name = module.path
         missing_hash_in_file = None
 
+        repo_id, proxy, local_replace = None, None, False
         if not version_or_path.startswith("."):
             version = version_or_path
             real_path = name
@@ -314,7 +330,8 @@ def _create_modules_from_parsed_data(
             resolved_replacement_path = main_module_dir.join_within_root(version_or_path)
             version = version_resolver.get_golang_version(module.path, resolved_replacement_path)
             real_path = _resolve_path_for_local_replacement(module)
-            proxy = None
+            local_replace = True
+            repo_id = get_repo_id(main_module_dir.path)
 
         return Module(
             name=name,
@@ -323,6 +340,8 @@ def _create_modules_from_parsed_data(
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
             proxy=proxy,
+            local_replace=local_replace,
+            repo_id=repo_id,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
@@ -561,10 +580,13 @@ def _create_main_module_from_parsed_data(
     if repo_name is None:
         # PERMISSIVE mode without git repo - use the module path as resolved_path
         resolved_path = parsed_main_module.path
+        repo_id = None
     elif str(resolved_subpath) == ".":
         resolved_path = repo_name
+        repo_id = get_repo_id(main_module_dir)
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
+        repo_id = get_repo_id(main_module_dir)
 
     if not parsed_main_module.version:
         # Should not happen, since the version is always resolved from the Git repo
@@ -576,6 +598,7 @@ def _create_main_module_from_parsed_data(
         version=parsed_main_module.version,
         real_path=resolved_path,
         main=True,
+        repo_id=repo_id,
     )
 
 

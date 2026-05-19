@@ -446,13 +446,17 @@ def test_get_go_sum_files(
 
 @pytest.mark.parametrize("has_workspaces", (False, True))
 @mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
+@mock.patch("hermeto.core.package_managers.gomod.main.get_repo_id")
 def test_create_modules_from_parsed_data(
+    mock_get_repo_id: mock.Mock,
     mock_version_resolver: mock.Mock,
     has_workspaces: bool,
     rooted_tmp_path: RootedPath,
 ) -> None:
     main_module_dir = rooted_tmp_path.join_within_root("target-module")
     mock_version_resolver.get_golang_version.return_value = "v1.5.0"
+
+    mock_get_repo_id.return_value = None
 
     go_work = None
 
@@ -462,6 +466,7 @@ def test_create_modules_from_parsed_data(
         original_name="github.com/my-org/my-repo/target-module",
         real_path="github.com/my-org/my-repo/target-module",
         main=True,
+        local_replace=False,
     )
 
     parsed_modules = [
@@ -523,12 +528,14 @@ def test_create_modules_from_parsed_data(
             version="v1.5.0",
             original_name="github.com/some-org/this-other-module",
             real_path="github.com/my-org/my-repo/target-module/local-path",
+            local_replace=True,
         ),
         Module(
             name="github.com/some-org/yet-another-module",
             version="v1.5.0",
             original_name="github.com/some-org/yet-another-module",
             real_path="github.com/my-org/my-repo/sibling-path",
+            local_replace=True,
         ),
     ]
 
@@ -1255,7 +1262,7 @@ def test_missing_gomod_file(
             [
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1273,7 +1280,7 @@ def test_missing_gomod_file(
                 ),
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1317,12 +1324,12 @@ def test_missing_gomod_file(
             [
                 Component(
                     name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
                     version="v1.0.0",
                 ),
                 Component(
                     name="github.com/my-org/my-repo/path",
-                    purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module",
+                    purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
                     version="v1.0.0",
                 ),
                 Component(
@@ -1352,7 +1359,9 @@ def test_missing_gomod_file(
 @mock.patch("hermeto.core.package_managers.gomod.main._get_go_work_path")
 @mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
 @mock.patch("hermeto.core.package_managers.gomod.main.create_backend_annotation")
+@mock.patch("hermeto.core.package_managers.gomod.main.get_repo_id")
 def test_fetch_gomod_source(
+    mock_get_repo_id: mock.Mock,
     mock_create_annotation: mock.Mock,
     mock_vendor_changed: mock.Mock,
     mock_get_go_work_path: mock.Mock,
@@ -1380,6 +1389,9 @@ def test_fetch_gomod_source(
         return packages_output_by_path[
             app_dir.path.relative_to(gomod_request.source_dir).as_posix()
         ]
+
+    repo_id = RepoID("https://github.com/org/repo.git", "c0ffee")
+    mock_get_repo_id.return_value = repo_id
 
     mock_gomod_annotation = Annotation(
         subjects=set(),
