@@ -63,9 +63,17 @@ class YumProxyConfig(ProxyRepositoryConfig):
     format: str = field(default="yum", init=False)
 
 
+@dataclass
+class GomodProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a Go proxy repository."""
+
+    format: str = field(default="go", init=False)
+
+
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
     PypiProxyConfig(name="pypi-proxy", remote_url="https://pypi.org"),
+    GomodProxyConfig(name="go-proxy", remote_url="https://proxy.golang.org"),
     YumProxyConfig(
         name="yum-proxy",
         remote_url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9",

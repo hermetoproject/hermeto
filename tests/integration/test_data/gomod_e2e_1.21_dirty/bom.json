@@ -12,8 +12,8 @@
         "pkg:golang/fmt?type=package",
         "pkg:golang/github.com/cachito-testing/cachi2-gomod/twentyone@v0.0.0?type=module",
         "pkg:golang/github.com/cachito-testing/cachi2-gomod/twentyone@v0.0.0?type=package",
-        "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module",
-        "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package",
+        "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
+        "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
         "pkg:golang/internal/abi?type=package",
         "pkg:golang/internal/asan?type=package",
         "pkg:golang/internal/bisect?type=package",
@@ -142,7 +142,7 @@
       "version": "v0.0.0"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
       "name": "github.com/cachito-testing/cachi2-gomod/twenty",
       "properties": [
         {
@@ -150,12 +150,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
       "type": "library",
       "version": "v0.0.0-20240321211820-3353e4526728"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
       "name": "github.com/cachito-testing/cachi2-gomod/twenty",
       "properties": [
         {
@@ -163,7 +163,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/twenty@v0.0.0-20240321211820-3353e4526728?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%403353e452672851079f1926b6b2d7372447104b31",
       "type": "library",
       "version": "v0.0.0-20240321211820-3353e4526728"
     },

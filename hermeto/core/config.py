@@ -134,10 +134,12 @@ class YarnSettings(ProxyMixin, extra="forbid"):
     enabled: bool = True
 
 
-class GomodSettings(BaseModel, extra="forbid"):
+class GomodSettings(ProxyMixin, extra="forbid"):
     """Settings for Go modules."""
 
-    proxy_url: str = "https://proxy.golang.org,direct"
+    # TODO: refactor typesystem to trivially include comma-separated lists of URLs.
+    # Ignore type error until that happens.
+    proxy_url: str = "https://proxy.golang.org,direct"  # type: ignore
     download_max_tries: int = 5
     environment_variables: dict[str, str] = {}
 

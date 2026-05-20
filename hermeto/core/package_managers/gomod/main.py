@@ -4,11 +4,14 @@ import os
 import re
 import shutil
 import tempfile
+import urllib
 from collections.abc import Iterable, Iterator
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from textwrap import dedent
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
 
@@ -55,7 +58,7 @@ from hermeto.core.package_managers.gomod.go import (
 )
 from hermeto.core.package_managers.gomod.utils import _clean_go_modcache, _go_exec_env
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import GitRepo, get_repo_for_path, get_repo_id
+from hermeto.core.scm import GitRepo, RepoID, get_repo_for_path, get_repo_id
 from hermeto.core.utils import GIT_PRISTINE_ENV, load_json_stream
 from hermeto.interface.logging import EnforcingModeLoggerAdapter
 
@@ -127,6 +130,8 @@ class Module(NamedTuple):
         had a checksum for this module but didn't
     proxy: the list of custom proxy URLs used to fetch this module, or None if the module was
         fetched directly from VCS or only via the canonical Go proxy (proxy.golang.org).
+    repo_id: optional RepoID to carry data necessary to construct vcs_url
+    local_replace: a flag to mark Modules which were obtained via a replace with a local path.
     """
 
     name: str
@@ -136,6 +141,8 @@ class Module(NamedTuple):
     main: bool = False
     missing_hash_in_file: Path | None = None
     proxy: list[str] | None = None
+    repo_id: RepoID | None = None
+    local_replace: bool = False
 
     @property
     def purl(self) -> str:
@@ -144,7 +151,7 @@ class Module(NamedTuple):
             type="golang",
             name=self.real_path,
             version=self.version,
-            qualifiers={"type": "module"},
+            qualifiers={"type": "module"} | _vcs_url_if_needed(self),
         )
         return purl.to_string()
 
@@ -204,13 +211,31 @@ class Package(NamedTuple):
             type="golang",
             name=self.real_path,
             version=self.module.version,
-            qualifiers={"type": "package"},
+            qualifiers={"type": "package"} | _vcs_url_if_needed(self.module),
         )
         return purl.to_string()
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
-        return Component(name=self.name, version=self.module.version, purl=self.purl)
+        return Component(
+            name=self.name,
+            version=self.module.version,
+            purl=self.purl,
+            external_references=self.module.to_component().external_references,
+        )
+
+
+def _vcs_url_if_needed(module: Module) -> dict:
+    """Determine whether a vcs_url quialifier is necessary and provide one."""
+    if module.main or module.local_replace:
+        # The main module is always consumed from a local filesystem and it is always
+        # a clone of a repository, thus adding vcs_url to it.
+        # Local replaces need a vcs_url as well and are supposed to be consumed from the file
+        # system too.
+        # Ignore because at this poing repo_id cannot be None, but that is not something mypy can
+        # infer.
+        return {"vcs_url": module.repo_id.as_vcs_url_qualifier()}  # type: ignore
+    return dict()
 
 
 class StandardPackage(NamedTuple):
@@ -229,6 +254,8 @@ class StandardPackage(NamedTuple):
 
     def to_component(self) -> Component:
         """Create a SBOM component for this package."""
+        # Note, these copmonents come from the standard lib, they lack version, they
+        # are not collected from a repository and are not present in the output directory.
         return Component(name=self.name, purl=self.purl)
 
 
@@ -296,6 +323,7 @@ def _create_modules_from_parsed_data(
         original_name = module.path
         missing_hash_in_file = None
 
+        repo_id, proxy, local_replace = None, None, False
         if not version_or_path.startswith("."):
             version = version_or_path
             real_path = name
@@ -314,7 +342,8 @@ def _create_modules_from_parsed_data(
             resolved_replacement_path = main_module_dir.join_within_root(version_or_path)
             version = version_resolver.get_golang_version(module.path, resolved_replacement_path)
             real_path = _resolve_path_for_local_replacement(module)
-            proxy = None
+            local_replace = True
+            repo_id = get_repo_id(main_module_dir.path)
 
         return Module(
             name=name,
@@ -323,6 +352,8 @@ def _create_modules_from_parsed_data(
             real_path=real_path,
             missing_hash_in_file=missing_hash_in_file,
             proxy=proxy,
+            local_replace=local_replace,
+            repo_id=repo_id,
         )
 
     def _resolve_path_for_local_replacement(module: ParsedModule) -> str:
@@ -560,10 +591,13 @@ def _create_main_module_from_parsed_data(
     if repo_name is None:
         # PERMISSIVE mode without git repo - use the module path as resolved_path
         resolved_path = parsed_main_module.path
+        repo_id = None
     elif str(resolved_subpath) == ".":
         resolved_path = repo_name
+        repo_id = get_repo_id(main_module_dir)
     else:
         resolved_path = f"{repo_name}/{resolved_subpath}"
+        repo_id = get_repo_id(main_module_dir)
 
     if not parsed_main_module.version:
         # Should not happen, since the version is always resolved from the Git repo
@@ -574,6 +608,8 @@ def _create_main_module_from_parsed_data(
         original_name=parsed_main_module.path,
         version=parsed_main_module.version,
         real_path=resolved_path,
+        main=True,
+        repo_id=repo_id,
     )
 
 
@@ -691,6 +727,67 @@ def _parse_packages(
     return iter(all_packages)
 
 
+def _determine_cache_path(should_vendor: bool, tmp_dir: Path) -> str:
+    if should_vendor:
+        # Even though we do not perform a "go mod download" when vendoring is detected, some
+        # go commands still download dependencies as a side effect. Since we don't want those
+        # copied to the output dir, we need to set the GOMODCACHE to a different directory.
+        return f"{tmp_dir}/vendor-cache"
+    return f"{tmp_dir}/pkg/mod"
+
+
+def _prepare_run_params(
+    request_flags: Iterable, should_vendor: bool, tmp_dir: Path, app_dir: RootedPath
+) -> tuple:
+    config = get_config()
+    gomod_cache = _determine_cache_path(should_vendor, tmp_dir)
+
+    go_vars: dict[str, str] = {
+        "GOPATH": str(tmp_dir),
+        "GO111MODULE": "on",
+        "GOCACHE": str(tmp_dir),
+        "GOMODCACHE": gomod_cache,
+        "GOSUMDB": "sum.golang.org",
+        "GOTOOLCHAIN": "auto",
+    }
+    if config.gomod.proxy_url:
+        go_vars["GOPROXY"] = config.gomod.proxy_url
+
+    # tmpdir for netrc must be returned to keep it in scope for the duration of _resolve_gomod()
+    temp_netrc_dir = None
+    if config.gomod.proxy_login is not None:
+        path_to_netrc, temp_netrc_dir = inject_netrc(prepare_netrc_contents())
+        go_vars["NETRC"] = path_to_netrc
+
+    if "cgo-disable" in request_flags:
+        go_vars["CGO_ENABLED"] = "0"
+
+    env = _go_exec_env(**go_vars)
+    run_params = {"env": env, "cwd": app_dir}
+
+    return run_params, temp_netrc_dir
+
+
+def _determine_which_modules_go_in_go_sum(
+    app_dir: RootedPath,
+    go_work: GoWork | None,
+) -> frozenset[ModuleID]:
+    if go_work:
+        return _parse_go_sum_from_workspaces(go_work)
+    return _parse_go_sum(app_dir.join_within_root("go.sum"))
+
+
+def _acquire_modules(
+    should_vendor: bool, go: Go, app_dir: RootedPath, go_work: GoWork | None, run_params: dict
+) -> Iterable[ParsedModule]:
+    # Vendor dependencies if the gomod-vendor flag is set
+    if should_vendor:
+        return _vendor_deps(go, app_dir, bool(go_work), run_params)
+    log.info("Downloading the gomod dependencies")
+    json_stream = go(["mod", "download", "-json"], run_params, retry=True)
+    return (ParsedModule.model_validate(obj) for obj in load_json_stream(json_stream))
+
+
 def _resolve_gomod(
     app_dir: RootedPath,
     request: Request,
@@ -713,53 +810,14 @@ def _resolve_gomod(
     :raises PackageManagerError: if fetching dependencies fails
     """
     _protect_against_symlinks(app_dir)
-
-    config = get_config()
-
     should_vendor = app_dir.join_within_root("vendor").path.is_dir()
 
-    if should_vendor:
-        # Even though we do not perform a "go mod download" when vendoring is detected, some
-        # go commands still download dependencies as a side effect. Since we don't want those
-        # copied to the output dir, we need to set the GOMODCACHE to a different directory.
-        gomod_cache = f"{tmp_dir}/vendor-cache"
-    else:
-        gomod_cache = f"{tmp_dir}/pkg/mod"
-
-    go_vars: dict[str, str] = {
-        "GOPATH": str(tmp_dir),
-        "GO111MODULE": "on",
-        "GOCACHE": str(tmp_dir),
-        "GOMODCACHE": gomod_cache,
-        "GOSUMDB": "sum.golang.org",
-        "GOTOOLCHAIN": "auto",
-    }
-    if config.gomod.proxy_url:
-        go_vars["GOPROXY"] = config.gomod.proxy_url
-
-    if "cgo-disable" in request.flags:
-        go_vars["CGO_ENABLED"] = "0"
-
-    env = _go_exec_env(**go_vars)
-    run_params = {"env": env, "cwd": app_dir}
+    run_params, _ = _prepare_run_params(request.flags, should_vendor, tmp_dir, app_dir)
 
     # Explicitly disable toolchain telemetry for go >= 1.23
     _disable_telemetry(go, run_params)
-
-    if go_work:
-        modules_in_go_sum = _parse_go_sum_from_workspaces(go_work)
-    else:
-        modules_in_go_sum = _parse_go_sum(app_dir.join_within_root("go.sum"))
-
-    # Vendor dependencies if the gomod-vendor flag is set
-    if should_vendor:
-        downloaded_modules = _vendor_deps(go, app_dir, bool(go_work), run_params)
-    else:
-        log.info("Downloading the gomod dependencies")
-        downloaded_modules = (
-            ParsedModule.model_validate(obj)
-            for obj in load_json_stream(go(["mod", "download", "-json"], run_params, retry=True))
-        )
+    modules_in_go_sum = _determine_which_modules_go_in_go_sum(app_dir, go_work)
+    downloaded_modules = _acquire_modules(should_vendor, go, app_dir, go_work, run_params)
 
     main_module, workspace_modules = _parse_local_modules(
         go_work, go, run_params, app_dir, version_resolver
@@ -1417,3 +1475,24 @@ def _vendor_changed(context_dir: RootedPath) -> bool:
         repo.git.reset("--", context_relative_path)
 
     return False
+
+
+def prepare_netrc_contents() -> str:
+    """Prepare .netrc contents."""
+    config = get_config()
+    # it should be `machine foo.bar.baz` in netrc, but is
+    # set to https://foo.bar.baz/repository/go-proxy/ via a variable.
+    machine = urllib.parse.urlparse(config.gomod.proxy_url).netloc
+    return dedent(
+        f"""machine {machine}
+        login {config.gomod.proxy_login}
+        password {config.gomod.proxy_password}"""
+    )
+
+
+def inject_netrc(netrc_stuff: str) -> tuple[str, TemporaryDirectory[str]]:
+    """Inject a temporary .netrc."""
+    tmpdir = TemporaryDirectory()
+    netrc = Path(tmpdir.name) / ".netrc"
+    netrc.write_text(netrc_stuff)
+    return str(netrc), tmpdir
