@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 from pathlib import Path
+from typing import Literal
 from unittest import mock
 
 import pypi_simple
@@ -127,41 +128,30 @@ class TestProcessPreferBinaryMode:
         assert result[1] == wheel2
         assert result[2] == sdist_tar  # .tar.gz preferred over .zip
 
-    def test_returns_only_wheels_when_no_sdist(
-        self,
+    @pytest.mark.parametrize(
+        "pkg_name, pkg_type, sdists_empty",
+        [
+            pytest.param("pkg-1.0.0-py3-none-any.whl", "wheel", True, id="wheel_only_no_sdist"),
+            pytest.param("pkg-1.0.0.tar.gz", "sdist", False, id="sdist_only_no_wheel"),
+        ],
+    )
+    def test_returns_single_type_when_other_missing(
+        self, pkg_name: str, pkg_type: Literal["sdist", "wheel"], sdists_empty: bool
     ) -> None:
-        """Wheel-only packages (no sdist on PyPI) return only wheels with debug log."""
-        wheel = mock_distribution_package_info(
-            name="pkg-1.0.0-py3-none-any.whl",
+        pkg = mock_distribution_package_info(
+            name=pkg_name,
             version="1.0.0",
-            package_type="wheel",
+            package_type=pkg_type,
         )
 
         result = _process_prefer_binary_mode(
-            sdists=[],
-            wheels=[wheel],
+            sdists=[] if sdists_empty else [pkg],
+            wheels=[pkg] if sdists_empty else [],
             name="pkg",
             version="1.0.0",
         )
 
-        assert result == [wheel]
-
-    def test_falls_back_to_sdist_when_no_wheels(self) -> None:
-        """No matching wheels falls back to sdist-only."""
-        sdist = mock_distribution_package_info(
-            name="pkg-1.0.0.tar.gz",
-            version="1.0.0",
-            package_type="sdist",
-        )
-
-        result = _process_prefer_binary_mode(
-            sdists=[sdist],
-            wheels=[],
-            name="pkg",
-            version="1.0.0",
-        )
-
-        assert result == [sdist]
+        assert result == [pkg]
 
 
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
