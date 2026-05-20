@@ -2,10 +2,6 @@
 import logging
 from typing import Any
 
-from requests import Session
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
 log = logging.getLogger(__name__)
 
 # The set is extended version of constant Retry.DEFAULT_ALLOWED_METHODS
@@ -16,27 +12,6 @@ ALL_REQUEST_METHODS = frozenset(
 # The set includes only methods which don't modify state of the service.
 SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 DEFAULT_RETRY_OPTIONS: dict[str, Any] = {
-    "total": 5,
-    "read": 5,
-    "connect": 5,
     "backoff_factor": 1.3,
     "status_forcelist": (500, 502, 503, 504),
 }
-
-
-def get_requests_session(retry_options: dict | None = None) -> Session:
-    """
-    Create a requests session with retries.
-
-    :param dict retry_options: overwrite options for initialization of Retry instance
-    :return: the configured requests session
-    :rtype: requests.Session
-    """
-    if retry_options is None:
-        retry_options = {}
-    session = Session()
-    retry_options = {**DEFAULT_RETRY_OPTIONS, **retry_options}
-    adapter = HTTPAdapter(max_retries=Retry(**retry_options))
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session

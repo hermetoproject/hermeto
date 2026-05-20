@@ -19,7 +19,6 @@ from hermeto.core.package_managers.general import (
     _async_download_binary_file,
     async_download_files,
     download_binary_file,
-    pkg_requests_session,
 )
 from tests.common_utils import GIT_REF
 
@@ -27,7 +26,7 @@ from tests.common_utils import GIT_REF
 @pytest.mark.parametrize("auth", [None, HTTPBasicAuth("user", "password")])
 @pytest.mark.parametrize("insecure", [True, False])
 @pytest.mark.parametrize("chunk_size", [1024, 2048])
-@mock.patch.object(pkg_requests_session, "get")
+@mock.patch("hermeto.core.package_managers.general.requests.Session.get")
 def test_download_binary_file(
     mock_get: Any, auth: AuthBase | None, insecure: bool, chunk_size: int, tmp_path: Path
 ) -> None:
@@ -49,7 +48,7 @@ def test_download_binary_file(
     mock_response.iter_content.assert_called_with(chunk_size=chunk_size)
 
 
-@mock.patch.object(pkg_requests_session, "get")
+@mock.patch("hermeto.core.package_managers.general.requests.Session.get")
 def test_download_binary_file_failed(mock_get: Any) -> None:
     mock_get.side_effect = [requests.RequestException("Something went wrong")]
 
