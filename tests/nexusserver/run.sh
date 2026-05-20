@@ -21,4 +21,9 @@ echo "--- Initializing Nexus ---"
 python "$DIR/configure.py"
 
 echo -e "\nPress Ctrl+C to stop and cleanup...\n"
-podman-compose -f "$DIR/docker-compose.yml" logs -f
+# On macOS, podman machine does not allow following logs for multiple containers at once.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    podman-compose -f "$DIR/docker-compose.yml" logs -f nexus
+else
+    podman-compose -f "$DIR/docker-compose.yml" logs -f
+fi
