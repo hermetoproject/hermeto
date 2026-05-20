@@ -10,11 +10,13 @@ from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
+from hermeto.core.models.sbom import create_backend_annotation
 from hermeto.core.package_managers.javascript.pnpm.project import (
     PnpmLock,
     PnpmPackage,
     parse_packages,
 )
+from hermeto.core.package_managers.javascript.pnpm.resolver import generate_sbom_components
 from hermeto.core.package_managers.npm import (
     NPM_REGISTRY_URL,
     async_download_with_auth,
@@ -34,7 +36,12 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
     for package in request.pnpm_packages:
         project_dir = request.source_dir.join_within_root(package.path)
         lockfile = PnpmLock.from_dir(project_dir.path)
-        project_files.append(_resolve_pnpm_project(deps_dir, lockfile))
+        packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
+        project_files.append(updated_lockfile)
+        components.extend(generate_sbom_components(project_dir, packages))
+
+    if backend_annotation := create_backend_annotation(components, "x-pnpm"):
+        annotations.append(backend_annotation)
 
     return RequestOutput.from_obj_list(
         components=components,
@@ -43,12 +50,14 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
     )
 
 
-def _resolve_pnpm_project(deps_dir: Path, lockfile: PnpmLock) -> ProjectFile:
+def _resolve_pnpm_project(
+    deps_dir: Path, lockfile: PnpmLock
+) -> tuple[list[PnpmPackage], ProjectFile]:
     """Resolve a pnpm project."""
     packages = parse_packages(lockfile)
     non_local = [p for p in packages if not p.url.startswith("file:")]
     _download_resolved_packages(non_local, deps_dir)
-    return _prepare_lockfile_for_hermetic_build(lockfile, non_local)
+    return packages, _prepare_lockfile_for_hermetic_build(lockfile, non_local)
 
 
 def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> None:
