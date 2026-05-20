@@ -1,0 +1,48 @@
+environment_variables:
+- name: CARGO_HOME
+  value: ${output_dir}/.cargo
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/../hermeto-output/.cargo/config.toml
+  template: |+
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+
+
+    [source."git+https://github.com/pyca/cryptography.git?tag=45.0.4"]
+    git = "https://github.com/pyca/cryptography.git"
+    tag = "45.0.4"
+    replace-with = "vendored-sources"
+
+- abspath: ${test_case_tmp_path}/../hermeto-output/deps/pip/cryptography-46.0.7/cryptography-46.0.7/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+- abspath: ${test_case_tmp_path}/../hermeto-output/deps/pip/maturin-1.13.3/maturin-1.13.3/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+- abspath: ${test_case_tmp_path}/../hermeto-output/deps/pip/rfc3161_client-1.0.6/rfc3161_client-1.0.6/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/pyca/cryptography.git?tag=45.0.4"]
+    git = "https://github.com/pyca/cryptography.git"
+    tag = "45.0.4"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"

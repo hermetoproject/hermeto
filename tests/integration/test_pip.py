@@ -209,6 +209,23 @@ def test_pip_packages(
             [],
             id="pip_e2e_rust_extensions",
         ),
+        pytest.param(
+            utils.TestParameters(
+                repo_url="https://github.com/slimreaper35/integration-tests",
+                # branch="pip/e2e-rust-git-dependency",
+                branch="cryptography-git",
+                packages=(
+                    (
+                        {"type": "pip", "binary": {"packages": "cffi,cryptography,pycparser"}},
+                        {"type": "rpm"},
+                    )
+                ),
+                check_output=False,
+            ),
+            [],
+            [],
+            id="pip_e2e_rust_git_dependency",
+        ),
     ],
 )
 def test_e2e_pip(
