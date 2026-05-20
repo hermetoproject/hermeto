@@ -1,19 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections.abc import Generator, Iterable
+from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 from typing import Any
 
-import pydantic
-
-from hermeto.core.package_managers.yarn_classic.project import PackageJson
+from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 
 
-class Workspace(pydantic.BaseModel):
+@dataclass
+class Workspace:
     """
     Workspace model.
 
@@ -25,12 +25,9 @@ class Workspace(pydantic.BaseModel):
     path: Path
     package_json: PackageJson
 
-    @pydantic.field_validator("package_json")
-    @classmethod
-    def _ensure_package_is_named(cls, package_json: PackageJson) -> PackageJson:
-        if "name" not in package_json.data:
+    def __post_init__(self) -> None:
+        if self.package_json.data.get("name") is None:
             raise ValueError("Workspaces must contain 'name' field.")
-        return package_json
 
 
 def ensure_no_path_leads_out(
@@ -76,7 +73,7 @@ def _extract_workspaces_globs(package: dict[str, Any]) -> list[str]:
 
 def extract_workspace_metadata(package_path: RootedPath) -> list[Workspace]:
     """Extract workspace metadata from a package."""
-    package_json = PackageJson.from_file(package_path.join_within_root("package.json"))
+    package_json = PackageJson.from_dir(package_path.path)
     workspaces_globs = _extract_workspaces_globs(package_json.data)
     workspaces_paths = _get_workspace_paths(workspaces_globs, package_path)
     ensure_no_path_leads_out(workspaces_paths, package_path)
@@ -98,10 +95,7 @@ def extract_workspace_metadata(package_path: RootedPath) -> list[Workspace]:
             continue
 
         parsed_workspaces.append(
-            Workspace(
-                path=wp,
-                package_json=PackageJson.from_file(package_json_path),
-            )
+            Workspace(path=wp, package_json=PackageJson.from_file(package_json_path.path))
         )
 
     return parsed_workspaces
