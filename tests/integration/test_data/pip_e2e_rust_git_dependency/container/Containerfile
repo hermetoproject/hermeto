@@ -1,0 +1,17 @@
+FROM registry.access.redhat.com/ubi10/ubi@sha256:eb702361cac064da1e7fb9b09eb030562a832209ed1fb1d6765d617ed6294e61
+
+# Test disabled network access
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
+
+RUN dnf -y install \
+    cargo \
+    python3 \
+    python3-pip \
+    python3-setuptools \
+    python3-devel \
+    libffi-devel \
+    openssl-devel
+
+WORKDIR /src
+
+RUN . /tmp/hermeto.env && python3 -m pip install -r requirements.txt

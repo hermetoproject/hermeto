@@ -2,8 +2,14 @@
 from pathlib import Path
 
 import pytest
+import tomlkit
 
-from hermeto.core.package_managers.pip.rust import _get_rust_root_dir, _shortest_path_parent
+from hermeto.core.models.output import ProjectFile
+from hermeto.core.package_managers.pip.rust import (
+    _get_rust_root_dir,
+    _merge_cargo_config_files,
+    _shortest_path_parent,
+)
 
 
 @pytest.mark.parametrize(
@@ -55,3 +61,59 @@ def test_get_rust_root_dir_prefers_cargo_lock_over_cargo_toml(tmp_path: Path) ->
     (subdir / "Cargo.lock").touch()
     (subdir / "Cargo.toml").touch()
     assert _get_rust_root_dir(tmp_path) == subdir
+
+
+def test_merge_cargo_config_files() -> None:
+    config1 = """
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/org1/repo1.git?tag=0.1.0"]
+    git = "https://github.com/org1/repo1.git"
+    tag = "0.1.0"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+    """
+
+    config2 = """
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/org2/repo2.git?tag=0.2.0"]
+    git = "https://github.com/org2/repo2.git"
+    tag = "0.2.0"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+    """
+
+    expected_config = """
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/org1/repo1.git?tag=0.1.0"]
+    git = "https://github.com/org1/repo1.git"
+    tag = "0.1.0"
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/org2/repo2.git?tag=0.2.0"]
+    git = "https://github.com/org2/repo2.git"
+    tag = "0.2.0"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"
+    """
+
+    expected = tomlkit.parse(expected_config)
+
+    # Make sure the order of the project files does not matter.
+    for variation in ((config1, config2), (config2, config1)):
+        pfs = [
+            ProjectFile(abspath=Path("/does/not/matter"), template=template)
+            for template in variation
+        ]
+        assert tomlkit.parse(_merge_cargo_config_files(pfs)) == expected
