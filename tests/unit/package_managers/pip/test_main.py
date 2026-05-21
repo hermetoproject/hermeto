@@ -23,12 +23,14 @@ from hermeto.core.errors import (
     UnrecognizedFileExtension,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import CargoPackageInput, Request
+from hermeto.core.models.input import CargoPackageInput, PipPackagingTool, Request
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.package_managers.pip.packages import PipPackageInfo, URLPackage, VCSPackage
+from hermeto.core.package_managers.pip.pylock import PyLockfileV1
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
+from tests.unit.package_managers.pip.test_pylock import write_pylock_toml
 
 CUSTOM_PYPI_ENDPOINT = "https://my-pypi.org/simple/"
 
@@ -956,3 +958,108 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
 
     with pytest.raises(PackageWithCorruptLockfileRejected):
         pip.fetch_pip_source(request)
+
+
+class TestDownloadPylock:
+    """Tests for dependency downloading from pylock.toml lockfiles."""
+
+    @pytest.mark.parametrize("checksum_match", [True, False])
+    @mock.patch(
+        "hermeto.core.package_managers.pip.main._checksum_must_match_or_path_unlink",
+    )
+    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
+    def test_download_dependencies_archive_pylock(
+        self,
+        mock_download_binary_file: mock.Mock,
+        mock_checksum: mock.Mock,
+        checksum_match: bool,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Test _download_dependencies with a pylock lockfile containing an archive (kind=url)."""
+        mock_checksum.return_value = checksum_match
+
+        archive_url = "https://files.example.com/foo-1.0.tar.gz"
+        lockfile_path = write_pylock_toml(
+            rooted_tmp_path,
+            f"""\
+            lock-version = "1.0"
+
+            [[packages]]
+            name = "foo"
+            version = "1.0"
+
+            [packages.archive]
+            url = "{archive_url}"
+
+            [packages.archive.hashes]
+            sha256 = "abcdef123456"
+            """,
+        )
+
+        lockfile = PyLockfileV1(lockfile_path)
+        found = pip._download_dependencies(rooted_tmp_path, lockfile, None)
+
+        if checksum_match:
+            assert len(found) == 1
+            assert isinstance(found[0], URLPackage)
+            assert found[0].name == "foo"
+            assert found[0].original_url == archive_url
+        else:
+            assert found == []
+
+    @mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
+    @mock.patch("hermeto.core.package_managers.pip.main._download_from_lockfiles")
+    @mock.patch("hermeto.core.package_managers.pip.main.filter_packages_with_rust_code")
+    def test_resolve_pip_pylock(
+        self,
+        mock_filter_cargo: mock.Mock,
+        mock_download: mock.Mock,
+        mock_metadata: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Test _resolve_pip routes pylock lockfiles through the lockfile path."""
+        write_pylock_toml(
+            rooted_tmp_path,
+            """\
+            lock-version = "1.0"
+
+            [[packages]]
+            name = "foo"
+            version = "1.0"
+
+            [packages.archive]
+            url = "https://x.org/foo-1.0.tar.gz"
+
+            [packages.archive.hashes]
+            sha256 = "abcdef"
+            """,
+        )
+
+        mock_metadata.return_value = ("foo", "1.0")
+        mock_filter_cargo.return_value = []
+        mock_url_pkg = URLPackage(
+            name="foo",
+            path=Path("some/path"),
+            requirement_file="pylock.toml",
+            missing_req_file_checksum=False,
+            package_type="",
+            original_url="https://x.org/foo-1.0.tar.gz",
+            checksum="sha256:abcdef",
+        )
+        mock_download.side_effect = [[mock_url_pkg], []]
+
+        result = pip._resolve_pip(
+            package_path=rooted_tmp_path,
+            output_dir=rooted_tmp_path.join_within_root("output"),
+            lockfile_path=Path("pylock.toml"),
+            lockfile_extra_paths=[],
+            packaging_tool=PipPackagingTool.PYLOCK,
+        )
+
+        assert isinstance(result, PipPackageInfo)
+        assert result.packaging_tool == PipPackagingTool.PYLOCK
+        assert result.name == "foo"
+        assert result.version == "1.0"
+        assert len(result.requires) == 1
+        assert isinstance(result.requires[0], URLPackage)
+        assert result.requires[0].name == "foo"
