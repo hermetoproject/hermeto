@@ -24,6 +24,7 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
+from hermeto.core.package_managers.pip.pylock import PyLockIndexPackage
 from hermeto.core.package_managers.pip.requirements import PipRequirement
 from hermeto.core.rooted_path import RootedPath
 
@@ -184,6 +185,9 @@ def process_package_distributions(
     name = requirement.package
     version = requirement.version_specs[0][1]
     req_file_checksums = set(map(ChecksumInfo.from_hash, requirement.hashes))
+
+    if isinstance(requirement, PyLockIndexPackage) and requirement.index:
+        index_url = requirement.index
 
     packages = list(_get_project_packages_from(index_url, name, version, auth=auth))
     sdists = filter(lambda x: x.package_type == "sdist", packages)

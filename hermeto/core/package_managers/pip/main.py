@@ -4,6 +4,7 @@ import functools
 import logging
 import tarfile
 import zipfile
+from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -12,6 +13,7 @@ from urllib import parse as urlparse
 import aiohttp
 import pypi_simple
 import requests.auth
+import tomlkit
 from packageurl import PackageURL
 from packaging.utils import canonicalize_name
 
@@ -19,7 +21,7 @@ from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnsupportedFeature
-from hermeto.core.models.input import PipBinaryFilters, Request
+from hermeto.core.models.input import PipBinaryFilters, PipPackagingTool, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import (
     Component,
@@ -43,6 +45,7 @@ from hermeto.core.package_managers.pip.packages import (
     VCSPackage,
 )
 from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
+from hermeto.core.package_managers.pip.pylock import PyLockfileV1
 from hermeto.core.package_managers.pip.requirements import (
     ALL_FILE_EXTENSIONS,
     SDIST_FILE_EXTENSIONS,
@@ -89,6 +92,9 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             package.requirements_files,
             package.requirements_build_files,
             package.binary,
+            package.lockfile,
+            package.lockfile_extras,
+            package.packaging_tool,
         )
         purl = _generate_purl_main_package(info, package_path)
         components.append(Component(name=info.name, version=info.version, purl=purl))
@@ -98,8 +104,11 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         for dep in info.build_requires:
             components.append(dep.to_component(build_dependency=True))
 
-        replaced_requirements_files = map(_replace_external_requirements, info.requirements)
-        project_files.extend(filter(None, replaced_requirements_files))
+        if info.packaging_tool == PipPackagingTool.REQUIREMENTS:
+            replaced_files = map(_replace_external_requirements, info.requirements)
+        else:
+            replaced_files = map(_replace_pylock_requirements, info.requirements)
+        project_files.extend(filter(None, replaced_files))
         # each package can have Rust dependencies
         packages_containing_rust_code += info.packages_containing_rust_code
 
@@ -240,7 +249,7 @@ def _checksum_must_match_or_path_unlink(path: Path, checksum_info: Iterable[Chec
 
 
 def _download_pypi_packages(
-    requirements_file: PipRequirementsFile,
+    lockfile: PipRequirementsFile | PyLockfileV1,
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
     index_url: str,
@@ -264,7 +273,7 @@ def _download_pypi_packages(
         dep = PyPIPackage(
             name=dpi.name,
             path=dpi.path,
-            requirement_file=str(requirements_file.file_path.subpath_from_root),
+            requirement_file=str(lockfile.file_path.subpath_from_root),
             missing_req_file_checksum=missing_req_file_checksum,
             package_type=dpi.package_type,
             version=dpi.version,
@@ -282,7 +291,7 @@ def _download_pypi_packages(
 
 def _download_vcs_package(
     req: PipRequirement,
-    requirements_file: PipRequirementsFile,
+    lockfile: PipRequirementsFile | PyLockfileV1,
     pip_deps_dir: RootedPath,
 ) -> VCSPackage:
     """Fetch a Python package from VCS (only git is supported)."""
@@ -296,7 +305,7 @@ def _download_vcs_package(
     dep = VCSPackage(
         name=req.package,
         path=download_to.path,
-        requirement_file=str(requirements_file.file_path.subpath_from_root),
+        requirement_file=str(lockfile.file_path.subpath_from_root),
         missing_req_file_checksum=True,
         package_type="",
         url=git_info["url"],
@@ -312,7 +321,7 @@ def _download_vcs_package(
 
 def _download_url_package(
     req: PipRequirement,
-    requirements_file: PipRequirementsFile,
+    lockfile: PipRequirementsFile | PyLockfileV1,
     pip_deps_dir: RootedPath,
     trusted_hosts: set[str],
 ) -> URLPackage | None:
@@ -352,7 +361,7 @@ def _download_url_package(
     dep = URLPackage(
         name=req.package,
         path=download_to.path,
-        requirement_file=str(requirements_file.file_path.subpath_from_root),
+        requirement_file=str(lockfile.file_path.subpath_from_root),
         missing_req_file_checksum=missing_req_file_checksum,
         package_type="wheel" if parsed_url.path.endswith(WHEEL_FILE_EXTENSION) else "",
         original_url=req.url,
@@ -378,7 +387,7 @@ async def _resolve_pypi_distributions(
 
 def _resolve_and_download_pypi_packages(
     pypi_reqs: list[PipRequirement],
-    requirements_file: PipRequirementsFile,
+    lockfile: PipRequirementsFile | PyLockfileV1,
     pip_deps_dir: RootedPath,
     binary_filters: PipBinaryFilters | None,
     index_url: str,
@@ -406,7 +415,7 @@ def _resolve_and_download_pypi_packages(
     reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
     pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
     return _download_pypi_packages(
-        requirements_file,
+        lockfile,
         pip_deps_dir,
         pypi_artifacts,
         index_url=index_url,
@@ -417,25 +426,33 @@ def _resolve_and_download_pypi_packages(
 
 def _download_dependencies(
     output_dir: RootedPath,
-    requirements_file: PipRequirementsFile,
+    lockfile: PipRequirementsFile | PyLockfileV1,
     binary_filters: PipBinaryFilters | None = None,
 ) -> list[PipPackage]:
     """
-    Download artifacts of all dependency packages in a requirements.txt file.
+    Download artifacts of all dependency packages in a lockfile.
 
     :param output_dir: the root output directory for this request
-    :param requirements_file: A requirements.txt file
+    :param lockfile: a requirements.txt file or pylock lockfile
     :param binary_filters: process wheels?
     :return: list of PipPackage instances for each downloaded package
     """
-    options: dict[str, Any] = process_requirements_options(requirements_file.options)
-    trusted_hosts = set(options["trusted_hosts"])
     processed: list[PipPackage] = []
+
+    if isinstance(lockfile, PyLockfileV1):
+        options: dict[str, Any] = defaultdict(lambda: None)
+        trusted_hosts: set[str] = set()
+
+        if binary_filters is not None:
+            lockfile.merge_wheel_hashes()
+    else:
+        options = process_requirements_options(lockfile.options)
+        trusted_hosts = set(options["trusted_hosts"])
 
     if options["require_hashes"]:
         log.info("Global --require-hashes option used, will require hashes")
         require_hashes = True
-    elif any(req.hashes for req in requirements_file.requirements):
+    elif any(req.hashes for req in lockfile.requirements):
         log.info("At least one dependency uses the --hash option, will require hashes")
         require_hashes = True
     else:
@@ -444,37 +461,37 @@ def _download_dependencies(
         )
         require_hashes = False
 
-    validate_requirements(requirements_file.requirements)
-    validate_requirements_hashes(requirements_file.requirements, require_hashes)
+    validate_requirements(lockfile.requirements)
+    validate_requirements_hashes(lockfile.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
     pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     pypi_reqs: list[PipRequirement] = []
-    for req in requirements_file.requirements:
+    for req in lockfile.requirements:
         log.info("-- Processing requirement line '%s'", req.download_line)
         if req.kind == "pypi":
             pypi_reqs.append(req)
             continue
         elif req.kind == "vcs":
-            processed.append(_download_vcs_package(req, requirements_file, pip_deps_dir))
+            processed.append(_download_vcs_package(req, lockfile, pip_deps_dir))
         elif req.kind == "url":
-            download_info = _download_url_package(
-                req, requirements_file, pip_deps_dir, trusted_hosts
-            )
+            download_info = _download_url_package(req, lockfile, pip_deps_dir, trusted_hosts)
             if download_info is not None:
                 processed.append(download_info)
         else:
-            # Should not happen
             raise RuntimeError(f"Unexpected requirement kind: '{req.kind!r}'")
 
         log.info("-- Finished processing requirement line '%s'", req.download_line)
 
     if pypi_reqs:
-        index_url = options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT
+        if isinstance(lockfile, PyLockfileV1):
+            index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
+        else:
+            index_url = options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT
         processed.extend(
             _resolve_and_download_pypi_packages(
-                pypi_reqs, requirements_file, pip_deps_dir, binary_filters, index_url
+                pypi_reqs, lockfile, pip_deps_dir, binary_filters, index_url
             )
         )
 
@@ -528,6 +545,9 @@ def _resolve_pip(
     requirement_files: list[Path] | None = None,
     build_requirement_files: list[Path] | None = None,
     binary_filters: PipBinaryFilters | None = None,
+    lockfile_path: Path | None = None,
+    lockfile_extra_paths: list[Path] | None = None,
+    packaging_tool: PipPackagingTool | None = None,
 ) -> PipPackageInfo:
     """Resolve and fetch pip dependencies for the given pip application.
 
@@ -535,6 +555,21 @@ def _resolve_pip(
         requirements/expectations
     """
     pkg_name, pkg_version = _get_pip_metadata(package_path)
+
+    def resolve_packaging_tool(lockfile_path: Path | None) -> PipPackagingTool:
+        if lockfile_path is None:
+            log.warning("No lockfile path specified, using requirements")
+            return PipPackagingTool.REQUIREMENTS
+
+        for tool in PipPackagingTool:
+            if tool.file == lockfile_path.name or tool.build_file == lockfile_path.name:
+                return tool
+
+        log.warning("Could not determine packaging tool, using requirements")
+        return PipPackagingTool.REQUIREMENTS
+
+    if packaging_tool is None:
+        packaging_tool = resolve_packaging_tool(lockfile_path)
 
     def resolve_req_files(req_files: list[Path] | None, devel: bool) -> list[RootedPath]:
         resolved: list[RootedPath] = []
@@ -546,28 +581,66 @@ def _resolve_pip(
 
         return resolved
 
-    resolved_req_files = resolve_req_files(requirement_files, False)
-    if not resolved_req_files:
-        log.warning("No requirements files found, no dependencies will be fetched")
-    else:
-        log.info(
-            "Using requirements files: %s",
-            ", ".join(str(f.subpath_from_root) for f in resolved_req_files),
-        )
+    def resolve_lockfiles(lockfile_paths: list[Path] | None, devel: bool) -> list[RootedPath]:
+        resolved: list[RootedPath] = []
+        if lockfile_paths is not None:
+            resolved.extend([package_path.join_within_root(p) for p in lockfile_paths])
+        elif packaging_tool:
+            resolved.append(
+                package_path.join_within_root(
+                    packaging_tool.build_file if devel else packaging_tool.file
+                )
+            )
+        return resolved
 
-    resolved_build_req_files = resolve_req_files(build_requirement_files, True)
-    if not resolved_build_req_files:
-        log.info("No build requirements files found")
-    else:
-        log.info(
-            "Using build requirements files: %s",
-            ", ".join(str(f.subpath_from_root) for f in resolved_build_req_files),
-        )
+    if packaging_tool == PipPackagingTool.REQUIREMENTS:
+        resolved_lockfiles = resolve_req_files(requirement_files, False)
+        if not resolved_lockfiles:
+            log.warning("No requirements files found, no dependencies will be fetched")
+        else:
+            log.info(
+                "Using requirements files: %s",
+                ", ".join(str(f.subpath_from_root) for f in resolved_lockfiles),
+            )
 
-    requires = _download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
-    build_requires = _download_from_requirement_files(
-        output_dir, resolved_build_req_files, binary_filters
-    )
+        resolved_build_lockfiles = resolve_req_files(build_requirement_files, True)
+        if not resolved_build_lockfiles:
+            log.info("No build requirements files found")
+        else:
+            log.info(
+                "Using build requirements files: %s",
+                ", ".join(str(f.subpath_from_root) for f in resolved_build_lockfiles),
+            )
+
+        requires = _download_from_requirement_files(output_dir, resolved_lockfiles, binary_filters)
+        build_requires = _download_from_requirement_files(
+            output_dir, resolved_build_lockfiles, binary_filters
+        )
+    else:
+        resolved_lockfiles = resolve_lockfiles([lockfile_path] if lockfile_path else None, False)
+        if not resolved_lockfiles:
+            log.warning("No lockfiles found, no dependencies will be fetched")
+        else:
+            log.info(
+                "Using lockfiles: %s",
+                ", ".join(str(f.subpath_from_root) for f in resolved_lockfiles),
+            )
+
+        resolved_build_lockfiles = resolve_lockfiles(lockfile_extra_paths, True)
+        if not resolved_build_lockfiles:
+            log.info("No build lockfiles found")
+        else:
+            log.info(
+                "Using build lockfiles: %s",
+                ", ".join(str(f.subpath_from_root) for f in resolved_build_lockfiles),
+            )
+
+        requires = _download_from_lockfiles(
+            output_dir, resolved_lockfiles, packaging_tool, binary_filters
+        )
+        build_requires = _download_from_lockfiles(
+            output_dir, resolved_build_lockfiles, packaging_tool, binary_filters
+        )
 
     all_deps = requires + build_requires
     if get_config().pip.ignore_dependencies_crates:
@@ -580,7 +653,8 @@ def _resolve_pip(
         version=pkg_version,
         requires=requires,
         build_requires=build_requires,
-        requirements=[*resolved_req_files, *resolved_build_req_files],
+        requirements=[*resolved_lockfiles, *resolved_build_lockfiles],
+        packaging_tool=packaging_tool,
         packages_containing_rust_code=packages_containing_rust_code,
     )
 
@@ -707,3 +781,57 @@ def _replace_external_requirements(requirements_file_path: RootedPath) -> Projec
         abspath=Path(requirements_file_path).resolve(),
         template=replaced_requirements_file.generate_file_content(),
     )
+
+
+def _replace_pylock_requirements(lockfile_path: RootedPath) -> ProjectFile | None:
+    """Generate a modified pylock.toml with local file paths for external dependencies.
+
+    Rewrite URL/VCS dependencies to point to local pre-fetched files (templated).
+    Index (PyPI) dependencies are left unchanged.
+    """
+    lockfile = PyLockfileV1(lockfile_path)
+    data = lockfile.data
+    modified = False
+
+    for req, pkg_data in zip(lockfile.requirements, data["packages"]):
+        if req.kind == "url" and "archive" in pkg_data:
+            path = _get_external_requirement_filepath(req)
+            templated_abspath = Path("${output_dir}", "deps", "pip", path)
+            pkg_data["archive"]["url"] = f"file://{templated_abspath}"
+            modified = True
+        elif req.kind == "vcs" and "vcs" in pkg_data:
+            path = _get_external_requirement_filepath(req)
+            templated_abspath = Path("${output_dir}", "deps", "pip", path)
+            pkg_data["vcs"]["url"] = f"file://{templated_abspath}"
+            modified = True
+
+    if not modified:
+        return None
+
+    return ProjectFile(
+        abspath=Path(lockfile_path).resolve(),
+        template=tomlkit.dumps(data),
+    )
+
+
+def _download_from_lockfiles(
+    output_dir: RootedPath,
+    lockfiles: list[RootedPath],
+    packaging_tool: PipPackagingTool,
+    binary_filters: PipBinaryFilters | None = None,
+) -> list[PipPackage]:
+    """Download dependencies from lockfiles."""
+    requirements: list[PipPackage] = []
+    for lockfile in lockfiles:
+        if not lockfile.path.exists():
+            raise LockfileNotFound(
+                files=lockfile.path,
+                solution="Please check that you have specified correct lockfile paths",
+            )
+        match packaging_tool:
+            case PipPackagingTool.PYLOCK:
+                requirements.extend(
+                    _download_dependencies(output_dir, PyLockfileV1(lockfile), binary_filters)
+                )
+
+    return requirements

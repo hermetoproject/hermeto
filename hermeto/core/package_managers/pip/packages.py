@@ -6,7 +6,7 @@ from pathlib import Path
 import pypi_simple
 from packageurl import PackageURL
 
-from hermeto.core.models.input import CargoPackageInput
+from hermeto.core.models.input import CargoPackageInput, PipPackagingTool
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE, Component, ExternalReference
 from hermeto.core.rooted_path import RootedPath
@@ -123,3 +123,4 @@ class PipPackageInfo:
     build_requires: list[PipPackage]
     requirements: list[RootedPath]
     packages_containing_rust_code: list[CargoPackageInput]
+    packaging_tool: PipPackagingTool = PipPackagingTool.REQUIREMENTS
