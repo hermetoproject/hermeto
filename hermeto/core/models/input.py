@@ -2,6 +2,7 @@
 import logging
 import re
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
 
@@ -23,6 +24,47 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=pydantic.BaseModel)
+
+
+class PipPackagingTool(Enum):
+    """Identify which packaging tool produced a project's lockfile.
+
+    Python projects can lock dependencies with different tools (pip-compile,
+    uv, Poetry, and others). Hermeto does not model every tool separately;
+    each member groups tools by the lockfile format they emit. The ``value``
+    is accepted in request JSON, and ``file`` / ``build_file`` are the
+    conventional default filenames Hermeto auto-discovers when paths are
+    omitted.
+
+    Set ``packaging_tool`` on :class:`PipPackageInput` to declare how the
+    lockfile was produced. When omitted, Hermeto infers it from the lockfile
+    basename. The choice selects which input fields apply and how lockfiles
+    are parsed.
+
+    >>> PipPackagingTool.REQUIREMENTS.value
+    'requirements'
+    >>> PipPackagingTool.REQUIREMENTS.file
+    'requirements.txt'
+    >>> PipPackagingTool.PYLOCK.file
+    'pylock.toml'
+    >>> PipPackagingTool.PYLOCK.build_file
+    'pylock.build.toml'
+    """
+
+    REQUIREMENTS = "requirements", "requirements.txt", "requirements-build.txt"
+    PYLOCK = "pylock", "pylock.toml", "pylock.build.toml"
+
+    def __new__(cls, *args: Any) -> Self:
+        """Create a new PackagingTool instance."""
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        obj._name_ = args[0]
+        return obj
+
+    def __init__(self, _: str, file: str, build_file: str) -> None:
+        """Initialize a PackagingTool instance."""
+        self.file = file
+        self.build_file = build_file
 
 
 def _handle_legacy_allow_binary(
@@ -315,8 +357,13 @@ class PipPackageInput(_PackageInputBase):
     requirements_build_files: list[Path] | None = None
     allow_binary: bool = False
     binary: PipBinaryFilters | None = None
+    lockfile: Path | None = None
+    lockfile_extras: list[Path] | None = None
+    packaging_tool: PipPackagingTool | None = None
 
-    @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @pydantic.field_validator(
+        "requirements_files", "requirements_build_files", "lockfile", "lockfile_extras"
+    )
     @classmethod
     def _no_explicit_none(cls, paths: list[Path] | None) -> list[Path]:
         """Fail if the user explicitly passes None."""
@@ -325,16 +372,27 @@ class PipPackageInput(_PackageInputBase):
             raise ValueError("none is not an allowed value")
         return paths
 
-    @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @pydantic.field_validator("requirements_files", "requirements_build_files", "lockfile_extras")
     @classmethod
     def _requirements_file_path_is_relative(cls, paths: list[Path]) -> list[Path]:
         for p in paths:
             check_sane_relpath(p)
         return paths
 
+    @pydantic.field_validator("lockfile")
+    @classmethod
+    def _lockfile_path_is_relative(cls, path: Path) -> Path:
+        check_sane_relpath(path)
+        return path
+
     @pydantic.model_validator(mode="after")
     def _handle_legacy_allow_binary_field(self) -> Self:
         """Handle backward compatibility for allow_binary field."""
+        if (self.lockfile is not None or self.lockfile_extras is not None) and (
+            self.requirements_files is not None or self.requirements_build_files is not None
+        ):
+            raise ValueError("cannot specify both requirements files and lockfile")
+
         _handle_legacy_allow_binary(self, PipBinaryFilters)
         return self
 
