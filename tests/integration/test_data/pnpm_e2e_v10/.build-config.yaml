@@ -1,0 +1,84 @@
+environment_variables: []
+project_files:
+- abspath: ${test_case_tmp_path}/pnpm-lock.yaml
+  template: |
+    lockfileVersion: '9.0'
+    settings:
+      autoInstallPeers: true
+      excludeLinksFromLockfile: false
+    importers:
+      .:
+        dependencies:
+          '@hono/hono':
+            specifier: jsr:^4.12.23
+            version: '@jsr/hono__hono@4.12.23'
+          '@sinclair/typebox':
+            specifier: ^0.34.49
+            version: 0.34.49
+          debug:
+            specifier: github:debug-js/debug
+            version: https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621
+          lodash:
+            specifier: file:lodash-4.18.1.tar.gz
+            version: file:lodash-4.18.1.tar.gz
+          semver:
+            specifier: https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz
+            version: https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz
+          zod:
+            specifier: ^4.4.3
+            version: 4.4.3
+    packages:
+      '@jsr/hono__hono@4.12.23':
+        resolution:
+          integrity: sha512-CQC/yU9m4ZcB+TgcMGmflF//Ds9MT3tSSpvwCQOhl9Ca7KT5KwjQi7uIQbIk1YfjGX/ogdYEXNr3L5FbFld9TQ==
+          tarball: file://${output_dir}/deps/pnpm/hono-hono-4.12.23.tgz
+      '@sinclair/typebox@0.34.49':
+        resolution:
+          integrity: sha512-brySQQs7Jtn0joV8Xh9ZV/hZb9Ozb0pmazDIASBkYKCjXrXU3mpcFahmK/z4YDhGkQvP9mWJbVyahdtU5wQA+A==
+          tarball: file://${output_dir}/deps/pnpm/sinclair-typebox-0.34.49.tgz
+      debug@https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621:
+        resolution:
+          gitHosted: true
+          integrity: sha512-woSfHOvCYarlVlvhFTArFwhefwTPUEHJKnC+6MLnsNCSSgklXUtxQ633LKbqLo2+nISTSHg2UP+vPVkdnp6RZA==
+          tarball: file://${output_dir}/deps/pnpm/debug-4.4.3.tgz
+        version: 4.4.3
+        engines:
+          node: '>=6.0'
+        peerDependencies:
+          supports-color: '*'
+        peerDependenciesMeta:
+          supports-color:
+            optional: true
+      lodash@file:lodash-4.18.1.tar.gz:
+        resolution:
+          integrity: sha512-plYgbm7FJptKmPjw0ae51BvnlQvZGPaiOhMlcbJEMHSj754WWoA6TQzIjxTDSX0MgcdTmtuHO3jZUTVg5gSb6w==
+          tarball: file:lodash-4.18.1.tar.gz
+        version: 4.18.1
+        engines:
+          node: '>=4.0.0'
+      ms@2.1.3:
+        resolution:
+          integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
+          tarball: file://${output_dir}/deps/pnpm/ms-2.1.3.tgz
+      semver@https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz:
+        resolution:
+          integrity: sha512-+T5wTYyd2XpsnpJyQYEQhC/FfOzhFt3xT3H+3xi7yCMzizkLM+TiJP3+7xBPCTVn+t6YWkURYM5q2AUCcUiwjA==
+          tarball: file://${output_dir}/deps/pnpm/semver-7.8.1.tgz
+        version: 7.8.1
+        engines:
+          node: '>=10'
+        hasBin: true
+      zod@4.4.3:
+        resolution:
+          integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==
+          tarball: file://${output_dir}/deps/pnpm/zod-4.4.3.tgz
+    snapshots:
+      '@jsr/hono__hono@4.12.23': {}
+      '@sinclair/typebox@0.34.49': {}
+      debug@https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621:
+        dependencies:
+          ms: 2.1.3
+      lodash@file:lodash-4.18.1.tar.gz: {}
+      ms@2.1.3: {}
+      semver@https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz: {}
+      zod@4.4.3: {}
