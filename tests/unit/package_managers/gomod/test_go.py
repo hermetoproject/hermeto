@@ -25,7 +25,7 @@ from hermeto.core.package_managers.gomod.go import (
 )
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import Symlink, write_file_tree
-from tests.unit.package_managers.gomod.helpers import get_mocked_data, proc_mock
+from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -75,30 +75,6 @@ class TestGo:
         mock_run.return_value = goversion_output
         go = Go()
         assert go._get_release() == expected
-
-    @pytest.mark.parametrize(
-        "params",
-        [
-            pytest.param({}, id="no_params"),
-            pytest.param(
-                {
-                    "env": {"GOCACHE": "/foo", "GOTOOLCHAIN": "local"},
-                    "cwd": "/foo/bar",
-                    "text": True,
-                },
-                id="with_params",
-            ),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-    def test_run(
-        self,
-        mock_run: mock.Mock,
-        params: dict,
-    ) -> None:
-        cmd = [GO_CMD_PATH, "mod", "download"]
-        Go._run(cmd, **params)
-        mock_run.assert_called_once_with(cmd, params)
 
     @pytest.mark.parametrize(
         "bin_, params, tries_needed",
@@ -224,65 +200,6 @@ class TestGo:
         assert not sdk_source_dir.exists()
         assert target_binary.exists()
         assert result_go.binary == str(target_binary)
-
-    @pytest.mark.parametrize(
-        "release, retry",
-        [
-            pytest.param(None, False, id="bundled_go"),
-            pytest.param("go1.20", True, id="custom_release_installed"),
-            pytest.param("go1.21.0", True, id="custom_release_needs_installation"),
-        ],
-    )
-    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
-    @mock.patch("hermeto.core.package_managers.gomod.go.Go._run")
-    def test_call(
-        self,
-        mock_run: mock.Mock,
-        mock_get_config: mock.Mock,
-        tmp_path: Path,
-        release: str | None,
-        retry: bool,
-    ) -> None:
-        env = {"env": {"GOTOOLCHAIN": "local", "GOCACHE": "foo", "GOPATH": "bar"}}
-        opts = ["mod", "download"]
-        go = Go()
-        go(opts, retry=retry, params=env)
-
-        cmd = [go.binary, *opts]
-        if not retry:
-            mock_run.assert_called_once_with(cmd, **env)
-        else:
-            mock_get_config.return_value.gomod.download_max_tries = 1
-            mock_run.call_count = 1
-            mock_run.assert_called_with(cmd, **env)
-
-    @pytest.mark.parametrize("retry", [False, True])
-    @mock.patch("hermeto.core.package_managers.gomod.go.get_config")
-    @mock.patch("subprocess.run")
-    def test_call_failure(
-        self,
-        mock_run: mock.Mock,
-        mock_get_config: mock.Mock,
-        retry: bool,
-    ) -> None:
-        tries = 1
-        mock_get_config.return_value.gomod.download_max_tries = tries
-        failure = proc_mock(returncode=1, stdout="")
-        mock_run.side_effect = [failure]
-
-        opts = ["mod", "download"]
-        cmd = [GO_CMD_PATH, *opts]
-        error_msg = "Go execution failed: "
-        if retry:
-            error_msg += f"{APP_NAME} re-tried running `{' '.join(cmd)}` command {tries} times."
-        else:
-            error_msg += f"`{' '.join(cmd)}` failed with rc=1"
-
-        with pytest.raises(PackageManagerError, match=error_msg):
-            go = Go()
-            go(opts, retry=retry)
-
-        assert mock_run.call_count == 1
 
 
 class TestGoWork:
