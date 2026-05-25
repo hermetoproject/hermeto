@@ -79,8 +79,8 @@ def _get_bom_ref_backends(sbom: dict[str, Any]) -> dict[str, set[str]]:
         if not annotation.text.startswith(BACKEND_ANNOTATION_PREFIX):
             continue
 
-        # Can be backend:foo or backend:experimental:foo
-        if not (backend_name := annotation.text.split(":")[-1]):
+        # Can be backend:foo or backend:experimental:x-foo
+        if not (backend_name := annotation.text.split(":")[-1].removeprefix("x-")):
             continue
 
         for subject in annotation.subjects:
