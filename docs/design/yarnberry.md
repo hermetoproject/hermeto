@@ -294,6 +294,12 @@ The path to the patch file can be parsed from the
 [locator](https://github.com/chmeliik/berryscary/blob/c424d96e1e36542e52985aee716e1b12881c24fb/yarn.lock#L740).
 We may want to set a reasonably large upper limit for the size of the patch file.
 
+##### Proxy External References
+
+When a proxy URL is configured (see [Proxy Support](#proxy-support)), components with PURLs of type npm
+include an `externalReference` in the SBOM with the proxy URL, annotated with the standard proxy
+reference type and comment.
+
 ##### Alternative Registries
 
 See the [npmRegistryServer][v3-npmRegistryServer] and
@@ -351,6 +357,20 @@ be rejected with a `PackageRejected` error.
 4. Undo accidental changes to the user's repo
 5. Set `$YARN_GLOBAL_FOLDER` for the build
 
+##### Proxy Support
+
+When Hermeto is configured with a proxy URL for Yarn, the following `.yarnrc.yml` options are set
+during prefetch:
+
+| Option | Value | Purpose |
+|--------|-------|---------|
+| `npmRegistryServer` | proxy URL | Redirect registry traffic through the proxy |
+| `npmAlwaysAuth` | `true` | Force authentication on every request (only if credentials are provided) |
+| `npmAuthIdent` | `<login>:<password>` | Proxy credentials (only if both login and password are provided) |
+
+If the proxy requires authentication and invalid or no credentials are provided, `yarn install` (or
+`yarn workspaces focus`) will fail with an "Invalid authentication" error. Hermeto catches this and
+raises a `PackageManagerError` with guidance to verify proxy settings.
 
 **For a zero-installs workflow:**
 
@@ -518,6 +538,9 @@ Optional:
 | [`enableScripts`](https://yarnpkg.com/configuration/yarnrc#enableScripts) | `false` | Extra safety (also achieved by --mode=skip-build) |
 | [`enableStrictSsl`](https://yarnpkg.com/configuration/yarnrc#enableStrictSsl) | `true` | Enforce strict SSL |
 | [`enableTelemetry`](https://yarnpkg.com/configuration/yarnrc#enableTelemetry) | `false` | Disable telemetry |
+| [`npmRegistryServer`][v4-npmRegistryServer] | proxy URL | Redirect registry traffic through proxy (only when proxy is configured) |
+| [`npmAlwaysAuth`](https://yarnpkg.com/configuration/yarnrc#npmAlwaysAuth) | `true` | Force authentication (only when proxy credentials are provided) |
+| [`npmAuthIdent`](https://yarnpkg.com/configuration/yarnrc#npmAuthIdent) | `<login>:<password>` | Proxy credentials (only when proxy credentials are provided) |
 | [`ignorePath`](https://yarnpkg.com/configuration/yarnrc#ignorePath) | `true` | Use global `yarn` instead of local |
 | [`unsafeHttpWhitelist`](https://yarnpkg.com/configuration/yarnrc#unsafeHttpWhitelist) | `[]` | Disallow HTTP |
 
@@ -527,7 +550,7 @@ Optional:
 |--------|---------|
 | [`cacheFolder`][cacheFolder] | To find out and reject if the user is using [zero-installs][zero-installs] |
 | [`lockfileFilename`](https://yarnpkg.com/configuration/yarnrc#lockfileFilename) | Parse the lockfile specified here (default yarn.lock); probably not needed if we base SBOM generation on `yarn info` output instead |
-| [`npmRegistryServer`](https://yarnpkg.com/configuration/yarnrc#npmRegistryServer) and [`npmScopes`](https://yarnpkg.com/configuration/yarnrc#npmScopes) | The user can configure multiple different registries; if we don't respect them we cause Dependency Confusion. `yarn install` will respect them automatically |
+| [`npmRegistryServer`][v4-npmRegistryServer] and [`npmScopes`](https://yarnpkg.com/configuration/yarnrc#npmScopes) | The user can configure multiple different registries; if we don't respect them we cause Dependency Confusion. `yarn install` will respect them automatically |
 | [`yarnPath`](https://yarnpkg.com/configuration/yarnrc#yarnPath) | Depending on how we [handle Yarnberry installs][yarn-install-guide] |
 
 #### Environment Variables
@@ -563,7 +586,7 @@ Optional:
 1. Make sure we will use the right version of Yarnberry to process the project
 2. If workspace focus is requested, validate that the project uses Yarn v4+
 3. Check and reject if the project uses zero-installs
-4. Prepare the configuration options relevant for prefetch
+4. Prepare the configuration options relevant for prefetch (including proxy settings if configured)
 5. Disable plugins
 6. Run `yarn info …` to get the necessary data (or per-workspace info queries if using workspace
    focus)
@@ -573,7 +596,8 @@ Optional:
 10. Run `yarn install …` or `yarn workspaces focus …` to fetch the dependencies (or check the
     existing cache, if zero-installs)
 11. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
-    `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`)
+    `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`);
+    include backend annotations and proxy external references where applicable
 12. Set environment variables for the build
 
 ## Implementation Notes
@@ -653,5 +677,6 @@ This design was originally written for Yarn@3.x. Relevant changes in
 [plugins]: https://v3.yarnpkg.com/features/plugins
 [pnp]: https://v3.yarnpkg.com/features/pnp
 [yarn-install-guide]: https://v3.yarnpkg.com/getting-started/install
+[v4-npmRegistryServer]: https://yarnpkg.com/configuration/yarnrc#npmRegistryServer
 [yarnrc-ref]: https://v3.yarnpkg.com/configuration/yarnrc
 [zero-installs]: https://v3.yarnpkg.com/features/zero-installs
