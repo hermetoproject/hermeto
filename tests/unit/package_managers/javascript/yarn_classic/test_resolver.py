@@ -22,7 +22,6 @@ from hermeto.core.package_managers.javascript.yarn_classic.resolver import (
     WorkspacePackage,
     YarnClassicPackage,
     _get_main_package,
-    _get_packages_from_lockfile,
     _get_workspace_packages,
     _is_git_url,
     _is_tarball_url,
@@ -217,35 +216,6 @@ def test_create_package_from_pyarn_package_fail_validation(
     package_factory = _YarnClassicPackageFactory(rooted_tmp_path, rooted_tmp_path, set())
     with pytest.raises(expected_exc, match=match_msg):
         package_factory.create_package_from_pyarn_package(pyarn_package)
-
-
-@mock.patch(
-    "hermeto.core.package_managers.javascript.yarn_classic.resolver._YarnClassicPackageFactory.create_package_from_pyarn_package"
-)
-def test_get_packages_from_lockfile(
-    mock_create_package: mock.Mock, rooted_tmp_path: RootedPath
-) -> None:
-    # Setup lockfile instance
-    mock_pyarn_lockfile = mock.Mock()
-    mock_yarn_lock = mock.Mock(yarn_lockfile=mock_pyarn_lockfile)
-    mock_pyarn_package_1 = mock.Mock()
-    mock_pyarn_package_2 = mock.Mock()
-    mock_pyarn_lockfile.packages.return_value = [mock_pyarn_package_1, mock_pyarn_package_2]
-
-    # Setup classifier
-    mock_package_1 = mock.Mock()
-    mock_package_2 = mock.Mock()
-    mock_create_package.side_effect = [mock_package_1, mock_package_2]
-    create_package_expected_calls = [
-        mock.call(mock_pyarn_package_1),
-        mock.call(mock_pyarn_package_2),
-    ]
-
-    output = _get_packages_from_lockfile(rooted_tmp_path, rooted_tmp_path, mock_yarn_lock, set())
-
-    mock_pyarn_lockfile.packages.assert_called_once()
-    mock_create_package.assert_has_calls(create_package_expected_calls)
-    assert output == [mock_package_1, mock_package_2]
 
 
 def test_get_main_package(rooted_tmp_path: RootedPath) -> None:
