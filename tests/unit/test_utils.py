@@ -111,29 +111,27 @@ def test_fast_copy(mock_blocksize: mock.Mock, tmp_path: Path) -> None:
 
 @pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
 @pytest.mark.parametrize(
-    "errno_",
+    "errno_, expected_exc",
     [
-        pytest.param(errno.ENOSYS, id="ENOSYS"),
-        pytest.param(errno.EXDEV, id="EXDEV"),
-        pytest.param(errno.EAGAIN, id="unexpected_errno"),
+        pytest.param(errno.ENOSYS, _FastCopyFailedFallback, id="ENOSYS"),
+        pytest.param(errno.EXDEV, _FastCopyFailedFallback, id="EXDEV"),
+        pytest.param(errno.EAGAIN, OSError, id="unexpected_errno"),
     ],
 )
 @mock.patch("os.copy_file_range")
-def test_fast_copy_fail_errno(mock_copy_range: mock.Mock, tmp_path: Path, errno_: int) -> None:
+def test_fast_copy_fail_errno(
+    mock_copy_range: mock.Mock, tmp_path: Path, errno_: int, expected_exc: type[Exception]
+) -> None:
     src = tmp_path / "src/test"
     dest = tmp_path / "dest/test"
     for dir_ in [src.parent, dest.parent]:
         dir_.mkdir()
+    src.write_text("data")
 
-    mock_copy_range.side_effect = OSError(errno_)
+    mock_copy_range.side_effect = OSError(errno_, "mock error")
 
-    with pytest.raises(Exception) as ex:
+    with pytest.raises(expected_exc):
         _fast_copy(src, dest)
-
-        if errno_ == errno.EAGAIN:
-            assert isinstance(ex, OSError)
-        else:
-            assert isinstance(ex, _FastCopyFailedFallback)
 
 
 @pytest.mark.skipif(sys.platform != "linux", reason="os.copy_file_range is only available on Linux")
