@@ -5,6 +5,7 @@ import pypi_simple
 import pytest
 
 from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE
 from hermeto.core.package_managers.pip.packages import (
     PyPIPackage,
     URLPackage,
@@ -192,3 +193,44 @@ def test_to_component_non_pypi_package_has_no_version(dep: VCSPackage | URLPacka
     component = dep.to_component(build_dependency=False)
 
     assert component.version is None
+
+
+def test_to_component_without_proxy_has_no_external_refs() -> None:
+    """A PyPI package fetched without a proxy has no external references."""
+    pkg = PyPIPackage(
+        name="foo",
+        path=_PATH,
+        requirement_file=_REQ_FILE,
+        missing_req_file_checksum=False,
+        package_type="sdist",
+        version="1.0",
+        index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+    )
+
+    component = pkg.to_component(build_dependency=False)
+
+    assert component.external_references is None
+
+
+def test_to_component_with_proxy_attaches_external_ref() -> None:
+    """A PyPI package fetched through a proxy records the proxy URL as an external reference."""
+    proxy = "https://pypi-proxy.example.com/simple/"
+    pkg = PyPIPackage(
+        name="foo",
+        path=_PATH,
+        requirement_file=_REQ_FILE,
+        missing_req_file_checksum=False,
+        package_type="sdist",
+        version="1.0",
+        index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
+        proxy_url=proxy,
+    )
+
+    component = pkg.to_component(build_dependency=False)
+
+    assert component.external_references is not None
+    assert len(component.external_references) == 1
+    ref = component.external_references[0]
+    assert ref.url == proxy
+    assert ref.type == PROXY_REF_TYPE
+    assert ref.comment == PROXY_COMMENT

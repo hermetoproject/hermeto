@@ -8,7 +8,7 @@ from packageurl import PackageURL
 
 from hermeto.core.models.input import CargoPackageInput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE, Component, ExternalReference
 from hermeto.core.rooted_path import RootedPath
 
 
@@ -36,7 +36,11 @@ class PipPackage(ABC):
                 pip_package_binary=(self.package_type == "wheel"),
                 pip_build_dependency=build_dependency,
             ).to_properties(),
+            external_references=self._get_external_refs(),
         )
+
+    def _get_external_refs(self) -> list[ExternalReference] | None:
+        return None
 
     @abstractmethod
     def _make_purl(self) -> str: ...
@@ -51,6 +55,12 @@ class PyPIPackage(PipPackage):
 
     version: str
     index_url: str
+    proxy_url: str | None = None
+
+    def _get_external_refs(self) -> list[ExternalReference] | None:
+        if self.proxy_url is None:
+            return None
+        return [ExternalReference(url=self.proxy_url, type=PROXY_REF_TYPE, comment=PROXY_COMMENT)]
 
     def _make_purl(self) -> str:
         qualifiers = None

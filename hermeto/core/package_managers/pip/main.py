@@ -21,7 +21,10 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
-from hermeto.core.models.sbom import Component, create_backend_annotation
+from hermeto.core.models.sbom import (
+    Component,
+    create_backend_annotation,
+)
 from hermeto.core.package_managers.general import (
     async_download_files,
     download_binary_file,
@@ -241,6 +244,7 @@ def _download_pypi_packages(
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
     index_url: str,
+    proxy_url: str | None = None,
     auth: aiohttp.BasicAuth | None = None,
 ) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
@@ -265,6 +269,7 @@ def _download_pypi_packages(
             package_type=dpi.package_type,
             version=dpi.version,
             index_url=index_url,
+            proxy_url=proxy_url,
         )
         log.debug(
             "Successfully processed '%s' in path '%s'",
@@ -405,6 +410,7 @@ def _resolve_and_download_pypi_packages(
         pip_deps_dir,
         pypi_artifacts,
         index_url=index_url,
+        proxy_url=proxy_url,
         auth=aiohttp_auth,
     )
 
