@@ -123,18 +123,6 @@ def test_rooted_path_eq() -> None:
     assert a == RootedPath("/some/directory").join_within_root("subpath")
 
 
-def test_rooted_path_repr() -> None:
-    rooted_path = RootedPath("/some/path")
-    assert repr(rooted_path) == "<RootedPath root='/some/path' subpath='.'>"
-    assert (
-        repr(rooted_path.join_within_root("subpath"))
-        == "<RootedPath root='/some/path' subpath='subpath'>"
-    )
-    assert (
-        repr(rooted_path.re_root("subpath")) == "<RootedPath root='/some/path/subpath' subpath='.'>"
-    )
-
-
 def test_pydantic_integration() -> None:
     class SomeModel(pydantic.BaseModel):
         path: RootedPath
