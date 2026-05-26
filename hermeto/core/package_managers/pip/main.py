@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Any, NamedTuple
 from urllib import parse as urlparse
 
+import aiohttp
 import pypi_simple
+import requests.auth
 from packageurl import PackageURL
 from packaging.utils import canonicalize_name
 
@@ -239,11 +241,12 @@ def _download_pypi_packages(
     pip_deps_dir: RootedPath,
     pypi_artifacts: list[_PyPIArtifact],
     index_url: str,
+    auth: aiohttp.BasicAuth | None = None,
 ) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
     if files:
         log.info("Downloading %d PyPI artifacts", len(files))
-        asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit))
+        asyncio.run(async_download_files(files, get_config().runtime.concurrency_limit, auth=auth))
 
     result: list[PyPIPackage] = []
     for req, dpi in pypi_artifacts:
@@ -379,18 +382,30 @@ def _resolve_and_download_pypi_packages(
     config = get_config()
     proxy_url = str(config.pip.proxy_url) if config.pip.proxy_url is not None else None
     query_url = proxy_url if proxy_url is not None else index_url
+    requests_auth = None
+    aiohttp_auth = None
+    if config.pip.proxy_login and config.pip.proxy_password:
+        requests_auth = requests.auth.HTTPBasicAuth(
+            config.pip.proxy_login, config.pip.proxy_password
+        )
+        aiohttp_auth = aiohttp.BasicAuth(config.pip.proxy_login, config.pip.proxy_password)
 
     resolve_callback = functools.partial(
         process_package_distributions,
         pip_deps_dir=pip_deps_dir,
         binary_filters=binary_filters,
         index_url=query_url,
+        auth=requests_auth,
     )
     pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
     reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
     pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
     return _download_pypi_packages(
-        requirements_file, pip_deps_dir, pypi_artifacts, index_url=index_url
+        requirements_file,
+        pip_deps_dir,
+        pypi_artifacts,
+        index_url=index_url,
+        auth=aiohttp_auth,
     )
 
 
