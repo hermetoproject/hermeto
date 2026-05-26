@@ -294,6 +294,15 @@ The path to the patch file can be parsed from the
 [locator](https://github.com/chmeliik/berryscary/blob/c424d96e1e36542e52985aee716e1b12881c24fb/yarn.lock#L740).
 We may want to set a reasonably large upper limit for the size of the patch file.
 
+
+##### Permissive Mode and Non-Git Sources
+
+For workspace, file, link, and portal locators, purl generation requires VCS qualifiers (e.g.
+`vcs_url`). When the project is not inside a git repository, this raises `NotAGitRepo`. In
+**permissive mode**, Hermeto silently skips the VCS qualifiers instead of failing. Patch locators
+always require git repository context regardless of mode and will raise `PackageRejected` if the
+project is not a git repo.
+
 ##### Proxy External References
 
 When a proxy URL is configured (see [Proxy Support](#proxy-support)), components with PURLs of type npm
