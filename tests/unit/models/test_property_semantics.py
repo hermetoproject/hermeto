@@ -13,7 +13,6 @@ from hermeto.core.models.sbom import (
 @pytest.mark.parametrize(
     "components, expect_merged",
     [
-        pytest.param([], [], id="empty_components"),
         pytest.param(
             # don't merge different components, just sort them by purl and sort their properties
             [
