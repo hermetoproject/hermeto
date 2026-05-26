@@ -570,6 +570,7 @@ Optional:
 |---------------|---------|---------------|----------|
 | `YARN_GLOBAL_FOLDER` | Points to dependency cache for non-zero-installs | `{hermeto_output}/deps/yarn` | Yes |
 | `YARN_IGNORE_PATH` | Use global `yarn` instead of local binary | `true` | Yes |
+| `NODE_USE_SYSTEM_CA` | Allow Node.js to use the OS trust store (certificates added via `update-ca-trust`) | `1` | Set automatically by Hermeto on every `yarn` invocation |
 
 #### Configuration Files
 
