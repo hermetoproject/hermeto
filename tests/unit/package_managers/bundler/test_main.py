@@ -155,17 +155,6 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alt
     assert result.template == existing_preamble + expected_alternate_config_contents
 
 
-@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
-def test_get_repo_name_raises_without_git_repo(
-    mock_handle_get_repo_id: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
-
-    with pytest.raises(PackageRejected):
-        _get_repo_name_from_origin_remote(rooted_tmp_path)
-
-
 @mock.patch("hermeto.core.package_managers.bundler.main.get_config")
 @mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
 def test_get_repo_name_raises_without_git_repo_even_in_permissive_mode(
