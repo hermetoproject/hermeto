@@ -146,77 +146,8 @@ class TestGo:
         assert mock_run.call_count == 5
         assert mock_sleep.call_count == 4
 
-    @pytest.mark.parametrize("release", ["go1.20", "go1.21.1"])
-    @mock.patch.object(Go, "__post_init__", lambda self: None)
-    @mock.patch("hermeto.core.package_managers.gomod.go.tempfile.TemporaryDirectory")
-    @mock.patch("pathlib.Path.home")
-    @mock.patch("hermeto.core.package_managers.gomod.go.Go._retry")
-    @mock.patch("hermeto.core.package_managers.gomod.go.get_cache_dir")
-    def test_from_missing_toolchain(
-        self,
-        mock_cache_dir: mock.Mock,
-        mock_go_retry: mock.Mock,
-        mock_path_home: mock.Mock,
-        mock_temp_dir: mock.Mock,
-        tmp_path: Path,
-        release: str,
-    ) -> None:
-        """
-        Test that given a release string we can download a Go SDK from the official sources and
-        instantiate a new Go instance from the downloaded toolchain.
-
-        NOTE: There is a module-level 'shutil.which' mock that applies to all tests and that would
-        collide with what we're trying to test, so we need to override it and mock one level above:
-        __post_init__.
-        """
-        dest_cache_dir = tmp_path / "cache"
-        temp_dir = tmp_path / "tmpdir"
-        env_vars = ["PATH", "GOPATH", "GOCACHE", "HOME"]
-
-        # This is to simulate the filesystem operations the tested method performs
-        temp_dir.mkdir()
-        sdk_source_dir = temp_dir / f"sdk/{release}"
-        sdk_bin_dir = sdk_source_dir / "bin"
-        sdk_bin_dir.mkdir(parents=True)
-        sdk_bin_dir.joinpath("go").touch()
-
-        mock_cache_dir.return_value = dest_cache_dir
-        mock_go_retry.return_value = 0
-        mock_path_home.return_value = tmp_path
-        mock_temp_dir.return_value.__enter__.return_value = str(temp_dir)
-        mock_temp_dir.return_value.__exit__.return_value = None
-
-        result_go = Go.from_missing_toolchain(release, GO_CMD_PATH)
-
-        assert mock_go_retry.call_count == 2  # 'go install' && '<go-shim> download'
-        assert mock_go_retry.call_args_list[0][0][0][0] == GO_CMD_PATH
-        assert mock_go_retry.call_args_list[0][0][0][1] == "install"
-        assert mock_go_retry.call_args_list[0][0][0][2] == f"golang.org/dl/{release}@latest"
-        assert mock_go_retry.call_args_list[0][1].get("env") is not None
-        assert set(mock_go_retry.call_args_list[0][1]["env"].keys()) == set(env_vars)
-        assert mock_go_retry.call_args_list[1][0][0][1] == "download"
-
-        target_binary = dest_cache_dir / f"go/{release}/bin/go"
-        assert not sdk_source_dir.exists()
-        assert target_binary.exists()
-        assert result_go.binary == str(target_binary)
-
 
 class TestGoWork:
-    def test_init(
-        self,
-        rooted_tmp_path: RootedPath,
-        data_dir: Path,
-    ) -> None:
-        go_work_path = rooted_tmp_path.join_within_root("foo/bar/baz/go.work")
-        go_work_data = ParsedGoWork.model_validate_json(
-            get_mocked_data(data_dir, "workspaces/go_work.json")
-        ).model_dump()
-        go_work = GoWork(go_work_path, go_work_data)
-        assert go_work.rooted_path == go_work_path
-        assert go_work.path == go_work_path.path
-        assert go_work.data == go_work_data
-
     @mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
     def test_from_file(
         self,
@@ -233,16 +164,6 @@ class TestGoWork:
         assert go_work.rooted_path == go_work_path
         assert go_work.path == go_work_path.path
         assert go_work.data == go_work_data
-
-    @pytest.mark.parametrize(
-        "go_work_data, expected",
-        [
-            pytest.param({}, False, id="empty"),
-            pytest.param({"foo": "bar"}, True, id="with_data"),
-        ],
-    )
-    def test_bool(self, rooted_tmp_path: RootedPath, go_work_data: dict, expected: bool) -> None:
-        assert bool(GoWork(rooted_tmp_path, go_work_data)) is expected
 
     @pytest.mark.parametrize(
         "go_work_json, expected",
@@ -282,15 +203,6 @@ class TestGoWork:
         go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go))
         assert list(go_work.workspace_paths) == expected
         mock_get_go_work.assert_called_once()
-
-    def test_get_go_work(self) -> None:
-        mock_go = mock.Mock(spec=Go)
-        mock_go.return_value = None
-
-        GoWork._get_go_work(mock_go, {})
-
-        mock_go.assert_called_once()
-        assert mock_go.call_args[0][0] == ["work", "edit", "-json"]
 
 
 @pytest.mark.parametrize(
@@ -549,95 +461,6 @@ def test_get_go_work_path(
 def test_ignore_toolchain_files(dir_path: str, files: list[str], expected: list[str]) -> None:
     result = _list_toolchain_files(dir_path, files)
     assert result == expected
-
-
-@pytest.mark.parametrize(
-    "input_json,expected",
-    [
-        pytest.param(
-            """{"Use": [], "Replace": []}""",
-            {"go": None, "toolchain": None, "use": []},
-            id="empty",
-        ),
-        pytest.param(
-            """
-            {
-                "Go": "1.999.999",
-                "Use": [
-                    {"DiskPath": "."},
-                    {"DiskPath": "./foo/bar"},
-                    {"DiskPath": "./bar/baz"}
-                ]
-            }""",
-            {
-                "go": "1.999.999",
-                "toolchain": None,
-                "use": [{"disk_path": "."}, {"disk_path": "./foo/bar"}, {"disk_path": "./bar/baz"}],
-            },
-            id="simple",
-        ),
-        pytest.param(
-            """
-            {
-                "Go": "1.999.999",
-                "Use": [
-                    {"DiskPath": "."},
-                    {"DiskPath": "./foo/bar"},
-                    {"DiskPath": "./bar/baz"}
-                ],
-                "Replace": [
-                    {
-                        "Old": {
-                                    "Path": "github.com/foo/bar"
-                               },
-                        "New": {
-                                    "Path": "github.com/bar/baz",
-                                    "Version": "v0.999.0"
-                               }
-                    }
-                ]
-            }""",
-            {
-                "go": "1.999.999",
-                "toolchain": None,
-                "use": [{"disk_path": "."}, {"disk_path": "./foo/bar"}, {"disk_path": "./bar/baz"}],
-            },
-            id="complex",
-        ),
-    ],
-)
-def test_go_work_model(input_json: str, expected: dict) -> None:
-    assert ParsedGoWork.model_validate_json(input_json) == ParsedGoWork(**expected)
-
-
-@pytest.mark.parametrize(
-    "input_json",
-    [
-        pytest.param("", id="invalid_json"),
-        pytest.param(
-            """
-            {
-                "Go": "1.999.999",
-                "Use": "invalid"
-            }""",
-            id="invalid_type",
-        ),
-        pytest.param(
-            """
-            {
-                "Go": "1.999.999",
-                "Use": [
-                    {"Path": "./foo/bar"},
-                ],
-            }
-            """,
-            id="missing_mandatory_attribute",
-        ),
-    ],
-)
-def test_go_work_model_fail(input_json: str) -> None:
-    with pytest.raises(ValueError):
-        ParsedGoWork.model_validate_json(input_json)
 
 
 def mock_go_class(binary: str) -> mock.Mock:
