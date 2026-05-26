@@ -117,6 +117,25 @@ Pretty much the same workspaces you already know from npm and Yarn 1. Could be w
 workspaces can depend on each other (and a "child" workspace can depend on the "parent" workspace,
 assuming that doesn't create a cycle).
 
+###### Workspace Focus (Yarn v4+)
+
+Yarn v4 supports [`yarn workspaces focus`](https://yarnpkg.com/cli/workspaces/focus), which installs
+only the dependencies of specific workspaces (and their transitive workspace dependencies) rather
+than the entire project. Hermeto supports this via the `workspaces` field in the request input.
+
+When workspace focus is used:
+
+- **Dependency resolution** runs `yarn workspace <name> info --recursive --cache --json` per
+  workspace instead of `yarn info --all`, deduplicating overlapping dependencies across workspaces.
+- **Fetching** uses `yarn workspaces focus <name> [<name>...]` instead of
+  `yarn install --mode skip-build`.
+- **Lifecycle scripts**: Because `yarn workspaces focus` does not support `--mode skip-build` and
+  `enableScripts: false` does not apply to workspace scripts. Hermeto strips the `scripts`
+  field from each workspace's `package.json` before running focus
+  ([_strip_workspace_scripts()](https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/package_managers/yarn/main.py#L267)).
+- Workspace focus requires Yarn v4 or later; requesting it on an older version raises
+  `PackageRejected`.
+
 #### Registry/Repository Model
 
 Yarnberry uses the npm registry by default. Registry configuration is controlled via the
@@ -189,6 +208,10 @@ See [.yarnrc.yml][yarnrc-ref] for the full reference.
 
 The core tool is `yarn info -AR --json --cache`. This command returns info based on the data in the
 lockfile (if the lockfile is missing or broken, the command fails).
+
+When [workspace focus](#workspace-focus-yarn-v4) is active, Hermeto instead runs
+`yarn workspace <name> info --recursive --cache --json` for each requested workspace and
+deduplicates the results by raw locator.
 
 #### Dependency List Format
 
@@ -318,6 +341,16 @@ be rejected with a `PackageRejected` error.
    - `skip-build` also ensures that the user's preinstall, install and postinstall lifecycle scripts
      will not run (again, leaving them for the build)
 3. Set `$YARN_GLOBAL_FOLDER` for the build
+
+**For a workspace focus workflow (Yarn v4 only):**
+
+1. Set `$YARN_GLOBAL_FOLDER` as in the regular workflow
+2. Strip `scripts` from each workspace's `package.json` (see
+   [Workspace Focus](#workspace-focus-yarn-v4) for rationale)
+3. `yarn workspaces focus <workspace1> [<workspace2> ...]`
+4. Undo accidental changes to the user's repo
+5. Set `$YARN_GLOBAL_FOLDER` for the build
+
 
 **For a zero-installs workflow:**
 
@@ -528,16 +561,20 @@ Optional:
 **Summary: Resolving a single Yarnberry project**
 
 1. Make sure we will use the right version of Yarnberry to process the project
-2. Check and reject if the project uses zero-installs
-3. Prepare the configuration options relevant for prefetch
-4. Disable plugins
-5. Run `yarn info …` to get the necessary data
-6. Validate that we can parse needed locator in the output
-7. Reject unsupported dependency types (git, exec)
-8. Run `yarn install …` to fetch the dependencies
-9. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
+2. If workspace focus is requested, validate that the project uses Yarn v4+
+3. Check and reject if the project uses zero-installs
+4. Prepare the configuration options relevant for prefetch
+5. Disable plugins
+6. Run `yarn info …` to get the necessary data (or per-workspace info queries if using workspace
+   focus)
+7. Validate that we can parse needed locator in the output
+8. Reject unsupported dependency types (git, exec)
+9. If using workspace focus, strip `scripts` from workspace `package.json` files
+10. Run `yarn install …` or `yarn workspaces focus …` to fetch the dependencies (or check the
+    existing cache, if zero-installs)
+11. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
     `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`)
-10. Set environment variables for the build
+12. Set environment variables for the build
 
 ## Implementation Notes
 
