@@ -180,16 +180,6 @@ See [.yarnrc.yml][yarnrc-ref] for the full reference.
 
 ## Design
 
-### Scope
-
-**In scope**:
-- Hermetic builds for Yarnberry (Yarn 2+ / Yarn 3.x / Yarn 4.x)
-- SBOM generation for Yarnberry
-
-**Not in scope**:
-- Anything related to Yarn 1
-- How to support Yarn and Yarnberry at the same time
-
 ### Dependency List Generation
 
 #### Dependency List Toolchain
@@ -595,48 +585,6 @@ wherever it wants, Hermeto wouldn't know about it. We should prevent arbitrary c
   (see [Arbitrary Code Execution During Prefetch](#arbitrary-code-execution-during-prefetch))
 - ~~The postinstall script of any dependency~~ — solved by `--mode=skip-build`
   (see [Prefetch Implementation](#prefetch-implementation))
-
-### Current Limitations
-
-#### Scoping
-
-**Yarnberry implementation:**
-
-1. (Investigate how to and) install Corepack in the Hermeto container and enable the yarn shim
-2. Design the high-level code for resolving a single Yarnberry project
-3. Design how to avoid/undo modifications in the user's repo
-4. Design how to detect problematic scripts in git dependencies
-5. Prepare test cases that cover most of the things that Hermeto should successfully support
-6. Implement the mechanism that ensures we will process the user's repo with the right version
-7. Implement the parsing of locators in the `yarn info` output
-8. Implement the `yarn install` step for zero-installs and non-zero-installs projects
-9. Implement SBOM generation (not including pedigree.patches)
-10. Implement pedigree.patches for the SBOM for patch: dependencies
-11. Implement symlink protection
-12. Fill in the missing pieces in the implementation
-13. Finalize test plan for Yarnberry
-14. Re-consider if our handling of Yarnberry installation is sufficient
-
-Dependencies:
-- Design the high-level code -> every "Implement" story -> Fill in the missing pieces
-- Implement locator parsing -> Implement SBOM generation
-- Implement locator parsing -> Implement pedigree.patches
-- Prepare test cases -> Finalize test plan
-
-**Yarnberry vs. Yarn:**
-
-1. Design Yarn 1 support
-2. Decide if Yarn and Yarnberry should be the same package manager in Hermeto
-
-**Release:**
-
-1. Docs
-2. Demo
-3. Release
-
-**Near future:**
-
-1. Design Yarn 4 support
 
 ### Yarn@4.x Notes
 
