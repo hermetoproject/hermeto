@@ -196,17 +196,6 @@ def test_prepare_environment_variables_raises_on_duplicate_git_url() -> None:
         _prepare_environment_variables_for_hermetic_build(git_paths)
 
 
-@mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
-def test_get_repo_name_raises_without_git_repo(
-    mock_handle_get_repo_id: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    mock_handle_get_repo_id.side_effect = NotAGitRepo("Not a git repo", solution="N/A")
-
-    with pytest.raises(PackageRejected):
-        _get_repo_name_from_origin_remote(rooted_tmp_path)
-
-
 @mock.patch("hermeto.core.package_managers.bundler.main.get_config")
 @mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")
 def test_get_repo_name_raises_without_git_repo_even_in_permissive_mode(
