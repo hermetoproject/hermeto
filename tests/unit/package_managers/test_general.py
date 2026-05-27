@@ -268,3 +268,30 @@ async def test_async_download_files(
     for call in mock_download_file.mock_calls:
         _, file, path = call.args
         assert file, path in files_to_download.items()
+
+
+@pytest.mark.asyncio
+async def test_async_download_preserves_redirect_url_encoding(tmp_path: Path) -> None:
+    """Redirect URLs with percent-encoded query params must not be re-quoted."""
+    from aiohttp import web
+    from aiohttp.test_utils import TestServer
+
+    async def redirect_handler(request: web.Request) -> web.Response:
+        return web.Response(
+            status=302,
+            headers={"Location": "/target?ResponseContentType=text%2Fplain"},
+        )
+
+    # we purposefully return the raw redirect URL in the body to verify what aiohttp did with it
+    async def target_handler(request: web.Request) -> web.Response:
+        return web.Response(status=200, body=request.raw_path.encode())
+
+    app = web.Application()
+    app.router.add_get("/redirect", redirect_handler)
+    app.router.add_get("/target", target_handler)
+
+    async with TestServer(app) as server:
+        url = str(server.make_url("/redirect"))
+        download_path = tmp_path / "artifact"
+        await async_download_files({url: str(download_path)}, concurrency_limit=1)
+        assert b"text%2Fplain" in download_path.read_bytes()

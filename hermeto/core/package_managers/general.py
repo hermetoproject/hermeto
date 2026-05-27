@@ -170,6 +170,8 @@ async def async_download_files(
         trace_configs=[trace_config],
         # respect proxy settings and .netrc
         trust_env=True,
+        # preserve percent-encoding in redirect URLs (e.g. signed CloudFront URLs)
+        requote_redirect_url=False,
     )
 
     async with retry_client as session:
