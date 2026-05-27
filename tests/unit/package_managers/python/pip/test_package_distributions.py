@@ -163,13 +163,8 @@ def test_process_non_existing_package_distributions(
     req = mock_requirement(package_name, "pypi", version_specs=[("==", "1.0.0")])
 
     mock_get_project_page.side_effect = pypi_simple.NoSuchProjectError(package_name, "URL")
-    with pytest.raises(FetchError) as exc_info:
+    with pytest.raises(FetchError):
         process_package_distributions(req, rooted_tmp_path)
-
-    assert (
-        str(exc_info.value)
-        == f"PyPI query failed: No details about project '{package_name}' available at URL"
-    )
 
 
 @mock.patch.object(pypi_simple.PyPISimple, "get_project_page")

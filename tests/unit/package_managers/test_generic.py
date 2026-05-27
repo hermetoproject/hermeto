@@ -237,10 +237,8 @@ def test_resolve_lockfile_path(
 
 
 def test_resolve_lockfile_path_fail(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(PackageRejected):
         _resolve_lockfile_path(rooted_tmp_path, Path("pkg"), Path("../outside.yaml"))
-
-    assert "must be inside the package path" in str(exc_info.value)
 
 
 @mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")

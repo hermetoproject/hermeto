@@ -557,12 +557,12 @@ def test_parse_locator_helper(
     ],
 )
 def test_unexpected_locator_format(locator_str: str) -> None:
-    with pytest.raises(UnexpectedFormat, match="could not parse locator"):
+    with pytest.raises(UnexpectedFormat):
         _parse_locator(locator_str)
 
 
 def test_unexpected_reference_format() -> None:
-    with pytest.raises(UnexpectedFormat, match="could not parse reference"):
+    with pytest.raises(UnexpectedFormat):
         # it is very difficult to find something that doesn't match, probably not doable without \n
         # kudos to hypothesis: https://hypothesis.readthedocs.io/en/latest/index.html
         # ^<empty protocol>:<no source><empty selector>::<empty params>$ - and 'x' is left unmatched

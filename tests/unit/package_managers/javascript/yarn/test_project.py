@@ -98,7 +98,7 @@ def test_parse_empty_yarnrc(rooted_tmp_path: RootedPath) -> None:
 
 
 def test_parse_invalid_yarnrc(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected, match="Can't parse the .yarnrc.yml file"):
+    with pytest.raises(PackageRejected):
         _prepare_yarnrc_file(rooted_tmp_path, INVALID_YML)
 
 

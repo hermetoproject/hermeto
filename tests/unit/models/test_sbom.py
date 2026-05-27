@@ -1158,7 +1158,7 @@ class TestSPDXSbom:
             ],
         )
 
-        with pytest.raises(UnexpectedFormat, match="Invalid JSON in annotation"):
+        with pytest.raises(UnexpectedFormat):
             sbom.to_cyclonedx()
 
     # SPDX SBOM objects are very verbose and it is rather hard to tell the

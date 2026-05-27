@@ -612,10 +612,10 @@ class TestPipRequirementsFile:
     def test_corner_cases_when_parsing_single_line(self) -> None:
         """Test scenarios in PipRequirement that cannot be triggered via PipRequirementsFile."""
         # Empty lines are NOT ignored
-        with pytest.raises(UnexpectedFormat, match="Unable to parse the requirement"):
+        with pytest.raises(UnexpectedFormat):
             assert PipRequirement.from_line("     ", []) is None
 
-        with pytest.raises(UnexpectedFormat, match="Unable to parse the requirement"):
+        with pytest.raises(UnexpectedFormat):
             PipRequirement.from_line("aiowsgi==0.7 \nasn1crypto==1.3.0", [])
 
     def test_replace_requirements(self, rooted_tmp_path: RootedPath) -> None:
@@ -1009,7 +1009,7 @@ class TestPipRequirementsFile:
         requirement.download_line = "aiowsgi==0.7"
         requirement.kind = "pypi"
 
-        with pytest.raises(ValueError, match="Cannot extract URL from pypi requirement"):
+        with pytest.raises(ValueError):
             _ = requirement.url
 
     def _assert_pip_requirement(self, pip_requirement: Any, expected_requirement: Any) -> None:

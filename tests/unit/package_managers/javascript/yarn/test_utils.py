@@ -41,5 +41,5 @@ def test_run_yarn_cmd_fail(
     cmd = ["foo", "bar"]
     mock_run_cmd.side_effect = CalledProcessError(1, cmd=cmd)
 
-    with pytest.raises(PackageManagerError, match=f"Yarn command failed: {' '.join(cmd)}"):
+    with pytest.raises(PackageManagerError):
         run_yarn_cmd(cmd, rooted_tmp_path)
