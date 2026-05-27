@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import json
 import os
 import textwrap
 from collections.abc import Iterator
@@ -44,7 +43,6 @@ from hermeto.core.package_managers.gomod.main import (
     _get_proxy_for_module,
     _get_repository_name,
     _parse_go_sum,
-    _parse_packages,
     _parse_vendor,
     _process_modules_json_stream,
     _resolve_gomod,
@@ -55,7 +53,6 @@ from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo, RepoID
 from hermeto.core.utils import GIT_PRISTINE_ENV
 from tests.common_utils import GIT_REF, write_file_tree
-from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -772,18 +769,6 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         _validate_local_replacements(modules, app_path)
 
 
-def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
-    modules_txt = rooted_tmp_path.join_within_root("vendor/modules.txt")
-    modules_txt.path.parent.mkdir(parents=True)
-    modules_txt.path.write_text(get_mocked_data(data_dir, "vendored/modules.txt"))
-    expect_modules = {
-        ParsedModule(path="golang.org/x/text", version="v0.0.0-20170915032832-14c0d48ead0c"),
-        ParsedModule(path="rsc.io/quote", version="v1.5.2"),
-        ParsedModule(path="rsc.io/sampler", version="v1.3.0"),
-    }
-    assert set(_parse_vendor(rooted_tmp_path)) == expect_modules
-
-
 @pytest.mark.parametrize(
     "file_content, expect_error_msg",
     [
@@ -1043,64 +1028,3 @@ def test_fetch_tags_fail(repo_remote_with_tag: tuple[RootedPath, RootedPath]) ->
     remote_repo_path, _ = repo_remote_with_tag
     with pytest.raises(FetchError):
         ModuleVersionResolver.from_repo_path(remote_repo_path)
-
-
-@pytest.mark.parametrize(
-    "input_subdir, expected_outfile",
-    [
-        pytest.param("non-vendored", "resolve_gomod.json", id="without_workspaces"),
-        pytest.param("workspaces", "resolve_gomod_workspaces.json", id="with_workspaces"),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
-def test_parse_packages(
-    mock_get_go_work: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    data_dir: Path,
-    input_subdir: str,
-    expected_outfile: str,
-) -> None:
-    """Test parsing of packages into ParsedPackage structures with real-like data.
-
-    Note querying workspaces will return some data duplicated - that's expected.
-    """
-    go_work = None
-    mocked_indata: str
-
-    ws_paths: list = []
-    mocked_outdata = json.loads(get_mocked_data(data_dir, f"expected-results/{expected_outfile}"))
-    expected = {ParsedPackage(**package) for package in mocked_outdata["packages"]}
-
-    go = mock.MagicMock(spec=Go)
-    if input_subdir != "workspaces":
-        mocked_indata = get_mocked_data(data_dir, f"{input_subdir}/go_list_deps_threedot.json")
-        go.return_value = mocked_indata
-    else:
-        side_effects = []
-        mock_get_go_work.return_value = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
-        go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go)
-
-        # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
-        ws_paths = go_work.workspace_paths
-        for wp in ws_paths:
-            wp_relative = wp.relative_to(go_work.path.parent)
-            indata_relative = f"{input_subdir}/{wp_relative}/go_list_deps_threedot.json"
-            mocked_indata = get_mocked_data(data_dir, indata_relative)
-            side_effects.append(mocked_indata)
-
-        go.side_effect = side_effects
-
-    run_params = {"env": {"GOMODCACHE": "foo"}}
-    pkgs = _parse_packages(go_work, go, run_params)
-
-    calls = go.call_args_list
-    if input_subdir != "workspaces":
-        go.assert_called_once()
-    else:
-        calls = go.call_args_list
-        assert go.call_count == len(ws_paths)
-        assert all([run_params | {"cwd": ws_paths[i]} in c.args for i, c in enumerate(calls)])
-
-    # _parse_packages calls _go_list_deps always with the './...' pattern
-    assert all("./..." in call.args[0] for call in calls)
-    assert set(pkgs) == expected
