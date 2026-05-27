@@ -168,6 +168,8 @@ async def async_download_files(
     retry_client = aiohttp_retry.RetryClient(
         retry_options=retry_options,
         trace_configs=[trace_config],
+        # Preserve signed redirect query strings exactly as received
+        requote_redirect_url=False,
         # respect proxy settings and .netrc
         trust_env=True,
     )
