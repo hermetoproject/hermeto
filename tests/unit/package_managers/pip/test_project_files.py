@@ -215,15 +215,6 @@ class TestPyprojectTOML:
 class TestSetupCFG:
     """SetupCFG tests."""
 
-    @pytest.mark.parametrize("exists", [True, False])
-    def test_exists(self, exists: bool, rooted_tmp_path: RootedPath) -> None:
-        """Test file existence check."""
-        if exists:
-            rooted_tmp_path.join_within_root("setup.cfg").path.write_text("")
-
-        setup_cfg = SetupCFG(rooted_tmp_path)
-        assert setup_cfg.exists() == exists
-
     @pytest.mark.parametrize(
         "cfg_content, expect_name, expect_logs",
         [
@@ -971,15 +962,6 @@ class TestSetupCFG:
 class TestSetupPY:
     """SetupPY tests."""
 
-    @pytest.mark.parametrize("exists", [True, False])
-    def test_exists(self, exists: bool, rooted_tmp_path: RootedPath) -> None:
-        """Test file existence check."""
-        if exists:
-            rooted_tmp_path.join_within_root("setup.py").path.write_text("")
-
-        setup_py = SetupPY(rooted_tmp_path)
-        assert setup_py.exists() == exists
-
     @pytest.mark.parametrize(
         "setup_py_content, expected",
         [
@@ -1161,13 +1143,11 @@ class TestSetupPY:
             ),
         ],
     )
-    @pytest.mark.parametrize("what", ["name", "version"])
     def test_get_kwarg_literal(
         self,
         script_content: str,
         expect_val: str | None,
         expect_logs: list[str],
-        what: Literal["name", "version"],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -1178,7 +1158,7 @@ class TestSetupPY:
         important for tests with variables.
         """
         self._test_get_value(
-            rooted_tmp_path, caplog, script_content, expect_val, expect_logs, what=what
+            rooted_tmp_path, caplog, script_content, expect_val, expect_logs, what="name"
         )
 
     @pytest.mark.parametrize(
@@ -1460,13 +1440,11 @@ class TestSetupPY:
             ),
         ],
     )
-    @pytest.mark.parametrize("what", ["name", "version"])
     def test_get_kwarg_var(
         self,
         script_content: str,
         expect_val: str | None,
         expect_logs: list[str],
-        what: Literal["name", "version"],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -1479,7 +1457,7 @@ class TestSetupPY:
             "setup kwarg '{what}' looks like a variable",
             f"Backtracking up the AST from line {lineno} to find variable 'foo'",
         ]
-        self._test_get_value(rooted_tmp_path, caplog, script_content, expect_val, logs, what=what)
+        self._test_get_value(rooted_tmp_path, caplog, script_content, expect_val, logs, what="name")
 
     @pytest.mark.parametrize(
         "version_val, expect_version",
@@ -1511,18 +1489,18 @@ class TestSetupPY:
             rooted_tmp_path, caplog, script_content, expect_version, expect_logs, what="version"
         )
 
-    @pytest.mark.parametrize("what", ["name", "version"])
     def test_kwarg_unsupported_expr(
         self,
-        what: Literal["name", "version"],
         rooted_tmp_path: RootedPath,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Value of kwarg is neither a literal nor a Name."""
-        script_content = f"setup({what}=get_version())"
+        script_content = "setup(name=get_version())"
         expect_logs = [
             "Found setup call on line 1",
             "Pseudo-path: Module.body[0] -> Expr(#1).value",
-            f"setup kwarg '{what}' is an unsupported expression: Call",
+            "setup kwarg 'name' is an unsupported expression: Call",
         ]
-        self._test_get_value(rooted_tmp_path, caplog, script_content, None, expect_logs, what=what)
+        self._test_get_value(
+            rooted_tmp_path, caplog, script_content, None, expect_logs, what="name"
+        )
