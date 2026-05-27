@@ -25,7 +25,6 @@ from hermeto.core.package_managers.gomod.go import (
 )
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import Symlink, write_file_tree
-from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -148,18 +147,17 @@ class TestGo:
 
 
 class TestGoWork:
+    _GO_WORK_JSON = '{"Go":"1.22.0","Use":[{"DiskPath":"."},{"DiskPath":"./terminaltor"},{"DiskPath":"./weird"}],"Replace":null}'
+
     @mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
     def test_from_file(
         self,
         mock_get_go_work: mock.Mock,
         rooted_tmp_path: RootedPath,
-        data_dir: Path,
     ) -> None:
         go_work_path = rooted_tmp_path.join_within_root("go.work")
-        mock_get_go_work.return_value = get_mocked_data(data_dir, "workspaces/go_work.json")
-        go_work_data = ParsedGoWork.model_validate_json(
-            get_mocked_data(data_dir, "workspaces/go_work.json")
-        ).model_dump()
+        mock_get_go_work.return_value = self._GO_WORK_JSON
+        go_work_data = ParsedGoWork.model_validate_json(self._GO_WORK_JSON).model_dump()
         go_work = GoWork.from_file(go_work_path, mock.Mock(spec=Go))
         assert go_work.rooted_path == go_work_path
         assert go_work.path == go_work_path.path
