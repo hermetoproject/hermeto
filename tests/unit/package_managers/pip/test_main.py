@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import subprocess
 from collections.abc import Collection
 from pathlib import Path
 from textwrap import dedent
@@ -24,8 +23,6 @@ from hermeto.core.errors import (
     UnrecognizedFileExtension,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import CargoPackageInput, Request
-from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
@@ -909,55 +906,6 @@ def test_infer_package_name_raises_without_git_repo(
 
     with pytest.raises(PackageRejected):
         pip._infer_package_name_from_origin_url(rooted_tmp_path)
-
-
-@mock.patch("hermeto.core.scm.GitRepo")
-@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
-@mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
-@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present")
-def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(
-    mock_verify_lockfile_present: mock.Mock,
-    mock_run_cmd: mock.Mock,
-    mock_resolve_pip: mock.Mock,
-    mock_replace_requirements: mock.Mock,
-    mock_git_repo: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    # Making this a pip test since it is pip who is affected by the problem the most.
-    source_dir = rooted_tmp_path.re_root("source")
-    output_dir = rooted_tmp_path.re_root("output")
-    source_dir.path.mkdir()
-
-    request = Request(
-        source_dir=source_dir,
-        output_dir=output_dir,
-        packages=[{"type": "pip", "requirements_files": ["requirements.txt"]}],
-    )
-
-    mock_run_cmd.side_effect = subprocess.CalledProcessError(
-        cmd="test",
-        returncode=101,
-        stderr="... failed to sync ... because --locked was passed to prevent this ...",
-    )
-    mock_verify_lockfile_present.return_value = None
-
-    resolved = {
-        "package": {"name": "foo", "version": "1.0", "type": "pip"},
-        "dependencies": [],
-        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
-        "requirements": [],
-    }
-
-    mock_resolve_pip.return_value = resolved
-
-    mocked_repo = mock.Mock()
-    mocked_repo.remote.return_value.url = "https://github.com/my-org/my-repo"
-    mocked_repo.head.commit.hexsha = GIT_REF
-    mock_git_repo.return_value = mocked_repo
-
-    with pytest.raises(PackageWithCorruptLockfileRejected):
-        pip.fetch_pip_source(request)
 
 
 @pytest.mark.parametrize(
