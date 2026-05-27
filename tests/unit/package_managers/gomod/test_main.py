@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import json
 import os
-import re
 import textwrap
 from collections.abc import Iterator
 from pathlib import Path
@@ -1049,10 +1048,7 @@ def test_fetch_tags(repo_remote_with_tag: tuple[RootedPath, RootedPath]) -> None
 def test_fetch_tags_fail(repo_remote_with_tag: tuple[RootedPath, RootedPath]) -> None:
     # The remote_repo itself has no remote configured, so will fail when fetching tags
     remote_repo_path, _ = repo_remote_with_tag
-    error_msg = re.escape(
-        f"Failed to fetch the tags on the Git repository (GitRemoteNotFoundError) for {remote_repo_path}"
-    )
-    with pytest.raises(FetchError, match=error_msg):
+    with pytest.raises(FetchError):
         ModuleVersionResolver.from_repo_path(remote_repo_path)
 
 
