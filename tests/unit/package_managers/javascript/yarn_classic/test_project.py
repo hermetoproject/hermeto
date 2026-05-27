@@ -140,6 +140,7 @@ def test_pnp_installs_true(
     pnp_kind: str,
 ) -> None:
     _prepare_package_json_file(rooted_tmp_path, package_json_content)
+    _prepare_yarn_lock_file(rooted_tmp_path, VALID_YARN_LOCK_FILE)
 
     project = Project.from_source_dir(rooted_tmp_path)
 
