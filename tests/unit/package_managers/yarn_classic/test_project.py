@@ -2,7 +2,7 @@
 import pytest
 from pyarn import lockfile  # type: ignore
 
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, PackageRejected
 from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.yarn_classic.main import _verify_repository
 from hermeto.core.package_managers.yarn_classic.project import Project, YarnLock
@@ -69,12 +69,12 @@ def test_parse_package_json(rooted_tmp_path: RootedPath) -> None:
 
 
 def test_parse_invalid_package_json(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected):
+    with pytest.raises(InvalidLockfileFormat):
         _prepare_package_json_file(rooted_tmp_path, INVALID_JSON_FILE)
 
 
 def test_parse_missing_package_json(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected):
+    with pytest.raises(LockfileNotFound):
         PackageJson.from_dir(rooted_tmp_path.path)
 
 
@@ -101,17 +101,17 @@ def test_parse_yarn_lock(rooted_tmp_path: RootedPath) -> None:
 
 
 def test_parse_empty_yarn_lock(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected):
+    with pytest.raises(InvalidLockfileFormat):
         _prepare_yarn_lock_file(rooted_tmp_path, EMPTY_YARN_LOCK_FILE)
 
 
 def test_parse_invalid_yarn_lock(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected):
+    with pytest.raises(InvalidLockfileFormat):
         _prepare_yarn_lock_file(rooted_tmp_path, INVALID_YARN_LOCK_FILE)
 
 
 def test_parse_missing_yarn_lock(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected):
+    with pytest.raises(LockfileNotFound):
         path = rooted_tmp_path.join_within_root("yarn.lock")
         YarnLock.from_file(path)
 
