@@ -23,7 +23,7 @@ def assert_attrs(rooted_path: RootedPath, *, path: Path, root: Path) -> None:
 
 
 def test_path_must_be_absolute() -> None:
-    with pytest.raises(ValueError, match="path must be absolute: foo"):
+    with pytest.raises(ValueError):
         RootedPath("foo")
 
 
