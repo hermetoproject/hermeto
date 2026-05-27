@@ -267,7 +267,7 @@ async def test_async_download_files(
     # Assert that mock_download_file was called with the correct arguments
     for call in mock_download_file.mock_calls:
         _, file, path = call.args
-        assert file, path in files_to_download.items()
+        assert (file, path) in files_to_download.items()
 
 
 @pytest.mark.asyncio
