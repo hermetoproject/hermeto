@@ -142,8 +142,8 @@ Whoever ends up implementing purl generation for Yarnberry will be reading a lot
 
 Notable protocols:
 
-**Git, GitHub**: Mostly the same as npm, but there are no `gitlab:` or `bitbucket:` shorthands.
-Differences include:
+**Git, GitHub**: git dependencies are not supported by Hermeto and it will raise a `UnsupportedFeature` error.
+But here is some useful information on how it works with yarnberry:
 - lockfile storage format differs from npm's `git+ssh://<url>#<commit>` — Yarnberry does
   [something](https://github.com/chmeliik/berryscary/blob/c424d96e1e36542e52985aee716e1b12881c24fb/yarn.lock#L248)
   quite [different](https://github.com/chmeliik/berryscary/blob/c424d96e1e36542e52985aee716e1b12881c24fb/yarn.lock#L275)
@@ -172,7 +172,6 @@ dependencies automatically (e.g. typescript as explained in [Plug'n'Play][pnp]).
 patched dependency, Yarnberry creates two entries in both `yarn.lock` and `.yarn/cache`:
 - [typescript built-in patch](https://github.com/chmeliik/berryscary/commit/7d1727907e28759c9324f33289e841f2fe05e192)
 - [left-pad custom patch](https://github.com/chmeliik/berryscary/commit/cf1af13718236ee06635928a153662ed94b29490)
-- [github dependency patch](https://github.com/chmeliik/berryscary/commit/c424d96e1e36542e52985aee716e1b12881c24fb)
 
 **[Exec][protocols]**: The exec plugin allows running arbitrary code to generate a package. Either we ban
 exec altogether, or we accept arbitrary code execution and figure out SBOM reporting. Banning exec
@@ -326,13 +325,19 @@ This workflow isn't supported and Hermeto will throw a `PackageRejected` error.
 
 ##### Arbitrary Code Execution During Prefetch
 
+Git deps are unsupported outright, so arbitrary code execution from git deps isn't a concern. Hermeto 
+will raise a `UnsupportedFeature` error when it encounters them.
+
+**Useful info:** Althrough git dependencies aren't supported, here is some useful information for it
+incase it ever gets supported:
+
 The `yarn install` command will execute the lifecycle scripts (prepack, postpack etc.) of any
 git/github dependency that happens to have them. And yes, it's only git/github, no other type —
 see the references to the
 [prepareExternalProject][prepareExternalProject]
 method.
 
-Cachito deals with this by
+Hermeto may deal with this by
 [banning git dependencies](https://github.com/containerbuildsystem/cachito/blob/6d7f809b0ab3ed34b426263d95bf0ae10213b436/cachito/workers/pkg_managers/general_js.py#L738-L741)
 that have
 [prepack or prepare scripts](https://github.com/containerbuildsystem/cachito/blob/6d7f809b0ab3ed34b426263d95bf0ae10213b436/cachito/workers/pkg_managers/general_js.py#L534-L535).
@@ -540,8 +545,8 @@ Optional:
 3. Prepare the configuration options relevant for prefetch
 4. Disable plugins
 5. Run `yarn info …` to get the necessary data
-6. Validate that we can parse every locator in the output
-7. Protect against arbitrary code execution by git dependencies
+6. Validate that we can parse needed locator in the output
+7. Reject unsupported dependency types (git, exec)
 8. Run `yarn install …` to fetch the dependencies
 9. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
     `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`)
@@ -569,10 +574,7 @@ wherever it wants, Hermeto wouldn't know about it. We should prevent arbitrary c
 
 **Controlled by their dependencies:**
 
-- Any lifecycle script of any git dependency, if that lifecycle script is relevant to `yarn install`,
-  `yarn pack`, `npm install` or `npm pack` for any version of Yarn 1, Yarnberry or npm — ban git
-  dependencies that use such scripts
-  (see [Arbitrary Code Execution During Prefetch](#arbitrary-code-execution-during-prefetch))
+- Any git dependency are no longer supported (see [Arbitrary Code Execution During Prefetch](#arbitrary-code-execution-during-prefetch))
 - ~~The postinstall script of any dependency~~ — solved by `--mode=skip-build`
   (see [Prefetch Implementation](#prefetch-implementation))
 
