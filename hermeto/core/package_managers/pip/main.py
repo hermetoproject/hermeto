@@ -367,6 +367,26 @@ async def _resolve_pypi_distributions(
     return await asyncio.gather(*tasks)
 
 
+def _resolve_and_download_pypi_packages(
+    pypi_reqs: list[PipRequirement],
+    requirements_file: PipRequirementsFile,
+    pip_deps_dir: RootedPath,
+    binary_filters: PipBinaryFilters | None,
+    index_url: str,
+) -> list[PyPIPackage]:
+    """Resolve and download all PyPI packages."""
+    resolve_callback = functools.partial(
+        process_package_distributions,
+        pip_deps_dir=pip_deps_dir,
+        binary_filters=binary_filters,
+        index_url=index_url,
+    )
+    pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
+    reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
+    pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
+    return _download_pypi_packages(requirements_file, pip_deps_dir, pypi_artifacts)
+
+
 def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
@@ -422,18 +442,13 @@ def _download_dependencies(
 
         log.info("-- Finished processing requirement line '%s'", req.download_line)
 
-    pypi_artifacts: list[_PyPIArtifact] = []
     if pypi_reqs:
-        resolve_callback = functools.partial(
-            process_package_distributions,
-            pip_deps_dir=pip_deps_dir,
-            binary_filters=binary_filters,
-            index_url=options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT,
+        index_url = options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT
+        processed.extend(
+            _resolve_and_download_pypi_packages(
+                pypi_reqs, requirements_file, pip_deps_dir, binary_filters, index_url
+            )
         )
-        pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
-        reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
-        pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
-        processed.extend(_download_pypi_packages(requirements_file, pip_deps_dir, pypi_artifacts))
 
     return processed
 
