@@ -20,6 +20,7 @@ from hermeto.core.models.sbom import (
     Component,
     ExternalReference,
 )
+from hermeto.core.package_managers.javascript.pnpm.resolver import JSR_REGISTRY_URL
 from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_TLS_PORT
 
 _NEXUS_BASE_URL = f"https://{DEFAULT_NEXUS_HOST}:{DEFAULT_NEXUS_TLS_PORT}"
@@ -47,7 +48,8 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_GOMOD__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
 }
 
-_DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url", "repository_url"})
+_DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url"})
+_UNSUPPORTED_REGISTRY_URLS = frozenset({JSR_REGISTRY_URL})
 
 
 def is_local_nexus_enabled() -> bool:
@@ -95,8 +97,8 @@ def _get_bom_ref_backends(sbom: dict[str, Any]) -> dict[str, set[str]]:
     return dict(backends_by_bom_ref)
 
 
-def _is_registry_component(component: Component) -> bool:
-    """Return True if the component was fetched from a registry (not bundled or direct-source)."""
+def _is_proxyable_component(component: Component) -> bool:
+    """Return True if the component is expected to have a proxy URL."""
     is_bundled = any(
         p.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED and p.value == "true"
         for p in component.properties
@@ -115,7 +117,13 @@ def _is_registry_component(component: Component) -> bool:
         return False
 
     purl = PackageURL.from_string(component.purl)
-    return not (purl.qualifiers.keys() & _DIRECT_SOURCE_QUALIFIERS)
+    if purl.qualifiers.keys() & _DIRECT_SOURCE_QUALIFIERS:
+        return False
+
+    if purl.qualifiers.get("repository_url") in _UNSUPPORTED_REGISTRY_URLS:
+        return False
+
+    return True
 
 
 def _partition_proxy_external_refs(
@@ -143,7 +151,7 @@ def _expected_proxy_urls_for_component(
     component_backends = bom_ref_backends.get(component.bom_ref, set())
     proxy_enabled_backends = component_backends & backend_proxy_urls.keys()
 
-    if not proxy_enabled_backends or not _is_registry_component(component):
+    if not proxy_enabled_backends or not _is_proxyable_component(component):
         return set()
 
     return set(backend_proxy_urls[backend] for backend in proxy_enabled_backends)
