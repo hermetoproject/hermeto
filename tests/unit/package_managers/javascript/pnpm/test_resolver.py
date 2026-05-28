@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import json
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -7,11 +8,12 @@ import pytest
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo
 from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference
-from hermeto.core.package_managers.javascript.pnpm.project import PnpmPackage
+from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
 from hermeto.core.package_managers.javascript.pnpm.resolver import (
     JSR_REGISTRY_URL,
     _create_dependency_components,
     _create_root_component,
+    _find_non_dev_dependencies,
     _generate_purl_for,
     generate_sbom_components,
 )
@@ -32,21 +34,29 @@ def test_generate_sbom_components_in_strict_mode_without_git_repo(
     mock_get_vcs_qualifiers.side_effect = NotAGitRepo("", solution=None)
 
     with pytest.raises(NotAGitRepo):
-        generate_sbom_components(rooted_tmp_path, [])
+        generate_sbom_components(rooted_tmp_path, [], mock.Mock())
 
 
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_config")
-def test_create_lockfile_components_without_proxy(mock_get_config: mock.Mock) -> None:
+@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver._find_non_dev_dependencies")
+def test_create_lockfile_components_without_proxy(
+    mock_find_non_dev_dependencies: mock.Mock,
+    mock_get_config: mock.Mock,
+) -> None:
     mock_get_config.return_value = mock.Mock()
     mock_get_config.return_value.pnpm.proxy_url = None
 
     pkg = PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz")
-    components = _create_dependency_components([pkg], vcs_qualifiers={})
+    components = _create_dependency_components([pkg], {}, mock.Mock())
     assert components[0].external_references is None
 
 
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_config")
-def test_create_lockfile_components_with_proxy(mock_get_config: mock.Mock) -> None:
+@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver._find_non_dev_dependencies")
+def test_create_lockfile_components_with_proxy(
+    mock_find_non_dev_dependencies: mock.Mock,
+    mock_get_config: mock.Mock,
+) -> None:
     mock_get_config.return_value = mock.Mock()
     mock_get_config.return_value.pnpm.proxy_url = FAKE_PROXY_URL
 
@@ -56,7 +66,7 @@ def test_create_lockfile_components_with_proxy(mock_get_config: mock.Mock) -> No
     non_registry_pkg = PnpmPackage(
         "pkg@1.0.0", "", "pkg", "1.0.0", "https://example.com/pkg-1.0.0.tgz"
     )
-    components = _create_dependency_components([registry_pkg, non_registry_pkg], vcs_qualifiers={})
+    components = _create_dependency_components([registry_pkg, non_registry_pkg], {}, mock.Mock())
 
     assert components[0].external_references == [
         ExternalReference(url=FAKE_PROXY_URL, comment=PROXY_COMMENT)
@@ -152,3 +162,65 @@ def test_create_root_component(rooted_tmp_path: RootedPath, name: str, expected_
     component = _create_root_component(subproject, vcs_qualifiers)
 
     assert component.purl == expected_purl
+
+
+def test_find_non_dev_dependencies(tmp_path: Path) -> None:
+    lockfile = PnpmLock(
+        path=tmp_path,
+        data={
+            "lockfileVersion": "9.0",
+            "importers": {
+                ".": {
+                    "dependencies": {
+                        "runtime-dep": {"specifier": "^1.7.0", "version": "1.7.9"},
+                        "shared-dep": {"specifier": "^7.6.0", "version": "7.6.3"},
+                        "runtime-dep-with-peers": {
+                            "specifier": "^2.0.0",
+                            "version": "2.0.0(peer-dep@1.1.0)",
+                        },
+                    },
+                    "devDependencies": {
+                        "shared-dep": {"specifier": "^7.6.0", "version": "7.6.3"},
+                        "dev-dep": {"specifier": "^3.0.0", "version": "3.0.5"},
+                    },
+                    "optionalDependencies": {
+                        "optional-dep": {"specifier": "~2.3.3", "version": "2.3.3"},
+                    },
+                },
+            },
+            "snapshots": {
+                "runtime-dep@1.7.9": {
+                    "dependencies": {
+                        "transitive-dep-with-peers": "4.4.3(peer-dep@1.1.0)",
+                    },
+                    "optionalDependencies": {
+                        "optional-transitive-dep": "4.0.1",
+                    },
+                },
+                "transitive-dep-with-peers@4.4.3(peer-dep@1.1.0)": {
+                    "dependencies": {"deep-transitive-dep": "2.1.3"},
+                },
+                "deep-transitive-dep@2.1.3": {},
+                "optional-transitive-dep@4.0.1": {},
+                "runtime-dep-with-peers@2.0.0(peer-dep@1.1.0)": {
+                    "dependencies": {"transitive-runtime-dep-c": "3.0.0"},
+                },
+                "transitive-runtime-dep-c@3.0.0": {},
+                "shared-dep@7.6.3": {},
+                "dev-dep@3.0.5": {},
+                "optional-dep@2.3.3": {},
+            },
+        },
+    )
+
+    expected = {
+        "runtime-dep@1.7.9",
+        "transitive-dep-with-peers@4.4.3",
+        "optional-transitive-dep@4.0.1",
+        "deep-transitive-dep@2.1.3",
+        "runtime-dep-with-peers@2.0.0",
+        "transitive-runtime-dep-c@3.0.0",
+        "shared-dep@7.6.3",
+        "optional-dep@2.3.3",
+    }
+    assert _find_non_dev_dependencies(lockfile) == expected

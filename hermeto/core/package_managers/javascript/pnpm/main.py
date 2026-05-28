@@ -38,7 +38,7 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
         lockfile = PnpmLock.from_dir(project_dir.path)
         packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
         project_files.append(updated_lockfile)
-        components.extend(generate_sbom_components(project_dir, packages))
+        components.extend(generate_sbom_components(project_dir, packages, lockfile))
 
     if backend_annotation := create_backend_annotation(components, "x-pnpm"):
         annotations.append(backend_annotation)

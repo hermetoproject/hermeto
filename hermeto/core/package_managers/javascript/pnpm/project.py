@@ -10,6 +10,8 @@ from semver import Version
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
 from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
 
+JSR_REGISTRY_PREFIX = "@jsr/"
+
 
 class PnpmLock(UserDict):
     """Class representing a pnpm-lock.yaml file."""
@@ -49,6 +51,30 @@ class PnpmLock(UserDict):
     def packages(self) -> dict[str, dict[str, Any]]:
         """Return the 'packages' key from the pnpm-lock.yaml file."""
         return self.get("packages", {})
+
+    @property
+    def snapshots(self) -> dict[str, dict[str, Any]]:
+        """Return the 'snapshots' key from the pnpm-lock.yaml file."""
+        return self.get("snapshots", {})
+
+    @property
+    def root_dependencies(self) -> list[str]:
+        """Return the root dependencies from the pnpm-lock.yaml file."""
+        importers: dict[str, dict[str, Any]] = self.get("importers", {})
+        root_importer = importers.get(".", {})
+        dependencies = root_importer.get("dependencies", {})
+        optional = root_importer.get("optionalDependencies", {})
+
+        ids = []
+        for name, data in {**dependencies, **optional}.items():
+            version = data["version"]
+            # For JSR dependencies, version is not a semver, it's the full lockfile package ID.
+            if version.startswith(JSR_REGISTRY_PREFIX):
+                ids.append(version)
+            else:
+                ids.append(f"{name}@{version}")
+
+        return ids
 
 
 @dataclass(frozen=True)
@@ -124,8 +150,8 @@ def _parse_pnpm_package(id: str) -> ParsedPackageID:
     ParsedPackageID(scope='', name='foo', version='1.0.0')
     """
     # JSR format
-    if id.startswith("@jsr/"):
-        full_name, version = id.removeprefix("@jsr/").split("@", maxsplit=1)
+    if id.startswith(JSR_REGISTRY_PREFIX):
+        full_name, version = id.removeprefix(JSR_REGISTRY_PREFIX).split("@", maxsplit=1)
         if "__" in full_name:
             scope, name = full_name.split("__", 1)
         else:
