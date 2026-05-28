@@ -68,17 +68,21 @@ installs work.
 
 ##### [Zero-Installs][zero-installs]
 
-A combination of the two features above. If you check in both `.yarn/cache` and `.pnp.cjs`, then
-the application is *already installed* as soon as you clone the repo. You don't even need to
-`yarn install`, it just works. According to the Yarnberry docs, checking in `.yarn/cache` is a good
-idea (while checking in `node_modules` is very much the opposite).
+The concept of [zero-Installs][zero-installs], i.e. no install needed (git clone is
+sufficient), is inherently flawed for a number of reasons:
+  - taking over maintenance (by the means of manual updates) of a
+      project's dependencies by baking their sources in to the given
+      project's repository
+  - creating unnecessary bloat (often in form of binary formats) in
+      the repository
+  - moving the trust in package contents from the official packaging
+      tooling and official public registries to a given project which
+      doesn't really solve the biggest security problem of many public
+      packaging repositories - unvetted contents
 
-Users of zero-installs should have an easy time making hermetic builds work. They most likely won't
-even bother with Hermeto (so SBOM generation will be at Syft's mercy). That said, we will still
-need some support for those who do decide to use zero-installs with Hermeto (see the
-[security implications](https://v3.yarnpkg.com/features/zero-installs#does-it-have-security-implications)).
+Currently Hermeto will reject [zero-Installs][zero-installs] with a `PackageRejected` error. Use this [commit](https://github.com/hermetoproject/hermeto/commit/0a913377ba692ba2e6620bbd8d2b55c16b5b7678) as reference.
 
-##### [Plugins][plugins]
+##### [Plugins][plugins] 
 
 Yarnberry distinguishes between three types of plugins:
 
@@ -302,9 +306,8 @@ Once you've [installed Yarnberry][yarn-install-guide],
 [dealt with plugins](#dealing-with-plugins) and the
 [user configuration](#dealing-with-user-configuration), prefetching is simple.
 
-We support two separate workflows: [zero-installs][zero-installs] and regular installs. First,
-check if the configured `cacheFolder` (default `.yarn/cache`) exists and contains at least one zip
-file. If yes, assume that the user intended to use zero-installs. If not, assume a regular workflow.
+We currently support only regular installs workflow. [Zero-installs][zero-installs] workflow will
+be rejected with a `PackageRejected` error.
 
 **For a regular workflow:**
 
@@ -319,19 +322,7 @@ file. If yes, assume that the user intended to use zero-installs. If not, assume
 
 **For a zero-installs workflow:**
 
-1. `yarn install --mode=skip-build --immutable-cache --check-cache`
-   - Note that immutable cache can also be enabled
-     [via configuration](#override-for-prefetch)
-   - The cache mutation error may not be entirely user friendly; consider implementing a git-based
-     check instead
-   - `--immutable-cache` also fails the build if any archives were to be *deleted* because they're
-     no longer required (that's a good thing, otherwise the user would have access to dependencies
-     not present in the lockfile and therefore not reported in the SBOM)
-
-*Should we let the user disable `--check-cache`? We should not (at least initially), for the
-reasons (the dependencies in the checked-in cache could be entirely different from what we report in the
-SBOM). If we were to ever introduce an option to disable the check, we would have to report some
-warnings checkable by the Enterprise Contract.*
+This workflow isn't supported and Hermeto will throw a `PackageRejected` error.
 
 ##### Arbitrary Code Execution During Prefetch
 
@@ -488,7 +479,6 @@ Options useful for implementing Hermeto's functionality or required for security
 | Option | Value | Purpose |
 |--------|-------|---------|
 | [`checksumBehavior`][checksumBehavior] | `"throw"` | Strict checksum validation |
-| [`enableImmutableCache`](https://yarnpkg.com/configuration/yarnrc#enableImmutableCache) | `true` | If the user is using zero-installs |
 | [`enableImmutableInstalls`](https://yarnpkg.com/configuration/yarnrc#enableImmutableInstalls) | `true` | Fail if yarn.lock needs an update |
 | [`globalFolder`][globalFolder] | `<output_dir>` | Where to download dependencies |
 | [`pnpMode`](https://yarnpkg.com/configuration/yarnrc#pnpMode) | `strict` | Modules won't be allowed to require packages they didn't list  |
@@ -510,7 +500,7 @@ Optional:
 
 | Option | Purpose |
 |--------|---------|
-| [`cacheFolder`][cacheFolder] | To find out if the user is using zero-installs |
+| [`cacheFolder`][cacheFolder] | To find out and reject if the user is using [zero-installs][zero-installs] |
 | [`lockfileFilename`](https://yarnpkg.com/configuration/yarnrc#lockfileFilename) | Parse the lockfile specified here (default yarn.lock); probably not needed if we base SBOM generation on `yarn info` output instead |
 | [`npmRegistryServer`](https://yarnpkg.com/configuration/yarnrc#npmRegistryServer) and [`npmScopes`](https://yarnpkg.com/configuration/yarnrc#npmScopes) | The user can configure multiple different registries; if we don't respect them we cause Dependency Confusion. `yarn install` will respect them automatically |
 | [`yarnPath`](https://yarnpkg.com/configuration/yarnrc#yarnPath) | Depending on how we [handle Yarnberry installs][yarn-install-guide] |
@@ -521,7 +511,7 @@ Optional:
 
 | Variable Name | Purpose | Example Value | Required |
 |---------------|---------|---------------|----------|
-| `YARN_GLOBAL_FOLDER` | Points to dependency cache for non-zero-installs | `{hermeto_output}/deps/yarn` | Yes (non-zero-installs) |
+| `YARN_GLOBAL_FOLDER` | Points to dependency cache for non-zero-installs | `{hermeto_output}/deps/yarn` | Yes |
 | `YARN_IGNORE_PATH` | Use global `yarn` instead of local binary | `true` | Yes |
 
 #### Configuration Files
@@ -530,7 +520,7 @@ Optional:
 
 | Option | Value | Purpose |
 |--------|-------|---------|
-| [`globalFolder`][globalFolder] | `<output_dir>` | Make offline builds work (if no zero-installs) |
+| [`globalFolder`][globalFolder] | `<output_dir>` | Make offline builds work |
 | [`enableMirror`][enableMirror] | `true` | false would break globalFolder |
 | [`enableGlobalCache`][enableGlobalCache] | `false` | true would cause the same issue as [mounting the local cache][global-cache-commit] |
 | [`enableImmutableCache`](https://yarnpkg.com/configuration/yarnrc#enableImmutableCache) | `false` | Define whether to allow adding/removing entries from the lockfile or not |
@@ -546,13 +536,13 @@ Optional:
 **Summary: Resolving a single Yarnberry project**
 
 1. Make sure we will use the right version of Yarnberry to process the project
-2. Check if the project uses zero-installs
+2. Check and reject if the project uses zero-installs
 3. Prepare the configuration options relevant for prefetch
 4. Disable plugins
 5. Run `yarn info …` to get the necessary data
 6. Validate that we can parse every locator in the output
 7. Protect against arbitrary code execution by git dependencies
-8. Run `yarn install …` to fetch the dependencies (or check the existing cache, if zero-installs)
+8. Run `yarn install …` to fetch the dependencies
 9. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
     `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`)
 10. Set environment variables for the build
