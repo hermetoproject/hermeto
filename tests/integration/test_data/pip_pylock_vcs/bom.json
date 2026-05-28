@@ -1,0 +1,95 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/gitdb@4.0.12",
+        "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%4080065ff915dc972a60e3eacd8a31b9ed40de8200",
+        "pkg:pypi/pip-pylock-vcs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%404d0784debcd650b421d988416cb8695db7adfd68",
+        "pkg:pypi/smmap@5.0.2"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/gitdb@4.0.12",
+      "name": "gitdb",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "pylock.toml"
+        }
+      ],
+      "purl": "pkg:pypi/gitdb@4.0.12",
+      "type": "library",
+      "version": "4.0.12"
+    },
+    {
+      "bom-ref": "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%4080065ff915dc972a60e3eacd8a31b9ed40de8200",
+      "name": "gitpython",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "pylock.toml"
+        }
+      ],
+      "purl": "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%4080065ff915dc972a60e3eacd8a31b9ed40de8200",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:pypi/pip-pylock-vcs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%404d0784debcd650b421d988416cb8695db7adfd68",
+      "name": "pip-pylock-vcs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-pylock-vcs@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%404d0784debcd650b421d988416cb8695db7adfd68",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/smmap@5.0.2",
+      "name": "smmap",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "pylock.toml"
+        }
+      ],
+      "purl": "pkg:pypi/smmap@5.0.2",
+      "type": "library",
+      "version": "5.0.2"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
