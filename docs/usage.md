@@ -70,7 +70,8 @@ The main parameter (PKG) can handle different types of definitions
   "subpath/to/other/module", "type": "<package manager>"}]`
 - JSON object with flags: `{"packages": [{"path": ".", "type": "<package
   manager>"}], "flags": ["cgo-disable"]}`
-- JSON file path: `/path/to/input-file.json`, where the file contains any supported JSON input
+- JSON file path: `/path/to/input-file.json`, where the file contains
+  any supported JSON input
 
 See also `hermeto fetch-deps --help`.
 
