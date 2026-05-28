@@ -213,18 +213,18 @@ Whether the reported Path is the local or global one depends on the
 The command works even if the cache is empty — it reports the path where `yarn install` would place
 the dependency.
 
-Example (with `enableGlobalCache: true` and `globalFolder: /tmp/berryscary`):
+Example (from "https://github.com/hermetoproject/hermeto/blob/main/tests/unit/package_managers/yarn/test_resolver.py#L52"):
 
 ```json
 {
-  "value": "ccto-wo-deps@git@github.com:cachito-testing/cachito-npm-without-deps.git#commit=2f0ce1d7b1f8b35572d919428b965285a69583f6",
+  "value": "@isaacs/cliui@npm:8.0.2",
   "children": {
-    "Version": "1.0.0",
-    "Cache": {
-      "Checksum": "8/3ed9ea417c75a1999925159e67cf04bf2d522967692a55321559ef2b353fa690167b7bc40e989e4ee35e36d095f007f2d0c53faeb55f14d07ec3ece34faba206",
-      "Path": "/tmp/berryscary/cache/ccto-wo-deps-git@github.com-e0fce8c89c-8.zip",
-      "Size": 638
-    }
+      "Version": "8.0.2",
+      "Cache": {
+          "Checksum": "8/4a473b9b32a7d4d3cfb7a614226e555091ff0c5a29a1734c28c72a182c2f6699b26fc6b5c2131dfd841e86b185aea714c72201d7c98c2fba5f17709333a67aeb",
+          "Path": "{repo_dir}/.yarn/cache/@isaacs-cliui-npm-8.0.2-f4364666d5-4a473b9b32.zip",
+          "Size": 10582,
+      }
   }
 }
 ```
@@ -352,16 +352,10 @@ And pnpm as well for good measure (in case Yarnberry adds support for it).
 ${output_dir}/deps/yarn
 ├── cache
 │    ├── ccto-wo-deps-git@github.com-e0fce8c89c-8.zip
-│    └── ccto-wo-deps-patch-c3567b709f-8.zip
-└── github.com
-      └── cachito-testing
-            └── cachito-npm-without-deps
-                  ├── ccto-wo-deps-git@github.com-e0fce8c89c-8.zip -> ../../../cache/ccto-wo-deps-git@github.com-e0fce8c89c-8.zip
-                  └── ccto-wo-deps-patch-c3567b709f-8.zip -> ../../../cache/ccto-wo-deps-patch-c3567b709f-8.zip
+└──  └── ccto-wo-deps-patch-c3567b709f-8.zip
 ```
 
-The symlink structure is intended to give `deps/yarn` a familiar structure consistent with
-what Cachito does for `deps/pip` and `deps/npm`. Source container denylists and their application are partially based around the Cachito structure.
+The symlink structure is intended to give `deps/yarn` a familiar structure consistent with `deps/pip` and `deps/npm`. 
 
 If RHTAP wants to use the same denylists, we should try to preserve the structure. The real zip
 files must stay in the `cache/` folder, but we can add symlinks from the expected locations. The
