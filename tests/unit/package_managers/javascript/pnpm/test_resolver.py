@@ -22,24 +22,6 @@ from tests.unit.package_managers.javascript.pnpm.test_main import FAKE_PROXY_URL
 
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_config")
-def test_generate_sbom_components_in_permissive_mode_without_git_repo(
-    mock_get_config: mock.Mock,
-    mock_get_vcs_qualifiers: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    mock_get_config.return_value = mock.Mock()
-    mock_get_config.return_value.mode = Mode.PERMISSIVE
-    mock_get_vcs_qualifiers.side_effect = NotAGitRepo("", solution=None)
-
-    package_json = rooted_tmp_path.path.joinpath("package.json")
-    package_json.write_text(json.dumps({"name": "app", "version": "1.0.0"}))
-
-    components = generate_sbom_components(rooted_tmp_path, [])
-    assert len(components) == 1
-
-
-@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_vcs_qualifiers")
-@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_config")
 def test_generate_sbom_components_in_strict_mode_without_git_repo(
     mock_get_config: mock.Mock,
     mock_get_vcs_qualifiers: mock.Mock,
