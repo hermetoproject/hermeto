@@ -1,0 +1,50 @@
+name: Bug report
+description: |
+  Report unexpected behavior from Hermeto.
+  For security vulnerabilities see "Report a security vulnerability" in the templates.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Describe the issue
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: latest-version
+    attributes:
+      label: Version
+      options:
+        - label: I have reproduced this issue on the latest version from the main branch
+          required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Provide a short example of the steps needed to reproduce the issue.
+        It should be self-contained and copy-pastable in a terminal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        List your operating system, deployment method (containerized or localhost),
+        and any other relevant tools together with their versions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: How does this issue affect you, or how did you find it?
+      description: |
+        Explain how this issue concretely affects you or others.
+        If it does not directly impact you, how did you find it?
+    validations:
+      required: true

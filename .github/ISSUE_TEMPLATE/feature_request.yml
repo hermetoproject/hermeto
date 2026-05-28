@@ -1,0 +1,17 @@
+name: Feature request
+description: Request a new feature
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Not sure whether your requested feature fits into Hermeto?
+        Consider starting a [Discussion](https://github.com/orgs/hermetoproject/discussions) on GitHub.
+
+  - type: textarea
+    id: request
+    attributes:
+      label: "Requested new feature or change"
+      description: Describe the motivation for the feature in detail.
+    validations:
+      required: true
