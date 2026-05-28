@@ -498,16 +498,7 @@ class TestDownload:
                 ],
                 [],
                 MissingChecksum,
-                id="pypi_local_hash_triggers_missing",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
-                    ("bar", "vcs", {}),
-                ],
-                [],
-                MissingChecksum,
-                id="vcs_local_hash_triggers_missing",
+                id="local_hash_triggers_missing",
             ),
             pytest.param(
                 [
@@ -516,16 +507,7 @@ class TestDownload:
                 ],
                 ["--require-hashes"],
                 MissingChecksum,
-                id="pypi_global_require_hashes",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {}),
-                    ("bar", "vcs", {}),
-                ],
-                ["--require-hashes"],
-                MissingChecksum,
-                id="vcs_global_require_hashes",
+                id="global_require_hashes",
             ),
             pytest.param(
                 [
@@ -534,34 +516,13 @@ class TestDownload:
                 ],
                 ["--require-hashes"],
                 MissingChecksum,
-                id="pypi_both_global_and_local_hash",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
-                    ("bar", "vcs", {}),
-                ],
-                ["--require-hashes"],
-                MissingChecksum,
-                id="vcs_both_global_and_local_hash",
+                id="both_global_and_local_hash",
             ),
             pytest.param(
                 [("foo", "pypi", {"hashes": ["malformed"]})],
                 [],
                 InvalidChecksum,
-                id="pypi_malformed_hash",
-            ),
-            pytest.param(
-                [("foo", "vcs", {"hashes": ["malformed"]})],
-                [],
-                InvalidChecksum,
-                id="vcs_malformed_hash",
-            ),
-            pytest.param(
-                [("foo", "url", {"hashes": ["malformed"]})],
-                [],
-                InvalidChecksum,
-                id="url_malformed_hash",
+                id="malformed_hash",
             ),
         ],
     )
