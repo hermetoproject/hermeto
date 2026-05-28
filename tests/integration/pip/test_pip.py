@@ -121,6 +121,38 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="pip_rust_dependency_unusual_cargo_toml_location",
         ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_comprehensive",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {
+                        "path": "first",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                    {
+                        "path": "second",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_multiple_packages",
+        ),
     ],
 )
 def test_pip_packages(
