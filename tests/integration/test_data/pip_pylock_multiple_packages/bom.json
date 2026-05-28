@@ -1,0 +1,84 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/click@8.2.1",
+        "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#first",
+        "pkg:pypi/packaging@25.0",
+        "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#second"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/click@8.2.1",
+      "name": "click",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/click@8.2.1",
+      "type": "library",
+      "version": "8.2.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#first",
+      "name": "first",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#first",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/packaging@25.0",
+      "name": "packaging",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/packaging@25.0",
+      "type": "library",
+      "version": "25.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#second",
+      "name": "second",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%40798f2350af29781fa48d96a949af09cfd823217f#second",
+      "type": "library",
+      "version": "0.1.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
