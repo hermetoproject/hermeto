@@ -492,6 +492,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#maven" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        maven
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#npm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1107,6 +1118,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#maven" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        maven
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#npm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,6 +1328,7 @@ it may not be complete or accurate.</p>
 <li><code>http.read_timeout</code> read timeout (seconds) for HTTP requests (default: 300).
   Long-running downloads can take arbitrarily long as long as bytes keep
   flowing.</li>
+<li><code>http.max_retries</code> maximum number of retries for HTTP requests (default: 5)</li>
 <li><code>http.timeout</code> (deprecated) automatically migrated to <code>http.read_timeout</code>.</li>
 <li><code>runtime.concurrency_limit</code> max concurrent operations.</li>
 <li><code>runtime.subprocess_timeout</code> timeout (seconds) for subprocess commands.</li>
@@ -1334,6 +1357,10 @@ it may not be complete or accurate.</p>
 <tr>
 <td><a href="#gomod">gomod</a></td>
 <td>Go</td>
+</tr>
+<tr>
+<td><a href="#maven">maven</a></td>
+<td>Java</td>
 </tr>
 <tr>
 <td><a href="#npm">npm</a></td>
@@ -1397,6 +1424,13 @@ compatibility<sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">3</a></sup>
 added benefit of downloading fewer dependencies (as noted in the changelog), in
 some cases drastically so.</p>
 <p>See docs/gomod.md for more details.</p>
+<h3 id="maven"><a href="https://maven.apache.org">maven</a><a class="headerlink" href="#maven" title="Permanent link">&para;</a></h3>
+<p>Hermeto supports Maven by reading <code>lockfile.json</code> in the project directory. To generate
+this file, you can use the <a href="https://github.com/chains-project/maven-lockfile">maven-lockfile</a> plugin, which records resolved dependencies,
+plugins, and parent POM graphs. Hermeto downloads those artifacts into a local repository
+layout and writes Maven settings so the build can run offline against that cache
+only.</p>
+<p><img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /> This feature is experimental and may change without prior notice.</p>
 <h3 id="npm"><a href="https://docs.npmjs.com">npm</a><a class="headerlink" href="#npm" title="Permanent link">&para;</a></h3>
 <p>Hermeto supports npm by parsing <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json">package-lock.json</a> file present in the source
 repository and downloading the declared dependencies.</p>
