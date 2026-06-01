@@ -8,7 +8,7 @@ import yaml
 from semver import Version
 
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
-from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
+from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 
 JSR_REGISTRY_PREFIX = "@jsr/"
 

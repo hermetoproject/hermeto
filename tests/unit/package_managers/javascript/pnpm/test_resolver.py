@@ -8,6 +8,7 @@ import pytest
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo
 from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference
+from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
 from hermeto.core.package_managers.javascript.pnpm.resolver import (
     JSR_REGISTRY_URL,
@@ -17,7 +18,6 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
     _generate_purl_for,
     generate_sbom_components,
 )
-from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
 from hermeto.core.rooted_path import RootedPath
 from tests.unit.package_managers.javascript.pnpm.test_main import FAKE_PROXY_URL
 
