@@ -161,6 +161,12 @@ def find_and_fetch_rust_dependencies(
         pf = [ProjectFile(abspath=_config_path(request), template=_config_data())]
 
         remove_extracted(packages_containing_rust_code)
-        return result + RequestOutput.from_obj_list([], ev, pf)
+        return RequestOutput.from_obj_list(
+            components=result.components,
+            environment_variables=ev + result.build_config.environment_variables,
+            project_files=pf,
+            options=result.build_config.options,
+            annotations=result.annotations,
+        )
 
-    return RequestOutput.from_obj_list([], [], [])
+    return RequestOutput.empty()
