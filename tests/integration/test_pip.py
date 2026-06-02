@@ -201,11 +201,9 @@ def test_pip_packages(
             utils.TestParameters(
                 branch="pip/e2e_rust_extensions",
                 packages=(({"type": "pip"}, {"type": "rpm"})),
-                flags=[],
                 check_output=True,
             ),
-            # Invocation will fail if there was a failure to build the dependencies.
-            ["python3", "/app/src/test_package_cachi2/main.py"],
+            ["python3", "/app/main.py"],
             [],
             id="pip_e2e_rust_extensions",
         ),

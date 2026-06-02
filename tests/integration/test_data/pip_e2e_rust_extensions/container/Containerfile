@@ -1,5 +1,4 @@
-# A corresponding rpms.lock.yaml was built for UBI9
-FROM registry.access.redhat.com/ubi9/ubi@sha256:c2bc4ee4ec4f200af9d78fd1307b7ff39f5db2c27166e52fb37650dee68a5ffd
+FROM registry.access.redhat.com/ubi10/ubi@sha256:23c5ae340c093552bb68187385f2c7f2f31f7e81a887a963d58326ca8bed7221
 
 # Test disabled network access
 RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
@@ -11,10 +10,15 @@ RUN dnf -y install \
     python3 \
     python3-pip \
     python3-setuptools \
-    python3-wheel \
     python3-devel \
     libffi-devel \
-    openssl-devel
+    openssl-devel \
+    perl-interpreter \
+    perl-FindBin \
+    perl-lib \
+    perl-IPC-Cmd \
+    perl-File-Compare \
+    perl-File-Copy
 
 WORKDIR /src
 
