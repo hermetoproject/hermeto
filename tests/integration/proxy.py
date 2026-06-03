@@ -39,6 +39,9 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_YARN__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/npm-proxy/",
     f"{APP_NAME}_YARN__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
     f"{APP_NAME}_YARN__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
+    f"{APP_NAME}_GOMOD__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/go-proxy/",
+    f"{APP_NAME}_GOMOD__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
+    f"{APP_NAME}_GOMOD__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
 }
 
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url", "repository_url"})
@@ -95,7 +98,17 @@ def _is_registry_component(component: Component) -> bool:
         p.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED and p.value == "true"
         for p in component.properties
     )
-    if is_bundled:
+
+    # This tuple will contain conditions to skip a Component for all package managers
+    # which use artifact registry proxies.
+    is_local = (
+        (  # local traits for go mod:
+            component.purl.startswith("pkg:golang")
+            and (component.version is None or "vcs_url" in component.purl)
+        ),
+    )
+
+    if is_bundled or any(is_local):
         return False
 
     purl = PackageURL.from_string(component.purl)
