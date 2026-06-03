@@ -398,6 +398,14 @@ class Sbom(pydantic.BaseModel):
                 is_proxy = lambda ref: ref.type == PROXY_REF_TYPE and ref.comment == PROXY_COMMENT
                 return sorted(ref.url for ref in component.external_references if is_proxy(ref))
 
+            def fix_refs(component: Component) -> list[dict[str, str]]:
+                if component.pedigree is None:
+                    return []
+
+                ref_base = dict(referenceCategory="SECURITY", referenceType="fix")
+                patch_urls = sorted({patch.diff.url for patch in component.pedigree.patches})
+                return [dict(referenceLocator=patch_url, **ref_base) for patch_url in patch_urls]
+
             packages = []
 
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
@@ -420,7 +428,7 @@ class Sbom(pydantic.BaseModel):
                         ),
                         name=component.name,
                         versionInfo=component.version,
-                        externalRefs=[erefdict(component)],
+                        externalRefs=[erefdict(component), *fix_refs(component)],
                         annotations=generate_package_annotations(
                             properties=component.properties, bom_ref=component.bom_ref
                         ),
@@ -521,13 +529,22 @@ class SPDXPackageExternalRefSecurityPURL(
     referenceType: Literal["cpe23Type"]
 
 
+class SPDXPackageExternalRefSecurityFix(
+    SPDXPackageExternalRefSecurity, SPDXPackageExternalRefReferenceLocatorURI
+):
+    """SPDX Package External Reference for category security and type fix."""
+
+    referenceCategory: Literal["SECURITY"]
+    referenceType: Literal["fix"]
+
+
 SPDXPackageExternalRefPackageManagerType = Annotated[
     SPDXPackageExternalRefPackageManagerPURL,
     pydantic.Field(discriminator="referenceType"),
 ]
 
 SPDXPackageExternalRefSecurityType = Annotated[
-    SPDXPackageExternalRefSecurityPURL,
+    SPDXPackageExternalRefSecurityPURL | SPDXPackageExternalRefSecurityFix,
     pydantic.Field(discriminator="referenceType"),
 ]
 
@@ -815,6 +832,17 @@ class SPDXSbom(pydantic.BaseModel):
         eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
         for package in self.packages:
             purls = _extract_purls(package.externalRefs)
+            fix_urls = sorted(
+                {
+                    ref.referenceLocator
+                    for ref in package.externalRefs
+                    if ref.referenceCategory == "SECURITY" and ref.referenceType == "fix"
+                }
+            )
+            pedigree = None
+            if fix_urls:
+                patches = [Patch(type="unofficial", diff=PatchDiff(url=url)) for url in fix_urls]
+                pedigree = Pedigree(patches=patches)
 
             properties = []
             for ann in package.annotations:
@@ -841,6 +869,7 @@ class SPDXSbom(pydantic.BaseModel):
                 version=package.versionInfo,
                 properties=properties,
                 external_references=exrefs,
+                pedigree=pedigree,
             )
 
             # cyclonedx doesn't support multiple purls, therefore
