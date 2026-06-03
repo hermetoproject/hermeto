@@ -116,9 +116,6 @@ SBOM_TYPE_OPTION = typer.Option(
 )
 
 
-Paths = list[Path]
-
-
 def _bail_out_with_error(e: BaseError) -> None:
     """Report and error and set correct exit code."""
     log.error("%s: %s", type(e).__name__, str(e).replace("\n", r"\n"))
@@ -453,8 +450,8 @@ def inject_files(
     )
 
 
-def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
-    def enough_files_for_merge(sbom_files_to_merge: Paths) -> Paths:
+def _prevalidate_sbom_files_args(sbom_files_to_merge: list[Path]) -> list[Path]:
+    def enough_files_for_merge(sbom_files_to_merge: list[Path]) -> list[Path]:
         if len(sbom_files_to_merge) < 2:
             # NOTE: an exception here happens during argument evaluation phase
             # i.e. outside of handle_errors() decorator. Simply raising
@@ -463,7 +460,7 @@ def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
             _bail_out_with_error(InvalidInput("Need at least two different SBOM files"))
         return sbom_files_to_merge
 
-    def all_files_are_jsons(sbom_files_to_merge: Paths) -> Paths:
+    def all_files_are_jsons(sbom_files_to_merge: list[Path]) -> list[Path]:
         for sbom_file in sbom_files_to_merge:
             try:
                 json.loads(sbom_file.read_text())
@@ -480,9 +477,8 @@ def _prevalidate_sbom_files_args(sbom_files_to_merge: Paths) -> Paths:
 @app.command(help=MERGE_SBOMS_HELP)
 @handle_errors
 def merge_sboms(  # noqa: D103 -- docstring becomes part of --help message
-    sbom_files_to_merge: Paths = typer.Argument(
+    sbom_files_to_merge: list[Path] = typer.Argument(
         ...,
-        callback=_prevalidate_sbom_files_args,
         exists=True,
         file_okay=True,
         dir_okay=False,
@@ -497,6 +493,7 @@ def merge_sboms(  # noqa: D103 -- docstring becomes part of --help message
     ),
 ) -> None:
     """Merge two or more SBOMs into one."""
+    sbom_files_to_merge = _prevalidate_sbom_files_args(sbom_files_to_merge)
     sboms_to_merge: list[SPDXSbom | Sbom] = []
     for sbom_file in sbom_files_to_merge:
         sbom_dict = json.loads(sbom_file.read_text())
