@@ -147,7 +147,7 @@ class NexusClient:
         log.info("Enabling anonymous access...")
         url = f"{self.base_url}/service/rest/v1/security/anonymous"
         payload = {
-            "enabled": True,
+            "enabled": "true",
             "userId": "anonymous",
             "realmName": "NexusAuthorizingRealm",
         }
