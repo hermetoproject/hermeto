@@ -140,26 +140,29 @@ def generate_test_data(session: Session) -> None:
 
 @nox.session(name="pip-compile")
 def pip_compile(session: Session) -> None:
-    """Update requirements.txt and requirements-extras.txt files."""
-    PWD = os.environ["PWD"]
-    uv_pip_compile_cmd = (
-        "pip install uv && "
+    """Update requirements files."""
+    compile_cmds = [
+        "pip install --upgrade pip",
+        "pip install uv",
         # requirements.txt
-        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.10 --refresh --no-strip-markers pyproject.toml && "
+        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.10 --refresh --no-strip-markers pyproject.toml",
+        # requirements-build.txt
+        "uv pip compile --generate-hashes --output-file=requirements-build.txt --python=3.10 --refresh --no-strip-markers requirements-build.in",
         # requirements-extras.txt
-        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.10 --refresh --no-strip-markers pyproject.toml"
-    )
+        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.10 --refresh --no-strip-markers pyproject.toml",
+    ]
+    pwd = os.environ["PWD"]
     cmd = [
         "podman",
         "run",
         "--rm",
         "--volume",
-        f"{PWD}:/hermeto:rw,Z",
+        f"{pwd}:/hermeto:rw,Z",
         "--workdir",
         "/hermeto",
         "mirror.gcr.io/library/python:3.10-alpine",
         "sh",
         "-c",
-        uv_pip_compile_cmd,
+        " && ".join(compile_cmds),
     ]
     session.run(*cmd, external=True)
