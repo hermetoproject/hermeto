@@ -55,6 +55,12 @@ jobs:
             --python=3.10 \
             --no-strip-markers \
             pyproject.toml
+          uv pip compile \
+            --generate-hashes \
+            --output-file=requirements-build.txt \
+            --python=3.10 \
+            --no-strip-markers \
+            requirements-build.in
           {
             echo 'GIT_DIFF<<EOF'
             git diff -p

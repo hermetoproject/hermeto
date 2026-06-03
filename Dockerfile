@@ -33,9 +33,10 @@ RUN dnf -y install \
     && dnf clean all
 
 # Install dependencies in a separate layer to maximize layer caching
-COPY requirements.txt .
+COPY requirements.txt requirements-build.txt ./
 RUN python3.12 -m venv /venv && \
     /venv/bin/pip install --upgrade pip && \
+    /venv/bin/pip install -r requirements-build.txt --no-deps --no-cache-dir --require-hashes && \
     /venv/bin/pip install -r requirements.txt --no-deps --no-cache-dir --require-hashes
 
 COPY . .
