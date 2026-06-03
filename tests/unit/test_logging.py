@@ -45,18 +45,33 @@ class TestColoredFormatter:
         assert f"{expected_color}{level_name}{RESET}" in result
 
     @pytest.mark.parametrize(
-        "color, stream, expect_color",
+        "color, stream, env, expect_color",
         [
-            (None, FakeTTY(), True),
-            (None, FakeNonTTY(), False),
-            (None, None, False),
-            (True, FakeNonTTY(), True),
-            (False, FakeTTY(), False),
+            (None, FakeTTY(), {}, True),
+            (None, FakeNonTTY(), {}, False),
+            (None, None, {}, False),
+            (True, FakeNonTTY(), {}, True),
+            (False, FakeTTY(), {}, False),
+            (None, FakeTTY(), {"NO_COLOR": "1"}, False),
+            (None, FakeNonTTY(), {"FORCE_COLOR": "1"}, True),
+            (None, FakeNonTTY(), {"NO_COLOR": "1", "FORCE_COLOR": "1"}, True),
+            (None, FakeTTY(), {"NO_COLOR": ""}, True),
+            (True, FakeNonTTY(), {"NO_COLOR": "1"}, True),
+            (False, FakeTTY(), {"FORCE_COLOR": "1"}, False),
         ],
     )
     def test_color_mode(
-        self, color: bool | None, stream: StringIO | None, expect_color: bool
+        self,
+        color: bool | None,
+        stream: StringIO | None,
+        env: dict[str, str],
+        expect_color: bool,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        for var in ("NO_COLOR", "FORCE_COLOR"):
+            monkeypatch.delenv(var, raising=False)
+        for name, value in env.items():
+            monkeypatch.setenv(name, value)
         fmt = ColoredFormatter(FMT, stream=stream, color=color)
         result = fmt.format(_make_record(logging.INFO))
         if expect_color:
