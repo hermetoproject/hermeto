@@ -29,7 +29,6 @@ RUN dnf -y install \
     gcc \
     python3.12-devel \
     python3.12-pip \
-    python3.12-setuptools \
     && dnf clean all
 
 # Install dependencies in a separate layer to maximize layer caching
