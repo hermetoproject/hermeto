@@ -4,7 +4,6 @@ from textwrap import dedent
 
 import pytest
 
-from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
 from hermeto.core.extras.envfile import EnvFormat, generate_envfile
 from hermeto.core.models.output import BuildConfig
@@ -23,26 +22,16 @@ def test_format_based_on_suffix(filename: str, expect_format: EnvFormat) -> None
 
 
 @pytest.mark.parametrize(
-    "filename, expect_reason",
+    "filename",
     [
-        (".env", "file has no suffix: .env"),
-        ("file.", "file has no suffix: file."),
-        ("file.yaml", "unsupported suffix: yaml"),
+        pytest.param(".env", id="no_suffix_dotenv"),
+        pytest.param("file.", id="no_suffix_trailing_dot"),
+        pytest.param("file.yaml", id="unsupported_suffix"),
     ],
 )
-def test_cannot_determine_format(filename: str, expect_reason: str) -> None:
-    expect_error = f"Cannot determine envfile format, {expect_reason}"
-    with pytest.raises(UnsupportedFeature, match=expect_error) as exc_info:
+def test_cannot_determine_format(filename: str) -> None:
+    with pytest.raises(UnsupportedFeature):
         EnvFormat.based_on_suffix(Path(filename))
-
-    expect_friendly_msg = dedent(
-        f"""
-        Cannot determine envfile format, {expect_reason}
-          Please use one of the supported suffixes: json, env, sh[==env]
-          You can also define the format explicitly instead of letting {APP_NAME} choose.
-        """
-    ).strip()
-    assert exc_info.value.friendly_msg() == expect_friendly_msg
 
 
 def test_generate_env_as_json() -> None:

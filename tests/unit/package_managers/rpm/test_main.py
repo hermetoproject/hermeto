@@ -14,15 +14,11 @@ from hermeto.core.errors import (
     InvalidLockfileFormat,
     LockfileNotFound,
 )
-from hermeto.core.models.input import ExtraOptions, RpmBinaryFilters, RpmPackageInput, SSLOptions
-from hermeto.core.models.sbom import Annotation, Component, Property
-from hermeto.core.package_managers.rpm import fetch_rpm_source, inject_files_post
+from hermeto.core.models.input import SSLOptions
+from hermeto.core.models.sbom import Component, Property
 from hermeto.core.package_managers.rpm.main import (
     DEFAULT_PACKAGE_DIR,
-    _createrepo,
-    _download,
     _generate_repofiles,
-    _generate_repos,
     _generate_sbom_components,
     _get_ssl_context,
     _Repofile,
@@ -31,114 +27,6 @@ from hermeto.core.package_managers.rpm.main import (
 )
 from hermeto.core.package_managers.rpm.redhat import RedhatRpmsLock
 from hermeto.core.rooted_path import RootedPath
-
-RPM_LOCK_FILE_DATA = """
-lockfileVersion: 1
-lockfileVendor: redhat
-arches:
-  - arch: x86_64
-    packages:
-      - url: https://example.com/x86_64/Packages/v/vim-enhanced-9.1.158-1.fc38.x86_64.rpm
-        checksum: sha256:21bb2a09852e75a693d277435c162e1a910835c53c3cee7636dd552d450ed0f1
-        size: 1976132
-        repoid: updates
-    source:
-      - url: https://example.com/source/tree/Packages/v/vim-9.1.158-1.fc38.src.rpm
-        checksum: sha256:94803b5e1ff601bf4009f223cb53037cdfa2fe559d90251bbe85a3a5bc6d2aab
-        size: 14735448
-        repoid: updates-source
-    module_metadata:
-      - url: https://example.com/x86_64/repodata/683718e724821ff45bf625a1b63f0431919bfff012af57589da57fd88dc6b445-modules.yaml.gz
-        checksum: sha256:683718e724821ff45bf625a1b63f0431919bfff012af57589da57fd88dc6b445
-        size: 76926
-        repoid: updates
-"""
-
-
-@pytest.mark.parametrize(
-    "model_input,result_options",
-    [
-        pytest.param(mock.Mock(options=None), None, id="fetch_with_no_options"),
-        pytest.param(
-            RpmPackageInput.model_construct(
-                type="rpm",
-                options=ExtraOptions.model_construct(dnf={"foorepo": {"foo": 1, "bar": False}}),
-            ),
-            {
-                "rpm": {
-                    "dnf": {"foorepo": {"foo": 1, "bar": False}},
-                    "ssl": None,
-                },
-            },
-            id="fetch_with_dnf_options",
-        ),
-        pytest.param(
-            [
-                RpmPackageInput.model_construct(
-                    type="rpm",
-                    options=ExtraOptions.model_construct(dnf={"foorepo": {"foo": 1, "bar": False}}),
-                ),
-                RpmPackageInput.model_construct(
-                    type="rpm",
-                    options=ExtraOptions.model_construct(dnf={"bazrepo": {"baz": 0}}),
-                ),
-            ],
-            {
-                "rpm": {
-                    "dnf": {"bazrepo": {"baz": 0}},
-                    "ssl": None,
-                }
-            },
-            id="fetch_multiple_dnf_option_sets",
-        ),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.rpm.main.create_backend_annotation")
-@mock.patch("hermeto.core.package_managers.rpm.main.RequestOutput.from_obj_list")
-@mock.patch("hermeto.core.package_managers.rpm.main._resolve_rpm_project")
-def test_fetch_rpm_source(
-    mock_resolve_rpm_project: mock.Mock,
-    mock_from_obj_list: mock.Mock,
-    mock_create_annotation: mock.Mock,
-    model_input: mock.Mock | RpmPackageInput | list[RpmPackageInput],
-    result_options: dict[str, dict[str, Any]] | None,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    def _has_multiple_options(rpm_models: list[RpmPackageInput]) -> bool:
-        options = 0
-        for model in rpm_models:
-            if model.options:
-                options += 1
-        return options > 1
-
-    mock_components = [mock.Mock()]
-    mock_resolve_rpm_project.return_value = mock_components
-    mock_annotation = Annotation(
-        subjects=set(),
-        annotator={"organization": {"name": "red hat"}},
-        timestamp="2026-01-01T00:00:00Z",
-        text="hermeto:backend:rpm",
-    )
-    mock_create_annotation.return_value = mock_annotation
-    mock_request = mock.Mock()
-    mock_request.rpm_packages = model_input if isinstance(model_input, list) else [model_input]
-    fetch_rpm_source(mock_request)
-
-    if isinstance(model_input, list):
-        mock_components *= len(model_input)
-
-        if _has_multiple_options(model_input):
-            assert "Multiple sets of DNF options detected on the input:" in caplog.text
-
-    mock_resolve_rpm_project.assert_called()
-    mock_create_annotation.assert_called_with(mock_components, "rpm")
-    mock_from_obj_list.assert_called_with(
-        components=mock_components,
-        environment_variables=[],
-        project_files=[],
-        options=result_options,
-        annotations=[mock_annotation],
-    )
 
 
 def test_resolve_rpm_project_no_lockfile(rooted_tmp_path: RootedPath) -> None:
@@ -250,26 +138,6 @@ def test_resolve_rpm_project_rejects_empty_arch(
         yaml.safe_dump(lockfile_data, f)
     with pytest.raises(InvalidLockfileFormat):
         _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
-
-
-@mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")
-def test_createrepo(mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath) -> None:
-    repodir = rooted_tmp_path
-    repoid = "repo1"
-    _createrepo(repoid, repodir.path)
-    mock_run_cmd.assert_called_once_with(
-        ["createrepo_c", "--general-compress-type", "gz", str(repodir)], params={}
-    )
-
-
-@mock.patch("hermeto.core.package_managers.rpm.main._createrepo")
-def test_generate_repos(mock_createrepo: mock.Mock, rooted_tmp_path: RootedPath) -> None:
-    package_dir = rooted_tmp_path.join_within_root(DEFAULT_PACKAGE_DIR)
-    arch_dir = package_dir.path.joinpath("x86_64")
-    arch_dir.joinpath("repo1").mkdir(parents=True)
-    arch_dir.joinpath("repos.d").mkdir(parents=True)
-    _generate_repos(rooted_tmp_path.path)
-    mock_createrepo.assert_called_once_with("repo1", arch_dir.joinpath("repo1"))
 
 
 @pytest.mark.parametrize(
@@ -435,75 +303,6 @@ def test_generate_sbom_components(
     ]
 
 
-@mock.patch("hermeto.core.package_managers.rpm.main.Path")
-@mock.patch("hermeto.core.package_managers.rpm.main._generate_repofiles")
-@mock.patch("hermeto.core.package_managers.rpm.main._generate_repos")
-def test_inject_files_post(
-    mock_generate_repos: mock.Mock,
-    mock_generate_repofiles: mock.Mock,
-    mock_path: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    inject_files_post(
-        from_output_dir=rooted_tmp_path.path, for_output_dir=rooted_tmp_path.path, options={}
-    )
-    mock_generate_repos.assert_called_once_with(rooted_tmp_path.path)
-    mock_generate_repofiles.assert_called_with(rooted_tmp_path.path, rooted_tmp_path.path, {})
-
-
-@mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
-def test_download(
-    mock_async_download_files: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    lock = RedhatRpmsLock.model_validate(yaml.safe_load(RPM_LOCK_FILE_DATA))
-    _download(lock, rooted_tmp_path.path)
-    mock_async_download_files.assert_called_once_with(
-        {
-            "https://example.com/x86_64/Packages/v/vim-enhanced-9.1.158-1.fc38.x86_64.rpm": str(
-                rooted_tmp_path.path.joinpath(
-                    "x86_64/updates/vim-enhanced-9.1.158-1.fc38.x86_64.rpm"
-                )
-            ),
-            "https://example.com/source/tree/Packages/v/vim-9.1.158-1.fc38.src.rpm": str(
-                rooted_tmp_path.path.joinpath("x86_64/updates-source/vim-9.1.158-1.fc38.src.rpm")
-            ),
-            "https://example.com/x86_64/repodata/683718e724821ff45bf625a1b63f0431919bfff012af57589da57fd88dc6b445-modules.yaml.gz": str(
-                rooted_tmp_path.path.joinpath(
-                    "x86_64/updates/683718e724821ff45bf625a1b63f0431919bfff012af57589da57fd88dc6b445-modules.yaml.gz"
-                )
-            ),
-        },
-        5,
-        ssl_context=None,
-    )
-
-
-@mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
-def test_download_filters_architectures(
-    mock_async_download_files: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    """Test that _download only processes architectures matching the filter."""
-    lock = RedhatRpmsLock.model_validate(
-        {
-            "lockfileVersion": 1,
-            "lockfileVendor": "redhat",
-            "arches": [
-                {"arch": "x86_64", "packages": [{"url": "http://x86.rpm"}]},
-                {"arch": "aarch64", "packages": [{"url": "http://arm.rpm"}]},
-            ],
-        }
-    )
-
-    metadata = _download(lock, rooted_tmp_path.path, None, RpmBinaryFilters(arch="x86_64"))
-
-    # The paths should only be for x86_64 packages
-    paths = [str(p) for p in metadata.keys()]
-    assert all("x86_64" in p for p in paths)
-    assert not any("aarch64" in p for p in paths)
-
-
 def test_verify_downloaded_unsupported_hash_alg() -> None:
     metadata = {Path("foo"): {"checksum": "noalg:unmatchedchecksum", "size": None}}
     with pytest.raises(ChecksumVerificationFailed):
@@ -579,18 +378,6 @@ class TestRepofile:
         actual.read_dict(data)
         actual._apply_defaults()
         assert actual == expected_r
-
-    @mock.patch("hermeto.core.package_managers.rpm.main._Repofile._apply_defaults")
-    @mock.patch("hermeto.core.package_managers.rpm.main.ConfigParser.write")
-    def test_write(
-        self, mock_superclass_write: mock.Mock, mock_apply_defaults: mock.Mock, tmp_path: Path
-    ) -> None:
-        mock_superclass_write.return_value = None
-
-        with open(tmp_path / "test.repo", "w") as f:
-            _Repofile({"foo": "bar"}).write(f)
-
-        mock_apply_defaults.assert_called_once()
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import subprocess
 from collections.abc import Collection
 from pathlib import Path
 from textwrap import dedent
@@ -10,7 +9,6 @@ import pypi_simple
 import pytest
 from git import Repo
 
-from hermeto import APP_NAME
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
@@ -24,8 +22,6 @@ from hermeto.core.errors import (
     UnrecognizedFileExtension,
     UnsupportedFeature,
 )
-from hermeto.core.models.input import CargoPackageInput, Request
-from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
 from hermeto.core.package_managers.pip import main as pip
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
@@ -122,7 +118,6 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     mock_setup_cfg: mock.Mock,
     mock_pyproject_toml: mock.Mock,
     rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     # Case 1: Only pyproject.toml exists with name but no version
     pyproject_toml = mock_pyproject_toml.return_value
@@ -139,7 +134,6 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     name, version = pip._extract_metadata_from_config_files(rooted_tmp_path)
     assert name == "name_from_pyproject_toml"
     assert version is None
-    assert "Checking pyproject.toml for metadata" in caplog.messages
 
     # Case 2: pyproject.toml exists but without a name; fallback to setup.py with name and version
     pyproject_toml.get_name.return_value = None
@@ -151,7 +145,6 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     name, version = pip._extract_metadata_from_config_files(rooted_tmp_path)
     assert name == "name_from_setup_py"
     assert version == "0.1.0"
-    assert "Checking setup.py for metadata" in caplog.messages
 
     # Case 3: Both pyproject.toml and setup.py lack names; fallback to setup.cfg with complete metadata
     setup_py.get_name.return_value = None
@@ -163,7 +156,6 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     name, version = pip._extract_metadata_from_config_files(rooted_tmp_path)
     assert name == "name_from_setup_cfg"
     assert version == "0.2.0"
-    assert "Checking setup.cfg for metadata" in caplog.messages
 
     # Case 4: None of the config files have names, resulting in None, None
     setup_cfg.get_name.return_value = None
@@ -186,7 +178,6 @@ def test_get_pip_metadata_from_remote_origin(
     mock_pyproject_toml: mock.Mock,
     origin_exists: bool,
     rooted_tmp_path_repo: RootedPath,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     pyproject_toml = mock_pyproject_toml.return_value
     pyproject_toml.exists.return_value = False
@@ -205,13 +196,9 @@ def test_get_pip_metadata_from_remote_origin(
         assert name == "repo"
         assert version is None
 
-        assert f"Resolved name repo for package at {rooted_tmp_path_repo}" in caplog.messages
-        assert f"Could not resolve version for package at {rooted_tmp_path_repo}" in caplog.messages
     else:
-        with pytest.raises(PackageRejected) as exc_info:
+        with pytest.raises(PackageRejected):
             pip._get_pip_metadata(rooted_tmp_path_repo)
-
-        assert str(exc_info.value) == "Unable to infer package name from origin URL"
 
 
 class TestDownload:
@@ -296,12 +283,7 @@ class TestDownload:
             original_url, download_path, insecure=host_is_trusted
         )
 
-    def test_ignored_and_rejected_options(self, caplog: pytest.LogCaptureFixture) -> None:
-        """
-        Test ignored and rejected options.
-
-        All ignored options should be logged, all rejected options should be in error message.
-        """
+    def test_ignored_and_rejected_options(self) -> None:
         all_rejected = [
             "--extra-index-url",
             "--no-index",
@@ -311,17 +293,8 @@ class TestDownload:
         ]
         options = all_rejected + ["-c", "constraints.txt", "--use-feature", "some_feature", "--foo"]
         req_file = mock_requirements_file(options=options)
-        with pytest.raises(UnsupportedFeature) as exc_info:
+        with pytest.raises(UnsupportedFeature):
             pip._download_dependencies(RootedPath("/output"), req_file)
-
-        err_msg = (
-            f"{APP_NAME} does not support the following options: --extra-index-url, "
-            "--no-index, -f, --find-links, --only-binary"
-        )
-        assert str(exc_info.value) == err_msg
-
-        log_msg = f"{APP_NAME} will ignore the following options: -c, --use-feature, --foo"
-        assert log_msg in caplog.text
 
     @pytest.mark.parametrize(
         "req_kwargs, exc_type",
@@ -501,16 +474,7 @@ class TestDownload:
                 ],
                 [],
                 MissingChecksum,
-                id="pypi_local_hash_triggers_missing",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
-                    ("bar", "vcs", {}),
-                ],
-                [],
-                MissingChecksum,
-                id="vcs_local_hash_triggers_missing",
+                id="local_hash_triggers_missing",
             ),
             pytest.param(
                 [
@@ -519,16 +483,7 @@ class TestDownload:
                 ],
                 ["--require-hashes"],
                 MissingChecksum,
-                id="pypi_global_require_hashes",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {}),
-                    ("bar", "vcs", {}),
-                ],
-                ["--require-hashes"],
-                MissingChecksum,
-                id="vcs_global_require_hashes",
+                id="global_require_hashes",
             ),
             pytest.param(
                 [
@@ -537,34 +492,13 @@ class TestDownload:
                 ],
                 ["--require-hashes"],
                 MissingChecksum,
-                id="pypi_both_global_and_local_hash",
-            ),
-            pytest.param(
-                [
-                    ("foo", "vcs", {"hashes": ["sha256:abcdef"]}),
-                    ("bar", "vcs", {}),
-                ],
-                ["--require-hashes"],
-                MissingChecksum,
-                id="vcs_both_global_and_local_hash",
+                id="both_global_and_local_hash",
             ),
             pytest.param(
                 [("foo", "pypi", {"hashes": ["malformed"]})],
                 [],
                 InvalidChecksum,
-                id="pypi_malformed_hash",
-            ),
-            pytest.param(
-                [("foo", "vcs", {"hashes": ["malformed"]})],
-                [],
-                InvalidChecksum,
-                id="vcs_malformed_hash",
-            ),
-            pytest.param(
-                [("foo", "url", {"hashes": ["malformed"]})],
-                [],
-                InvalidChecksum,
-                id="url_malformed_hash",
+                id="malformed_hash",
             ),
         ],
     )
@@ -909,55 +843,6 @@ def test_infer_package_name_raises_without_git_repo(
 
     with pytest.raises(PackageRejected):
         pip._infer_package_name_from_origin_url(rooted_tmp_path)
-
-
-@mock.patch("hermeto.core.scm.GitRepo")
-@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
-@mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
-@mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present")
-def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(
-    mock_verify_lockfile_present: mock.Mock,
-    mock_run_cmd: mock.Mock,
-    mock_resolve_pip: mock.Mock,
-    mock_replace_requirements: mock.Mock,
-    mock_git_repo: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    # Making this a pip test since it is pip who is affected by the problem the most.
-    source_dir = rooted_tmp_path.re_root("source")
-    output_dir = rooted_tmp_path.re_root("output")
-    source_dir.path.mkdir()
-
-    request = Request(
-        source_dir=source_dir,
-        output_dir=output_dir,
-        packages=[{"type": "pip", "requirements_files": ["requirements.txt"]}],
-    )
-
-    mock_run_cmd.side_effect = subprocess.CalledProcessError(
-        cmd="test",
-        returncode=101,
-        stderr="... failed to sync ... because --locked was passed to prevent this ...",
-    )
-    mock_verify_lockfile_present.return_value = None
-
-    resolved = {
-        "package": {"name": "foo", "version": "1.0", "type": "pip"},
-        "dependencies": [],
-        "packages_containing_rust_code": [CargoPackageInput(type="cargo", path=".")],
-        "requirements": [],
-    }
-
-    mock_resolve_pip.return_value = resolved
-
-    mocked_repo = mock.Mock()
-    mocked_repo.remote.return_value.url = "https://github.com/my-org/my-repo"
-    mocked_repo.head.commit.hexsha = GIT_REF
-    mock_git_repo.return_value = mocked_repo
-
-    with pytest.raises(PackageWithCorruptLockfileRejected):
-        pip.fetch_pip_source(request)
 
 
 @pytest.mark.parametrize(

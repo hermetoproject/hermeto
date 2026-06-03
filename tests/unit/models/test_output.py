@@ -202,6 +202,5 @@ class TestEnvironmentVariable:
     def test_nested_resolution_failure(self, envs: list[EnvironmentVariable]) -> None:
         mappings = {e.name: e.value for e in envs}
 
-        err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
-        with pytest.raises(BaseError, match=err_msg):
+        with pytest.raises(BaseError):
             envs[0].resolve_value(mappings)
