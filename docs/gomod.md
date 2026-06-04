@@ -1,11 +1,17 @@
 # [gomod][]
 
+The gomod package manager works by parsing the [go.mod][] file present in the
+source repository to determine which dependencies to download. Hermeto does not
+parse this file on its own — rather, it relies on the `go` command to download and
+list the required dependencies.
+
 <!-- markdownlint-disable-next-line link-fragments -->
 - [Specifying modules to process](#specifying-modules-to-process)
 - [Using fetched dependencies](#using-fetched-dependencies)
 - [gomod flags](#gomod-flags)
 - [Vendoring](#vendoring)
 - [Understanding reported dependencies](#understanding-reported-dependencies)
+- [Go toolchain version](#go-toolchain-version)
 - [Go 1.21+](#go-121)
 - [Full example walkthrough](#example)
 
@@ -215,6 +221,35 @@ fail.
 Please make sure to keep your go.sum file up to date, perhaps by incorporating
 the `go mod tidy` command in your dev workflow.
 
+### Go toolchain version
+
+Current version: 1.25
+
+> [!WARNING]
+> Hermeto expects to use a specific version of the `go` command when downloading
+> dependencies. This is the version installed in the [hermeto container][]. Correctness
+> is not guaranteed if Hermeto is run locally (outside the container)
+> with a different Go version. You are free to use a different version to build
+> your project.
+
+From [Go 1.17][] onward, the go.mod file includes all the transitively required
+dependencies of your application - see the section about *Pruned module graphs*
+in the [Go 1.17 changelog][]. In previous Go versions, the go.mod file included
+only direct dependencies. Hermeto does support downloading and listing all
+transitive dependencies for earlier versions thanks to Go's backwards
+compatibility. Note that using Go >= 1.17 in your project has the added benefit
+of downloading fewer dependencies (as noted in the changelog), in some cases
+drastically so.
+
+> [!NOTE]
+> The `go` command promises to be backwards compatible with previous versions. If
+> your go.mod file specifies the intended go version, Hermeto should handle it
+> appropriately. If your go version is *higher* than what Hermeto uses, there is
+> a good chance it will be compatible regardless, as long as the dependency
+> resolution did not change between the two versions. For example, dependency
+> resolution did change in [Go 1.18][] but not in [Go 1.19][]. For [Go 1.21][]
+> and newer, please see [Go 1.21+](#go-121) below as it gets a bit more complicated.
+
 ### Go 1.21+
 
 Starting with [Go 1.21][], Go changed the meaning of the `go 1.X` directive in
@@ -350,7 +385,13 @@ podman run --rm -ti fzf
 
 [cgo]: https://pkg.go.dev/cmd/cgo
 [fzf]: https://github.com/junegunn/fzf
+[Go 1.17]: https://tip.golang.org/doc/go1.17
+[Go 1.17 changelog]: https://tip.golang.org/doc/go1.17#go-command
+[Go 1.18]: https://tip.golang.org/doc/go1.18#go-command
+[Go 1.19]: https://tip.golang.org/doc/go1.19#go-command
 [Go 1.21]: https://tip.golang.org/doc/go1.21
+[go.mod]: https://go.dev/ref/mod#go-mod-file
+[hermeto container]: https://github.com/hermetoproject/hermeto/pkgs/container/hermeto
 [Go checksum database]: https://go.dev/ref/mod#checksum-database
 [gomod]: https://go.dev/ref/mod
 [Go modules documentation]: https://go.dev/ref/mod#modules-overview

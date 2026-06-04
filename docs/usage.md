@@ -18,6 +18,10 @@ needed for the build. One class of hermetic build implementations is to restrict
 external network access during the build itself, requiring that all dependencies
 are declared and pre-fetched before the build occurs.
 
+Hermeto prefetches dependencies and produces an SBOM; it is not a complete
+hermetic build system. A user would need to isolate the build step
+(e.g. with containers) so it runs without network access.
+
 In order to support this class of hermetic builds, not only does Hermeto need to
 pre-fetch the dependencies, but some build flows will need additional changes
 (i.e. leveraging defined [environment variables](#generate-environment-variables)
