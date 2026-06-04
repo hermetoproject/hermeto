@@ -35,6 +35,7 @@ theme:
 nav:
   - Home: index.md
   - Usage: usage.md
+  - Configuration: configuration.md
   - SBOM: sbom.md
   - Package managers:
       - bundler: bundler.md
@@ -49,10 +50,13 @@ nav:
 
 # Markdown extensions
 markdown_extensions:
+  - admonition
   - footnotes
   - pymdownx.emoji
   - pymdownx.highlight:
       use_pygments: true
+  - pymdownx.quotes:
+      callouts: true
   - pymdownx.superfences
   - toc:
       permalink: true
