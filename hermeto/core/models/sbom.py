@@ -402,9 +402,15 @@ class Sbom(pydantic.BaseModel):
                 if component.pedigree is None:
                     return []
 
-                ref_base = dict(referenceCategory="SECURITY", referenceType="fix")
                 patch_urls = sorted({patch.diff.url for patch in component.pedigree.patches})
-                return [dict(referenceLocator=patch_url, **ref_base) for patch_url in patch_urls]
+                return [
+                    {
+                        "referenceCategory": "SECURITY",
+                        "referenceType": "fix",
+                        "referenceLocator": patch_url,
+                    }
+                    for patch_url in patch_urls
+                ]
 
             packages = []
 
