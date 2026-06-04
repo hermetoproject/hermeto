@@ -658,24 +658,35 @@ def validate_requirements_hashes(requirements: list[PipRequirement], require_has
 
     :param list[PipRequirement] requirements: All requirements from a file
     :param bool require_hashes: True if hashes are required for all requirements
+    :raise UnsupportedFeature: If any VCS requirement is used in a hash-locked requirements file
     :raise MissingChecksum: If any hashes are missing
     :raise InvalidChecksum: If hashes have invalid format
     """
     for req in requirements:
         hashes = req.hashes
 
-        if require_hashes and not hashes:
-            # We shouldn't get here, but it's a definite error if we do.
+        if require_hashes:
             # VCS reqs *cannot* be hashed, so we'll always hit
             # this for any VCS req in a 'requirements.txt' which has *any* hash.
             # For URL requirements, having a hash is required to pass *basic* validation.
-            raise MissingChecksum(
-                None,
-                solution=(
-                    f"Hash is required, dependency does not specify any: {req.download_line}.\n"
-                    "Please specify the expected hashes for all dependencies"
-                ),
-            )
+            if req.kind == "vcs":
+                raise UnsupportedFeature(
+                    f"VCS requirements are not supported in hash-locked requirements files: {req.download_line}",
+                    solution=(
+                        "VCS requirements do not support pip's --hash option.\n"
+                        "Consider using a hashable URL instead, for example:\n"
+                        "  <name> @ https://github.com/.../1.0.0.tar.gz \\\n"
+                        "    --hash=sha256:..."
+                    ),
+                )
+            elif not hashes:
+                raise MissingChecksum(
+                    None,
+                    solution=(
+                        f"Hash is required, dependency does not specify any: {req.download_line}.\n"
+                        "Please specify the expected hashes for all dependencies"
+                    ),
+                )
 
         for hash_spec in hashes:
             _, _, digest = hash_spec.partition(":")
