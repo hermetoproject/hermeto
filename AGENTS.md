@@ -49,6 +49,9 @@ files or ask. Do not assume.
   `nox -s lint` independently
 - Changes split into standalone commits, not a single blob
 - Commit messages explain WHY, not what
+- Commit messages must reference GitHub/GitLab issues and PRs with full
+  URLs (e.g., `https://github.com/hermetoproject/hermeto/issues/123`),
+  never short references like `#123` or `org/repo#45`
 - `# SPDX-License-Identifier: GPL-3.0-only` header on new files
 - No gitmojis
 
