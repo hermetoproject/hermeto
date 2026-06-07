@@ -30,7 +30,20 @@ class PnpmLock(UserDict):
 
         try:
             with path.open() as f:
-                data = yaml.safe_load(f)
+                content = f.read()
+                if content.startswith("---\n") or content.startswith(
+                    "---\r\n"
+                ):  # pnpm v11 lockfile format
+                    documents = list(yaml.safe_load_all(content))
+                    if len(documents) < 2:
+                        raise InvalidLockfileFormat(
+                            path,
+                            err_details="Expected at least two YAML documents in pnpm v11 lockfile format.",
+                            solution="Ensure the pnpm-lock.yaml file is not corrupted.",
+                        )
+                    data = documents[1]
+                else:  # pnpm v10 lockfile format
+                    data = yaml.safe_load(content)
         except yaml.YAMLError as e:
             raise InvalidLockfileFormat(
                 path,
