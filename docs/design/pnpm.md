@@ -296,10 +296,11 @@ file.
 
 ```yaml
 patchedDependencies:
-  lodash@4.17.23:
-    hash: 5877a18891ec19fc2a2e4eaf39284abc77fe7f8a910708f424aac3434b0813aa
-    path: patches/lodash-4.17.23.patch
+  lodash@4.17.23: 5877a18891ec19fc2a2e4eaf39284abc77fe7f8a910708f424aac3434b0813aa
 ```
+pnpm v11 simplified `patchedDependencies` to a hash mapping.
+Patch file paths are no longer stored in the lockfile;
+they are resolved from `pnpm-workspace.yaml` instead.
 
 CycloneDX specification defines patches for a component as a list of `patch` objects.
 This approach is already used for the yarn berry backend. See [cyclonedx.org/docs](https://cyclonedx.org/docs/1.6/json/#metadata_tools_oneOf_i0_components_items_pedigree_patches).
