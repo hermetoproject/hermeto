@@ -70,6 +70,7 @@ def download_binary_file(
     config = get_config()
     timeout = (config.http.connect_timeout, config.http.read_timeout)
     try:
+        log.debug("requests.get(url: %s)", url)
         resp = _get_pkg_requests_session().get(
             url, stream=True, verify=not insecure, auth=auth, timeout=timeout
         )
@@ -80,6 +81,8 @@ def download_binary_file(
     with open(download_path, "wb") as f:
         for chunk in resp.iter_content(chunk_size=chunk_size):
             f.write(chunk)
+
+    log.debug("Download completed - %s", url)
 
 
 def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
