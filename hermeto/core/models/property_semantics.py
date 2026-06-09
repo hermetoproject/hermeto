@@ -18,6 +18,7 @@ class PropertyEnum(str, Enum):
     PROP_BUNDLER_PACKAGE_BINARY = f"{APP_NAME}:bundler:package:binary"
     PROP_CDX_NPM_PACKAGE_BUNDLED = "cdx:npm:package:bundled"
     PROP_CDX_NPM_PACKAGE_DEVELOPMENT = "cdx:npm:package:development"
+    PROP_EXPERIMENTAL = f"{APP_NAME}:experimental"
     PROP_FOUND_BY = f"{APP_NAME}:found_by"
     PROP_MISSING_HASH_IN_FILE = f"{APP_NAME}:missing_hash:in_file"
     PROP_PIP_PACKAGE_BINARY = f"{APP_NAME}:pip:package:binary"
@@ -41,6 +42,7 @@ class PropertySet:
     """Represents the semantic meaning of the set of Properties of a single Component."""
 
     bundler_package_binary: bool = False
+    experimental: bool = False
     found_by: str | None = None
     missing_hash_in_file: frozenset[str] = field(default_factory=frozenset)
     npm_bundled: bool = False
@@ -54,6 +56,7 @@ class PropertySet:
     def from_properties(cls, props: Iterable[Property]) -> "Self":
         """Convert a list of SBOM component properties to a PropertySet."""
         bundler_package_binary = False
+        experimental = False
         found_by = None
         missing_hash_in_file = []
         npm_bundled = False
@@ -66,6 +69,8 @@ class PropertySet:
         for prop in props:
             if prop.name == PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY:
                 bundler_package_binary = True
+            elif prop.name == PropertyEnum.PROP_EXPERIMENTAL:
+                experimental = True
             elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED:
                 npm_bundled = True
             elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT:
@@ -87,6 +92,7 @@ class PropertySet:
 
         return cls(
             bundler_package_binary,
+            experimental,
             found_by,
             frozenset(missing_hash_in_file),
             npm_bundled,
@@ -102,6 +108,8 @@ class PropertySet:
         props = []
         if self.bundler_package_binary:
             props.append(Property(name=PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY, value="true"))
+        if self.experimental:
+            props.append(Property(name=PropertyEnum.PROP_EXPERIMENTAL, value="true"))
         if self.found_by:
             props.append(Property(name=PropertyEnum.PROP_FOUND_BY, value=self.found_by))
         props.extend(
@@ -134,6 +142,7 @@ class PropertySet:
         cls = type(self)
         return cls(
             bundler_package_binary=self.bundler_package_binary or other.bundler_package_binary,
+            experimental=self.experimental or other.experimental,
             found_by=self.found_by or other.found_by,
             missing_hash_in_file=self.missing_hash_in_file | other.missing_hash_in_file,
             npm_bundled=self.npm_bundled and other.npm_bundled,
