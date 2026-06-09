@@ -6,8 +6,8 @@ from unittest import mock
 import pytest
 
 from hermeto.core.constants import Mode
-from hermeto.core.errors import NotAGitRepo
-from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference
+from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo
+from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
 from hermeto.core.package_managers.javascript.pnpm.resolver import (
@@ -15,6 +15,7 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
     _create_dependency_components,
     _create_root_component,
     _find_non_dev_dependencies,
+    _generate_pedigree_for,
     _generate_purl_for,
     generate_sbom_components,
 )
@@ -137,6 +138,75 @@ def test_generate_purl_for(
     package: PnpmPackage, vcs_qualifiers: dict[str, str], expected_purl: str
 ) -> None:
     assert _generate_purl_for(package, vcs_qualifiers).to_string() == expected_purl
+
+
+@pytest.mark.parametrize(
+    ("package", "vcs_qualifiers", "patches", "url"),
+    [
+        pytest.param(
+            PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
+            {},
+            {"pkg@1.0.0": {"path": "patches/pkg.patch"}},
+            None,
+            id="no_vcs_qualifiers",
+        ),
+        pytest.param(
+            PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
+            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            {},
+            None,
+            id="no_patches",
+        ),
+        pytest.param(
+            PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
+            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            {"pkg@1.0.0": {"path": "patches/pkg@1.0.0.patch"}},
+            "git+https://github.com/org/repo@abc#patches/pkg@1.0.0.patch",
+            id="match_by_package_id",
+        ),
+        pytest.param(
+            PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
+            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            {"pkg": {"path": "patches/pkg.patch"}},
+            "git+https://github.com/org/repo@abc#patches/pkg.patch",
+            id="match_by_package_name",
+        ),
+        pytest.param(
+            PnpmPackage(
+                "@scope/pkg@1.0.0",
+                "scope",
+                "pkg",
+                "1.0.0",
+                f"{NPM_REGISTRY_URL}/@scope/pkg/-/pkg-1.0.0.tgz",
+            ),
+            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            {"@scope/pkg": {"path": "patches/@scope/pkg.patch"}},
+            "git+https://github.com/org/repo@abc#patches/@scope/pkg.patch",
+            id="match_by_package_scope_and_name",
+        ),
+    ],
+)
+def test_generate_pedigree_for(
+    package: PnpmPackage,
+    vcs_qualifiers: dict[str, str],
+    patches: dict[str, dict[str, str]],
+    url: str | None,
+    tmp_path: Path,
+) -> None:
+    lockfile = PnpmLock(tmp_path, {"lockfileVersion": "9.0", "patchedDependencies": patches})
+    expected_pedigree = Pedigree(patches=[Patch(diff=PatchDiff(url=url))]) if url else None
+    assert _generate_pedigree_for(package, vcs_qualifiers, lockfile) == expected_pedigree
+
+
+def test_generate_pedigree_fails_when_path_is_missing(tmp_path: Path) -> None:
+    lockfile = PnpmLock(
+        tmp_path, {"lockfileVersion": "9.0", "patchedDependencies": {"pkg@1.0.0": {}}}
+    )
+    pkg = PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", "")
+    vcs_qualifiers = {"vcs_url": "git+https://github.com/org/repo@abc"}
+
+    with pytest.raises(InvalidLockfileFormat):
+        _generate_pedigree_for(pkg, vcs_qualifiers, lockfile)
 
 
 @pytest.mark.parametrize(

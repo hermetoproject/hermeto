@@ -5,14 +5,22 @@ from packageurl import PackageURL
 
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
-from hermeto.core.errors import NotAGitRepo, PackageRejected
+from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo, PackageRejected
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import PROXY_COMMENT, Component, ExternalReference
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    Component,
+    ExternalReference,
+    Patch,
+    PatchDiff,
+    Pedigree,
+)
 from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
 from hermeto.core.rooted_path import RootedPath
+from hermeto.core.utils import first_for
 
 JSR_REGISTRY_URL = "https://npm.jsr.io"
 
@@ -52,6 +60,7 @@ def _create_dependency_components(
             external_references = None
 
         purl = _generate_purl_for(package, vcs_qualifiers)
+        pedigree = _generate_pedigree_for(package, vcs_qualifiers, lockfile)
         property_set = PropertySet(npm_development=package.id not in non_dev_dependencies)
 
         components.append(
@@ -61,6 +70,7 @@ def _create_dependency_components(
                 purl=purl.to_string(),
                 properties=property_set.to_properties(),
                 external_references=external_references,
+                pedigree=pedigree,
             )
         )
 
@@ -93,6 +103,32 @@ def _generate_purl_for(package: PnpmPackage, vcs_qualifiers: dict[str, str]) -> 
         qualifiers=qualifiers,
         subpath=subpath,
     )
+
+
+def _generate_pedigree_for(
+    package: PnpmPackage, vcs_qualifiers: dict[str, str], lockfile: PnpmLock
+) -> Pedigree | None:
+    """Generate a Pedigree for the given package."""
+    vcs_url = vcs_qualifiers.get("vcs_url")
+    if not vcs_url:
+        return None
+
+    patches = lockfile.patched_dependencies
+
+    def get_patch_url(key: str) -> str:
+        try:
+            subpath = patches[key]["path"]
+        except (KeyError, TypeError):
+            raise InvalidLockfileFormat(lockfile.path, f"Missing path for patched dependency {key}")
+
+        return vcs_url + "#" + subpath
+
+    # Dependencies can be patched by package ID or package name (including scope).
+    full_name = f"@{package.scope}/{package.name}"
+    search_keys = (package.id, full_name, package.name)
+    key = first_for(lambda search_key: search_key in patches, search_keys, None)
+
+    return Pedigree(patches=[Patch(diff=PatchDiff(url=get_patch_url(key)))]) if key else None
 
 
 def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, str]) -> Component:
