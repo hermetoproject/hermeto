@@ -8,7 +8,14 @@ from typing import Any
 import pydantic
 
 from hermeto.core.errors import BaseError
-from hermeto.core.models.sbom import Annotation, Component, Sbom, merge_component_properties
+from hermeto.core.models.property_semantics import Property, PropertyEnum
+from hermeto.core.models.sbom import (
+    BACKEND_ANNOTATION_PREFIX,
+    Annotation,
+    Component,
+    Sbom,
+    merge_component_properties,
+)
 from hermeto.core.models.validators import unique_sorted
 
 log = logging.getLogger(__name__)
@@ -143,14 +150,34 @@ class RequestOutput(pydantic.BaseModel):
     build_config: BuildConfig
 
     def generate_sbom(self) -> Sbom:
-        """Generate the SBOM for this RequestOutput.
+        """
+        Generate the SBOM for RequestOutput.
 
         Note that RequestOutput may contain duplicated components, we de-duplicate them here
-        while merging their `properties`.
+        while merging their `properties`. If any experimental backends were used, the SBOM
+        metadata and the affected components are tagged with the experimental property.
         """
-        return Sbom(
+        sbom = Sbom(
             annotations=self.annotations, components=merge_component_properties(self.components)
         )
+
+        experimental_annotations = [
+            a
+            for a in self.annotations
+            if a.text.startswith(f"{BACKEND_ANNOTATION_PREFIX}experimental:")
+        ]
+        if not experimental_annotations:
+            return sbom
+
+        experimental = Property(name=PropertyEnum.PROP_EXPERIMENTAL, value="true")
+        sbom.metadata.properties.append(experimental)
+
+        experimental_subjects = {s for a in experimental_annotations for s in a.subjects}
+        for comp in sbom.components:
+            if comp.bom_ref in experimental_subjects:
+                comp.properties.append(experimental)
+
+        return sbom
 
     def __add__(self, other: "RequestOutput") -> "RequestOutput":
         if not isinstance(other, self.__class__):
