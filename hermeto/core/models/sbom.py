@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Callable, Literal, Union
 from urllib.parse import urlparse
 
 import pydantic
@@ -42,6 +42,11 @@ SortedSet = Annotated[set[str], pydantic.PlainSerializer(sorted, return_type=lis
 
 @dataclass
 class _PerBackendAccumulator:
+    """Collects Components produced by individual backends.
+
+    Intended to be used when generating annotations for CycloneDX SBOM during conversion
+    from SPDX. Marks all components with the same timestamp."""
+
     _max_timestamp: datetime
     subjects: set[str] = field(default_factory=set)
 
@@ -811,61 +816,25 @@ class SPDXSbom(pydantic.BaseModel):
 
         components = []
         backend_accumulators: dict[str, _PerBackendAccumulator] = {}
-        get_backend_name = lambda ann: ann.comment
-        eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
         for package in self.packages:
             purls = _extract_purls(package.externalRefs)
+            if is_spdx_package_wrapper(purls, package.name, package.versionInfo):
+                continue
 
-            properties = []
-            for ann in package.annotations:
-                result = convert_annotation_to_property(ann)
-                if result is a_backend_indicator:
-                    accumulator = backend_accumulators.setdefault(
-                        get_backend_name(ann),
-                        _PerBackendAccumulator(ann.annotationDate),
-                    )
-                    accumulator.accumulate(purls, ann.annotationDate)
-                else:
-                    properties.append(result)
-
-            # sourceInfo morphs into ExternalReference of type PROXY_REF_TYPE
-            # with PROXY_COMMENT comment
-            if package.sourceInfo is not None:
-                actual_download_urls = package.sourceInfo.split(";")
-                exrefs = [ExternalReference(url=url, **eref_rest) for url in actual_download_urls]
-            else:
-                exrefs = None
-            pComponent = partial(
-                Component,
-                name=package.name,
-                version=package.versionInfo,
-                properties=properties,
-                external_references=exrefs,
+            properties, backend_accumulators = convert_annotations(
+                package.annotations, backend_accumulators, purls
             )
+
+            external_references = get_external_references_from_source_info(package.sourceInfo)
+            pComponent = _partial_component(package, properties, external_references)
 
             # cyclonedx doesn't support multiple purls, therefore
             # new component is created for each purl
             components += [pComponent(purl=purl) for purl in purls]
-            # if there's no purl and no package name or version, it's just wrapping element for
-            # spdx package which is one layer bellow SPDXDocument in relationships
-            if not any((purls, package.name, package.versionInfo)):
-                continue
-            # if there's no purl, add it as single component
-            elif not purls:
+            if not purls:
                 components.append(pComponent(purl=""))
-        tools = []
-        name, vendor = None, None
-        # Following approach is used as position of "Organization" and "Tool" is not
-        # guaranteed by the standard
-        for creator in self.creationInfo.creators:
-            if creator.startswith("Organization:"):
-                vendor = creator.replace("Organization:", "").strip()
-            elif creator.startswith("Tool:"):
-                name = creator.replace("Tool:", "").strip()
-            if name is not None and vendor is not None:
-                tools.append(Tool(vendor=vendor, name=name))
-                name, vendor = None, None
 
+        tools = convert_creators_to_tools(self.creationInfo.creators)
         annotations = _PerBackendAccumulator.to_annotations(backend_accumulators)
 
         return Sbom(
@@ -873,6 +842,86 @@ class SPDXSbom(pydantic.BaseModel):
             components=components,
             metadata=Metadata(tools=tools),
         )
+
+
+def convert_annotations(
+    annotations: Iterable[SPDXPackageAnnotation],
+    backend_accumulators: dict[str, _PerBackendAccumulator],
+    purls: list[str],
+) -> tuple[list[Property], dict[str, _PerBackendAccumulator]]:
+    """Convert annotations to properties."""
+
+    properties = []
+    get_backend_name = lambda ann: ann.comment
+    for ann in annotations:
+        result = convert_annotation_to_property(ann)
+        if result is a_backend_indicator:
+            accumulator = backend_accumulators.setdefault(
+                get_backend_name(ann),
+                _PerBackendAccumulator(ann.annotationDate),
+            )
+            accumulator.accumulate(purls, ann.annotationDate)
+        else:
+            properties.append(result)
+    # mypy insists that properties may end up containing object() values which is not true.
+    return properties, backend_accumulators  # type: ignore
+
+
+def is_spdx_package_wrapper(
+    purls: Iterable[str],
+    package_name: str,
+    package_version_info: str | None,
+) -> bool:
+    """Check wrapper package properties."""
+
+    # if there's no purl and no package name or version, it's just wrapping element for
+    # spdx package which is one layer below SPDXDocument in relationships
+    return not any((purls, package_name, package_version_info))
+
+
+def get_external_references_from_source_info(
+    source_info: str | None,
+) -> list[ExternalReference] | None:
+    """Convert sourceInfo to external refs."""
+
+    # sourceInfo morphs into ExternalReference of type PROXY_REF_TYPE
+    # with PROXY_COMMENT comment
+    if source_info is not None:
+        actual_download_urls = source_info.split(";")
+        eref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+        return [ExternalReference(url=url, **eref_rest) for url in actual_download_urls]
+    return None
+
+
+def _partial_component(
+    package: SPDXPackage,
+    properties: Iterable[Property],
+    external_references: Iterable[ExternalReference] | None,
+) -> Callable:
+    return partial(
+        Component,
+        name=package.name,
+        version=package.versionInfo,
+        properties=properties,
+        external_references=external_references,
+    )
+
+
+def convert_creators_to_tools(creators: Iterable[str]) -> list[Tool]:
+    """Convert creators to tools."""
+    tools = []
+    name, vendor = None, None
+    # Following approach is used as position of "Organization" and "Tool" is not
+    # guaranteed by the standard
+    for creator in creators:
+        if creator.startswith("Organization:"):
+            vendor = creator.replace("Organization:", "").strip()
+        elif creator.startswith("Tool:"):
+            name = creator.replace("Tool:", "").strip()
+        if name is not None and vendor is not None:
+            tools.append(Tool(vendor=vendor, name=name))
+            name, vendor = None, None
+    return tools
 
 
 def merge_component_annotations(annotations: Iterable[Annotation]) -> list[Annotation]:
