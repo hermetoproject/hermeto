@@ -1,0 +1,1363 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../usage/">
+      
+      
+        <link rel="next" href="../bundler/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SBOM - Hermeto</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sbom" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Hermeto" class="md-header__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hermeto
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SBOM
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Hermeto" class="md-nav__button md-logo" aria-label="Hermeto" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hermeto
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hermetoproject/hermeto" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    hermetoproject/hermeto
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SBOM
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SBOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheme
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scheme">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cyclonedx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CycloneDX
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spdx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPDX
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-data-hermeto-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom data Hermeto reports
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom data Hermeto reports">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependency-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-and-source-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend and source information
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-package-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main package representation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Versioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reasons-for-lack-of-versions-in-some-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reasons for lack of versions in some dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merging-sboms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merging SBOMs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cyclonedx-to-spdx-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CycloneDX to SPDX mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spdx-to-cyclonedx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPDX to CycloneDX
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package managers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Package managers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bundler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cargo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cargo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    generic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gomod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gomod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../npm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    npm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rpm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn_classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yarn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    yarn berry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheme
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scheme">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cyclonedx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CycloneDX
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spdx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPDX
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-data-hermeto-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom data Hermeto reports
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom data Hermeto reports">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependency-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-and-source-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend and source information
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-package-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main package representation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Versioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reasons-for-lack-of-versions-in-some-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reasons for lack of versions in some dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merging-sboms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merging SBOMs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cyclonedx-to-spdx-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CycloneDX to SPDX mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spdx-to-cyclonedx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPDX to CycloneDX
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/sbom.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/sbom.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="sbom">SBOM<a class="headerlink" href="#sbom" title="Permanent link">&para;</a></h1>
+<p>Hermeto produces a Software Bill of Materials (SBOM) describing the dependencies
+it fetches. This document explains how Hermeto structures the SBOM, what custom
+fields it uses, how it maps between supported formats, and how conversion works.</p>
+<p>Hermeto supports the following SBOM formats:</p>
+<ul>
+<li><strong>CycloneDX</strong> <a href="https://cyclonedx.org/docs/1.6/json">v1.6</a> (default)</li>
+<li><strong>SPDX</strong> <a href="https://spdx.github.io/spdx-spec/v2.3/">v2.3</a></li>
+</ul>
+<p>The output format can be selected with <code>--sbom-output-type cyclonedx</code> or
+<code>--sbom-output-type spdx</code> when running <code>hermeto fetch-deps</code> or
+<code>hermeto merge-sboms</code>.</p>
+<p>Hermeto represents SBOMs internally as CycloneDX and can convert them to SPDX.
+Both formats use only a subset of their respective specifications; the subsets
+map into each other. The mapping is documented in
+<a href="#cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping</a>.</p>
+<h2 id="scheme">Scheme<a class="headerlink" href="#scheme" title="Permanent link">&para;</a></h2>
+<p>Hermeto produces a flat list of components (CycloneDX) or packages (SPDX). There
+is no nested tree of dependencies in either format.</p>
+<h3 id="cyclonedx">CycloneDX<a class="headerlink" href="#cyclonedx" title="Permanent link">&para;</a></h3>
+<p>All packages processed by Hermeto are represented by CycloneDX components. In a
+SBOM produced by Hermeto components form a single flat top-level <code>components</code> array,
+no hierarchy is preserved withing it. Of all possible component types available
+in CycloneDX spec Hermeto uses only two component types: <code>library</code> (default, used
+for components produced by all package managers except generic) and <code>file</code> (used
+for URL-based generic artifacts such as archives when the generic package manager
+fetches a zip/tarball).</p>
+<h3 id="spdx">SPDX<a class="headerlink" href="#spdx" title="Permanent link">&para;</a></h3>
+<p>At the time of writing, SBOMs are represented internally as CycloneDX. SPDX is
+produced with a converter (see <a href="#cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping</a>).
+SPDX SBOMs provided by Hermeto have the following properties:</p>
+<ul>
+<li>The output has a <code>packages</code> array and a <code>relationships</code> array.</li>
+<li><code>packages</code>: the first entry is a synthetic root with
+  <code>SPDXID</code>:&nbsp;<code>SPDXRef-DocumentRoot-File-</code>
+  (empty <code>name</code> and <code>versionInfo</code>); the rest are SPDX package entries for actual
+  packages. The root is required by the SPDX specification.</li>
+<li><code>relationships</code>: the document describes the root
+  (<code>SPDXRef-DOCUMENT</code> &rarr; <code>SPDXRef-DocumentRoot-File-</code> via <code>DESCRIBES</code>);
+  every real package is linked to the root via <code>CONTAINS</code>.</li>
+<li>Unlike CycloneDX SPDX does not have direct equivalents to "library" or "file"
+  component types; all packages are listed without that distinction. As a result,
+  a <code>file</code> component in CycloneDX that is converted to SPDX and back will become
+  a <code>library</code> component &mdash; this is a known limitation.</li>
+</ul>
+<h2 id="custom-data-hermeto-reports">Custom data Hermeto reports<a class="headerlink" href="#custom-data-hermeto-reports" title="Permanent link">&para;</a></h2>
+<h3 id="dependency-properties">Dependency properties<a class="headerlink" href="#dependency-properties" title="Permanent link">&para;</a></h3>
+<p>Hermeto attaches properties from a fixed set to all dependencies. These
+properties carry metadata about dependencies they are attached to. These
+properties are stored in the CycloneDX <code>components[].properties</code> array; in SPDX
+they are represented as package annotations (see
+<a href="#cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping</a>). Property names use
+<code>hermeto:</code> as a prefix, except for the two <a href="https://github.com/CycloneDX/cyclonedx-property-taxonomy/blob/main/cdx/npm.md#cdxnpmpackage-namespace-taxonomy">standard CycloneDX npm properties</a>
+which use the <code>cdx:</code> prefix defined by the CycloneDX specification. The table
+below lists all custom properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property name</th>
+<th>Meaning</th>
+<th>When it appears</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hermeto:found_by</code></td>
+<td>Tool that added the dependency</td>
+<td>Always</td>
+</tr>
+<tr>
+<td><code>hermeto:missing_hash:in_file</code></td>
+<td>Path to a lockfile with a missing checksum</td>
+<td>When there is a lockfile with some checksums missing</td>
+</tr>
+<tr>
+<td><code>hermeto:bundler:package:binary</code></td>
+<td>Bundler gem is a platform-specific binary</td>
+<td>When the gem is a platform-specific binary</td>
+</tr>
+<tr>
+<td><code>cdx:npm:package:bundled</code></td>
+<td>Npm package is bundled</td>
+<td>When the package is bundled within another</td>
+</tr>
+<tr>
+<td><code>cdx:npm:package:development</code></td>
+<td>Npm package is a dev dependency</td>
+<td>When the package is a development dependency</td>
+</tr>
+<tr>
+<td><code>hermeto:pip:package:binary</code></td>
+<td>Pip package is a binary wheel</td>
+<td>When the package is a binary wheel</td>
+</tr>
+<tr>
+<td><code>hermeto:pip:package:build-dependency</code></td>
+<td>Pip package is a build-time dependency</td>
+<td>When the package is required at build time</td>
+</tr>
+<tr>
+<td><code>hermeto:rpm_modularity_label</code></td>
+<td>RPM modularity label</td>
+<td>When the RPM has a modularity label</td>
+</tr>
+<tr>
+<td><code>hermeto:rpm_summary</code></td>
+<td>RPM summary</td>
+<td><a href="../rpm/#basic-options">When you set <code>include_summary_in_sbom</code> to <code>true</code></a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="backend-and-source-information">Backend and source information<a class="headerlink" href="#backend-and-source-information" title="Permanent link">&para;</a></h3>
+<p>Unlike the dependency properties above, which are stored as flat key/value pairs
+in <code>components[].properties</code> (CycloneDX) or package annotations (SPDX), backend
+and source information use other SBOM fields because they describe where a
+component came from, not arbitrary key/value metadata on the component.</p>
+<p><strong>Backends</strong> &mdash; lets consumers know which backend (e.g. gomod, pip, npm)
+produced each dependency. Experimental backends (name starting with <code>x-</code>) are
+tagged as experimental. Supported SBOM types represent them like follows:</p>
+<ul>
+<li><strong>CycloneDX</strong>: Top-level annotations. Text format <code>hermeto:backend:&lt;backend_name&gt;</code>
+  (e.g. <code>hermeto:backend:gomod</code>); for experimental backends,
+  <code>hermeto:backend:experimental:&lt;backend_name&gt;</code>. Each annotation references a
+  component by <code>bom-ref</code> (which equals the component's <code>purl</code>).</li>
+<li><strong>SPDX</strong>: Those backend tags become package annotations on the matching
+  packages (see <a href="#cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping</a>).</li>
+</ul>
+<p><strong>Actual source URL</strong> &mdash; When a dependency was downloaded via an artifact
+repository manager (e.g. JFrog Artifactory or Sonatype Nexus), Hermeto records
+the real download location as well as the usual distribution reference. If
+several URLs are known, all are recorded; the SBOM does not say which URL was
+actually used (some backends cannot provide that). It is represented as follows:</p>
+<ul>
+<li><strong>CycloneDX</strong>: An external reference with <code>type</code>:&nbsp;<code>"distribution"</code>,
+  <code>comment</code>:&nbsp;<code>"proxy URL"</code>, and <code>url</code> set to the download location. Multiple
+  URLs are multiple such references.</li>
+<li><strong>SPDX</strong>: The same information is mapped to the package field <code>sourceInfo</code>
+  (semicolon-separated when there are several).</li>
+</ul>
+<h2 id="main-package-representation">Main package representation<a class="headerlink" href="#main-package-representation" title="Permanent link">&para;</a></h2>
+<p>The SBOM does <strong>not</strong> mark which dependency is the main package. All are
+listed as peers. The SBOM alone does not distinguish "the app" from its
+dependencies.</p>
+<h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">&para;</a></h2>
+<p>Hermeto provides several versioning mechanisms in SBOMs:</p>
+<ul>
+<li><strong>Version</strong>: Each dependency can have a version, taken from the package
+  manager's data (lockfile, metadata, or similar). Some dependencies have no
+  version; Hermeto omits the field in that case. For further details see
+  <a href="#reasons-for-lack-of-versions-in-some-dependencies">Reasons for lack of versions in some dependencies</a>.</li>
+<li><strong>PURL</strong>: The main identifier for each dependency is its PURL (package URL).
+  The PURL can still include version-like information (e.g. a Git commit) even
+  when the version field is missing.</li>
+<li><strong>SBOM format version</strong>: The SBOM file itself carries a format version
+  &mdash; the schema version, not the application's version.
+  CycloneDX:&nbsp;<code>specVersion</code> (e.g. <code>"1.6"</code>) and a top-level integer <code>version</code>
+  (BOM revision). SPDX:&nbsp;<code>spdxVersion</code> (e.g. <code>"SPDX-2.3"</code>).</li>
+</ul>
+<h3 id="reasons-for-lack-of-versions-in-some-dependencies">Reasons for lack of versions in some dependencies<a class="headerlink" href="#reasons-for-lack-of-versions-in-some-dependencies" title="Permanent link">&para;</a></h3>
+<p>Some dependencies in the SBOM may have no version; when and why depends on the
+ecosystem:</p>
+<ul>
+<li><strong>Go (gomod)</strong>: The standard library version is tied to the Go runtime, but
+  Hermeto omits it because the Go version used during pre-fetching may differ
+  from the one used in the actual hermetic build; recording it could lead
+  vulnerability analyzers to incorrectly flag versions and to incorrectly apply
+  a particular provenance policy. Modules referenced via <code>replace</code> directives
+  pointing to local paths may also lack a version; other modules get one when
+  resolved.</li>
+<li><strong>Yarn</strong>: Workspace and linked packages often have no version.</li>
+<li><strong>Cargo</strong>: Missing if a local path dependency omits it, or if a workspace
+  member inherits from <code>[workspace.package]</code> and that field is unset.</li>
+<li><strong>npm</strong>: Version is taken from the lock file, however in rare cases it could
+  be missing.</li>
+<li><strong>pip</strong>: PyPI packages always have a version; VCS or local path sources may
+  not. May also be absent if the main project uses dynamic versioning
+  (e.g. setuptools-scm).</li>
+</ul>
+<h2 id="merging-sboms">Merging SBOMs<a class="headerlink" href="#merging-sboms" title="Permanent link">&para;</a></h2>
+<p>Merging is only meant for <strong>SBOMs produced by Hermeto</strong> (for example from
+<code>fetch-deps</code> or an earlier successful merge) due to the fact that Hermeto
+supports only subsets of SBOM formats. Input files must match Hermeto's
+CycloneDX or SPDX model; arbitrary SBOMs from other tools are not supported and
+will be rejected as invalid.</p>
+<h2 id="cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping<a class="headerlink" href="#cyclonedx-to-spdx-mapping" title="Permanent link">&para;</a></h2>
+<p>Hermeto forms the SBOM as CycloneDX first; this section describes the
+translation used when SPDX output is requested (e.g. via
+<code>--sbom-output-type spdx</code>).</p>
+<table>
+<thead>
+<tr>
+<th>CycloneDX</th>
+<th>SPDX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Component</code></td>
+<td><code>SPDXPackage</code></td>
+</tr>
+<tr>
+<td>Component identity</td>
+<td><code>SPDXID</code>: <code>SPDXRef-Package-{name}-{version}-{hash}</code> (or <code>SPDXRef-Package-{name}-{hash}</code>). The hash is the SHA-256 hex digest of a JSON object with keys <code>name</code>, <code>version</code>, and <code>purl</code>, serialized with keys sorted. The idstring is sanitized per SPDX rules (only letters, digits, <code>.</code>, <code>-</code>). <code>versionInfo</code> is set to the component's version or omitted when <code>None</code>.</td>
+</tr>
+<tr>
+<td><code>purl</code></td>
+<td><code>externalRefs</code>: one entry with <code>referenceCategory=PACKAGE-MANAGER</code>, <code>referenceType=purl</code>, <code>referenceLocator=&lt;purl&gt;</code></td>
+</tr>
+<tr>
+<td><code>properties</code></td>
+<td>Package <code>annotations</code>: each property encoded as JSON <code>{"name":"...","value":"..."}</code> in <code>comment</code>; <code>annotator</code> is <code>Tool: hermeto:jsonencoded</code>.</td>
+</tr>
+<tr>
+<td>Top-level <code>annotations</code> (by bom-ref)</td>
+<td>Per-package annotations containing the same values as CycloneDX top-level annotations: <code>comment</code> = annotation text</td>
+</tr>
+<tr>
+<td>ExternalReference (<code>type=distribution</code>, <code>comment=proxy URL</code>)</td>
+<td><code>sourceInfo</code> (semicolon-separated if multiple)</td>
+</tr>
+<tr>
+<td>(no root in CycloneDX)</td>
+<td>A synthetic root package <code>SPDXRef-DocumentRoot-File-</code> is created with <code>name=""</code> and <code>versionInfo=""</code>. The document describes the root; the root contains every package.</td>
+</tr>
+<tr>
+<td><code>metadata.tools</code></td>
+<td><code>creationInfo.creators</code> (<code>Tool:</code> / <code>Organization:</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="spdx-to-cyclonedx">SPDX to CycloneDX<a class="headerlink" href="#spdx-to-cyclonedx" title="Permanent link">&para;</a></h2>
+<p>When SPDX is converted to CycloneDX (e.g. when merging an SPDX SBOM with a
+CycloneDX one), the following applies:</p>
+<ul>
+<li>Each SPDX package becomes one or more CycloneDX components. Because CycloneDX
+  allows only one PURL per component, an SPDX package with multiple PURLs in
+  <code>externalRefs</code> becomes multiple components.</li>
+<li><code>versionInfo</code> is passed through as the component's <code>version</code>.</li>
+<li>Annotations whose <code>annotator</code> ends with <code>:jsonencoded</code> are parsed as
+  properties; others are stored as top-level annotations.</li>
+<li><code>sourceInfo</code> is converted back to ExternalReferences with <code>type=distribution</code>
+  and <code>comment=proxy URL</code>.</li>
+</ul>
+<p><strong>Limitation</strong>: An SPDX package that has multiple PURLs in <code>externalRefs</code> becomes
+multiple CycloneDX components when converted to CycloneDX, because CycloneDX does
+not support multiple PURLs on one component.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.action.edit", "content.action.view", "content.code.copy", "content.tooltips", "navigation.sections", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": ["latest"], "provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
