@@ -245,7 +245,7 @@ def _download_pypi_packages(
     pypi_artifacts: list[_PyPIArtifact],
     index_url: str,
     proxy_url: str | None = None,
-    auth: aiohttp.BasicAuth | None = None,
+    auth: str | None = None,
 ) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
     if files:
@@ -393,7 +393,7 @@ def _resolve_and_download_pypi_packages(
         requests_auth = requests.auth.HTTPBasicAuth(
             config.pip.proxy_login, config.pip.proxy_password
         )
-        aiohttp_auth = aiohttp.BasicAuth(config.pip.proxy_login, config.pip.proxy_password)
+        aiohttp_auth = aiohttp.encode_basic_auth(config.pip.proxy_login, config.pip.proxy_password)
 
     resolve_callback = functools.partial(
         process_package_distributions,

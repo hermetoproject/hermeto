@@ -65,7 +65,7 @@ def test_download_resolved_packages_with_proxy_credentials(
     mock_async_download_with_auth.assert_called_once_with(
         files_without_auth={},
         files_with_auth={f"{FAKE_PROXY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "pkg-1.0.0.tgz"},
-        auth=aiohttp.BasicAuth("user", "password"),
+        auth=aiohttp.encode_basic_auth("user", "password"),
     )
     mock_must_match_any_checksum.assert_called_once_with(
         file_path=tmp_path / "pkg-1.0.0.tgz",

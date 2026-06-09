@@ -80,7 +80,7 @@ def patch_url_to_point_to_proxy(url: str, proxy_url: ProxyUrl) -> str:
 async def async_download_with_auth(
     files_without_auth: dict[str, Path],
     files_with_auth: dict[str, Path],
-    auth: aiohttp.BasicAuth | None,
+    auth: str | None,
 ) -> None:
     """
     Asynchronous function to download files with and without (proxy) authentication.
@@ -112,7 +112,7 @@ def _get_npm_dependencies(
     download_paths = {}
     config = get_config()
     npm_proxy_basic_auth = (
-        aiohttp.BasicAuth(config.npm.proxy_login, config.npm.proxy_password)
+        aiohttp.encode_basic_auth(login=config.npm.proxy_login, password=config.npm.proxy_password)
         if config.npm.proxy_login and config.npm.proxy_password
         else None
     )
