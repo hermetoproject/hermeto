@@ -223,7 +223,7 @@ the `go mod tidy` command in your dev workflow.
 
 ### Go toolchain version
 
-Current version: 1.25
+Current version: 1.26
 
 > [!WARNING]
 > Hermeto expects to use a specific version of the `go` command when downloading
