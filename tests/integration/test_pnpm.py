@@ -11,7 +11,9 @@ from . import utils
     [
         pytest.param(
             utils.TestParameters(
-                branch="pnpm/e2e-v10",
+                repo_url="https://github.com/slimreaper35/integration-tests",
+                branch="my-pnpm",
+                # branch="pnpm/e2e-v10",
                 packages=({"type": "generic"}, {"type": "x-pnpm"}),
             ),
             [],

@@ -6,6 +6,10 @@ project_files:
     settings:
       autoInstallPeers: true
       excludeLinksFromLockfile: false
+    patchedDependencies:
+      zod@4.4.3:
+        hash: d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685
+        path: patches/zod@4.4.3.patch
     importers:
       .:
         dependencies:
@@ -26,7 +30,7 @@ project_files:
             version: https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz
           zod:
             specifier: ^4.4.3
-            version: 4.4.3
+            version: 4.4.3(patch_hash=d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685)
         devDependencies:
           '@hono/zod-validator':
             specifier: jsr:^0.8.0
@@ -101,7 +105,7 @@ project_files:
       '@jsr/hono__zod-validator@0.8.0':
         dependencies:
           '@jsr/hono__hono': 4.12.23
-          zod: 4.4.3
+          zod: 4.4.3(patch_hash=d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685)
       '@sinclair/typebox@0.34.49': {}
       debug@https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621:
         dependencies:
@@ -112,4 +116,4 @@ project_files:
         optional: true
       semver@https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz: {}
       uuid@14.0.0: {}
-      zod@4.4.3: {}
+      zod@4.4.3(patch_hash=d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685): {}
