@@ -23,8 +23,8 @@
         "pkg:npm/%40hono/zod-validator@0.8.0?repository_url=https://npm.jsr.io",
         "pkg:npm/%40sinclair/typebox@0.34.49",
         "pkg:npm/debug@4.4.3?download_url=https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621",
-        "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303",
-        "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303#lodash-4.18.1.tar.gz",
+        "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024",
+        "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024#lodash-4.18.1.tar.gz",
         "pkg:npm/ms@2.1.3",
         "pkg:npm/picocolors@1.1.1",
         "pkg:npm/semver@7.8.1?download_url=https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
@@ -112,7 +112,7 @@
       "version": "4.4.3"
     },
     {
-      "bom-ref": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303",
+      "bom-ref": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024",
       "name": "integration-tests",
       "properties": [
         {
@@ -120,12 +120,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303",
+      "purl": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024",
       "type": "library",
       "version": "1.0.0"
     },
     {
-      "bom-ref": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303#lodash-4.18.1.tar.gz",
+      "bom-ref": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024#lodash-4.18.1.tar.gz",
       "name": "lodash",
       "properties": [
         {
@@ -133,7 +133,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40e053ccdb17b19feb5d9c73de91a435731a36b303#lodash-4.18.1.tar.gz",
+      "purl": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4018e8d8eaee5e0a959285385681d78b47844c9024#lodash-4.18.1.tar.gz",
       "type": "library",
       "version": "4.18.1"
     },
@@ -196,6 +196,16 @@
     {
       "bom-ref": "pkg:npm/zod@4.4.3",
       "name": "zod",
+      "pedigree": {
+        "patches": [
+          {
+            "diff": {
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@18e8d8eaee5e0a959285385681d78b47844c9024#patches/zod@4.4.3.patch"
+            },
+            "type": "unofficial"
+          }
+        ]
+      },
       "properties": [
         {
           "name": "hermeto:found_by",
