@@ -346,7 +346,7 @@ We can do the same, but we would have to ban every script relevant to the Yarn 1
 [prepareExternalProject][prepareExternalProject]).
 And pnpm as well for good measure (in case Yarnberry adds support for it).
 
-#### Project Structure
+#### Output Structure
 
 ```
 ${output_dir}/deps/yarn
@@ -355,15 +355,8 @@ ${output_dir}/deps/yarn
 └──  └── ccto-wo-deps-patch-c3567b709f-8.zip
 ```
 
-The symlink structure is intended to give `deps/yarn` a familiar structure consistent with `deps/pip` and `deps/npm`. 
-
-If RHTAP wants to use the same denylists, we should try to preserve the structure. The real zip
-files must stay in the `cache/` folder, but we can add symlinks from the expected locations. The
-one in charge of applying the denylist would have to delete not only the symlinks, but also their
-targets.
-
-This is not relevant until RHTAP starts thinking about source container denylists and should be
-implementable when necessary.
+Yarnberry doesn't download .tgz tarballs like npm does. Instead, it stores every dependency as a .zip file in the cache
+directory (deps/yarn/cache/).
 
 ### Build Environment Config
 
