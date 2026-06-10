@@ -107,6 +107,15 @@ actually used (some backends cannot provide that). It is represented as follows:
 - **SPDX**: The same information is mapped to the package field `sourceInfo`
   (semicolon-separated when there are several).
 
+**Patch provenance** &mdash; When a dependency has applied patches, Hermeto records
+patch URLs in CycloneDX pedigree and maps them to SPDX security external
+references:
+
+- **CycloneDX**: `component.pedigree.patches[].diff.url`
+- **SPDX**: `externalRefs[]` entries with
+  `referenceCategory=SECURITY`, `referenceType=fix`,
+  `referenceLocator=<patch_url>`
+
 ## Main package representation
 
 The SBOM does **not** mark which dependency is the main package. All are
@@ -172,6 +181,7 @@ translation used when SPDX output is requested (e.g. via
 | `properties` | Package `annotations`: each property encoded as JSON `{"name":"...","value":"..."}` in `comment`; `annotator` is `Tool: hermeto:jsonencoded`. |
 | Top-level `annotations` (by bom-ref) | Per-package annotations containing the same values as CycloneDX top-level annotations: `comment` = annotation text |
 | ExternalReference (`type=distribution`, `comment=proxy URL`) | `sourceInfo` (semicolon-separated if multiple) |
+| `pedigree.patches[].diff.url` | `externalRefs`: one entry per patch with `referenceCategory=SECURITY`, `referenceType=fix`, `referenceLocator=<patch_url>` |
 | (no root in CycloneDX) | A synthetic root package `SPDXRef-DocumentRoot-File-` is created with `name=""` and `versionInfo=""`. The document describes the root; the root contains every package. |
 | `metadata.tools` | `creationInfo.creators` (`Tool:` / `Organization:`) |
 
@@ -188,6 +198,8 @@ CycloneDX one), the following applies:
   properties; others are stored as top-level annotations.
 - `sourceInfo` is converted back to ExternalReferences with `type=distribution`
   and `comment=proxy URL`.
+- `externalRefs` entries with `referenceCategory=SECURITY`,
+  `referenceType=fix` are converted to `pedigree.patches[].diff.url`.
 
 **Limitation**: An SPDX package that has multiple PURLs in `externalRefs` becomes
 multiple CycloneDX components when converted to CycloneDX, because CycloneDX does

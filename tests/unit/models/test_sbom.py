@@ -22,6 +22,7 @@ from hermeto.core.models.sbom import (
     SPDXPackage,
     SPDXPackageAnnotation,
     SPDXPackageExternalRefPackageManagerPURL,
+    SPDXPackageExternalRefSecurityFix,
     SPDXPackageExternalRefType,
     SPDXRelation,
     SPDXSbom,
@@ -635,6 +636,52 @@ class TestSbom:
 
         assert the_only_package.sourceInfo == expected_package_source_info
 
+    def test_spdx_correctly_converts_cydx_pedigree_to_fix_external_references(
+        self, mock_spdx_now: str
+    ) -> None:
+        sbom = Sbom(
+            components=[
+                {
+                    "name": "github.com/org/A",
+                    "version": "v1.0.0",
+                    "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                    "pedigree": {
+                        "patches": [
+                            {
+                                "type": "unofficial",
+                                "diff": {"url": "https://example.com/patch-2.diff"},
+                            },
+                            {
+                                "type": "unofficial",
+                                "diff": {"url": "https://example.com/patch-1.diff"},
+                            },
+                        ]
+                    },
+                }
+            ],
+        )
+
+        spdx_sbom = sbom.to_spdx("NOASSERTION")
+        the_only_package = [p for p in spdx_sbom.packages if "DocumentRoot" not in p.SPDXID][0]
+
+        assert the_only_package.externalRefs == [
+            SPDXPackageExternalRefSecurityFix(
+                referenceCategory="SECURITY",
+                referenceLocator="https://example.com/patch-1.diff",
+                referenceType="fix",
+            ),
+            SPDXPackageExternalRefSecurityFix(
+                referenceCategory="SECURITY",
+                referenceLocator="https://example.com/patch-2.diff",
+                referenceType="fix",
+            ),
+            SPDXPackageExternalRefPackageManagerPURL(
+                referenceCategory="PACKAGE-MANAGER",
+                referenceLocator="pkg:golang/github.com/org/A@v1.0.0",
+                referenceType="purl",
+            ),
+        ]
+
 
 # Some partially constructed objects to streamline test cases definitions.
 STOCK_ANNOTATION = {
@@ -1126,6 +1173,44 @@ class TestSPDXSbom:
 
         with pytest.raises(UnexpectedFormat, match="Invalid JSON in annotation"):
             sbom.to_cyclonedx()
+
+    def test_to_cyclonedx_with_fix_external_ref(self, mock_spdx_now: str) -> None:
+        sbom = SPDXSbom(
+            documentNamespace="NOASSERTION",
+            creationInfo={
+                "creators": [f"Tool: {APP_NAME}", "Organization: hermetoproject"],
+                "created": SPDX_EPOCH_STRFTIME,
+            },
+            packages=[
+                {
+                    "SPDXID": "SPDXRef-Package-test-abc123",
+                    "name": "test-package",
+                    "versionInfo": "1.0.0",
+                    "externalRefs": [
+                        _gen_ref("pkg:npm/test-package@1.0.0"),
+                        {
+                            "referenceCategory": "SECURITY",
+                            "referenceLocator": "https://example.com/fix.patch",
+                            "referenceType": "fix",
+                        },
+                    ],
+                },
+            ],
+        )
+
+        cyclonedx = sbom.to_cyclonedx()
+        assert cyclonedx.components == [
+            Component(
+                name="test-package",
+                purl="pkg:npm/test-package@1.0.0",
+                version="1.0.0",
+                pedigree={
+                    "patches": [
+                        {"type": "unofficial", "diff": {"url": "https://example.com/fix.patch"}}
+                    ]
+                },
+            )
+        ]
 
     # SPDX SBOM objects are very verbose and it is rather hard to tell the
     # difference between them at a glance. It is unavoidable when a SBOM is
