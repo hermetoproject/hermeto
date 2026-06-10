@@ -177,16 +177,20 @@ def _find_non_dev_dependencies(lockfile: PnpmLock) -> set[str]:
     # the «packages» section of the lockfile. See:
     # https://github.com/argoproj/argo-cd/blob/bf1591de63e39b7c3be5f5ba54abe8763de1a48c/ui/pnpm-lock.yaml#L2164
     # https://github.com/argoproj/argo-cd/blob/bf1591de63e39b7c3be5f5ba54abe8763de1a48c/ui/pnpm-lock.yaml#L7869
-    return {_strip_peer_suffix(id) for id in seen}
+    return {_strip_dependency_path_suffix(id) for id in seen}
 
 
-def _strip_peer_suffix(package_id: str) -> str:
+def _strip_dependency_path_suffix(package_id: str) -> str:
     """
-    >>> _strip_peer_suffix('pkg@1.0.0')
+    https://github.com/pnpm/pnpm/blob/46fd26afc9926b4391636a851ae32493f9b2c9ff/deps/path/src/index.ts#L52
+
+    >>> _strip_dependency_path_suffix('pkg@1.0.0')
     'pkg@1.0.0'
-    >>> _strip_peer_suffix('pkg@1.0.0(foo@2.0.0)')
+    >>> _strip_dependency_path_suffix('pkg@1.0.0(foo@2.0.0)')
     'pkg@1.0.0'
-    >>> _strip_peer_suffix('pkg@1.0.0(foo@2.0.0)(bar@2.0.0)')
+    >>> _strip_dependency_path_suffix('pkg@1.0.0(foo@2.0.0)(bar@2.0.0)')
+    'pkg@1.0.0'
+    >>> _strip_dependency_path_suffix('pkg@1.0.0(patch_hash=abc123)')
     'pkg@1.0.0'
     """
     return package_id.partition("(")[0]
