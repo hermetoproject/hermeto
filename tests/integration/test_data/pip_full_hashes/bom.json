@@ -14,18 +14,6 @@
       "version": "0.7"
     },
     {
-      "name": "cachito-pip-with-deps",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:pypi/cachito-pip-with-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%400692ac68975fe4665aabd2a5b7595c7c7d98d8e6",
-      "type": "library",
-      "version": "1.0.0"
-    },
-    {
       "name": "gitdb",
       "properties": [
         {
@@ -47,6 +35,18 @@
       ],
       "purl": "pkg:pypi/gitpython?checksum=sha256:30101221a869968d4fe2a010ee9ca1134c22272089d9e9fee2040a68541443c6&download_url=https://github.com/gitpython-developers/GitPython/archive/refs/tags/3.1.44.tar.gz",
       "type": "library"
+    },
+    {
+      "name": "pip-with-deps",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-with-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%406b614ebd9365dc6f79a6ffffe701699d8f1010f3",
+      "type": "library",
+      "version": "1.0.0"
     },
     {
       "name": "smmap",

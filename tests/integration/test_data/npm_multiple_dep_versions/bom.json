@@ -2,34 +2,6 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "name": "cachito-npm-with-multiple-dep-versions",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:npm/cachito-npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3",
-      "type": "library",
-      "version": "1.0.0"
-    },
-    {
-      "name": "cachito-npm-without-deps",
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:npm/cachito-npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40github.com/cachito-testing/cachito-npm-without-deps.git%402f0ce1d7b1f8b35572d919428b965285a69583f6",
-      "type": "library",
-      "version": "1.0.0"
-    },
-    {
       "name": "foo",
       "properties": [
         {
@@ -37,7 +9,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4097070a9eb06bad62eb581890731221660ade9ea3#foo",
+      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c4a5aa46360a83f37efec53aca1ca874f779e9ba#foo",
       "type": "library",
       "version": "1.0.0"
     },
@@ -64,6 +36,34 @@
       "purl": "pkg:npm/is-positive@2.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%4075dd3a181375162eda014984f2decc663199b09e",
       "type": "library",
       "version": "2.0.0"
+    },
+    {
+      "name": "npm-with-multiple-dep-versions",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40c4a5aa46360a83f37efec53aca1ca874f779e9ba",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "name": "npm-without-deps",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40github.com/hermetoproject/integration-tests.git%40b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81",
+      "type": "library",
+      "version": "1.0.0"
     }
   ],
   "metadata": {

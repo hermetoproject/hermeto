@@ -13,64 +13,64 @@
       "type": "library"
     },
     {
-      "name": "github.com/cachito-testing/gomod-multiple-modules/eggs-module",
+      "name": "github.com/hermetoproject/integration-tests/eggs-module",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161108-98375b8401ea?type=module",
       "type": "library",
-      "version": "v0.0.0-20230829115309-5a8c00ce4921"
+      "version": "v0.0.0-20260311161108-98375b8401ea"
     },
     {
-      "name": "github.com/cachito-testing/gomod-multiple-modules/eggs-module",
+      "name": "github.com/hermetoproject/integration-tests/eggs-module",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/eggs-module@v0.0.0-20260311161108-98375b8401ea?type=package",
       "type": "library",
-      "version": "v0.0.0-20230829115309-5a8c00ce4921"
+      "version": "v0.0.0-20260311161108-98375b8401ea"
     },
     {
-      "name": "github.com/cachito-testing/gomod-multiple-modules/spam-module",
+      "name": "github.com/hermetoproject/integration-tests/spam-module",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161108-98375b8401ea?type=module",
       "type": "library",
-      "version": "v0.0.0-20230829115309-5a8c00ce4921"
+      "version": "v0.0.0-20260311161108-98375b8401ea"
     },
     {
-      "name": "github.com/cachito-testing/gomod-multiple-modules/spam-module",
+      "name": "github.com/hermetoproject/integration-tests/spam-module",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20230829115309-5a8c00ce4921?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests/spam-module@v0.0.0-20260311161108-98375b8401ea?type=package",
       "type": "library",
-      "version": "v0.0.0-20230829115309-5a8c00ce4921"
+      "version": "v0.0.0-20260311161108-98375b8401ea"
     },
     {
-      "name": "github.com/cachito-testing/gomod-multiple-modules",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20230829115309-5a8c00ce4921?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161108-98375b8401ea?type=module",
       "type": "library",
-      "version": "v0.0.0-20230829115309-5a8c00ce4921"
+      "version": "v0.0.0-20260311161108-98375b8401ea"
     },
     {
       "name": "golang.org/x/text/language",

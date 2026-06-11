@@ -1811,17 +1811,6 @@
       "type": "library"
     },
     {
-      "name": "vendor/golang.org/x/sys/cpu",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/vendor/golang.org/x/sys/cpu?type=package",
-      "type": "library"
-    },
-    {
       "name": "vendor/golang.org/x/text/secure/bidirule",
       "properties": [
         {

@@ -542,14 +542,14 @@
       "version": "0.6.3"
     },
     {
-      "name": "npm-cachi2-yarn-registry-test",
+      "name": "npm-yarn-registry-test",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-yarn-registry-test@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40f830b62780e75357c38abb7e1102871b51bfbcfe",
+      "purl": "pkg:npm/npm-yarn-registry-test@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%401f0f5a144ebbd9ef96ebc66b903b05b34a0e4113",
       "type": "library",
       "version": "1.0.0"
     },

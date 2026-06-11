@@ -1435,17 +1435,6 @@
       "type": "library"
     },
     {
-      "name": "io/ioutil",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/io/ioutil?type=package",
-      "type": "library"
-    },
-    {
       "name": "io",
       "properties": [
         {
@@ -2048,17 +2037,6 @@
         }
       ],
       "purl": "pkg:golang/vendor/golang.org/x/net/idna?type=package",
-      "type": "library"
-    },
-    {
-      "name": "vendor/golang.org/x/sys/cpu",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/vendor/golang.org/x/sys/cpu?type=package",
       "type": "library"
     },
     {

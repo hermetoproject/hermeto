@@ -35,28 +35,28 @@
       "type": "library"
     },
     {
-      "name": "github.com/cachito-testing/gomod-vendor-check-pass",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=module",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=module",
       "type": "library",
-      "version": "v0.0.0-20210802173203-0543a5034b68"
+      "version": "v0.0.0-20260311161302-acda5b87da24"
     },
     {
-      "name": "github.com/cachito-testing/gomod-vendor-check-pass",
+      "name": "github.com/hermetoproject/integration-tests",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20210802173203-0543a5034b68?type=package",
+      "purl": "pkg:golang/github.com/hermetoproject/integration-tests@v0.0.0-20260311161302-acda5b87da24?type=package",
       "type": "library",
-      "version": "v0.0.0-20210802173203-0543a5034b68"
+      "version": "v0.0.0-20260311161302-acda5b87da24"
     },
     {
       "name": "golang.org/x/text/internal/tag",

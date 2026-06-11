@@ -1,4 +1,7 @@
 {
+  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.zip": "sha256:b6f74ee19664842468544153450554f0388ce6b82a2959ea00e7cd1023d5378b",
+  "gomod/pkg/mod/cache/download/golang.org/toolchain/@v/v0.0.1-go1.22.0.linux-amd64.ziphash": "sha256:57323a831789ac1dbf02734fdba3480193d34955e80ae305cb413ef210b2855b",
   "gomod/pkg/mod/cache/download/golang.org/x/text/@v/list": "sha256:732287184a0e1b31fc87adc055faa80d1a3f8a49789e329e1b0c73b0523fafe0",
   "gomod/pkg/mod/cache/download/golang.org/x/text/@v/v0.0.0-20170915032832-14c0d48ead0c.info": "sha256:f60e7e1cbe51ed46f6203984ae32a2e5f37eced569558cfceb6c2e2f726d6930",
   "gomod/pkg/mod/cache/download/golang.org/x/text/@v/v0.0.0-20170915032832-14c0d48ead0c.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -16,5 +19,6 @@
   "gomod/pkg/mod/cache/download/rsc.io/sampler/@v/v1.3.0.lock": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "gomod/pkg/mod/cache/download/rsc.io/sampler/@v/v1.3.0.mod": "sha256:a2ae6e8540a40b85e57703cc618b99c5b1075386d958e8999a0e2d4c02f3a705",
   "gomod/pkg/mod/cache/download/rsc.io/sampler/@v/v1.3.0.zip": "sha256:da202b0da803ab2661ab98a680bba4f64123a326e540c25582b6cdbb9dc114aa",
-  "gomod/pkg/mod/cache/download/rsc.io/sampler/@v/v1.3.0.ziphash": "sha256:ee5ed9d268a6fb84db6e6f237c214c42f2d9ef7a721f4c28083883234ddadb23"
+  "gomod/pkg/mod/cache/download/rsc.io/sampler/@v/v1.3.0.ziphash": "sha256:ee5ed9d268a6fb84db6e6f237c214c42f2d9ef7a721f4c28083883234ddadb23",
+  "gomod/pkg/mod/cache/download/sumdb/sum.golang.org/lookup/golang.org/toolchain@v0.0.1-go1.22.0.linux-amd64": "unstable"
 }
