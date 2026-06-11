@@ -1,0 +1,42 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/pip-pylock-without-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%407a4971e63d454a75476b0aa92f47ef6cc56096df"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/pip-pylock-without-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%407a4971e63d454a75476b0aa92f47ef6cc56096df",
+      "name": "pip-pylock-without-deps",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-pylock-without-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests%407a4971e63d454a75476b0aa92f47ef6cc56096df",
+      "type": "library",
+      "version": "1.0.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

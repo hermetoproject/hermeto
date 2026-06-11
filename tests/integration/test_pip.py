@@ -133,6 +133,114 @@ from . import utils
             ),
             id="pip_rust_dependency_unusual_cargo_toml_location",
         ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-without-deps",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_without_deps",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-full-hashes",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_full_hashes",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-missing-hashes",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_missing_hashes",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-vcs",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_vcs",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-multiple-packages",
+                packages=(
+                    {
+                        "path": "first",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                    {
+                        "path": "second",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_multiple_packages",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-local-path",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+                check_output=False,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
+            ),
+            id="pip_pylock_local_path",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pip/pylock-directory",
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+                check_output=False,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
+            ),
+            id="pip_pylock_directory",
+        ),
     ],
 )
 def test_pip_packages(
