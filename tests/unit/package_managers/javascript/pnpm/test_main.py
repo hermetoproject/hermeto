@@ -6,13 +6,13 @@ import aiohttp
 import yaml
 
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.main import (
     _download_resolved_packages,
     _prepare_lockfile_for_hermetic_build,
     _resolve_pnpm_project,
 )
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
-from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
 from tests.unit.test_checksum import SHA512_SRI
 
 FAKE_PROXY_URL = "http://proxy.com/npm/registry"

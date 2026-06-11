@@ -9,9 +9,9 @@ from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import PROXY_COMMENT, Component, ExternalReference
 from hermeto.core.package_managers.general import get_vcs_qualifiers
+from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
-from hermeto.core.package_managers.npm import NPM_REGISTRY_URL
 from hermeto.core.rooted_path import RootedPath
 
 JSR_REGISTRY_URL = "https://npm.jsr.io"

@@ -11,17 +11,17 @@ from hermeto.core.config import get_config
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.package_managers.javascript.npm import (
+    NPM_REGISTRY_URL,
+    async_download_with_auth,
+    patch_url_to_point_to_proxy,
+)
 from hermeto.core.package_managers.javascript.pnpm.project import (
     PnpmLock,
     PnpmPackage,
     parse_packages,
 )
 from hermeto.core.package_managers.javascript.pnpm.resolver import generate_sbom_components
-from hermeto.core.package_managers.npm import (
-    NPM_REGISTRY_URL,
-    async_download_with_auth,
-    patch_url_to_point_to_proxy,
-)
 
 
 def fetch_pnpm_source(request: Request) -> RequestOutput:
