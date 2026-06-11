@@ -83,12 +83,12 @@ def _generate_purl_for(package: PnpmPackage, vcs_qualifiers: dict[str, str]) -> 
         qualifiers["download_url"] = package.url
 
     # The scope must contain the '@' prefix according to the PURL specification.
-    scope = f"@{package.scope.lower()}" if package.scope else None
+    scope = f"@{package.scope}" if package.scope else None
 
     return PackageURL(
         type="npm",
         namespace=scope,
-        name=package.name.lower(),
+        name=package.name,
         version=package.version,
         qualifiers=qualifiers,
         subpath=subpath,
@@ -106,7 +106,7 @@ def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, st
     subpath = str(project_dir.subpath_from_root)
     purl = PackageURL(
         type="npm",
-        name=name.lower(),
+        name=name,
         version=version,
         qualifiers=vcs_qualifiers,
         subpath=subpath,
