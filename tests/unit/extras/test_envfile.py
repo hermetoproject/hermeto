@@ -6,7 +6,7 @@ import pytest
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnsupportedFeature
-from hermeto.core.extras.envfile import EnvFormat, generate_envfile
+from hermeto.core.extras.envfile import EnvFormat, _resolve_env_vars, generate_envfile
 from hermeto.core.models.output import BuildConfig
 
 
@@ -78,3 +78,17 @@ def test_generate_env_as_env() -> None:
 
     content = generate_envfile(build_config, EnvFormat.env, relative_to_path=Path("/output/dir"))
     assert content == expect_content
+
+
+def test_resolve_env_vars_dependent_path_var() -> None:
+    build_config = BuildConfig(
+        environment_variables=[
+            {"name": "GOMODCACHE", "value": "deps/gomod/pkg/mod", "kind": "path"},
+            {"name": "GOPROXY", "value": "file://${GOMODCACHE}/cache/download"},
+        ],
+        project_files=[],
+    )
+    assert _resolve_env_vars(build_config, Path("/tmp/output")) == [
+        ("GOMODCACHE", "/tmp/output/deps/gomod/pkg/mod"),
+        ("GOPROXY", "file:///tmp/output/deps/gomod/pkg/mod/cache/download"),
+    ]
