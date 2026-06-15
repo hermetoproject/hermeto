@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import json
 import shlex
-from copy import deepcopy
 from enum import Enum
 from pathlib import Path
 
@@ -55,7 +54,13 @@ def generate_envfile(build_config: BuildConfig, fmt: EnvFormat, relative_to_path
     - env: export GOCACHE=/path/to/output-dir/deps/gomod
            export ...
     """
-    env_vars = _resolve_env_vars(build_config, relative_to_path)
+    # pass all variables as placeholder mappings to env var template value resolution
+    mappings = {var.name: var.value for var in build_config.environment_variables}
+    mappings["output_dir"] = relative_to_path.as_posix()
+    env_vars = [
+        (env_var.name, env_var.resolve_value(mappings))
+        for env_var in build_config.environment_variables
+    ]
     if fmt == EnvFormat.json:
         content = json.dumps([{"name": name, "value": value} for name, value in env_vars])
     else:
@@ -63,22 +68,3 @@ def generate_envfile(build_config: BuildConfig, fmt: EnvFormat, relative_to_path
             f"export {shlex.quote(name)}={shlex.quote(value)}" for name, value in env_vars
         )
     return content
-
-
-def _resolve_env_vars(build_config: BuildConfig, relative_to_path: Path) -> list[tuple[str, str]]:
-    """Resolve the environment variables for the given build config and path."""
-    # pass all variables as placeholder mappings to env var template value resolution
-    mappings = {var.name: var.value for var in build_config.environment_variables}
-    mappings["output_dir"] = relative_to_path.as_posix()
-
-    # Legacy kind="path" variables must be resolved into mappings before dependents
-    # (e.g. GOPROXY's file://${GOMODCACHE}/...) are expanded; otherwise substitution
-    # uses the unresolved relative path from the initial mappings dict.
-    for env_var in build_config.environment_variables:
-        if env_var.kind == "path":
-            mappings[env_var.name] = deepcopy(env_var).resolve_value(mappings)
-
-    return [
-        (env_var.name, env_var.resolve_value(mappings))
-        for env_var in build_config.environment_variables
-    ]
