@@ -5,7 +5,11 @@ from typing import Any
 import pytest
 
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
-from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, parse_packages
+from hermeto.core.package_managers.javascript.pnpm.project import (
+    PnpmLock,
+    PnpmPackage,
+    parse_packages,
+)
 
 
 class TestPnpmLock:
@@ -55,3 +59,19 @@ class TestPnpmLock:
         packages = parse_packages(lockfile)
         assert packages[0].version == "1.0.0"
         assert packages[0].url == "https://codeload.github.com/org/repo/tar.gz/abc123"
+
+    @pytest.mark.parametrize(
+        "id, expected",
+        [
+            ("foo@1.0.0", True),
+            ("@scope/bar@2.3.4", True),
+            ("@jsr/foo@1.0.0", True),
+            ("foo@1.0.0-rc.1+build.5", True),
+            ("repo@https://codeload.github.com/org/repo/tar.gz/abc123", False),
+            ("foo@git+ssh://git@github.com/org/repo.git#abc123", False),
+        ],
+    )
+    def test_pnpm_package_registry_shaped(self, id: str, expected: bool) -> None:
+        # registry_shaped reads only the key, so the other fields are irrelevant here.
+        package = PnpmPackage(id, "", "x", "1.0.0", "https://example.com/x.tgz")
+        assert package.registry_shaped is expected

@@ -96,6 +96,16 @@ class PnpmPackage:
 
         return f"{self.name}-{self.version}.tgz"
 
+    @property
+    def registry_shaped(self) -> bool:
+        """Return whether the lockfile key is registry-shaped (``name@<semver>``).
+
+        pnpm enforces a registry-style ``resolution`` -- and so rejects a local
+        ``tarball: file://`` rewrite as a shape mismatch -- only for keys whose version
+        component is a semver. Keys carrying a URL (git or remote-tarball deps) are exempt.
+        """
+        return Version.is_valid(_parse_pnpm_package(self.id).version)
+
 
 def _ensure_lockfile_version_is_supported(lockfile: PnpmLock) -> None:
     """Ensure Hermeto supports the lockfile version in the pnpm-lock.yaml file."""
