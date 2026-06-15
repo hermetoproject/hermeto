@@ -94,6 +94,14 @@ class PnpmPackage:
     integrity: str | None = None  # git and URL dependencies don't have an integrity field
 
     @property
+    def full_name(self) -> str:
+        """Return the full package name with the scope prefix if present."""
+        if self.scope:
+            return f"@{self.scope}/{self.name}"
+
+        return self.name
+
+    @property
     def tarball_filename(self) -> str:
         """Return the tarball filename."""
         if self.scope:

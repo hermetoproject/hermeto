@@ -92,13 +92,9 @@ def _generate_purl_for(package: PnpmPackage, vcs_qualifiers: dict[str, str]) -> 
     elif not package.url.startswith(NPM_REGISTRY_URL):
         qualifiers["download_url"] = package.url
 
-    # The scope must contain the '@' prefix according to the PURL specification.
-    scope = f"@{package.scope}" if package.scope else None
-
     return PackageURL(
         type="npm",
-        namespace=scope,
-        name=package.name,
+        name=package.full_name,
         version=package.version,
         qualifiers=qualifiers,
         subpath=subpath,
@@ -124,8 +120,7 @@ def _generate_pedigree_for(
         return vcs_url + "#" + subpath
 
     # Dependencies can be patched by package ID or package name (including scope).
-    full_name = f"@{package.scope}/{package.name}"
-    search_keys = (package.id, full_name, package.name)
+    search_keys = (package.id, package.full_name)
     key = first_for(lambda search_key: search_key in patches, search_keys, None)
 
     return Pedigree(patches=[Patch(diff=PatchDiff(url=get_patch_url(key)))]) if key else None
