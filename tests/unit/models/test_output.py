@@ -37,9 +37,7 @@ class TestProjectFile:
 class TestBuildConfig:
     def test_conflicting_env_vars(self) -> None:
         expect_error = (
-            "conflict by GOSUMDB: "
-            "name='GOSUMDB' value='on' kind=None "
-            "X name='GOSUMDB' value='sum.golang.org' kind=None"
+            "conflict by GOSUMDB: name='GOSUMDB' value='on' X name='GOSUMDB' value='sum.golang.org'"
         )
         with pytest.raises(pydantic.ValidationError, match=expect_error):
             BuildConfig(
@@ -130,8 +128,6 @@ ENVVAR_TEMPLATE_MAPPINGS = {
     "BAR": "and",
     "BARR": "the_${BAZ}",
     "FOO": "python_${BAR}_${BARR}",
-    "LEGACY_LITERAL": "foobar",
-    "LEGACY_PATH": "relative/path",
     "SIMPLE": "${deadbeef}",
 }
 
@@ -139,28 +135,13 @@ ENVVAR_TEMPLATE_MAPPINGS = {
 class TestEnvironmentVariable:
     @pytest.fixture(scope="class")
     def env_variables(self) -> dict[str, EnvironmentVariable]:
-        ret = {k: EnvironmentVariable(name=k, value=v) for k, v in ENVVAR_TEMPLATE_MAPPINGS.items()}
-
-        # need to inject 'kind' for legacy variable templates
-        ret["LEGACY_LITERAL"].kind = "literal"
-        ret["LEGACY_PATH"].kind = "path"
-        return ret
+        return {
+            k: EnvironmentVariable(name=k, value=v) for k, v in ENVVAR_TEMPLATE_MAPPINGS.items()
+        }
 
     @pytest.mark.parametrize(
         "var, expected, mappings",
         [
-            pytest.param(
-                "LEGACY_LITERAL",
-                "foobar",
-                {"output_dir": "/absolute/path"},
-                id="compatibility_test_legacy_literal",
-            ),
-            pytest.param(
-                "LEGACY_PATH",
-                "/absolute/path/relative/path",
-                {"output_dir": "/absolute/path"},
-                id="compatibility_test_legacy_path",
-            ),
             pytest.param(
                 "SIMPLE", "badf00d", {"deadbeef": "badf00d"}, id="simple_template_variable"
             ),
@@ -180,7 +161,6 @@ class TestEnvironmentVariable:
         mappings: dict[str, str],
     ) -> None:
         assert env_variables[var].resolve_value(mappings) == expected
-        assert "kind" not in env_variables[var].model_dump()
 
     @pytest.mark.parametrize(
         "envs",

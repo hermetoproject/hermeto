@@ -20,7 +20,7 @@ GOMOD_OUTPUT = RequestOutput.from_obj_list(
         )
     ],
     environment_variables=[
-        EnvironmentVariable(name="GOMODCACHE", value="deps/gomod/pkg/mod", kind="path"),
+        EnvironmentVariable(name="GOMODCACHE", value="${output_dir}/deps/gomod/pkg/mod"),
     ],
     project_files=[
         ProjectFile(abspath="/your/project/go.mod", template="Hello gomod my old friend.")
@@ -32,7 +32,7 @@ PIP_OUTPUT = RequestOutput.from_obj_list(
         Component(type="library", name="spam", version="1.0.0", purl="pkg:pypi/spam@1.0.0")
     ],
     environment_variables=[
-        EnvironmentVariable(name="PIP_INDEX_URL", value="file:///some/path", kind="literal"),
+        EnvironmentVariable(name="PIP_INDEX_URL", value="file:///some/path"),
     ],
     project_files=[
         ProjectFile(
@@ -44,7 +44,7 @@ PIP_OUTPUT = RequestOutput.from_obj_list(
 NPM_OUTPUT = RequestOutput.from_obj_list(
     components=[Component(type="library", name="eggs", version="1.0.0", purl="pkg:npm/eggs@1.0.0")],
     environment_variables=[
-        EnvironmentVariable(name="CHROMEDRIVER_SKIP_DOWNLOAD", value="true", kind="literal"),
+        EnvironmentVariable(name="CHROMEDRIVER_SKIP_DOWNLOAD", value="true"),
     ],
     project_files=[
         ProjectFile(

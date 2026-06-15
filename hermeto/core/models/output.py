@@ -3,7 +3,7 @@ import logging
 import string
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import pydantic
 
@@ -22,19 +22,10 @@ class EnvironmentVariable(pydantic.BaseModel):
     variable to the output.
     Templating as the base solution for this representation is useful in cases where the exact
     value of a given environment variable can't be determined at the time of instantiation.
-
-    Note that legacy implementation of this model differentiated between 2 kinds of variables:
-    'path' & 'literal' with the following behaviour:
-        - for "literal" variables, the resolved value is simply the value it was created with
-        - for "path" variables, the value is joined to the specified path.
-
-    The new implementation is backwards compatible with the legacy handling in terms of input
-    parsing, but the produced output is not.
     """
 
     name: str
     value: str
-    kind: Literal["literal", "path"] | None = pydantic.Field(default=None, exclude=True)
 
     def resolve_value(self, mappings: dict[str, str]) -> str:
         """Return the resolved value of this templated environment variable.
@@ -43,7 +34,7 @@ class EnvironmentVariable(pydantic.BaseModel):
 
         The environment variable value will be converted to a string template which will then
         substitute all placeholders defined; if no placeholders are contained within the value
-        string, substitution is a NOOP (e.g. legacy "literal" variables)
+        string, substitution is a NOOP
         """
 
         def get_placeholders(t: string.Template) -> set[str]:
@@ -63,11 +54,6 @@ class EnvironmentVariable(pydantic.BaseModel):
                     placeholders.add(placeholder)
 
             return placeholders
-
-        # legacy path variable handling, need to prepend the base path placeholder
-        if self.kind == "path" and "output_dir" in mappings:
-            log.debug(f"Adjusting a legacy path variable value '{self.name}={self.value}'")
-            self.value = "${output_dir}/" + self.value
 
         # "Recursively" resolve potentially nested variables up to len(mappings) tries
         log.debug(f"Resolving environment variable '{self.name}={self.value}'")

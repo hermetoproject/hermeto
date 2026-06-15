@@ -47,8 +47,8 @@ def test_cannot_determine_format(filename: str, expect_reason: str) -> None:
 
 def test_generate_env_as_json() -> None:
     env_vars = [
-        {"name": "GOCACHE", "value": "deps/gomod", "kind": "path"},
-        {"name": "GOSUMDB", "value": "off", "kind": "literal"},
+        {"name": "GOCACHE", "value": "${output_dir}/deps/gomod"},
+        {"name": "GOSUMDB", "value": "off"},
     ]
     build_config = BuildConfig(environment_variables=env_vars, project_files=[])
 
@@ -62,9 +62,9 @@ def test_generate_env_as_json() -> None:
 
 def test_generate_env_as_env() -> None:
     env_vars = [
-        {"name": "GOCACHE", "value": "deps/gomod", "kind": "path"},
-        {"name": "GOSUMDB", "value": "off", "kind": "literal"},
-        {"name": "SNEAKY", "value": "foo; echo hello there", "kind": "literal"},
+        {"name": "GOCACHE", "value": "${output_dir}/deps/gomod"},
+        {"name": "GOSUMDB", "value": "off"},
+        {"name": "SNEAKY", "value": "foo; echo hello there"},
     ]
     build_config = BuildConfig(environment_variables=env_vars, project_files=[])
 
