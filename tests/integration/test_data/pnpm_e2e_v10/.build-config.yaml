@@ -1,5 +1,9 @@
 environment_variables: []
 project_files:
+- abspath: ${test_case_tmp_path}/.npmrc
+  template: |
+    registry=file://${output_dir}/deps/pnpm/npm/
+    @jsr:registry=file://${output_dir}/deps/pnpm/jsr/
 - abspath: ${test_case_tmp_path}/pnpm-lock.yaml
   template: |
     lockfileVersion: '9.0'
@@ -46,15 +50,15 @@ project_files:
       '@jsr/hono__hono@4.12.23':
         resolution:
           integrity: sha512-CQC/yU9m4ZcB+TgcMGmflF//Ds9MT3tSSpvwCQOhl9Ca7KT5KwjQi7uIQbIk1YfjGX/ogdYEXNr3L5FbFld9TQ==
-          tarball: file://${output_dir}/deps/pnpm/hono-hono-4.12.23.tgz
+          tarball: hono-hono-4.12.23.tgz
       '@jsr/hono__zod-validator@0.8.0':
         resolution:
           integrity: sha512-N83lxbjgUEgekCWUBXTNuFrRrXSTeqZsHesArsHsPgtfM4mk4xLOkOHCuS6AH4k9W+tGUq/488QY43xhmFivJA==
-          tarball: file://${output_dir}/deps/pnpm/hono-zod-validator-0.8.0.tgz
+          tarball: hono-zod-validator-0.8.0.tgz
       '@sinclair/typebox@0.34.49':
         resolution:
           integrity: sha512-brySQQs7Jtn0joV8Xh9ZV/hZb9Ozb0pmazDIASBkYKCjXrXU3mpcFahmK/z4YDhGkQvP9mWJbVyahdtU5wQA+A==
-          tarball: file://${output_dir}/deps/pnpm/sinclair-typebox-0.34.49.tgz
+          tarball: sinclair-typebox-0.34.49.tgz
       debug@https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621:
         resolution:
           gitHosted: true
@@ -78,11 +82,11 @@ project_files:
       ms@2.1.3:
         resolution:
           integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
-          tarball: file://${output_dir}/deps/pnpm/ms-2.1.3.tgz
+          tarball: ms-2.1.3.tgz
       picocolors@1.1.1:
         resolution:
           integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==
-          tarball: file://${output_dir}/deps/pnpm/picocolors-1.1.1.tgz
+          tarball: picocolors-1.1.1.tgz
       semver@https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz:
         resolution:
           integrity: sha512-+T5wTYyd2XpsnpJyQYEQhC/FfOzhFt3xT3H+3xi7yCMzizkLM+TiJP3+7xBPCTVn+t6YWkURYM5q2AUCcUiwjA==
@@ -94,12 +98,12 @@ project_files:
       uuid@14.0.0:
         resolution:
           integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==
-          tarball: file://${output_dir}/deps/pnpm/uuid-14.0.0.tgz
+          tarball: uuid-14.0.0.tgz
         hasBin: true
       zod@4.4.3:
         resolution:
           integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==
-          tarball: file://${output_dir}/deps/pnpm/zod-4.4.3.tgz
+          tarball: zod-4.4.3.tgz
     snapshots:
       '@jsr/hono__hono@4.12.23': {}
       '@jsr/hono__zod-validator@0.8.0':

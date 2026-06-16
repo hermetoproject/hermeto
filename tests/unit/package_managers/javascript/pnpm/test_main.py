@@ -3,16 +3,20 @@ from pathlib import Path
 from unittest import mock
 
 import aiohttp
+import pytest
 import yaml
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.main import (
     _download_resolved_packages,
+    _mirror_tarball_path,
     _prepare_lockfile_for_hermetic_build,
+    _prepare_npmrc_for_hermetic_build,
     _resolve_pnpm_project,
 )
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
+from hermeto.core.package_managers.javascript.pnpm.resolver import JSR_REGISTRY_URL
 from tests.unit.test_checksum import SHA512_SRI
 
 FAKE_PROXY_URL = "http://proxy.com/npm/registry"
@@ -64,11 +68,11 @@ def test_download_resolved_packages_with_proxy_credentials(
 
     mock_async_download_with_auth.assert_called_once_with(
         files_without_auth={},
-        files_with_auth={f"{FAKE_PROXY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "pkg-1.0.0.tgz"},
+        files_with_auth={f"{FAKE_PROXY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "npm/pkg-1.0.0.tgz"},
         auth=aiohttp.encode_basic_auth("user", "password"),
     )
     mock_must_match_any_checksum.assert_called_once_with(
-        file_path=tmp_path / "pkg-1.0.0.tgz",
+        file_path=tmp_path / "npm/pkg-1.0.0.tgz",
         expected_checksums=[ChecksumInfo.from_sri(SHA512_SRI)],
     )
 
@@ -90,12 +94,14 @@ def test_download_resolved_packages_without_proxy_credentials(
     _download_resolved_packages([pkg], tmp_path)
 
     mock_async_download_with_auth.assert_called_once_with(
-        files_without_auth={f"{FAKE_PROXY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "pkg-1.0.0.tgz"},
+        files_without_auth={
+            f"{FAKE_PROXY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "npm/pkg-1.0.0.tgz"
+        },
         files_with_auth={},
         auth=None,
     )
     mock_must_match_any_checksum.assert_called_once_with(
-        file_path=tmp_path / "pkg-1.0.0.tgz",
+        file_path=tmp_path / "npm/pkg-1.0.0.tgz",
         expected_checksums=[ChecksumInfo.from_sri(SHA512_SRI)],
     )
 
@@ -117,12 +123,14 @@ def test_download_resolved_packages_without_proxy(
     _download_resolved_packages([pkg], tmp_path)
 
     mock_async_download_with_auth.assert_called_once_with(
-        files_without_auth={f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "pkg-1.0.0.tgz"},
+        files_without_auth={
+            f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz": tmp_path / "npm/pkg-1.0.0.tgz"
+        },
         files_with_auth={},
         auth=None,
     )
     mock_must_match_any_checksum.assert_called_once_with(
-        file_path=tmp_path / "pkg-1.0.0.tgz",
+        file_path=tmp_path / "npm/pkg-1.0.0.tgz",
         expected_checksums=[ChecksumInfo.from_sri(SHA512_SRI)],
     )
 
@@ -165,13 +173,13 @@ def test_prepare_lockfile_for_hermetic_build(tmp_path: Path) -> None:
                 "a@1.0.0": {
                     "resolution": {
                         "integrity": "sha512-abc",
-                        "tarball": "file://${output_dir}/deps/pnpm/a-1.0.0.tgz",
+                        "tarball": "a-1.0.0.tgz",
                     }
                 },
                 "@scope/b@2.0.0": {
                     "resolution": {
                         "integrity": "sha512-def",
-                        "tarball": "file://${output_dir}/deps/pnpm/scope-b-2.0.0.tgz",
+                        "tarball": "scope-b-2.0.0.tgz",
                     }
                 },
             },
@@ -182,3 +190,76 @@ def test_prepare_lockfile_for_hermetic_build(tmp_path: Path) -> None:
     # Verify that the original URLs are preserved.
     assert packages[0].url == f"{NPM_REGISTRY_URL}/a/-/a-1.0.0.tgz"
     assert packages[1].url == f"{NPM_REGISTRY_URL}/@scope/b/-/b-2.0.0.tgz"
+
+
+@pytest.mark.parametrize(
+    ("package", "expected_path"),
+    [
+        pytest.param(
+            PnpmPackage(
+                "a@1.0.0",
+                "",
+                "a",
+                "1.0.0",
+                f"{NPM_REGISTRY_URL}/a/-/a-1.0.0.tgz",
+            ),
+            "npm/a-1.0.0.tgz",
+            id="npm_registry",
+        ),
+        pytest.param(
+            PnpmPackage(
+                "@scope/b@2.0.0",
+                "scope",
+                "b",
+                "2.0.0",
+                f"{JSR_REGISTRY_URL}/~/11/@scope/b/-/b-2.0.0.tgz",
+            ),
+            "jsr/scope-b-2.0.0.tgz",
+            id="jsr_registry",
+        ),
+        pytest.param(
+            PnpmPackage(
+                "repo@https://codeload.github.com/org/repo/tar.gz/abc123",
+                "",
+                "repo",
+                "1.0.0",
+                "https://codeload.github.com/org/repo/tar.gz/abc123",
+            ),
+            "repo-1.0.0.tgz",
+            id="git",
+        ),
+    ],
+)
+def test_mirror_tarball_path(tmp_path: Path, package: PnpmPackage, expected_path: str) -> None:
+    assert _mirror_tarball_path(tmp_path, package) == tmp_path / expected_path
+
+
+@pytest.mark.parametrize(
+    ("existing_content", "expected_template"),
+    [
+        (
+            None,
+            "registry=file://${output_dir}/deps/pnpm/npm/\n"
+            "@jsr:registry=file://${output_dir}/deps/pnpm/jsr/\n",
+        ),
+        (
+            "strict-peer-dependencies=false",
+            "strict-peer-dependencies=false\n"
+            "registry=file://${output_dir}/deps/pnpm/npm/\n"
+            "@jsr:registry=file://${output_dir}/deps/pnpm/jsr/\n",
+        ),
+    ],
+)
+def test_prepare_npmrc_for_hermetic_build(
+    tmp_path: Path,
+    existing_content: str | None,
+    expected_template: str,
+) -> None:
+    npmrc_path = tmp_path / ".npmrc"
+    if existing_content is not None:
+        npmrc_path.write_text(existing_content)
+
+    project_file = _prepare_npmrc_for_hermetic_build(tmp_path)
+
+    assert project_file.abspath == npmrc_path
+    assert project_file.template == expected_template

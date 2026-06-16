@@ -21,7 +21,10 @@ from hermeto.core.package_managers.javascript.pnpm.project import (
     PnpmPackage,
     parse_packages,
 )
-from hermeto.core.package_managers.javascript.pnpm.resolver import generate_sbom_components
+from hermeto.core.package_managers.javascript.pnpm.resolver import (
+    JSR_REGISTRY_URL,
+    generate_sbom_components,
+)
 
 
 def fetch_pnpm_source(request: Request) -> RequestOutput:
@@ -38,6 +41,7 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
         lockfile = PnpmLock.from_dir(project_dir.path)
         packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
         project_files.append(updated_lockfile)
+        project_files.append(_prepare_npmrc_for_hermetic_build(project_dir.path))
         components.extend(generate_sbom_components(project_dir, packages, lockfile))
 
     if backend_annotation := create_backend_annotation(components, "x-pnpm"):
@@ -73,7 +77,8 @@ def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> 
     files_with_auth = {}
     files_without_auth = {}
     for package in packages:
-        tarball_path = deps_dir / package.tarball_filename
+        tarball_path = _mirror_tarball_path(deps_dir, package)
+        tarball_path.parent.mkdir(parents=True, exist_ok=True)
 
         # non-registry packages, or no proxy is configured
         if not package.url.startswith(NPM_REGISTRY_URL) or proxy_url is None:
@@ -95,7 +100,7 @@ def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> 
     for package in packages:
         if package.integrity is not None:
             must_match_any_checksum(
-                file_path=deps_dir / package.tarball_filename,
+                file_path=_mirror_tarball_path(deps_dir, package),
                 expected_checksums=[ChecksumInfo.from_sri(package.integrity)],
             )
 
@@ -108,8 +113,36 @@ def _prepare_lockfile_for_hermetic_build(
     for package in packages:
         data = lockfile_copy.packages[package.id]
         resolution = data.setdefault("resolution", {})
-        resolution["tarball"] = f"file://${{output_dir}}/deps/pnpm/{package.tarball_filename}"
+        if package.url.startswith(NPM_REGISTRY_URL) or package.url.startswith(JSR_REGISTRY_URL):
+            resolution["tarball"] = package.tarball_filename
+        else:
+            resolution["tarball"] = f"file://${{output_dir}}/deps/pnpm/{package.tarball_filename}"
 
     return ProjectFile(
         abspath=lockfile_copy.path, template=yaml.safe_dump(lockfile_copy.data, sort_keys=False)
     )
+
+
+def _prepare_npmrc_for_hermetic_build(project_dir: Path) -> ProjectFile:
+    """
+    Create a .npmrc file with registry configuration instead of using environment variables because
+    of limitations with `npm_config_@jsr:registry` environment variable ("@" is not a valid POSIX
+    export name when sourcing hermeto.env).
+    """
+    npmrc_path = project_dir.joinpath(".npmrc")
+    content = (npmrc_path.read_text() + "\n") if npmrc_path.is_file() else ""
+
+    content += (
+        "registry=file://${output_dir}/deps/pnpm/npm/\n"
+        "@jsr:registry=file://${output_dir}/deps/pnpm/jsr/\n"
+    )
+    return ProjectFile(abspath=npmrc_path, template=content)
+
+
+def _mirror_tarball_path(deps_dir: Path, package: PnpmPackage) -> Path:
+    if package.url.startswith(NPM_REGISTRY_URL):
+        deps_dir = deps_dir / "npm"
+    elif package.url.startswith(JSR_REGISTRY_URL):
+        deps_dir = deps_dir / "jsr"
+
+    return deps_dir / package.tarball_filename
