@@ -43,7 +43,7 @@ def ensure_no_path_leads_out(
         source_dir.join_within_root(path)
 
 
-def _get_workspace_paths(workspaces_globs: list[str], source_dir: RootedPath) -> list[Path]:
+def get_workspace_paths(workspaces_globs: list[str], source_dir: RootedPath) -> list[Path]:
     """Resolve globs within source directory."""
 
     def all_paths_matching(glob: str) -> Generator[Path, None, None]:
@@ -75,7 +75,7 @@ def extract_workspace_metadata(package_path: RootedPath) -> list[Workspace]:
     """Extract workspace metadata from a package."""
     package_json = PackageJson.from_dir(package_path.path)
     workspaces_globs = _extract_workspaces_globs(package_json.data)
-    workspaces_paths = _get_workspace_paths(workspaces_globs, package_path)
+    workspaces_paths = get_workspace_paths(workspaces_globs, package_path)
     ensure_no_path_leads_out(workspaces_paths, package_path)
 
     parsed_workspaces = []

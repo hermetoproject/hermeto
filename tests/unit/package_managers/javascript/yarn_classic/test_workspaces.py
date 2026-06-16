@@ -9,13 +9,13 @@ from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.javascript.yarn_classic.workspaces import (
     Workspace,
     _extract_workspaces_globs,
-    _get_workspace_paths,
     extract_workspace_metadata,
+    get_workspace_paths,
 )
 from hermeto.core.rooted_path import RootedPath
 
 
-@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces._get_workspace_paths")
+@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces.get_workspace_paths")
 def test_packages_with_workspaces_outside_source_dir_are_rejected(
     mock_get_ws_paths: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -28,7 +28,7 @@ def test_packages_with_workspaces_outside_source_dir_are_rejected(
         extract_workspace_metadata(rooted_tmp_path)
 
 
-@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces._get_workspace_paths")
+@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces.get_workspace_paths")
 def test_workspaces_could_be_parsed(
     mock_get_ws_paths: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -54,7 +54,7 @@ def test_workspaces_could_be_parsed(
     assert result == expected_result
 
 
-@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces._get_workspace_paths")
+@mock.patch("hermeto.core.package_managers.javascript.yarn_classic.workspaces.get_workspace_paths")
 def test_workspaces_with_missing_package_json(
     mock_get_ws_paths: mock.Mock,
     caplog: pytest.LogCaptureFixture,
@@ -122,6 +122,6 @@ def test_workspace_paths_could_be_resolved(
     workspace_path = package_path.join_within_root("foo")
     workspace_path.path.mkdir(parents=True)
 
-    result = list(_get_workspace_paths(["foo"], package_path))
+    result = list(get_workspace_paths(["foo"], package_path))
 
     assert result == [workspace_path.path]
