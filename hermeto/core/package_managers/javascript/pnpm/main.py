@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import asyncio
 import copy
+import logging
 from pathlib import Path
 
 import aiohttp
@@ -26,6 +27,8 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
     generate_sbom_components,
 )
 
+log = logging.getLogger(__name__)
+
 
 def fetch_pnpm_source(request: Request) -> RequestOutput:
     """Process all pnpm source directories in the given request."""
@@ -38,6 +41,8 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
 
     for package in request.pnpm_packages:
         project_dir = request.source_dir.join_within_root(package.path)
+        log.info("Fetching pnpm dependencies at %s", project_dir)
+
         lockfile = PnpmLock.from_dir(project_dir.path)
         packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
         project_files.append(updated_lockfile)
@@ -59,6 +64,7 @@ def _resolve_pnpm_project(
 ) -> tuple[list[PnpmPackage], ProjectFile]:
     """Resolve a pnpm project."""
     packages = parse_packages(lockfile)
+    log.info("Parsed %d packages from %s", len(packages), lockfile.path)
     non_local = [p for p in packages if not p.url.startswith("file:")]
     _download_resolved_packages(non_local, deps_dir)
     return packages, _prepare_lockfile_for_hermetic_build(lockfile, non_local)
@@ -103,6 +109,8 @@ def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> 
                 file_path=_mirror_tarball_path(deps_dir, package),
                 expected_checksums=[ChecksumInfo.from_sri(package.integrity)],
             )
+        else:
+            log.warning("Missing checksum for %s", package.id)
 
 
 def _prepare_lockfile_for_hermetic_build(
