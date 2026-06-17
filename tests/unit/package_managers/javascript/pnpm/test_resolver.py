@@ -22,6 +22,10 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
 from hermeto.core.rooted_path import RootedPath
 from tests.unit.package_managers.javascript.pnpm.test_main import FAKE_PROXY_URL
 
+VCS_URL = "git+https://github.com/org/repo@abc"
+ENQUOTED_VCS_URL = "git%2Bhttps://github.com/org/repo%40abc"
+VCS_QUALIFIERS = {"vcs_url": VCS_URL}
+
 
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_vcs_qualifiers")
 @mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_config")
@@ -128,8 +132,8 @@ def test_create_lockfile_components_with_proxy(
         ),
         pytest.param(
             PnpmPackage("local@1.0.0", "", "local", "1.0.0", "file:packages/local.tgz"),
-            {"vcs_url": "git+https://github.com/org/repo@abc"},
-            "pkg:npm/local@1.0.0?vcs_url=git%2Bhttps://github.com/org/repo%40abc#packages/local.tgz",
+            VCS_QUALIFIERS,
+            f"pkg:npm/local@1.0.0?vcs_url={ENQUOTED_VCS_URL}#packages/local.tgz",
             id="local",
         ),
     ],
@@ -152,23 +156,23 @@ def test_generate_purl_for(
         ),
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
-            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            VCS_QUALIFIERS,
             {},
             None,
             id="no_patches",
         ),
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
-            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            VCS_QUALIFIERS,
             {"pkg@1.0.0": {"path": "patches/pkg@1.0.0.patch"}},
-            "git+https://github.com/org/repo@abc#patches/pkg@1.0.0.patch",
+            f"{VCS_URL}#patches/pkg@1.0.0.patch",
             id="match_by_package_id",
         ),
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
-            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            VCS_QUALIFIERS,
             {"pkg": {"path": "patches/pkg.patch"}},
-            "git+https://github.com/org/repo@abc#patches/pkg.patch",
+            f"{VCS_URL}#patches/pkg.patch",
             id="match_by_package_name",
         ),
         pytest.param(
@@ -179,9 +183,9 @@ def test_generate_purl_for(
                 "1.0.0",
                 f"{NPM_REGISTRY_URL}/@scope/pkg/-/pkg-1.0.0.tgz",
             ),
-            {"vcs_url": "git+https://github.com/org/repo@abc"},
+            VCS_QUALIFIERS,
             {"@scope/pkg": {"path": "patches/@scope/pkg.patch"}},
-            "git+https://github.com/org/repo@abc#patches/@scope/pkg.patch",
+            f"{VCS_URL}#patches/@scope/pkg.patch",
             id="match_by_package_scope_and_name",
         ),
     ],
@@ -203,10 +207,9 @@ def test_generate_pedigree_fails_when_path_is_missing(tmp_path: Path) -> None:
         tmp_path, {"lockfileVersion": "9.0", "patchedDependencies": {"pkg@1.0.0": {}}}
     )
     pkg = PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", "")
-    vcs_qualifiers = {"vcs_url": "git+https://github.com/org/repo@abc"}
 
     with pytest.raises(InvalidLockfileFormat):
-        _generate_pedigree_for(pkg, vcs_qualifiers, lockfile)
+        _generate_pedigree_for(pkg, VCS_QUALIFIERS, lockfile)
 
 
 @pytest.mark.parametrize(
@@ -214,11 +217,11 @@ def test_generate_pedigree_fails_when_path_is_missing(tmp_path: Path) -> None:
     [
         (
             "app",
-            "pkg:npm/app@0.1.0?vcs_url=git%2Bhttps://github.com/org/repo%40abc#ui/frontend",
+            f"pkg:npm/app@0.1.0?vcs_url={ENQUOTED_VCS_URL}#ui/frontend",
         ),
         (
             "@scope/app",
-            "pkg:npm/%40scope/app@0.1.0?vcs_url=git%2Bhttps://github.com/org/repo%40abc#ui/frontend",
+            f"pkg:npm/%40scope/app@0.1.0?vcs_url={ENQUOTED_VCS_URL}#ui/frontend",
         ),
     ],
 )
@@ -228,8 +231,7 @@ def test_create_root_component(rooted_tmp_path: RootedPath, name: str, expected_
 
     package_json = subproject.path.joinpath("package.json")
     package_json.write_text(json.dumps({"name": name, "version": "0.1.0"}))
-    vcs_qualifiers = {"vcs_url": "git+https://github.com/org/repo@abc"}
-    component = _create_root_component(subproject, vcs_qualifiers)
+    component = _create_root_component(subproject, VCS_QUALIFIERS)
 
     assert component.purl == expected_purl
 
