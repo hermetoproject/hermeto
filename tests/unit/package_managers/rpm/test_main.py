@@ -216,10 +216,11 @@ def test_resolve_rpm_project_invalid_lockfile_format(
 
 
 @pytest.mark.parametrize(
-    "lockfile_data",
+    "lockfile_data, expected_components",
     [
         pytest.param(
             {"lockfileVendor": "redhat", "lockfileVersion": 1, "arches": [{"arch": "x86_64"}]},
+            0,
             id="no_packages_or_source",
         ),
         pytest.param(
@@ -228,6 +229,7 @@ def test_resolve_rpm_project_invalid_lockfile_format(
                 "lockfileVersion": 1,
                 "arches": [{"arch": "aarch64", "packages": []}],
             },
+            0,
             id="empty_packages",
         ),
         pytest.param(
@@ -236,20 +238,47 @@ def test_resolve_rpm_project_invalid_lockfile_format(
                 "lockfileVersion": 1,
                 "arches": [
                     {"arch": "i686", "packages": [], "source": []},
-                    {"arch": "x86_64", "packages": [{"url": "SOME_URL"}]},
                 ],
             },
+            0,
+            id="all_empty",
+        ),
+        pytest.param(
+            {
+                "lockfileVendor": "redhat",
+                "lockfileVersion": 1,
+                "arches": [
+                    {"arch": "i686", "packages": [], "source": []},
+                    {
+                        "arch": "x86_64",
+                        "packages": [{"url": "https://example.com/foo-1.0-1.fc39.x86_64.rpm"}],
+                    },
+                ],
+            },
+            1,
             id="mixed_empty_and_valid",
         ),
     ],
 )
-def test_resolve_rpm_project_rejects_empty_arch(
-    rooted_tmp_path: RootedPath, lockfile_data: dict
+@mock.patch("hermeto.core.package_managers.rpm.main.Package.from_filepath")
+@mock.patch("hermeto.core.package_managers.rpm.main.async_download_files")
+def test_resolve_rpm_project_accepts_empty_arch(
+    mock_async_download_files: mock.Mock,
+    mock_from_filepath: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    lockfile_data: dict,
+    expected_components: int,
 ) -> None:
+    mock_from_filepath.return_value = mock.Mock(
+        to_component=mock.Mock(
+            return_value=Component(name="foo", version="1.0", purl="pkg:rpm/foo@1.0"),
+        ),
+    )
     with open(rooted_tmp_path.join_within_root("rpms.lock.yaml"), "w") as f:
         yaml.safe_dump(lockfile_data, f)
-    with pytest.raises(InvalidLockfileFormat):
-        _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
+    components = _resolve_rpm_project(rooted_tmp_path, rooted_tmp_path)
+    assert len(components) == expected_components
+    assert mock_async_download_files.call_count == len(lockfile_data["arches"])
 
 
 @mock.patch("hermeto.core.package_managers.rpm.main.run_cmd")

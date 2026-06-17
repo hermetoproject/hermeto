@@ -3,7 +3,7 @@ import logging
 import uuid
 from functools import cached_property
 
-from pydantic import BaseModel, PositiveInt, field_validator, model_validator
+from pydantic import BaseModel, PositiveInt, field_validator
 
 from hermeto import APP_NAME
 
@@ -32,13 +32,6 @@ class LockfileArch(BaseModel):
     packages: list[LockfilePackage] = []
     source: list[LockfilePackage] = []
     module_metadata: list[LockfileModuleMetadata] = []
-
-    @model_validator(mode="after")
-    def _arch_empty(self) -> "LockfileArch":
-        """Validate arch."""
-        if self.packages == [] and self.source == []:
-            raise ValueError("At least one field ('packages', 'source') must be set in every arch.")
-        return self
 
 
 class RedhatRpmsLock(BaseModel):
