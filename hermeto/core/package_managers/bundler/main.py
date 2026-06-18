@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -12,16 +13,17 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import BundlerBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
-from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.property_semantics import Property, PropertySet
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.bundler.parser import (
+    GemDependency,
     GemPlatformSpecificDependency,
     GitDependency,
     ParseResult,
     PathDependency,
     parse_lockfile,
 )
-from hermeto.core.package_managers.general import get_vcs_qualifiers
+from hermeto.core.package_managers.general import async_download_files, get_vcs_qualifiers
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 
@@ -97,18 +99,29 @@ def _resolve_bundler_package(
 
     components = [Component(name=name, version=version, purl=main_package_purl.to_string())]
     git_paths = []
+    files_to_download: dict[str, RootedPath] = {}
     for dep in dependencies:
-        dep.download_to(deps_dir)
-        if isinstance(dep, GemPlatformSpecificDependency):
-            properties = PropertySet(bundler_package_binary=True).to_properties()
-        else:
-            properties = []
-        if isinstance(dep, GitDependency):
-            git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12]))
+        properties: list[Property] = []
+        match dep:
+            case GemPlatformSpecificDependency():
+                files_to_download[dep.remote_location] = dep.download_location(deps_dir)
+                properties = PropertySet(bundler_package_binary=True).to_properties()
+            case GemDependency():
+                files_to_download[dep.remote_location] = dep.download_location(deps_dir)
+            case GitDependency():
+                dep.download_to(deps_dir)
+                git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12]))
 
         c = Component(name=dep.name, version=dep.version, purl=dep.purl, properties=properties)
         components.append(c)
 
+    if files_to_download:
+        asyncio.run(
+            async_download_files(
+                files_to_download=files_to_download,
+                concurrency_limit=get_config().runtime.concurrency_limit,
+            )
+        )
     return components, git_paths
 
 

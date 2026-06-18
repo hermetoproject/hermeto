@@ -12,7 +12,7 @@ from typing_extensions import Self
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo
-from hermeto.core.package_managers.general import download_binary_file, get_vcs_qualifiers
+from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
 
@@ -41,10 +41,6 @@ class _GemMetadata(pydantic.BaseModel):
     name: str
     version: str
 
-    def download_to(self, deps_dir: RootedPath) -> None:  # noqa: ARG002
-        """Download gem to the specified directory."""
-        return None
-
 
 class GemDependency(_GemMetadata):
     """
@@ -69,11 +65,9 @@ class GemDependency(_GemMetadata):
         """Return remote location to download this gem from."""
         return urljoin(self.source, f"downloads/{self.name}-{self.version}.gem")
 
-    def download_to(self, deps_dir: RootedPath) -> None:
-        """Download represented gem to specified file system location."""
-        fs_location = deps_dir.join_within_root(Path(f"{self.name}-{self.version}.gem"))
-        log.info("Downloading gem %s", self.name)
-        download_binary_file(self.remote_location, fs_location)
+    def download_location(self, deps_dir: RootedPath) -> RootedPath:
+        """Get the file system location of the gem."""
+        return deps_dir.join_within_root(Path(f"{self.name}-{self.version}.gem"))
 
 
 class GemPlatformSpecificDependency(GemDependency):
@@ -89,21 +83,15 @@ class GemPlatformSpecificDependency(GemDependency):
     @property
     def remote_location(self) -> str:
         """Return remote location to download this gem from."""
-        return urljoin(self.source, f"downloads/{self.name}-{self.version}-{self.platform}.gem")
-
-    def download_to(self, deps_dir: RootedPath) -> None:
-        """Download represented gem to specified file system location."""
-        fs_location = deps_dir.join_within_root(
-            Path(f"{self.name}-{self.version}-{self.platform}.gem")
-        )
-        log.info(
-            "Downloading platform-specific gem %s-%s-%s", self.name, self.version, self.platform
-        )
         # A combination of Ruby v.3.0.7 and some Bundler dependencies results in
         # -gnu suffix being dropped from some platforms. This was observed on
         # sqlite3-aarch-linux-gnu. We discourage using outdated platforms
         # for building dependencies and cnsider this to be a limitation of Ruby.
-        download_binary_file(self.remote_location, fs_location)
+        return urljoin(self.source, f"downloads/{self.name}-{self.version}-{self.platform}.gem")
+
+    def download_location(self, deps_dir: RootedPath) -> RootedPath:
+        """Get the file system location of the gem."""
+        return deps_dir.join_within_root(Path(f"{self.name}-{self.version}-{self.platform}.gem"))
 
 
 class GitDependency(_GemMetadata):

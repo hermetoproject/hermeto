@@ -195,53 +195,6 @@ def test_parse_gemlock_empty(
     assert result == []
 
 
-@pytest.mark.parametrize(
-    "source",
-    [
-        "https://rubygems.org",
-        "https://dedicatedprivategemrepo.com",
-    ],
-)
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.download_binary_file")
-def test_source_gem_dependencies_could_be_downloaded(
-    mock_downloader: mock.MagicMock,
-    rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
-    source: str,
-) -> None:
-    dependency = GemDependency(name="foo", version="0.0.2", source=source)
-    expected_source_url = f"{source}/downloads/foo-0.0.2.gem"
-    expected_destination = rooted_tmp_path.join_within_root("foo-0.0.2.gem")
-
-    dependency.download_to(rooted_tmp_path)
-
-    assert f"Downloading gem {dependency.name}" in caplog.messages
-    mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
-
-
-@mock.patch("hermeto.core.package_managers.bundler.gem_models.download_binary_file")
-def test_binary_gem_dependencies_could_be_downloaded(
-    mock_downloader: mock.MagicMock,
-    rooted_tmp_path: RootedPath,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    source = "https://rubygems.org/"
-    platform = "m6502_wm"
-    dependency = GemPlatformSpecificDependency(
-        name="foo",
-        version="0.0.2",
-        source=source,
-        platform=platform,
-    )
-    expected_source_url = f"{source}downloads/foo-0.0.2-{platform}.gem"
-    expected_destination = rooted_tmp_path.join_within_root(f"foo-0.0.2-{platform}.gem")
-
-    dependency.download_to(rooted_tmp_path)
-
-    assert some_message_contains_substring("Downloading platform-specific gem", caplog.messages)
-    mock_downloader.assert_called_once_with(expected_source_url, expected_destination)
-
-
 @mock.patch("hermeto.core.package_managers.bundler.gem_models.GitRepo.clone_from")
 def test_download_git_dependency_works(
     mock_git_clone: mock.Mock,
