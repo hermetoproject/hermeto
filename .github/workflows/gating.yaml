@@ -29,7 +29,7 @@ jobs:
 
           pip install --upgrade pip nox
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -62,7 +62,7 @@ jobs:
           apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
           pip install --upgrade pip nox
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
     name: Hadolint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: tj-actions/changed-files@v47
@@ -128,7 +128,7 @@ jobs:
           /var/tmp/venv/bin/pip3 install --upgrade pip nox podman-compose requests typer tenacity
 
       - name: add checkout action...
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

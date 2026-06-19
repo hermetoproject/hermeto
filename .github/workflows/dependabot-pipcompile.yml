@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: apk update && apk add --no-cache git
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
