@@ -667,13 +667,9 @@ def _check_metadata_in_sdist(sdist_path: Path) -> None:
                 ),
             )
     except tarfile.ReadError as e:
-        raise PackageRejected(
-            f"Cannot open {sdist_path} as a Tar file. Error: {str(e)}", solution=None
-        )
+        raise PackageRejected(f"Cannot open {sdist_path} as a Tar file. Error: {e}")
     except zipfile.BadZipFile as e:
-        raise PackageRejected(
-            f"Cannot open {sdist_path} as a Zip file. Error: {str(e)}", solution=None
-        )
+        raise PackageRejected(f"Cannot open {sdist_path} as a Zip file. Error: {e}")
 
 
 def _replace_external_requirements(requirements_file_path: RootedPath) -> ProjectFile | None:

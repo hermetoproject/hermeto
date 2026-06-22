@@ -63,9 +63,7 @@ def test_fetch_yarn_source_propagates_yarn_classic_error(
     mock_yarnberry_fetch_source: mock.Mock,
     input_request: Request,
 ) -> None:
-    mock_yarnclassic_fetch_source.side_effect = PackageRejected(
-        "this is a very bad package!", solution=None
-    )
+    mock_yarnclassic_fetch_source.side_effect = PackageRejected("this is a very bad package!")
 
     with pytest.raises(PackageRejected):
         _ = fetch_yarn_source(input_request)
@@ -87,9 +85,7 @@ def test_fetch_yarn_source_propagates_yarnberry_error(
     input_request: Request,
 ) -> None:
     mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/some/path")
-    mock_yarnberry_fetch_source.side_effect = PackageRejected(
-        "this is a very bad package!", solution=None
-    )
+    mock_yarnberry_fetch_source.side_effect = PackageRejected("this is a very bad package!")
 
     with pytest.raises(PackageRejected):
         _ = fetch_yarn_source(input_request)

@@ -32,7 +32,7 @@ def test_generate_sbom_components_in_strict_mode_without_git_repo(
 ) -> None:
     mock_get_config.return_value = mock.Mock()
     mock_get_config.return_value.mode = Mode.STRICT
-    mock_get_vcs_qualifiers.side_effect = NotAGitRepo("", solution=None)
+    mock_get_vcs_qualifiers.side_effect = NotAGitRepo("")
 
     with pytest.raises(NotAGitRepo):
         generate_sbom_components(rooted_tmp_path, [], mock.Mock())

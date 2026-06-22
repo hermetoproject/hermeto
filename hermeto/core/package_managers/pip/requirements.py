@@ -649,7 +649,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     "URL for requirement does not contain any recognized file extension: "
                     f"{req.download_line} (expected one of {', '.join(ALL_FILE_EXTENSIONS)})"
                 )
-                raise UnrecognizedFileExtension(msg, solution=None)
+                raise UnrecognizedFileExtension(msg)
 
 
 def validate_requirements_hashes(requirements: list[PipRequirement], require_hashes: bool) -> None:

@@ -355,10 +355,7 @@ class SetupCFG(SetupFile):
             # Relative import (supported only to the extent that one leading '.' is ignored)
             parts.pop(0)
         if not all(self._name_re.fullmatch(part) for part in parts):
-            raise PackageRejected(
-                f"{module_name!r} is not an accepted module name",
-                solution=None,
-            )
+            raise PackageRejected(f"{module_name!r} is not an accepted module name")
         return Path(*parts)
 
     def _get_package_dirs(self) -> dict[str, str] | None:

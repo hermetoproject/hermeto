@@ -51,7 +51,7 @@ class NotV1Lockfile(PackageRejected):
     def __init__(self, package_path: Any) -> None:
         """Initialize a Missing Lockfile error."""
         reason = f"{package_path} not a Yarn v1"
-        super().__init__(reason, solution=None)
+        super().__init__(reason)
 
 
 def fetch_yarn_source(request: Request) -> RequestOutput:

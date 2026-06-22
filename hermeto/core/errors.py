@@ -160,16 +160,6 @@ class PackageRejected(UsageError):
 
     _exit_error: ClassVar[ExitError] = ExitError.ERR_PACKAGE_REJECTED
 
-    def __init__(self, reason: str, *, solution: str | None) -> None:
-        """Initialize a Package Rejected error.
-
-        Compared to the parent class, the solution param is required (but can be explicitly None).
-
-        :param reason: explain why we rejected the package
-        :param solution: politely suggest a potential solution to the user
-        """
-        super().__init__(reason, solution=solution)
-
 
 class UnpinnedPackage(PackageRejected):
     """A package requirement is not pinned to an exact version."""

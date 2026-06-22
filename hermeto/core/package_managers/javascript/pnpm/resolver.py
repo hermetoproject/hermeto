@@ -137,7 +137,7 @@ def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, st
     name = package_json.get("name")
     version = package_json.get("version")
     if name is None:
-        raise PackageRejected(f"Missing 'name' field in the {package_json.path}", solution=None)
+        raise PackageRejected(f"Missing 'name' field in the {package_json.path}")
 
     subpath = str(project_dir.subpath_from_root)
     purl = PackageURL(

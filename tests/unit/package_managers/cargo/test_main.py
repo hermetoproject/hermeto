@@ -327,7 +327,7 @@ def test_generate_sbom_components_permissive_no_git_vcs_url_is_none(
 ) -> None:
     """PERMISSIVE mode + NotAGitRepo: no exception raised and vcs_url absent from PURL."""
     mock_get_config.return_value.mode = Mode.PERMISSIVE
-    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo", solution=None)
+    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo")
 
     write_cargo_toml(rooted_tmp_path, _MINIMAL_CARGO_TOML)
     write_cargo_lock(rooted_tmp_path, _MINIMAL_CARGO_LOCK)
@@ -376,7 +376,7 @@ def test_generate_sbom_components_strict_source_inside_output_no_git_no_raise(
 ) -> None:
     """STRICT mode + source_dir inside output_dir + NotAGitRepo: short-circuit suppresses error."""
     mock_get_config.return_value.mode = Mode.STRICT
-    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo", solution=None)
+    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo")
 
     # Place cargo files inside a subdirectory of the output dir to trigger the short-circuit.
     output_dir = rooted_tmp_path.path / "output"
@@ -410,7 +410,7 @@ def test_generate_sbom_components_strict_mode_raises_without_git_repo(
 ) -> None:
     """STRICT mode + NotAGitRepo + source NOT inside output_dir: exception propagates."""
     mock_get_config.return_value.mode = Mode.STRICT
-    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo", solution=None)
+    mock_get_repo_id.side_effect = NotAGitRepo("not a git repo")
 
     write_cargo_toml(rooted_tmp_path, _MINIMAL_CARGO_TOML)
     write_cargo_lock(rooted_tmp_path, _MINIMAL_CARGO_LOCK)

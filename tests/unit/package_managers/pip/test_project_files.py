@@ -765,7 +765,7 @@ class TestSetupCFG:
                     "Resolving metadata.version in setup.cfg from 'attr: ..module.__ver__'",
                     "Attempting to find attribute '__ver__' in '..module'",
                 ],
-                PackageRejected("", solution=None),
+                PackageRejected(""),
             ),
             (
                 {
@@ -781,7 +781,7 @@ class TestSetupCFG:
                     "Resolving metadata.version in setup.cfg from 'attr: /root.module.__ver__'",
                     "Attempting to find attribute '__ver__' in '/root.module'",
                 ],
-                PackageRejected("", solution=None),
+                PackageRejected(""),
             ),
         ],
     )
