@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import logging
 from collections import deque
 
+import yaml
 from packageurl import PackageURL
 
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
-from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo, PackageRejected
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    NotAGitRepo,
+    PackageRejected,
+)
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
@@ -19,10 +26,16 @@ from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
+from hermeto.core.package_managers.javascript.yarn_classic.workspaces import (
+    ensure_no_path_leads_out,
+    get_workspace_paths,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import first_for
 
 JSR_REGISTRY_URL = "https://npm.jsr.io"
+
+log = logging.getLogger(__name__)
 
 
 def generate_sbom_components(
@@ -40,6 +53,7 @@ def generate_sbom_components(
 
     return [
         _create_root_component(project_dir, vcs_qualifiers),
+        *_create_workspace_components(project_dir, vcs_qualifiers),
         *_create_dependency_components(packages, vcs_qualifiers, lockfile),
     ]
 
@@ -143,6 +157,59 @@ def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, st
         subpath=subpath,
     )
     return Component(name=name, version=version, purl=purl.to_string())
+
+
+def _create_workspace_components(
+    project_dir: RootedPath, vcs_qualifiers: dict[str, str]
+) -> list[Component]:
+    components = []
+
+    workspaces_globs = _read_workspace_globs(project_dir)
+    workspace_paths = get_workspace_paths(workspaces_globs, project_dir)
+    ensure_no_path_leads_out(workspace_paths, project_dir)
+
+    log.debug("Found %d workspaces", len(workspace_paths))
+
+    for workspace_path in workspace_paths:
+        try:
+            package_json = PackageJson.from_dir(workspace_path)
+        except LockfileNotFound:
+            log.warning(
+                "The workspace %s does not contain a package.json file and will be ignored",
+                workspace_path,
+            )
+            continue
+
+        name = package_json.get("name")
+        version = package_json.get("version")
+        if name is None:
+            raise PackageRejected(f"Missing 'name' field in the {package_json.path}")
+
+        subpath = str(project_dir.join_within_root(workspace_path).subpath_from_root)
+        purl = PackageURL(
+            type="npm",
+            name=name,
+            version=version,
+            qualifiers=vcs_qualifiers,
+            subpath=subpath,
+        )
+        components.append(Component(name=name, version=version, purl=purl.to_string()))
+
+    return components
+
+
+def _read_workspace_globs(project_dir: RootedPath) -> list[str]:
+    pnpm_workspace_path = project_dir.path / "pnpm-workspace.yaml"
+    if not pnpm_workspace_path.exists():
+        return []
+
+    try:
+        with pnpm_workspace_path.open() as f:
+            pnpm_workspace = yaml.safe_load(f)
+    except yaml.YAMLError:
+        raise PackageRejected(f"The {pnpm_workspace_path} file must contain valid YAML.")
+
+    return pnpm_workspace.get("packages", [])
 
 
 def _find_non_dev_dependencies(lockfile: PnpmLock) -> set[str]:

@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from hermeto.core.constants import Mode
-from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo
+from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo, PackageRejected
 from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
@@ -14,9 +14,11 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
     JSR_REGISTRY_URL,
     _create_dependency_components,
     _create_root_component,
+    _create_workspace_components,
     _find_non_dev_dependencies,
     _generate_pedigree_for,
     _generate_purl_for,
+    _read_workspace_globs,
     generate_sbom_components,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -234,6 +236,60 @@ def test_create_root_component(rooted_tmp_path: RootedPath, name: str, expected_
     component = _create_root_component(subproject, VCS_QUALIFIERS)
 
     assert component.purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    ("project_relpath", "expected_subpath"),
+    [
+        pytest.param(".", "packages/w", id="project_at_repo_root"),
+        pytest.param("ui/frontend", "ui/frontend/packages/w", id="nested_project_path"),
+    ],
+)
+@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_workspace_paths")
+def test_create_workspace_components(
+    mock_get_workspace_paths: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    project_relpath: str,
+    expected_subpath: str,
+) -> None:
+    project_dir = rooted_tmp_path.join_within_root(project_relpath)
+    project_dir.path.mkdir(parents=True, exist_ok=True)
+
+    w = project_dir.path.joinpath("packages", "w")
+    w.mkdir(parents=True)
+    w.joinpath("package.json").write_text(json.dumps({"name": "hermelean", "version": "1.0.0"}))
+
+    mock_get_workspace_paths.return_value = [w]
+
+    components = _create_workspace_components(project_dir, VCS_QUALIFIERS)
+    assert len(components) == 1
+
+    assert components[0].name == "hermelean"
+    assert components[0].version == "1.0.0"
+    assert (
+        components[0].purl
+        == f"pkg:npm/hermelean@1.0.0?vcs_url={ENQUOTED_VCS_URL}#{expected_subpath}"
+    )
+
+
+@mock.patch("hermeto.core.package_managers.javascript.pnpm.resolver.get_workspace_paths")
+def test_create_workspace_components_without_package_json(
+    mock_get_workspace_paths: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    w = rooted_tmp_path.path.joinpath("packages", "w")
+    w.mkdir(parents=True)
+
+    mock_get_workspace_paths.return_value = [w]
+    assert _create_workspace_components(rooted_tmp_path, {}) == []
+
+
+def test_read_workspace_globs_rejects_invalid_yaml(rooted_tmp_path: RootedPath) -> None:
+    pnpm_workspace_path = rooted_tmp_path.path.joinpath("pnpm-workspace.yaml")
+    pnpm_workspace_path.write_text(":")
+
+    with pytest.raises(PackageRejected):
+        _read_workspace_globs(rooted_tmp_path)
 
 
 def test_find_non_dev_dependencies(tmp_path: Path) -> None:
