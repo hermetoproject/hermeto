@@ -77,7 +77,6 @@ class ErrorRegistryMeta(type):
 class BaseError(Exception, metaclass=ErrorRegistryMeta):
     """Root of the error hierarchy. Don't raise this directly, use more specific error types."""
 
-    is_invalid_usage: ClassVar[bool] = False
     _exit_error: ClassVar[ExitError] = ExitError.ERR_BASE
     default_solution: ClassVar[str | None] = None
 
@@ -114,7 +113,6 @@ class BaseError(Exception, metaclass=ErrorRegistryMeta):
 class UsageError(BaseError):
     """Generic error for "Hermeto was used incorrectly." Prefer more specific errors."""
 
-    is_invalid_usage: ClassVar[bool] = True
     _exit_error: ClassVar[ExitError] = ExitError.ERR_USAGE
 
 
