@@ -125,3 +125,33 @@ def test_workspace_paths_could_be_resolved(
     result = list(get_workspace_paths(["foo"], package_path))
 
     assert result == [workspace_path.path]
+
+
+@pytest.mark.parametrize(
+    "asterisks",
+    [
+        pytest.param("*", id="single_asterisk"),
+        pytest.param("**", id="double_asterisk"),
+    ],
+)
+def test_get_workspace_paths_with_globs(
+    rooted_tmp_path: RootedPath,
+    asterisks: str,
+) -> None:
+    packages = rooted_tmp_path.path.joinpath("packages")
+    packages.mkdir(parents=True)
+
+    w1 = packages.joinpath("w1")
+    w1.mkdir(parents=True)
+
+    w2 = packages.joinpath("w2")
+    w2.mkdir(parents=True)
+
+    globs = [f"packages/{asterisks}"]
+
+    expected = {w1, w2}
+    # Two asterisks means include the packages directory itself.
+    if asterisks == "**":
+        expected.add(packages)
+
+    assert set(get_workspace_paths(globs, rooted_tmp_path)) == expected
