@@ -1,0 +1,258 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:generic/pnpm-11.9.0.tgz?checksum=sha256:2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287&download_url=https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz"
+      ],
+      "text": "hermeto:backend:generic",
+      "timestamp": "2025-01-01T00:00:00Z"
+    },
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:npm/%40hono/hono@4.12.23?repository_url=https://npm.jsr.io",
+        "pkg:npm/%40hono/zod-validator@0.8.0?repository_url=https://npm.jsr.io",
+        "pkg:npm/%40sinclair/typebox@0.34.49",
+        "pkg:npm/debug@4.4.3?download_url=https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621",
+        "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
+        "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+        "pkg:npm/moment@2.30.1",
+        "pkg:npm/ms@2.1.3",
+        "pkg:npm/picocolors@1.1.1",
+        "pkg:npm/semver@7.8.1?download_url=https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
+        "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+        "pkg:npm/uuid@14.0.0",
+        "pkg:npm/zod@4.4.3"
+      ],
+      "text": "hermeto:backend:experimental:x-pnpm",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:generic/pnpm-11.9.0.tgz?checksum=sha256:2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287&download_url=https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz",
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz"
+        }
+      ],
+      "name": "pnpm-11.9.0.tgz",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:generic/pnpm-11.9.0.tgz?checksum=sha256:2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287&download_url=https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz",
+      "type": "file"
+    },
+    {
+      "bom-ref": "pkg:npm/%40hono/hono@4.12.23?repository_url=https://npm.jsr.io",
+      "name": "hono",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/%40hono/hono@4.12.23?repository_url=https://npm.jsr.io",
+      "type": "library",
+      "version": "4.12.23"
+    },
+    {
+      "bom-ref": "pkg:npm/%40hono/zod-validator@0.8.0?repository_url=https://npm.jsr.io",
+      "name": "zod-validator",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/%40hono/zod-validator@0.8.0?repository_url=https://npm.jsr.io",
+      "type": "library",
+      "version": "0.8.0"
+    },
+    {
+      "bom-ref": "pkg:npm/%40sinclair/typebox@0.34.49",
+      "name": "typebox",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/%40sinclair/typebox@0.34.49",
+      "type": "library",
+      "version": "0.34.49"
+    },
+    {
+      "bom-ref": "pkg:npm/debug@4.4.3?download_url=https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621",
+      "name": "debug",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/debug@4.4.3?download_url=https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621",
+      "type": "library",
+      "version": "4.4.3"
+    },
+    {
+      "bom-ref": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
+      "name": "integration-tests",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+      "name": "lodash",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+      "type": "library",
+      "version": "4.18.1"
+    },
+    {
+      "bom-ref": "pkg:npm/moment@2.30.1",
+      "name": "moment",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/moment@2.30.1",
+      "type": "library",
+      "version": "2.30.1"
+    },
+    {
+      "bom-ref": "pkg:npm/ms@2.1.3",
+      "name": "ms",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "type": "library",
+      "version": "2.1.3"
+    },
+    {
+      "bom-ref": "pkg:npm/picocolors@1.1.1",
+      "name": "picocolors",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/picocolors@1.1.1",
+      "type": "library",
+      "version": "1.1.1"
+    },
+    {
+      "bom-ref": "pkg:npm/semver@7.8.1?download_url=https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
+      "name": "semver",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/semver@7.8.1?download_url=https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
+      "type": "library",
+      "version": "7.8.1"
+    },
+    {
+      "bom-ref": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+      "name": "ui",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/uuid@14.0.0",
+      "name": "uuid",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/uuid@14.0.0",
+      "type": "library",
+      "version": "14.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/zod@4.4.3",
+      "name": "zod",
+      "pedigree": {
+        "patches": [
+          {
+            "diff": {
+              "url": "git+https://github.com/hermetoproject/integration-tests.git@efbc5cd2ef474fca49304a77749b84198638a4e5#patches/zod@4.4.3.patch"
+            },
+            "type": "unofficial"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/zod@4.4.3",
+      "type": "library",
+      "version": "4.4.3"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

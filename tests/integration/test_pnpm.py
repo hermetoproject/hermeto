@@ -17,7 +17,16 @@ from . import utils
             [],
             [],
             id="pnpm_e2e_v10",
-        )
+        ),
+        pytest.param(
+            utils.TestParameters(
+                branch="pnpm/e2e-v11",
+                packages=({"type": "generic"}, {"type": "x-pnpm"}),
+            ),
+            [],
+            [],
+            id="pnpm_e2e_v11",
+        ),
     ],
 )
 def test_e2e_pnpm(
