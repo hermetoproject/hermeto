@@ -1,4 +1,6 @@
-environment_variables: []
+environment_variables:
+- name: PNPM_CONFIG_TRUST_LOCKFILE
+  value: 'true'
 project_files:
 - abspath: ${test_case_tmp_path}/.npmrc
   template: |

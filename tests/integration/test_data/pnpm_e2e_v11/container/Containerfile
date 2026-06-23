@@ -7,4 +7,4 @@ RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
 RUN npm install -g /tmp/hermeto-output/deps/generic/pnpm-11.9.0.tgz
 
 WORKDIR /src
-RUN pnpm install
+RUN . /tmp/hermeto.env && pnpm install

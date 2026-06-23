@@ -10,7 +10,13 @@ import yaml
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
+from hermeto.core.models.output import (
+    Annotation,
+    Component,
+    EnvironmentVariable,
+    ProjectFile,
+    RequestOutput,
+)
 from hermeto.core.models.sbom import create_backend_annotation
 from hermeto.core.package_managers.javascript.npm import (
     NPM_REGISTRY_URL,
@@ -54,6 +60,10 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
 
     return RequestOutput.from_obj_list(
         components=components,
+        # https://pnpm.io/blog/releases/11.3#trustlockfile
+        environment_variables=[
+            EnvironmentVariable(name="PNPM_CONFIG_TRUST_LOCKFILE", value="true"),
+        ],
         project_files=project_files,
         annotations=annotations,
     )
