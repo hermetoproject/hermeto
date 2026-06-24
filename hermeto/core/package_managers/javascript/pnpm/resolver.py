@@ -23,17 +23,18 @@ from hermeto.core.models.sbom import (
     Pedigree,
 )
 from hermeto.core.package_managers.general import get_vcs_qualifiers
-from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.package_json import PackageJson
-from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
+from hermeto.core.package_managers.javascript.pnpm.project import (
+    JSR_REGISTRY_URL,
+    PnpmLock,
+    PnpmPackage,
+)
 from hermeto.core.package_managers.javascript.yarn_classic.workspaces import (
     ensure_no_path_leads_out,
     get_workspace_paths,
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import first_for
-
-JSR_REGISTRY_URL = "https://npm.jsr.io"
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ def _create_dependency_components(
 
     components = []
     for package in packages:
-        if package.url.startswith(NPM_REGISTRY_URL) and proxy_url is not None:
+        if package.is_from_npm_registry and proxy_url is not None:
             external_references = [ExternalReference(url=str(proxy_url), comment=PROXY_COMMENT)]
         else:
             external_references = None
@@ -100,10 +101,10 @@ def _generate_purl_for(package: PnpmPackage, vcs_qualifiers: dict[str, str]) -> 
         subpath = package.url.removeprefix("file:")
         qualifiers.update(vcs_qualifiers)
 
-    elif package.url.startswith(JSR_REGISTRY_URL):
+    elif package.is_from_jsr_registry:
         qualifiers["repository_url"] = JSR_REGISTRY_URL
 
-    elif not package.url.startswith(NPM_REGISTRY_URL):
+    elif not package.is_from_npm_registry:
         qualifiers["download_url"] = package.url
 
     return PackageURL(

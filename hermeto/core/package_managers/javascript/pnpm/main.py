@@ -19,7 +19,6 @@ from hermeto.core.models.output import (
 )
 from hermeto.core.models.sbom import create_backend_annotation
 from hermeto.core.package_managers.javascript.npm import (
-    NPM_REGISTRY_URL,
     async_download_with_auth,
     patch_url_to_point_to_proxy,
 )
@@ -28,10 +27,7 @@ from hermeto.core.package_managers.javascript.pnpm.project import (
     PnpmPackage,
     parse_packages,
 )
-from hermeto.core.package_managers.javascript.pnpm.resolver import (
-    JSR_REGISTRY_URL,
-    generate_sbom_components,
-)
+from hermeto.core.package_managers.javascript.pnpm.resolver import generate_sbom_components
 
 log = logging.getLogger(__name__)
 
@@ -97,7 +93,7 @@ def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> 
         tarball_path.parent.mkdir(parents=True, exist_ok=True)
 
         # non-registry packages, or no proxy is configured
-        if not package.url.startswith(NPM_REGISTRY_URL) or proxy_url is None:
+        if not package.is_from_npm_registry or proxy_url is None:
             files_without_auth[package.url] = tarball_path
             continue
 
@@ -131,7 +127,7 @@ def _prepare_lockfile_for_hermetic_build(
     for package in packages:
         data = lockfile_copy.packages[package.id]
         resolution = data.setdefault("resolution", {})
-        if package.url.startswith(NPM_REGISTRY_URL) or package.url.startswith(JSR_REGISTRY_URL):
+        if package.is_from_npm_registry or package.is_from_jsr_registry:
             resolution["tarball"] = package.tarball_filename
         else:
             resolution["tarball"] = f"file://${{output_dir}}/deps/pnpm/{package.tarball_filename}"
@@ -158,9 +154,9 @@ def _prepare_npmrc_for_hermetic_build(project_dir: Path) -> ProjectFile:
 
 
 def _mirror_tarball_path(deps_dir: Path, package: PnpmPackage) -> Path:
-    if package.url.startswith(NPM_REGISTRY_URL):
+    if package.is_from_npm_registry:
         deps_dir = deps_dir / "npm"
-    elif package.url.startswith(JSR_REGISTRY_URL):
+    elif package.is_from_jsr_registry:
         deps_dir = deps_dir / "jsr"
 
     return deps_dir / package.tarball_filename

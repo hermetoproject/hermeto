@@ -10,6 +10,7 @@ from semver import Version
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 
+JSR_REGISTRY_URL = "https://npm.jsr.io"
 JSR_REGISTRY_PREFIX = "@jsr/"
 
 
@@ -116,6 +117,16 @@ class PnpmPackage:
             return f"{self.scope}-{self.name}-{self.version}.tgz"
 
         return f"{self.name}-{self.version}.tgz"
+
+    @property
+    def is_from_npm_registry(self) -> bool:
+        """Return True if the package is from the npm registry."""
+        return self.url.startswith(NPM_REGISTRY_URL)
+
+    @property
+    def is_from_jsr_registry(self) -> bool:
+        """Return True if the package is from the JSR registry."""
+        return self.url.startswith(JSR_REGISTRY_URL)
 
 
 def _ensure_lockfile_version_is_supported(lockfile: PnpmLock) -> None:
