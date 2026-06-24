@@ -38,7 +38,7 @@ the `artifacts.lock.yaml` file yourself.
 
 - **Go**: gomod
 - **Java**: maven (experimental)
-- **JavaScript**: npm, yarn (classic and berry), pnpm (experimental)
+- **JavaScript**: npm, pnpm, yarn (classic and berry)
 - **Python**: pip
 - **Ruby**: bundler
 - **Rust**: cargo
