@@ -138,16 +138,34 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
     """SSL options model.
 
     Defines extra options fields for client TLS authentication.
+
+    Mandates that if defined then both client_cert and client_key must be files on the
+    file system. When the files are present an object could be instantiated like this:
+
+    >>> SSLOptions(client_cert=Path("/tmp/foo"), client_key=Path("/tmp/bar"))  # doctest: +SKIP
+    SSLOptions(client_cert=PosixPath('/tmp/foo'), client_key=PosixPath('/tmp/bar'), ca_bundle=None, ssl_verify=True)
+
+    or like this:
+
+    >>> SSLOptions(client_cert="/tmp/foo", client_key="/tmp/bar")  # doctest: +SKIP
+    SSLOptions(client_cert=PosixPath('/tmp/foo'), client_key=PosixPath('/tmp/bar'), ca_bundle=None, ssl_verify=True)
+
+    When any file is missing:
+    >>> SSLOptions(client_cert="/tmp/foo", client_key="/tmp/bar")  # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+        ...
+    pydantic_core._pydantic_core.ValidationError: 1 validation error for SSLOptions
+
     """
 
-    client_cert: str | None = None
-    client_key: str | None = None
-    ca_bundle: str | None = None
+    client_cert: Path | None = None
+    client_key: Path | None = None
+    ca_bundle: Path | None = None
     ssl_verify: bool = True
 
     @pydantic.field_validator("client_key", "client_cert", "ca_bundle")
     @classmethod
-    def _validate_auth_file_paths(cls, val: str, info: pydantic.ValidationInfo) -> str | None:
+    def _validate_auth_file_paths(cls, val: Path, info: pydantic.ValidationInfo) -> Path | None:
         if val is None:
             return val
 
