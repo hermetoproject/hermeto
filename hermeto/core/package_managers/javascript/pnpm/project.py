@@ -63,21 +63,22 @@ class PnpmLock(UserDict):
         return self.get("snapshots", {})
 
     @property
-    def root_dependencies(self) -> list[str]:
-        """Return the root dependencies from the pnpm-lock.yaml file."""
+    def direct_dependencies(self) -> list[str]:
+        """Return the direct dependencies from the pnpm-lock.yaml file."""
         importers: dict[str, dict[str, Any]] = self.get("importers", {})
-        root_importer = importers.get(".", {})
-        dependencies = root_importer.get("dependencies", {})
-        optional = root_importer.get("optionalDependencies", {})
 
         ids = []
-        for name, data in {**dependencies, **optional}.items():
-            version = data["version"]
-            # For JSR dependencies, version is not a semver, it's the full lockfile package ID.
-            if version.startswith(JSR_REGISTRY_PREFIX):
-                ids.append(version)
-            else:
-                ids.append(f"{name}@{version}")
+        for importer in importers.values():
+            dependencies = importer.get("dependencies", {})
+            optional = importer.get("optionalDependencies", {})
+
+            for name, data in {**dependencies, **optional}.items():
+                version = data["version"]
+                # For JSR dependencies, version is not a semver, it's the full lockfile package ID.
+                if version.startswith(JSR_REGISTRY_PREFIX):
+                    ids.append(version)
+                else:
+                    ids.append(f"{name}@{version}")
 
         return ids
 

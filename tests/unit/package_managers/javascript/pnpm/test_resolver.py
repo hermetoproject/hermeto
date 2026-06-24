@@ -315,8 +315,17 @@ def test_find_non_dev_dependencies(tmp_path: Path) -> None:
                         "optional-dep": {"specifier": "~2.3.3", "version": "2.3.3"},
                     },
                 },
+                "another-importer": {
+                    "dependencies": {
+                        "workspace-runtime-dep": {
+                            "specifier": "^2.30.1",
+                            "version": "2.30.1",
+                        },
+                    },
+                },
             },
             "snapshots": {
+                "workspace-runtime-dep@2.30.1": {},
                 "runtime-dep@1.7.9": {
                     "dependencies": {
                         "transitive-dep-with-peers": "4.4.3(peer-dep@1.1.0)",
@@ -350,5 +359,6 @@ def test_find_non_dev_dependencies(tmp_path: Path) -> None:
         "transitive-runtime-dep-c@3.0.0",
         "shared-dep@7.6.3",
         "optional-dep@2.3.3",
+        "workspace-runtime-dep@2.30.1",
     }
     assert _find_non_dev_dependencies(lockfile) == expected

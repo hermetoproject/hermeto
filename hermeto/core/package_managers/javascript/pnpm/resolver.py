@@ -219,7 +219,7 @@ def _find_non_dev_dependencies(lockfile: PnpmLock) -> set[str]:
     If a dependency is found as a runtime dependency and also as a development dependency,
     it is classified as runtime dependency.
     """
-    seen = set(lockfile.root_dependencies)
+    seen = set(lockfile.direct_dependencies)
     queue = deque(seen)
 
     while queue:

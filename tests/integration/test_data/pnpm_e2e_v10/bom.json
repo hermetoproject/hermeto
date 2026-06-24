@@ -144,10 +144,6 @@
       "name": "moment",
       "properties": [
         {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
