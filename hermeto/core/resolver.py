@@ -29,7 +29,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "x-maven": maven.fetch_maven_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
-    "x-pnpm": pnpm.fetch_pnpm_source,
+    "pnpm": pnpm.fetch_pnpm_source,
     "yarn": metayarn.fetch_yarn_source,
     "generic": generic.fetch_generic_source,
     "rpm": rpm.fetch_rpm_source,

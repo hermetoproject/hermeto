@@ -108,12 +108,12 @@ PackageManagerType = Literal[
     "gomod",
     "npm",
     "pip",
+    "pnpm",
     "rpm",
     "yarn",
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
     "x-maven",
-    "x-pnpm",
 ]
 
 
@@ -342,7 +342,7 @@ class PipPackageInput(_PackageInputBase):
 class PnpmPackageInput(_PackageInputBase):
     """Accepted input for a pnpm package."""
 
-    type: Literal["x-pnpm"]
+    type: Literal["pnpm"]
 
 
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):

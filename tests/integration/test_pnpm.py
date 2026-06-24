@@ -12,7 +12,7 @@ from . import utils
         pytest.param(
             utils.TestParameters(
                 branch="pnpm/e2e-v10",
-                packages=({"type": "generic"}, {"type": "x-pnpm"}),
+                packages=({"type": "generic"}, {"type": "pnpm"}),
             ),
             [],
             [],
@@ -21,7 +21,7 @@ from . import utils
         pytest.param(
             utils.TestParameters(
                 branch="pnpm/e2e-v11",
-                packages=({"type": "generic"}, {"type": "x-pnpm"}),
+                packages=({"type": "generic"}, {"type": "pnpm"}),
             ),
             [],
             [],

@@ -33,7 +33,7 @@
         "pkg:npm/uuid@14.0.0",
         "pkg:npm/zod@4.4.3"
       ],
-      "text": "hermeto:backend:experimental:x-pnpm",
+      "text": "hermeto:backend:pnpm",
       "timestamp": "2025-01-01T00:00:00Z"
     }
   ],

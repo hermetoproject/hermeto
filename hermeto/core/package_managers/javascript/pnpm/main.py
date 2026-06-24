@@ -51,7 +51,7 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
         project_files.append(_prepare_npmrc_for_hermetic_build(project_dir.path))
         components.extend(generate_sbom_components(project_dir, packages, lockfile))
 
-    if backend_annotation := create_backend_annotation(components, "x-pnpm"):
+    if backend_annotation := create_backend_annotation(components, "pnpm"):
         annotations.append(backend_annotation)
 
     return RequestOutput.from_obj_list(
