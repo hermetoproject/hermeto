@@ -46,7 +46,6 @@ jobs:
             --generate-hashes \
             --output-file=requirements.txt \
             --python=3.10 \
-            --refresh \
             --no-strip-markers \
             pyproject.toml
           uv pip compile \
@@ -54,7 +53,6 @@ jobs:
             --generate-hashes \
             --output-file=requirements-extras.txt \
             --python=3.10 \
-            --refresh \
             --no-strip-markers \
             pyproject.toml
           {
