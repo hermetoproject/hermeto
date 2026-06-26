@@ -964,87 +964,58 @@ class TestDefaultIndexUrl:
     Precedence: requirements.txt --index-url > JSON default_index_url > PyPI default.
     """
 
+    @pytest.mark.parametrize(
+        "options, default_index_url, expected_index_url",
+        [
+            pytest.param(
+                [],
+                CUSTOM_PYPI_ENDPOINT,
+                CUSTOM_PYPI_ENDPOINT,
+                id="json_default_used_when_no_req_file_index",
+            ),
+            pytest.param(
+                ["-i", "https://req-file-index.example.com/simple/"],
+                CUSTOM_PYPI_ENDPOINT,
+                "https://req-file-index.example.com/simple/",
+                id="req_file_index_wins_over_json_default",
+            ),
+            pytest.param(
+                ["-i", "https://req-file-index.example.com/simple/"],
+                None,
+                "https://req-file-index.example.com/simple/",
+                id="req_file_index_used_when_no_json_default",
+            ),
+            pytest.param(
+                [],
+                None,
+                None,
+                id="pypi_default_used_when_no_index_provided",
+            ),
+        ],
+    )
     @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
-    def test_json_default_used_when_no_req_file_index(
+    def test_index_url_precedence(
         self,
         mock_resolve: mock.Mock,
+        options: list[str],
+        default_index_url: str | None,
+        expected_index_url: str | None,
         rooted_tmp_path: RootedPath,
     ) -> None:
-        """JSON default_index_url is used when requirements file has no --index-url."""
-        mock_resolve.return_value = []
-        req = mock_requirement("foo", "pypi")
-        req_file = mock_requirements_file(requirements=[req], options=[])
-
-        pip._download_dependencies(
-            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
-        )
-
-        mock_resolve.assert_called_once()
-        call_args = mock_resolve.call_args
-        assert call_args[0][4] == CUSTOM_PYPI_ENDPOINT
-
-    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
-    def test_req_file_index_wins_over_json_default(
-        self,
-        mock_resolve: mock.Mock,
-        rooted_tmp_path: RootedPath,
-    ) -> None:
-        """Requirements file --index-url wins over JSON default_index_url."""
-        mock_resolve.return_value = []
-        req = mock_requirement("foo", "pypi")
-        req_file_index = "https://req-file-index.example.com/simple/"
-        req_file = mock_requirements_file(
-            requirements=[req],
-            options=["-i", req_file_index],
-        )
-
-        pip._download_dependencies(
-            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
-        )
-
-        mock_resolve.assert_called_once()
-        call_args = mock_resolve.call_args
-        assert call_args[0][4] == req_file_index
-
-    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
-    def test_req_file_index_used_when_no_json_default(
-        self,
-        mock_resolve: mock.Mock,
-        rooted_tmp_path: RootedPath,
-    ) -> None:
-        """Requirements file --index-url is used when JSON default_index_url is None."""
-        mock_resolve.return_value = []
-        req = mock_requirement("foo", "pypi")
-        req_file_index = "https://req-file-index.example.com/simple/"
-        req_file = mock_requirements_file(
-            requirements=[req],
-            options=["-i", req_file_index],
-        )
-
-        pip._download_dependencies(rooted_tmp_path, req_file)
-
-        mock_resolve.assert_called_once()
-        call_args = mock_resolve.call_args
-        assert call_args[0][4] == req_file_index
-
-    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
-    def test_pypi_default_used_when_no_index_provided(
-        self,
-        mock_resolve: mock.Mock,
-        rooted_tmp_path: RootedPath,
-    ) -> None:
-        """PyPI default is used when neither JSON nor requirements file provides an index."""
+        """Test index_url precedence: req file --index-url > JSON default > PyPI default."""
         import pypi_simple
 
+        if expected_index_url is None:
+            expected_index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
+
         mock_resolve.return_value = []
         req = mock_requirement("foo", "pypi")
-        req_file = mock_requirements_file(requirements=[req], options=[])
+        req_file = mock_requirements_file(requirements=[req], options=options)
 
-        pip._download_dependencies(rooted_tmp_path, req_file)
+        pip._download_dependencies(rooted_tmp_path, req_file, default_index_url=default_index_url)
 
         mock_resolve.assert_called_once()
-        call_args = mock_resolve.call_args
-        assert call_args[0][4] == pypi_simple.PYPI_SIMPLE_ENDPOINT
+        assert mock_resolve.call_args[0][4] == expected_index_url
 
     @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
     def test_json_default_logged_when_applied(

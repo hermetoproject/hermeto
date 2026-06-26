@@ -321,8 +321,8 @@ authentication via
 
 ##### JSON-level `index_url`
 
-Instead of embedding `--index-url` in your requirements files, you can specify a
-default index URL in the JSON input:
+Specify a default index URL in the JSON input instead of embedding `--index-url`
+in your requirements files:
 
 ```json
 {"type": "pip", "index_url": "https://my-index.example.com/simple/"}
