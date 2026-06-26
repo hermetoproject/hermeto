@@ -53,6 +53,7 @@ class TestPackageInput:
                     "requirements_build_files": None,
                     "allow_binary": False,
                     "binary": None,
+                    "index_url": None,
                 },
             ),
             (
@@ -77,6 +78,7 @@ class TestPackageInput:
                         "platform": None,
                         "packages": BINARY_FILTER_ALL,
                     },
+                    "index_url": None,
                 },
             ),
             (
@@ -192,8 +194,51 @@ class TestPackageInput:
                         "platform": None,
                         "packages": "numpy,pandas",
                     },
+                    "index_url": None,
                 },
                 id="pip_with_binary_filters",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "https://my-index.example.com/simple/"},
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": None,
+                    "index_url": "https://my-index.example.com/simple/",
+                },
+                id="pip_with_index_url",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "http://internal-pypi.corp.example.com/simple/"},
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": None,
+                    "index_url": "http://internal-pypi.corp.example.com/simple/",
+                },
+                id="pip_with_http_index_url",
+            ),
+            pytest.param(
+                {
+                    "type": "pip",
+                    "index_url": "https://my-index.example.com/custom/simple/",
+                },
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": None,
+                    "index_url": "https://my-index.example.com/custom/simple/",
+                },
+                id="pip_with_index_url_path",
             ),
             pytest.param(
                 {
@@ -297,6 +342,31 @@ class TestPackageInput:
                 {"type": "rpm", "options": {"dnf": {"repo": "bad_type"}}},
                 r"Unexpected data type for 'options.dnf.repo.bad_type' in input JSON",
                 id="rpm_bad_type_for_dnf_options",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "ftp://my-index.example.com/simple/"},
+                r"index_url must use http or https scheme, got: ftp",
+                id="pip_index_url_bad_scheme",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "not-a-url"},
+                r"index_url must use http or https scheme, got: none",
+                id="pip_index_url_no_scheme",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "https://"},
+                r"index_url must include a host",
+                id="pip_index_url_no_host",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": "https://user:pass@my-index.example.com/simple/"},
+                r"index_url must not contain embedded credentials",
+                id="pip_index_url_with_credentials",
+            ),
+            pytest.param(
+                {"type": "pip", "index_url": ""},
+                r"index_url must not be empty",
+                id="pip_index_url_empty_string",
             ),
             pytest.param(
                 {"type": "pip", "binary": "invalid_string"},
@@ -413,6 +483,7 @@ class TestRequest:
                     "requirements_build_files": [],
                     "allow_binary": False,
                     "binary": None,
+                    "index_url": None,
                 },
             ],
             "flags": frozenset(),

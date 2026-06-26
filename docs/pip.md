@@ -39,6 +39,9 @@ where 'JSON input' is
   // path to the package (relative to the --source directory)
   // defaults to "."
   "path": ".",
+  // default PyPI index URL for requirements files that don't specify --index-url
+  // defaults to https://pypi.org/simple/
+  "index_url": "https://my-index.example.com/simple/",
   // specify requirements files (relative to the package path)
   // defaults to ["requirements.txt"] or [] if the file does not exist
   "requirements_files": ["requirements.txt", "requirements-extra.txt"],
@@ -313,6 +316,30 @@ Make Hermeto download packages from the specified Python Package Index server.
 > index server (`https://pypi.org/simple`).
 
 :warning: **Do not include credentials in the index url.** If needed, provide
+authentication via
+[a **.netrc** file](https://pip.pypa.io/en/stable/topics/authentication/#netrc-support).
+
+##### JSON-level `index_url`
+
+Instead of embedding `--index-url` in your requirements files, you can specify a
+default index URL in the JSON input:
+
+```json
+{"type": "pip", "index_url": "https://my-index.example.com/simple/"}
+```
+
+This is useful in CI/CD pipelines where the index URL may change between
+environments (e.g., staging vs. production) without requiring modifications to
+the requirements files themselves.
+
+**Precedence:** `requirements.txt --index-url` > JSON `index_url` > PyPI default
+(`https://pypi.org/simple/`).
+
+The JSON `index_url` acts as a **default** — it only applies to requirements
+files that don't already specify `--index-url`. Files that have their own
+`--index-url` are not affected, so existing multi-index setups are preserved.
+
+:warning: **Do not include credentials in the index URL.** If needed, provide
 authentication via
 [a **.netrc** file](https://pip.pypa.io/en/stable/topics/authentication/#netrc-support).
 

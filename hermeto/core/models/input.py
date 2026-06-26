@@ -4,6 +4,7 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
+from urllib.parse import urlparse
 
 import pydantic
 from typing_extensions import Self
@@ -315,6 +316,28 @@ class PipPackageInput(_PackageInputBase):
     requirements_build_files: list[Path] | None = None
     allow_binary: bool = False
     binary: PipBinaryFilters | None = None
+    index_url: str | None = None
+
+    @pydantic.field_validator("index_url")
+    @classmethod
+    def _validate_index_url(cls, url: str | None) -> str | None:
+        if url is None:
+            return url
+        if not url:
+            raise ValueError("index_url must not be empty")
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError(
+                f"index_url must use http or https scheme, got: {parsed.scheme or 'none'}"
+            )
+        if not parsed.netloc:
+            raise ValueError("index_url must include a host")
+        if parsed.username or parsed.password:
+            raise ValueError(
+                "index_url must not contain embedded credentials; "
+                "use a .netrc file for authentication"
+            )
+        return url
 
     @pydantic.field_validator("requirements_files", "requirements_build_files")
     @classmethod

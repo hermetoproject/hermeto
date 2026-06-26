@@ -956,3 +956,179 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
 
     with pytest.raises(PackageWithCorruptLockfileRejected):
         pip.fetch_pip_source(request)
+
+
+class TestDefaultIndexUrl:
+    """Test the default_index_url parameter precedence logic.
+
+    Precedence: requirements.txt --index-url > JSON default_index_url > PyPI default.
+    """
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_json_default_used_when_no_req_file_index(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """JSON default_index_url is used when requirements file has no --index-url."""
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file = mock_requirements_file(requirements=[req], options=[])
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
+        )
+
+        mock_resolve.assert_called_once()
+        call_args = mock_resolve.call_args
+        assert call_args[0][4] == CUSTOM_PYPI_ENDPOINT
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_req_file_index_wins_over_json_default(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Requirements file --index-url wins over JSON default_index_url."""
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file_index = "https://req-file-index.example.com/simple/"
+        req_file = mock_requirements_file(
+            requirements=[req],
+            options=["-i", req_file_index],
+        )
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
+        )
+
+        mock_resolve.assert_called_once()
+        call_args = mock_resolve.call_args
+        assert call_args[0][4] == req_file_index
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_req_file_index_used_when_no_json_default(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Requirements file --index-url is used when JSON default_index_url is None."""
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file_index = "https://req-file-index.example.com/simple/"
+        req_file = mock_requirements_file(
+            requirements=[req],
+            options=["-i", req_file_index],
+        )
+
+        pip._download_dependencies(rooted_tmp_path, req_file)
+
+        mock_resolve.assert_called_once()
+        call_args = mock_resolve.call_args
+        assert call_args[0][4] == req_file_index
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_pypi_default_used_when_no_index_provided(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """PyPI default is used when neither JSON nor requirements file provides an index."""
+        import pypi_simple
+
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file = mock_requirements_file(requirements=[req], options=[])
+
+        pip._download_dependencies(rooted_tmp_path, req_file)
+
+        mock_resolve.assert_called_once()
+        call_args = mock_resolve.call_args
+        assert call_args[0][4] == pypi_simple.PYPI_SIMPLE_ENDPOINT
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_json_default_logged_when_applied(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """INFO log emitted when JSON default_index_url is applied."""
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file = mock_requirements_file(requirements=[req], options=[])
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
+        )
+
+        assert f"Using JSON default index_url '{CUSTOM_PYPI_ENDPOINT}'" in caplog.text
+
+    @mock.patch("hermeto.core.package_managers.pip.main._resolve_and_download_pypi_packages")
+    def test_no_log_when_req_file_index_wins(
+        self,
+        mock_resolve: mock.Mock,
+        rooted_tmp_path: RootedPath,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """No JSON default log when requirements file --index-url wins."""
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi")
+        req_file = mock_requirements_file(
+            requirements=[req],
+            options=["-i", "https://req-file-index.example.com/simple/"],
+        )
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, default_index_url=CUSTOM_PYPI_ENDPOINT
+        )
+
+        assert "Using JSON default index_url" not in caplog.text
+
+    @mock.patch("hermeto.core.package_managers.pip.main._download_dependencies")
+    @mock.patch("hermeto.core.package_managers.pip.main.PipRequirementsFile")
+    def test_default_index_url_threads_to_download_dependencies(
+        self,
+        mock_req_file_cls: mock.Mock,
+        mock_download: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """default_index_url is forwarded from _download_from_requirement_files."""
+        mock_download.return_value = []
+        req_path = rooted_tmp_path.join_within_root("requirements.txt")
+        req_path.path.touch()
+
+        pip._download_from_requirement_files(
+            rooted_tmp_path,
+            [req_path],
+            binary_filters=None,
+            default_index_url=CUSTOM_PYPI_ENDPOINT,
+        )
+
+        mock_download.assert_called_once()
+        assert mock_download.call_args[0][3] == CUSTOM_PYPI_ENDPOINT
+
+    @mock.patch("hermeto.core.package_managers.pip.main._download_from_requirement_files")
+    @mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
+    def test_default_index_url_threads_to_both_req_file_types(
+        self,
+        mock_metadata: mock.Mock,
+        mock_download_from_files: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """default_index_url is forwarded to both requires and build_requires paths."""
+        mock_metadata.return_value = ("foo", "1.0")
+        mock_download_from_files.return_value = []
+
+        pip._resolve_pip(
+            rooted_tmp_path,
+            rooted_tmp_path,
+            requirement_files=[],
+            build_requirement_files=[],
+            binary_filters=None,
+            default_index_url=CUSTOM_PYPI_ENDPOINT,
+        )
+
+        assert mock_download_from_files.call_count == 2
+        for call in mock_download_from_files.call_args_list:
+            assert call[0][3] == CUSTOM_PYPI_ENDPOINT

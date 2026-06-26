@@ -89,6 +89,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             package.requirements_files,
             package.requirements_build_files,
             package.binary,
+            package.index_url,
         )
         purl = _generate_purl_main_package(info, package_path)
         components.append(Component(name=info.name, version=info.version, purl=purl))
@@ -419,6 +420,7 @@ def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
     binary_filters: PipBinaryFilters | None = None,
+    default_index_url: str | None = None,
 ) -> list[PipPackage]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
@@ -471,7 +473,16 @@ def _download_dependencies(
         log.info("-- Finished processing requirement line '%s'", req.download_line)
 
     if pypi_reqs:
-        index_url = options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT
+        if options["index_url"]:
+            index_url = options["index_url"]
+        elif default_index_url:
+            index_url = default_index_url
+            log.info(
+                "Using JSON default index_url '%s' (no --index-url in requirements file)",
+                default_index_url,
+            )
+        else:
+            index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
         processed.extend(
             _resolve_and_download_pypi_packages(
                 pypi_reqs, requirements_file, pip_deps_dir, binary_filters, index_url
@@ -485,6 +496,7 @@ def _download_from_requirement_files(
     output_dir: RootedPath,
     files: list[RootedPath],
     binary_filters: PipBinaryFilters | None = None,
+    default_index_url: str | None = None,
 ) -> list[PipPackage]:
     """
     Download dependencies listed in the requirement files.
@@ -492,6 +504,8 @@ def _download_from_requirement_files(
     :param output_dir: the root output directory for this request
     :param files: list of absolute paths to pip requirements files
     :param binary_filters: process wheels?
+    :param default_index_url: fallback index URL from JSON input, used when the
+        requirements file does not specify --index-url
     :return: list of PipPackage instances for each downloaded package
     :raises PackageRejected: If requirement file does not exist
     """
@@ -503,7 +517,9 @@ def _download_from_requirement_files(
                 solution="Please check that you have specified correct requirements file paths",
             )
         requirements.extend(
-            _download_dependencies(output_dir, PipRequirementsFile(req_file), binary_filters)
+            _download_dependencies(
+                output_dir, PipRequirementsFile(req_file), binary_filters, default_index_url
+            )
         )
 
     return requirements
@@ -528,6 +544,7 @@ def _resolve_pip(
     requirement_files: list[Path] | None = None,
     build_requirement_files: list[Path] | None = None,
     binary_filters: PipBinaryFilters | None = None,
+    default_index_url: str | None = None,
 ) -> PipPackageInfo:
     """Resolve and fetch pip dependencies for the given pip application.
 
@@ -564,9 +581,11 @@ def _resolve_pip(
             ", ".join(str(f.subpath_from_root) for f in resolved_build_req_files),
         )
 
-    requires = _download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
+    requires = _download_from_requirement_files(
+        output_dir, resolved_req_files, binary_filters, default_index_url
+    )
     build_requires = _download_from_requirement_files(
-        output_dir, resolved_build_req_files, binary_filters
+        output_dir, resolved_build_req_files, binary_filters, default_index_url
     )
 
     all_deps = requires + build_requires
