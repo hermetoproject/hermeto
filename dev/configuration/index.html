@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../usage/">
       
       
-        <link rel="next" href="../configuration/">
+        <link rel="next" href="../sbom/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Usage - Hermeto</title>
+        <title>Configuration - Hermeto</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#usage" class="md-skip">
+        <a href="#configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Usage
+              Configuration
             
           </span>
         </div>
@@ -291,6 +291,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -310,7 +337,7 @@
   <span class="md-ellipsis">
     
   
-    Usage
+    Configuration
   
 
     
@@ -328,7 +355,7 @@
   <span class="md-ellipsis">
     
   
-    Usage
+    Configuration
   
 
     
@@ -354,113 +381,118 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#general-process" class="md-nav__link">
+  <a href="#modes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        General Process
+        Modes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="General Process">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pre-fetch-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pre-fetch dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate environment variables
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inject-project-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inject project files
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#merge-sboms" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Merge SBOMs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#building-the-artifact-with-the-pre-fetched-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Building the Artifact with the Pre-fetched dependencies
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Building the Artifact with the Pre-fetched dependencies">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#write-the-dockerfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Write the Dockerfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#build-the-container" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Build the container
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#exit-codes" class="md-nav__link">
+  <a href="#config-sources" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exit codes
+        Config sources
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        http
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxy settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gomod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gomod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yarn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        yarn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-and-pnpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm and pnpm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -468,33 +500,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -864,113 +869,118 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#general-process" class="md-nav__link">
+  <a href="#modes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        General Process
+        Modes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="General Process">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pre-fetch-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pre-fetch dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate environment variables
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inject-project-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inject project files
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#merge-sboms" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Merge SBOMs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#building-the-artifact-with-the-pre-fetched-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Building the Artifact with the Pre-fetched dependencies
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Building the Artifact with the Pre-fetched dependencies">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#write-the-dockerfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Write the Dockerfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#build-the-container" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Build the container
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#exit-codes" class="md-nav__link">
+  <a href="#config-sources" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exit codes
+        Config sources
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        http
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxy settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gomod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gomod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yarn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        yarn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-and-pnpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm and pnpm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -991,7 +1001,7 @@
 
 
   
-    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/usage.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/hermetoproject/hermeto/edit/main/docs/configuration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1000,223 +1010,200 @@
     
       
     
-    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/usage.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/hermetoproject/hermeto/raw/main/docs/configuration.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
+<h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
+<p>Hermeto's behavior can be tuned with CLI flags, environment variables, and YAML
+config files. This page describes operating modes and available settings.</p>
+<h2 id="modes">Modes<a class="headerlink" href="#modes" title="Permanent link">&para;</a></h2>
+<p>Hermeto currently supports two fetch modes. In <code>strict</code> mode, unmet input
+requirements are errors. In <code>permissive</code> mode, the same conditions produce
+warnings and Hermeto continues, however resulting SBOM may be incomplete or
+inaccurate.</p>
+<p>Set the global CLI option <code>--mode</code> to one of:</p>
 <ul>
-<li><a href="#general-process">General process</a></li>
-<li><a href="#pre-fetch-dependencies">Pre-fetch dependencies</a></li>
-<li><a href="#generate-environment-variables">Generate environment variables</a></li>
-<li><a href="#inject-project-files">Inject project files</a></li>
-<li><a href="#merge-sboms">Merge SBOMs</a></li>
-<li><a href="#building-the-artifact-with-the-pre-fetched-dependencies">Building the artifact</a><ul>
-<li><a href="#write-the-dockerfile">Set the environment variables</a></li>
-<li><a href="#build-the-container">Container build example</a></li>
+<li><code>strict</code> (default)</li>
+<li><code>permissive</code></li>
 </ul>
-</li>
-</ul>
-<h2 id="general-process">General Process<a class="headerlink" href="#general-process" title="Permanent link">&para;</a></h2>
-<p>A hermetic build environment is one that is fully encapsulated and isolated from
-outside influences. When a build is run on a build platform, this encapsulation
-can guarantee that the platform has a complete picture of all dependencies
-needed for the build. One class of hermetic build implementations is to restrict
-external network access during the build itself, requiring that all dependencies
-are declared and pre-fetched before the build occurs.</p>
-<p>Hermeto prefetches dependencies and produces an SBOM; it is not a complete
-hermetic build system. A user would need to isolate the build step
-(e.g. with containers) so it runs without network access.</p>
-<p>In order to support this class of hermetic builds, not only does Hermeto need to
-pre-fetch the dependencies, but some build flows will need additional changes
-(i.e. leveraging defined <a href="#generate-environment-variables">environment variables</a>
-or using Hermeto to <a href="#inject-project-files">inject project files</a>).</p>
-<p>Hermeto relies on git metadata when processing sources, it expects sources to
-be a valid git repository with "origin" remote defined. This is paramount
-for successful execution. If for some reason you don't have a git repository,
-e.g. you're trying to use Hermeto on an unpacked tarball, you may also get
-acceptable results by passing the global option <code>--mode permissive</code>, which will
-treat the input as a non-git tree and continue.</p>
-<p>Note, however, that this is only good for smoke testing a scenario, and the accuracy
-of the SBOM will be reduced.</p>
-<h3 id="pre-fetch-dependencies">Pre-fetch dependencies<a class="headerlink" href="#pre-fetch-dependencies" title="Permanent link">&para;</a></h3>
-<p>The first step in creating hermetic builds is to fetch the dependencies for one
-of the supported package managers.</p>
-<p>Hermeto can be run as follows</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--source<span class="w"> </span>./foo<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--sbom-output-type<span class="w"> </span>cyclonedx<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;{&quot;path&quot;: &quot;.&quot;, &quot;type&quot;: &quot;&lt;supported package manager&gt;&quot;}&#39;</span>
-</code></pre></div>
+<p>The permissive mode currently suppresses:</p>
 <ul>
-<li><code>--source</code> the path to a <em>git repository</em> on the local disk <code>[default: .]</code></li>
-<li><code>--output</code> the path to the directory where Hermeto will write all output
-  <code>[default: ./hermeto-output]</code></li>
-<li><code>--sbom-output-type</code> the format of generated SBOM, supported values are
-  <code>cyclonedx</code> (outputs <a href="https://cyclonedx.org/docs/1.6/json">CycloneDX v1.6</a>) and <code>spdx</code> (outputs <a href="https://spdx.github.io/spdx-spec/v2.3/">SPDX v2.3</a>).
-  See <a href="../sbom/">SBOM documentation</a> for structure, custom fields, and format
-  mapping. <code>[default: cyclonedx]</code></li>
-<li><code>{JSON}</code> specifies a <em>package</em> (a directory) within the repository to process</li>
+<li>Go <code>vendor</code> directory inconsistencies (see <a href="../gomod/#vendoring">gomod</a>)</li>
+<li><code>Cargo.toml</code> out of sync with <code>Cargo.lock</code></li>
+<li>non-Git sources (e.g., unpacked tarballs)</li>
 </ul>
-<p>Note that Hermeto does not auto-detect which package managers your project uses.
-You need to tell Hermeto what to process when calling fetch-deps. In the example
-above, the package path is located at the root of the foo repo, hence the
-relative path is <code>.</code>.</p>
-<p>The main parameter (PKG) can handle different types of definitions</p>
-<ul>
-<li>simple: <code>&lt;package manager&gt;</code>, same as <code>{"path": ".", "type": "&lt;package manager&gt;"}</code></li>
-<li>JSON object: <code>{"path": "subpath/to/other/module", "type": "&lt;package manager&gt;"}</code></li>
-<li>JSON array: <code>[{"path": ".", "type": "&lt;package manager&gt;"}, {"path":
-  "subpath/to/other/module", "type": "&lt;package manager&gt;"}]</code></li>
-<li>JSON object with flags: <code>{"packages": [{"path": ".", "type": "&lt;package
-  manager&gt;"}], "flags": ["cgo-disable"]}</code></li>
-<li>JSON file path: <code>/path/to/input-file.json</code>, where the file contains
-  any supported JSON input</li>
-</ul>
-<p>See also <code>hermeto fetch-deps --help</code>.</p>
-<p>Using the JSON array object, multiple package managers can be used to resolve
-dependencies in the same repository.</p>
-<p><em>⚠ While Hermeto does not intentionally modify the source repository unless the
-output and source paths are the same, some package managers may add missing data
-like checksums as dependency data is resolved. If this occurs from a clean git
-tree then the tree has the possibility to become dirty.</em></p>
-<h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
-<p>Once the dependencies have been cached, the build process needs to be made aware
-of the dependencies. Some package managers need to be informed of cache
-customizations by environment variables.</p>
-<p>In order to simplify this process, Hermeto provides a helper command to generate
-the environment variables in an easy-to-use format. The example above uses the
-"env" format which generates a simple shell script that <code>export</code>s the required
-variables (properly shell quoted when necessary). You can <code>source</code> this file to
-set the variables.</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>generate-env<span class="w"> </span>./hermeto-output<span class="w"> </span>-o<span class="w"> </span>./hermeto.env<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
-</code></pre></div>
-<ul>
-<li><code>-o</code> the output path for the generated environment file</li>
-</ul>
-<p>Don't worry about the <code>--for-output-dir</code> option yet - and about the fact that
-the directory does not exist - it has to do with the target path where we will
-mount the output directory <a href="#build-the-container">during the build</a>.</p>
-<p>See also <code>hermeto generate-env --help</code>.</p>
-<h3 id="inject-project-files">Inject project files<a class="headerlink" href="#inject-project-files" title="Permanent link">&para;</a></h3>
-<p>While some package managers only need an environment file to be informed of the
-cache locations, others may need to create a configuration file or edit or rebuild
-the lockfile (or some other file in your project directory).</p>
-<p>Before starting your build, call <code>hermeto inject-files</code> to automatically make
-the necessary changes in your repository (based on data in the fetch-deps output
-directory). Please do not change the absolute path to the repo between the calls
-to fetch-deps and inject-files; if it's not at the same path, the inject-files
-command won't find it.</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>inject-files<span class="w"> </span>./hermeto-output<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
-</code></pre></div>
-<p>The <code>--for-output-dir</code> option has the same meaning as the one used when
-generating environment variables.</p>
-<p><em>⚠ Hermeto may overwrite existing files. Please make sure you have no
-un-committed changes (that you are not prepared to lose) when calling
-inject-files.</em></p>
-<p><em>⚠ Hermeto may change files if required by the package manager. This means that
-the git status will become dirty if it was previously clean. If any scripting
-depends on the cleanliness of a git repository and you do not want to commit the
-changes, the scripting should either be changed to handle the dirty status or
-the changes should be temporarily stashed by wrapping in <code>git stash &amp;&amp; &lt;command&gt;
-&amp;&amp; git stash pop</code> according to the suitability of the context.</em></p>
-<h3 id="merge-sboms">Merge SBOMs<a class="headerlink" href="#merge-sboms" title="Permanent link">&para;</a></h3>
-<p>Sometimes it might be necessary to merge two or more SBOMs. This could be done
-with <code>hermeto merge-sboms</code></p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>merge-sboms<span class="w"> </span>&lt;hermeto_sbom_1.json&gt;<span class="w"> </span>...<span class="w"> </span>&lt;hermeto_sbom_n.json&gt;
-</code></pre></div>
-<p>The subcommand expects at least two SBOMs, all produced by Hermeto, and will
-exit with error otherwise. The reason for this is that Hermeto supports a
-<a href="https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13">limited set</a> of component <a href="https://cyclonedx.org/docs/1.6/json/#components_items_properties">properties</a>
-(documented in <a href="../sbom/">SBOM documentation</a>), and it validates that no other
-properties exist in the SBOM. By default the result of a merge will be printed
-to stdout. To save it to a file use <code>-o</code> option</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>merge-sboms<span class="w"> </span>&lt;hermeto_sbom_1.json&gt;<span class="w"> </span>...<span class="w"> </span>&lt;hermeto_sbom_n.json&gt;<span class="w"> </span>-o<span class="w"> </span>&lt;merged_sbom.json&gt;
-</code></pre></div>
-<h3 id="building-the-artifact-with-the-pre-fetched-dependencies">Building the Artifact with the Pre-fetched dependencies<a class="headerlink" href="#building-the-artifact-with-the-pre-fetched-dependencies" title="Permanent link">&para;</a></h3>
-<p>After the pre-fetch and the above steps to inform the package manager(s) of the
-cache have been completed, it all needs to be wired up into a build. The primary
-use case for building these is within a Dockerfile or Dockerfile but the same
-principles can be applied to other build strategies.</p>
-<h4 id="write-the-dockerfile">Write the Dockerfile<a class="headerlink" href="#write-the-dockerfile" title="Permanent link">&para;</a></h4>
-<p>Now that we have pre-fetched our dependencies and enabled package manager
-configuration to point to them, we now need to ensure that the build process
-(i.e. a Dockerfile or Dockerfile for a container build) is properly written
-to build in a network isolated mode. All injected files are changed in the
-source itself, so they will be present in the build context for the
-Dockerfile. The environment variables added to the <code>hermeto.env</code> file,
-however, will not be pulled into the build process without a specific action to
-<code>source</code> the generated file.</p>
-<p>Outside of this additional <code>source</code> directive in any relevant <code>RUN</code> command, the
-rest of a container build can remain unchanged.</p>
-<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.19.2-alpine3.16</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">build</span>
-
-<span class="k">COPY</span><span class="w"> </span>./foo<span class="w"> </span>/src/foo
-<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/src/foo</span>
-
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>make<span class="w"> </span>build
-
-<span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9/ubi-minimal:9.0.0</span>
-
-<span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>build<span class="w"> </span>/foo<span class="w"> </span>/usr/bin/foo
-</code></pre></div>
-<p><em>⚠ The <code>source</code>d environment variables do not persist to the next RUN
-instruction. The sourcing of the file and the package manager command(s) need to
-be in the same instruction. If the build needs more than one command and you
-would like to split them into separate RUN instructions, <code>source</code> the
-environment file in each one.</em></p>
-<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/foo<span class="w"> </span>cmd/foo<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bar<span class="w"> </span>cmd/bar
-
-<span class="c"># or, if preferable</span>
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/foo<span class="w"> </span>cmd/foo
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bar<span class="w"> </span>cmd/bar
-</code></pre></div>
-<h4 id="build-the-container">Build the container<a class="headerlink" href="#build-the-container" title="Permanent link">&para;</a></h4>
-<p>Now that the Dockerfile or Container file is configured, the next step is to
-build the container itself. Since more than just the source code context is
-needed to build the container, we also need to make sure that there are
-appropriate volumes mounted for the Hermeto output as well as the Hermeto
-environment variable that is being <code>source</code>d within the build. Since all
-dependencies are cached, we can confidently restrict the network from the
-container build as well!</p>
-<div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--tag<span class="w"> </span>foo
-
-<span class="c1"># test that it worked</span>
-podman<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>foo
-</code></pre></div>
-<p>We use the <code>--volume</code> option to mount Hermeto resources into the container build
-— the output directory at /tmp/hermeto-output and the environment file at
-/tmp/hermeto.env.</p>
-<p>The path where the output directory gets mounted is important. Some environment
-variables or project files may use absolute paths to content in the output
-directory; if the directory is not at the expected path, the paths will be
-wrong. Remember the <code>--for-output-dir</code> option used when
-<a href="#generate-environment-variables">generating the env file</a>
-and <a href="#inject-project-files">injecting the project files</a>?
-The absolute path to ./hermeto-output on your machine is (probably) not
-/tmp/hermeto-output. That is why we had to tell the generate-env command what
-the path inside the container is eventually going to be.</p>
-<p>In order to run the build with network isolation, use the <code>--network=none</code>
-option. Note that this option only works if your podman/buildah version contains
-the fix for <a href="https://github.com/containers/buildah/issues/4227">buildah#4227</a> (buildah &gt;= 1.28). In older versions, a workaround
-could be to manually create an internal network (but you'll need root
-privileges): <code>sudo podman network create --internal isolated-network; sudo
-podman build --network isolated-network ...</code>.</p>
-<h2 id="exit-codes">Exit codes<a class="headerlink" href="#exit-codes" title="Permanent link">&para;</a></h2>
-<p>Hermeto uses a set of exit codes to signal different error conditions. These are
-internal only and serve informational purposes and hence may change in between
-releases, please do NOT depend on them!</p>
+<p>Using permissive mode on non-Git trees is mainly useful for smoke tests; SBOM
+accuracy is reduced. See <a href="../usage/#general-process">usage</a> for Git repository
+expectations.</p>
+<p>For details on how permissive violations are tracked in SBOM output, see
+<code>docs/design/permissive-mode.md</code>.</p>
+<h2 id="config-sources">Config sources<a class="headerlink" href="#config-sources" title="Permanent link">&para;</a></h2>
+<p>Hermeto merges settings from several sources, where higher-priority sources
+override lower-priority ones (listed top to bottom):</p>
+<ol>
+<li><strong>Environment variables</strong> — prefix <code>HERMETO_</code>, use <code>__</code> for nested keys
+   (e.g., <code>HERMETO_GOMOD__DOWNLOAD_MAX_TRIES=10</code>)</li>
+<li><strong>CLI</strong> — <code>--config-file path/to/config.yaml</code></li>
+<li><strong>Config files</strong> — loaded automatically when present:</li>
+<li><code>~/.config/hermeto/config.yaml</code></li>
+<li><code>hermeto.yaml</code></li>
+<li><code>.hermeto.yaml</code></li>
+</ol>
+<p>Hermeto only supports YAML config files.</p>
+<h2 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h2>
+<p>Some settings apply to every package manager. Others apply only to specific
+backends.</p>
+<h3 id="http"><code>http</code><a class="headerlink" href="#http" title="Permanent link">&para;</a></h3>
+<p>Applies to all package managers.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect_timeout</code></td>
+<td><code>30</code></td>
+<td>Connection timeout in seconds</td>
+</tr>
+<tr>
+<td><code>read_timeout</code></td>
+<td><code>300</code></td>
+<td>Read timeout in seconds; long downloads succeed while data flows</td>
+</tr>
+<tr>
+<td><code>max_retries</code></td>
+<td><code>5</code></td>
+<td>Maximum HTTP request retries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime"><code>runtime</code><a class="headerlink" href="#runtime" title="Permanent link">&para;</a></h3>
+<p>Applies to all package managers.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>concurrency_limit</code></td>
+<td><code>5</code></td>
+<td>Maximum concurrent operations</td>
+</tr>
+<tr>
+<td><code>subprocess_timeout</code></td>
+<td><code>3600</code></td>
+<td>Subprocess timeout in seconds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="proxy-settings">Proxy settings<a class="headerlink" href="#proxy-settings" title="Permanent link">&para;</a></h3>
+<p>Applies to <code>gomod</code>, <code>npm</code>, <code>pnpm</code>, and <code>yarn</code> when pulling dependencies
+through an artifact repository manager (e.g. Sonatype Nexus or JFrog
+Artifactory). The primary use of <code>proxy_login</code> and <code>proxy_password</code> is to
+authenticate with such a registry. Set <code>proxy_url</code> to its base URL. Do not
+embed credentials in the URL.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proxy_url</code></td>
+<td><em>(unset)</em></td>
+<td>Registry base URL</td>
+</tr>
+<tr>
+<td><code>proxy_login</code></td>
+<td><em>(unset)</em></td>
+<td>Registry username (must be set together with <code>proxy_password</code>)</td>
+</tr>
+<tr>
+<td><code>proxy_password</code></td>
+<td><em>(unset)</em></td>
+<td>Registry password (must be set together with <code>proxy_login</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gomod"><code>gomod</code><a class="headerlink" href="#gomod" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>download_max_tries</code></td>
+<td><code>5</code></td>
+<td>Maximum retry attempts for Go module commands</td>
+</tr>
+<tr>
+<td><code>environment_variables</code></td>
+<td><code>{}</code></td>
+<td>Default environment variables for the gomod backend</td>
+</tr>
+</tbody>
+</table>
+<p>Go supports the <a href="#proxy-settings">proxy settings</a> above. The default
+<code>proxy_url</code> is <code>https://proxy.golang.org,direct</code>. When <code>proxy_login</code> is set,
+<code>proxy_url</code> must be a single URL (not a comma-separated list).</p>
+<h3 id="pip"><code>pip</code><a class="headerlink" href="#pip" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ignore_dependencies_crates</code></td>
+<td><code>false</code></td>
+<td>Legacy option for Rust-based pip dependencies; do not rely on it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="yarn"><code>yarn</code><a class="headerlink" href="#yarn" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>true</code></td>
+<td>Legacy toggle for Yarn v3 and v4 processing; do not rely on it</td>
+</tr>
+</tbody>
+</table>
+<p>Yarn v3 and v4 also support the <a href="#proxy-settings">proxy settings</a> above. Yarn
+Classic ignores this section.</p>
+<h3 id="npm-and-pnpm"><code>npm</code> and <code>pnpm</code><a class="headerlink" href="#npm-and-pnpm" title="Permanent link">&para;</a></h3>
+<p>Both support the <a href="#proxy-settings">proxy settings</a> above and have no additional
+keys.</p>
 
 
 

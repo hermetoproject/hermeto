@@ -321,6 +321,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../sbom/" class="md-nav__link">
         
   
@@ -363,10 +390,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -384,8 +411,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -701,6 +728,17 @@
     <span class="md-ellipsis">
       
         Missing checksums
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#go-toolchain-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go toolchain version
       
     </span>
   </a>
@@ -1140,6 +1178,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#go-toolchain-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go toolchain version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#go-121" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1261,6 +1310,10 @@
 
 
 <h1 id="gomod"><a href="https://go.dev/ref/mod">gomod</a><a class="headerlink" href="#gomod" title="Permanent link">&para;</a></h1>
+<p>The gomod package manager works by parsing the <a href="https://go.dev/ref/mod#go-mod-file">go.mod</a> file present in the
+source repository to determine which dependencies to download. Hermeto does not
+parse this file on its own — rather, it relies on the <code>go</code> command to download and
+list the required dependencies.</p>
 <!-- markdownlint-disable-next-line link-fragments -->
 <ul>
 <li><a href="#specifying-modules-to-process">Specifying modules to process</a></li>
@@ -1268,6 +1321,7 @@
 <li><a href="#gomod-flags">gomod flags</a></li>
 <li><a href="#vendoring">Vendoring</a></li>
 <li><a href="#understanding-reported-dependencies">Understanding reported dependencies</a></li>
+<li><a href="#go-toolchain-version">Go toolchain version</a></li>
 <li><a href="#go-121">Go 1.21+</a></li>
 <li><a href="#example">Full example walkthrough</a></li>
 </ul>
@@ -1437,6 +1491,34 @@ incomplete<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>.</p
 fail.</p>
 <p>Please make sure to keep your go.sum file up to date, perhaps by incorporating
 the <code>go mod tidy</code> command in your dev workflow.</p>
+<h3 id="go-toolchain-version">Go toolchain version<a class="headerlink" href="#go-toolchain-version" title="Permanent link">&para;</a></h3>
+<p>Current version: 1.26</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Hermeto expects to use a specific version of the <code>go</code> command when downloading
+dependencies. This is the version installed in the <a href="https://github.com/hermetoproject/hermeto/pkgs/container/hermeto">hermeto container</a>. Correctness
+is not guaranteed if Hermeto is run locally (outside the container)
+with a different Go version. You are free to use a different version to build
+your project.</p>
+</div>
+<p>From <a href="https://tip.golang.org/doc/go1.17">Go 1.17</a> onward, the go.mod file includes all the transitively required
+dependencies of your application - see the section about <em>Pruned module graphs</em>
+in the <a href="https://tip.golang.org/doc/go1.17#go-command">Go 1.17 changelog</a>. In previous Go versions, the go.mod file included
+only direct dependencies. Hermeto does support downloading and listing all
+transitive dependencies for earlier versions thanks to Go's backwards
+compatibility. Note that using Go &gt;= 1.17 in your project has the added benefit
+of downloading fewer dependencies (as noted in the changelog), in some cases
+drastically so.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code>go</code> command promises to be backwards compatible with previous versions. If
+your go.mod file specifies the intended go version, Hermeto should handle it
+appropriately. If your go version is <em>higher</em> than what Hermeto uses, there is
+a good chance it will be compatible regardless, as long as the dependency
+resolution did not change between the two versions. For example, dependency
+resolution did change in <a href="https://tip.golang.org/doc/go1.18#go-command">Go 1.18</a> but not in <a href="https://tip.golang.org/doc/go1.19#go-command">Go 1.19</a>. For <a href="https://tip.golang.org/doc/go1.21">Go 1.21</a>
+and newer, please see <a href="#go-121">Go 1.21+</a> below as it gets a bit more complicated.</p>
+</div>
 <h3 id="go-121">Go 1.21+<a class="headerlink" href="#go-121" title="Permanent link">&para;</a></h3>
 <p>Starting with <a href="https://tip.golang.org/doc/go1.21">Go 1.21</a>, Go changed the meaning of the <code>go 1.X</code> directive in
 that it now specifies the <a href="https://go.dev/ref/mod#go-mod-file-go">minimum required version</a> of Go rather than a
