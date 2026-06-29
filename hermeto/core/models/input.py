@@ -110,6 +110,7 @@ PackageManagerType = Literal[
     "pip",
     "rpm",
     "yarn",
+    "yarn-classic",
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
     "x-maven",

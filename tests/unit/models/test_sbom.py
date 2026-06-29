@@ -564,7 +564,12 @@ class TestSbom:
     def test_create_backend_annotation_experimental(self, mock_spdx_now: str) -> None:
         """Experimental backends (x- prefix) should produce a distinct annotation text."""
         components = [Component(name="test", purl="pkg:foo/test@1.0.0", version="1.0.0")]
-        annotation = create_backend_annotation(components, "x-foo")
+        # From the perspective of mypy type of backends is limited to a set of
+        # string literals, however in practice any string would work. A type
+        # ignore is added here to relax the demand for strict value since here
+        # in the test the value used is not important as long as it has the right
+        # prefix.
+        annotation = create_backend_annotation(components, "x-foo")  # type: ignore
         sbom = Sbom(annotations=[annotation], components=components)
 
         spdx_sbom = sbom.to_spdx("NOASSERTION")

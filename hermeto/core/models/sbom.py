@@ -19,6 +19,7 @@ from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnexpectedFormat
+from hermeto.core.models.input import PackageManagerType
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
@@ -240,7 +241,7 @@ def spdx_now() -> datetime:
 
 
 def create_backend_annotation(
-    components: list["Component"], backend_name: str
+    components: list["Component"], backend_name: PackageManagerType
 ) -> Annotation | None:
     """Create an annotation that tags components with the backend that fetched them.
 
