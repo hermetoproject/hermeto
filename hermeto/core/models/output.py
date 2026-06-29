@@ -3,9 +3,9 @@ import logging
 import string
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
 
 import pydantic
+from typing_extensions import TypeAliasType
 
 from hermeto.core.errors import BaseError
 from hermeto.core.models.sbom import Annotation, Component, Sbom, merge_component_properties
@@ -115,12 +115,19 @@ class ProjectFile(pydantic.BaseModel):
         return template.safe_substitute(output_dir=output_dir)
 
 
+ConfigEntryValue = TypeAliasType(
+    "ConfigEntryValue",
+    'str | int | float | bool | None | list["ConfigEntryValue"] | dict[str, "ConfigEntryValue"]',
+)
+ConfigOptions = dict[str, ConfigEntryValue]
+
+
 class BuildConfig(pydantic.BaseModel):
     """Holds output used to configure a repository for a build."""
 
     environment_variables: list[EnvironmentVariable] = []
     project_files: list[ProjectFile] = []
-    options: dict[str, Any] | None = None
+    options: ConfigOptions | None = None
 
     @pydantic.field_validator("environment_variables")
     @classmethod
@@ -199,7 +206,7 @@ class RequestOutput(pydantic.BaseModel):
         components: list[Component],
         environment_variables: list[EnvironmentVariable] | None = None,
         project_files: list[ProjectFile] | None = None,
-        options: dict[str, Any] | None = None,
+        options: ConfigOptions | None = None,
         annotations: list[Annotation] | None = None,
     ) -> "RequestOutput":
         """Create a RequestOutput from components, environment variables and project files."""
