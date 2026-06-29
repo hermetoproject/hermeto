@@ -6,7 +6,7 @@ from typing import Any, Literal
 import pytest
 
 from hermeto.core.errors import BaseError, PackageRejected
-from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
+from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from tests.common_utils import Symlink, write_file_tree
 

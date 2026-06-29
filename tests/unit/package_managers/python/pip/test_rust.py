@@ -5,7 +5,7 @@ import pytest
 import tomlkit
 
 from hermeto.core.models.output import ProjectFile
-from hermeto.core.package_managers.pip.rust import (
+from hermeto.core.package_managers.python.pip.rust import (
     _get_rust_root_dir,
     _merge_cargo_config_files,
     _shortest_path_parent,

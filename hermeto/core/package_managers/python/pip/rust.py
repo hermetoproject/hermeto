@@ -11,9 +11,9 @@ import tomlkit
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.package_managers.cargo import fetch_cargo_source
-from hermeto.core.package_managers.pip.packages import PipPackage
-from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
-from hermeto.core.package_managers.pip.requirements import WHEEL_FILE_EXTENSION
+from hermeto.core.package_managers.python.pip.packages import PipPackage
+from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
+from hermeto.core.package_managers.python.pip.requirements import WHEEL_FILE_EXTENSION
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
