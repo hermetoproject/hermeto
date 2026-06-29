@@ -642,11 +642,25 @@ class TestSbom:
 
 
 # Some partially constructed objects to streamline test cases definitions.
-STOCK_ANNOTATION = {
+STOCK_FOUND_BY_ANNOTATION = {
     "annotator": f"Tool: {APP_NAME}:jsonencoded",
     "annotationDate": SPDX_EPOCH_STRFTIME,
     "annotationType": "OTHER",
     "comment": f'{{"name": "{APP_NAME}:found_by", "value": "{APP_NAME}"}}',
+}
+
+STOCK_GOMOD_BACKEND_ANNOTATION = {
+    "annotator": f"Tool: {APP_NAME}:backend",
+    "annotationDate": SPDX_EPOCH_STRFTIME,
+    "annotationType": "OTHER",
+    "comment": f"{APP_NAME}:backend:gomod",
+}
+
+STOCK_NPM_BACKEND_ANNOTATION = {
+    "annotator": f"Tool: {APP_NAME}:backend",
+    "annotationDate": SPDX_EPOCH_STRFTIME,
+    "annotationType": "OTHER",
+    "comment": f"{APP_NAME}:backend:npm",
 }
 
 BLANK_SPDX_SBOM = SPDXSbom(
@@ -985,6 +999,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e4e45c4dc4bfb505f298188b3156fcee718b13e618a73a270401f5a3b77e49b3",
@@ -997,6 +1012,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-github.com-org-A-v1.1.0-e92e3a95e71ca3b2ef7bd075547593856dec87255626aa3db90a05dcde1b05ec",
@@ -1009,6 +1025,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
@@ -1021,6 +1038,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
@@ -1033,6 +1051,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-github.com-org-B-v1.0.0-f75a590094f92d64111235b9ae298c34b9acd126f8fc6263b7924810bfe6470c",
@@ -1045,6 +1064,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
@@ -1057,6 +1077,7 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
                 {
                     "SPDXID": "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
@@ -1069,11 +1090,27 @@ class TestSPDXSbom:
                             "referenceType": "purl",
                         }
                     ],
+                    "annotations": [STOCK_GOMOD_BACKEND_ANNOTATION, STOCK_FOUND_BY_ANNOTATION],
                 },
             ],
         )
         cyclonedx_sbom = sbom.to_cyclonedx()
         assert cyclonedx_sbom == Sbom(
+            annotations=[
+                Annotation(
+                    subjects={
+                        "pkg:golang/bytes",
+                        "pkg:golang/github.com/org/B@v1.0.0",
+                        "pkg:golang/github.com/org/A@v1.0.0",
+                        "pkg:golang/github.com/org/A@v1.1.0?repository_id=R2",
+                        "pkg:golang/fmt",
+                        "pkg:golang/github.com/org/A@v1.1.0?repository_id=R1",
+                    },
+                    annotator={"organization": {"name": "red hat"}},
+                    timestamp=SPDX_EPOCH_STRFTIME,
+                    text="hermeto:backend:gomod",
+                ),
+            ],
             components=[
                 Component(name="bytes", purl="pkg:golang/bytes", version=None),
                 Component(name="fmt", purl="pkg:golang/fmt", version=None),
@@ -1123,7 +1160,8 @@ class TestSPDXSbom:
                             "annotationDate": SPDX_EPOCH_STRFTIME,
                             "annotationType": "OTHER",
                             "comment": "not valid json {{{",
-                        }
+                        },
+                        STOCK_NPM_BACKEND_ANNOTATION,
                     ],
                 },
             ],
@@ -1158,7 +1196,10 @@ class TestSPDXSbom:
                                 "externalRefs": [
                                     _gen_ref(locator="pkg:golang/github.com/org/B@v1.0.0")
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                     ],
@@ -1185,7 +1226,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R1"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1196,7 +1240,10 @@ class TestSPDXSbom:
                                 "externalRefs": [
                                     _gen_ref(locator="pkg:golang/github.com/org/B@v1.0.0")
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                     ],
@@ -1227,7 +1274,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R1"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1242,7 +1292,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R2"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1253,7 +1306,10 @@ class TestSPDXSbom:
                                 "externalRefs": [
                                     _gen_ref(locator="pkg:golang/github.com/org/B@v1.0.0")
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                     ],
@@ -1282,7 +1338,10 @@ class TestSPDXSbom:
                                 "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                                 "versionInfo": "v1.0.0",
                                 "externalRefs": [_gen_ref("pkg:golang/github.com/org/A@v1.0.0")],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1295,7 +1354,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R1"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1308,7 +1370,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R2"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1319,7 +1384,10 @@ class TestSPDXSbom:
                                 "externalRefs": [
                                     _gen_ref(locator="pkg:golang/github.com/org/B@v1.0.0")
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                     ],
@@ -1352,7 +1420,10 @@ class TestSPDXSbom:
                                 "SPDXID": "SPDXRef-Package-bytes-074b51b574e3fc5ce325ef4cb4fb463c1705e696a3e6bf4850b46ca7bd724ff4",
                                 "versionInfo": None,
                                 "externalRefs": [_gen_ref("pkg:golang/bytes")],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1361,7 +1432,10 @@ class TestSPDXSbom:
                                 "SPDXID": "SPDXRef-Package-fmt-6de2ff54d8fade17788a93f13f1249fcb15d3970e74fedc3722be421ad800a0d",
                                 "versionInfo": None,
                                 "externalRefs": [_gen_ref("pkg:golang/fmt")],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1370,7 +1444,10 @@ class TestSPDXSbom:
                                 "SPDXID": "SPDXRef-Package-github.com-org-A-v1.0.0-8090f86e9eb851549de5f8391948c1df6a2c8976bfa33c3cbd82e917564ac94f",
                                 "versionInfo": "v1.0.0",
                                 "externalRefs": [_gen_ref("pkg:golang/github.com/org/A@v1.0.0")],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1383,7 +1460,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R1"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1396,7 +1476,10 @@ class TestSPDXSbom:
                                         locator="pkg:golang/github.com/org/A@v1.1.0?repository_id=R2"
                                     )
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                         SPDXPackage(
@@ -1407,7 +1490,10 @@ class TestSPDXSbom:
                                 "externalRefs": [
                                     _gen_ref(locator="pkg:golang/github.com/org/B@v1.0.0")
                                 ],
-                                "annotations": [STOCK_ANNOTATION],
+                                "annotations": [
+                                    STOCK_GOMOD_BACKEND_ANNOTATION,
+                                    STOCK_FOUND_BY_ANNOTATION,
+                                ],
                             }
                         ),
                     ],
