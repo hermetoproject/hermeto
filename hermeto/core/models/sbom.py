@@ -81,11 +81,12 @@ class _PerBackendAccumulator:
 
 
 a_backend_indicator = object()
+BackendIndicator = object
 
 
 def convert_annotation_to_property(
     annotation: "SPDXPackageAnnotation",
-) -> Property | object:
+) -> Property | BackendIndicator:
     """Convert a SPDX annotation to a CycloneDX property or a backend indicator.
 
     Returns a Property for JSON-encoded or custom annotations,
@@ -821,7 +822,7 @@ class SPDXSbom(pydantic.BaseModel):
             if is_spdx_package_wrapper(purls, package.name, package.versionInfo):
                 continue
 
-            properties, backend_accumulators = convert_annotations(
+            properties, backend_accumulators = convert_annotations_to_properties(
                 package.annotations, backend_accumulators, purls
             )
 
@@ -844,12 +845,12 @@ class SPDXSbom(pydantic.BaseModel):
         )
 
 
-def convert_annotations(
+def convert_annotations_to_properties(
     annotations: Iterable[SPDXPackageAnnotation],
     backend_accumulators: dict[str, _PerBackendAccumulator],
     purls: list[str],
 ) -> tuple[list[Property], dict[str, _PerBackendAccumulator]]:
-    """Convert annotations to properties."""
+    """Convert SPDX annotations to properties."""
 
     properties = []
     get_backend_name = lambda ann: ann.comment
