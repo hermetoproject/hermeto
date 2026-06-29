@@ -217,15 +217,24 @@ class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
     packages: BinaryFilterStr = BINARY_FILTER_ALL
 
 
+PlatformRegexStr = str
+# *(list(range(310, 400))) cannot be used here as long as 3.10 is supported.
+# Once added it would support all Python version for the next fifty years or
+# so.  This could be tightened up further, (like it is implemented now) but
+# that would require constant care -- once a new version gets out this list
+# would need an expansion.
+SupportedPyVersions = Literal[39, 310, 311, 312, 313, 314, 315, 316, 317]
+
+
 class PipBinaryFilters(BinaryModeOptions):
     """Binary filters specific to pip packages."""
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
-    py_version: int | None = None
+    py_version: SupportedPyVersions | None = None
     py_impl: BinaryFilterStr = "cp"
     abi: BinaryFilterStr = BINARY_FILTER_ALL
-    platform: str | None = None
+    platform: PlatformRegexStr | None = None
 
     @pydantic.model_validator(mode="after")
     def _validate_platform_exclusivity(self) -> Self:
@@ -242,7 +251,7 @@ class PipBinaryFilters(BinaryModeOptions):
 
     @pydantic.field_validator("platform")
     @classmethod
-    def _validate_platform(cls, value: str | None) -> str | None:
+    def _validate_platform(cls, value: PlatformRegexStr | None) -> PlatformRegexStr | None:
         if value is None:
             return value
 
