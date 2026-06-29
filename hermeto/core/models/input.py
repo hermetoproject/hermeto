@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
 
 import pydantic
-from typing_extensions import Self
+from typing_extensions import Self, TypeAliasType
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
@@ -372,6 +372,12 @@ class PnpmPackageInput(_PackageInputBase):
     type: Literal["x-pnpm"]
 
 
+ConfigEntryValue = TypeAliasType(
+    "ConfigEntryValue",
+    'str | int | float | bool | None | list["ConfigEntryValue"] | dict[str, "ConfigEntryValue"]',
+)
+
+
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     """Global package manager extra options model.
 
@@ -383,12 +389,12 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
     """
 
-    dnf: dict[Literal["main"] | str, dict[str, Any]] | None = None
+    dnf: dict[Literal["main"] | str, dict[str, ConfigEntryValue]] | None = None
     ssl: SSLOptions | None = None
 
     @pydantic.model_validator(mode="before")
     @classmethod
-    def _validate_dnf_options(cls, data: Any) -> Any:
+    def _validate_dnf_options(cls, data: dict) -> dict:
         """DNF options model.
 
         DNF options can be provided via 2 'streams':
@@ -405,7 +411,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
         """
 
         def _raise_unexpected_type(repr_: str, *prefixes: str) -> None:
-            loc = ".".join(prefixes + (repr_,))
+            loc = f"{'.'.join(prefixes)}.{repr_}"
             raise ValueError(f"Unexpected data type for '{loc}' in input JSON: expected 'dict'")
 
         if "dnf" not in data:
