@@ -24,7 +24,7 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
-from hermeto.core.package_managers.pip.requirements import PipRequirement
+from hermeto.core.package_managers.python.pip.requirements import PipRequirement
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)

@@ -31,19 +31,19 @@ from hermeto.core.package_managers.general import (
     extract_git_info,
     get_vcs_qualifiers,
 )
-from hermeto.core.package_managers.pip.package_distributions import (
+from hermeto.core.package_managers.python.pip.package_distributions import (
     DistributionPackageInfo,
     process_package_distributions,
 )
-from hermeto.core.package_managers.pip.packages import (
+from hermeto.core.package_managers.python.pip.packages import (
     PipPackage,
     PipPackageInfo,
     PyPIPackage,
     URLPackage,
     VCSPackage,
 )
-from hermeto.core.package_managers.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
-from hermeto.core.package_managers.pip.requirements import (
+from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
+from hermeto.core.package_managers.python.pip.requirements import (
     ALL_FILE_EXTENSIONS,
     SDIST_FILE_EXTENSIONS,
     WHEEL_FILE_EXTENSION,
@@ -53,7 +53,7 @@ from hermeto.core.package_managers.pip.requirements import (
     validate_requirements,
     validate_requirements_hashes,
 )
-from hermeto.core.package_managers.pip.rust import (
+from hermeto.core.package_managers.python.pip.rust import (
     filter_packages_with_rust_code,
     find_and_fetch_rust_dependencies,
 )
