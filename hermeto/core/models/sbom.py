@@ -826,8 +826,7 @@ class SPDXSbom(pydantic.BaseModel):
             )
             accumulator.accumulate(purls, backend_anno.annotationDate)
 
-            external_references = get_external_references_from_source_info(package.sourceInfo)
-            pComponent = _partial_component(package, properties, external_references)
+            pComponent = _partial_component(package, properties)
 
             # cyclonedx doesn't support multiple purls, therefore
             # new component is created for each purl
@@ -895,8 +894,8 @@ def get_external_references_from_source_info(
 def _partial_component(
     package: SPDXPackage,
     properties: Iterable[Property],
-    external_references: Iterable[ExternalReference] | None,
 ) -> Callable:
+    external_references = get_external_references_from_source_info(package.sourceInfo)
     return partial(
         Component,
         name=package.name,
