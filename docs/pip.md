@@ -281,8 +281,7 @@ commit hash.
 *Hermeto does not support PEP 440 commit hashes in the url fragment (the `#`
 part), only directly after `@`.*
 
-> **NOTE**
->
+> [!NOTE]
 > It's impossible to craft a requirements.txt file that would download
 > dependencies from both https urls and git urls. Hermeto requires hashes for
 > https. Using one --hash makes pip require hashes for everything. Pip does not
@@ -305,16 +304,15 @@ supported.
 
 Make Hermeto download packages from the specified Python Package Index server.
 
-> **NOTE**
->
-> Applies to all the packages (and only the packages) from the file which
-> contains the `--index-url` option. If file A contains `--index-url` and file B
-> does not, Hermeto will download the packages declared in B from the default
-> index server (`https://pypi.org/simple`).
+Applies to all the packages (and only the packages) from the file which
+contains the `--index-url` option. If file A contains `--index-url` and file B
+does not, Hermeto will download the packages declared in B from the default
+index server (`https://pypi.org/simple`).
 
-:warning: **Do not include credentials in the index url.** If needed, provide
-authentication via
-[a **.netrc** file](https://pip.pypa.io/en/stable/topics/authentication/#netrc-support).
+> [!WARNING]
+> Do not include credentials in the index url. If needed, provide authentication
+> via a [.netrc](https://pip.pypa.io/en/stable/topics/authentication/#netrc-support)
+> file.
 
 ##### [`--require-hashes`](https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes)
 
@@ -550,8 +548,7 @@ Hermeto requires a fully resolved requirements-build.txt to do this. The file
 follows the same rules as requirements.txt, but contains build dependencies
 rather than runtime dependencies.
 
-> **NOTE**
->
+> [!NOTE]
 > This file must contain all the transitive build dependencies of each of your
 > transitive runtime dependencies (you are installing dependencies from source).
 

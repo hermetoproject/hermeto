@@ -15,13 +15,13 @@
   - [Updated project example](#updated-project-example)
 - [Full example walkthrough](#example)
 
-:warning: **This backend is best-effort only and apart from bug fixes we may be
-reluctant to introduce new functionality (unless trivially added), especially
-one that would require architectural OR `rpms.lock.yaml` schema changes simply
-because there's a native
-[DNF solution](https://github.com/rpm-software-management/libpkgmanifest) in the
-making which we expect will fully replace and hence deprecate this backend.**
-:warning:
+> [!WARNING]
+> This backend is best-effort only and apart from bug fixes we may be
+> reluctant to introduce new functionality (unless trivially added), especially
+> one that would require architectural OR `rpms.lock.yaml` schema changes simply
+> because there's a native
+> [DNF solution](https://github.com/rpm-software-management/libpkgmanifest) in the
+> making which we expect will fully replace and hence deprecate this backend.
 
 ## Prerequisites
 
@@ -372,9 +372,9 @@ This command will:
 
 ### Generate environment variables
 
-**Note**: The RPM package manager does not require any environment variables, so
-the `generate-env` command is not needed for RPM projects. This step can be
-skipped.
+> [!NOTE]
+> The RPM package manager does not require any environment variables, so
+> the `generate-env` command is not needed for RPM projects. This step can be skipped.
 
 ### Inject project files
 

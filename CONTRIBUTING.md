@@ -126,7 +126,8 @@ provided as a technical preview, with no stability, correctness, or backwards co
 Experimental package managers must always be considered a work in progress and never be relied upon in
 production.
 
-Note: `--dev-package-managers` is deprecated (no-op) and will be removed; use `x-<pkg>`.
+> [!NOTE]
+> `--dev-package-managers` is deprecated (no-op) and will be removed; use `x-<pkg>`.
 
 ### Coding standards
 
@@ -269,7 +270,8 @@ Build Hermeto image (localhost/hermeto:latest) and run **all** integration tests
 nox -s all-integration-tests
 ```
 
-Note: while developing, you can run the Nexus server with `tests/nexusserver/run.sh`.
+> [!NOTE]
+> While developing, you can run the Nexus server with `tests/nexusserver/run.sh`.
 
 To run integration-tests with custom image, specify the HERMETO\_TEST\_IMAGE environment variable or use the --hermeto-image option. Examples:
 

@@ -80,8 +80,7 @@ export HERMETO_PNPM__PROXY_LOGIN=user
 export HERMETO_PNPM__PROXY_PASSWORD=pass
 ```
 
-> **NOTE**
->
+> [!NOTE]
 > The proxy is used only for packages from the official npm registry. Other package
 > sources do not work with the proxy.
 
@@ -99,8 +98,7 @@ cat hermeto-output/bom.json
 
 ### Generate environment variables
 
-> **NOTE**
->
+> [!NOTE]
 > This step is only required when using pnpm v11.3 and later.
 
 Starting with pnpm 11.3, the [trustLockfile][] setting controls whether `pnpm install`
@@ -148,7 +146,7 @@ RUN source /tmp/hermeto.env && pnpm install
 # ...
 ```
 
-> **NOTE**
+> [!NOTE]
 > When using pnpm v10, you can omit sourcing hermeto.env and the volume mount in
 > the command below.
 

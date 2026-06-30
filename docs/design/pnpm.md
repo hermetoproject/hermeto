@@ -369,7 +369,8 @@ Workspace packages appear in the `importers` section. External dependencies appe
 in the `packages` section. Workspace packages will be included in the SBOM, but
 do not require any action during prefetch.
 
-**NOTE:** This approach is consistent with PURL generation in the yarn berry backend.
+> [!NOTE]
+> This approach is consistent with PURL generation in the yarn berry backend.
 
 ```yaml
 importers:
@@ -412,7 +413,8 @@ packages. The `name` and `version` fields could be determined from the respectiv
 Local packages will be included in the SBOM, but do not require any action during
 prefetch.
 
-**NOTE:** This approach is consistent with PURL generation in the yarn berry backend.
+> [!NOTE]
+> This approach is consistent with PURL generation in the yarn berry backend.
 
 ```yaml
 packages:

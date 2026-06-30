@@ -77,9 +77,10 @@ when running `cargo vendor`.
 versions from your Cargo.lock file. Any MSRV-aware resolution choices you made
 when generating the lock file are fully preserved.
 
-**Note**: The only exception is PERMISSIVE mode when Cargo.lock is out-of-sync
-with Cargo.toml. In this case, Hermeto regenerates the lock file without
-MSRV-aware resolution, potentially selecting newer dependency versions than
-your `rust-version` supports.
+> [!NOTE]
+> The only exception is PERMISSIVE mode when Cargo.lock is out-of-sync
+> with Cargo.toml. In this case, Hermeto regenerates the lock file without
+> MSRV-aware resolution, potentially selecting newer dependency versions than
+> your `rust-version` supports.
 
 [Cargo]: https://doc.rust-lang.org/cargo

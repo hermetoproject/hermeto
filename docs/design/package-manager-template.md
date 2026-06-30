@@ -68,7 +68,8 @@ Hermeto needs a reliable list of dependencies to pre-fetch. This section documen
 procedure needed to generate this list. Hermeto is **not** responsible for generating the
 dependency list on its own.
 
-_Note: The subsections below are not required, but serve as a useful starting point_.
+> [!NOTE]
+> The subsections below are not required, but serve as a useful starting point.
 
 #### Dependency List Toolchain [optional]
 
@@ -103,7 +104,8 @@ Describe how checksums are handled:
 Describe how Hermeto should fetch dependencies on the dependency list. This will form the core of
 the `fetch-deps` command implementation.
 
-_Note: The subsections below are not required, but serve as a useful starting point_.
+> [!NOTE]
+> The subsections below are not required, but serve as a useful starting point.
 
 #### Native vs. Hermeto Fetch [optional]
 
@@ -182,10 +184,11 @@ This section helps the community evaluate the maturity of the package manager. E
 managers use the `x-` prefix in their package manager name. This section should be completed prior
 to the community declaring the package manager "fully supported."
 
-**Note**: Components produced by experimental package managers (those with `x-` prefix) are
-identified through document-level annotations in generated SBOMs. Each experimental package manager
-creates a separate annotation listing the components it produced, with text such as
-`hermeto:backend:experimental:x-foo` and subjects containing the relevant bom-ref values.
+> [!NOTE]
+> Components produced by experimental package managers (those with `x-` prefix) are
+> identified through document-level annotations in generated SBOMs. Each experimental package manager
+> creates a separate annotation listing the components it produced, with text such as
+> `hermeto:backend:experimental:x-foo` and subjects containing the relevant bom-ref values.
 
 ### Current Limitations
 

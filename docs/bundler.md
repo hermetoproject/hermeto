@@ -40,8 +40,7 @@ are only available as pre-compiled binaries. In this case, you may need to
 enable the pre-fetching of gems for specific platforms using the `binary` field
 when running the `fetch-deps` command.
 
-> **WARNING**
->
+> [!WARNING]
 > The `binary` field is not fully supported yet. When the `binary` field is specified,
 > no platform filtering is performed. Instead, all available pre-compiled gems
 > from the Gemfile.lock are downloaded, regardless of platform-specific
@@ -102,8 +101,7 @@ Allow Bundler to use cached data when installing without network access.
 
 Stop Bundler from checking if a newer Bundler version is available on rubygems.org.
 
-> **NOTE**
->
+> [!NOTE]
 > A prefetch could fail when Bundler versions differ between the build system
 > and lockfile and when the former is outdated. Therefore we do not recommend
 > using mismatching or outdated versions of Bundler in build systems as this

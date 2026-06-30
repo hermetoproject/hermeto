@@ -54,8 +54,7 @@ Yarn's [PnP Zero-Installs][] are unsupported due to the potentially
 impossible for the Yarn cache to be checked for integrity using Yarn's standard
 tooling (i.e. `yarn install --check-cache`).
 
-> **NOTE**
->
+> [!NOTE]
 > The same applies to dealing with the `node_modules` top level directory which,
 > if checked into the repository, can also serve the Zero-Install purpose. If
 > you need further information on which dependency linking mode is used, have a
@@ -77,8 +76,7 @@ dependencies took action.
 For Yarn v3, even the official plugins are disabled, with the exception of
 [exec][].
 
-> **NOTE**
->
+> [!NOTE]
 > hermeto doesn't taint your project files, so any plugins you set will be
 > enabled normally in your build environment, the only problem that can arise is
 > if any of your specified plugins adds a new protocol which hermeto doesn't
@@ -145,8 +143,7 @@ hermeto fetch-deps \
   '{"type": "yarn", "workspaces": ["app-frontend", "lib-shared"]}'
 ```
 
-> **NOTE**
->
+> [!NOTE]
 > This feature requires **Yarn v4**. The workspace names must match the `name`
 > field in each workspace's `package.json`.
 

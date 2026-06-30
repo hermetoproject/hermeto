@@ -41,8 +41,8 @@ Validation checks that are currently relaxed in permissive mode:
 - Validation can be done using the CycloneDX [CLI](https://github.com/CycloneDX/cyclonedx-cli)
 tool.
 
-**NOTE:** We are using CycloneDX version 1.6, which is the latest version
-at the time of writing.
+> [!NOTE]
+> Hermeto uses CycloneDX version 1.6.
 
 ```bash
 cyclonedx validate --input-file bom.json
@@ -189,8 +189,9 @@ Example:
 - Validation can be done using the SPDX [online](https://tools.spdx.org/app/validate)
 tool.
 
-**NOTE:** We are using SPDX version 2.3. The latest version is 3.0.1 at the time
-of writing, but we are not planning to upgrade in the near future.
+> [!NOTE]
+> Hermeto uses SPDX version 2.3. There are currently no plans to upgrade to version
+> 3.0.1.
 
 #### Approach 1 (preferred): Annotations within the packages
 

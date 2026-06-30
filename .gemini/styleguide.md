@@ -12,6 +12,8 @@
 - Focus on good stylistic and correct english grammar
 - Use imperative mood language
 - Markdown format is used in the documentation
+- Each note starts with `> [!NOTE]` line
+- Each warning starts with `> [!WARNING]` line
 
 ## Python Code Style
 
