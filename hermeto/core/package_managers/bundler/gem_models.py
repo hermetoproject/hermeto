@@ -100,12 +100,10 @@ class GitDependency(_GemMetadata):
 
     Attributes:
         url:        The URL of the git repository.
-        branch:     The branch to checkout.
         ref:        Commit hash.
     """
 
     url: AcceptedUrl
-    branch: str | None = None
     ref: AcceptedGitRef
 
     @cached_property
@@ -134,16 +132,12 @@ class GitDependency(_GemMetadata):
         git_repo_path.path.mkdir(parents=True)
 
         log.info("Cloning git repository %s", self.url)
-        repo = GitRepo.clone_from(
+        GitRepo.clone_from(
             url=str(self.url),
             to_path=git_repo_path.path,
+            bare=True,
             env={"GIT_TERMINAL_PROMPT": "0"},
         )
-
-        if self.branch is not None:
-            repo.git.checkout(self.branch)
-
-        repo.git.reset("--hard", self.ref)
 
 
 class PathDependency(_GemMetadata):

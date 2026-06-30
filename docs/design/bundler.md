@@ -271,7 +271,7 @@ nokogiri-1.16.6.gem
 tzinfo-2.0.6.gem
 ```
 
-Notice that all the `.gem` dependencies are kept in their original format, and Git dependencies are just plain clones
+Notice that all the `.gem` dependencies are kept in their original format, and Git dependencies are bare git clones
 of the repository placed in a folder. For Git dependencies, the folder name must match this specific
 [format](https://github.com/rubygems/rubygems/blob/3da9b1dda0824d1d770780352bb1d3f287cb2df5/bundler/lib/bundler/source/git.rb#L130):
 
@@ -389,8 +389,6 @@ BUNDLE_DEPLOYMENT=true
 BUNDLE_NO_PRUNE=true
 BUNDLE_ALLOW_OFFLINE_INSTALL=true
 BUNDLE_DISABLE_VERSION_CHECK=true
-BUNDLE_DISABLE_LOCAL_BRANCH_CHECK=true
-BUNDLE_DISABLE_LOCAL_REVISION_CHECK=true
 ```
 
 - **BUNDLE_CACHE_PATH**: The directory that Bundler will place cached gems in when running bundle package, and that
@@ -414,16 +412,6 @@ package cache.
 
 - **BUNDLE_DISABLE_VERSION_CHECK**: Stop Bundler from checking if a newer Bundler version is
 available on rubygems.org.
-
-- **BUNDLE_DISABLE_LOCAL_REVISION_CHECK**: Allow Bundler to use a local git override without a
-branch specified in the Gemfile
-
-- **BUNDLE_DISABLE_LOCAL_BRANCH_CHECK**: Allow Bundler to use a local git override without checking
-if the revision present in the lockfile is present in the repository.
-
-- **BUNDLE_LOCAL__<GEM_NAME>**: Instead of checking out the remote git repository for GEM_NAME,
-the local git directory override will be used. See below for more information on Bundler's git
-dependency handling.
 
 For more information, see Bundler's [documentation](https://bundler.io/v2.5/man/bundle-config.1.html).
 

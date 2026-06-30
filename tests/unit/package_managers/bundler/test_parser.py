@@ -139,7 +139,6 @@ def test_parse_gemlock(
         {
             "type": "git",
             "url": "https://github.com/3scale/json-schema.git",
-            "branch": "devel",
             "ref": GIT_REF,
             **base_dep,
         },
@@ -164,7 +163,6 @@ def test_parse_gemlock(
             name="example",
             version="0.1.0",
             url="https://github.com/3scale/json-schema.git",
-            branch="devel",
             ref=GIT_REF,
         ),
         PathDependency(
@@ -215,6 +213,7 @@ def test_download_git_dependency_works(
     mock_git_clone.assert_called_once_with(
         url=str(dep.url),
         to_path=dep_path,
+        bare=True,
         env={"GIT_TERMINAL_PROMPT": "0"},
     )
     assert dep_path.exists()
@@ -241,6 +240,7 @@ def test_download_duplicate_git_dependency_is_skipped(
     mock_git_clone.assert_called_once_with(
         url=str(dep.url),
         to_path=dep_path,
+        bare=True,
         env={"GIT_TERMINAL_PROMPT": "0"},
     )
     assert dep_path.exists()
