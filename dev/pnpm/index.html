@@ -1080,11 +1080,11 @@ page for supported config file locations.</p>
 <span class="nb">export</span><span class="w"> </span><span class="nv">HERMETO_PNPM__PROXY_LOGIN</span><span class="o">=</span>user
 <span class="nb">export</span><span class="w"> </span><span class="nv">HERMETO_PNPM__PROXY_PASSWORD</span><span class="o">=</span>pass
 </code></pre></div>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>The proxy is used only for packages from the official npm registry. Other package
 sources do not work with the proxy.</p>
-</blockquote>
+</div>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <h3 id="fetch-dependencies">Fetch dependencies<a class="headerlink" href="#fetch-dependencies" title="Permanent link">&para;</a></h3>
 <p>Fetch all dependencies from pnpm-lock.yaml and generate an SBOM.</p>
@@ -1093,10 +1093,10 @@ tree<span class="w"> </span>hermeto-output/deps/pnpm
 cat<span class="w"> </span>hermeto-output/bom.json
 </code></pre></div>
 <h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>This step is only required when using pnpm v11.3 and later.</p>
-</blockquote>
+</div>
 <p>Starting with pnpm 11.3, the <a href="https://pnpm.io/blog/releases/11.3#trustlockfile">trustLockfile</a> setting controls whether <code>pnpm install</code>
 re-applies supply-chain verification checks to lockfile entries. Hermeto injects
 pnpm-lock.yaml to point tarball URLs to local files, so this verification must be
@@ -1129,11 +1129,11 @@ are also an option.</p>
 
 <span class="c"># ...</span>
 </code></pre></div>
-<blockquote>
-<p><strong>NOTE</strong>
-When using pnpm v10, you can omit sourcing hermeto.env and the volume mount in
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using pnpm v10, you can omit sourcing hermeto.env and the volume mount in
 the command below.</p>
-</blockquote>
+</div>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>

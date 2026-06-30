@@ -1304,13 +1304,13 @@ references are bound by the repository. Part of the analysis of the repository's
 <a href="https://yarnpkg.com/advanced/lexicon#unplugged-package">unplugged dependencies</a> checked into the repository which simply make it
 impossible for the Yarn cache to be checked for integrity using Yarn's standard
 tooling (i.e. <code>yarn install --check-cache</code>).</p>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>The same applies to dealing with the <code>node_modules</code> top level directory which,
 if checked into the repository, can also serve the Zero-Install purpose. If
 you need further information on which dependency linking mode is used, have a
 look at the <a href="https://yarnpkg.com/configuration/yarnrc#nodeLinker">nodeLinker</a> and on the <a href="https://yarnpkg.com/features/pnp">PnP</a> approach in general.</p>
-</blockquote>
+</div>
 <p>Also note that we may reconsider our initial decision when it comes to
 Zero-Installs provided the input repository doesn't rely on any dependencies
 which may include install scripts leading to their unpacking in a form of
@@ -1323,14 +1323,14 @@ dependency prefetch stage to ensure no other changes apart from downloading
 dependencies took action.</p>
 <p>For Yarn v3, even the official plugins are disabled, with the exception of
 <a href="https://v3.yarnpkg.com/features/plugins#official-plugins">exec</a>.</p>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>hermeto doesn't taint your project files, so any plugins you set will be
 enabled normally in your build environment, the only problem that can arise is
 if any of your specified plugins adds a new protocol which hermeto doesn't
 know about in which case the dependency pre-fetch stage will fail with an
 error.</p>
-</blockquote>
+</div>
 <h2 id="specifying-packages-to-process">Specifying packages to process<a class="headerlink" href="#specifying-packages-to-process" title="Permanent link">&para;</a></h2>
 <p>A package is a file or directory that is described by a <a href="https://yarnpkg.com/configuration/manifest">package.json</a> file
 (also called a manifest).</p>
@@ -1373,11 +1373,11 @@ also included and will appear in the SBOM.</p>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="s1">&#39;{&quot;type&quot;: &quot;yarn&quot;, &quot;workspaces&quot;: [&quot;app-frontend&quot;, &quot;lib-shared&quot;]}&#39;</span>
 </code></pre></div>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>This feature requires <strong>Yarn v4</strong>. The workspace names must match the <code>name</code>
 field in each workspace's <code>package.json</code>.</p>
-</blockquote>
+</div>
 <p>When <code>workspaces</code> is not specified, Hermeto fetches dependencies for all
 workspaces.</p>
 <h3 id="controlling-yarns-behavior">Controlling Yarn's behavior<a class="headerlink" href="#controlling-yarns-behavior" title="Permanent link">&para;</a></h3>

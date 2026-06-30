@@ -1153,13 +1153,13 @@ As a result, gems with native extensions will be compiled from the source.</p>
 are only available as pre-compiled binaries. In this case, you may need to
 enable the pre-fetching of gems for specific platforms using the <code>binary</code> field
 when running the <code>fetch-deps</code> command.</p>
-<blockquote>
-<p><strong>WARNING</strong></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p>The <code>binary</code> field is not fully supported yet. When the <code>binary</code> field is specified,
 no platform filtering is performed. Instead, all available pre-compiled gems
 from the Gemfile.lock are downloaded, regardless of platform-specific
 requirements. See <a href="https://github.com/hermetoproject/hermeto/issues/1075">#1075</a>.</p>
-</blockquote>
+</div>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p><a href="https://bundler.io">Bundler</a> uses an unorthodox system when dealing with
 <a href="https://bundler.io/v2.5/man/bundle-config.1.html#DESCRIPTION">configuration options</a>. The highest precedence is given to the config file,
@@ -1201,13 +1201,13 @@ path for your app explicitly with
 <p>Allow Bundler to use cached data when installing without network access.</p>
 <h3 id="bundle_disable_version_check">BUNDLE_DISABLE_VERSION_CHECK<a class="headerlink" href="#bundle_disable_version_check" title="Permanent link">&para;</a></h3>
 <p>Stop Bundler from checking if a newer Bundler version is available on rubygems.org.</p>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>A prefetch could fail when Bundler versions differ between the build system
 and lockfile and when the former is outdated. Therefore we do not recommend
 using mismatching or outdated versions of Bundler in build systems as this
 might result in unexpected failures.*</p>
-</blockquote>
+</div>
 <p>To create the configuration file, run the following command.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>inject-files<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output<span class="w"> </span>hermeto-output
 </code></pre></div>

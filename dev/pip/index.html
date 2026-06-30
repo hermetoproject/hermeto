@@ -2002,13 +2002,13 @@ URL instead, if possible</p>
 commit hash.</p>
 <p><em>Hermeto does not support PEP 440 commit hashes in the url fragment (the <code>#</code>
 part), only directly after <code>@</code>.</em></p>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>It's impossible to craft a requirements.txt file that would download
 dependencies from both https urls and git urls. Hermeto requires hashes for
 https. Using one --hash makes pip require hashes for everything. Pip does not
 support hashes for git dependencies. Please use https urls instead.</p>
-</blockquote>
+</div>
 <h3 id="supported-options">Supported options<a class="headerlink" href="#supported-options" title="Permanent link">&para;</a></h3>
 <p>Requirements files support some <code>pip install</code> options - refer to the
 <a href="https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options">Pip docs</a>.</p>
@@ -2019,16 +2019,16 @@ supported.</p>
 <h5 id="-index-url"><a href="https://pip.pypa.io/en/stable/cli/pip_install/#install-index-url"><code>--index-url</code></a><a class="headerlink" href="#-index-url" title="Permanent link">&para;</a></h5>
 <p><em>Supported since v0.8.0.</em></p>
 <p>Make Hermeto download packages from the specified Python Package Index server.</p>
-<blockquote>
-<p><strong>NOTE</strong></p>
 <p>Applies to all the packages (and only the packages) from the file which
 contains the <code>--index-url</code> option. If file A contains <code>--index-url</code> and file B
 does not, Hermeto will download the packages declared in B from the default
 index server (<code>https://pypi.org/simple</code>).</p>
-</blockquote>
-<p><img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /> <strong>Do not include credentials in the index url.</strong> If needed, provide
-authentication via
-<a href="https://pip.pypa.io/en/stable/topics/authentication/#netrc-support">a <strong>.netrc</strong> file</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not include credentials in the index url. If needed, provide authentication
+via a <a href="https://pip.pypa.io/en/stable/topics/authentication/#netrc-support">.netrc</a>
+file.</p>
+</div>
 <h5 id="-require-hashes"><a href="https://pip.pypa.io/en/stable/cli/pip_install/#install-require-hashes"><code>--require-hashes</code></a><a class="headerlink" href="#-require-hashes" title="Permanent link">&para;</a></h5>
 <p>Enables hash-checking mode. Typically redundant, since the presence of any
 <code>--hash</code> option enables hash-checking mode as well.</p>
@@ -2224,11 +2224,11 @@ download all the PEP 517 build dependencies before the build starts.</p>
 <p>Hermeto requires a fully resolved requirements-build.txt to do this. The file
 follows the same rules as requirements.txt, but contains build dependencies
 rather than runtime dependencies.</p>
-<blockquote>
-<p><strong>NOTE</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>This file must contain all the transitive build dependencies of each of your
 transitive runtime dependencies (you are installing dependencies from source).</p>
-</blockquote>
+</div>
 <p>We recommend the <a href="https://pypi.org/project/pybuild-deps">pybuild-deps</a> package to generate the requirements-build.txt
 file. It will automatically generate build requirements from your
 requirements.txt file.</p>

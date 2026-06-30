@@ -1304,13 +1304,15 @@
 <li><a href="#updated-project-example">Updated project example</a></li>
 <li><a href="#example">Full example walkthrough</a></li>
 </ul>
-<p><img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /> <strong>This backend is best-effort only and apart from bug fixes we may be
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This backend is best-effort only and apart from bug fixes we may be
 reluctant to introduce new functionality (unless trivially added), especially
 one that would require architectural OR <code>rpms.lock.yaml</code> schema changes simply
 because there's a native
 <a href="https://github.com/rpm-software-management/libpkgmanifest">DNF solution</a> in the
-making which we expect will fully replace and hence deprecate this backend.</strong>
-<img alt="⚠️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/26a0.png" title=":warning:" /></p>
+making which we expect will fully replace and hence deprecate this backend.</p>
+</div>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>To use Hermeto with RPM packages, ensure you have the following tools installed:</p>
 <ul>
@@ -1602,9 +1604,11 @@ file:</p>
 <li>Generate an SBOM with package information</li>
 </ul>
 <h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
-<p><strong>Note</strong>: The RPM package manager does not require any environment variables, so
-the <code>generate-env</code> command is not needed for RPM projects. This step can be
-skipped.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The RPM package manager does not require any environment variables, so
+the <code>generate-env</code> command is not needed for RPM projects. This step can be skipped.</p>
+</div>
 <h3 id="inject-project-files">Inject project files<a class="headerlink" href="#inject-project-files" title="Permanent link">&para;</a></h3>
 <p>Generate repository metadata and configuration files:</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>inject-files<span class="w"> </span>./hermeto-output<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
