@@ -629,6 +629,84 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authentication-v2-schema-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication [v2 schema only]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication [v2 schema only]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bearer-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bearer token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-basic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP Basic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variable-interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variable interpolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-fetched-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1007,6 +1085,84 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authentication-v2-schema-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication [v2 schema only]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication [v2 schema only]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bearer-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bearer token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-basic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP Basic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variable-interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variable interpolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-fetched-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1098,6 +1254,7 @@
 <h1 id="generic-fetcher">Generic fetcher<a class="headerlink" href="#generic-fetcher" title="Permanent link">&para;</a></h1>
 <ul>
 <li><a href="#specifying-artifacts-to-fetch">Specifying artifacts to fetch</a></li>
+<li><a href="#authentication-v2-schema-only">Authentication</a></li>
 <li><a href="#using-fetched-dependencies">Using fetched dependencies</a></li>
 <li><a href="#example">Full example walkthrough</a></li>
 </ul>
@@ -1116,10 +1273,11 @@ path or a path relative to the package <code>path</code>.</p>
 <p>Below are sections for each type of supported artifact. Several artifacts of
 different types can be specified in a single lockfile.</p>
 <p>The lockfile must always contain a <code>metadata</code> header and a list of <code>artifacts</code>.
-Currently, the only supported version is 1.0:</p>
+Currently supported version: 2.0 (backwards compatible with 1.0). Version 2.0
+is required when using <a href="#authentication-v2-schema-only">authentication</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span><span class="w">  </span><span class="c1"># or &quot;2.0&quot;</span>
 <span class="nt">artifacts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </code></pre></div>
 <p>Hermeto can be run as follows</p>
@@ -1205,6 +1363,114 @@ lockfile. The download URL will be assembled using this information.</p>
 <p>These files will be reported with <code>pkg:maven</code> purl in the output SBOM, because
 the URL is fully assembled from the provided attributes and therefore the file
 can be assumed to be a maven artifact.</p>
+<h2 id="authentication-v2-schema-only">Authentication [v2 schema only]<a class="headerlink" href="#authentication-v2-schema-only" title="Permanent link">&para;</a></h2>
+<p>The generic fetcher supports per-artifact authentication for downloading from
+private repositories and registries. Authentication requires lockfile version
+<code>"2.0"</code>. Artifacts without <code>auth</code> do not require authentication and will still
+use <code>.netrc</code> credentials if available.</p>
+<h3 id="auth-types">Auth types<a class="headerlink" href="#auth-types" title="Permanent link">&para;</a></h3>
+<p>Each artifact can specify an <code>auth</code> block with exactly one auth type. Supported
+auth types are listed below:</p>
+<h4 id="bearer-token">Bearer token<a class="headerlink" href="#bearer-token" title="Permanent link">&para;</a></h4>
+<p>Header-based token authentication. Supports most platforms (GitHub, GitLab,
+Gitea, JFrog Artifactory, etc.). Hermeto sends the configured <code>header</code> and
+<code>value</code> exactly as written — it does not add a <code>Bearer</code> prefix or otherwise
+transform the value. Consult the platform's authentication documentation for the
+correct header name and value format.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header</code></td>
+<td>No</td>
+<td>HTTP header name. Defaults to <code>Authorization</code></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>Yes</td>
+<td>Header value, supports <code>$VAR</code> / <code>${VAR}</code> environment variable interpolation</td>
+</tr>
+</tbody>
+</table>
+<h4 id="http-basic">HTTP Basic<a class="headerlink" href="#http-basic" title="Permanent link">&para;</a></h4>
+<p>Username and password authentication encoded as a Base64 <code>Authorization</code> header.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username</code></td>
+<td>Yes</td>
+<td>Username, supports <code>$VAR</code> / <code>${VAR}</code> interpolation</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>Yes</td>
+<td>Password, supports <code>$VAR</code> / <code>${VAR}</code> interpolation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="environment-variable-interpolation">Environment variable interpolation<a class="headerlink" href="#environment-variable-interpolation" title="Permanent link">&para;</a></h3>
+<p>Secret values should be provided via environment variables using <code>$VAR</code> or
+<code>${VAR}</code> syntax. Hermeto will fail with a clear error if any referenced variable
+is not set. Use <code>$$</code> for a literal dollar sign.</p>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<p><em>⚠ The examples below show common platform conventions. Both the <code>header</code> name
+and <code>value</code> must match what your platform expects — for example, GitLab uses a
+<code>PRIVATE-TOKEN</code> header with the raw token, while GitHub expects
+<code>Authorization: Bearer &lt;token&gt;</code>. Consult the platform's authentication
+documentation when configuring <code>auth</code>.</em></p>
+<p><strong>GitLab</strong> (custom <code>PRIVATE-TOKEN</code> header, raw token value):</p>
+<div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz&quot;</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:abc123...&quot;</span>
+<span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">header</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE-TOKEN</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$GITLAB_TOKEN&quot;</span>
+</code></pre></div>
+<p><strong>GitHub</strong> (<code>Authorization</code> header with <code>Bearer</code> prefix in the value):</p>
+<div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://api.github.com/repos/owner/repo/tarball/v1.0.0&quot;</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:abc123...&quot;</span>
+<span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Bearer</span><span class="nv"> </span><span class="s">$GITHUB_TOKEN&quot;</span>
+</code></pre></div>
+<p><strong>Mixed</strong> (authenticated and public artifacts):</p>
+<div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz&quot;</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:...&quot;</span>
+<span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">header</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE-TOKEN</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$GITLAB_TOKEN&quot;</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://example.com/public-file.zip&quot;</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:...&quot;</span>
+</code></pre></div>
+<p>Then run hermeto with the required environment variables set:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">GITLAB_TOKEN</span><span class="o">=</span><span class="s2">&quot;glpat-xxxxxxxxxxxxxxxxxxxx&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span><span class="s2">&quot;github_pat_xxxxxxxxxxxxxxxxxxxxx&quot;</span>
+hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>generic
+</code></pre></div>
 <h2 id="using-fetched-dependencies">Using fetched dependencies<a class="headerlink" href="#using-fetched-dependencies" title="Permanent link">&para;</a></h2>
 <p>Hermeto downloads the files into the <code>deps/generic/</code> subpath of the output
 directory. Files are named according to the <code>filename</code> field if specified,
