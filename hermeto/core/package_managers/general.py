@@ -98,6 +98,7 @@ async def _async_download_binary_file(
     headers: dict[str, str] | None = None,
     ssl_context: ssl.SSLContext | None = None,
     chunk_size: int = 8192,
+    auth: str | None = None,
 ) -> None:
     """
     Download a binary file (such as a TAR archive) from a URL using asyncio.
@@ -116,6 +117,7 @@ async def _async_download_binary_file(
             f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
         )
 
+        headers = {"Authorization": auth} if auth is not None else headers
         async with session.get(
             url,
             timeout=timeout,
@@ -145,6 +147,7 @@ async def async_download_files(
     concurrency_limit: int,
     ssl_context: ssl.SSLContext | None = None,
     headers: Mapping[str, dict[str, str]] | None = None,
+    auth: str | None = None,
 ) -> None:
     """Asynchronous function to download files.
 
@@ -201,6 +204,7 @@ async def async_download_files(
                         download_path,
                         ssl_context=ssl_context,
                         headers=headers.get(url) if headers else None,
+                        auth=auth,
                     )
                 )
             )
