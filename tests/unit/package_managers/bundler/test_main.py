@@ -6,10 +6,12 @@ import pytest
 from git.repo import Repo
 
 from hermeto.core.constants import Mode
-from hermeto.core.errors import NotAGitRepo, PackageRejected
+from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
+from hermeto.core.models.output import EnvironmentVariable
 from hermeto.core.package_managers.bundler.main import (
     _get_main_package_name_and_version,
     _get_repo_name_from_origin_remote,
+    _prepare_environment_variables_for_hermetic_build,
     _prepare_for_hermetic_build,
 )
 from hermeto.core.package_managers.bundler.parser import (
@@ -153,6 +155,37 @@ def test_prepare_for_hermetic_build_injects_necessary_variable_into_existing_alt
         result = _prepare_for_hermetic_build(rooted_tmp_path, rooted_tmp_path)
 
     assert result.template == existing_preamble + expected_alternate_config_contents
+
+
+def test_prepare_environment_variables_generates_git_config_entries_for_git_deps() -> None:
+    git_paths = [
+        ("gem-a", "gem-a-aabb11223344", "https://git.example/gem-a.git"),
+        ("gem-b", "gem-b-ccdd55667788", "https://git.example/gem-b.git"),
+    ]
+
+    result = _prepare_environment_variables_for_hermetic_build(git_paths)
+
+    expected = [
+        EnvironmentVariable(name="BUNDLE_APP_CONFIG", value="${output_dir}/bundler/config_override"),
+        EnvironmentVariable(name="GIT_CONFIG_COUNT", value="3"),
+        EnvironmentVariable(name="GIT_CONFIG_KEY_0", value="url.file://${output_dir}/deps/bundler/gem-a-aabb11223344/.insteadOf"),
+        EnvironmentVariable(name="GIT_CONFIG_VALUE_0", value="https://git.example/gem-a.git"),
+        EnvironmentVariable(name="GIT_CONFIG_KEY_1", value="url.file://${output_dir}/deps/bundler/gem-b-ccdd55667788/.insteadOf"),
+        EnvironmentVariable(name="GIT_CONFIG_VALUE_1", value="https://git.example/gem-b.git"),
+        EnvironmentVariable(name="GIT_CONFIG_KEY_2", value="protocol.file.allow"),
+        EnvironmentVariable(name="GIT_CONFIG_VALUE_2", value="always"),
+    ]
+    assert result == expected
+
+
+def test_prepare_environment_variables_raises_on_duplicate_git_url() -> None:
+    git_paths = [
+        ("gem-a", "gem-a-aabbccdd1234", "https://git.example/monorepo.git"),
+        ("gem-b", "gem-b-eeff00112233", "https://git.example/monorepo.git"),
+    ]
+
+    with pytest.raises(UnsupportedFeature, match="same repository"):
+        _prepare_environment_variables_for_hermetic_build(git_paths)
 
 
 @mock.patch("hermeto.core.package_managers.bundler.main.get_repo_id")

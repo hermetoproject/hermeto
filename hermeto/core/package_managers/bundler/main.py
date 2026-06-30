@@ -35,9 +35,6 @@ CONFIG_OVERRIDE = "bundler/config_override"
 def fetch_bundler_source(request: Request) -> RequestOutput:
     """Resolve and process all bundler packages."""
     components: list[Component] = []
-    environment_variables: list[EnvironmentVariable] = (
-        _prepare_environment_variables_for_hermetic_build()
-    )
     project_files: list[ProjectFile] = []
     git_paths = []
 
@@ -50,9 +47,11 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
         )
         components.extend(_comps)
         git_paths.extend(_git_paths)
-    project_files.append(
-        _prepare_for_hermetic_build(request.source_dir, request.output_dir, git_paths)
+
+    environment_variables: list[EnvironmentVariable] = (
+        _prepare_environment_variables_for_hermetic_build(git_paths)
     )
+    project_files.append(_prepare_for_hermetic_build(request.source_dir, request.output_dir))
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "bundler"):
@@ -65,17 +64,17 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
     )
 
 
-# Aliases for git dependency name and git dependency name as
-# it is written to file system:
+# Aliases for git dependency name, file system name, and remote URL:
 DepName = str
 FSDepName = str
+DepURL = str
 
 
 def _resolve_bundler_package(
     package_dir: RootedPath,
     output_dir: RootedPath,
     binary_filters: BundlerBinaryFilters | None = None,
-) -> tuple[list[Component], list[tuple[DepName, FSDepName]]]:
+) -> tuple[list[Component], list[tuple[DepName, FSDepName, DepURL]]]:
     """Process a request for a single bundler package."""
     deps_dir = output_dir.join_within_root("deps", "bundler")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
@@ -110,7 +109,7 @@ def _resolve_bundler_package(
                 files_to_download[dep.remote_location] = dep.download_location(deps_dir)
             case GitDependency():
                 dep.download_to(deps_dir)
-                git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12]))
+                git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12], str(dep.url)))
 
         c = Component(name=dep.name, version=dep.version, purl=dep.purl, properties=properties)
         components.append(c)
@@ -196,16 +195,53 @@ def _get_repo_name_from_origin_remote(package_dir: RootedPath) -> str:
     return str(resolved_path)
 
 
-def _prepare_environment_variables_for_hermetic_build() -> list[EnvironmentVariable]:
-    return [
+def _prepare_environment_variables_for_hermetic_build(
+    git_paths: list[tuple[DepName, FSDepName, DepURL]] | None = None,
+) -> list[EnvironmentVariable]:
+    env_vars = [
         # Contains path to a directory where a new config could be found.
         EnvironmentVariable(name="BUNDLE_APP_CONFIG", value="${output_dir}/" + CONFIG_OVERRIDE),
     ]
+    if git_paths:
+        # Redirect git remote URLs to pre-fetched local clones via git's
+        # GIT_CONFIG_COUNT/KEY/VALUE mechanism. This injects url.insteadOf
+        # entries without replacing the global git config.
+        # See: https://git-scm.com/docs/git-config#ENVIRONMENT
+        _check_for_duplicate_git_urls(git_paths)
+        # (key, value) pairs for GIT_CONFIG_KEY_N / GIT_CONFIG_VALUE_N
+        git_config: list[tuple[str, str]] = []
+        for _packname, dirname, url in git_paths:
+            clone_file_url = "file://${output_dir}/deps/bundler/" + dirname + "/"
+            git_config.append((f"url.{clone_file_url}.insteadOf", url))
+        git_config.append(("protocol.file.allow", "always"))
+
+        env_vars.append(
+            EnvironmentVariable(name="GIT_CONFIG_COUNT", value=str(len(git_config)))
+        )
+        for idx, (key, value) in enumerate(git_config):
+            env_vars.append(EnvironmentVariable(name=f"GIT_CONFIG_KEY_{idx}", value=key))
+            env_vars.append(EnvironmentVariable(name=f"GIT_CONFIG_VALUE_{idx}", value=value))
+    return env_vars
 
 
-def _prepare_for_hermetic_build(
-    source_dir: RootedPath, output_dir: RootedPath, git_paths: list | None = None
-) -> ProjectFile:
+def _check_for_duplicate_git_urls(
+    git_paths: list[tuple[DepName, FSDepName, DepURL]],
+) -> None:
+    """Raise if multiple git deps share the same URL with different revisions."""
+    url_to_dirs: dict[str, set[str]] = {}
+    for _packname, dirname, url in git_paths:
+        url_to_dirs.setdefault(url, set()).add(dirname)
+    for url, dirs in url_to_dirs.items():
+        if len(dirs) > 1:
+            raise UnsupportedFeature(
+                f"Multiple git dependencies point to the same repository ({url}) "
+                f"but use different revisions: {', '.join(sorted(dirs))}. "
+                "This is not supported because git's url.insteadOf redirect "
+                "can only map a repository URL to a single local clone."
+            )
+
+
+def _prepare_for_hermetic_build(source_dir: RootedPath, output_dir: RootedPath) -> ProjectFile:
     """Prepare a package for hermetic build by injecting necessary config."""
     potential_bundle_config = source_dir.join_within_root(".bundle/config").path
     hermetic_config = dedent(
