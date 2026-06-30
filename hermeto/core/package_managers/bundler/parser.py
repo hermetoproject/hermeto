@@ -45,10 +45,12 @@ def parse_lockfile(
     lockfile_parser = scripts_dir / "lockfile_parser.rb"
     try:
         output = run_cmd(cmd=[str(lockfile_parser)], params={"cwd": package_dir.path})
-    except subprocess.CalledProcessError as e:
-        raise PackageManagerError("Failed to parse Gemfile.lock") from e
-
-    json_output = json.loads(output)
+        json_output = json.loads(output)
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        details = e.stderr if isinstance(e, subprocess.CalledProcessError) else output
+        raise PackageManagerError(
+            f"Failed to parse Gemfile.lock{f': {details}' if details else ''}"
+        ) from e
 
     bundler_version: str = json_output["bundler_version"]
     log.info("Package %s is bundled with version %s", package_dir.path.name, bundler_version)
