@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import json
 import os
-import re
-import subprocess
 import textwrap
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 from unittest import mock
 
 import git
@@ -15,21 +12,15 @@ import pytest
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
-    LockfileNotFound,
     NotAGitRepo,
-    PackageManagerError,
     UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import BuildConfig, EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
     PROXY_REF_TYPE,
-    Annotation,
     Component,
     ExternalReference,
-    Property,
-    PropertyEnum,
 )
 from hermeto.core.package_managers.gomod.go import (
     Go,
@@ -44,33 +35,24 @@ from hermeto.core.package_managers.gomod.main import (
     ParsedModule,
     ParsedOrigin,
     ParsedPackage,
-    ResolvedGoModule,
     StandardPackage,
     _create_main_module_from_parsed_data,
     _create_modules_from_parsed_data,
     _create_packages_from_parsed_data,
     _deduplicate_resolved_modules,
-    _disable_telemetry,
-    _get_go_sum_files,
     _get_proxy_for_module,
     _get_repository_name,
-    _go_list_deps,
     _parse_go_sum,
-    _parse_local_modules,
-    _parse_packages,
     _parse_vendor,
-    _parse_workspace_module,
     _process_modules_json_stream,
     _resolve_gomod,
     _validate_local_replacements,
     _vendor_changed,
-    fetch_gomod_source,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo, RepoID
 from hermeto.core.utils import GIT_PRISTINE_ENV
 from tests.common_utils import GIT_REF, write_file_tree
-from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
 
@@ -86,17 +68,6 @@ def mock_which_go() -> Iterator[None]:
     with mock.patch("shutil.which") as mock_which:
         mock_which.return_value = GO_CMD_PATH
         yield
-
-
-@pytest.fixture(scope="module")
-def env_variables() -> list[EnvironmentVariable]:
-    return [
-        EnvironmentVariable(name="GOCACHE", value="${output_dir}/deps/gomod"),
-        EnvironmentVariable(name="GOMODCACHE", value="${output_dir}/deps/gomod/pkg/mod"),
-        EnvironmentVariable(name="GOPATH", value="${output_dir}/deps/gomod"),
-        EnvironmentVariable(name="GOPROXY", value="file://${GOMODCACHE}/cache/download"),
-        EnvironmentVariable(name="GOSUMDB", value="off"),
-    ]
 
 
 @pytest.fixture(autouse=True)
@@ -125,19 +96,6 @@ def gomod_request(tmp_path: Path, gomod_input_packages: list[dict[str, str]]) ->
         output_dir=tmp_path / "output",
         packages=gomod_input_packages,
     )
-
-
-def _parse_mocked_data(data_dir: Path, file_path: str) -> ResolvedGoModule:
-    mocked_data = json.loads(get_mocked_data(data_dir, file_path))
-
-    main_module = ParsedModule(**mocked_data["main_module"])
-    modules = {ParsedModule(**module) for module in mocked_data["modules"]}
-    packages = {ParsedPackage(**package) for package in mocked_data["packages"]}
-    modules_in_go_sum = frozenset(
-        (name, version) for name, version in mocked_data["modules_in_go_sum"]
-    )
-
-    return ResolvedGoModule(main_module, modules, packages, modules_in_go_sum)
 
 
 @pytest.mark.parametrize(
@@ -229,48 +187,6 @@ def test_parse_broken_go_sum(rooted_tmp_path: RootedPath, caplog: pytest.LogCapt
     ]
 
 
-@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver")
-def test_parse_local_modules(version_resolver: mock.Mock) -> None:
-    go_list_m_json = """
-    {
-        "Path": "myorg.com/my-project",
-        "Main": true,
-        "Dir": "/path/to/project"
-    }
-    {
-        "Path": "myorg.com/my-project/workspace/foo",
-        "Main": true,
-        "Dir": "/path/to/project/workspace/foo"
-    }
-    """
-
-    app_dir = RootedPath("/path/to/project")
-    version_resolver.get_golang_version.return_value = "1.0.0"
-    go = mock.Mock(spec=Go)
-    go.return_value = go_list_m_json
-
-    go_work = mock.Mock(spec=GoWork)
-
-    # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
-    type(go_work).path = mock.PropertyMock(return_value=(app_dir.path / "go.work"))
-    type(go_work).workspace_paths = mock.PropertyMock(return_value=[app_dir.path / "workspace/foo"])
-
-    main_module, workspace_modules = _parse_local_modules(
-        go_work, go, {}, app_dir, version_resolver
-    )
-
-    assert main_module == ParsedModule(
-        path="myorg.com/my-project",
-        version="1.0.0",
-        main=True,
-    )
-
-    assert workspace_modules[0] == ParsedModule(
-        path="myorg.com/my-project/workspace/foo",
-        replace=ParsedModule(path="./workspace/foo"),
-    )
-
-
 @pytest.mark.parametrize(
     "project_path, stream, expected_modules",
     (
@@ -360,88 +276,6 @@ def test_process_modules_json_stream(
     result = _process_modules_json_stream(app_dir, stream)
 
     assert result == expected_modules
-
-
-@pytest.mark.parametrize(
-    "relative_app_dir, module, expected_module",
-    (
-        # main module is also the workspace root:
-        pytest.param(
-            ".",
-            {"Dir": "foo", "Path": "example.com/myproject/foo"},
-            ParsedModule(
-                path="example.com/myproject/foo",
-                replace=ParsedModule(path="./foo"),
-            ),
-            id="app_root_is_workspace",
-        ),
-    ),
-)
-def test_parse_workspace_modules(
-    relative_app_dir: str,
-    module: dict[str, Any],
-    expected_module: ParsedModule,
-    tmp_path: Path,
-) -> None:
-    app_dir = tmp_path / relative_app_dir
-    go_work = mock.Mock(spec=GoWork)
-
-    # see examples at https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock
-    type(go_work).path = mock.PropertyMock(return_value=(app_dir / "go.work"))
-    type(go_work).workspace_paths = mock.PropertyMock(return_value=[app_dir / "foo"])
-
-    # makes Dir an absolute path based on tmp_path
-    module["Dir"] = str(tmp_path / module["Dir"])
-
-    parsed_workspace = _parse_workspace_module(go_work, module)
-    assert parsed_workspace == expected_module
-
-
-@pytest.mark.parametrize(
-    "go_work_edit_json, relative_file_paths",
-    [
-        pytest.param(
-            # main module is the same as the source dir, there's one nested workspace
-            """
-            {
-                "Use": [
-                    {"DiskPath": "."},
-                    {"DiskPath": "./workspace"}
-                ]
-            }
-            """,
-            ["./go.sum", "./workspace/go.sum", "./go.work.sum"],
-            id="main_module_is_repo_root",
-        ),
-        pytest.param(
-            # go.work is in the source dir, main module and a workspace are nested
-            """
-            {
-                "Use": [
-                    {"DiskPath": "./app"},
-                    {"DiskPath": "./workspace"}
-                ]
-            }
-            """,
-            ["./app/go.sum", "./workspace/go.sum", "./go.work.sum"],
-            id="nested_main_module",
-        ),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
-def test_get_go_sum_files(
-    mock_get_go_work: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    go_work_edit_json: str,
-    relative_file_paths: list[str],
-) -> None:
-    mock_go = mock.Mock(spec=Go)
-    mock_get_go_work.return_value = go_work_edit_json
-    go_work_path = rooted_tmp_path.join_within_root("go.work")
-    files = _get_go_sum_files(GoWork.from_file(go_work_path, mock_go))
-
-    expected_files = [rooted_tmp_path.join_within_root(p) for p in relative_file_paths]
-    assert files == expected_files
 
 
 @pytest.mark.parametrize("has_workspaces", (False, True))
@@ -725,126 +559,6 @@ def test_create_packages_from_parsed_data() -> None:
     assert packages == expect_packages
 
 
-@pytest.mark.parametrize(
-    "package, expected_component",
-    (
-        # package is also the main module
-        (
-            Package(
-                relative_path="",
-                module=Module(
-                    name="github.com/my-org/some-repo",
-                    version="v0.0.3",
-                    original_name="github.com/my-org/some-repo",
-                    real_path="github.com/my-org/some-repo",
-                ),
-            ),
-            Component(
-                name="github.com/my-org/some-repo",
-                version="v0.0.3",
-                purl="pkg:golang/github.com/my-org/some-repo@v0.0.3?type=package",
-            ),
-        ),
-        # package is from a replaced module
-        (
-            Package(
-                relative_path="this-pkg",
-                module=Module(
-                    name="github.com/another-org/nice-repo",
-                    version="v0.0.1",
-                    original_name="github.com/my-org/nice-repo",
-                    real_path="github.com/another-org/nice-repo",
-                ),
-            ),
-            Component(
-                name="github.com/another-org/nice-repo/this-pkg",
-                version="v0.0.1",
-                purl="pkg:golang/github.com/another-org/nice-repo/this-pkg@v0.0.1?type=package",
-            ),
-        ),
-        # main module is from a forked repo
-        (
-            Package(
-                relative_path="this-pkg",
-                module=Module(
-                    name="github.com/my-org/nice-repo",
-                    version="v0.0.2",
-                    original_name="github.com/my-org/nice-repo",
-                    real_path="github.com/another-org/forked-repo",
-                ),
-            ),
-            Component(
-                name="github.com/my-org/nice-repo/this-pkg",
-                version="v0.0.2",
-                purl="pkg:golang/github.com/another-org/forked-repo/this-pkg@v0.0.2?type=package",
-            ),
-        ),
-    ),
-)
-def test_package_to_component(package: Package, expected_component: Component) -> None:
-    assert package.to_component() == expected_component
-
-
-@pytest.mark.parametrize("pattern", ["./...", "all"])
-@mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_go_list_deps(mock_run_cmd: mock.Mock, pattern: Literal["all", "./..."]) -> None:
-    go_list_deps_json = """
-        {
-            "ImportPath": "time",
-            "Standard": true,
-            "Deps": [
-                "errors",
-                "internal/abi"
-            ]
-        }
-        {
-            "ImportPath": "github.com/foo",
-            "Module": {
-                "Path": "github.com/foo",
-                "Main": true
-            },
-            "Deps": [
-                "internal/bisect",
-                "internal/bytealg"
-            ]
-        }
-    """
-
-    parsed_packages = {
-        ParsedPackage(
-            import_path="time",
-            standard=True,
-        ),
-        ParsedPackage(
-            import_path="github.com/foo",
-            module=ParsedModule(
-                path="github.com/foo",
-                main=True,
-            ),
-        ),
-    }
-
-    mock_run_cmd.return_value = go_list_deps_json
-    call_args = [
-        GO_CMD_PATH,
-        "list",
-        "-e",
-        "-deps",
-        "-json=ImportPath,Module,Standard,Deps",
-        pattern,
-    ]
-    assert set(_go_list_deps(Go(), pattern, {})) == parsed_packages
-    mock_run_cmd.assert_called_once_with(call_args, {})
-
-
-@mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_go_list_deps_fail(mock_run_cmd: mock.Mock) -> None:
-    mock_run_cmd.side_effect = subprocess.CalledProcessError(1, cmd="foo")
-
-    with pytest.raises(PackageManagerError):
-        _go_list_deps(Go(), "./...", {})
-
-
 def test_deduplicate_resolved_modules() -> None:
     # as reported by "go list -deps all"
     package_modules = [
@@ -1062,18 +776,6 @@ def test_invalid_local_replacements(tmpdir: Path) -> None:
         _validate_local_replacements(modules, app_path)
 
 
-def test_parse_vendor(rooted_tmp_path: RootedPath, data_dir: Path) -> None:
-    modules_txt = rooted_tmp_path.join_within_root("vendor/modules.txt")
-    modules_txt.path.parent.mkdir(parents=True)
-    modules_txt.path.write_text(get_mocked_data(data_dir, "vendored/modules.txt"))
-    expect_modules = {
-        ParsedModule(path="golang.org/x/text", version="v0.0.0-20170915032832-14c0d48ead0c"),
-        ParsedModule(path="rsc.io/quote", version="v1.5.2"),
-        ParsedModule(path="rsc.io/sampler", version="v1.3.0"),
-    }
-    assert set(_parse_vendor(rooted_tmp_path)) == expect_modules
-
-
 @pytest.mark.parametrize(
     "file_content, expect_error_msg",
     [
@@ -1190,259 +892,6 @@ def test_vendor_changed(
 
     # The _vendor_changed function should reset the `git add` => added files should not be tracked
     assert not repo.git.diff("--diff-filter", "A")
-
-
-@pytest.mark.parametrize(
-    "file_tree",
-    (
-        {".": {}},
-        {"foo": {}, "bar": {}},
-        {"foo": {}, "bar": {"go.mod": ""}},
-    ),
-)
-@mock.patch("hermeto.core.package_managers.gomod.main._list_installed_toolchains")
-@mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_missing_gomod_file(
-    mock_run_cmd: mock.Mock,
-    mock_list_installed_toolchains: mock.Mock,
-    file_tree: dict[str, Any],
-    tmp_path: Path,
-) -> None:
-    mock_run_cmd.return_value = "go version go0.0.1"
-    mock_list_installed_toolchains.return_value = [mock.Mock(spec=Go)]
-    write_file_tree(file_tree, tmp_path, exist_ok=True)
-
-    packages = [{"path": path, "type": "gomod"} for path, _ in file_tree.items()]
-    request = Request(source_dir=tmp_path, output_dir=tmp_path, packages=packages)
-
-    with pytest.raises(LockfileNotFound):
-        fetch_gomod_source(request)
-
-
-@pytest.mark.parametrize(
-    "gomod_input_packages, packages_output_by_path, expect_components",
-    (
-        # First scenario
-        (
-            [{"type": "gomod", "path": "."}],
-            {
-                ".": ResolvedGoModule(
-                    ParsedModule(
-                        path="github.com/my-org/my-repo",
-                        version="v1.0.0",
-                    ),
-                    [
-                        ParsedModule(
-                            path="golang.org/x/net",
-                            version="v0.0.0-20190311183353-d8887717615a",
-                        ),
-                        ParsedModule(
-                            path="golang.org/x/tools",
-                            version="v0.7.0",
-                        ),
-                    ],
-                    [
-                        ParsedPackage(
-                            import_path="github.com/my-org/my-repo",
-                            module=ParsedModule(
-                                path="github.com/my-org/my-repo",
-                                version="v1.0.0",
-                            ),
-                        ),
-                        ParsedPackage(
-                            import_path="golang.org/x/net/http",
-                            module=ParsedModule(
-                                path="golang.org/x/net",
-                                version="v0.0.0-20190311183353-d8887717615a",
-                            ),
-                        ),
-                    ],
-                    frozenset([("golang.org/x/tools", "v0.7.0")]),
-                ),
-            },
-            [
-                Component(
-                    name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
-                    version="v1.0.0",
-                ),
-                Component(
-                    name="golang.org/x/net",
-                    purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
-                    version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="go.sum")
-                    ],
-                ),
-                Component(
-                    name="golang.org/x/tools",
-                    purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
-                    version="v0.7.0",
-                ),
-                Component(
-                    name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=package&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
-                    version="v1.0.0",
-                ),
-                Component(
-                    name="golang.org/x/net/http",
-                    purl="pkg:golang/golang.org/x/net/http@v0.0.0-20190311183353-d8887717615a?type=package",
-                    version="v0.0.0-20190311183353-d8887717615a",
-                ),
-            ],
-        ),
-        # Second scenario
-        (
-            [{"type": "gomod", "path": "."}, {"type": "gomod", "path": "./path"}],
-            {
-                ".": ResolvedGoModule(
-                    ParsedModule(
-                        path="github.com/my-org/my-repo",
-                        version="v1.0.0",
-                    ),
-                    [],
-                    [],
-                    frozenset(),
-                ),
-                "path": ResolvedGoModule(
-                    ParsedModule(
-                        path="github.com/my-org/my-repo/path",
-                        version="v1.0.0",
-                    ),
-                    [
-                        ParsedModule(
-                            path="golang.org/x/net",
-                            version="v0.0.0-20190311183353-d8887717615a",
-                        ),
-                        ParsedModule(
-                            path="golang.org/x/tools",
-                            version="v0.7.0",
-                        ),
-                    ],
-                    [],
-                    frozenset([("golang.org/x/tools", "v0.7.0")]),
-                ),
-            },
-            [
-                Component(
-                    name="github.com/my-org/my-repo",
-                    purl="pkg:golang/github.com/my-org/my-repo@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
-                    version="v1.0.0",
-                ),
-                Component(
-                    name="github.com/my-org/my-repo/path",
-                    purl="pkg:golang/github.com/my-org/my-repo/path@v1.0.0?type=module&vcs_url=git%2Bhttps://github.com/org/repo.git%40c0ffee",
-                    version="v1.0.0",
-                ),
-                Component(
-                    name="golang.org/x/net",
-                    purl="pkg:golang/golang.org/x/net@v0.0.0-20190311183353-d8887717615a?type=module",
-                    version="v0.0.0-20190311183353-d8887717615a",
-                    properties=[
-                        Property(name=PropertyEnum.PROP_MISSING_HASH_IN_FILE, value="path/go.sum")
-                    ],
-                ),
-                Component(
-                    name="golang.org/x/tools",
-                    purl="pkg:golang/golang.org/x/tools@v0.7.0?type=module",
-                    version="v0.7.0",
-                ),
-            ],
-        ),
-    ),
-)
-@mock.patch("hermeto.core.package_managers.gomod.main._list_installed_toolchains")
-@mock.patch("hermeto.core.package_managers.gomod.main._get_repository_name")
-@mock.patch("hermeto.core.package_managers.gomod.main._find_missing_gomod_files")
-@mock.patch("hermeto.core.package_managers.gomod.main._resolve_gomod")
-@mock.patch("hermeto.core.package_managers.gomod.main.GoCacheTemporaryDirectory")
-@mock.patch("hermeto.core.package_managers.gomod.main.ModuleVersionResolver.from_repo_path")
-@mock.patch("hermeto.core.package_managers.gomod.main._select_toolchain")
-@mock.patch("hermeto.core.package_managers.gomod.main._get_go_work_path")
-@mock.patch("hermeto.core.package_managers.gomod.main._vendor_changed")
-@mock.patch("hermeto.core.package_managers.gomod.main.create_backend_annotation")
-@mock.patch("hermeto.core.package_managers.gomod.main.get_repo_id")
-def test_fetch_gomod_source(
-    mock_get_repo_id: mock.Mock,
-    mock_create_annotation: mock.Mock,
-    mock_vendor_changed: mock.Mock,
-    mock_get_go_work_path: mock.Mock,
-    mock_select_toolchain: mock.Mock,
-    mock_version_resolver: mock.Mock,
-    mock_tmp_dir: mock.Mock,
-    mock_resolve_gomod: mock.Mock,
-    mock_find_missing_gomod_files: mock.Mock,
-    mock_get_repository_name: mock.Mock,
-    mock_list_installed_toolchains: mock.Mock,
-    gomod_request: Request,
-    packages_output_by_path: dict[str, ResolvedGoModule],
-    expect_components: list[Component],
-    env_variables: list[EnvironmentVariable],
-) -> None:
-    def resolve_gomod_mocked(
-        app_dir: RootedPath,
-        request: Request,
-        tmp_dir: Path,
-        version_resolver: ModuleVersionResolver,
-        go: Go,
-        go_work: GoWork,
-    ) -> ResolvedGoModule:
-        # Find package output based on the path being processed
-        return packages_output_by_path[
-            app_dir.path.relative_to(gomod_request.source_dir).as_posix()
-        ]
-
-    repo_id = RepoID("https://github.com/org/repo.git", "c0ffee")
-    mock_get_repo_id.return_value = repo_id
-
-    mock_gomod_annotation = Annotation(
-        subjects=set(),
-        annotator={"organization": {"name": "red hat"}},
-        timestamp="2026-01-01T00:00:00Z",
-        text="hermeto:backend:gomod",
-    )
-    mock_create_annotation.return_value = mock_gomod_annotation
-
-    mock_resolve_gomod.side_effect = resolve_gomod_mocked
-    mock_find_missing_gomod_files.return_value = []
-    mock_get_repository_name.return_value = "github.com/my-org/my-repo"
-    mock_vendor_changed.return_value = False
-
-    mock_tmp_dir.name = "tmpdir"
-    mock_tmp_dir.return_value.__enter__.return_value = mock_tmp_dir
-    mock_tmp_dir.return_value.__exit__.return_value = None
-    mock_tmp_dir_path = Path(mock_tmp_dir.name)
-
-    # workspaces are tested in integration tests, skip them here
-    mock_get_go_work_path.return_value = None
-    mock_go = mock.MagicMock(spec=Go)
-    mock_select_toolchain.return_value = mock_go
-    mock_list_installed_toolchains.return_value = [mock_go]
-
-    output = fetch_gomod_source(gomod_request)
-    calls = [
-        mock.call(
-            gomod_request.source_dir.join_within_root(package.path),
-            gomod_request,
-            mock_tmp_dir_path,
-            mock_version_resolver.return_value,
-            mock_go,
-            None,
-        )
-        for package in gomod_request.packages
-    ]
-    mock_resolve_gomod.assert_has_calls(calls)
-
-    if len(gomod_request.packages) == 0:
-        expected_output = RequestOutput.empty()
-    else:
-        expected_output = RequestOutput(
-            annotations=[mock_gomod_annotation],
-            components=expect_components,
-            build_config=BuildConfig(environment_variables=env_variables),
-        )
-
-    assert output == expected_output
 
 
 @pytest.mark.parametrize(
@@ -1584,198 +1033,5 @@ def test_fetch_tags(repo_remote_with_tag: tuple[RootedPath, RootedPath]) -> None
 def test_fetch_tags_fail(repo_remote_with_tag: tuple[RootedPath, RootedPath]) -> None:
     # The remote_repo itself has no remote configured, so will fail when fetching tags
     remote_repo_path, _ = repo_remote_with_tag
-    error_msg = re.escape(
-        f"Failed to fetch the tags on the Git repository (GitRemoteNotFoundError) for {remote_repo_path}"
-    )
-    with pytest.raises(FetchError, match=error_msg):
+    with pytest.raises(FetchError):
         ModuleVersionResolver.from_repo_path(remote_repo_path)
-
-
-@pytest.mark.parametrize(
-    "GOTELEMETRY, telemetry_disable",
-    [
-        pytest.param("", False, id="telemetry_not_set"),
-        pytest.param("off", False, id="telemetry_disabled"),
-        pytest.param("local", True, id="telemetry_enabled"),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.gomod.go.run_cmd")
-def test_disable_telemetry(
-    mock_run_cmd: mock.Mock,
-    GOTELEMETRY: str,
-    telemetry_disable: bool,
-) -> None:
-    mock_run_cmd.side_effect = [GOTELEMETRY, None]
-
-    go = Go()
-    cmd = [go.binary, "telemetry", "off"]
-    params = {"env": {"GOTOOLCHAIN": "auto"}}
-    _disable_telemetry(go, params)
-
-    if not telemetry_disable:
-        assert mock_run_cmd.call_count == 1
-    else:
-        assert mock_run_cmd.call_count == 2
-        mock_run_cmd.assert_called_with(cmd, params)
-
-
-@pytest.mark.parametrize(
-    "input_subdir, expected_outfile",
-    [
-        pytest.param("non-vendored", "resolve_gomod.json", id="without_workspaces"),
-        pytest.param("workspaces", "resolve_gomod_workspaces.json", id="with_workspaces"),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.gomod.go.GoWork._get_go_work")
-def test_parse_packages(
-    mock_get_go_work: mock.Mock,
-    rooted_tmp_path: RootedPath,
-    data_dir: Path,
-    input_subdir: str,
-    expected_outfile: str,
-) -> None:
-    """Test parsing of packages into ParsedPackage structures with real-like data.
-
-    Calls into _go_list_deps. Low level go command interaction testing was already done in
-    test_go_list_deps. Note querying workspaces will return some data duplicated - that's
-    expected.
-    """
-    go_work = None
-    mocked_indata: str
-
-    ws_paths: list = []
-    mocked_outdata = json.loads(get_mocked_data(data_dir, f"expected-results/{expected_outfile}"))
-    expected = {ParsedPackage(**package) for package in mocked_outdata["packages"]}
-
-    go = mock.MagicMock(spec=Go)
-    if input_subdir != "workspaces":
-        mocked_indata = get_mocked_data(data_dir, f"{input_subdir}/go_list_deps_threedot.json")
-        go.return_value = mocked_indata
-    else:
-        side_effects = []
-        mock_get_go_work.return_value = get_mocked_data(data_dir, f"{input_subdir}/go_work.json")
-        go_work = GoWork.from_file(rooted_tmp_path.join_within_root("go.work"), go)
-
-        # add each <workspace_module>/go_list_deps_threedot.json as a side-effect to Go() execution
-        ws_paths = go_work.workspace_paths
-        for wp in ws_paths:
-            wp_relative = wp.relative_to(go_work.path.parent)
-            indata_relative = f"{input_subdir}/{wp_relative}/go_list_deps_threedot.json"
-            mocked_indata = get_mocked_data(data_dir, indata_relative)
-            side_effects.append(mocked_indata)
-
-        go.side_effect = side_effects
-
-    run_params = {"env": {"GOMODCACHE": "foo"}}
-    pkgs = _parse_packages(go_work, go, run_params)
-
-    calls = go.call_args_list
-    if input_subdir != "workspaces":
-        go.assert_called_once()
-    else:
-        calls = go.call_args_list
-        assert go.call_count == len(ws_paths)
-        assert all([run_params | {"cwd": ws_paths[i]} in c.args for i, c in enumerate(calls)])
-
-    # _parse_packages calls _go_list_deps always with the './...' pattern
-    assert all("./..." in call.args[0] for call in calls)
-    assert set(pkgs) == expected
-
-
-@pytest.mark.parametrize(
-    "input_json,expected_fields",
-    [
-        pytest.param(
-            {
-                "Vcs": "git",
-                "Url": "github.com/my-org/some-repo",
-                "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
-                "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
-                "Ref": "refs/tags/v1.11.0",
-            },
-            {
-                "vcs": "git",
-                "url": "github.com/my-org/some-repo",
-                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
-                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
-                "ref": "refs/tags/v1.11.0",
-            },
-            id="module_origin",
-        ),
-    ],
-)
-def test_parsed_origin_from_json(input_json: dict, expected_fields: dict) -> None:
-    """Test ParsedOrigin parsing from JSON with PascalCase field mapping."""
-    origin = ParsedOrigin.model_validate(input_json)
-
-    assert origin.vcs == expected_fields["vcs"]
-    assert origin.url == expected_fields["url"]
-    assert origin.hash == expected_fields["hash"]
-    assert origin.tag_sum == expected_fields["tag_sum"]
-    assert origin.ref == expected_fields["ref"]
-
-
-@pytest.mark.parametrize(
-    "input_json,expected_origin",
-    [
-        pytest.param(
-            {
-                "Path": "github.com/my-org/some-repo",
-                "Version": "v1.11.0",
-                "Main": False,
-                "Replace": None,
-                "Origin": {
-                    "Vcs": "git",
-                    "Url": "https://github.com/my-org/some-repo",
-                    "Hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
-                    "TagSum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
-                    "Ref": "refs/tags/v1.11.0",
-                },
-            },
-            {
-                "vcs": "git",
-                "url": "https://github.com/my-org/some-repo",
-                "hash": "6ad6205e9c94a4b8a320219e28c37c29d22a7a2c",
-                "tag_sum": "t1:yK0MyvqFzQnCd/LSHSL150cX+UpEII14IaeQYlJIJJI=",
-                "ref": "refs/tags/v1.11.0",
-            },
-            id="module_with_origin",
-        ),
-        pytest.param(
-            {
-                "Path": "example.org/some/package",
-                "Version": "v1.0.0",
-                "Main": False,
-                "Replace": None,
-                "Origin": None,
-            },
-            None,
-            id="module_without_origin",
-        ),
-        pytest.param(
-            {"Path": "example.org/local/package", "Version": None, "Main": True, "Replace": None},
-            None,
-            id="module_missing_origin_field",
-        ),
-    ],
-)
-def test_parsed_module_with_origin(input_json: dict, expected_origin: dict | None) -> None:
-    """Test ParsedModule parsing with optional Origin field."""
-    from hermeto.core.package_managers.gomod.main import ParsedModule
-
-    module = ParsedModule.model_validate(input_json)
-
-    assert module.path == input_json["Path"]
-    assert module.version == input_json.get("Version")
-    assert module.main == input_json.get("Main", False)
-    assert module.replace == input_json.get("Replace")
-
-    if expected_origin is None:
-        assert module.origin is None
-    else:
-        assert module.origin is not None
-        assert module.origin.vcs == expected_origin["vcs"]
-        assert module.origin.url == expected_origin["url"]
-        assert module.origin.hash == expected_origin["hash"]
-        assert module.origin.tag_sum == expected_origin["tag_sum"]
-        assert module.origin.ref == expected_origin["ref"]

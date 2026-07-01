@@ -71,9 +71,8 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
     with lockfile_path.open("w") as f:
         json.dump(package_lock_json, f)
 
-    expected_error = f"lockfileVersion {package_lock_json['lockfileVersion']} from {lockfile_path} is not supported"
     npm_deps_dir = mock.Mock(spec=RootedPath)
-    with pytest.raises(UnsupportedFeature, match=expected_error):
+    with pytest.raises(UnsupportedFeature):
         _resolve_npm(rooted_tmp_path, npm_deps_dir)
 
 

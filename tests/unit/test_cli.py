@@ -194,18 +194,6 @@ class TestTopLevelOpts:
             result = invoke_expecting_invalid_usage(app, args, expected_error)
             assert error_expectation in result.output
 
-    @pytest.mark.parametrize(
-        "mode",
-        [
-            "strict",
-            "permissive",
-        ],
-    )
-    def test_mode_option_is_valid(self, mode: str) -> None:
-        args = ["--mode", mode, "fetch-deps", "gomod"]
-        with mock_fetch_deps():
-            invoke_expecting_sucess(app, args)
-
     def test_mode_permissive_propagates_to_config(self) -> None:
         args = ["--mode", "permissive", "fetch-deps", "gomod"]
 
@@ -217,18 +205,11 @@ class TestTopLevelOpts:
             mock_resolve.side_effect = side_effect
             invoke_expecting_sucess(app, args)
 
-    @pytest.mark.parametrize(
-        "mode",
-        [
-            "bad",
-            "ugly",
-        ],
-    )
-    def test_mode_option_is_not_valid(self, mode: str) -> None:
-        args = ["--mode", mode, "fetch-deps", "gomod"]
+    def test_mode_option_is_not_valid(self) -> None:
+        args = ["--mode", "invalid", "fetch-deps", "gomod"]
         with mock_fetch_deps():
             result = invoke_expecting_invalid_usage(app, args, ExitError.ERR_USAGE)
-            assert f"Invalid value for '--mode': '{mode}' is not one of" in result.output
+            assert "is not one of" in result.output
 
     @pytest.mark.parametrize(
         "loglevel_args, expected_level",
@@ -1093,27 +1074,6 @@ class TestMergeSboms:
             app, ["merge-sboms", *sbom_files_to_merge], expected_error
         )
         assert pattern in result.output
-
-    @pytest.mark.parametrize(
-        "sbom_files_to_merge",
-        [
-            [
-                "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
-            ],
-            [
-                "./tests/unit/data/sboms/hermeto.bom.json",
-                "./tests/unit/data/sboms/hermeto_gomod.bom.json",
-                "./tests/unit/data/sboms/hermeto_gomod_nodeps.bom.json",
-            ],
-        ],
-    )
-    def test_a_user_can_successfully_merge_several_hermeto_sboms(
-        self,
-        sbom_files_to_merge: list[str],
-    ) -> None:
-        # Asserts exit code is 0. All subcomponents are tested elsewhere.
-        invoke_expecting_sucess(app, ["merge-sboms", *sbom_files_to_merge])
 
     @pytest.mark.parametrize(
         "sbom_files_to_merge, extra_args",

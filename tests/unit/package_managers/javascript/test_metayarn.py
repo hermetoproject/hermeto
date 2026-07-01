@@ -14,19 +14,30 @@ from hermeto.core.package_managers.javascript.yarn_classic.main import NotV1Lock
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
+@pytest.mark.parametrize(
+    ("classic_side_effect", "expect_yarnberry_called"),
+    [
+        pytest.param(None, False, id="yarn_classic"),
+        pytest.param(NotV1Lockfile("/some/path"), True, id="yarnberry"),
+    ],
+)
 @mock.patch("hermeto.core.package_managers.javascript.metayarn.RequestOutput.__add__")
 @mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarn_classic_source")
-def test_fetch_yarn_source_detects_yarn_classic(
+def test_fetch_yarn_source_detects_yarn_version(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
     mock_requestoutput_add_: mock.Mock,
     input_request: Request,
+    classic_side_effect: Exception | None,
+    expect_yarnberry_called: bool,
 ) -> None:
+    mock_yarnclassic_fetch_source.side_effect = classic_side_effect
+
     _ = fetch_yarn_source(input_request)
 
     mock_yarnclassic_fetch_source.assert_called_once()
-    mock_yarnberry_fetch_source.assert_not_called()
+    assert mock_yarnberry_fetch_source.called == expect_yarnberry_called
 
 
 @pytest.mark.parametrize(
@@ -34,64 +45,41 @@ def test_fetch_yarn_source_detects_yarn_classic(
     (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
     indirect=["input_request"],
 )
-@mock.patch("hermeto.core.package_managers.javascript.metayarn.RequestOutput.__add__")
-@mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarnberry_source")
-@mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarn_classic_source")
-def test_fetch_yarn_source_detects_yarnberry(
-    mock_yarnclassic_fetch_source: mock.Mock,
-    mock_yarnberry_fetch_source: mock.Mock,
-    mock_requestoutput_add_: mock.Mock,
-    input_request: Request,
-) -> None:
-    mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/some/path")
-
-    _ = fetch_yarn_source(input_request)
-
-    mock_yarnclassic_fetch_source.assert_called_once()
-    mock_yarnberry_fetch_source.assert_called_once()
-
-
 @pytest.mark.parametrize(
-    "input_request",
-    (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
-    indirect=["input_request"],
+    ("classic_side_effect", "berry_side_effect", "expect_yarnberry_called"),
+    [
+        pytest.param(
+            PackageRejected("this is a very bad package!"),
+            None,
+            False,
+            id="yarn_classic_error",
+        ),
+        pytest.param(
+            NotV1Lockfile("/some/path"),
+            PackageRejected("this is a very bad package!"),
+            True,
+            id="yarnberry_error",
+        ),
+    ],
 )
 @mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarnberry_source")
 @mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarn_classic_source")
-def test_fetch_yarn_source_propagates_yarn_classic_error(
+def test_fetch_yarn_source_propagates_backend_error(
     mock_yarnclassic_fetch_source: mock.Mock,
     mock_yarnberry_fetch_source: mock.Mock,
     input_request: Request,
+    classic_side_effect: Exception,
+    berry_side_effect: Exception | None,
+    expect_yarnberry_called: bool,
 ) -> None:
-    mock_yarnclassic_fetch_source.side_effect = PackageRejected("this is a very bad package!")
+    mock_yarnclassic_fetch_source.side_effect = classic_side_effect
+    mock_yarnberry_fetch_source.side_effect = berry_side_effect
 
     with pytest.raises(PackageRejected):
         _ = fetch_yarn_source(input_request)
 
     mock_yarnclassic_fetch_source.assert_called_once()
-    mock_yarnberry_fetch_source.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "input_request",
-    (pytest.param([{"type": "yarn", "path": "."}], id="no_input_packages"),),
-    indirect=["input_request"],
-)
-@mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarnberry_source")
-@mock.patch("hermeto.core.package_managers.javascript.metayarn.fetch_yarn_classic_source")
-def test_fetch_yarn_source_propagates_yarnberry_error(
-    mock_yarnclassic_fetch_source: mock.Mock,
-    mock_yarnberry_fetch_source: mock.Mock,
-    input_request: Request,
-) -> None:
-    mock_yarnclassic_fetch_source.side_effect = NotV1Lockfile("/some/path")
-    mock_yarnberry_fetch_source.side_effect = PackageRejected("this is a very bad package!")
-
-    with pytest.raises(PackageRejected):
-        _ = fetch_yarn_source(input_request)
-
-    mock_yarnclassic_fetch_source.assert_called_once()
-    mock_yarnberry_fetch_source.assert_called_once()
+    assert mock_yarnberry_fetch_source.called == expect_yarnberry_called
 
 
 @pytest.mark.parametrize(

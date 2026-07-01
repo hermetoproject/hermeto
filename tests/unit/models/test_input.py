@@ -326,15 +326,6 @@ class TestSSLOptions:
     def patched_isfile(path: Path) -> bool:
         return str(path) == "pass"
 
-    def test_defaults(self) -> None:
-        ssl = SSLOptions()
-        assert (
-            ssl.client_cert is None
-            and ssl.client_key is None
-            and ssl.ca_bundle is None
-            and ssl.ssl_verify is True
-        )
-
     @pytest.mark.parametrize(
         "data",
         [

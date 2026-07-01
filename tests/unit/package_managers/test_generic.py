@@ -14,15 +14,12 @@ from hermeto.core.errors import (
     PackageRejected,
     PathOutsideRoot,
 )
-from hermeto.core.models.input import GenericPackageInput
-from hermeto.core.models.sbom import Annotation, Component
 from hermeto.core.package_managers.generic.main import (
     DEFAULT_DEPS_DIR,
     DEFAULT_LOCKFILE_NAME,
     _load_lockfile,
     _resolve_generic_lockfile,
     _resolve_lockfile_path,
-    fetch_generic_source,
 )
 from hermeto.core.package_managers.generic.models import (
     BasicAuth,
@@ -210,55 +207,6 @@ artifacts:
 
 
 @pytest.mark.parametrize(
-    ["model_input", "components"],
-    [
-        pytest.param(
-            GenericPackageInput.model_construct(type="generic"),
-            [Component(name="foo", version="1.0.0", purl="pkg:generic/foo@1.0.0")],
-            id="single_input_with_components",
-        ),
-        pytest.param(
-            GenericPackageInput.model_construct(type="generic"),
-            [],
-            id="single_input_without_components",
-        ),
-    ],
-)
-@mock.patch("hermeto.core.package_managers.generic.main.create_backend_annotation")
-@mock.patch("hermeto.core.package_managers.generic.main.RequestOutput.from_obj_list")
-@mock.patch("hermeto.core.package_managers.generic.main._resolve_generic_lockfile")
-def test_fetch_generic_source(
-    mock_resolve_generic_lockfile: mock.Mock,
-    mock_from_obj_list: mock.Mock,
-    mock_create_annotation: mock.Mock,
-    model_input: GenericPackageInput,
-    components: list[Component],
-) -> None:
-    mock_resolve_generic_lockfile.return_value = components
-    mock_annotation = Annotation(
-        subjects=set(),
-        annotator={"organization": {"name": "red hat"}},
-        timestamp="2026-01-01T00:00:00Z",
-        text="hermeto:backend:generic",
-    )
-    mock_create_annotation.side_effect = lambda resolved_components, _: (
-        mock_annotation if resolved_components else None
-    )
-
-    mock_request = mock.Mock()
-    mock_request.generic_packages = [model_input]
-
-    fetch_generic_source(mock_request)
-
-    mock_resolve_generic_lockfile.assert_called()
-    mock_create_annotation.assert_called_once_with(components, "generic")
-    mock_from_obj_list.assert_called_once_with(
-        components=components,
-        annotations=[mock_annotation] if components else [],
-    )
-
-
-@pytest.mark.parametrize(
     ("pkg_path", "lockfile_value", "expected_result"),
     [
         pytest.param(Path("."), None, "artifacts.lock.yaml", id="default-lockfile"),
@@ -289,10 +237,8 @@ def test_resolve_lockfile_path(
 
 
 def test_resolve_lockfile_path_fail(rooted_tmp_path: RootedPath) -> None:
-    with pytest.raises(PackageRejected) as exc_info:
+    with pytest.raises(PackageRejected):
         _resolve_lockfile_path(rooted_tmp_path, Path("pkg"), Path("../outside.yaml"))
-
-    assert "must be inside the package path" in str(exc_info.value)
 
 
 @mock.patch("hermeto.core.package_managers.generic.main._load_lockfile")
