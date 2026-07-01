@@ -6,7 +6,7 @@ import tarfile
 import zipfile
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
-from typing import Any, Mapping, NamedTuple
+from typing import Any, NamedTuple
 from urllib import parse as urlparse
 
 import aiohttp
@@ -245,10 +245,13 @@ def _download_pypi_packages(
     pypi_artifacts: list[_PyPIArtifact],
     index_url: str,
     proxy_url: str | None = None,
-    headers: Mapping[str, dict[str, str]] | None = None,
+    auth: str | None = None,
 ) -> list[PyPIPackage]:
     files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
     if files:
+        headers = None
+        if auth is not None:
+            headers = {url: {"Authorization": auth} for url in files}
         log.info("Downloading %d PyPI artifacts", len(files))
         asyncio.run(
             async_download_files(files, get_config().runtime.concurrency_limit, headers=headers)
@@ -415,17 +418,13 @@ def _resolve_and_download_pypi_packages(
     # If a standard PyPI index is used with proxy URL then proxy URL must be reported,
     # if a custom index is used then proxy URL must not be reported even if set.
     proxy_to_report = proxy_url if (proxy_url is not None and (proxy_url != index_url)) else None
-    headers = None
-    if aiohttp_auth is not None:
-        value = {"Authorization": str(aiohttp_auth)}
-        headers = {req.url: value for req in pypi_reqs}
     return _download_pypi_packages(
         requirements_file,
         pip_deps_dir,
         pypi_artifacts,
         index_url=index_url,
         proxy_url=proxy_to_report,
-        headers=headers,
+        auth=aiohttp_auth,
     )
 
 
