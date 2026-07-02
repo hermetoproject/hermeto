@@ -39,7 +39,6 @@ lockfile_parser.specs.each do |spec|
         version: spec.version,
         type: 'git',
         url: spec.source.uri,
-        branch: spec.source.branch,
         ref: spec.source.revision
       }
       parsed_specs << parsed_spec
