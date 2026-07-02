@@ -279,9 +279,9 @@ of the repository placed in a folder. For Git dependencies, the folder name must
 "#{base_name}-#{shortref_for_path(revision)}"
 ```
 
-The name of the directory **must come from the Git URL**, not the actual name of the gem, and the cloned folder must
-contain unpacked source code. Any other format will cause bundler to try to re-download the repository, causing the
-build to fail.
+The name of the directory **must come from the Git URL**, not the actual name of the gem. The clones are bare
+repositories used as local remotes via git's `url.insteadOf` mechanism (see
+[Offline installs involving git dependencies](#offline-installs-involving-git-dependencies)).
 
 ##### Multiple Gems in a single repository
 
@@ -455,6 +455,27 @@ making use of the deployment mode.**
 ##### Offline installs involving git dependencies
 Bundler always tries to fetch git dependencies from the remote, so `BUNDLE_DEPLOYMENT` alone
 doesn't prevent network access.
+
+To solve this without coupling to bundler's internal cache format
+(which has [changed across versions](https://github.com/ruby/rubygems/commit/7d6b6316)), we use git's
+[`url.insteadOf`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-urlltbasegtinsteadOf)
+via `GIT_CONFIG_COUNT`/`KEY`/`VALUE` environment variables to redirect each remote URL to the
+pre-fetched local bare clone. This operates at the git transport layer — bundler runs its standard
+flow but git silently fetches from disk instead of the network.
+
+For example, given a git dependency on `https://github.com/3scale/json-schema`, hermeto sets:
+
+```
+GIT_CONFIG_COUNT=2
+GIT_CONFIG_KEY_0=url.file:///output/deps/bundler/json-schema-26487618a684/.insteadOf
+GIT_CONFIG_VALUE_0=https://github.com/3scale/json-schema
+GIT_CONFIG_KEY_1=protocol.file.allow
+GIT_CONFIG_VALUE_1=always
+```
+
+The `protocol.file.allow=always` entry ensures git permits the `file://` protocol after the URL
+rewrite. See the [git documentation](https://git-scm.com/docs/git-config#Documentation/git-config.txt-protocolallow)
+for details.
 
 ##### Offline installation using deployment mode
 Deployment mode is a way of vendoring one's code along with the dependencies.
