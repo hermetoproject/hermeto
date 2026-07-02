@@ -1,18 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections import deque
+from pathlib import Path
+from typing import Any
 
 import yaml
 from packageurl import PackageURL
 
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
-from hermeto.core.errors import (
-    InvalidLockfileFormat,
-    LockfileNotFound,
-    NotAGitRepo,
-    PackageRejected,
-)
+from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
@@ -52,20 +49,26 @@ def generate_sbom_components(
         else:
             raise
 
+    workspace_data = _load_pnpm_workspace(project_dir.path)
+
     return [
         _create_root_component(project_dir, vcs_qualifiers),
-        *_create_workspace_components(project_dir, vcs_qualifiers),
-        *_create_dependency_components(packages, vcs_qualifiers, lockfile),
+        *_create_workspace_components(project_dir, vcs_qualifiers, workspace_data),
+        *_create_dependency_components(packages, vcs_qualifiers, lockfile, workspace_data),
     ]
 
 
 def _create_dependency_components(
-    packages: list[PnpmPackage], vcs_qualifiers: dict[str, str], lockfile: PnpmLock
+    packages: list[PnpmPackage],
+    vcs_qualifiers: dict[str, str],
+    lockfile: PnpmLock,
+    workspace_data: dict[str, Any],
 ) -> list[Component]:
     config = get_config()
     proxy_url = config.pnpm.proxy_url
 
     non_dev_dependencies = _find_non_dev_dependencies(lockfile)
+    patched_dependencies = workspace_data.get("patchedDependencies", {})
 
     components = []
     for package in packages:
@@ -75,7 +78,7 @@ def _create_dependency_components(
             external_references = None
 
         purl = _generate_purl_for(package, vcs_qualifiers)
-        pedigree = _generate_pedigree_for(package, vcs_qualifiers, lockfile)
+        pedigree = _generate_pedigree_for(package, vcs_qualifiers, patched_dependencies)
         property_set = PropertySet(npm_development=package.id not in non_dev_dependencies)
 
         components.append(
@@ -117,26 +120,23 @@ def _generate_purl_for(package: PnpmPackage, vcs_qualifiers: dict[str, str]) -> 
 
 
 def _generate_pedigree_for(
-    package: PnpmPackage, vcs_qualifiers: dict[str, str], lockfile: PnpmLock
+    package: PnpmPackage, vcs_qualifiers: dict[str, str], patched_dependencies: dict[str, str]
 ) -> Pedigree | None:
     """Generate a Pedigree for the given package."""
     vcs_url = vcs_qualifiers.get("vcs_url")
-    if not vcs_url:
+    if not vcs_url or not patched_dependencies:
         return None
-
-    patches = lockfile.patched_dependencies
 
     def get_patch_url(key: str) -> str:
         try:
-            subpath = patches[key]["path"]
+            subpath = patched_dependencies[key]
+            return vcs_url + "#" + subpath
         except (KeyError, TypeError):
-            raise InvalidLockfileFormat(lockfile.path, f"Missing path for patched dependency {key}")
-
-        return vcs_url + "#" + subpath
+            raise PackageRejected(f"Invalid patched dependency format for {key}")
 
     # Dependencies can be patched by package ID or package name (including scope).
     search_keys = (package.id, package.full_name)
-    key = first_for(lambda search_key: search_key in patches, search_keys, None)
+    key = first_for(lambda search_key: search_key in patched_dependencies, search_keys, None)
 
     return Pedigree(patches=[Patch(diff=PatchDiff(url=get_patch_url(key)))]) if key else None
 
@@ -161,11 +161,11 @@ def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, st
 
 
 def _create_workspace_components(
-    project_dir: RootedPath, vcs_qualifiers: dict[str, str]
+    project_dir: RootedPath, vcs_qualifiers: dict[str, str], workspace_data: dict[str, Any]
 ) -> list[Component]:
     components = []
 
-    workspaces_globs = _read_workspace_globs(project_dir)
+    workspaces_globs = workspace_data.get("packages", [])
     workspace_paths = get_workspace_paths(workspaces_globs, project_dir)
     ensure_no_path_leads_out(workspace_paths, project_dir)
 
@@ -199,18 +199,16 @@ def _create_workspace_components(
     return components
 
 
-def _read_workspace_globs(project_dir: RootedPath) -> list[str]:
-    pnpm_workspace_path = project_dir.path / "pnpm-workspace.yaml"
+def _load_pnpm_workspace(project_dir: Path) -> dict[str, Any]:
+    pnpm_workspace_path = project_dir / "pnpm-workspace.yaml"
     if not pnpm_workspace_path.exists():
-        return []
+        return {}
 
     try:
         with pnpm_workspace_path.open() as f:
-            pnpm_workspace = yaml.safe_load(f)
+            return yaml.safe_load(f)
     except yaml.YAMLError:
         raise PackageRejected(f"The {pnpm_workspace_path} file must contain valid YAML.")
-
-    return pnpm_workspace.get("packages", [])
 
 
 def _find_non_dev_dependencies(lockfile: PnpmLock) -> set[str]:

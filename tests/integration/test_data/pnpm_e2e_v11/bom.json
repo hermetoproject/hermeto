@@ -23,13 +23,13 @@
         "pkg:npm/%40hono/zod-validator@0.8.0?repository_url=https://npm.jsr.io",
         "pkg:npm/%40sinclair/typebox@0.34.49",
         "pkg:npm/debug@4.4.3?download_url=https://codeload.github.com/debug-js/debug/tar.gz/f405ade8a4b7a0dc353e0f7390c1be90060f3621",
-        "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
-        "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+        "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d",
+        "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#lodash-4.18.1.tar.gz",
         "pkg:npm/moment@2.30.1",
         "pkg:npm/ms@2.1.3",
         "pkg:npm/picocolors@1.1.1",
         "pkg:npm/semver@7.8.1?download_url=https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
-        "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+        "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#packages/ui",
         "pkg:npm/uuid@14.0.0",
         "pkg:npm/zod@4.4.3"
       ],
@@ -114,7 +114,7 @@
       "version": "4.4.3"
     },
     {
-      "bom-ref": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
+      "bom-ref": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d",
       "name": "integration-tests",
       "properties": [
         {
@@ -122,12 +122,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5",
+      "purl": "pkg:npm/integration-tests@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d",
       "type": "library",
       "version": "1.0.0"
     },
     {
-      "bom-ref": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+      "bom-ref": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#lodash-4.18.1.tar.gz",
       "name": "lodash",
       "properties": [
         {
@@ -135,7 +135,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#lodash-4.18.1.tar.gz",
+      "purl": "pkg:npm/lodash@4.18.1?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#lodash-4.18.1.tar.gz",
       "type": "library",
       "version": "4.18.1"
     },
@@ -192,7 +192,7 @@
       "version": "7.8.1"
     },
     {
-      "bom-ref": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+      "bom-ref": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#packages/ui",
       "name": "ui",
       "properties": [
         {
@@ -200,7 +200,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40efbc5cd2ef474fca49304a77749b84198638a4e5#packages/ui",
+      "purl": "pkg:npm/ui@1.0.0?vcs_url=git%2Bhttps://github.com/slimreaper35/integration-tests%403f443cfe76d3cde388d2bb96125b0d8ab6ec240d#packages/ui",
       "type": "library",
       "version": "1.0.0"
     },
@@ -228,7 +228,7 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/hermetoproject/integration-tests.git@efbc5cd2ef474fca49304a77749b84198638a4e5#patches/zod@4.4.3.patch"
+              "url": "git+https://github.com/slimreaper35/integration-tests@3f443cfe76d3cde388d2bb96125b0d8ab6ec240d#patches/zod@4.4.3.patch"
             },
             "type": "unofficial"
           }

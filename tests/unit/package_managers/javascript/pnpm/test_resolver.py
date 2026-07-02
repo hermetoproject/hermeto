@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from hermeto.core.constants import Mode
-from hermeto.core.errors import InvalidLockfileFormat, NotAGitRepo, PackageRejected
+from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.models.sbom import PROXY_COMMENT, ExternalReference, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
@@ -18,7 +18,7 @@ from hermeto.core.package_managers.javascript.pnpm.resolver import (
     _find_non_dev_dependencies,
     _generate_pedigree_for,
     _generate_purl_for,
-    _read_workspace_globs,
+    _load_pnpm_workspace,
     generate_sbom_components,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -54,7 +54,7 @@ def test_create_lockfile_components_without_proxy(
     mock_get_config.return_value.pnpm.proxy_url = None
 
     pkg = PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz")
-    components = _create_dependency_components([pkg], {}, mock.Mock())
+    components = _create_dependency_components([pkg], {}, mock.Mock(), {})
     assert components[0].external_references is None
 
 
@@ -73,7 +73,9 @@ def test_create_lockfile_components_with_proxy(
     non_registry_pkg = PnpmPackage(
         "pkg@1.0.0", "", "pkg", "1.0.0", "https://example.com/pkg-1.0.0.tgz"
     )
-    components = _create_dependency_components([registry_pkg, non_registry_pkg], {}, mock.Mock())
+    components = _create_dependency_components(
+        [registry_pkg, non_registry_pkg], {}, mock.Mock(), {}
+    )
 
     assert components[0].external_references == [
         ExternalReference(url=FAKE_PROXY_URL, comment=PROXY_COMMENT)
@@ -152,7 +154,7 @@ def test_generate_purl_for(
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
             {},
-            {"pkg@1.0.0": {"path": "patches/pkg.patch"}},
+            {"pkg@1.0.0": "patches/pkg.patch"},
             None,
             id="no_vcs_qualifiers",
         ),
@@ -166,14 +168,14 @@ def test_generate_purl_for(
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
             VCS_QUALIFIERS,
-            {"pkg@1.0.0": {"path": "patches/pkg@1.0.0.patch"}},
+            {"pkg@1.0.0": "patches/pkg@1.0.0.patch"},
             f"{VCS_URL}#patches/pkg@1.0.0.patch",
             id="match_by_package_id",
         ),
         pytest.param(
             PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", f"{NPM_REGISTRY_URL}/pkg/-/pkg-1.0.0.tgz"),
             VCS_QUALIFIERS,
-            {"pkg": {"path": "patches/pkg.patch"}},
+            {"pkg": "patches/pkg.patch"},
             f"{VCS_URL}#patches/pkg.patch",
             id="match_by_package_name",
         ),
@@ -186,7 +188,7 @@ def test_generate_purl_for(
                 f"{NPM_REGISTRY_URL}/@scope/pkg/-/pkg-1.0.0.tgz",
             ),
             VCS_QUALIFIERS,
-            {"@scope/pkg": {"path": "patches/@scope/pkg.patch"}},
+            {"@scope/pkg": "patches/@scope/pkg.patch"},
             f"{VCS_URL}#patches/@scope/pkg.patch",
             id="match_by_package_scope_and_name",
         ),
@@ -195,23 +197,19 @@ def test_generate_purl_for(
 def test_generate_pedigree_for(
     package: PnpmPackage,
     vcs_qualifiers: dict[str, str],
-    patches: dict[str, dict[str, str]],
+    patches: dict[str, str],
     url: str | None,
-    tmp_path: Path,
 ) -> None:
-    lockfile = PnpmLock(tmp_path, {"lockfileVersion": "9.0", "patchedDependencies": patches})
     expected_pedigree = Pedigree(patches=[Patch(diff=PatchDiff(url=url))]) if url else None
-    assert _generate_pedigree_for(package, vcs_qualifiers, lockfile) == expected_pedigree
+    assert _generate_pedigree_for(package, vcs_qualifiers, patches) == expected_pedigree
 
 
-def test_generate_pedigree_fails_when_path_is_missing(tmp_path: Path) -> None:
-    lockfile = PnpmLock(
-        tmp_path, {"lockfileVersion": "9.0", "patchedDependencies": {"pkg@1.0.0": {}}}
-    )
+def test_generate_pedigree_fails_when_path_is_missing() -> None:
+    patches = {"pkg@1.0.0": None}
     pkg = PnpmPackage("pkg@1.0.0", "", "pkg", "1.0.0", "")
 
-    with pytest.raises(InvalidLockfileFormat):
-        _generate_pedigree_for(pkg, VCS_QUALIFIERS, lockfile)
+    with pytest.raises(PackageRejected):
+        _generate_pedigree_for(pkg, VCS_QUALIFIERS, patches)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -261,7 +259,7 @@ def test_create_workspace_components(
 
     mock_get_workspace_paths.return_value = [w]
 
-    components = _create_workspace_components(project_dir, VCS_QUALIFIERS)
+    components = _create_workspace_components(project_dir, VCS_QUALIFIERS, {})
     assert len(components) == 1
 
     assert components[0].name == "hermelean"
@@ -281,15 +279,15 @@ def test_create_workspace_components_without_package_json(
     w.mkdir(parents=True)
 
     mock_get_workspace_paths.return_value = [w]
-    assert _create_workspace_components(rooted_tmp_path, {}) == []
+    assert _create_workspace_components(rooted_tmp_path, {}, {}) == []
 
 
-def test_read_workspace_globs_rejects_invalid_yaml(rooted_tmp_path: RootedPath) -> None:
-    pnpm_workspace_path = rooted_tmp_path.path.joinpath("pnpm-workspace.yaml")
+def test_load_pnpm_workspace_rejects_invalid_yaml(tmp_path: Path) -> None:
+    pnpm_workspace_path = tmp_path.joinpath("pnpm-workspace.yaml")
     pnpm_workspace_path.write_text(":")
 
     with pytest.raises(PackageRejected):
-        _read_workspace_globs(rooted_tmp_path)
+        _load_pnpm_workspace(tmp_path)
 
 
 def test_find_non_dev_dependencies(tmp_path: Path) -> None:
