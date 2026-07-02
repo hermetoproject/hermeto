@@ -2,6 +2,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pydantic
@@ -53,49 +54,37 @@ class PropertySet:
     @classmethod
     def from_properties(cls, props: Iterable[Property]) -> "Self":
         """Convert a list of SBOM component properties to a PropertySet."""
-        bundler_package_binary = False
-        found_by = None
-        missing_hash_in_file = []
-        npm_bundled = False
-        npm_development = False
-        pip_build_dependency = False
-        pip_package_binary = False
-        rpm_modularity_label = ""
-        rpm_summary = ""
+        # Default values should propagate unless explicitly changed:
+        p = SimpleNamespace(**cls().__dict__)
+        # TODO: use copy.replace() once Hermeto is at Python 3.13
+        p.missing_hash_in_file = []
 
         for prop in props:
-            if prop.name == PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY:
-                bundler_package_binary = True
-            elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED:
-                npm_bundled = True
-            elif prop.name == PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT:
-                npm_development = True
-            elif prop.name == PropertyEnum.PROP_FOUND_BY:
-                found_by = prop.value
-            elif prop.name == PropertyEnum.PROP_MISSING_HASH_IN_FILE:
-                missing_hash_in_file.append(prop.value)
-            elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BINARY:
-                pip_package_binary = True
-            elif prop.name == PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY:
-                pip_build_dependency = True
-            elif prop.name == PropertyEnum.PROP_RPM_MODULARITY_LABEL:
-                rpm_modularity_label = prop.value
-            elif prop.name == PropertyEnum.PROP_RPM_SUMMARY:
-                rpm_summary = prop.value
-            else:
-                assert_never(prop.name)
+            match prop.name:
+                case PropertyEnum.PROP_BUNDLER_PACKAGE_BINARY:
+                    p.bundler_package_binary = True
+                case PropertyEnum.PROP_CDX_NPM_PACKAGE_BUNDLED:
+                    p.npm_bundled = True
+                case PropertyEnum.PROP_CDX_NPM_PACKAGE_DEVELOPMENT:
+                    p.npm_development = True
+                case PropertyEnum.PROP_FOUND_BY:
+                    p.found_by = prop.value
+                case PropertyEnum.PROP_MISSING_HASH_IN_FILE:
+                    p.missing_hash_in_file.append(prop.value)
+                case PropertyEnum.PROP_PIP_PACKAGE_BINARY:
+                    p.pip_package_binary = True
+                case PropertyEnum.PROP_PIP_PACKAGE_BUILD_DEPENDENCY:
+                    p.pip_build_dependency = True
+                case PropertyEnum.PROP_RPM_MODULARITY_LABEL:
+                    p.rpm_modularity_label = prop.value
+                case PropertyEnum.PROP_RPM_SUMMARY:
+                    p.rpm_summary = prop.value
+                case _:
+                    assert_never(prop.name)
 
-        return cls(
-            bundler_package_binary,
-            found_by,
-            frozenset(missing_hash_in_file),
-            npm_bundled,
-            npm_development,
-            pip_build_dependency,
-            pip_package_binary,
-            rpm_modularity_label,
-            rpm_summary,
-        )
+        p.missing_hash_in_file = frozenset(p.missing_hash_in_file)
+
+        return cls(**p.__dict__)
 
     def to_properties(self) -> list[Property]:
         """Convert a PropertySet to a list of SBOM component properties."""
