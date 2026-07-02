@@ -14,7 +14,7 @@ from hermeto.core.models.validators import unique_sorted
 log = logging.getLogger(__name__)
 
 
-class EnvironmentVariable(pydantic.BaseModel):
+class EnvironmentVariable(pydantic.BaseModel, frozen=True):
     """An environment variable high-level representation.
 
     An environment variable is represented as a string template that is evaluated (i.e.
