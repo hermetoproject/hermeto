@@ -1,11 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
 from hermeto import APP_NAME
+from hermeto.core.models.output import EnvironmentVariable, RequestOutput
 from hermeto.core.models.sbom import Component, Property
-from hermeto.core.package_managers.javascript.npm.main import _generate_component_list
+from hermeto.core.package_managers.javascript.npm.main import (
+    _generate_component_list,
+    fetch_npm_source,
+)
 from hermeto.core.package_managers.javascript.npm.project import NpmComponentInfo
 
 
@@ -120,3 +125,46 @@ def test_generate_component_list(
     """Test _generate_component_list with different NpmComponentInfo inputs."""
     merged_components = _generate_component_list(components)
     assert merged_components == expected_components
+
+
+@mock.patch(
+    "hermeto.core.package_managers.javascript.npm.main.create_backend_annotation",
+    return_value=None,
+)
+@mock.patch("hermeto.core.package_managers.javascript.npm.main._resolve_npm")
+def test_fetch_npm_source_sets_build_from_source_env_var(
+    mock_resolve_npm: mock.Mock,
+    mock_create_annotation: mock.Mock,
+    rooted_tmp_path: "RootedPath",
+) -> None:
+    """fetch_npm_source must set npm_config_build_from_source=true so that
+    prebuildify packages compile from source instead of using prebuilt binaries.
+    See https://github.com/hermetoproject/hermeto/issues/1015."""
+    from hermeto.core.models.input import Request
+    from hermeto.core.rooted_path import RootedPath
+
+    (rooted_tmp_path.path / ".").mkdir(exist_ok=True)
+    request = Request(
+        source_dir=rooted_tmp_path,
+        output_dir=rooted_tmp_path.join_within_root("output"),
+        packages=[{"type": "npm", "path": "."}],
+    )
+    mock_resolve_npm.return_value = {
+        "package": {
+            "name": "foo",
+            "version": "1.0.0",
+            "purl": "pkg:npm/foo@1.0.0",
+            "bundled": False,
+            "dev": False,
+            "missing_hash_in_file": None,
+            "external_refs": None,
+        },
+        "dependencies": [],
+        "projectfiles": [],
+    }
+
+    output = fetch_npm_source(request)
+
+    assert EnvironmentVariable(name="npm_config_build_from_source", value="true") in (
+        output.build_config.environment_variables
+    )
