@@ -50,9 +50,7 @@ def fetch_bundler_source(request: Request) -> RequestOutput:
         )
         components.extend(_comps)
         git_paths.extend(_git_paths)
-    project_files.append(
-        _prepare_for_hermetic_build(request.source_dir, request.output_dir, git_paths)
-    )
+    project_files.append(_prepare_for_hermetic_build(request.source_dir, request.output_dir))
 
     annotations = []
     if backend_annotation := create_backend_annotation(components, "bundler"):
@@ -203,9 +201,7 @@ def _prepare_environment_variables_for_hermetic_build() -> list[EnvironmentVaria
     ]
 
 
-def _prepare_for_hermetic_build(
-    source_dir: RootedPath, output_dir: RootedPath, git_paths: list | None = None
-) -> ProjectFile:
+def _prepare_for_hermetic_build(source_dir: RootedPath, output_dir: RootedPath) -> ProjectFile:
     """Prepare a package for hermetic build by injecting necessary config."""
     potential_bundle_config = source_dir.join_within_root(".bundle/config").path
     hermetic_config = dedent(
@@ -218,30 +214,6 @@ def _prepare_for_hermetic_build(
         BUNDLE_VERSION: "system"
     """
     )
-    # Note: if a package depends on a git revision then the following variables
-    # are necessary for a hermetic build:
-    #  BUNDLE_DISABLE_LOCAL_BRANCH_CHECK
-    #  BUNDLE_DISABLE_LOCAL_REVISION_CHECK
-    # because otherwise some (potentially all, depending on exact set of
-    # ecosystem components versions, environment variables and celestial
-    # alignment) Bundler versions will try to fetch the latest changes of the
-    # remotes which may be present even when instructed not to with --local
-    # flag.
-    # See https://bundler.io/guides/git.html#local-git-repos for details.
-    # (or https://github.com/rubygems/bundler-site/blob/
-    #             9ff3b76e9866524ecefe165633ffb547f0004a99/source/guides/git.html.md
-    # if the link above ceases to exist).
-    if git_paths is not None:
-        hermetic_config += 'BUNDLE_DISABLE_LOCAL_BRANCH_CHECK: "true"\n'
-        hermetic_config += 'BUNDLE_DISABLE_LOCAL_REVISION_CHECK: "true"\n'
-        for packname, dirname in git_paths:
-            # "-" in variable names is deprecated in Bundler and now generates
-            # a warning and a suggestion to replace all dashes with triple
-            # underscores. Package names sometimes contain dashes:
-            varname = "BUNDLE_LOCAL." + packname.upper().replace("-", "___")
-            location = "${output_dir}/deps/bundler/" + dirname
-            config_entry = varname + f': "{location}"'
-            hermetic_config += f"{config_entry}\n"
     if potential_bundle_config.is_file():
         config_data = potential_bundle_config.read_text()
         config_data += hermetic_config
