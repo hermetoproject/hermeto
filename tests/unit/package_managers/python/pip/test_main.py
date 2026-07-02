@@ -25,8 +25,8 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.package_managers.cargo.main import PackageWithCorruptLockfileRejected
-from hermeto.core.package_managers.pip import main as pip
-from hermeto.core.package_managers.pip.packages import PipPackageInfo, URLPackage, VCSPackage
+from hermeto.core.package_managers.python.pip import main as pip
+from hermeto.core.package_managers.python.pip.packages import PipPackageInfo, URLPackage, VCSPackage
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -101,7 +101,7 @@ def test_get_pip_metadata_from_project_file(
     mock_target: str,
     rooted_tmp_path: RootedPath,
 ) -> None:
-    with mock.patch(f"hermeto.core.package_managers.pip.main.{mock_target}") as mock_cls:
+    with mock.patch(f"hermeto.core.package_managers.python.pip.main.{mock_target}") as mock_cls:
         instance = mock_cls.return_value
         instance.exists.return_value = True
         instance.get_name.return_value = "foo"
@@ -112,9 +112,9 @@ def test_get_pip_metadata_from_project_file(
         assert version == "0.1.0"
 
 
-@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
-@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
-@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
+@mock.patch("hermeto.core.package_managers.python.pip.main.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.python.pip.main.SetupCFG")
+@mock.patch("hermeto.core.package_managers.python.pip.main.SetupPY")
 def test_extract_metadata_from_config_files_with_fallbacks(
     mock_setup_py: mock.Mock,
     mock_setup_cfg: mock.Mock,
@@ -175,9 +175,9 @@ def test_extract_metadata_from_config_files_with_fallbacks(
     "origin_exists",
     [True, False],
 )
-@mock.patch("hermeto.core.package_managers.pip.main.PyProjectTOML")
-@mock.patch("hermeto.core.package_managers.pip.main.SetupPY")
-@mock.patch("hermeto.core.package_managers.pip.main.SetupCFG")
+@mock.patch("hermeto.core.package_managers.python.pip.main.PyProjectTOML")
+@mock.patch("hermeto.core.package_managers.python.pip.main.SetupPY")
+@mock.patch("hermeto.core.package_managers.python.pip.main.SetupCFG")
 def test_get_pip_metadata_from_remote_origin(
     mock_setup_cfg: mock.Mock,
     mock_setup_py: mock.Mock,
@@ -215,7 +215,7 @@ def test_get_pip_metadata_from_remote_origin(
 class TestDownload:
     """Tests for dependency downloading."""
 
-    @mock.patch("hermeto.core.package_managers.pip.main.clone_as_tarball")
+    @mock.patch("hermeto.core.package_managers.python.pip.main.clone_as_tarball")
     def test_download_vcs_package(
         self,
         mock_clone_as_tarball: Any,
@@ -257,10 +257,10 @@ class TestDownload:
         ],
     )
     @mock.patch(
-        "hermeto.core.package_managers.pip.main._checksum_must_match_or_path_unlink",
+        "hermeto.core.package_managers.python.pip.main._checksum_must_match_or_path_unlink",
         return_value=True,
     )
-    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.python.pip.main.download_binary_file")
     def test_download_url_package(
         self,
         mock_download_file: Any,
@@ -314,10 +314,10 @@ class TestDownload:
         ],
     )
     @mock.patch(
-        "hermeto.core.package_managers.pip.main._checksum_must_match_or_path_unlink",
+        "hermeto.core.package_managers.python.pip.main._checksum_must_match_or_path_unlink",
         return_value=True,
     )
-    @mock.patch("hermeto.core.package_managers.pip.main.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.python.pip.main.download_binary_file")
     def test_download_url_package_identifies_wheel_from_url(
         self,
         mock_download_file: Any,
@@ -630,7 +630,7 @@ class TestDownload:
         pytest.param("build_requirement_files", id="build_requirement_files"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.pip.main._get_pip_metadata")
+@mock.patch("hermeto.core.package_managers.python.pip.main._get_pip_metadata")
 def test_resolve_pip_invalid_file_path(
     mock_metadata: mock.Mock, rooted_tmp_path: RootedPath, file_kwarg: str
 ) -> None:
@@ -805,8 +805,8 @@ def test_generate_purl_main_package(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.pip.main.get_config")
-@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_repo_id")
 def test_generate_purl_main_package_permissive_mode_without_vcs_url(
     mock_handle_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -830,8 +830,8 @@ def test_generate_purl_main_package_permissive_mode_without_vcs_url(
     assert purl == expected_purl
 
 
-@mock.patch("hermeto.core.package_managers.pip.main.get_config")
-@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_repo_id")
 def test_generate_purl_main_package_strict_mode_raises_without_git_repo(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -865,8 +865,8 @@ def test_generate_purl_main_package_strict_mode_raises_without_git_repo(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.pip.main.get_config")
-@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_repo_id")
 @mock.patch("hermeto.core.scm.GitRepo")
 def test_generate_purl_main_package_permissive_mode_with_vcs_url(
     mock_git_repo: mock.Mock,
@@ -896,7 +896,7 @@ def test_generate_purl_main_package_permissive_mode_with_vcs_url(
     assert purl == expected_purl
 
 
-@mock.patch("hermeto.core.package_managers.pip.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.python.pip.main.get_repo_id")
 def test_infer_package_name_raises_without_git_repo(
     mock_handle_get_repo_id: mock.Mock,
     rooted_tmp_path: RootedPath,
@@ -908,8 +908,8 @@ def test_infer_package_name_raises_without_git_repo(
 
 
 @mock.patch("hermeto.core.scm.GitRepo")
-@mock.patch("hermeto.core.package_managers.pip.main._replace_external_requirements")
-@mock.patch("hermeto.core.package_managers.pip.main._resolve_pip")
+@mock.patch("hermeto.core.package_managers.python.pip.main._replace_external_requirements")
+@mock.patch("hermeto.core.package_managers.python.pip.main._resolve_pip")
 @mock.patch("hermeto.core.package_managers.cargo.main.run_cmd")
 @mock.patch("hermeto.core.package_managers.cargo.main._verify_lockfile_is_present")
 def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lock_mismatch(

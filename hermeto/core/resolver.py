@@ -13,10 +13,10 @@ from hermeto.core.package_managers import (
     generic,
     gomod,
     maven,
-    pip,
     rpm,
 )
 from hermeto.core.package_managers.javascript import metayarn, npm, pnpm
+from hermeto.core.package_managers.python import pip
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import copy_directory
 

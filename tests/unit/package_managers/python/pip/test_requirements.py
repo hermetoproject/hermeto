@@ -6,7 +6,10 @@ from typing import Any
 import pytest
 
 from hermeto.core.errors import UnexpectedFormat, UnsupportedFeature
-from hermeto.core.package_managers.pip.requirements import PipRequirement, PipRequirementsFile
+from hermeto.core.package_managers.python.pip.requirements import (
+    PipRequirement,
+    PipRequirementsFile,
+)
 from hermeto.core.rooted_path import RootedPath
 
 

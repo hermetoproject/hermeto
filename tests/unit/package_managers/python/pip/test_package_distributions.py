@@ -9,14 +9,14 @@ import pytest
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
-from hermeto.core.package_managers.pip.package_distributions import (
+from hermeto.core.package_managers.python.pip.package_distributions import (
     WheelsFilter,
     _process_prefer_binary_mode,
     _sdist_preference,
     process_package_distributions,
 )
 from hermeto.core.rooted_path import RootedPath
-from tests.unit.package_managers.pip.test_main import (
+from tests.unit.package_managers.python.pip.test_main import (
     mock_distribution_package_info,
     mock_requirement,
 )

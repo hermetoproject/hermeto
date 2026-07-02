@@ -6,7 +6,7 @@ import pytest
 
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE
-from hermeto.core.package_managers.pip.packages import (
+from hermeto.core.package_managers.python.pip.packages import (
     PyPIPackage,
     URLPackage,
     VCSPackage,
