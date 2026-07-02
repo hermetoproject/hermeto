@@ -54,11 +54,6 @@ class PnpmLock(UserDict):
         return self.get("packages", {})
 
     @property
-    def patched_dependencies(self) -> dict[str, dict[str, Any]]:
-        """Return the 'patchedDependencies' key from the pnpm-lock.yaml file."""
-        return self.get("patchedDependencies", {})
-
-    @property
     def snapshots(self) -> dict[str, dict[str, Any]]:
         """Return the 'snapshots' key from the pnpm-lock.yaml file."""
         return self.get("snapshots", {})

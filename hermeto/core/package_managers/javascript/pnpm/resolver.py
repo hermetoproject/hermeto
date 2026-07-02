@@ -214,20 +214,6 @@ def _load_pnpm_workspace(project_dir: Path) -> dict[str, Any]:
         raise PackageRejected(f"The {pnpm_workspace_path} file must contain valid YAML.")
 
 
-def _read_workspace_globs(project_dir: RootedPath) -> list[str]:
-    pnpm_workspace_path = project_dir.path / "pnpm-workspace.yaml"
-    if not pnpm_workspace_path.exists():
-        return []
-
-    try:
-        with pnpm_workspace_path.open() as f:
-            pnpm_workspace = yaml.safe_load(f)
-    except yaml.YAMLError:
-        raise PackageRejected(f"The {pnpm_workspace_path} file must contain valid YAML.")
-
-    return pnpm_workspace.get("packages", [])
-
-
 def _find_non_dev_dependencies(lockfile: PnpmLock) -> set[str]:
     """
     Find all transitive non-development dependencies using BFS algorithm.
