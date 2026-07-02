@@ -13,9 +13,7 @@ project_files:
       autoInstallPeers: true
       excludeLinksFromLockfile: false
     patchedDependencies:
-      zod@4.4.3:
-        hash: d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685
-        path: patches/zod@4.4.3.patch
+      zod@4.4.3: d591421aa525062c8ea1d45ca2c3443c85b3fc17c497a1004d48f2747a053685
     importers:
       .:
         dependencies:
