@@ -1,0 +1,99 @@
+environment_variables:
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/pylock.toml
+  template: |
+    lock-version = "1.0"
+
+    [[packages]]
+    name = "aiowsgi"
+    version = "0.7"
+
+    [packages.sdist]
+    url = "https://files.pythonhosted.org/packages/45/84/39b14340ce79f83c2e27e25ef7e02e9d17e8b08df89e9c9c5de787e91a5e/aiowsgi-0.7.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "9fad305430fa39d54cd10a47a367a98c47424e5f176774d443bcf48aa5b5be33"
+
+    [[packages.wheels]]
+    url = "https://files.pythonhosted.org/packages/fe/4d/3e83a1c8777acb9d05e05a0b73e2e835a2e8a2fceb84d45a711034be0b20/aiowsgi-0.7-py3-none-any.whl"
+
+    [packages.wheels.hashes]
+    sha256 = "caa338f95d6eb0908015b63cf2147ced24a8f3c88b6254f79a3cbd814b1fdcc5"
+
+    [[packages]]
+    name = "gitdb"
+    version = "4.0.12"
+
+    [packages.sdist]
+    url = "https://files.pythonhosted.org/packages/72/94/63b0fc47eb32792c76ee1b2f03158d3c5efc73d8e2e4a243d0fa59e6862a/gitdb-4.0.12.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571"
+
+    [[packages.wheels]]
+    url = "https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl"
+
+    [packages.wheels.hashes]
+    sha256 = "67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf"
+
+    [[packages]]
+    name = "gitpython"
+    version = "3.1.44"
+
+    [packages.archive]
+    url = "file://${output_dir}/deps/pip/gitpython-30101221a869968d4fe2a010ee9ca1134c22272089d9e9fee2040a68541443c6.tar.gz"
+
+    [packages.archive.hashes]
+    sha256 = "30101221a869968d4fe2a010ee9ca1134c22272089d9e9fee2040a68541443c6"
+
+    [[packages]]
+    name = "smmap"
+    version = "5.0.2"
+
+    [packages.sdist]
+    url = "https://files.pythonhosted.org/packages/44/cd/a040c4b3119bbe532e5b0732286f805e4b20b078d2d6a4b354c5b6b98606/smmap-5.0.2.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "26ea65a03958fa0c8a1c7e8c7a58fdc77221b8910f6be2131affade476898ad5"
+
+    [[packages.wheels]]
+    url = "https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl"
+
+    [packages.wheels.hashes]
+    sha256 = "b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e"
+
+    [[packages]]
+    name = "waitress"
+    version = "3.0.0"
+
+    [packages.sdist]
+    url = "https://files.pythonhosted.org/packages/70/34/cb77e5e5f4a4a0e28d4c4ec0e21ac1e47663438849e4e94713585bbc0b0a/waitress-3.0.0.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "005da479b04134cdd9dd602d1ee7c49d79de0537610d653674cc6cbde222b8a1"
+
+    [[packages.wheels]]
+    url = "https://files.pythonhosted.org/packages/fa/a8/85ff39cb02eeee2e8bfcfb8e0a1efcff398fff3ac5de29a07f7c78e2bf54/waitress-3.0.0-py3-none-any.whl"
+
+    [packages.wheels.hashes]
+    sha256 = "2a06f242f4ba0cc563444ca3d1998959447477363a2d7e9b8b4d75d35cfd1669"
+
+    [[packages]]
+    name = "webob"
+    version = "1.8.7"
+
+    [packages.sdist]
+    url = "https://files.pythonhosted.org/packages/c7/c3/3e7ef52d599a37a4ee6c5e19641b5e5b0e3200e344b07be56a02e5599d01/WebOb-1.8.7.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "b64ef5141be559cfade448f044fa45c2260351edcb6a8ef6b7e00c7dcef0c323"
+
+    [[packages.wheels]]
+    url = "https://files.pythonhosted.org/packages/31/1a/9cf25f69a1e0a5b9e86ed45e8a0e91c0e35c1d1edea02a7e95c4e0db8793/WebOb-1.8.7-py2.py3-none-any.whl"
+
+    [packages.wheels.hashes]
+    sha256 = "73aae30359291c14fa3b956f8b5ca31960e420c28c1bec002547fb04928cf89b"

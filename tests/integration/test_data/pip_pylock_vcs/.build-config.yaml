@@ -1,0 +1,25 @@
+environment_variables:
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/pylock.toml
+  template: |
+    lock-version = "1.0"
+
+    [[packages]]
+    name = "smmap"
+    version = "5.0.2"
+
+    [[packages]]
+    name = "gitdb"
+    version = "4.0.12"
+
+    [[packages]]
+    name = "gitpython"
+
+    [packages.vcs]
+    type = "git"
+    url = "file://${output_dir}/deps/pip/GitPython-gitcommit-80065ff915dc972a60e3eacd8a31b9ed40de8200.tar.gz"
+    commit-id = "80065ff915dc972a60e3eacd8a31b9ed40de8200"
