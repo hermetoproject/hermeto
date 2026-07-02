@@ -227,6 +227,17 @@ class Metadata(pydantic.BaseModel):
     """Metadata field in a SBOM."""
 
     tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
+    properties: list[Property] = pydantic.Field(default_factory=list)
+
+    @pydantic.model_serializer(mode="wrap")
+    def serialize_model(self, handler: pydantic.SerializerFunctionWrapHandler) -> dict[str, object]:
+        """
+        Custom serializer that removes the `properties` field if it is empty.
+        """
+        serialized = handler(self)
+        if not self.properties:
+            serialized.pop("properties")
+        return serialized
 
 
 def spdx_now() -> datetime:
@@ -303,6 +314,11 @@ class Sbom(pydantic.BaseModel):
 
     def __add__(self, other: Union["Sbom", "SPDXSbom"]) -> "Sbom":
         if isinstance(other, self.__class__):
+            merged_metadata_props = (
+                PropertySet.from_properties(self.metadata.properties)
+                .merge(PropertySet.from_properties(other.metadata.properties))
+                .to_properties()
+            )
             return Sbom(
                 # NOTE: We might consider deduplicating annotations based on the annotation text
                 # in the future. It is a very rare corner case, though, and it only matters when
@@ -313,6 +329,7 @@ class Sbom(pydantic.BaseModel):
                 components=merge_component_properties(
                     chain.from_iterable(s.components for s in [self, other])
                 ),
+                metadata=Metadata(tools=self.metadata.tools, properties=merged_metadata_props),
             )
         else:
             return self + other.to_cyclonedx()
@@ -338,7 +355,24 @@ class Sbom(pydantic.BaseModel):
         """
 
         def create_document_root() -> SPDXPackage:
-            return SPDXPackage(name="", versionInfo="", SPDXID="SPDXRef-DocumentRoot-File-")
+            # Metadata properties are encoded as annotations on the DocumentRoot
+            # package to enable round-tripping metadata through SPDX format.
+            now = spdx_now()
+            annotations = [
+                SPDXPackageAnnotation(
+                    annotator=f"Tool: {ANNOTATOR_JSON}",
+                    annotationDate=now,
+                    annotationType="OTHER",
+                    comment=json.dumps({"name": prop.name, "value": prop.value}),
+                )
+                for prop in self.metadata.properties
+            ]
+            return SPDXPackage(
+                name="",
+                versionInfo="",
+                SPDXID="SPDXRef-DocumentRoot-File-",
+                annotations=annotations,
+            )
 
         def create_root_relationship() -> SPDXRelation:
             return SPDXRelation(
@@ -836,11 +870,20 @@ class SPDXSbom(pydantic.BaseModel):
 
         tools = convert_creators_to_tools(self.creationInfo.creators)
         annotations = _PerBackendAccumulator.to_annotations(backend_accumulators)
+        properties = []
+        root_package = next((p for p in self.packages if p.SPDXID == self.root_id), None)
+        if root_package:
+            properties = [
+                prop
+                for an in root_package.annotations
+                if an.annotator.endswith(ANNOTATOR_JSON)
+                and isinstance(prop := convert_annotation_to_property(an), Property)
+            ]
 
         return Sbom(
             annotations=annotations,
             components=components,
-            metadata=Metadata(tools=tools),
+            metadata=Metadata(tools=tools, properties=properties),
         )
 
 

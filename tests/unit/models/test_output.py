@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from datetime import datetime, timezone
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
@@ -6,8 +7,11 @@ from typing import Any
 import pydantic
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import BaseError
 from hermeto.core.models.output import BuildConfig, EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertyEnum
+from hermeto.core.models.sbom import Annotation, Component
 
 
 class TestProjectFile:
@@ -185,3 +189,46 @@ class TestEnvironmentVariable:
         err_msg = f"Detected a cycle in environment variable expansion of '{envs[0].name}'"
         with pytest.raises(BaseError, match=err_msg):
             envs[0].resolve_value(mappings)
+
+
+class TestRequestOutputExperimental:
+    @pytest.mark.parametrize(
+        ("annotation_text_template", "expect_flag"),
+        [
+            ("{app_name}:backend:experimental:x-foo", True),
+            ("{app_name}:backend:pip", False),
+        ],
+    )
+    def test_generate_sbom_experimental_flag(
+        self, annotation_text_template: str, expect_flag: bool
+    ) -> None:
+        comp_experimental = Component(name="exp-pkg", purl="pkg:generic/exp-pkg")
+        comp_normal = Component(name="normal-pkg", purl="pkg:generic/normal-pkg")
+
+        anno = Annotation(
+            subjects={comp_experimental.bom_ref},
+            annotator={"organization": {"name": "red hat"}},
+            timestamp=datetime.now(timezone.utc),
+            text=annotation_text_template.format(app_name=APP_NAME),
+        )
+        ro = RequestOutput(
+            annotations=[anno],
+            components=[comp_experimental, comp_normal],
+            build_config=BuildConfig(),
+        )
+        sbom = ro.generate_sbom()
+        has_flag = any(
+            p.name == PropertyEnum.PROP_EXPERIMENTAL and p.value == "true"
+            for p in sbom.metadata.properties
+        )
+        assert has_flag is expect_flag
+
+        for comp in sbom.components:
+            has_comp_flag = any(
+                p.name == PropertyEnum.PROP_EXPERIMENTAL and p.value == "true"
+                for p in comp.properties
+            )
+            if comp.bom_ref == comp_experimental.bom_ref:
+                assert has_comp_flag is expect_flag
+            else:
+                assert not has_comp_flag
