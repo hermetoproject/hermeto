@@ -19,6 +19,7 @@ from hermeto.core.errors import FetchError
 from hermeto.core.http_requests import (
     DEFAULT_RETRY_OPTIONS,
     SAFE_REQUEST_METHODS,
+    RetryAfterJitterRetry,
 )
 from hermeto.core.scm import get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -157,7 +158,7 @@ async def async_download_files(
     max_retries = get_config().http.max_retries
     # aiohttp uses n calls (1 call, n-1 retries).
     max_retries = max_retries + 1
-    retry_options = aiohttp_retry.JitterRetry(
+    retry_options = RetryAfterJitterRetry(
         start_timeout=DEFAULT_RETRY_OPTIONS["backoff_factor"],
         attempts=max_retries,
         statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
