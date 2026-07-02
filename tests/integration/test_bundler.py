@@ -70,7 +70,7 @@ def test_bundler_packages(
             ),
             [],  # No additional commands are run to verify the build
             [],
-            id="bundler_e2e",
+            id="bundler_e2e_ruby33",
         ),
         pytest.param(
             utils.TestParameters(
