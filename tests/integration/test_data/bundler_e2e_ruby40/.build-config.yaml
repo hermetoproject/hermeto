@@ -1,0 +1,23 @@
+environment_variables:
+- name: BUNDLE_APP_CONFIG
+  value: ${output_dir}/bundler/config_override
+- name: GIT_CONFIG_COUNT
+  value: '2'
+- name: GIT_CONFIG_KEY_0
+  value: url.file://${output_dir}/deps/bundler/json-schema-26487618a684/.insteadOf
+- name: GIT_CONFIG_KEY_1
+  value: protocol.file.allow
+- name: GIT_CONFIG_VALUE_0
+  value: https://github.com/3scale/json-schema
+- name: GIT_CONFIG_VALUE_1
+  value: always
+project_files:
+- abspath: ${test_case_tmp_path}/hermeto-output/bundler/config_override/config
+  template: |2
+
+    BUNDLE_CACHE_PATH: "${output_dir}/deps/bundler"
+    BUNDLE_DEPLOYMENT: "true"
+    BUNDLE_NO_PRUNE: "true"
+    BUNDLE_ALLOW_OFFLINE_INSTALL: "true"
+    BUNDLE_DISABLE_VERSION_CHECK: "true"
+    BUNDLE_VERSION: "system"
