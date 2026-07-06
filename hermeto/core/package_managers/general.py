@@ -16,14 +16,14 @@ from urllib3.util.retry import Retry
 
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
-from hermeto.core.http_requests import (
-    DEFAULT_RETRY_OPTIONS,
-    SAFE_REQUEST_METHODS,
-)
 from hermeto.core.scm import get_repo_id
 from hermeto.core.type_aliases import StrPath
 
 _pkg_requests_session: requests.Session | None = None
+
+SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
+BACKOFF_FACTOR = 1.3
+STATUS_FORCELIST = (500, 502, 503, 504)
 
 
 def _get_pkg_requests_session() -> requests.Session:
@@ -33,13 +33,15 @@ def _get_pkg_requests_session() -> requests.Session:
     global _pkg_requests_session
     if _pkg_requests_session is None:
         max_retries = get_config().http.max_retries
-        retry_options = {
-            **DEFAULT_RETRY_OPTIONS,
-            "allowed_methods": SAFE_REQUEST_METHODS,
-            "total": max_retries,
-        }
         _pkg_requests_session = Session()
-        adapter = HTTPAdapter(max_retries=Retry(**retry_options))
+        adapter = HTTPAdapter(
+            max_retries=Retry(
+                backoff_factor=BACKOFF_FACTOR,
+                status_forcelist=STATUS_FORCELIST,
+                allowed_methods=SAFE_REQUEST_METHODS,
+                total=max_retries,
+            )
+        )
         _pkg_requests_session.mount("http://", adapter)
         _pkg_requests_session.mount("https://", adapter)
 
@@ -158,9 +160,9 @@ async def async_download_files(
     # aiohttp uses n calls (1 call, n-1 retries).
     max_retries = max_retries + 1
     retry_options = aiohttp_retry.JitterRetry(
-        start_timeout=DEFAULT_RETRY_OPTIONS["backoff_factor"],
+        start_timeout=BACKOFF_FACTOR,
         attempts=max_retries,
-        statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
+        statuses=set(STATUS_FORCELIST),
         exceptions={
             aiohttp.ClientConnectionError,
             aiohttp.ClientPayloadError,
