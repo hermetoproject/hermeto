@@ -135,6 +135,7 @@ def test_parse_gemlock(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     base_dep: dict[str, str] = sample_parser_output["dependencies"][0]
+    mocked_checksum: str = "sha256:bd2d213996ff7b3b364cd342a585fbee9797dbc1c0c6d868dc4150cc75739781"
     sample_parser_output["dependencies"] = [
         {
             "type": "git",
@@ -151,6 +152,7 @@ def test_parse_gemlock(
             "type": "rubygems",
             "source": "https://rubygems.org/",
             "platforms": ["ruby"],
+            "checksums": {"ruby": mocked_checksum},
             **base_dep,
         },
     ]
@@ -171,7 +173,12 @@ def test_parse_gemlock(
             root=str(rooted_tmp_path),
             subpath="vendor/pathgem",
         ),
-        GemDependency(name="example", version="0.1.0", source="https://rubygems.org/"),
+        GemDependency(
+            name="example",
+            version="0.1.0",
+            source="https://rubygems.org/",
+            checksum=mocked_checksum,
+        ),
     ]
 
     assert f"Package {rooted_tmp_path.path.name} is bundled with version 2.5.10" in caplog.messages
@@ -294,11 +301,13 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     base_dep: dict[str, str] = sample_parser_output["dependencies"][0]
+    mocked_checksum: str = "sha256:bd2d213996ff7b3b364cd342a585fbee9797dbc1c0c6d868dc4150cc75739781"
     sample_parser_output["dependencies"] = [
         {
             "type": "rubygems",
             "source": "https://rubygems.org/",
             "platforms": ["i8080_cpm"],
+            "checksums": {"i8080_cpm": mocked_checksum},
             **base_dep,
         },
     ]
@@ -314,6 +323,7 @@ def test_parse_gemlock_detects_binaries_and_adds_to_parse_result_when_allowed_to
             version="0.1.0",
             source="https://rubygems.org/",
             platform="i8080_cpm",
+            checksum=mocked_checksum,
         ),
     ]
 

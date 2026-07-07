@@ -11,12 +11,14 @@ parsed_specs = []
 lockfile_parser.specs.each do |spec|
     case spec.source
     when Bundler::Source::Rubygems
+      checksum = spec.source.checksum_store.to_lock(spec)[/sha[^, ]*/]&.sub("=",":")
       parsed_spec = {
         name: spec.name,
         version: spec.version,
         type: 'rubygems',
         source: spec.source.remotes.first,
-        platforms: [spec.platform]
+        platforms: [spec.platform],
+        checksums: checksum.nil? ? {} : { spec.platform => checksum }
       }
 
       existing_spec = parsed_specs.find { |s|
@@ -27,8 +29,9 @@ lockfile_parser.specs.each do |spec|
       }
 
       if existing_spec
-        # extend the platforms array
-        existing_spec[:platforms] << parsed_spec[:platforms].first
+        # extend the platforms array and checksums dictionary
+        existing_spec[:platforms] |= parsed_spec[:platforms]
+        existing_spec[:checksums].merge!(parsed_spec[:checksums])
       else
         parsed_specs << parsed_spec
       end
@@ -57,4 +60,4 @@ lockfile_parser.specs.each do |spec|
 puts JSON.pretty_generate({ bundler_version: lockfile_parser.bundler_version, dependencies: parsed_specs })
 
 # References:
-# https://github.com/rubygems/rubygems/blob/master/bundler/lib/bundler/lockfile_parser.rb
+# https://github.com/ruby/rubygems/blob/master/lib/bundler/lockfile_parser.rb
