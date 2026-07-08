@@ -35,6 +35,10 @@ _ENV_VAR_CLI_MAP = [
     ("HERMETO_TEST_LOCAL_NEXUS_NO_CLEANUP", "--hermeto-local-nexus-no-cleanup"),
 ]
 
+# Scenario in/ dirs contain real project sources (e.g. Python packages for pip) that pytest
+# would otherwise try to collect and import, causing ModuleNotFoundError during collection.
+collect_ignore_glob = ["*/scenarios/*/in/**"]
+
 
 def pytest_configure(config: pytest.Config) -> None:
     """Sync CLI option values to env so existing os.getenv() code sees them."""

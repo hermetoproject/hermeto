@@ -3,6 +3,7 @@ import functools
 import json
 import logging
 import os
+import shutil
 import tempfile
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ from hermeto import APP_NAME
 from hermeto.core.errors import ExitError
 from hermeto.core.scm import GitRepo
 from hermeto.core.type_aliases import StrPath
+from hermeto.core.utils import GIT_PRISTINE_ENV
 from hermeto.interface.cli import DEFAULT_OUTPUT
 from tests.integration.container_engine import get_container_engine
 from tests.integration.proxy import (
@@ -85,8 +87,8 @@ CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specificatio
 
 @dataclass
 class TestParameters:
-    branch: str
     packages: tuple[dict[str, Any], ...]
+    branch: str | None = None
     check_output: bool = True
     expected_error: ExitError = ExitError.ERR_OK
     expected_output: str = ""
@@ -96,6 +98,7 @@ class TestParameters:
     hermeto_env: dict[str, str] = field(default_factory=dict)
     unset_hermeto_env: set[str] = field(default_factory=set)
     netrc_content: str | None = None
+    containerfile: str = "Containerfile"
 
 
 class ContainerImage:
@@ -298,6 +301,51 @@ def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
     return repo_dir
 
 
+def create_synthetic_repo(
+    tmp_path: Path,
+    source_dir: Path,
+    *,
+    origin_url: str = "https://github.com/hermetoproject/hermeto.git",
+) -> Path:
+    """Create a deterministic synthetic git repo from scenario source files.
+
+    All git metadata (author, date, commit message) is fixed so that identical
+    source files always produce the same commit SHA.
+    """
+    SYNTHETIC_AUTHOR = "Test Author"
+    SYNTHETIC_EMAIL = "test@example.com"
+    SYNTHETIC_DATE = "1970-01-01T00:00:00+00:00"
+    SYNTHETIC_MESSAGE = "test scenario"
+
+    synthetic_repo_path = tmp_path / "repo"
+    shutil.copytree(source_dir, synthetic_repo_path)
+
+    # copy hermeto's root .gitignore into the synthetic repo
+    project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
+    gitignore = Path(project_repo_root) / ".gitignore"
+    if gitignore.is_file():
+        # we copy the .gitignore to .git/info/exclude instead of .gitignore, because we don't need
+        # nor want to commit more than test scenario data in the synthetic repo
+        exclude_file = synthetic_repo_path / ".git" / "info" / "exclude"
+        exclude_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(gitignore, exclude_file)
+
+    synthetic_repo = GitRepo.init(synthetic_repo_path, env=GIT_PRISTINE_ENV)
+    with synthetic_repo.git.custom_environment(
+        GIT_AUTHOR_NAME=SYNTHETIC_AUTHOR,
+        GIT_AUTHOR_EMAIL=SYNTHETIC_EMAIL,
+        GIT_COMMITTER_NAME=SYNTHETIC_AUTHOR,
+        GIT_COMMITTER_EMAIL=SYNTHETIC_EMAIL,
+        GIT_AUTHOR_DATE=SYNTHETIC_DATE,
+        GIT_COMMITTER_DATE=SYNTHETIC_DATE,
+    ):
+        synthetic_repo.git.add(".")
+        synthetic_repo.git.commit(m=SYNTHETIC_MESSAGE, env=GIT_PRISTINE_ENV)
+    synthetic_repo.create_remote("origin", origin_url)
+
+    return synthetic_repo_path
+
+
 def fetch_deps_and_check_output(
     tmp_path: Path,
     test_case: str,
@@ -327,9 +375,9 @@ def fetch_deps_and_check_output(
     :param fetch_output_dirname: Name of the directory where the fetch output is stored
     :return: Path to the repository directory used (for passing to build_image_and_check_cmd)
     """
-    # Use custom repository if specified, otherwise use the default session-scoped one
-    # To maintain backwards compatibility, we keep the original behavior of cloning default repo at start of whole test
-    if test_params.repo_url is not None:
+    if test_params.branch is None:
+        actual_repo_dir = test_repo_dir
+    elif test_params.repo_url is not None:
         actual_repo_dir = _clone_custom_test_repo(
             tmp_path, test_params.repo_url, test_params.branch
         )
@@ -407,8 +455,14 @@ def fetch_deps_and_check_output(
             _replace_tmp_path_with_placeholder(build_config["project_files"], actual_repo_dir)
 
         # store .build_config as yaml for more readable test data
-        expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
-        expected_sbom_path = test_data_dir.joinpath(test_case, "bom.json")
+        if test_params.branch is None:
+            expected_build_config_path = test_data_dir.joinpath(
+                test_case, "out", ".build-config.yaml"
+            )
+            expected_sbom_path = test_data_dir.joinpath(test_case, "out", "bom.json")
+        else:
+            expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
+            expected_sbom_path = test_data_dir.joinpath(test_case, "bom.json")
 
         # If any proxy backends are configured, validate and strip proxy refs from the SBOM
         # before comparing to test data.
@@ -432,7 +486,10 @@ def fetch_deps_and_check_output(
         schema = _fetch_cyclone_dx_schema()
         jsonschema.validate(instance=sbom, schema=schema)
 
-    deps_content_file = Path(test_data_dir, test_case, "fetch_deps_file_contents.yaml")
+    if test_params.branch is None:
+        deps_content_file = Path(test_data_dir, test_case, "out", "fetch_deps_file_contents.yaml")
+    else:
+        deps_content_file = Path(test_data_dir, test_case, "fetch_deps_file_contents.yaml")
     if deps_content_file.exists():
         _validate_expected_dep_file_contents(deps_content_file, output_dir)
 
@@ -450,6 +507,7 @@ def build_image_and_check_cmd(
     hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
+    test_params: TestParameters | None = None,
 ) -> None:
     """
     Build image and check that Hermeto provided sources properly.
@@ -458,6 +516,7 @@ def build_image_and_check_cmd(
     :param test_repo_dir: Path to source repository
     :param test_data_dir: Relative path to expected output test data
     :param test_case: Test case name retrieved from pytest id
+    :param test_params: Test case arguments (may include repo_url for custom repository)
     :param check_cmd: Command to be run on image to check provided sources
     :param expected_cmd_output: Expected output of check_cmd
     :param hermeto_image: ContainerImage instance with Hermeto image
@@ -501,12 +560,15 @@ def build_image_and_check_cmd(
     assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     log.info("Build container image with all prerequisites retrieved in previous steps")
-    container_folder = test_data_dir.joinpath(test_case, "container")
+    if test_params is not None and test_params.branch is None:
+        containerfile_path = test_data_dir.joinpath(test_case, "in", test_params.containerfile)
+    else:
+        containerfile_path = test_data_dir.joinpath(test_case, "container", "Containerfile")
 
     with build_image_for_test_case(
         source_dir=test_repo_dir,
         output_dir=tmp_path,
-        containerfile_path=container_folder.joinpath("Containerfile"),
+        containerfile_path=containerfile_path,
         test_case=test_case,
     ) as test_image:
         log.info(f"Run command {check_cmd} on built image {test_image.repository}")
