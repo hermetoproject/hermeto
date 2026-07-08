@@ -1,0 +1,13 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "is-odd": "^3.0.1"
+  },
+  "scripts": {
+    "preinstall": "exit 1",
+    "install": "exit 1",
+    "postinstall": "exit 1"
+  }
+}

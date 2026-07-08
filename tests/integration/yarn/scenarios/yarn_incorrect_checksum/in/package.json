@@ -1,0 +1,17 @@
+{
+  "name": "berryscary",
+  "packageManager": "yarn@3.6.1",
+  "bin": "dist/app.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "old-man-from-scene-24": "workspace:^"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

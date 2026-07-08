@@ -1,0 +1,10 @@
+{
+  "name": "root",
+  "packageManager": "yarn@4.14.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "nanoid": "^5.1.9"
+  }
+}

@@ -1,0 +1,7 @@
+diff --git a/index.js b/index.js
+index 019c0f4bc8e76a84a401d572d7525eb51562989e..c65e6f1fb5c715f262b65c8fb5040ed49f36903c 100644
+--- a/index.js
++++ b/index.js
+@@ -1 +1 @@
+-console.log("Hello World!");
++console.log("Goodbye, Cruel World!");

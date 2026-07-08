@@ -1,0 +1,17 @@
+{
+  "name": "the-answer",
+  "packageManager": "yarn@3.6.1",
+  "bin": "index.js",
+  "dependencies": {
+    "berryscary": "workspace:^",
+    "is-positive": "github:kevva/is-positive#semver=3.0.0",
+    "proxy-from-env": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/proxy-from-env": "^1",
+    "@types/yargs": "^17",
+    "old-man-from-scene-24": "workspace:^",
+    "strip-ansi-tarball": "file:../../external-packages/strip-ansi-4.0.0.tgz",
+    "yargs": "^17.7.2"
+  }
+}

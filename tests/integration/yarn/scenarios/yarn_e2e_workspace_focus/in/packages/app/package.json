@@ -1,0 +1,17 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "is-number": "^7.0.0",
+    "shared": "workspace:^"
+  },
+  "devDependencies": {
+    "tooling": "workspace:^"
+  },
+  "scripts": {
+    "preinstall": "exit 1",
+    "install": "exit 1",
+    "postinstall": "exit 1"
+  }
+}
