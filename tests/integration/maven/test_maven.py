@@ -3,7 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from . import utils
+from tests.integration import utils
+
+SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 
 
 @pytest.mark.parametrize(
@@ -11,7 +13,6 @@ from . import utils
     [
         pytest.param(
             utils.TestParameters(
-                branch="maven/e2e",
                 packages=({"path": ".", "type": "x-maven"},),
                 check_output=True,
             ),
@@ -27,23 +28,24 @@ def test_e2e_maven(
     expected_cmd_output: str,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """End to end tests for maven."""
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
-        test_data_dir,
+        SCENARIOS_DIR,
         test_case,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+        test_params=test_params,
     )
