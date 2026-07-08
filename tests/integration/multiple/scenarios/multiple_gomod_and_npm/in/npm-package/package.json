@@ -1,0 +1,11 @@
+{
+  "name": "npm-package",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "react": "^19.1.0"
+  }
+}
