@@ -1,0 +1,8 @@
+metadata:
+    version: "2.0"
+artifacts:
+    - download_url: https://127.0.0.1:8445/repository/pypi-proxy/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl
+      checksum: "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+      auth:
+          bearer:
+              value: "Bearer SecretToken"

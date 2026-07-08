@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 
 from hermeto.core.errors import ExitError
+from tests.integration import utils
 
-from . import utils
+SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 
 
 @pytest.mark.parametrize(
@@ -14,7 +15,6 @@ from . import utils
     [
         pytest.param(
             utils.TestParameters(
-                branch="generic/file-not-reachable",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=False,
                 expected_error=ExitError.ERR_FETCH,
@@ -28,8 +28,6 @@ def test_generic_fetcher(
     test_params: utils.TestParameters,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -39,9 +37,11 @@ def test_generic_fetcher(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
 
@@ -50,7 +50,6 @@ def test_generic_fetcher(
     [
         pytest.param(
             utils.TestParameters(
-                branch="generic/e2e",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
             ),
@@ -60,7 +59,6 @@ def test_generic_fetcher(
         ),
         pytest.param(
             utils.TestParameters(
-                branch="generic/e2e-maven",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
             ),
@@ -76,8 +74,6 @@ def test_e2e_generic(
     expected_cmd_output: str,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -87,19 +83,22 @@ def test_e2e_generic(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
-        test_data_dir,
+        SCENARIOS_DIR,
         test_case,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+        test_params=test_params,
     )
 
 
@@ -108,7 +107,6 @@ def test_e2e_generic(
     [
         pytest.param(
             utils.TestParameters(
-                branch="generic/e2e-basic-auth",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
                 expected_output="All dependencies fetched successfully",
@@ -121,7 +119,6 @@ def test_e2e_generic(
         ),
         pytest.param(
             utils.TestParameters(
-                branch="generic/e2e-bearer-auth",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
                 expected_output="All dependencies fetched successfully",
@@ -134,7 +131,6 @@ def test_e2e_generic(
         ),
         pytest.param(
             utils.TestParameters(
-                branch="generic/e2e-auth-wrong-creds",
                 packages=({"path": ".", "type": "generic"},),
                 check_output=False,
                 expected_error=ExitError.ERR_FETCH,
@@ -152,8 +148,6 @@ def test_generic_auth(
     test_params: utils.TestParameters,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -163,7 +157,9 @@ def test_generic_auth(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
