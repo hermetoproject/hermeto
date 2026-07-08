@@ -3,7 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from . import utils
+from tests.integration import utils
+
+SCENARIOS_DIR = Path(__file__).parent / "scenarios"
+CARGO_SCENARIOS_DIR = Path(__file__).parent.parent / "cargo" / "scenarios"
 
 
 def test_help(hermeto_image: utils.HermetoImage, tmp_path: Path) -> None:
@@ -31,7 +34,6 @@ def test_help(hermeto_image: utils.HermetoImage, tmp_path: Path) -> None:
     [
         pytest.param(
             utils.TestParameters(
-                branch="cargo/mixed-git-crate-dependency",
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
             ),
@@ -48,8 +50,6 @@ def test_e2e_cargo(
     expected_cmd_output: str,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -58,13 +58,15 @@ def test_e2e_cargo(
     TODO: Drop this when we no longer support the legacy entrypoint.
     """
     test_case = request.node.callspec.id
+    source_dir = CARGO_SCENARIOS_DIR / "cargo_mixed_git_crate_dependency" / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path,
         test_case,
         test_params,
-        test_repo_dir,
-        test_data_dir,
+        repo_dir,
+        SCENARIOS_DIR,
         hermeto_image,
         fetch_output_dirname="cachi2-output",
         entrypoint="cachi2",
@@ -73,7 +75,7 @@ def test_e2e_cargo(
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
-        test_data_dir,
+        SCENARIOS_DIR,
         test_case,
         check_cmd,
         expected_cmd_output,
@@ -81,4 +83,5 @@ def test_e2e_cargo(
         fetch_output_dirname="cachi2-output",
         env_vars_filename="cachi2.env",
         hermeto_image_entrypoint="cachi2",
+        test_params=test_params,
     )
