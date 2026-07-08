@@ -1,0 +1,16 @@
+{
+  "name": "npm-with-aliased-deps",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fecha": "^4.2.3",
+    "fecha-4.2.0": "github:taylorhakes/fecha#91680e4db1415fea33eac878cfd889c80a7b55c7",
+    "fecha-4.2.2": "npm:fecha@^4.2.2"
+  }
+}

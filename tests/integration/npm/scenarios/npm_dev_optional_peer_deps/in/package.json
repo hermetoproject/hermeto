@@ -1,0 +1,26 @@
+{
+  "name": "npm-dev-optional-peer-deps",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ansi-styles": "^6.2.1",
+    "chalk": "github:chalk/chalk"
+  },
+  "workspaces": [
+    "foo"
+  ],
+  "optionalDependencies": {
+    "emoji-regex": "^10.2.1",
+    "minimist": "https://github.com/minimistjs/minimist/archive/refs/tags/v1.2.8.tar.gz"
+  },
+  "peerDependencies": {
+    "jsonfile": "^6.1.0"
+  }
+}

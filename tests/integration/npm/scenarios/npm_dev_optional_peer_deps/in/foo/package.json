@@ -1,0 +1,19 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "ansi-regex": "^6.0.1",
+    "ms": "https://github.com/vercel/ms/archive/refs/tags/2.1.3.tar.gz"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "optionalDependencies": {
+    "balanced-match": "^2.0.0",
+    "is-interactive": "github:sindresorhus/is-interactive"
+  }
+}

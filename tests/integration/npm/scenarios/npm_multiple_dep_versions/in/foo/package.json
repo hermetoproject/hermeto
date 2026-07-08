@@ -1,0 +1,15 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+      "is-positive": "github:kevva/is-positive#75dd3a181375162eda014984f2decc663199b09e"
+  }
+}

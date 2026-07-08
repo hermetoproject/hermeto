@@ -1,0 +1,27 @@
+{
+  "name": "npm-first-package",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermetoproject/integration-tests.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hermetoproject/integration-tests/issues"
+  },
+  "homepage": "https://github.com/hermetoproject/integration-tests#readme",
+  "devDependencies": {
+    "express": "^4.18.2"
+  },
+  "dependencies": {
+    "@types/react-dom": "^18.0.1",
+    "npm-without-deps": "https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz",
+    "is-positive": "github:kevva/is-positive"
+  }
+}

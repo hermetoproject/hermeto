@@ -1,0 +1,26 @@
+{
+  "name": "npm-third-package",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermetoproject/integration-tests.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hermetoproject/integration-tests/issues"
+  },
+  "homepage": "https://github.com/hermetoproject/integration-tests#readme",
+  "dependencies": {
+    "npm-without-deps": "https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz",
+    "is-positive": "github:kevva/is-positive",
+    "is-number": "file:is-number-7.0.0.tgz",
+    "chai": "4.2.0",
+    "sax": "0.1.1"
+  },
+  "description": ""
+}

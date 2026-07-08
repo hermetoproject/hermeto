@@ -1,0 +1,24 @@
+{
+  "name": "npm-cachi2-bundled",
+  "version": "1.0.0",
+  "description": "Verify cachi2's handling of direct and indirect bundled dependencies.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bundle-dependencies": "^1.0.2"
+  },
+  "dependencies": {
+    "ansi-regex": "^2.0.0",
+    "builtin-modules": "^1.1.1",
+    "fecha": "^4.2.3"
+  },
+  "bundleDependencies": [
+    "builtin-modules",
+    "fecha"
+  ]
+}
