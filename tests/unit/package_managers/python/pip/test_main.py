@@ -998,3 +998,68 @@ class TestValidateIndexUrl:
         )
         with pytest.raises(InvalidInput):
             pip._download_dependencies(rooted_tmp_path, req_file)
+
+
+class TestPipIndexUrlEnv:
+    """Tests for PIP_INDEX_URL environment variable support."""
+
+    @pytest.mark.parametrize(
+        "env_url, file_options, expected_url",
+        [
+            pytest.param(
+                "https://env-index.example.com/simple/",
+                ["-i", "https://file-index.example.com/simple/"],
+                "https://file-index.example.com/simple/",
+                id="file_wins_over_env",
+            ),
+            pytest.param(
+                "https://env-index.example.com/simple/",
+                [],
+                "https://env-index.example.com/simple/",
+                id="env_used_when_no_file_index",
+            ),
+            pytest.param(
+                None,
+                [],
+                "https://pypi.org/simple/",
+                id="pypi_default_when_neither_set",
+            ),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.python.pip.main._resolve_and_download_pypi_packages")
+    def test_precedence(
+        self,
+        mock_resolve: Any,
+        env_url: str | None,
+        file_options: list[str],
+        expected_url: str,
+        monkeypatch: pytest.MonkeyPatch,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Test precedence of index URL configuration sources."""
+        if env_url is not None:
+            monkeypatch.setenv("PIP_INDEX_URL", env_url)
+        else:
+            monkeypatch.delenv("PIP_INDEX_URL", raising=False)
+
+        mock_resolve.return_value = []
+        req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
+        req_file = mock_requirements_file(requirements=[req], options=file_options)
+
+        pip._download_dependencies(rooted_tmp_path, req_file)
+
+        call_args = mock_resolve.call_args
+        assert call_args[0][4] == expected_url
+
+    def test_invalid_env_url_rejected(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """An invalid PIP_INDEX_URL is rejected when no --index-url is in the file."""
+        monkeypatch.setenv("PIP_INDEX_URL", "ftp://bad.example.com/simple/")
+        req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
+        req_file = mock_requirements_file(requirements=[req])
+
+        with pytest.raises(InvalidInput):
+            pip._download_dependencies(rooted_tmp_path, req_file)

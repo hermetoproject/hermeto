@@ -306,8 +306,16 @@ Make Hermeto download packages from the specified Python Package Index server.
 
 Applies to all the packages (and only the packages) from the file which
 contains the `--index-url` option. If file A contains `--index-url` and file B
-does not, Hermeto will download the packages declared in B from the default
-index server (`https://pypi.org/simple`).
+does not, Hermeto will download the packages declared in B from the
+`PIP_INDEX_URL` environment variable (if set) or the default index server
+(`https://pypi.org/simple`).
+
+The precedence follows
+[pip's own configuration precedence](https://pip.pypa.io/en/stable/topics/configuration/#environment-variables):
+
+```text
+requirements.txt --index-url  >  PIP_INDEX_URL env var  >  PyPI default
+```
 
 > [!WARNING]
 > Do not include credentials in the index url. If needed, provide authentication

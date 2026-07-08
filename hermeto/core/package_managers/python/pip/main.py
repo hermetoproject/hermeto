@@ -2,6 +2,7 @@
 import asyncio
 import functools
 import logging
+import os
 import tarfile
 import zipfile
 from collections.abc import Callable, Iterable, Iterator
@@ -519,6 +520,13 @@ def _download_dependencies(
         if options["index_url"]:
             _validate_index_url(options["index_url"], "--index-url")
             index_url = options["index_url"]
+        elif pip_index_url := os.environ.get("PIP_INDEX_URL", "").strip():
+            _validate_index_url(pip_index_url, "PIP_INDEX_URL")
+            index_url = pip_index_url
+            log.info(
+                "Using PIP_INDEX_URL='%s' (no --index-url in requirements file)",
+                pip_index_url,
+            )
         else:
             index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
         processed.extend(
