@@ -1,0 +1,9 @@
+contentOrigin:
+  repos:
+    - repoid: appstream
+      baseurl: https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os
+    - repoid: baseos
+      baseurl: https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os
+packages:
+    - name: vim
+installWeakDeps: false

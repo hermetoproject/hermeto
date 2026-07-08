@@ -1,0 +1,13 @@
+contentOrigin:
+  repos:
+    - repoid: baseos
+      baseurl: https://mirror.stream.centos.org/9-stream/BaseOS/$basearch/os/
+    - repoid: appstream
+      baseurl: https://mirror.stream.centos.org/9-stream/AppStream/$basearch/os/
+packages:
+  - alternatives
+  - centos-stream-repos
+  - gpm-libs
+arches:
+  - x86_64
+installWeakDeps: false

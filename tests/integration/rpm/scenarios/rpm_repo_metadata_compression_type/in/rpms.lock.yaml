@@ -1,0 +1,232 @@
+---
+lockfileVersion: 1
+lockfileVendor: redhat
+arches:
+- arch: x86_64
+  packages:
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/g/gpm-libs-1.20.7-6.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 33212
+    checksum: sha256:ab255e1e536cbc9e8dc453892ac6f6dcd4b73b20740bb20b9c39fedcd4266107
+    name: gpm-libs
+    evr: 1.20.7-6.el7
+    sourcerpm: gpm-1.20.7-6.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/g/groff-base-1.22.2-8.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 964200
+    checksum: sha256:e0e5409f044c98cab1ffce5cf8915a8eee43a37f723c59760469d306c7ae1cfe
+    name: groff-base
+    evr: 1.22.2-8.el7
+    sourcerpm: groff-1.22.2-8.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-5.16.3-299.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 8360528
+    checksum: sha256:a35104d8976b8e82d0ace47f0b55d60810c3f05c0b7953de340e5471346bfbf2
+    name: perl
+    evr: 4:5.16.3-299.el7_9
+    sourcerpm: perl-5.16.3-299.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Carp-1.26-244.el7.noarch.rpm
+    repoid: ubi-7
+    size: 19724
+    checksum: sha256:08a7cd07930cc331c629d79dcfc919f44695cddbc60ae44b0af08d5618462484
+    name: perl-Carp
+    evr: 1.26-244.el7
+    sourcerpm: perl-Carp-1.26-244.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Encode-2.51-7.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 1545504
+    checksum: sha256:bf67290204eecd89a5e8ddc171a9b320718b76c042be86de40b34ac7ef7d286b
+    name: perl-Encode
+    evr: 2.51-7.el7
+    sourcerpm: perl-Encode-2.51-7.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Exporter-5.68-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 29040
+    checksum: sha256:791a9cbd72458f4f28a5e7d267ad415c51f9647a60c5645cb288cc4cd85381ea
+    name: perl-Exporter
+    evr: 5.68-3.el7
+    sourcerpm: perl-Exporter-5.68-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-File-Path-2.09-2.el7.noarch.rpm
+    repoid: ubi-7
+    size: 27196
+    checksum: sha256:71fa2eceea6cea25283dccee16f61cedef49f4262af360821ceebef808401090
+    name: perl-File-Path
+    evr: 2.09-2.el7
+    sourcerpm: perl-File-Path-2.09-2.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-File-Temp-0.23.01-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 57724
+    checksum: sha256:15b698148ae0f924adf4e287e2de86c2289a3f2d46d9170ff21972ab0a73ba36
+    name: perl-File-Temp
+    evr: 0.23.01-3.el7
+    sourcerpm: perl-File-Temp-0.23.01-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Filter-1.49-3.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 78288
+    checksum: sha256:49176af8fa7ec5f144b33988ab7ac6b186793c0438e28d0b12f343e9addb8451
+    name: perl-Filter
+    evr: 1.49-3.el7
+    sourcerpm: perl-Filter-1.49-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Getopt-Long-2.40-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 57184
+    checksum: sha256:2d777b3e8a9940a4d6111c7212bbbb44de83916e3a61457ea269107b29740e64
+    name: perl-Getopt-Long
+    evr: 2.40-3.el7
+    sourcerpm: perl-Getopt-Long-2.40-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-HTTP-Tiny-0.033-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 39404
+    checksum: sha256:66a79f8531a5a937f2db732219c36220ccfb925837b4d2e278bed040776703cb
+    name: perl-HTTP-Tiny
+    evr: 0.033-3.el7
+    sourcerpm: perl-HTTP-Tiny-0.033-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-PathTools-3.40-5.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 84516
+    checksum: sha256:aec11b0267a711f6bee2824a9914e88ca55a01738bf409b7ef7e7a38e37a9037
+    name: perl-PathTools
+    evr: 3.40-5.el7
+    sourcerpm: perl-PathTools-3.40-5.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Pod-Escapes-1.04-299.el7_9.noarch.rpm
+    repoid: ubi-7
+    size: 53068
+    checksum: sha256:7eb0ac5f9a59d6afed9729622836fe6e5ffe360ac38246b28ea8fc4d8eb3ae5a
+    name: perl-Pod-Escapes
+    evr: 1:1.04-299.el7_9
+    sourcerpm: perl-5.16.3-299.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Pod-Perldoc-3.20-4.el7.noarch.rpm
+    repoid: ubi-7
+    size: 88764
+    checksum: sha256:7658cb0e7b6518d9786d863c04f12781992989b8bbafefc6c5634104ea138321
+    name: perl-Pod-Perldoc
+    evr: 3.20-4.el7
+    sourcerpm: perl-Pod-Perldoc-3.20-4.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Pod-Simple-3.28-4.el7.noarch.rpm
+    repoid: ubi-7
+    size: 221272
+    checksum: sha256:43616a0a035c29c98cdf462c0dc2a7c5e98c56000ca7ec358984947b7b222902
+    name: perl-Pod-Simple
+    evr: 1:3.28-4.el7
+    sourcerpm: perl-Pod-Simple-3.28-4.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Pod-Usage-1.63-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 27492
+    checksum: sha256:d1fb8b3c6fb9a98d63766c3c9a228bb97453ba62cc4a490b6c187b1dfe42fae2
+    name: perl-Pod-Usage
+    evr: 1.63-3.el7
+    sourcerpm: perl-Pod-Usage-1.63-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Scalar-List-Utils-1.27-248.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 36864
+    checksum: sha256:3106a99a28a75685253fa53c53c3a96c3d111c7906d55b1328791388d876e823
+    name: perl-Scalar-List-Utils
+    evr: 1.27-248.el7
+    sourcerpm: perl-Scalar-List-Utils-1.27-248.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Socket-2.010-5.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 49948
+    checksum: sha256:b8f77d5b3714ca6d1b19736ad13588997ab31dc39b036f842a07b061af0fd247
+    name: perl-Socket
+    evr: 2.010-5.el7
+    sourcerpm: perl-Socket-2.010-5.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Storable-2.45-3.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 78940
+    checksum: sha256:730dc7a252fdf9307d8a59e6d2788671eeb582175f471522785e479c9f60cfa9
+    name: perl-Storable
+    evr: 2.45-3.el7
+    sourcerpm: perl-Storable-2.45-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Text-ParseWords-3.29-4.el7.noarch.rpm
+    repoid: ubi-7
+    size: 14108
+    checksum: sha256:e085d2171393ba86e53bf8b47cc897fccc09382a8a15bf629303c5486e8bd1cc
+    name: perl-Text-ParseWords
+    evr: 3.29-4.el7
+    sourcerpm: perl-Text-ParseWords-3.29-4.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Time-HiRes-1.9725-3.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 46352
+    checksum: sha256:672035f4b12c0ce547a90287d936caeadcb0c06dbdda01a026071eab9622da04
+    name: perl-Time-HiRes
+    evr: 4:1.9725-3.el7
+    sourcerpm: perl-Time-HiRes-1.9725-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-Time-Local-1.2300-2.el7.noarch.rpm
+    repoid: ubi-7
+    size: 24836
+    checksum: sha256:b83c398d8040ad255360d3fb37f04982a31d7e51d81815c5fafaf0dbe8fda9e7
+    name: perl-Time-Local
+    evr: 1.2300-2.el7
+    sourcerpm: perl-Time-Local-1.2300-2.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-constant-1.27-2.el7.noarch.rpm
+    repoid: ubi-7
+    size: 19184
+    checksum: sha256:3230783603695707b5b037f700c0293658afeff26541bde93c2743b335c70e1b
+    name: perl-constant
+    evr: 1.27-2.el7
+    sourcerpm: perl-constant-1.27-2.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-libs-5.16.3-299.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 706180
+    checksum: sha256:e0a4e421a8b3512c06c572f771a332fccf2f83893868b71aa850d2d5fab74856
+    name: perl-libs
+    evr: 4:5.16.3-299.el7_9
+    sourcerpm: perl-5.16.3-299.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-macros-5.16.3-299.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 45368
+    checksum: sha256:70dff19568333c4dc8037a10f85029c03067027a6daa94bb29a638fd1a5416b8
+    name: perl-macros
+    evr: 4:5.16.3-299.el7_9
+    sourcerpm: perl-5.16.3-299.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-parent-0.225-244.el7.noarch.rpm
+    repoid: ubi-7
+    size: 12544
+    checksum: sha256:6e7dae153c72989bcbf0f9174f513dbca277578eba1fe08895b4dafb98308caf
+    name: perl-parent
+    evr: 1:0.225-244.el7
+    sourcerpm: perl-parent-0.225-244.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-podlators-2.5.1-3.el7.noarch.rpm
+    repoid: ubi-7
+    size: 114432
+    checksum: sha256:916f6a6c4b25af9a227e943cf61ca0873553e2ac67479aa43b954f98735e5d7f
+    name: perl-podlators
+    evr: 2.5.1-3.el7
+    sourcerpm: perl-podlators-2.5.1-3.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-threads-1.87-4.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 50448
+    checksum: sha256:37675735e4ea2e72205985d04535c7bd8901db2d618de333b783ae29c0117d2e
+    name: perl-threads
+    evr: 1.87-4.el7
+    sourcerpm: perl-threads-1.87-4.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/p/perl-threads-shared-1.43-6.el7.x86_64.rpm
+    repoid: ubi-7
+    size: 39924
+    checksum: sha256:3b25187cbec0cc9c4c6884f1534e45384639644a4819f24a47536b6ae4515eda
+    name: perl-threads-shared
+    evr: 1.43-6.el7
+    sourcerpm: perl-threads-shared-1.43-6.el7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/v/vim-common-7.4.629-8.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 6205708
+    checksum: sha256:569a0ba16ff928fe4ae022afe94e0eb102509d8e35a3281bae838ba25379c674
+    name: vim-common
+    evr: 2:7.4.629-8.el7_9
+    sourcerpm: vim-7.4.629-8.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/v/vim-enhanced-7.4.629-8.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 1106076
+    checksum: sha256:f9df69adbbafc14c33c2f838ae64f043f697611a30acf2574bae1bb5105317c3
+    name: vim-enhanced
+    evr: 2:7.4.629-8.el7_9
+    sourcerpm: vim-7.4.629-8.el7_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/x86_64/os/Packages/v/vim-filesystem-7.4.629-8.el7_9.x86_64.rpm
+    repoid: ubi-7
+    size: 11316
+    checksum: sha256:94a1e0a9c6ea6159a8515a2ac2e9af2cd6345f2d6849f29711ae00e875f38c98
+    name: vim-filesystem
+    evr: 2:7.4.629-8.el7_9
+    sourcerpm: vim-7.4.629-8.el7_9.src.rpm
+  source: []
+  module_metadata: []

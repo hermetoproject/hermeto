@@ -1,0 +1,43 @@
+---
+lockfileVersion: 1
+lockfileVendor: redhat
+arches:
+  - arch: x86_64
+    packages:
+      - url: https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages/gpm-libs-1.20.7-29.el9.x86_64.rpm
+        repoid: appstream
+        size: 21865
+        checksum: sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd
+        name: gpm-libs
+        evr: 1.20.7-29.el9
+        sourcerpm: gpm-1.20.7-29.el9.src.rpm
+      - url: https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages/vim-common-8.2.2637-28.el9.x86_64.rpm
+        repoid: appstream
+        size: 7343604
+        checksum: sha256:225b9336591f2adb2616ee87b3296dd7d3244a5d01d857219e474691e127825e
+        name: vim-common
+        evr: 2:8.2.2637-28.el9
+        sourcerpm: vim-8.2.2637-28.el9.src.rpm
+      - url: https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages/vim-enhanced-8.2.2637-28.el9.x86_64.rpm
+        repoid: appstream
+        size: 1831116
+        checksum: sha256:b843e15aeb437ab3a12c97d07f47490617220b0c2534cef76450e43aa2a5322a
+        name: vim-enhanced
+        evr: 2:8.2.2637-28.el9
+        sourcerpm: vim-8.2.2637-28.el9.src.rpm
+      - url: https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/Packages/vim-filesystem-8.2.2637-28.el9.noarch.rpm
+        repoid: baseos
+        size: 13890
+        checksum: sha256:041476da470f7cf2abdefecb441573f6a71649b86f747c5e6a33a9b6810064a3
+        name: vim-filesystem
+        evr: 2:8.2.2637-28.el9
+        sourcerpm: vim-8.2.2637-28.el9.src.rpm
+      - url: https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/Packages/which-2.21-30.el9.x86_64.rpm
+        repoid: baseos
+        size: 41976
+        checksum: sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b
+        name: which
+        evr: 2.21-30.el9
+        sourcerpm: which-2.21-30.el9.src.rpm
+    source: []
+    module_metadata: []

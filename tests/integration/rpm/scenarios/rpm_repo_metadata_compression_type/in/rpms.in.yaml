@@ -1,0 +1,7 @@
+contentOrigin:
+  repos:
+    - repoid: ubi-7
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi/server/7/7Server/$basearch/os
+
+packages:
+  - vim 

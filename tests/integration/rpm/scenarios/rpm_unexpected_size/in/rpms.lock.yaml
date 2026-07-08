@@ -1,0 +1,14 @@
+lockfileVersion: 1
+lockfileVendor: redhat
+arches:
+- arch: x86_64
+  packages:
+  - url: https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/Packages/centos-stream-repos-9.0-36.el9.noarch.rpm
+    repoid: baseos
+    size: 9771
+    checksum: sha256:da62952810eacfb857532029a6cfe15049345be202346c3d64e2d067a2149bb8
+    name: centos-stream-repos
+    evr: 9.0-36.el9
+    sourcerpm: centos-stream-release-9.0-36.el9.src.rpm
+  source: []
+  module_metadata: []

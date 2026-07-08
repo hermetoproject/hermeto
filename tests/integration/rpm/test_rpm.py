@@ -8,8 +8,9 @@ import pytest
 
 from hermeto.core.errors import ExitError
 from hermeto.interface.cli import DEFAULT_OUTPUT
+from tests.integration import utils
 
-from . import utils
+SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 
 
 @pytest.mark.parametrize(
@@ -17,7 +18,6 @@ from . import utils
     [
         pytest.param(
             utils.TestParameters(
-                branch="rpm/missing-checksum",
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=True,
             ),
@@ -25,7 +25,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/unmatched-checksum",
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 expected_error=ExitError.ERR_CHECKSUM_VERIFICATION_FAILED,
@@ -35,7 +34,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/unexpected-size",
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 expected_error=ExitError.ERR_CHECKSUM_VERIFICATION_FAILED,
@@ -45,7 +43,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/multiple-packages",
                 packages=(
                     {"path": "this-project", "type": "rpm"},
                     {"path": "another-project", "type": "rpm"},
@@ -56,7 +53,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/multiple-archs",
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=True,
             ),
@@ -64,7 +60,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/multiple-archs",
                 packages=({"path": ".", "type": "rpm", "binary": {"arch": "x86_64"}},),
                 check_output=True,
             ),
@@ -72,7 +67,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/dnf-tls-client-auth",
                 packages=(
                     {
                         "path": ".",
@@ -97,7 +91,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="rpm/multiple-packages-summary",
                 packages=(
                     {"path": "this-project", "type": "rpm", "include_summary_in_sbom": "true"},
                     {"path": "another-project", "type": "rpm"},
@@ -112,8 +105,6 @@ def test_rpm_packages(
     test_params: utils.TestParameters,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     top_level_test_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
@@ -124,13 +115,15 @@ def test_rpm_packages(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     utils.fetch_deps_and_check_output(
         tmp_path,
         test_case,
         test_params,
-        test_repo_dir,
-        test_data_dir,
+        repo_dir,
+        SCENARIOS_DIR,
         hermeto_image,
         mounts=[(top_level_test_dir / "certificates", "/certificates")],
     )
@@ -141,7 +134,6 @@ def test_rpm_packages(
     [
         pytest.param(
             utils.TestParameters(
-                branch="rpm/repo-file",
                 packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
             ),
@@ -153,16 +145,16 @@ def test_repo_files(
     test_params: utils.TestParameters,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """Test if the contents of the generated .repo file are correct."""
     test_case = request.node.callspec.id
     output_dir = tmp_path.joinpath(DEFAULT_OUTPUT)
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
     # call inject-files to create the .repo file
@@ -188,7 +180,7 @@ def test_repo_files(
     )
 
     # update test data if needed
-    expected_repo_file_path = test_data_dir.joinpath(test_case, "hermeto.repo")
+    expected_repo_file_path = SCENARIOS_DIR / test_case / "out" / "hermeto.repo"
 
     if os.getenv("HERMETO_TEST_GENERATE_DATA") == "1":
         expected_repo_file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -211,7 +203,6 @@ def test_repo_files(
     [
         pytest.param(
             utils.TestParameters(
-                branch="rpm/repo-metadata-compression-type",
                 packages=(
                     {
                         "type": "rpm",
@@ -230,7 +221,6 @@ def test_repo_files(
         # RPMs were properly installed
         pytest.param(
             utils.TestParameters(
-                branch="rpm/e2e",
                 packages=(
                     {
                         "type": "rpm",
@@ -246,7 +236,6 @@ def test_repo_files(
         # if the RPMs (including modular packages) were properly installed.
         pytest.param(
             utils.TestParameters(
-                branch="rpm/e2e-modularity",
                 packages=(
                     {
                         "type": "rpm",
@@ -265,8 +254,6 @@ def test_e2e_rpm(
     expected_cmd_output: str,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -276,17 +263,20 @@ def test_e2e_rpm(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
-        test_data_dir,
+        SCENARIOS_DIR,
         test_case,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+        test_params=test_params,
     )

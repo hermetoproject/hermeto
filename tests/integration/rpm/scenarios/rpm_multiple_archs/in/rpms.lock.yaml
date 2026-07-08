@@ -1,0 +1,26 @@
+---
+lockfileVersion: 1
+lockfileVendor: redhat
+arches:
+- arch: aarch64
+  packages:
+  - url: https://mirror.stream.centos.org/9-stream/AppStream/aarch64/os/Packages/gpm-libs-1.20.7-29.el9.aarch64.rpm
+    repoid: appstream
+    size: 22098
+    checksum: sha256:5a0d1794946ea191519eed8ebf3c56ebdd6fe31d9d7ef8a466366332b0265063
+    name: gpm-libs
+    evr: 1.20.7-29.el9
+    sourcerpm: gpm-1.20.7-29.el9.src.rpm
+  source: []
+  module_metadata: []
+- arch: x86_64
+  packages:
+  - url: https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages/gpm-libs-1.20.7-29.el9.x86_64.rpm
+    repoid: appstream
+    size: 21865
+    checksum: sha256:d669a8aaabc03d8a44330f0d8115f87fbedc9396b554c592d66a0bd718a8e4cd
+    name: gpm-libs
+    evr: 1.20.7-29.el9
+    sourcerpm: gpm-1.20.7-29.el9.src.rpm
+  source: []
+  module_metadata: []
