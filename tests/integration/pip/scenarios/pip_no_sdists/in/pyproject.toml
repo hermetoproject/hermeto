@@ -1,0 +1,6 @@
+[project]
+name = "package"
+version = "0.1.0"
+# only wheel distributions are available on PyPI
+# https://pypi.org/project/tensorboard/2.16.2/#files
+dependencies = ["tensorboard==2.16.2"]

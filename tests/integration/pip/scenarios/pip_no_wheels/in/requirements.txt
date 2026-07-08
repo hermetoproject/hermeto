@@ -1,0 +1,6 @@
+pyicu==2.12 \
+    --hash=sha256:bd7ab5efa93ad692e6daa29cd249364e521218329221726a113ca3cb281c8611
+    # https://pypi.org/project/PyICU/2.12/#files
+cryptos==2.0.9 \
+    --hash=sha256:3465f37ff22fad3903394ed1dafa0d712472a2ab2e9bc1f13a31886ffc7df343
+    # https://pypi.org/project/cryptos/2.0.9/#files

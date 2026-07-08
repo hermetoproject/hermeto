@@ -1,0 +1,13 @@
+[project]
+name = "integration-tests"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography",
+    "rfc3161-client>=1.0.6",
+]
+
+[tool.uv.sources]
+cryptography = { url = "https://github.com/pyca/cryptography/archive/refs/tags/44.0.2.zip" }

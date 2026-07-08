@@ -1,0 +1,8 @@
+maturin>=1,<2
+cffi>=1.12; platform_python_implementation != 'PyPy'
+setuptools>=62.4,!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2
+wheel>=0.36.2
+tomli>=1.1.0,<=2.0.2 ; python_version<'3.11'
+setuptools-rust>=1.4.0
+flit_core>=3.2.0,<4
+setuptools_scm

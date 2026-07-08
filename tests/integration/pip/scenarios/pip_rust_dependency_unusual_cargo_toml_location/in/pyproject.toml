@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cargo_toml_placement"
+version = "0.0.1"
+dependencies = [
+  "cryptography",
+]

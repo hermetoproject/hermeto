@@ -1,0 +1,42 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b",
+      "name": "pip-empty",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b",
+      "type": "library",
+      "version": "1.0.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

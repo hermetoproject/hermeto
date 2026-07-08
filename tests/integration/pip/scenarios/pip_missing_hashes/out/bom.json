@@ -1,0 +1,132 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/certifi@2025.7.14",
+        "pkg:pypi/charset-normalizer@3.4.2",
+        "pkg:pypi/idna@3.10",
+        "pkg:pypi/requests@2.32.4",
+        "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+        "pkg:pypi/urllib3@2.5.0"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/certifi@2025.7.14",
+      "name": "certifi",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/certifi@2025.7.14",
+      "type": "library",
+      "version": "2025.7.14"
+    },
+    {
+      "bom-ref": "pkg:pypi/charset-normalizer@3.4.2",
+      "name": "charset-normalizer",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/charset-normalizer@3.4.2",
+      "type": "library",
+      "version": "3.4.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/idna@3.10",
+      "name": "idna",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/idna@3.10",
+      "type": "library",
+      "version": "3.10"
+    },
+    {
+      "bom-ref": "pkg:pypi/requests@2.32.4",
+      "name": "requests",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/requests@2.32.4",
+      "type": "library",
+      "version": "2.32.4"
+    },
+    {
+      "bom-ref": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+      "name": "test",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/urllib3@2.5.0",
+      "name": "urllib3",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/urllib3@2.5.0",
+      "type": "library",
+      "version": "2.5.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
