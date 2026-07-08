@@ -14,6 +14,7 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     InvalidChecksum,
+    InvalidInput,
     InvalidVCSReference,
     LockfileNotFound,
     MissingChecksum,
@@ -956,3 +957,44 @@ def test_fetch_pip_source_correctly_reraises_when_there_is_a_dependency_cargo_lo
 
     with pytest.raises(PackageWithCorruptLockfileRejected):
         pip.fetch_pip_source(request)
+
+
+class TestValidateIndexUrl:
+    """Tests for index URL validation shared by --index-url and PIP_INDEX_URL."""
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            pytest.param(CUSTOM_PYPI_ENDPOINT, id="https"),
+            pytest.param("http://internal.example.com/simple/", id="http"),
+        ],
+    )
+    def test_validate_index_url_accepts_valid(self, url: str) -> None:
+        """Accept valid HTTP(S) index URLs."""
+        pip._validate_index_url(url, "--index-url")
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            pytest.param("ftp://example.com/simple/", id="ftp_scheme"),
+            pytest.param("https://", id="no_host"),
+            pytest.param("https://user:pass@example.com/simple/", id="user_pass"),
+            pytest.param("https://user@example.com/simple/", id="user_only"),
+        ],
+    )
+    def test_validate_index_url_rejects_invalid(self, url: str) -> None:
+        """Reject index URLs with bad scheme, missing host, or embedded credentials."""
+        with pytest.raises(InvalidInput):
+            pip._validate_index_url(url, "--index-url")
+
+    def test_download_dependencies_rejects_invalid_file_index_url(
+        self, rooted_tmp_path: RootedPath
+    ) -> None:
+        """--index-url from a requirements file is validated before use."""
+        req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
+        req_file = mock_requirements_file(
+            requirements=[req],
+            options=["-i", "ftp://bad.example.com/simple/"],
+        )
+        with pytest.raises(InvalidInput):
+            pip._download_dependencies(rooted_tmp_path, req_file)

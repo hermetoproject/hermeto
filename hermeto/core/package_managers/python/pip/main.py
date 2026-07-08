@@ -18,7 +18,13 @@ from packaging.utils import canonicalize_name
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
-from hermeto.core.errors import LockfileNotFound, NotAGitRepo, PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    InvalidInput,
+    LockfileNotFound,
+    NotAGitRepo,
+    PackageRejected,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import PipBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import (
@@ -64,6 +70,32 @@ log = logging.getLogger(__name__)
 
 DEFAULT_BUILD_REQUIREMENTS_FILE = "requirements-build.txt"
 DEFAULT_REQUIREMENTS_FILE = "requirements.txt"
+
+
+def _validate_index_url(url: str, source: str) -> None:
+    """Validate a PyPI index URL regardless of where it was configured.
+
+    :param url: the index URL to validate
+    :param source: human-readable origin for error messages (e.g. "--index-url", "PIP_INDEX_URL")
+    :raises PackageRejected: if the URL is invalid
+    """
+    parsed = urlparse.urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise InvalidInput(
+            f"{source} must use http or https scheme, got: {parsed.scheme or 'none'}",
+            solution=f"Set {source} to a valid HTTP(S) URL (e.g., https://pypi.org/simple/)",
+        )
+    if not parsed.netloc:
+        raise InvalidInput(
+            f"{source} must include a host",
+            solution=f"Set {source} to a valid HTTP(S) URL (e.g., https://pypi.org/simple/)",
+        )
+    if parsed.username or parsed.password:
+        raise InvalidInput(
+            f"{source} must not contain embedded credentials",
+            solution="Use a .netrc file for authentication instead of embedding "
+            "credentials in the URL",
+        )
 
 
 class _PyPIArtifact(NamedTuple):
@@ -484,7 +516,11 @@ def _download_dependencies(
         log.info("-- Finished processing requirement line '%s'", req.download_line)
 
     if pypi_reqs:
-        index_url = options["index_url"] or pypi_simple.PYPI_SIMPLE_ENDPOINT
+        if options["index_url"]:
+            _validate_index_url(options["index_url"], "--index-url")
+            index_url = options["index_url"]
+        else:
+            index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
         processed.extend(
             _resolve_and_download_pypi_packages(
                 pypi_reqs, requirements_file, pip_deps_dir, binary_filters, index_url
