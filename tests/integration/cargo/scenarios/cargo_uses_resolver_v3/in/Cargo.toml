@@ -1,0 +1,8 @@
+[package]
+name = "test-resolver-v3-no-rust-version"
+version = "0.1.0"
+edition = "2021"
+resolver = "3"
+
+[dependencies]
+itoa = "1.0.15"

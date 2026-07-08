@@ -1,0 +1,12 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# uuid is small and also has certain functions exposed as features.
+# For example, to use Uuid::new_v4() one has to explicitly include v4
+# as a feature.
+uuid = { version = "1.12.1", features = ["v4"] }
+# An optional dependency. Should nevertheless be vendored.
+data-encoding = { version = "2.7.0", optional = true }

@@ -1,0 +1,8 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uuid = { git = "https://github.com/uuid-rs/uuid" }
+data-encoding = { version = "2.7.0" }

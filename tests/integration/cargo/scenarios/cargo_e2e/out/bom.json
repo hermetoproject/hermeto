@@ -16,7 +16,7 @@
         "pkg:cargo/anstyle-wincon@3.0.2?checksum=1cd54b81ec8d6180e24654d0b371ad22fc3dd083b6ff8ba325b72e00c87660a7",
         "pkg:cargo/anstyle@1.0.4?checksum=7079075b41f533b8c61d2a4d073c4676e1f8b249ff94a393b0595db304e0dd87",
         "pkg:cargo/autocfg@1.1.0?checksum=d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa",
-        "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#bombadil",
+        "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#bombadil",
         "pkg:cargo/bumpalo@3.14.0?checksum=7f30e7476521f6f8af1a1c4c0b8cc94f0bee37d91763d0ca2665f299b6cd8aec",
         "pkg:cargo/cc@1.0.83?checksum=f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0",
         "pkg:cargo/cfg-if@1.0.0?checksum=baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd",
@@ -31,7 +31,7 @@
         "pkg:cargo/encode_unicode@0.3.6?checksum=a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f",
         "pkg:cargo/getrandom@0.1.16?checksum=8fc3cb4d91f53b50155bdcfd23f6a4c39ae1969c2ae85982b135750cccaf5fce",
         "pkg:cargo/getrandom@0.2.11?checksum=fe9006bed769170c11f845cf00c7c1e9092aeb3f268e007c3e760ac68008070f",
-        "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#heck",
+        "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#heck",
         "pkg:cargo/iana-time-zone-haiku@0.1.2?checksum=f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f",
         "pkg:cargo/iana-time-zone@0.1.58?checksum=8326b86b6cff230b97d0d312a6c40a60726df3332e721f72a1b035f451663b20",
         "pkg:cargo/indicatif@0.17.7?checksum=fb28741c9db9a713d93deb3bb9515c20788cef5815265bee4980e87bde7e0f25",
@@ -55,7 +55,7 @@
         "pkg:cargo/rand_core@0.6.3?vcs_url=git%2Bhttps://github.com/rust-random/rand%408792268dfe57e49bb4518190bf4fe66176759a44",
         "pkg:cargo/rand_hc@0.2.0?checksum=ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c",
         "pkg:cargo/rand_hc@0.3.1?vcs_url=git%2Bhttps://github.com/rust-random/rand%408792268dfe57e49bb4518190bf4fe66176759a44",
-        "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997",
+        "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381",
         "pkg:cargo/smawk@0.3.2?checksum=b7c388c1b5e93756d0c740965c41e8822f866621d41acbdf6336a6a168f8840c",
         "pkg:cargo/strsim@0.10.0?checksum=73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623",
         "pkg:cargo/syn@2.0.43?checksum=ee659fb5f3d355364e1f3e5bc10fb82068efbf824a1e9d1c9504244a6469ad53",
@@ -64,7 +64,7 @@
         "pkg:cargo/unicode-linebreak@0.1.5?checksum=3b09c83c3c29d37506a3e260c08c03743a6bb66a9cd432c6934ab501a190571f",
         "pkg:cargo/unicode-width@0.1.11?checksum=e51733f11c9c4f72aa0c160008246859e340b00807569a0da0e7a1079b27ba85",
         "pkg:cargo/utf8parse@0.2.1?checksum=711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a",
-        "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#packages/utils",
+        "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#packages/utils",
         "pkg:cargo/wasi@0.11.0%2Bwasi-snapshot-preview1?checksum=9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423",
         "pkg:cargo/wasi@0.9.0%2Bwasi-snapshot-preview1?checksum=cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519",
         "pkg:cargo/wasm-bindgen-backend@0.2.89?checksum=1b56f625e64f3a1084ded111c4d5f477df9f8c92df113852fa5a374dbda78826",
@@ -224,7 +224,7 @@
       "version": "1.1.0"
     },
     {
-      "bom-ref": "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#bombadil",
+      "bom-ref": "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#bombadil",
       "name": "bombadil",
       "properties": [
         {
@@ -232,7 +232,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#bombadil",
+      "purl": "pkg:cargo/bombadil@0.2.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#bombadil",
       "type": "library",
       "version": "0.2.0"
     },
@@ -419,7 +419,7 @@
       "version": "0.2.11"
     },
     {
-      "bom-ref": "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#heck",
+      "bom-ref": "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#heck",
       "name": "heck",
       "properties": [
         {
@@ -427,7 +427,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#heck",
+      "purl": "pkg:cargo/heck@0.4.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#heck",
       "type": "library",
       "version": "0.4.1"
     },
@@ -731,7 +731,7 @@
       "version": "0.3.1"
     },
     {
-      "bom-ref": "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997",
+      "bom-ref": "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381",
       "name": "rustic",
       "properties": [
         {
@@ -739,7 +739,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997",
+      "purl": "pkg:cargo/rustic@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381",
       "type": "library",
       "version": "0.1.0"
     },
@@ -848,7 +848,7 @@
       "version": "0.2.1"
     },
     {
-      "bom-ref": "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#packages/utils",
+      "bom-ref": "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#packages/utils",
       "name": "utils",
       "properties": [
         {
@@ -856,7 +856,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%4088363c07b4a32fccc39f59150005a8bd5cac4997#packages/utils",
+      "purl": "pkg:cargo/utils@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4033f8bca7ff848c66b13088079212e2154f86b381#packages/utils",
       "type": "library",
       "version": "0.1.0"
     },

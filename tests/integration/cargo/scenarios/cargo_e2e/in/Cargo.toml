@@ -1,0 +1,43 @@
+[workspace]
+members = ["packages/*"]
+exclude = ["packages/knights"]
+
+[workspace.package]
+version = "0.2.0"
+authors = ["Brian <b@thelife.of>"]
+
+[workspace.dependencies]
+rand = { version = "0.7.1" }
+
+[package]
+name = "rustic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# workspace dependency
+bombadil = { path = "bombadil" }
+
+# workspace dependency with a pinned version
+utils = { version = "0.1.0", path = "packages/utils" }
+
+# crates.io dependency
+clap = { version = "4.0", features = ["derive"] }
+
+# crates.io dependency that will be patched (see patch.crates-io)
+heck = "0.4.1"
+
+# crates.io dependency that is not pinned
+indicatif = "~0.17"
+
+# git dependency
+rand = { git = "https://github.com/rust-random/rand", rev = "8792268dfe57e49bb4518190bf4fe66176759a44", version = "0.8.4" }
+
+[dev-dependencies]
+textwrap = "0.15.2"
+
+[build-dependencies]
+adler = "0.2.3"
+
+[patch.crates-io]
+heck = { path = "./heck" }
