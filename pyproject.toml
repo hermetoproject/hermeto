@@ -65,6 +65,7 @@ fallback_version = "0.0.0+dev.fallback"
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+extend-exclude = ["tests/integration/*/scenarios/*/in", "tests/integration/*/scenarios/*/out"]
 
 [tool.ruff.lint]
 select = [
@@ -113,6 +114,7 @@ plugins = ["pydantic.mypy"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
+exclude = ["tests/integration/.*/scenarios/.*/in/", "tests/integration/.*/scenarios/.*/out/"]
 
 # TODO: pyarn does not currently have type annotations
 [[tool.mypy.overrides]]
