@@ -80,23 +80,7 @@ def _resolve_bundler_package(
     deps_dir.path.mkdir(parents=True, exist_ok=True)
     dependencies = parse_lockfile(package_dir, binary_filters)
 
-    name, version = _get_main_package_name_and_version(package_dir, dependencies)
-    try:
-        qualifiers = get_vcs_qualifiers(package_dir.root)
-    except NotAGitRepo:
-        if get_config().mode == Mode.PERMISSIVE:
-            qualifiers = None
-        else:
-            raise
-    main_package_purl = PackageURL(
-        type="gem",
-        name=name,
-        version=version,
-        qualifiers=qualifiers,
-        subpath=str(package_dir.subpath_from_root),
-    )
-
-    main_component = Component(name=name, version=version, purl=main_package_purl.to_string())
+    main_component = _create_main_component(package_dir, dependencies)
     git_paths = []
     files_to_download: dict[str, RootedPath] = {}
     for dep in dependencies:
@@ -117,6 +101,27 @@ def _resolve_bundler_package(
 
     components = [main_component] + [dep.to_component() for dep in dependencies]
     return components, git_paths
+
+
+def _create_main_component(package_dir: RootedPath, dependencies: ParseResult) -> Component:
+    """Build the SBOM Component for the main package being processed."""
+    name, version = _get_main_package_name_and_version(package_dir, dependencies)
+    try:
+        qualifiers = get_vcs_qualifiers(package_dir.root)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            qualifiers = None
+        else:
+            raise
+    main_package_purl = PackageURL(
+        type="gem",
+        name=name,
+        version=version,
+        qualifiers=qualifiers,
+        subpath=str(package_dir.subpath_from_root),
+    )
+
+    return Component(name=name, version=version, purl=main_package_purl.to_string())
 
 
 def _get_main_package_name_and_version(
