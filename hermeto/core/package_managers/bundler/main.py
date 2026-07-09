@@ -14,7 +14,6 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
 from hermeto.core.models.input import BundlerBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
-from hermeto.core.models.property_semantics import Property, PropertySet
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.bundler.parser import (
     GemDependency,
@@ -97,23 +96,16 @@ def _resolve_bundler_package(
         subpath=str(package_dir.subpath_from_root),
     )
 
-    components = [Component(name=name, version=version, purl=main_package_purl.to_string())]
+    main_component = Component(name=name, version=version, purl=main_package_purl.to_string())
     git_paths = []
     files_to_download: dict[str, RootedPath] = {}
     for dep in dependencies:
-        properties: list[Property] = []
         match dep:
-            case GemPlatformSpecificDependency():
-                files_to_download[dep.remote_location] = dep.download_location(deps_dir)
-                properties = PropertySet(bundler_package_binary=True).to_properties()
-            case GemDependency():
+            case GemPlatformSpecificDependency() | GemDependency():
                 files_to_download[dep.remote_location] = dep.download_location(deps_dir)
             case GitDependency():
                 dep.download_to(deps_dir)
                 git_paths.append((dep.name, dep.repo_name + "-" + dep.ref[:12], str(dep.url)))
-
-        c = Component(name=dep.name, version=dep.version, purl=dep.purl, properties=properties)
-        components.append(c)
 
     if files_to_download:
         asyncio.run(
@@ -122,6 +114,8 @@ def _resolve_bundler_package(
                 concurrency_limit=get_config().runtime.concurrency_limit,
             )
         )
+
+    components = [main_component] + [dep.to_component() for dep in dependencies]
     return components, git_paths
 
 

@@ -12,6 +12,8 @@ from typing_extensions import Self
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo
+from hermeto.core.models.property_semantics import PropertySet
+from hermeto.core.models.sbom import Component
 from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
@@ -40,6 +42,23 @@ class _GemMetadata(pydantic.BaseModel):
 
     name: str
     version: str
+
+    @property
+    def purl(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def _is_binary(self) -> bool:
+        return False
+
+    def to_component(self) -> Component:
+        """Build an SBOM Component from this dependency."""
+        return Component(
+            name=self.name,
+            version=self.version,
+            purl=self.purl,
+            properties=PropertySet(bundler_package_binary=self._is_binary).to_properties(),
+        )
 
 
 class GemDependency(_GemMetadata):
@@ -92,6 +111,10 @@ class GemPlatformSpecificDependency(GemDependency):
     def download_location(self, deps_dir: RootedPath) -> RootedPath:
         """Get the file system location of the gem."""
         return deps_dir.join_within_root(Path(f"{self.name}-{self.version}-{self.platform}.gem"))
+
+    @property
+    def _is_binary(self) -> bool:
+        return True
 
 
 class GitDependency(_GemMetadata):
