@@ -2021,8 +2021,13 @@ supported.</p>
 <p>Make Hermeto download packages from the specified Python Package Index server.</p>
 <p>Applies to all the packages (and only the packages) from the file which
 contains the <code>--index-url</code> option. If file A contains <code>--index-url</code> and file B
-does not, Hermeto will download the packages declared in B from the default
-index server (<code>https://pypi.org/simple</code>).</p>
+does not, Hermeto will download the packages declared in B from the
+<code>PIP_INDEX_URL</code> environment variable (if set) or the default index server
+(<code>https://pypi.org/simple</code>).</p>
+<p>The precedence follows
+<a href="https://pip.pypa.io/en/stable/topics/configuration/#environment-variables">pip's own configuration precedence</a>:</p>
+<div class="highlight"><pre><span></span><code>requirements.txt --index-url  &gt;  PIP_INDEX_URL env var  &gt;  PyPI default
+</code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Do not include credentials in the index url. If needed, provide authentication
