@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import email
 import logging
 import ssl
+import time
 import types
 from collections.abc import Mapping
 from types import TracebackType
@@ -28,10 +30,69 @@ _pkg_requests_session: requests.Session | None = None
 
 SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 BACKOFF_FACTOR = 1.3
-STATUS_FORCELIST = (500, 502, 503, 504)
+STATUS_FORCELIST = (429, 500, 502, 503, 504)
 
 
 log = logging.getLogger(__name__)
+
+
+class RetryAfterJitterRetry(aiohttp_retry.JitterRetry):
+    """JitterRetry that uses the Retry-After header value when present."""
+
+    def __init__(
+        self,
+        max_timeout: float = 3600.0,  # 1 hour should be enough for this use case
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the RetryAfterJitterRetry.
+
+        :param max_timeout: The maximum timeout in seconds.
+        :param kwargs: Keyword arguments for the JitterRetry constructor.
+        """
+        kwargs["max_timeout"] = max_timeout
+        super().__init__(**kwargs)
+
+    def get_timeout(
+        self,
+        attempt: int,
+        response: aiohttp_retry.ClientResponse | None = None,
+    ) -> float:
+        """Return the retry delay, preferring the Retry-After header when present."""
+        default = super().get_timeout(attempt, response)
+
+        if response is None:
+            return default
+
+        retry_after = response.headers.get("Retry-After")
+        if retry_after is None:
+            return default
+
+        parsed = self._parse_retry_after(retry_after)
+        if parsed is None:
+            log.warning("Unparseable Retry-After header: '%s'", retry_after)
+            return default
+        if parsed < 0:
+            log.warning("Retry-After resolved to negative delay (%.1fs): '%s'", parsed, retry_after)
+            return default
+
+        return min(parsed, self._max_timeout)
+
+    @staticmethod
+    def _parse_retry_after(retry_after: str) -> float | None:
+        """Parse a Retry-After header value into seconds, or None if unparseable."""
+        # Try numeric seconds first (most common for 429 responses)
+        try:
+            return float(retry_after)
+        except ValueError:
+            pass
+
+        # Try HTTP-date format
+        parsed_date = email.utils.parsedate_tz(retry_after)
+        if parsed_date is not None:
+            retry_timestamp = email.utils.mktime_tz(parsed_date)
+            return retry_timestamp - time.time()
+
+        return None
 
 
 class SyncLoggingRetry(Retry):
@@ -255,7 +316,7 @@ async def async_download_files(
     max_retries = get_config().http.max_retries
     # aiohttp uses n calls (1 call, n-1 retries).
     max_retries = max_retries + 1
-    retry_options = aiohttp_retry.JitterRetry(
+    retry_options = RetryAfterJitterRetry(
         start_timeout=BACKOFF_FACTOR,
         attempts=max_retries,
         statuses=set(STATUS_FORCELIST),

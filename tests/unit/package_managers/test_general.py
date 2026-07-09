@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import email
 import random
+import time
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -17,6 +19,7 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
+    RetryAfterJitterRetry,
     _async_download_binary_file,
     _get_pkg_requests_session,
     async_download_files,
@@ -295,3 +298,75 @@ async def test_async_download_preserves_redirect_url_encoding(tmp_path: Path) ->
         download_path = tmp_path / "artifact"
         await async_download_files({url: str(download_path)}, concurrency_limit=1)
         assert b"text%2Fplain" in download_path.read_bytes()
+
+
+class TestRetryAfterJitterRetry:
+    _FALLBACK_TIMEOUT = 1.0
+
+    @pytest.fixture()
+    def retry(self) -> RetryAfterJitterRetry:
+        return RetryAfterJitterRetry()
+
+    @pytest.fixture()
+    def mock_response(self) -> mock.Mock:
+        resp = mock.Mock(spec=aiohttp_retry.ClientResponse)
+        resp.headers = {}
+        return resp
+
+    @pytest.mark.parametrize(
+        "retry_after, expected",
+        [
+            pytest.param("5", 5.0, id="integer"),
+            pytest.param("0", 0.0, id="zero"),
+            pytest.param("2.5", 2.5, id="float"),
+        ],
+    )
+    def test_get_timeout_valid_seconds(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        retry_after: str,
+        expected: float,
+    ) -> None:
+        mock_response.headers = {"Retry-After": retry_after}
+        assert retry.get_timeout(attempt=1, response=mock_response) == expected
+
+    def test_get_timeout_valid_http_date(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+    ) -> None:
+        future = time.time() + 10
+        mock_response.headers = {"Retry-After": email.utils.formatdate(future, usegmt=True)}
+        timeout = retry.get_timeout(attempt=1, response=mock_response)
+        assert timeout == pytest.approx(10, abs=1)
+
+    def test_get_timeout_capped_at_max_timeout(self, mock_response: mock.Mock) -> None:
+        retry = RetryAfterJitterRetry(max_timeout=10.0)
+        mock_response.headers = {"Retry-After": "60"}
+        assert retry.get_timeout(attempt=1, response=mock_response) == 10.0
+
+    @pytest.mark.parametrize(
+        "headers",
+        [
+            pytest.param({}, id="no-header"),
+            pytest.param({"Retry-After": "-5"}, id="negative"),
+            pytest.param({"Retry-After": "not-a-number"}, id="unparseable"),
+        ],
+    )
+    @mock.patch("aiohttp_retry.JitterRetry.get_timeout", return_value=_FALLBACK_TIMEOUT)
+    def test_get_timeout_falls_back_to_default(
+        self,
+        mock_get_timeout: mock.Mock,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        headers: dict[str, str],
+    ) -> None:
+        mock_response.headers = headers
+        assert retry.get_timeout(attempt=1, response=mock_response) == self._FALLBACK_TIMEOUT
+
+    @mock.patch("aiohttp_retry.JitterRetry.get_timeout", return_value=_FALLBACK_TIMEOUT)
+    def test_get_timeout_no_response(
+        self, mock_get_timeout: mock.Mock, retry: RetryAfterJitterRetry
+    ) -> None:
+        assert retry.get_timeout(attempt=1, response=None) == self._FALLBACK_TIMEOUT
