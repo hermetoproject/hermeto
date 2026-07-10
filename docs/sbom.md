@@ -173,6 +173,7 @@ translation used when SPDX output is requested (e.g. via
 | Top-level `annotations` (by bom-ref) | Per-package annotations containing the same values as CycloneDX top-level annotations: `comment` = annotation text |
 | ExternalReference (`type=distribution`, `comment=proxy URL`) | `sourceInfo` (semicolon-separated if multiple) |
 | (no root in CycloneDX) | A synthetic root package `SPDXRef-DocumentRoot-File-` is created with `name=""` and `versionInfo=""`. The document describes the root; the root contains every package. |
+| `pedigree.patches` | `externalRefs`: one entry per patch with `referenceCategory=OTHER`, `referenceType=patch` (hermeto-defined custom type), `referenceLocator=<patch diff URL>` |
 | `metadata.tools` | `creationInfo.creators` (`Tool:` / `Organization:`) |
 
 ## SPDX to CycloneDX
@@ -188,6 +189,8 @@ CycloneDX one), the following applies:
   properties; others are stored as top-level annotations.
 - `sourceInfo` is converted back to ExternalReferences with `type=distribution`
   and `comment=proxy URL`.
+- External refs with `referenceCategory=OTHER` and `referenceType=patch` are
+  reconstructed as `pedigree.patches` entries.
 
 **Limitation**: An SPDX package that has multiple PURLs in `externalRefs` becomes
 multiple CycloneDX components when converted to CycloneDX, because CycloneDX does

@@ -403,11 +403,30 @@ class Sbom(pydantic.BaseModel):
                 is_proxy = lambda ref: ref.type == PROXY_REF_TYPE and ref.comment == PROXY_COMMENT
                 return sorted(ref.url for ref in component.external_references if is_proxy(ref))
 
+            def external_references(component: Component) -> list[SPDXPackageExternalRefType]:
+                purl_ref = SPDXPackageExternalRefPackageManagerPURL(
+                    referenceLocator=component.purl,
+                    referenceCategory="PACKAGE-MANAGER",
+                    referenceType="purl",
+                )
+
+                if component.pedigree is None:
+                    return [purl_ref]
+
+                patches_refs = [
+                    SPDXPackageExternalRefOtherPatch(
+                        referenceLocator=patch.diff.url,
+                        referenceCategory="OTHER",
+                        referenceType="patch",
+                    )
+                    for patch in component.pedigree.patches
+                ]
+
+                return [purl_ref, *patches_refs]
+
             packages = []
 
             hashdict = lambda c: dict(name=c.name, version=c.version, purl=c.purl)
-            erefbase = dict(referenceCategory="PACKAGE-MANAGER", referenceType="purl")
-            erefdict = lambda c: dict(referenceLocator=c.purl, **erefbase)
 
             for component in libraries:
                 package_hash = SPDXPackage._calculate_package_hash_from_dict(hashdict(component))
@@ -425,7 +444,7 @@ class Sbom(pydantic.BaseModel):
                         ),
                         name=component.name,
                         versionInfo=component.version,
-                        externalRefs=[erefdict(component)],
+                        externalRefs=external_references(component),
                         annotations=generate_package_annotations(
                             properties=component.properties, bom_ref=component.bom_ref
                         ),
@@ -526,6 +545,29 @@ class SPDXPackageExternalRefSecurityPURL(
     referenceType: Literal["cpe23Type"]
 
 
+class SPDXPackageExternalRefOther(SPDXPackageExternalRef):
+    """SPDX Package External Reference for category OTHER.
+
+    Compliant to the SPDX specification:
+    https://spdx.github.io/spdx-spec/v2.3/package-information/#721-external-reference-field
+    """
+
+    referenceCategory: Literal["OTHER"]
+
+
+class SPDXPackageExternalRefOtherPatch(
+    SPDXPackageExternalRefOther, SPDXPackageExternalRefReferenceLocatorURI
+):
+    """SPDX Package External Reference for category OTHER and custom type patch.
+
+    The "patch" referenceType is a hermeto-defined custom type, not part of the
+    SPDX specification. The OTHER category allows custom types per:
+    https://spdx.github.io/spdx-spec/v2.3/package-information/#721-external-reference-field
+    """
+
+    referenceType: Literal["patch"]
+
+
 SPDXPackageExternalRefPackageManagerType = Annotated[
     SPDXPackageExternalRefPackageManagerPURL,
     pydantic.Field(discriminator="referenceType"),
@@ -536,9 +578,16 @@ SPDXPackageExternalRefSecurityType = Annotated[
     pydantic.Field(discriminator="referenceType"),
 ]
 
+SPDXPackageExternalRefOtherType = Annotated[
+    SPDXPackageExternalRefOtherPatch,
+    pydantic.Field(discriminator="referenceType"),
+]
+
 
 SPDXPackageExternalRefType = Annotated[
-    SPDXPackageExternalRefPackageManagerType | SPDXPackageExternalRefSecurityType,
+    SPDXPackageExternalRefPackageManagerType
+    | SPDXPackageExternalRefSecurityType
+    | SPDXPackageExternalRefOtherType,
     pydantic.Field(discriminator="referenceCategory"),
 ]
 
@@ -563,6 +612,15 @@ class SPDXPackageAnnotation(pydantic.BaseModel):
 
 def _extract_purls(from_refs: list[SPDXPackageExternalRefType]) -> list[str]:
     return [ref.referenceLocator for ref in from_refs if ref.referenceType == "purl"]
+
+
+def _extract_pedigree(from_refs: list[SPDXPackageExternalRefType]) -> Pedigree | None:
+    patches = [
+        Patch(diff=PatchDiff(url=ref.referenceLocator))
+        for ref in from_refs
+        if ref.referenceCategory == "OTHER" and ref.referenceType == "patch"
+    ]
+    return Pedigree(patches=patches) if patches else None
 
 
 def _parse_purls(purls: list[str]) -> list[PackageURL]:
@@ -904,6 +962,7 @@ def _partial_component(
         version=package.versionInfo,
         properties=properties,
         external_references=external_references,
+        pedigree=_extract_pedigree(package.externalRefs),
     )
 
 

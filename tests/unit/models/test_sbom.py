@@ -472,6 +472,40 @@ class TestSbom:
                 ),
                 id="two_external_references",
             ),
+            pytest.param(
+                _sbom_for_cyclonedx_spdx_roundtrip(
+                    [
+                        {
+                            "name": "spdx-expression-parse",
+                            "version": "v1.0.0",
+                            "purl": "pkg:npm/spdx-expression-parse@1.0.0",
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.0.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.0.0",
+                            "pedigree": {
+                                "patches": [
+                                    {
+                                        "type": "unofficial",
+                                        "diff": {"url": "https://example.com/patch1.diff"},
+                                    },
+                                    {
+                                        "type": "unofficial",
+                                        "diff": {"url": "https://example.com/patch2.diff"},
+                                    },
+                                ]
+                            },
+                        },
+                        {
+                            "name": "github.com/org/A",
+                            "version": "v1.1.0",
+                            "purl": "pkg:golang/github.com/org/A@v1.1.0",
+                        },
+                    ]
+                ),
+                id="pedigree_patches",
+            ),
         ],
     )
     def test_cyclonedx_sbom_can_be_converted_to_spdx_and_back_without_loosing_any_data(
