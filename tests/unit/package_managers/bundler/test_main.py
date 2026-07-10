@@ -15,20 +15,13 @@ from hermeto.core.package_managers.bundler.main import (
     _prepare_for_hermetic_build,
 )
 from hermeto.core.package_managers.bundler.parser import (
-    GemDependency,
-    ParseResult,
     PathDependency,
 )
 from hermeto.core.rooted_path import RootedPath
 
 
 def test_get_main_package_name_and_version(rooted_tmp_path: RootedPath) -> None:
-    dependencies: ParseResult = [
-        GemDependency(
-            name="my_gem_dep",
-            version="0.1.0",
-            source="https://rubygems.org",
-        ),
+    path_deps = [
         PathDependency(
             name="my_path_dep",
             version="0.2.0",
@@ -38,7 +31,7 @@ def test_get_main_package_name_and_version(rooted_tmp_path: RootedPath) -> None:
     ]
 
     name, version = _get_main_package_name_and_version(
-        package_dir=rooted_tmp_path, dependencies=dependencies
+        package_dir=rooted_tmp_path, path_deps=path_deps
     )
     assert name == "my_path_dep"
     assert version == "0.2.0"
@@ -49,7 +42,7 @@ def test_get_main_package_name_and_version_from_repo(rooted_tmp_path_repo: Roote
     repo.create_remote("origin", "git@github.com:user/example.git")
 
     name, version = _get_main_package_name_and_version(
-        package_dir=rooted_tmp_path_repo, dependencies=[]
+        package_dir=rooted_tmp_path_repo, path_deps=[]
     )
 
     assert name == "example"
@@ -61,7 +54,7 @@ def test_get_main_package_name_and_version_from_repo_without_origin(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     with pytest.raises(PackageRejected) as exc_info:
-        _get_main_package_name_and_version(package_dir=rooted_tmp_path_repo, dependencies=[])
+        _get_main_package_name_and_version(package_dir=rooted_tmp_path_repo, path_deps=[])
 
     assert "Failed to extract package name from origin remote" in exc_info.value.friendly_msg()
 
