@@ -640,27 +640,230 @@ wherever it wants, Hermeto wouldn't know about it. We should prevent arbitrary c
 - ~~The postinstall script of any dependency~~ — solved by `--mode=skip-build`
   (see [Prefetch Implementation](#prefetch-implementation))
 
-### Yarn@4.x Notes
+### Yarn v4 Support
 
-This design was originally written for Yarn@3.x. Relevant changes in
-[Yarn@4.x](https://yarnpkg.com/advanced/changelog):
+This design was originally written for Yarn@3.x. Yarn v4 was released in October 2023, which
+coincided with the time that v3 support was being introduced in Hermeto. To limit the scope of
+implementation, v4 support was deferred. As more projects migrate to v4, proper support has become
+a priority.
 
-- Official plugins are now always enabled, notably including the exec plugin — we will parse
-  locators and ban exec before running yarn install
-- There's a hardened mode: [https://yarnpkg.com/features/security#hardened-mode](https://yarnpkg.com/features/security#hardened-mode)
-- The `pnpDataPath` config option was removed; the path is hardcoded now
-- Yarnberry now caches npm version metadata — the `globalFolder` now also includes `./metadata`;
-  we can probably keep only the `./cache` part
-- `enableGlobalCache` is now true by default — we were going to
-  [override it to false](#override-for-build) for the build already; this changes the default
-  behavior, which should be called out in documentation
-- Some configuration options now accept new values (e.g. "reset" for
-  [checksumBehavior][checksumBehavior]) but we still want
-  to handle configuration the same way
-- Lots of miscellaneous changes in `.yarn/cache` and the lockfile:
-  [berryscary@8d71311](https://github.com/chmeliik/berryscary/commit/8d71311bcea58238e2ecdbca50e00af3a8155c55)
-  — mostly OK since we'll process with the right Yarnberry version via Corepack, but some locator
-  formats changed (e.g. builtin `patch:` and `file:` tarball)
+Main references:
+- [v4 blog post](https://yarnpkg.com/blog/release/4.0)
+- [Breaking changes for Yarn 4](https://github.com/yarnpkg/berry/issues/3591)
+
+#### Changes in Yarn Behavior
+
+##### Global cache is enabled by default
+
+The [enableGlobalCache](https://yarnpkg.com/configuration/yarnrc#enableGlobalCache) option allows
+the user to set a shared location for the cache folder. Hermeto already treats this option the
+following way:
+
+- Set to `true` during the prefetch, and point it to a specific location in order to keep the
+  prefetched dependencies.
+- Set to `false` during the build, since the build needs to read from the cache, but the
+  dependencies need to be installed to a local folder since they'll be used during the runtime.
+
+Since v4 defaults this to `true`, Hermeto is now setting the opposite option that would be expected
+as default during build-time.
+
+##### All official plugins are enabled by default
+
+Official plugins can no longer be disabled by `.yarnrc.yml` configuration. The current official
+plugins don't introduce any behavior that would taint the accuracy of the prefetched dependencies.
+Most of them only add support to protocols (which will still be filtered using the same rules) or
+CLI commands.
+
+The list of all official plugins can be found under the "Default Plugins" section in the
+[API](https://yarnpkg.com/api) page on the official Yarn documentation. Here's a short summary of
+every official plugin (as of 4.5.3):
+
+<details>
+    <summary>Plugins that add support for a protocol</summary>
+
+- plugin-exec
+- plugin-file
+- plugin-git
+- plugin-http
+- plugin-link
+- plugin-npm
+- plugin-patch
+</details>
+
+<details>
+    <summary>Plugins that enable a CLI command</summary>
+
+- plugin-essentials
+- plugin-init
+- plugin-interactive-tools
+- plugin-npm-cli
+- plugin-pack
+- plugin-stage
+- plugin-workspace-tools
+- plugin-version
+</details>
+
+<details>
+    <summary>Other plugins</summary>
+
+- plugin-compat: patches packages that aren't compatible with Plug'n'Play
+- plugin-constraints: support for [constraints](https://yarnpkg.com/features/constraints)
+- plugin-dlx: install a package in temporary environment
+- plugin-github: improves the performance when cloning from Github
+- plugin-nm: support for installing packages in `node_modules`
+- plugin-pnp: support for [Plug'n'Play](https://yarnpkg.com/features/pnp)
+- plugin-pnpm: support for installing packages using symlinks
+- plugin-typescript: Automatically adds `@types/` packages into your dependencies
+</details>
+
+Hermeto proceeds by disabling non-official plugins without introducing any arbitrary code execution,
+and keeps the current behavior for v3 projects unchanged.
+
+###### A note about plugin-typescript
+
+The [typescript](https://yarnpkg.com/api/plugin-typescript) plugin automatically includes types when
+adding a dependency that does not package them by default. Since these changes are reflected in the
+`package.json` file, Hermeto handles them normally.
+
+<details>
+    <summary>Example of how the Typescript plugin works</summary>
+
+```
+$ yarn add lodash
+➤ YN0000: · Yarn 4.5.3
+➤ YN0000: ┌ Resolution step
+➤ YN0085: │ + @types/lodash@npm:4.17.13, lodash@npm:4.17.21
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0013: │ A package was added to the project (+ 957.26 KiB).
+➤ YN0000: └ Completed in 0s 252ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed
+➤ YN0000: · Done in 0s 313ms
+
+$ cat package.json
+{
+  "name": "yarn-types",
+  "packageManager": "yarn@4.5.3",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4"
+  }
+}
+```
+</details>
+
+##### pnpDataPath is no longer configurable
+
+The `pnpDataPath` config option was removed; the default path `./.pnp.data.json` is now hard-coded.
+The only mention of `pnpDataPath` in Hermeto is the check for paths pointing outside of the repo.
+The check is kept for Yarn v3 compatibility and is simply skipped in v4.
+
+##### Yarn now caches npm version metadata
+
+Yarn only seems to create the metadata cache folder (`{globalFolder}/metadata/npm`) when                                                  
+the [hardened mode](https://yarnpkg.com/configuration/yarnrc#enableHardenedMode) is enabled.                                              
+Running `yarn install` on a local project or prefetching with Hermeto does not generate this                                              
+extra folder. The metadata is a collection of JSON files with a few kilobytes each.
+
+##### Changes to .yarnrc.yml options
+
+- **enableConstraintsChecks**: when set to true, automatically executes
+  [constraint checks](https://yarnpkg.com/features/constraints) after `yarn install` finishes.
+  Hermeto explicitly disables it during prefetch.
+
+Some new options worth of notice:
+
+- **cacheMigrationMode**: determines behavior when dealing with outdated cache. Hermeto never reuses
+  cache, so this has no effect.
+- **enableOfflineMode**: tells Yarn to use the local cache instead of making a network request. Since
+  it is not enforcing (it tries to use the local cache only if possible), setting it as a build
+  environment variable is not useful.
+- **tsEnableAutoTypes**: enable/disable the installing of types for packages that don't provide their
+  own. This only happens during `yarn add`, so it has no effect on Hermeto.
+
+##### Changes to yarn.lock
+
+When updating v3 projects to v4, some differences in the lockfile appear:
+
+**`npm:` locator added to npm dependencies:**
+```
+   dependencies:
+-    chownr: ^2.0.0
+-    fs-minipass: ^2.0.0
+-    minipass: ^5.0.0
+-    minizlib: ^2.1.1
+-    mkdirp: ^1.0.3
+-    yallist: ^4.0.0
+-  checksum: ...
++    chownr: "npm:^2.0.0"
++    fs-minipass: "npm:^2.0.0"
++    minipass: "npm:^5.0.0"
++    minizlib: "npm:^2.1.1"
++    mkdirp: "npm:^1.0.3"
++    yallist: "npm:^4.0.0"
++  checksum: ...
+```
+
+**Changes to some instances of the file locator:**
+```
+-  resolution: "strip-ansi-tarball@file:external-packages/strip-ansi-4.0.0.tgz::locator=berryscary%40workspace%3A."
++  resolution: "strip-ansi-tarball@file:external-packages/strip-ansi-4.0.0.tgz#external-packages/strip-ansi-4.0.0.tgz::hash=e17689&locator=berryscary%40workspace%3A."
+```
+
+Yarn v4 introduced the subdirectory and the hash to the previously existing locator. These parts
+are already handled by the v3 implementation.
+
+**Changes to some instances of the patch locator:**
+```
+-  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=5da071"
++  resolution: "typescript@patch:typescript@npm%3A5.1.6#optional!builtin<compat/typescript>::version=5.1.6&hash=5da071"
+```
+
+Hermeto processes both forms of the patch locator and produces pedigree records in the CycloneDX SBOM.
+
+##### Hardened mode
+
+Yarn v4 has introduced a [hardened mode](https://yarnpkg.com/blog/release/4.0#hardened-mode) to
+avoid lockfile poisoning attacks (i.e. when the resolved url for a dependency points to a
+non-standard malicious location). The downside is that `yarn install` time increases by roughly
+1.5 to 2 times. Hermeto may benefit from toggling this on during the prefetch, but the extra
+prefetch time needs consideration.
+
+##### Workspace focus
+
+[yarn workspaces focus](https://yarnpkg.com/cli/workspaces/focus) installs only the dependencies
+for specified workspaces and their transitive workspace dependencies. To produce accurate output,
+Hermeto queries each specified workspace individually using Yarn's workspace-scoped `info` command,
+which reports only the transitive dependencies of that workspace.
+
+`yarn workspaces focus` does not support `--mode skip-build`
+([yarnpkg/berry#3524](https://github.com/yarnpkg/berry/issues/3524)), and `enableScripts: false`
+[does not apply to workspace scripts](https://github.com/yarnpkg/berry/pull/4781). To prevent
+workspace lifecycle scripts from executing, Hermeto strips the `scripts` field from workspace
+`package.json` files before running the command.
+
+> [!NOTE]
+> This feature is available in Yarn v3 via the `@yarnpkg/plugin-workspace-tools` plugin, but only
+> Yarn v4 (where the plugin is built-in) is supported at this time.
+
+#### Decision
+
+The changes needed to support Yarn v4 boil down to raising the maximum supported version, adding a
+few integration tests to cover v4 scenarios and updating the documentation. The Corepack shim is
+compatible with v4, so the project will still be processed with the exact Yarn version that is
+defined in its configuration files.
+
+Enabling the newly introduced hardened mode during the prefetch might prove useful to further
+increase the security of the process, but is by no means necessary to introduce basic support for
+v4. The impact on the prefetching speed is something that needs to be investigated in depth before
+enabling it, but the decision can be deferred.
+
+Workspace focus is exposed as an optional `workspaces` field in the package input. When omitted,
+existing behavior is unchanged. An empty list is rejected as invalid input, and the field requires
+Yarn v4 or later.
 
 ## References
 
