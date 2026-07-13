@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import chain, groupby
 from pathlib import Path
-from typing import Annotated, Any, Callable, Literal, Union
+from typing import Annotated, Any, Callable, Literal, TypeVar, Union
 from urllib.parse import urlparse
 
 import pydantic
@@ -19,6 +19,7 @@ from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnexpectedFormat
+from hermeto.core.models.input import PackageManagerType
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 from hermeto.core.utils import first_for
 
@@ -39,6 +40,9 @@ def datetime_to_iso_8601(value: datetime) -> str:
 ISODatetime = Annotated[datetime, pydantic.PlainSerializer(datetime_to_iso_8601)]
 SortedSet = Annotated[set[str], pydantic.PlainSerializer(sorted, return_type=list[str])]
 
+# Temporary alias until a purl string could be properly represented
+PURLString = str
+
 
 @dataclass
 class _PerBackendAccumulator:
@@ -48,7 +52,7 @@ class _PerBackendAccumulator:
     from SPDX. Marks all components with the same timestamp."""
 
     _max_timestamp: datetime
-    subjects: set[str] = field(default_factory=set)
+    subjects: set[PURLString] = field(default_factory=set)
 
     @property
     def max_timestamp(self) -> datetime:
@@ -59,14 +63,14 @@ class _PerBackendAccumulator:
         if value > self._max_timestamp:
             self._max_timestamp = value
 
-    def accumulate(self, subjects: Iterable[str], at: datetime) -> None:
+    def accumulate(self, subjects: Iterable[PURLString], at: datetime) -> None:
         """Add subjects and update the max timestamp."""
         self.subjects.update(subjects)
         self.max_timestamp = at
 
     @staticmethod
     def to_annotations(
-        accumulators: dict[str, "_PerBackendAccumulator"],
+        accumulators: dict[PackageManagerType, "_PerBackendAccumulator"],
     ) -> "list[Annotation]":
         """Convert accumulated backends to CycloneDX annotations."""
         return [
@@ -80,16 +84,12 @@ class _PerBackendAccumulator:
         ]
 
 
-a_backend_indicator = object()
-
-
 def convert_annotation_to_property(
     annotation: "SPDXPackageAnnotation",
-) -> Property | object:
+) -> Property:
     """Convert a SPDX annotation to a CycloneDX property or a backend indicator.
 
-    Returns a Property for JSON-encoded or custom annotations,
-    or `a_backend_indicator` for backend annotations.
+    Returns a Property for JSON-encoded or custom annotations.
     """
     if annotation.annotator.endswith(ANNOTATOR_JSON):
         try:
@@ -103,10 +103,7 @@ def convert_annotation_to_property(
                     ' e.g. {"name": "property_name", "value": "property_value"}.'
                 ),
             )
-    elif annotation.annotator.endswith(ANNOTATOR_BACKEND):
-        return a_backend_indicator
-    else:
-        return Property(name=annotation.annotator, value=annotation.comment)
+    return Property(name=annotation.annotator, value=annotation.comment)
 
 
 class Annotation(pydantic.BaseModel):
@@ -239,7 +236,7 @@ def spdx_now() -> datetime:
 
 
 def create_backend_annotation(
-    components: list["Component"], backend_name: str
+    components: list["Component"], backend_name: PackageManagerType
 ) -> Annotation | None:
     """Create an annotation that tags components with the backend that fetched them.
 
@@ -561,11 +558,11 @@ class SPDXPackageAnnotation(pydantic.BaseModel):
         return hash((self.annotator, self.annotationDate, self.annotationType, self.comment))
 
 
-def _extract_purls(from_refs: list[SPDXPackageExternalRefType]) -> list[str]:
+def _extract_purls(from_refs: list[SPDXPackageExternalRefType]) -> list[PURLString]:
     return [ref.referenceLocator for ref in from_refs if ref.referenceType == "purl"]
 
 
-def _parse_purls(purls: list[str]) -> list[PackageURL]:
+def _parse_purls(purls: list[PURLString]) -> list[PackageURL]:
     return [PackageURL.from_string(purl) for purl in purls if purl]
 
 
@@ -813,20 +810,23 @@ class SPDXSbom(pydantic.BaseModel):
 
     def to_cyclonedx(self) -> Sbom:
         """Convert a SPDX SBOM to a CycloneDX SBOM."""
-
         components = []
-        backend_accumulators: dict[str, _PerBackendAccumulator] = {}
+        backend_accumulators: dict[PackageManagerType, _PerBackendAccumulator] = {}
+        get_backend_name = lambda ann: ann.comment
         for package in self.packages:
             purls = _extract_purls(package.externalRefs)
             if is_spdx_package_wrapper(purls, package.name, package.versionInfo):
                 continue
 
-            properties, backend_accumulators = convert_annotations(
-                package.annotations, backend_accumulators, purls
+            backend_anno, props_annos = separate_backend_annotation_from_others(package.annotations)
+            properties = [convert_annotation_to_property(a) for a in props_annos]
+            accumulator = backend_accumulators.setdefault(
+                get_backend_name(backend_anno),
+                _PerBackendAccumulator(backend_anno.annotationDate),
             )
+            accumulator.accumulate(purls, backend_anno.annotationDate)
 
-            external_references = get_external_references_from_source_info(package.sourceInfo)
-            pComponent = _partial_component(package, properties, external_references)
+            pComponent = _partial_component(package, properties)
 
             # cyclonedx doesn't support multiple purls, therefore
             # new component is created for each purl
@@ -837,34 +837,32 @@ class SPDXSbom(pydantic.BaseModel):
         tools = convert_creators_to_tools(self.creationInfo.creators)
         annotations = _PerBackendAccumulator.to_annotations(backend_accumulators)
 
-        return Sbom(
-            annotations=annotations,
-            components=components,
-            metadata=Metadata(tools=tools),
-        )
+        return Sbom(annotations=annotations, components=components, metadata=Metadata(tools=tools))
 
 
-def convert_annotations(
-    annotations: Iterable[SPDXPackageAnnotation],
-    backend_accumulators: dict[str, _PerBackendAccumulator],
-    purls: list[str],
-) -> tuple[list[Property], dict[str, _PerBackendAccumulator]]:
-    """Convert annotations to properties."""
+T = TypeVar("T")
 
-    properties = []
-    get_backend_name = lambda ann: ann.comment
-    for ann in annotations:
-        result = convert_annotation_to_property(ann)
-        if result is a_backend_indicator:
-            accumulator = backend_accumulators.setdefault(
-                get_backend_name(ann),
-                _PerBackendAccumulator(ann.annotationDate),
-            )
-            accumulator.accumulate(purls, ann.annotationDate)
+
+# TODO: replace with more_itertools implementation
+def partition(predicate: Callable[[T], bool], iterable: Iterable[T]) -> tuple[list[T], list[T]]:
+    """Partition an iterable according to predicate."""
+    is_true, is_false = [], []
+    for el in iterable:
+        if predicate(el):
+            is_true.append(el)
         else:
-            properties.append(result)
-    # mypy insists that properties may end up containing object() values which is not true.
-    return properties, backend_accumulators  # type: ignore
+            is_false.append(el)
+    return is_true, is_false
+
+
+def separate_backend_annotation_from_others(
+    annotations: Iterable[SPDXPackageAnnotation],
+) -> tuple[SPDXPackageAnnotation, list[SPDXPackageAnnotation]]:
+    """Separate backend annotation from properties annotations."""
+    is_backend = lambda ann: ann.annotator.endswith(ANNOTATOR_BACKEND)
+    backends, others = partition(is_backend, annotations)
+    # There will always be just one backend, so it has to be extracted here:
+    return backends[0], others
 
 
 def is_spdx_package_wrapper(
@@ -896,8 +894,8 @@ def get_external_references_from_source_info(
 def _partial_component(
     package: SPDXPackage,
     properties: Iterable[Property],
-    external_references: Iterable[ExternalReference] | None,
 ) -> Callable:
+    external_references = get_external_references_from_source_info(package.sourceInfo)
     return partial(
         Component,
         name=package.name,
@@ -927,7 +925,7 @@ def convert_creators_to_tools(creators: Iterable[str]) -> list[Tool]:
 def merge_component_annotations(annotations: Iterable[Annotation]) -> list[Annotation]:
     """Merge component annotations."""
     other_annotations = []
-    backend_accumulators: dict[str, _PerBackendAccumulator] = {}
+    backend_accumulators: dict[PackageManagerType, _PerBackendAccumulator] = {}
     get_backend_name = lambda ann: ann.text
     for ann in annotations:
         if ann.text.startswith(BACKEND_ANNOTATION_PREFIX):

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
 
 import pydantic
-from typing_extensions import Self
+from typing_extensions import Self, TypeAliasType
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
@@ -111,6 +111,7 @@ PackageManagerType = Literal[
     "pnpm",
     "rpm",
     "yarn",
+    "yarn-classic",
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
     "x-maven",
@@ -138,16 +139,34 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
     """SSL options model.
 
     Defines extra options fields for client TLS authentication.
+
+    Mandates that if defined then both client_cert and client_key must be files on the
+    file system. When the files are present an object could be instantiated like this:
+
+    >>> SSLOptions(client_cert=Path("/tmp/foo"), client_key=Path("/tmp/bar"))  # doctest: +SKIP
+    SSLOptions(client_cert=PosixPath('/tmp/foo'), client_key=PosixPath('/tmp/bar'), ca_bundle=None, ssl_verify=True)
+
+    or like this:
+
+    >>> SSLOptions(client_cert="/tmp/foo", client_key="/tmp/bar")  # doctest: +SKIP
+    SSLOptions(client_cert=PosixPath('/tmp/foo'), client_key=PosixPath('/tmp/bar'), ca_bundle=None, ssl_verify=True)
+
+    When any file is missing:
+    >>> SSLOptions(client_cert="/tmp/foo", client_key="/tmp/bar")  # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+        ...
+    pydantic_core._pydantic_core.ValidationError: 1 validation error for SSLOptions
+
     """
 
-    client_cert: str | None = None
-    client_key: str | None = None
-    ca_bundle: str | None = None
+    client_cert: Path | None = None
+    client_key: Path | None = None
+    ca_bundle: Path | None = None
     ssl_verify: bool = True
 
     @pydantic.field_validator("client_key", "client_cert", "ca_bundle")
     @classmethod
-    def _validate_auth_file_paths(cls, val: str, info: pydantic.ValidationInfo) -> str | None:
+    def _validate_auth_file_paths(cls, val: Path, info: pydantic.ValidationInfo) -> Path | None:
         if val is None:
             return val
 
@@ -199,15 +218,24 @@ class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
     packages: BinaryFilterStr = BINARY_FILTER_ALL
 
 
+PlatformRegexStr = str
+# *(list(range(310, 400))) cannot be used here as long as 3.10 is supported.
+# Once added it would support all Python version for the next fifty years or
+# so.  This could be tightened up further, (like it is implemented now) but
+# that would require constant care -- once a new version gets out this list
+# would need an expansion.
+SupportedPyVersions = Literal[39, 310, 311, 312, 313, 314, 315, 316, 317]
+
+
 class PipBinaryFilters(BinaryModeOptions):
     """Binary filters specific to pip packages."""
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
-    py_version: int | None = None
+    py_version: SupportedPyVersions | None = None
     py_impl: BinaryFilterStr = "cp"
     abi: BinaryFilterStr = BINARY_FILTER_ALL
-    platform: str | None = None
+    platform: PlatformRegexStr | None = None
 
     @pydantic.model_validator(mode="after")
     def _validate_platform_exclusivity(self) -> Self:
@@ -224,7 +252,7 @@ class PipBinaryFilters(BinaryModeOptions):
 
     @pydantic.field_validator("platform")
     @classmethod
-    def _validate_platform(cls, value: str | None) -> str | None:
+    def _validate_platform(cls, value: PlatformRegexStr | None) -> PlatformRegexStr | None:
         if value is None:
             return value
 
@@ -345,6 +373,12 @@ class PnpmPackageInput(_PackageInputBase):
     type: Literal["pnpm"]
 
 
+ConfigEntryValue = TypeAliasType(
+    "ConfigEntryValue",
+    'str | int | float | bool | None | list["ConfigEntryValue"] | dict[str, "ConfigEntryValue"]',
+)
+
+
 class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     """Global package manager extra options model.
 
@@ -356,12 +390,12 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
     TODO: Enable this globally for all pkg managers not just the RpmPackageInput model.
     """
 
-    dnf: dict[Literal["main"] | str, dict[str, Any]] | None = None
+    dnf: dict[Literal["main"] | str, dict[str, ConfigEntryValue]] | None = None
     ssl: SSLOptions | None = None
 
     @pydantic.model_validator(mode="before")
     @classmethod
-    def _validate_dnf_options(cls, data: Any) -> Any:
+    def _validate_dnf_options(cls, data: dict) -> dict:
         """DNF options model.
 
         DNF options can be provided via 2 'streams':
@@ -378,7 +412,7 @@ class ExtraOptions(pydantic.BaseModel, extra="forbid"):
         """
 
         def _raise_unexpected_type(repr_: str, *prefixes: str) -> None:
-            loc = ".".join(prefixes + (repr_,))
+            loc = f"{'.'.join(prefixes)}.{repr_}"
             raise ValueError(f"Unexpected data type for '{loc}' in input JSON: expected 'dict'")
 
         if "dnf" not in data:
