@@ -19,7 +19,7 @@ from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
 from urllib3.util.retry import Retry
 
-from hermeto.core.config import get_config
+from hermeto.core.config import ProxyUrl, get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.scm import get_repo_id
 from hermeto.core.type_aliases import StrPath
@@ -365,3 +365,18 @@ def extract_git_info(vcs_url: str) -> dict[str, Any]:
         "namespace": namespace,
         "repo": repo,
     }
+
+
+def patch_url_to_point_to_proxy(url: str, proxy_url: ProxyUrl) -> str:
+    """
+    >>> patch_url_to_point_to_proxy('https://registry.npmjs.org/foo/-/foo-1.0.0.tgz', 'http://proxy.com/npm/registry')
+    'http://proxy.com/npm/registry/foo/-/foo-1.0.0.tgz'
+    >>> patch_url_to_point_to_proxy('https://registry.npmjs.org/foo/-/foo-1.0.0.tgz', 'http://proxy.com/npm/registry/')
+    'http://proxy.com/npm/registry/foo/-/foo-1.0.0.tgz'
+    >>> patch_url_to_point_to_proxy('https://rubygems.org/downloads/foo-1.0.0.gem', 'http://proxy.com/rubygems/registry/')
+    'http://proxy.com/rubygems/registry/downloads/foo-1.0.0.gem'
+    """
+    str_proxy_url = str(proxy_url)
+    str_proxy_url = str_proxy_url if str_proxy_url[-1] == "/" else str_proxy_url + "/"
+    url_path = urlparse(url).path.removeprefix("/")
+    return str_proxy_url + url_path

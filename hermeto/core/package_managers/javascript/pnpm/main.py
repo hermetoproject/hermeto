@@ -18,10 +18,8 @@ from hermeto.core.models.output import (
     RequestOutput,
 )
 from hermeto.core.models.sbom import create_backend_annotation
-from hermeto.core.package_managers.javascript.npm import (
-    async_download_with_auth,
-    patch_url_to_point_to_proxy,
-)
+from hermeto.core.package_managers.general import patch_url_to_point_to_proxy
+from hermeto.core.package_managers.javascript.npm import async_download_with_auth
 from hermeto.core.package_managers.javascript.pnpm.project import (
     PnpmLock,
     PnpmPackage,
