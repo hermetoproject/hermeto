@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
+import tempfile
+from contextlib import contextmanager
+from typing import Generator
 
 import semver
 
@@ -140,7 +143,12 @@ def _resolve_yarn_project(
 
     _fetch_dependencies(project.source_dir, workspaces)
 
-    return create_components(packages, project, output_dir)
+    with _hide_dev_dependencies(project):
+        prod_packages = resolve_packages(project.source_dir, workspaces)
+
+    log.debug("Resolved %d total locators", len(packages))
+    log.debug("Resolved %d production locators", len(prod_packages))
+    return create_components(packages, prod_packages, project, output_dir)
 
 
 def _configure_yarn_version(project: Project) -> semver.Version:
@@ -262,6 +270,46 @@ def _set_yarnrc_configuration(
         yarn_rc["enableConstraintsChecks"] = False
 
     yarn_rc.write()
+
+
+@contextmanager
+def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
+    """Temporarily remove devDependencies from every package.json in the source directory."""
+    global_folder = project.yarn_rc.get("globalFolder")
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Prevent any changes to the hermeto-output/deps directory.
+        # Otherwise, yarn will re-package file dependencies after modifying their package.json files.
+        project.yarn_rc["globalFolder"] = temp_dir
+        project.yarn_rc.write()
+
+        saved_deps: list[tuple[PackageJson, dict[str, str]]] = []
+        for path in project.source_dir.path.glob("**/package.json"):
+            if "node_modules" in path.parts:
+                continue
+
+            package_json = PackageJson.from_file(path)
+            if "devDependencies" not in package_json:
+                continue
+
+            log.debug('Found "devDependencies" in %s', path)
+            saved_deps.append((package_json, package_json["devDependencies"]))
+            del package_json["devDependencies"]
+            package_json.write()
+
+        filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
+        lockfile = project.source_dir.join_within_root(filename)
+        content = lockfile.path.read_text()
+        try:
+            run_yarn_cmd(["install", "--mode", "update-lockfile"], project.source_dir)
+            yield
+        finally:
+            for package_json, deps in saved_deps:
+                package_json["devDependencies"] = deps
+                package_json.write()
+
+            lockfile.path.write_text(content)
+            project.yarn_rc["globalFolder"] = global_folder
+            project.yarn_rc.write()
 
 
 def _strip_workspace_scripts(source_dir: RootedPath, packages: list[Package]) -> None:

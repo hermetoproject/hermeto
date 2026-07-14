@@ -414,7 +414,9 @@ def test_create_components_single_package(
     mocked_package = mocked_package.resolve_cache_path(output_dir)
     mock_package_json(mocked_package, project_dir)
 
-    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+    components = create_components(
+        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+    )
 
     assert len(components) == 1
     assert components[0] == expect_component
@@ -473,6 +475,7 @@ def test_create_components_patched_packages(
     ]
 
     components = create_components(
+        [mocked_package.package for mocked_package in mocked_packages],
         [mocked_package.package for mocked_package in mocked_packages],
         mock_project(project_dir),
         output_dir=RootedPath("/unused"),
@@ -545,6 +548,7 @@ def test_create_components_patched_packages_with_multiple_paths(
     ]
 
     components = create_components(
+        [mocked_package.package for mocked_package in mocked_packages],
         [mocked_package.package for mocked_package in mocked_packages],
         mock_project(project_dir),
         output_dir=RootedPath("/unused"),
@@ -767,6 +771,7 @@ def test_create_components_failed_to_resolve(
     with pytest.raises(PackageRejected, match=re.escape(expect_err_msg)):
         create_components(
             [mocked_package.package],
+            [mocked_package.package],
             mock_project(project_dir),
             output_dir=RootedPath("/unused"),
         )
@@ -790,6 +795,7 @@ def test_create_components_cache_path_reported_but_missing(rooted_tmp_path: Root
 
     with pytest.raises(PackageRejected, match=re.escape(expect_err_msg)):
         create_components(
+            [package],
             [package],
             mock_project(rooted_tmp_path),
             output_dir=RootedPath("/unused"),
@@ -847,7 +853,7 @@ def test_get_path_patch_url(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        {}, set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_url = resolver._get_path_patch_url(patch_locator, patch_path)
@@ -870,7 +876,7 @@ def test_get_builtin_patch_url(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        {}, set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_url = resolver._get_builtin_patch_url(builtin_patch, Version(3, 0, 0))
@@ -910,7 +916,7 @@ def test_pedigree_mapping_flattens_nested_patches(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
+        {}, set(), [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_pedigree = resolver._get_pedigree_mapping([patch_locator1, patch_locator2])
@@ -970,7 +976,9 @@ def test_get_pedigree_with_unsupported_locators(
     mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
-        _ComponentResolver({}, patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+        _ComponentResolver(
+            {}, set(), patch_locators, mock_project, rooted_tmp_path.re_root("output")
+        )
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_config")
@@ -1002,7 +1010,9 @@ def test_create_components_permissive_mode_without_vcs_url(
     mocked_package = mocked_package.resolve_cache_path(output_dir)
     mock_package_json(mocked_package, project_dir)
 
-    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+    components = create_components(
+        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+    )
 
     assert len(components) == 1
     # vcs_url should not be present when repo_id is None
@@ -1039,7 +1049,12 @@ def test_create_components_strict_mode_raises_without_git_repo(
     mock_package_json(mocked_package, project_dir)
 
     with pytest.raises(NotAGitRepo):
-        create_components([mocked_package.package], mock_project(project_dir), output_dir)
+        create_components(
+            [mocked_package.package],
+            [mocked_package.package],
+            mock_project(project_dir),
+            output_dir,
+        )
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_config")
@@ -1074,7 +1089,9 @@ def test_create_components_permissive_mode_with_vcs_url(
     mocked_package = mocked_package.resolve_cache_path(output_dir)
     mock_package_json(mocked_package, project_dir)
 
-    components = create_components([mocked_package.package], mock_project(project_dir), output_dir)
+    components = create_components(
+        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+    )
 
     assert len(components) == 1
     # vcs_url should be present when get_repo_id succeeds, even in PERMISSIVE mode
@@ -1108,7 +1125,7 @@ def test_path_patch_raises_without_repo_in_permissive_mode(
     mock_proj = mock.Mock(source_dir=source_dir)
 
     with pytest.raises(PackageRejected):
-        _ComponentResolver({}, [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
+        _ComponentResolver({}, set(), [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.run_yarn_cmd")

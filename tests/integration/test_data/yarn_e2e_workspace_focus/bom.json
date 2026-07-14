@@ -78,6 +78,10 @@
       "name": "ms",
       "properties": [
         {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
@@ -103,6 +107,10 @@
       "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/integration-tests.git%40fac7c04c75beb888983e6e669f381a75eb96b2ed#packages/tooling",
       "name": "tooling",
       "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
         {
           "name": "hermeto:found_by",
           "value": "hermeto"

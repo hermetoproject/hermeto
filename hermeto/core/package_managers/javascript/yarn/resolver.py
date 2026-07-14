@@ -32,6 +32,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnsupportedFeature,
 )
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
     PROXY_REF_TYPE,
@@ -229,11 +230,15 @@ def _resolve_workspace_packages(source_dir: RootedPath, workspaces: list[str]) -
 
 
 def create_components(
-    packages: list[Package], project: Project, output_dir: RootedPath
+    packages: list[Package], prod_packages: list[Package], project: Project, output_dir: RootedPath
 ) -> list[Component]:
     """Create SBOM components for all the packages parsed from the 'yarn info' output."""
     package_mapping: dict[Locator, Package] = {}
     patch_locators: list[PatchLocator] = []
+
+    # The number of components with the cdx:npm:development property might be lower than the number
+    # of dev locators because patches are not components themselves.
+    dev_locators = {p.raw_locator for p in packages} - {pp.raw_locator for pp in prod_packages}
 
     # Patches are not components themselves, but they are necessary to
     # resolve pedigree for their non-patch parent package components
@@ -243,7 +248,9 @@ def create_components(
         else:
             package_mapping[package.parsed_locator] = package
 
-    component_resolver = _ComponentResolver(package_mapping, patch_locators, project, output_dir)
+    component_resolver = _ComponentResolver(
+        package_mapping, dev_locators, patch_locators, project, output_dir
+    )
     return [component_resolver.get_component(package) for package in package_mapping.values()]
 
 
@@ -271,6 +278,7 @@ class _ComponentResolver:
     def __init__(
         self,
         package_mapping: Mapping[Locator, Package],
+        dev_raw_locators: set[str],
         patch_locators: list[PatchLocator],
         project: Project,
         output_dir: RootedPath,
@@ -278,6 +286,7 @@ class _ComponentResolver:
         self._project = project
         self._output_dir = output_dir
         self._package_mapping = package_mapping
+        self._dev_raw_locators = dev_raw_locators
         self._pedigree_mapping = self._get_pedigree_mapping(patch_locators)
         self._proxy_url = get_config().yarn.proxy_url
 
@@ -337,10 +346,12 @@ class _ComponentResolver:
             proxy_common = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
             external_refs = [ExternalReference(url=str(self._proxy_url), **proxy_common)]
 
+        property_set = PropertySet(npm_development=package.raw_locator in self._dev_raw_locators)
         return Component(
             name=resolved_package.name,
             version=resolved_package.version,
             purl=purl,
+            properties=property_set.to_properties(),
             pedigree=self._pedigree_mapping.get(package.parsed_locator),
             external_references=external_refs,
         )
