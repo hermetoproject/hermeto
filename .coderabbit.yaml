@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+reviews:
+  profile: assertive
+  review_progress: false
+  high_level_summary: false
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
+  enable_prompt_for_ai_agents: false
+  slop_detection:
+    enabled: true
+  path_filters:
+    - "!requirements*.txt"
+  auto_review:
+    auto_pause_after_reviewed_commits: 20
+    ignore_title_keywords:
+      - WIP
+      - DO NOT MERGE
+      - REPRODUCER
+      - DNM
+    ignore_usernames:
+      - dependabot[bot]
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+    autofix:
+      enabled: false
+
+chat:
+  art: false
+  allow_non_org_members: false
+  auto_reply: false
+  integrations:
+    jira:
+      usage: disabled
+
+knowledge_base:
+  jira:
+    usage: disabled
+
+issue_enrichment:
+  planning:
+    enabled: false
+    auto_planning:
+      enabled: false
