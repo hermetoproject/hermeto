@@ -1338,6 +1338,10 @@ translation used when SPDX output is requested (e.g. via
 <td>A synthetic root package <code>SPDXRef-DocumentRoot-File-</code> is created with <code>name=""</code> and <code>versionInfo=""</code>. The document describes the root; the root contains every package.</td>
 </tr>
 <tr>
+<td><code>pedigree.patches</code></td>
+<td><code>externalRefs</code>: one entry per patch with <code>referenceCategory=OTHER</code>, <code>referenceType=patch</code> (hermeto-defined custom type), <code>referenceLocator=&lt;patch diff URL&gt;</code></td>
+</tr>
+<tr>
 <td><code>metadata.tools</code></td>
 <td><code>creationInfo.creators</code> (<code>Tool:</code> / <code>Organization:</code>)</td>
 </tr>
@@ -1355,6 +1359,8 @@ CycloneDX one), the following applies:</p>
   properties; others are stored as top-level annotations.</li>
 <li><code>sourceInfo</code> is converted back to ExternalReferences with <code>type=distribution</code>
   and <code>comment=proxy URL</code>.</li>
+<li>External refs with <code>referenceCategory=OTHER</code> and <code>referenceType=patch</code> are
+  reconstructed as <code>pedigree.patches</code> entries.</li>
 </ul>
 <p><strong>Limitation</strong>: An SPDX package that has multiple PURLs in <code>externalRefs</code> becomes
 multiple CycloneDX components when converted to CycloneDX, because CycloneDX does
