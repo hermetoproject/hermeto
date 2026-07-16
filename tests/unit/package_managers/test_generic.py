@@ -660,13 +660,11 @@ class TestLockfileArtifactAuth:
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_auth_headers(
     mock_checksums: mock.Mock,
     mock_download: mock.Mock,
-    mock_asyncio_run: mock.Mock,
     lockfile_content: str,
     expected_url: str,
     expected_headers: dict[str, str],
@@ -681,13 +679,11 @@ def test_resolve_generic_lockfile_auth_headers(
     assert mock_download.call_args.kwargs["headers"] == {expected_url: expected_headers}
 
 
-@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_mixed_auth_headers(
     mock_checksums: mock.Mock,
     mock_download: mock.Mock,
-    mock_asyncio_run: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
@@ -709,13 +705,11 @@ def test_resolve_generic_lockfile_mixed_auth_headers(
         pytest.param(LOCKFILE_V2_VALID, id="v2_no_auth"),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.asyncio.run")
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_no_auth_headers(
     mock_checksums: mock.Mock,
     mock_download: mock.Mock,
-    mock_asyncio_run: mock.Mock,
     rooted_tmp_path: RootedPath,
     lockfile_content: str,
 ) -> None:
