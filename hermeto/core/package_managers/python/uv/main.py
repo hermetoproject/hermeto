@@ -4,7 +4,10 @@ import logging
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
+
+import tomlkit
+from typing_extensions import assert_never
 
 from hermeto.core.checksum import must_match_any_checksum
 from hermeto.core.config import get_config
@@ -14,7 +17,7 @@ from hermeto.core.errors import (
     PackageRejected,
 )
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import EnvironmentVariable, RequestOutput
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import Annotation, Component, create_backend_annotation
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML
@@ -22,8 +25,12 @@ from hermeto.core.package_managers.python.uv.build_deps import download_build_de
 from hermeto.core.package_managers.python.uv.models import (
     PackageArtifact,
     PackageSourceGit,
+    PackageSourceLocal,
+    PackageSourceRegistry,
+    PackageSourceUrl,
     UvLock,
     UvPackage,
+    load_lockfile_document,
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import clone_as_tarball
@@ -32,6 +39,9 @@ from hermeto.core.utils import first_for, run_cmd
 log = logging.getLogger(__name__)
 
 DEFAULT_LOCKFILE_NAME = "uv.lock"
+
+# string.Template placeholder resolved by ProjectFile.resolve_content at inject-files time
+_TEMPLATED_DEPS_DIR = "${output_dir}/deps/uv"
 
 Url = str
 
@@ -49,24 +59,30 @@ class UvPackageResolved:
     name: str
     version: str | None
     components: list[Component]
+    rewritten_lockfile: ProjectFile | None
 
 
 def fetch_uv_source(request: Request) -> RequestOutput:
     """Resolve and fetch uv dependencies for the given request."""
     annotations: list[Annotation] = []
     components: list[Component] = []
+    project_files: list[ProjectFile] = []
 
     for package in request.uv_packages:
         package_dir = request.source_dir.join_within_root(package.path)
         resolution_result = _resolve_uv(package_dir, request.output_dir)
         components.extend(resolution_result.components)
+        if resolution_result.rewritten_lockfile is not None:
+            project_files.append(resolution_result.rewritten_lockfile)
 
     if backend_annotation := create_backend_annotation(components, "x-uv"):
         annotations.append(backend_annotation)
 
     environment_variables = _generate_environment_variables()
 
-    return RequestOutput.from_obj_list(components, environment_variables, annotations=annotations)
+    return RequestOutput.from_obj_list(
+        components, environment_variables, project_files, annotations=annotations
+    )
 
 
 def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageResolved:
@@ -84,7 +100,8 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
 
     _validate_lockfile(package_dir)
 
-    lock = UvLock.from_file(package_dir)
+    lockfile_doc = load_lockfile_document(package_dir)
+    lock = UvLock.from_toml(lockfile_doc, package_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path)
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
 
     _download_dependencies(output_dir, lock)
@@ -92,7 +109,12 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
     build_deps = download_build_dependencies(package_dir, output_dir)
     components = [dep.to_component(build_dependency=True, backend="uv") for dep in build_deps]
 
-    return UvPackageResolved(name=name, version=version, components=components)
+    return UvPackageResolved(
+        name=name,
+        version=version,
+        components=components,
+        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock),
+    )
 
 
 def _validate_lockfile(package_dir: RootedPath) -> None:
@@ -183,18 +205,85 @@ def _download_dependencies(output_dir: RootedPath, lock: UvLock) -> None:
             log.warning("Missing checksum for %s==%s", package.name, package.version)
 
 
+def _is_local_package(package: UvPackage) -> bool:
+    """Whether the package's files are already in the project tree, so nothing is fetched."""
+    return isinstance(package.source, PackageSourceLocal)
+
+
+def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
+    """Name of the tarball under deps/uv for a git package.
+
+    The download and lockfile-rewrite phases must agree on this name.
+    """
+    return f"{package.name}-gitcommit-{source.commit}.tar.gz"
+
+
 def _download_git_package(
     package: UvPackage, source: PackageSourceGit, deps_dir: RootedPath
 ) -> None:
     """Clone a git package at its resolved commit and archive it as a tarball."""
     commit = source.commit
-    tarball = deps_dir.join_within_root(f"{package.name}-gitcommit-{commit}.tar.gz")
+    tarball = deps_dir.join_within_root(_git_tarball_filename(package, source))
     if tarball.path.exists():
         log.debug("%s already exists, skipping clone", tarball.path.name)
         return
 
     log.info("Cloning git repository for %s==%s", package.name, package.version)
     clone_as_tarball(source.clone_url, commit, to_path=tarball.path)
+
+
+def _replace_source_with_path(raw_package: Any, filename: str) -> None:
+    """Swap a remote source for the local path it was downloaded to."""
+    # built from a snippet rather than tomlkit.inline_table() to match the
+    # brace padding style uv itself writes, e.g. `{ registry = "..." }`
+    source = tomlkit.value('{ path = "" }')
+    source["path"] = f"{_TEMPLATED_DEPS_DIR}/{filename}"
+    raw_package["source"] = source
+
+
+def _rewrite_lockfile(
+    doc: tomlkit.TOMLDocument, package_dir: RootedPath, lock: UvLock
+) -> ProjectFile | None:
+    """Redirect every remote artifact reference in uv.lock into deps/uv.
+
+    `uv sync` fetches the URLs recorded in uv.lock verbatim and cannot fall
+    back to UV_FIND_LINKS, so the lockfile itself must point at the prefetched
+    artifacts. The rewrite edits the raw TOML document in place (callers must
+    not reuse it): the UvLock model is deliberately lossy, while tomlkit
+    preserves every field and the original formatting.
+
+    Returns None if the lockfile references no remote artifacts.
+    """
+    if all(_is_local_package(package) for package in lock.packages):
+        return None
+
+    # both views parse the same file, so the entries are index-aligned
+    for raw_package, package in zip(doc.get("package", []), lock.packages, strict=True):
+        match package.source:
+            case PackageSourceRegistry():
+                if package.sdist is not None:
+                    filename = package.sdist.get_target_filename(package.source)
+                    raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+                raw_wheels = raw_package.get("wheels", [])
+                for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
+                    filename = wheel.get_target_filename(package.source)
+                    raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+            case PackageSourceGit() as source:
+                _replace_source_with_path(raw_package, _git_tarball_filename(package, source))
+            case PackageSourceUrl():
+                recorded = package.sole_artifact
+                if recorded is None:
+                    # should not happen: artifacts_to_download rejects such a package
+                    raise RuntimeError(f"{package.name} records no sdist and no wheels in uv.lock")
+                _replace_source_with_path(raw_package, recorded.get_target_filename(package.source))
+            case PackageSourceLocal():
+                # nothing was fetched for these, so the entries already point at the files
+                pass
+            case _:
+                assert_never(package.source)
+
+    lockfile_path = package_dir.join_within_root(DEFAULT_LOCKFILE_NAME)
+    return ProjectFile(abspath=lockfile_path.path, template=tomlkit.dumps(doc))
 
 
 def _get_pyproject_metadata(package_dir: RootedPath) -> tuple[str, str | None]:

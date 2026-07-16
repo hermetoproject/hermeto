@@ -350,8 +350,9 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
 def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:
     """Find and load the raw uv.lock document from a directory.
 
-    The raw document complements the deliberately lossy UvLock model: it
-    keeps the fields and formatting the model does not carry.
+    The raw document complements the deliberately lossy UvLock model: the
+    lockfile rewrite edits it in place to preserve fields and formatting the
+    model does not carry.
 
     :raises LockfileNotFound: if no uv.lock file is found in the directory.
     :raises InvalidLockfileFormat: if the file is not valid TOML.
