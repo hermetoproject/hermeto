@@ -2,6 +2,7 @@
 from textwrap import dedent
 from unittest import mock
 
+import aiohttp
 import pytest
 from git.repo import Repo
 from pydantic import HttpUrl
@@ -232,8 +233,15 @@ def test_path_dependency_purl_strict_mode_raises_without_git_repo(
         _ = dep.purl
 
 
-def _mock_bundler_config(proxy_url: HttpUrl | None) -> mock.Mock:
+def _mock_bundler_config(
+    proxy_url: HttpUrl | None,
+    proxy_login: str | None,
+    proxy_password: str | None,
+) -> mock.Mock:
     mock_config = mock.Mock()
+    mock_config.bundler.proxy_url = proxy_url
+    mock_config.bundler.proxy_login = proxy_login
+    mock_config.bundler.proxy_password = proxy_password
     mock_config.bundler.proxy_url = proxy_url
     mock_config.runtime.concurrency_limit = 5
     return mock_config
@@ -256,15 +264,15 @@ def _mock_bundler_config(proxy_url: HttpUrl | None) -> mock.Mock:
 )
 @mock.patch("hermeto.core.package_managers.bundler.main.async_download_files")
 @mock.patch("hermeto.core.package_managers.bundler.main.get_config")
-def test_download_gems_rewrites_url_when_proxy_configured(
+def test_download_gems_without_credentials_sends_no_auth_header(
     mock_get_config: mock.Mock,
     mock_async_download_files: mock.Mock,
     proxy_url: HttpUrl | None,
     expected_url: str,
     rooted_tmp_path: RootedPath,
 ) -> None:
-    """Gems download from the original URL, or a proxy-rewritten one when configured."""
-    mock_get_config.return_value = _mock_bundler_config(proxy_url)
+    """Gems download from the original or proxy-rewritten URL, never with an auth header."""
+    mock_get_config.return_value = _mock_bundler_config(proxy_url, None, None)
     dep = GemDependency(name="foo", version="1.0.0", source=FAKE_RUBYGEMS_SOURCE)
 
     _download_gems([dep], rooted_tmp_path)
@@ -272,4 +280,26 @@ def test_download_gems_rewrites_url_when_proxy_configured(
     mock_async_download_files.assert_called_once_with(
         files_to_download={expected_url: dep.download_location(rooted_tmp_path)},
         concurrency_limit=5,
+        headers=None,
+    )
+
+
+@mock.patch("hermeto.core.package_managers.bundler.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.bundler.main.get_config")
+def test_download_gems_with_proxy_credentials_adds_auth_header(
+    mock_get_config: mock.Mock,
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Proxy credentials are sent as a Basic-auth header alongside the rewritten URL."""
+    mock_get_config.return_value = _mock_bundler_config(HttpUrl(FAKE_PROXY_URL), "user", "password")  # noqa: S106
+    dep = GemDependency(name="foo", version="1.0.0", source=FAKE_RUBYGEMS_SOURCE)
+    expected_url = f"{FAKE_PROXY_URL}/downloads/foo-1.0.0.gem"
+
+    _download_gems([dep], rooted_tmp_path)
+
+    mock_async_download_files.assert_called_once_with(
+        files_to_download={expected_url: dep.download_location(rooted_tmp_path)},
+        concurrency_limit=5,
+        headers={expected_url: {"Authorization": aiohttp.encode_basic_auth("user", "password")}},
     )

@@ -6,6 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
 
+import aiohttp
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
@@ -107,7 +108,16 @@ def _download_gems(
     deps_dir: RootedPath,
 ) -> None:
     """Download rubygems registry dependencies, rewriting URLs through a proxy if configured."""
-    proxy_url = get_config().bundler.proxy_url
+    config = get_config()
+    proxy_url = config.bundler.proxy_url
+    proxy_auth = (
+        aiohttp.encode_basic_auth(
+            login=config.bundler.proxy_login, password=config.bundler.proxy_password
+        )
+        if config.bundler.proxy_login and config.bundler.proxy_password
+        else None
+    )
+
     files_to_download: dict[str, RootedPath] = {}
     for dep in gem_deps:
         fetch_url = (
@@ -120,10 +130,15 @@ def _download_gems(
     if not files_to_download:
         return
 
+    headers = None
+    if proxy_auth is not None:
+        headers = {url: {"Authorization": proxy_auth} for url in files_to_download}
+
     asyncio.run(
         async_download_files(
             files_to_download=files_to_download,
-            concurrency_limit=get_config().runtime.concurrency_limit,
+            concurrency_limit=config.runtime.concurrency_limit,
+            headers=headers,
         )
     )
 
