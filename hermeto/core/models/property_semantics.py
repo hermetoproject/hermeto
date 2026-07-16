@@ -22,6 +22,8 @@ class PropertyEnum(str, Enum):
     PROP_PIP_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:pip:package:build-dependency"
     PROP_RPM_MODULARITY_LABEL = f"{APP_NAME}:rpm_modularity_label"
     PROP_RPM_SUMMARY = f"{APP_NAME}:rpm_summary"
+    PROP_UV_PACKAGE_BINARY = f"{APP_NAME}:uv:package:binary"
+    PROP_UV_PACKAGE_BUILD_DEPENDENCY = f"{APP_NAME}:uv:package:build-dependency"
 
     def __str__(self) -> str:
         return self.value
@@ -47,6 +49,8 @@ class PropertySet:
     pip_package_binary: bool = False
     rpm_modularity_label: str = ""
     rpm_summary: str = ""
+    uv_build_dependency: bool = False
+    uv_package_binary: bool = False
 
     @classmethod
     def from_properties(cls, props: Iterable[Property]) -> "Self":
@@ -74,6 +78,10 @@ class PropertySet:
                     p.rpm_modularity_label = prop.value
                 case PropertyEnum.PROP_RPM_SUMMARY:
                     p.rpm_summary = prop.value
+                case PropertyEnum.PROP_UV_PACKAGE_BINARY:
+                    p.uv_package_binary = True
+                case PropertyEnum.PROP_UV_PACKAGE_BUILD_DEPENDENCY:
+                    p.uv_build_dependency = True
                 case _:
                     assert_never(prop.name)
 
@@ -108,6 +116,10 @@ class PropertySet:
             )
         if self.rpm_summary:
             props.append(Property(name=PropertyEnum.PROP_RPM_SUMMARY, value=self.rpm_summary))
+        if self.uv_build_dependency:
+            props.append(Property(name=PropertyEnum.PROP_UV_PACKAGE_BUILD_DEPENDENCY, value="true"))
+        if self.uv_package_binary:
+            props.append(Property(name=PropertyEnum.PROP_UV_PACKAGE_BINARY, value="true"))
 
         return sorted(props, key=lambda p: (p.name, p.value))
 
@@ -124,4 +136,6 @@ class PropertySet:
             pip_package_binary=self.pip_package_binary or other.pip_package_binary,
             rpm_modularity_label=self.rpm_modularity_label or other.rpm_modularity_label,
             rpm_summary=self.rpm_summary or other.rpm_summary,
+            uv_build_dependency=self.uv_build_dependency and other.uv_build_dependency,
+            uv_package_binary=self.uv_package_binary or other.uv_package_binary,
         )
