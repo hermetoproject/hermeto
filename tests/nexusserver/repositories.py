@@ -43,6 +43,13 @@ class ProxyRepositoryConfig:
 
 
 @dataclass
+class BundlerProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a bundler (rubygems) proxy repository."""
+
+    format: str = field(default="rubygems", init=False)
+
+
+@dataclass
 class NpmProxyConfig(ProxyRepositoryConfig):
     """Configuration for an npm proxy repository."""
 
@@ -71,6 +78,7 @@ class GomodProxyConfig(ProxyRepositoryConfig):
 
 
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
+    BundlerProxyConfig(name="rubygems-proxy", remote_url="https://rubygems.org"),
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
     PypiProxyConfig(name="pypi-proxy", remote_url="https://pypi.org"),
     GomodProxyConfig(name="go-proxy", remote_url="https://proxy.golang.org"),
