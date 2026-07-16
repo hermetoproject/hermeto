@@ -106,7 +106,9 @@ from hermeto.core.package_managers.javascript.npm.project import NpmComponentInf
                     properties=[
                         Property(
                             name=f"{APP_NAME}:missing_hash:in_file",
-                            value="path/to/foo/package-lock.json",
+                            # Mirror str(Path(...)) that the production code uses so
+                            # the assertion holds on both POSIX and Windows.
+                            value=str(Path("path/to/foo/package-lock.json")),
                         ),
                     ],
                 ),
@@ -120,3 +122,4 @@ def test_generate_component_list(
     """Test _generate_component_list with different NpmComponentInfo inputs."""
     merged_components = _generate_component_list(components)
     assert merged_components == expected_components
+

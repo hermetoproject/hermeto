@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 from hermeto.core.models.input import Request
-from hermeto.core.models.output import ProjectFile, RequestOutput
+from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, create_backend_annotation
 from hermeto.core.package_managers.javascript.npm import project as npm_project
@@ -57,13 +57,20 @@ def fetch_npm_source(request: Request) -> RequestOutput:
         for projectfile in info["projectfiles"]:
             project_files.append(projectfile)
 
+    env_vars = [
+        EnvironmentVariable(
+            name="npm_config_build_from_source",
+            value="true",
+        ),
+    ]
+
     components = _generate_component_list(component_info)
     annotations = []
     if backend_annotation := create_backend_annotation(components, "npm"):
         annotations.append(backend_annotation)
     return RequestOutput.from_obj_list(
         components=components,
-        environment_variables=[],
+        environment_variables=env_vars,
         project_files=project_files,
         annotations=annotations,
     )
