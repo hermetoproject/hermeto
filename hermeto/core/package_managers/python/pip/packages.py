@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import pypi_simple
 from packageurl import PackageURL
@@ -22,20 +23,34 @@ class PipPackage(ABC):
     missing_req_file_checksum: bool
     package_type: str
 
-    def to_component(self, build_dependency: bool) -> Component:
-        """Build an SBOM Component from this package."""
+    def to_component(
+        self, build_dependency: bool, backend: Literal["pip", "uv"] = "pip"
+    ) -> Component:
+        """Build an SBOM Component from this package.
+
+        Backends reusing this machinery must pass their own name so that the
+        component's properties are attributed to them rather than to pip.
+        """
         missing_hash = (
             frozenset({self.requirement_file}) if self.missing_req_file_checksum else frozenset()
         )
+        if backend == "uv":
+            properties = PropertySet(
+                missing_hash_in_file=missing_hash,
+                uv_package_binary=(self.package_type == "wheel"),
+                uv_build_dependency=build_dependency,
+            )
+        else:
+            properties = PropertySet(
+                missing_hash_in_file=missing_hash,
+                pip_package_binary=(self.package_type == "wheel"),
+                pip_build_dependency=build_dependency,
+            )
         return Component(
             name=self.name,
             version=self._sbom_version(),
             purl=self._make_purl(),
-            properties=PropertySet(
-                missing_hash_in_file=missing_hash,
-                pip_package_binary=(self.package_type == "wheel"),
-                pip_build_dependency=build_dependency,
-            ).to_properties(),
+            properties=properties.to_properties(),
             external_references=self._get_external_refs(),
         )
 
