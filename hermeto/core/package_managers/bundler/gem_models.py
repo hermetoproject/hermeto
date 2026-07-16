@@ -7,13 +7,14 @@ from urllib.parse import urljoin, urlparse
 
 import pydantic
 from packageurl import PackageURL
+from pydantic import HttpUrl
 from typing_extensions import Self
 
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import PROXY_COMMENT, Component, ExternalReference
 from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
@@ -51,14 +52,18 @@ class _GemMetadata(pydantic.BaseModel):
     def _is_binary(self) -> bool:
         return False
 
-    def to_component(self) -> Component:
+    def to_component(self, proxy_url: HttpUrl | None = None) -> Component:
         """Build an SBOM Component from this dependency."""
         return Component(
             name=self.name,
             version=self.version,
             purl=self.purl,
             properties=PropertySet(bundler_package_binary=self._is_binary).to_properties(),
+            external_references=self._get_external_refs(proxy_url),
         )
+
+    def _get_external_refs(self, proxy_url: HttpUrl | None) -> list[ExternalReference] | None:  # noqa: ARG002
+        return None
 
 
 class GemDependency(_GemMetadata):
@@ -87,6 +92,11 @@ class GemDependency(_GemMetadata):
     def download_location(self, deps_dir: RootedPath) -> RootedPath:
         """Get the file system location of the gem."""
         return deps_dir.join_within_root(Path(f"{self.name}-{self.version}.gem"))
+
+    def _get_external_refs(self, proxy_url: HttpUrl | None) -> list[ExternalReference] | None:
+        if proxy_url is None:
+            return None
+        return [ExternalReference(url=str(proxy_url), comment=PROXY_COMMENT)]
 
 
 class GemPlatformSpecificDependency(GemDependency):

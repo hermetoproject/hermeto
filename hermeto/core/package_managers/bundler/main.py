@@ -82,6 +82,7 @@ def _resolve_bundler_package(
     deps_dir = output_dir.join_within_root("deps", "bundler")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
     dependencies = parse_lockfile(package_dir, binary_filters)
+    proxy_url = get_config().bundler.proxy_url
 
     gem_deps: list[GemDependency] = []
     git_deps: list[GitDependency] = []
@@ -99,7 +100,7 @@ def _resolve_bundler_package(
     _download_gems(gem_deps, deps_dir)
     git_paths = _clone_git_deps(git_deps, deps_dir)
 
-    components = [main_component] + [dep.to_component() for dep in dependencies]
+    components = [main_component] + [dep.to_component(proxy_url) for dep in dependencies]
     return components, git_paths
 
 
