@@ -8,12 +8,15 @@ from urllib.parse import ParseResult, urlparse
 import pydantic
 import tomlkit
 from tomlkit.exceptions import ParseError
+from typing_extensions import assert_never
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import (
     InvalidLockfileFormat,
     LockfileNotFound,
+    MissingChecksum,
     PackageRejected,
+    UnexpectedFormat,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -282,6 +285,65 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
         if self.sdist is not None:
             return self.sdist
         return self.wheels[0] if self.wheels else None
+
+    @cached_property
+    def artifacts_to_download(self) -> list[PackageArtifact]:
+        """Extract the remote artifacts to fetch for a package.
+
+        Only sdists are fetched for now. Like pip's process_package_distributions,
+        this is the single place where binary filters will decide the sdist/wheel
+        split once they are supported. Local sources need no fetching and git
+        sources are cloned rather than downloaded, so both yield nothing here.
+
+        Cached so that the download phase and the SBOM both describe the same
+        artifacts rather than deriving them separately.
+
+        :raises PackageRejected: if a registry package publishes no sdist.
+        :raises UnexpectedFormat: if a registry sdist records no download URL.
+        :raises MissingChecksum: if a url package records no hash.
+        """
+        match self.source:
+            case PackageSourceRegistry():
+                # registry checksums are optional in uv.lock; a missing hash is
+                # tolerated here and reported by the download phase
+                if self.sdist is None:
+                    # wheel-only packages lock fine and pass `uv lock --check`, but
+                    # cannot be built from source under UV_NO_BINARY=true
+                    raise PackageRejected(
+                        reason=(
+                            f"{self.name}=={self.version} has no sdist in uv.lock; "
+                            "the package likely only publishes wheels"
+                        ),
+                    )
+                if self.sdist.url is None:
+                    # uv always records a URL for registry sdists; `uv lock --check`
+                    # does not catch its absence, but `uv sync` would fail on it
+                    raise UnexpectedFormat(
+                        f"registry sdist for {self.name}=={self.version} has no URL in uv.lock",
+                        solution="The lockfile looks corrupted. Regenerate it with `uv lock`.",
+                    )
+                return [self.sdist]
+            case PackageSourceUrl():
+                # a url source points at a single file, so uv records exactly one
+                # distribution for it: the sdist, or a single wheel. Its hash is
+                # mandatory, but the download URL lives only in the source itself.
+                recorded = self.sole_artifact
+                if recorded is None or recorded.hash is None:
+                    raise MissingChecksum(
+                        f"{self.name}=={self.version}",
+                        solution=(
+                            "uv requires a hash for URL dependencies, so this lockfile looks "
+                            "corrupted. Regenerate it with `uv lock`."
+                        ),
+                    )
+                # copying rather than rebuilding keeps the sdist/wheel type, which the
+                # SBOM reads back to tell a source build from a binary one
+                return [recorded.model_copy(update={"url": self.source.location})]
+            case PackageSourceGit() | PackageSourceLocal():
+                # a git source is cloned instead, and the rest are already in the tree
+                return []
+            case _:
+                assert_never(self.source)
 
 
 def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:

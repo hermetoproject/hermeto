@@ -10,7 +10,9 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import (
     InvalidLockfileFormat,
     LockfileNotFound,
+    MissingChecksum,
     PackageRejected,
+    UnexpectedFormat,
 )
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
@@ -26,6 +28,9 @@ from hermeto.core.package_managers.python.uv.models import (
 )
 from hermeto.core.rooted_path import RootedPath
 
+SDIST = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234")
+UNHASHED_SDIST = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz")
+WHEEL = ArtifactWheel(url="https://example.org/example-1.0.0-py3-none-any.whl", hash="sha256:5678")
 URL_SOURCE = "https://example.org/downloads/example-1.0.0.tar.gz"
 
 PYPI_SOURCE = PackageSourceRegistry(kind="registry", location="https://pypi.org/simple")
@@ -346,6 +351,92 @@ class TestUvPackage:
     ) -> None:
         package = make_package(DIRECT_URL_SOURCE, sdist=sdist, wheels=wheels)
         assert package.sole_artifact == expected
+
+    def test_artifacts_to_download_registry_sdist(self) -> None:
+        """The sdist has a URL, so it is the artifact to download; the wheels are not."""
+        package = make_package(
+            PYPI_SOURCE,
+            sdist=SDIST,
+            wheels=[WHEEL],
+        )
+        assert package.artifacts_to_download == [SDIST]
+
+    @pytest.mark.parametrize(
+        "package, expected_error, expected_message",
+        [
+            pytest.param(
+                make_package(
+                    PYPI_SOURCE,
+                    wheels=[WHEEL],
+                ),
+                PackageRejected,
+                "has no sdist in uv.lock",
+                id="registry_package_publishes_only_wheels",
+            ),
+            pytest.param(
+                make_package(
+                    PYPI_SOURCE,
+                    sdist=ArtifactSdist(hash="sha256:1234"),
+                ),
+                UnexpectedFormat,
+                "has no URL in uv.lock",
+                id="registry_sdist_records_no_download_url",
+            ),
+            pytest.param(
+                make_package(DIRECT_URL_SOURCE, sdist=UNHASHED_SDIST),
+                MissingChecksum,
+                "missing mandatory integrity checksum",
+                id="url_sdist_records_no_hash",
+            ),
+        ],
+    )
+    def test_artifacts_to_download_rejects(
+        self, package: UvPackage, expected_error: type[Exception], expected_message: str
+    ) -> None:
+        with pytest.raises(expected_error, match=expected_message):
+            _ = package.artifacts_to_download
+
+    @pytest.mark.parametrize(
+        "sdist, wheels, expected",
+        [
+            pytest.param(
+                ArtifactSdist(hash="sha256:1234"),
+                [],
+                ArtifactSdist(url=URL_SOURCE, hash="sha256:1234"),
+                id="hash_recorded_under_sdist",
+            ),
+            pytest.param(
+                None,
+                [
+                    ArtifactWheel(
+                        url="https://example.org/downloads/example-1.0.0-py3-none-any.whl",
+                        hash="sha256:1234",
+                    )
+                ],
+                ArtifactWheel(url=URL_SOURCE, hash="sha256:1234"),
+                id="hash_recorded_under_wheels",
+            ),
+        ],
+    )
+    def test_artifacts_to_download_returns_one_artifact_for_url_sources(
+        self, sdist: ArtifactSdist | None, wheels: list[ArtifactWheel], expected: PackageArtifact
+    ) -> None:
+        """A url source points at one file, recorded as either the sdist or a single wheel."""
+        package = make_package(DIRECT_URL_SOURCE, sdist=sdist, wheels=wheels)
+        assert package.artifacts_to_download == [expected]
+
+    @pytest.mark.parametrize(
+        "source",
+        [
+            pytest.param(PackageSourceLocal(kind="path", location="../pkg.tar.gz"), id="path"),
+            pytest.param(PackageSourceLocal(kind="directory", location="subdir"), id="directory"),
+            pytest.param(PackageSourceLocal(kind="editable", location="."), id="editable"),
+            pytest.param(PackageSourceLocal(kind="virtual", location="."), id="virtual"),
+        ],
+    )
+    def test_artifacts_to_download_skips_local_sources(self, source: PackageSource) -> None:
+        """Local sources are already in the tree, so nothing is fetched for them."""
+        assert make_package(source).artifacts_to_download == []
 
 
 class TestUvLock:
