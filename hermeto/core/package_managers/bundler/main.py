@@ -21,7 +21,11 @@ from hermeto.core.package_managers.bundler.parser import (
     PathDependency,
     parse_lockfile,
 )
-from hermeto.core.package_managers.general import async_download_files, get_vcs_qualifiers
+from hermeto.core.package_managers.general import (
+    async_download_files,
+    get_vcs_qualifiers,
+    patch_url_to_point_to_proxy,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 
@@ -98,9 +102,21 @@ def _resolve_bundler_package(
     return components, git_paths
 
 
-def _download_gems(gem_deps: list[GemDependency], deps_dir: RootedPath) -> None:
-    """Download rubygems registry dependencies."""
-    files_to_download = {dep.remote_location: dep.download_location(deps_dir) for dep in gem_deps}
+def _download_gems(
+    gem_deps: list[GemDependency],
+    deps_dir: RootedPath,
+) -> None:
+    """Download rubygems registry dependencies, rewriting URLs through a proxy if configured."""
+    proxy_url = get_config().bundler.proxy_url
+    files_to_download: dict[str, RootedPath] = {}
+    for dep in gem_deps:
+        fetch_url = (
+            patch_url_to_point_to_proxy(dep.remote_location, proxy_url)
+            if proxy_url is not None
+            else dep.remote_location
+        )
+        files_to_download[fetch_url] = dep.download_location(deps_dir)
+
     if not files_to_download:
         return
 

@@ -172,6 +172,10 @@ class PnpmSettings(ProxyMixin, extra="forbid"):
     """Pnpm settings."""
 
 
+class BundlerSettings(ProxyMixin, extra="forbid"):
+    """Bundler settings."""
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
@@ -188,6 +192,7 @@ class Config(BaseSettings):
     yarn: YarnSettings = YarnSettings()
     npm: NpmSettings = NpmSettings()
     pnpm: PnpmSettings = PnpmSettings()
+    bundler: BundlerSettings = BundlerSettings()
     gomod: GomodSettings = GomodSettings()
     http: HttpSettings = HttpSettings()
     runtime: RuntimeSettings = RuntimeSettings()
