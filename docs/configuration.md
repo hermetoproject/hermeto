@@ -69,10 +69,10 @@ Applies to all package managers.
 
 ### Proxy settings
 
-Applies to `gomod`, `npm`, `pnpm`, and `yarn` when pulling dependencies
-through an artifact repository manager (e.g. Sonatype Nexus or JFrog
-Artifactory). The primary use of `proxy_login` and `proxy_password` is to
-authenticate with such a registry. Set `proxy_url` to its base URL. Do not
+Applies to `bundler`, `gomod`, `npm`, `pnpm`, and `yarn` when pulling
+dependencies through an artifact repository manager (e.g. Sonatype Nexus or
+JFrog Artifactory). The primary use of `proxy_login` and `proxy_password` is
+to authenticate with such a registry. Set `proxy_url` to its base URL. Do not
 embed credentials in the URL.
 
 | Key | Default | Description |
@@ -80,6 +80,12 @@ embed credentials in the URL.
 | `proxy_url` | *(unset)* | Registry base URL |
 | `proxy_login` | *(unset)* | Registry username (must be set together with `proxy_password`) |
 | `proxy_password` | *(unset)* | Registry password (must be set together with `proxy_login`) |
+
+### `bundler`
+
+Supports the [proxy settings](#proxy-settings) above and has no additional
+keys. Only rubygems registry dependencies are proxied; git and path
+dependencies are unaffected.
 
 ### `gomod`
 
