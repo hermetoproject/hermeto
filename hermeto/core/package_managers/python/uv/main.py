@@ -16,7 +16,7 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, RequestOutput
-from hermeto.core.models.sbom import Component
+from hermeto.core.models.sbom import Annotation, Component, create_backend_annotation
 from hermeto.core.package_managers.general import async_download_files
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML
 from hermeto.core.package_managers.python.uv.build_requirements import download_build_requirements
@@ -49,6 +49,7 @@ class UvPackageResolved:
 
 def fetch_uv_source(request: Request) -> RequestOutput:
     """Resolve and fetch uv dependencies for the given request."""
+    annotations: list[Annotation] = []
     components: list[Component] = []
 
     for package in request.uv_packages:
@@ -56,9 +57,12 @@ def fetch_uv_source(request: Request) -> RequestOutput:
         resolution_result = _resolve_uv(package_dir, request.output_dir)
         components.extend(resolution_result.components)
 
+    if backend_annotation := create_backend_annotation(components, "x-uv"):
+        annotations.append(backend_annotation)
+
     environment_variables = _generate_environment_variables()
 
-    return RequestOutput.from_obj_list(components, environment_variables)
+    return RequestOutput.from_obj_list(components, environment_variables, annotations=annotations)
 
 
 def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageResolved:
@@ -79,7 +83,7 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
     _download_dependencies(output_dir, lock)
 
     build_requires = download_build_requirements(package_dir, output_dir)
-    components = [dep.to_component(build_dependency=True) for dep in build_requires]
+    components = [dep.to_component(build_dependency=True, backend="uv") for dep in build_requires]
 
     return UvPackageResolved(name=name, version=version, components=components)
 
