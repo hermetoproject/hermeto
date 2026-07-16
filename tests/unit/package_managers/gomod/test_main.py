@@ -68,8 +68,8 @@ from hermeto.core.package_managers.gomod.main import (
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo, RepoID
-from hermeto.core.utils import GIT_PRISTINE_ENV
 from tests.common_utils import GIT_REF, write_file_tree
+from tests.unit.conftest import _create_git_repo
 from tests.unit.package_managers.gomod.helpers import get_mocked_data
 
 GO_CMD_PATH = "/usr/bin/go"
@@ -1098,56 +1098,32 @@ def test_parse_vendor_unexpected_format(
 
 @pytest.mark.parametrize("subpath", ["", "some/app/"])
 @pytest.mark.parametrize(
-    "vendor_before, vendor_changes, expected_change",
+    "vendor_before, vendor_changes, expected_changed_files",
     [
         pytest.param({}, {}, None, id="no_vendoring"),
         pytest.param({"vendor": {"modules.txt": "foo v1.0.0\n"}}, {}, None, id="no_changes"),
         pytest.param(
             {},
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
-            textwrap.dedent(
-                """
-                --- /dev/null
-                +++ b/{subpath}vendor/modules.txt
-                @@ -0,0 +1 @@
-                +foo v1.0.0
-                """
-            ),
+            ["{subpath}vendor/modules.txt"],
             id="modules_txt_added",
         ),
         pytest.param(
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
             {"vendor": {"modules.txt": "foo v2.0.0\n"}},
-            textwrap.dedent(
-                """
-                --- a/{subpath}vendor/modules.txt
-                +++ b/{subpath}vendor/modules.txt
-                @@ -1 +1 @@
-                -foo v1.0.0
-                +foo v2.0.0
-                """
-            ),
+            ["{subpath}vendor/modules.txt"],
             id="modules_txt_changes",
         ),
         pytest.param(
             {},
             {"vendor": {"some_file": "foo"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/some_file
-                """
-            ),
+            ["{subpath}vendor directory"],
             id="a_file_was_added",
         ),
         pytest.param(
             {"vendor": {"some_file": "foo"}},
             {"vendor": {"some_file": "bar", "other_file": "baz"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/other_file
-                M\t{subpath}vendor/some_file
-                """
-            ),
+            ["{subpath}vendor directory"],
             id="multiple_changes",
         ),
         # vendor/ was added but only contains empty dirs => will be ignored
@@ -1156,11 +1132,7 @@ def test_parse_vendor_unexpected_format(
         pytest.param(
             {".gitignore": "vendor/"},
             {"vendor": {"some_file": "foo"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/some_file
-                """
-            ),
+            ["{subpath}vendor directory"],
             id="file_added_in_gitignored_vendor_dir",
         ),
     ],
@@ -1169,7 +1141,7 @@ def test_vendor_changed(
     subpath: str,
     vendor_before: dict[str, Any],
     vendor_changes: dict[str, Any],
-    expected_change: str | None,
+    expected_changed_files: list[str] | None,
     rooted_tmp_path_repo: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -1184,9 +1156,10 @@ def test_vendor_changed(
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir) == bool(expected_change)
-    if expected_change:
-        assert expected_change.format(subpath=subpath) in caplog.text
+    assert _vendor_changed(app_dir) == bool(expected_changed_files)
+    if expected_changed_files:
+        for f in expected_changed_files:
+            assert f.format(subpath=subpath) in caplog.text
 
     # The _vendor_changed function should reset the `git add` => added files should not be tracked
     assert not repo.git.diff("--diff-filter", "A")
@@ -1553,7 +1526,7 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
 
     local_repo_path.path.mkdir()
     remote_repo_path.path.mkdir()
-    remote_repo = git.Repo.init(remote_repo_path)
+    remote_repo = _create_git_repo(remote_repo_path.path)
 
     with open(readme_file_path, "wb"):
         pass
@@ -1567,8 +1540,8 @@ def repo_remote_with_tag(rooted_tmp_path: RootedPath) -> tuple[RootedPath, Roote
 
     git.Repo.clone_from(remote_repo_path, local_repo_path)
 
-    remote_repo.create_tag("v1.0.0", ref=initial_commit, env=GIT_PRISTINE_ENV)
-    remote_repo.create_tag("v2.0.0", env=GIT_PRISTINE_ENV)
+    remote_repo.create_tag("v1.0.0", ref=initial_commit)
+    remote_repo.create_tag("v2.0.0")
 
     return remote_repo_path, local_repo_path
 
