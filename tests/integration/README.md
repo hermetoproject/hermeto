@@ -44,3 +44,19 @@ nox -s integration-tests -- -n auto
 pytest [path/to/test] -n 4
 pytest [path/to/test] -n auto
 ```
+
+## Generating test data
+
+Any time an existing test scenario is updated the test data needs to be updated
+because the existing output SBOMs would not match anymore.
+To generate new data and run integration tests with them:
+
+```shell
+nox -s generate-test-data
+```
+
+Generate data for test cases matching a pytest pattern:
+
+```shell
+nox -s generate-test-data -- -k test_e2e_gomod
+```

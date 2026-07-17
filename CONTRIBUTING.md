@@ -230,20 +230,6 @@ nox -s python-3.10 -- tests/unit/extras/test_envfile.py::test_cannot_determine_f
 
 In short, nox passes all arguments to the right of `--` directly to pytest.
 
-#### Generating new test data
-
-To generate new data (output, dependencies checksums, vendor checksums) and run integration tests with them:
-
-```shell
-nox -s generate-test-data
-```
-
-Generate data for test cases matching a pytest pattern:
-
-```shell
-nox -s generate-test-data -- -k test_e2e_gomod
-```
-
 ### Running integration tests
 
 See [tests/integration/README.md](tests/integration/README.md) for full details
