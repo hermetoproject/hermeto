@@ -22,6 +22,7 @@ RUN dnf -y install \
 
 WORKDIR /src
 
+ARG CARGO_BUILD_JOBS
 RUN . /tmp/hermeto.env \
     && python3 -m pip install -r requirements.txt
 

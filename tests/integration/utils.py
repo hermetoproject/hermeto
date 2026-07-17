@@ -201,6 +201,11 @@ def build_image_for_test_case(
         "none",
     ]
 
+    # extra build args
+    for build_arg in ("CARGO_BUILD_JOBS",):
+        if val := os.environ.get(build_arg):
+            flags.extend(["--build-arg", f"{build_arg}={val}"])
+
     # this should be extended to support more archs when we have the means of testing it in our CI
     rpm_repos_path = f"{output_dir}/hermeto-output/deps/rpm/x86_64/repos.d"
     if Path(rpm_repos_path).exists():
