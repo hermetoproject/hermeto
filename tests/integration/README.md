@@ -60,3 +60,19 @@ Generate data for test cases matching a pytest pattern:
 ```shell
 nox -s generate-test-data -- -k test_e2e_gomod
 ```
+
+## Resource tuning
+
+Some end-to-end tests build Rust code inside containers. With many parallel
+workers, concurrent `cargo build` processes can saturate the machine. The
+following environment variables can help limit resource usage for your own local
+use:
+
+* `PYTEST_XDIST_AUTO_NUM_WORKERS` - caps the number of pytest-xdist workers
+  when using `-n auto` (defaults to the number of logical CPUs).
+* `CARGO_BUILD_JOBS` - limits the number of parallel `rustc` processes cargo
+  spawns inside each container build (defaults to all available CPUs).
+
+Integration tests also define several `HERMETO_TEST_*` variables for controlling
+the test image, container engine, and other options. Run `pytest --help` inside
+the integration test directory for a full list.
