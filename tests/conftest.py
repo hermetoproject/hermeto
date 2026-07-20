@@ -9,7 +9,7 @@ from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO
 @pytest.fixture(autouse=True, scope="session")
 def _clean_git_env() -> None:
     """Strip selected GIT_ env vars that leak from outer git operations."""
-    for var in ("GIT_DIR",):
+    for var in ("GIT_DIR", "GIT_WORK_TREE"):
         os.environ.pop(var, None)
 
 
