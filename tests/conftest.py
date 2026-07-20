@@ -6,6 +6,13 @@ import pytest
 from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _clean_git_env() -> None:
+    """Strip selected GIT_ env vars that leak from outer git operations."""
+    for var in ("GIT_DIR",):
+        os.environ.pop(var, None)
+
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Register custom CLI options for Hermeto integration tests."""
     group = parser.getgroup("hermeto integration", "hermeto integration test options")
