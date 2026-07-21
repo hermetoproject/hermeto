@@ -1,0 +1,1 @@
+../../../../yarn_e2e/in/.yarn/releases/yarn-3.6.1.cjs

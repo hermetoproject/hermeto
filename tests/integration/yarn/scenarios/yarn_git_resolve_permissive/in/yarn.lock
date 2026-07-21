@@ -190,7 +190,8 @@ __metadata:
     date-in-spanish: "npm:fecha@latest"
     emoji-regex: "https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz"
     fsevents: "patch:fsevents@^2.3.2#./my-patches/fsevents.patch"
-    holy-hand-grenade: "exec:./generate-holy-hand-grenade.js"
+    get-document: "github:webmodules/get-document#a04ccb499d6e0433a368c3bb150b4899b698461f"
+    holy-hand-grenade: "link:book-of-armaments"
     is-positive: "https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz"
     left-pad: "patch:left-pad@1.3.0#./my-patches/left-pad.patch&./my-patches/left-pad-2.patch"
     minimist: "https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz"
@@ -198,7 +199,6 @@ __metadata:
     once-portal: "portal:external-packages/once"
     strip-ansi-tarball: "file:external-packages/strip-ansi-4.0.0.tgz"
     supports-hyperlinks-folder: "file:external-packages/supports-hyperlinks"
-    tree-sitter-json: ^0.20.0
     typescript: ^5.1.6
     yargs: ^17.7.2
   peerDependencies:
@@ -258,13 +258,6 @@ __metadata:
   version: 1.0.0
   resolution: "ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz"
   checksum: da9ab3e8fcea43cf17fba24e5add8675bfa4002050b32853b8348588515d2bed19e4866d2071010048b170c129897eb1c4919239885c6a0eaf2bbf490ed840f8
-  languageName: node
-  linkType: hard
-
-"ccto-wo-deps@patch:ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::locator=berryscary%40workspace%3A.":
-  version: 1.0.0
-  resolution: "ccto-wo-deps@patch:ccto-wo-deps@https%3A//github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A."
-  checksum: 0b368057b2a14b3dee06b46bb461df65b143709e9fda4c5dd792357b0dbebbc6ae756b33c0ac89d20dea13ada05eed54c6668a277680f4ecfe588be658174658
   languageName: node
   linkType: hard
 
@@ -535,6 +528,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-document@github:webmodules/get-document#a04ccb499d6e0433a368c3bb150b4899b698461f":
+  version: 1.0.0
+  resolution: "get-document@https://github.com/webmodules/get-document.git#commit=a04ccb499d6e0433a368c3bb150b4899b698461f"
+  checksum: 7a1e374e8c8a670853ae2884050432251538ab7b065a348c7c2267cf268fc9a73f9745716b6ddaa992cdac888f7849fc33ca401d1ff539b2b1caf2774d96bb18
+  languageName: node
+  linkType: hard
+
 "glob@npm:^10.2.2":
   version: 10.3.3
   resolution: "glob@npm:10.3.3"
@@ -585,12 +585,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"holy-hand-grenade@exec:./generate-holy-hand-grenade.js::locator=berryscary%40workspace%3A.":
-  version: 1.0.0
-  resolution: "holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A."
-  checksum: 6053ad5dc79d8fedfdc528e1bf75e3f4a1a4558a8184f55589e1e54ab8819f5111ffc1812333906cfcfa05fdd3e81d9b65191d1a093066f3a3f479a61c626be9
+"holy-hand-grenade@link:book-of-armaments::locator=berryscary%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "holy-hand-grenade@link:book-of-armaments::locator=berryscary%40workspace%3A."
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "http-cache-semantics@npm:^4.1.1":
   version: 4.1.1
@@ -913,15 +912,6 @@ __metadata:
   version: 2.1.3
   resolution: "ms@npm:2.1.3"
   checksum: aa92de608021b242401676e35cfa5aa42dd70cbdc082b916da7fb925c542173e36bce97ea3e804923fe92c0ad991434e4a38327e15a1b5b5f945d66df615ae6d
-  languageName: node
-  linkType: hard
-
-"nan@npm:^2.14.1":
-  version: 2.17.0
-  resolution: "nan@npm:2.17.0"
-  dependencies:
-    node-gyp: latest
-  checksum: ec609aeaf7e68b76592a3ba96b372aa7f5df5b056c1e37410b0f1deefbab5a57a922061e2c5b369bae9c7c6b5e6eecf4ad2dac8833a1a7d3a751e0a7c7f849ed
   languageName: node
   linkType: hard
 
@@ -1300,16 +1290,6 @@ __metadata:
     the-answer: index.js
   languageName: unknown
   linkType: soft
-
-"tree-sitter-json@npm:^0.20.0":
-  version: 0.20.0
-  resolution: "tree-sitter-json@npm:0.20.0"
-  dependencies:
-    nan: ^2.14.1
-    node-gyp: latest
-  checksum: 820e27b644e3ec62d8753976572660fbc314b0ffb10178384ae0d187187797c3d87223bec6b034e602445e4095484a28fb89ca67653a1d4f41fa13dd6adad0d2
-  languageName: node
-  linkType: hard
 
 "typescript@npm:^5.1.6":
   version: 5.1.6
