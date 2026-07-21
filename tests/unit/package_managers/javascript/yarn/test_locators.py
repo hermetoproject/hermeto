@@ -578,9 +578,7 @@ def test_parse_locator(locator_str: str, expect_locator: Locator) -> None:
 
 @pytest.mark.parametrize("locator_str", UNSUPPORTED_LOCATORS)
 def test_parse_unsupported_locator(locator_str: str) -> None:
-    with pytest.raises(
-        UnsupportedFeature, match=f"{APP_NAME} does not support Git or Exec dependencies"
-    ):
+    with pytest.raises(UnsupportedFeature):
         parse_locator(locator_str)
 
 
@@ -630,7 +628,8 @@ def test_parse_unknown_protocol(locator_str: str) -> None:
         (
             "name@patch:name@git@github.com/foo/bar%23commit=abcdef#builtin<foo>",
             UnsupportedFeature(
-                f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: name@git@github.com/foo/bar#commit=abcdef"
+                f"{APP_NAME} cannot process this Yarn Berry Git dependency: "
+                "name@git@github.com/foo/bar#commit=abcdef"
             ),
         ),
         (

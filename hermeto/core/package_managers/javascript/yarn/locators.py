@@ -175,9 +175,21 @@ def parse_locator(locator_str: str) -> Locator:
             parsed_reference.protocol.removesuffix(":") if parsed_reference.protocol else None
         )
 
-        if "commit" in parse_qs(parsed_reference.selector) or protocol == "exec":
+        if protocol == "exec":
             raise UnsupportedFeature(
-                f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: {locator_str}",
+                f"{APP_NAME} does not support Exec dependencies for Yarn Berry: {locator_str}",
+            )
+        if "commit" in parse_qs(parsed_reference.selector):
+            # Plain Git deps are rewritten to file: tarballs before parse_locator runs.
+            # Locators that still carry a commit here are unsupported forms (e.g. workspace
+            # selectors inside a cloned repo, or a patch whose original is a Git dependency).
+            raise UnsupportedFeature(
+                f"{APP_NAME} cannot process this Yarn Berry Git dependency: {locator_str}",
+                solution=(
+                    "Plain Git dependencies are supported with --mode=permissive. "
+                    "Patched Git dependencies and Git dependencies that select a workspace "
+                    "inside the cloned repository are not supported."
+                ),
             )
         elif protocol == "npm":
             return NpmLocator(locator.scope, locator.name, version=parsed_reference.selector)
