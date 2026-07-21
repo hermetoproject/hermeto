@@ -109,9 +109,9 @@ def test_validate_unsupported_locators(
         resolve_packages(rooted_tmp_path)
 
     assert caplog.messages == [
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
+        f"{APP_NAME} cannot process this Yarn Berry Git dependency: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
+        f"{APP_NAME} cannot process this Yarn Berry Git dependency: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
+        f"{APP_NAME} does not support Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
     ]
 
 
