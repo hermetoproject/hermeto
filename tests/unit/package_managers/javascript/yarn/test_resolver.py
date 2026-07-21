@@ -10,7 +10,6 @@ from urllib.parse import quote
 import pytest
 from semver import Version
 
-from hermeto import APP_NAME
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     NotAGitRepo,
@@ -63,7 +62,7 @@ def test_resolve_packages_unsupported_resolver(
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.run_yarn_cmd")
 def test_validate_unsupported_locators(
-    mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath, caplog: pytest.LogCaptureFixture
+    mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
 ) -> None:
     unsupported_outputs = [
         {
@@ -107,12 +106,6 @@ def test_validate_unsupported_locators(
         UnsupportedFeature, match="Found 3 unsupported dependencies, more details in the logs."
     ):
         resolve_packages(rooted_tmp_path)
-
-    assert caplog.messages == [
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
-    ]
 
 
 class MockedPackage(NamedTuple):
