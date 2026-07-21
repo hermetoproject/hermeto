@@ -1,5 +1,6 @@
 {
   "name": "berryscary",
+  "private": true,
   "packageManager": "yarn@3.6.1",
   "bin": "dist/app.js",
   "scripts": {
@@ -18,18 +19,15 @@
     "ansi-regex-link": "link:external-packages/ansi-regex",
     "ccto-wo-deps": "https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz",
     "date-in-spanish": "npm:fecha@latest",
-    "holy-hand-grenade": "exec:./generate-holy-hand-grenade.js",
+    "get-document": "github:webmodules/get-document#a04ccb499d6e0433a368c3bb150b4899b698461f",
+    "holy-hand-grenade": "link:book-of-armaments",
     "is-positive": "https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz",
     "left-pad": "patch:left-pad@1.3.0#./my-patches/left-pad.patch&./my-patches/left-pad-2.patch",
     "old-man-from-scene-24": "workspace:^",
     "once-portal": "portal:external-packages/once",
     "strip-ansi-tarball": "file:external-packages/strip-ansi-4.0.0.tgz",
     "supports-hyperlinks-folder": "file:external-packages/supports-hyperlinks",
-    "tree-sitter-json": "^0.20.0",
     "yargs": "^17.7.2"
-  },
-  "resolutions": {
-    "ccto-wo-deps": "patch:ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch"
   },
   "workspaces": [
     "packages/*"

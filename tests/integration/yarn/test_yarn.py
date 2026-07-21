@@ -27,7 +27,7 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_error=ExitError.ERR_UNSUPPORTED_FEATURE,
-                expected_output="UnsupportedFeature: Found 8 unsupported dependencies, more details in the logs.",
+                expected_output="UnsupportedFeature: Found 1 unsupported dependencies, more details in the logs.",
             ),
             id="yarn_disallowed_protocols",
         ),
@@ -71,6 +71,25 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 expected_output="Required files not found:",
             ),
             id="yarn_missing_lockfile",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                global_flags=["--mode=permissive"],
+                packages=({"path": ".", "type": "yarn"},),
+                check_output=False,
+                expected_error=ExitError.ERR_OK,
+                expected_output="All dependencies fetched successfully",
+            ),
+            id="yarn_git_resolve_permissive",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=({"path": ".", "type": "yarn"},),
+                check_output=False,
+                expected_error=ExitError.ERR_PACKAGE_REJECTED,
+                expected_output="Git dependencies in Yarn Berry projects cannot be processed in strict mode because the lockfile must be modified to reference local tarballs.",
+            ),
+            id="yarn_git_resolve_strict",
         ),
     ],
 )
