@@ -107,6 +107,21 @@ actually used (some backends cannot provide that). It is represented as follows:
 - **SPDX**: The same information is mapped to the package field `sourceInfo`
   (semicolon-separated when there are several).
 
+**Permissive mode** &mdash; When Hermeto runs with
+[`--mode=permissive`](configuration.md#modes) and bypasses a check that would
+fail in strict mode, it records that fact as a top-level annotation whose
+`subjects` list the affected components (by `bom-ref`). Annotation text uses
+the form `hermeto:permissive-mode:<backend>:<reason>`:
+
+| Annotation suffix (`<backend>:<reason>`) | Meaning |
+| ---------------------------------------- | ------- |
+| `gomod:vendor-directory-changed-after-vendoring` | Contents of the Go `vendor` directory differed from what `go mod vendor` would produce |
+| `cargo:generated-lockfile` | Hermeto generated a `Cargo.lock` that was missing or out of sync with `Cargo.toml` |
+| `yarn:using-git-dependencies` | Yarn Berry project used plain git dependencies (see [yarn](yarn.md#git-dependencies)) |
+
+In SPDX output, these become per-package annotations on the matching packages
+(see [CycloneDX to SPDX mapping](#cyclonedx-to-spdx-mapping)).
+
 ## Main package representation
 
 The SBOM does **not** mark which dependency is the main package. All are

@@ -26,6 +26,7 @@ Validation checks that are currently relaxed in permissive mode:
 
 - `gomod` - vendor directory contents differ from go.mod/go.sum after vendoring
 - `cargo` - Cargo.lock is out of sync with Cargo.toml (it must exist though)
+- `yarn` - plain Git/GitHub protocol dependencies in Yarn Berry lockfiles
 
 ## Goals
 
