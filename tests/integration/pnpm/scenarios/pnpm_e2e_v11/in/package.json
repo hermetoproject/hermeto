@@ -1,0 +1,23 @@
+{
+  "name": "integration-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "license": "ISC",
+  "packageManager": "pnpm@11.9.0",
+  "dependencies": {
+    "@hono/hono": "jsr:^4.12.23",
+    "@sinclair/typebox": "^0.34.49",
+    "debug": "github:debug-js/debug",
+    "is-number": "file:is-number-7.0.0.tgz",
+    "semver": "https://github.com/npm/node-semver/archive/refs/tags/v7.8.1.tar.gz",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@hono/zod-validator": "jsr:^0.8.0",
+    "uuid": "^14.0.0"
+  },
+  "optionalDependencies": {
+    "picocolors": "^1.1.1"
+  }
+}

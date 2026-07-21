@@ -1,0 +1,7 @@
+metadata:
+  version: "1.0"
+
+artifacts:
+  - download_url: https://registry.npmjs.org/pnpm/-/pnpm-10.34.4.tgz
+    checksum: "sha256:98cd5718dbd8c4b2689156493b9596cecf6b64b1a98d4a087e82135a175b40eb"
+    filename: pnpm-10.34.4.tgz

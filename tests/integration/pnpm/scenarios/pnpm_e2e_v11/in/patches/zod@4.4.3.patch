@@ -1,0 +1,10 @@
+diff --git a/index.js b/index.js
+index b0bbaefb767b76b3b59cf6598f08fa189e426f16..864be0f24126a90cf52df8e91abc57de4217bef4 100644
+--- a/index.js
++++ b/index.js
+@@ -2,3 +2,5 @@ import * as z from "./v4/classic/external.js";
+ export * from "./v4/classic/external.js";
+ export { z };
+ export default z;
++
++console.log("Hello world!");
