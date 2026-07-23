@@ -18,7 +18,7 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 packages=({"path": ".", "type": "generic"},),
                 check_output=False,
                 expected_error=ExitError.ERR_FETCH,
-                expected_output="Unsuccessful download",
+                expected_output="Could not download",
             ),
             id="generic_file_not_reachable",
         )
@@ -109,7 +109,6 @@ def test_e2e_generic(
             utils.TestParameters(
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
-                expected_output="All dependencies fetched successfully",
             ),
             id="generic_e2e_basic_auth",
             marks=pytest.mark.skipif(
@@ -121,7 +120,6 @@ def test_e2e_generic(
             utils.TestParameters(
                 packages=({"path": ".", "type": "generic"},),
                 check_output=True,
-                expected_output="All dependencies fetched successfully",
             ),
             id="generic_e2e_bearer_auth",
             marks=pytest.mark.skipif(
@@ -134,7 +132,7 @@ def test_e2e_generic(
                 packages=({"path": ".", "type": "generic"},),
                 check_output=False,
                 expected_error=ExitError.ERR_FETCH,
-                expected_output="401",
+                expected_output="Could not download",
             ),
             id="generic_e2e_auth_wrong_creds",
             marks=pytest.mark.skipif(

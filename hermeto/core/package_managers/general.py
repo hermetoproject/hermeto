@@ -116,20 +116,19 @@ def download_binary_file(
     """
     config = get_config()
     timeout = (config.http.connect_timeout, config.http.read_timeout)
+    log.debug("Downloading %s", url)
+
     try:
-        log.debug("requests.get(url: %s)", url)
         resp = _get_pkg_requests_session().get(
             url, stream=True, verify=not insecure, auth=auth, timeout=timeout
         )
         resp.raise_for_status()
     except requests.RequestException as e:
-        raise FetchError(f"Could not download {url}: {e}")
+        raise FetchError(f"Could not download {url}") from e
 
     with open(download_path, "wb") as f:
         for chunk in resp.iter_content(chunk_size=chunk_size):
             f.write(chunk)
-
-    log.debug("Download completed - %s", url)
 
 
 def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
@@ -160,13 +159,10 @@ async def _async_download_binary_file(
     :param int chunk_size: Chunk size param for Response.content.read()
     :raise FetchError: If download failed
     """
+    log.debug("Downloading %s", url)
+
     try:
         timeout = _get_aiohttp_timeout()
-
-        log.debug(
-            f"aiohttp.ClientSession.get(url: {url}, timeout: {timeout}, raise_for_status: True)"
-        )
-
         async with session.get(
             url,
             timeout=timeout,
@@ -181,14 +177,8 @@ async def _async_download_binary_file(
                         break
                     f.write(chunk)
 
-    except Exception as exception:
-        log.error(f"Unsuccessful download: {url}")
-        # "from None" since we have the exception context in the logs
-        raise FetchError(
-            f"exception_name: {exception.__class__.__name__}, details: {exception}"
-        ) from None
-
-    log.debug(f"Download completed - {url}")
+    except Exception as e:
+        raise FetchError(f"Could not download {url}") from e
 
 
 def _aiohttp_create_retry_trace_config(
