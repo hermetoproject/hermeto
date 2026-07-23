@@ -29,7 +29,7 @@ _pkg_requests_session: requests.Session | None = None
 SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 BACKOFF_FACTOR = 1.3
 STATUS_FORCELIST = (500, 502, 503, 504)
-
+DEFAULT_CHUNK_SIZE = 65536  # 64KB
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def download_binary_file(
     download_path: StrPath,
     auth: AuthBase | None = None,
     insecure: bool = False,
-    chunk_size: int = 8192,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
 ) -> None:
     """
     Download a binary file (such as a TAR archive) from a URL.
@@ -111,24 +111,24 @@ def download_binary_file(
     :param [StrPath] download_path: Path to download file to
     :param requests.auth.AuthBase auth: Authentication for the URL
     :param bool insecure: Do not verify SSL for the URL
-    :param int chunk_size: Chunk size param for Response.iter_content()
+    :param int chunk_size: Max size of each chunk to read from the response
     :raise FetchError: If download failed
     """
     config = get_config()
     timeout = (config.http.connect_timeout, config.http.read_timeout)
     log.debug("Downloading %s", url)
 
+    session = _get_pkg_requests_session()
     try:
-        resp = _get_pkg_requests_session().get(
-            url, stream=True, verify=not insecure, auth=auth, timeout=timeout
-        )
-        resp.raise_for_status()
+        response = session.get(url, stream=True, verify=not insecure, auth=auth, timeout=timeout)
+        response.raise_for_status()
+
+        with open(download_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                f.write(chunk)
+
     except requests.RequestException as e:
         raise FetchError(f"Could not download {url}") from e
-
-    with open(download_path, "wb") as f:
-        for chunk in resp.iter_content(chunk_size=chunk_size):
-            f.write(chunk)
 
 
 def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
@@ -147,7 +147,7 @@ async def _async_download_binary_file(
     download_path: StrPath,
     headers: dict[str, str] | None = None,
     ssl_context: ssl.SSLContext | None = None,
-    chunk_size: int = 8192,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
 ) -> None:
     """
     Download a binary file (such as a TAR archive) from a URL using asyncio.
@@ -156,23 +156,19 @@ async def _async_download_binary_file(
     :param str url: URL for file download
     :param str download_path: File path location
     :param headers: Optional headers dict for this request.
-    :param int chunk_size: Chunk size param for Response.content.read()
+    :param int chunk_size: Max size of each chunk to read from the response
     :raise FetchError: If download failed
     """
+    timeout = _get_aiohttp_timeout()
     log.debug("Downloading %s", url)
 
     try:
-        timeout = _get_aiohttp_timeout()
         async with session.get(
-            url,
-            timeout=timeout,
-            raise_for_status=True,
-            ssl=ssl_context,
-            headers=headers,
-        ) as resp:
+            url, timeout=timeout, raise_for_status=True, ssl=ssl_context, headers=headers
+        ) as response:
             with open(download_path, "wb") as f:
                 while True:
-                    chunk = await resp.content.read(chunk_size)
+                    chunk = await response.content.read(chunk_size)
                     if not chunk:
                         break
                     f.write(chunk)
