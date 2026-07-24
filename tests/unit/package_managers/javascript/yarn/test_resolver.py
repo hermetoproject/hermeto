@@ -18,6 +18,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnsupportedFeature,
 )
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component, Patch, PatchDiff, Pedigree
 from hermeto.core.package_managers.javascript.yarn.locators import (
     Locator,
@@ -421,6 +422,57 @@ def test_create_components_single_package(
     assert len(components) == 1
     assert components[0] == expect_component
     assert caplog.messages == expect_logs
+
+
+@mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_repo_id")
+def test_create_components_marks_dev_dependencies(
+    mock_get_repo_id: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """Dev dependencies (packages not in prod_packages) are marked with npm_development property."""
+    mock_get_repo_id.return_value = MOCK_REPO_ID
+    project_dir = rooted_tmp_path.join_within_root("project")
+    output_dir = rooted_tmp_path.join_within_root("output")
+
+    mocked_prod_package = MockedPackage(
+        Package(
+            raw_locator="foo@npm:1.0.0",
+            version="1.0.0",
+            checksum="a4a97ec07d7ea112c517036882b2ac22f3109b7b19077dc656316d07d308438aac28e4d9746dc4d84bf6b1e75b4a7b0a5f3cb30592419f128ca9a8cee3bcfa17",
+            cache_path=str(output_dir.join_within_root(".yarn/cache/foo-npm-1.0.0-a4a97ec07d.zip")),
+        ),
+        is_hardlink=True,
+    )
+
+    mocked_dev_package = MockedPackage(
+        Package(
+            raw_locator="bar@npm:2.0.0",
+            version="2.0.0",
+            checksum="f1e2d3c4b5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+            cache_path=str(output_dir.join_within_root(".yarn/cache/bar-npm-2.0.0-f1e2d3c4b5.zip")),
+        ),
+        is_hardlink=True,
+    )
+
+    resolved_prod_pkg = mocked_prod_package.resolve_cache_path(output_dir)
+    resolved_dev_pkg = mocked_dev_package.resolve_cache_path(output_dir)
+
+    mock_package_json(resolved_prod_pkg, project_dir)
+    mock_package_json(resolved_dev_pkg, project_dir)
+
+    all_components = create_components(
+        packages=[mocked_prod_package.package, mocked_dev_package.package],
+        prod_packages=[resolved_prod_pkg.package],
+        project=mock_project(project_dir),
+        output_dir=output_dir,
+    )
+
+    assert len(all_components) == 2
+
+    dev_components = [
+        c for c in all_components if PropertySet.from_properties(c.properties).npm_development
+    ]
+    assert len(dev_components) == 1
+    assert dev_components[0].name == "bar"
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_repo_id")
