@@ -176,6 +176,10 @@ class BundlerSettings(ProxyMixin, extra="forbid"):
     """Bundler settings."""
 
 
+class CargoSettings(ProxyMixin, extra="forbid"):
+    """Cargo settings."""
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
@@ -188,6 +192,7 @@ class Config(BaseSettings):
         extra="forbid",
     )
 
+    cargo: CargoSettings = CargoSettings()
     pip: PipSettings = PipSettings()
     yarn: YarnSettings = YarnSettings()
     npm: NpmSettings = NpmSettings()
