@@ -69,7 +69,7 @@ Applies to all package managers.
 
 ### Proxy settings
 
-Applies to `bundler`, `gomod`, `npm`, `pnpm`, and `yarn` when pulling
+Applies to `bundler`, `cargo`, `gomod`, `npm`, `pnpm`, and `yarn` when pulling
 dependencies through an artifact repository manager (e.g. Sonatype Nexus or
 JFrog Artifactory). The primary use of `proxy_login` and `proxy_password` is
 to authenticate with such a registry. Set `proxy_url` to its base URL. Do not
@@ -113,7 +113,7 @@ Go supports the [proxy settings](#proxy-settings) above. The default
 Yarn v3 and v4 also support the [proxy settings](#proxy-settings) above. Yarn
 Classic ignores this section.
 
-### `npm` and `pnpm`
+### `cargo`, `npm` and `pnpm`
 
-Both support the [proxy settings](#proxy-settings) above and have no additional
-keys.
+These package managers support the [proxy settings](#proxy-settings) above and
+have no additional keys.
