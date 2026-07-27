@@ -260,6 +260,27 @@ Example (from "https://github.com/hermetoproject/hermeto/blob/4fc76df98d71df67c7
 in the cache. For registry dependencies, the name seems to be accurate (even for aliased registry
 dependencies).
 
+#### Development Dependencies
+
+`yarn info` does not distinguish production from development dependencies, so every
+locator appears as a regular package.
+
+Other JavaScript backends (npm, pnpm, Yarn classic) already report development
+dependencies via the CycloneDX `cdx:npm:package:development`
+[property](https://github.com/CycloneDX/cyclonedx-property-taxonomy/blob/main/cdx/npm.md).
+
+**Approach:** after the full-tree prefetch, temporarily strip `devDependencies` from every
+`package.json`, run `yarn install --mode=update-lockfile` plus a second `yarn info`, and treat
+locators in the full set but not the production set as development (including transitive ones).
+Mark those packages with `cdx:npm:package:development` in the SBOM.
+
+`--mode=update-lockfile` is enough for the second pass: it skips linking, does not re-download
+existing packages, and disables immutable installs
+([yarnpkg/berry#3933](https://github.com/yarnpkg/berry/pull/3933)). The lockfile must be restored
+afterwards — re-running `update-lockfile` after putting `devDependencies` back would
+let Yarn bump them. Patches are not components themselves, so fewer components may carry the
+development property than there are development locators.
+
 #### Checksum Generation
 
 Checksums are provided natively via the `yarn info --cache` output (SHA-512). The
@@ -609,10 +630,12 @@ Optional:
 8. Reject unsupported dependency types (git, exec)
 9. If using workspace focus, strip `scripts` from workspace `package.json` files
 10. Run `yarn install …` or `yarn workspaces focus …` to fetch the dependencies
-11. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
+11. Resolve production-only locators
+12. Generate the SBOM based on the data from `yarn info`, the zip files of the dependencies and the
     `.yarnrc.yml` configuration (also report missing checksums based on the data from `yarn info`);
-    include backend annotations and proxy external references where applicable
-12. Set environment variables for the build
+    mark development packages with `cdx:npm:package:development`; include backend annotations and
+    proxy external references where applicable
+13. Set environment variables for the build
 
 ## Implementation Notes
 
