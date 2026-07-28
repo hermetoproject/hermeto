@@ -114,6 +114,7 @@ PackageManagerType = Literal[
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
     "x-maven",
+    "x-oci",
 ]
 
 
@@ -301,6 +302,12 @@ class MavenPackageInput(_PackageInputBase):
     type: Literal["x-maven"]
 
 
+class OciPackageInput(_PackageInputBase):
+    """Accepted input for an OCI image package."""
+
+    type: Literal["x-oci"]
+
+
 class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
@@ -428,6 +435,7 @@ PackageInput = Annotated[
     | GomodPackageInput
     | MavenPackageInput
     | NpmPackageInput
+    | OciPackageInput
     | PipPackageInput
     | PnpmPackageInput
     | RpmPackageInput
@@ -527,6 +535,11 @@ class Request(pydantic.BaseModel):
     def maven_packages(self) -> list[MavenPackageInput]:
         """Get the maven packages specified for this request."""
         return self._packages_by_type(MavenPackageInput)
+
+    @property
+    def oci_packages(self) -> list[OciPackageInput]:
+        """Get the OCI image packages specified for this request."""
+        return self._packages_by_type(OciPackageInput)
 
     @property
     def npm_packages(self) -> list[NpmPackageInput]:

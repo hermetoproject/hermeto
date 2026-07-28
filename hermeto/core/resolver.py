@@ -13,6 +13,7 @@ from hermeto.core.package_managers import (
     generic,
     gomod,
     maven,
+    oci,
     rpm,
 )
 from hermeto.core.package_managers.javascript import metayarn, npm, pnpm
@@ -27,6 +28,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "cargo": cargo.fetch_cargo_source,
     "gomod": gomod.fetch_gomod_source,
     "x-maven": maven.fetch_maven_source,
+    "x-oci": oci.fetch_oci_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "pnpm": pnpm.fetch_pnpm_source,
