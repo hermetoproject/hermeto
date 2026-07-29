@@ -1,0 +1,14 @@
+environment_variables: []
+project_files:
+- abspath: ${test_case_tmp_path}/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source."git+https://github.com/rust-random/rand?rev=8792268dfe57e49bb4518190bf4fe66176759a44"]
+    git = "https://github.com/rust-random/rand"
+    rev = "8792268dfe57e49bb4518190bf4fe66176759a44"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo"

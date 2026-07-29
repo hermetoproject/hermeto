@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 from pathlib import Path
 
 import pytest
 
+from hermeto import APP_NAME
 from hermeto.core.errors import ExitError
 from tests.integration import utils
 
@@ -95,6 +97,24 @@ def test_cargo_packages(
             ["foo"],
             ["The word foo has 3 letters"],
             id="cargo_e2e",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=({"path": ".", "type": "cargo"},),
+                check_output=False,
+                unset_hermeto_env={
+                    f"{APP_NAME.upper()}_CARGO__PROXY_URL",
+                    f"{APP_NAME.upper()}_CARGO__PROXY_LOGIN",
+                    f"{APP_NAME.upper()}_CARGO__PROXY_PASSWORD",
+                },
+            ),
+            ["foo"],
+            [],
+            id="cargo_e2e_no_proxy",
+            marks=pytest.mark.skipif(
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="Another e2e has already been run without a proxy",
+            ),
         ),
     ],
 )
