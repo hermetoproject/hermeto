@@ -49,6 +49,9 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_GOMOD__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/go-proxy/",
     f"{APP_NAME}_GOMOD__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
     f"{APP_NAME}_GOMOD__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
+    f"{APP_NAME}_CARGO__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/cargo-proxy/",
+    f"{APP_NAME}_CARGO__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
+    f"{APP_NAME}_CARGO__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
 }
 
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url"})
@@ -113,6 +116,9 @@ def _is_proxyable_component(component: Component) -> bool:
         (  # local traits for go mod:
             component.purl.startswith("pkg:golang")
             and (component.version is None or "vcs_url" in component.purl)
+        ),
+        (  # local traits for cargo:
+            component.purl.startswith("pkg:cargo") and ("vcs_url" in component.purl)
         ),
     )
 

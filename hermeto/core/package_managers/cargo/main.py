@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import base64
 import logging
 import os
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cache, cached_property
 from pathlib import Path
 from typing import Any, ClassVar, NamedTuple
 from urllib.parse import urlparse, urlunparse
@@ -13,9 +14,10 @@ from urllib.parse import urlparse, urlunparse
 import tomlkit
 import tomlkit.exceptions
 from packageurl import PackageURL
+from pydantic import HttpUrl
 
 from hermeto import APP_NAME
-from hermeto.core.config import get_config
+from hermeto.core.config import CargoSettings, get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     ExitError,
@@ -27,7 +29,13 @@ from hermeto.core.errors import (
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
-from hermeto.core.models.sbom import create_backend_annotation, spdx_now
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    ExternalReference,
+    create_backend_annotation,
+    spdx_now,
+)
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 from hermeto.core.utils import run_cmd
@@ -70,6 +78,7 @@ class CargoPackage:
     version: str
     source: str | None = None  # [git|registry]+https://github.com/<org>/<package>#[|<sha>]
     checksum: str | None = None
+    proxy: HttpUrl | None = None
 
     @cached_property
     def purl(self) -> PackageURL:
@@ -95,9 +104,32 @@ class CargoPackage:
 
         return PackageURL(type="cargo", name=self.name, version=self.version, qualifiers=qualifiers)
 
+    @property
+    def _is_proxied(self) -> bool:
+        # Custom registries are not proxied, so only those which actually use
+        # proxy_url should be reported, vcs_urls are not proxied.
+        # Note, that crates.io gets replaced with proxy_url on .cargo/config.toml level
+        if self.proxy is None:
+            return False
+        if self.source is None:
+            # This can happen to some Rust dependencies for Python project,
+            # e.g. cryptography-cffi@0.1.0. This is not a local package, those
+            # are handled elsewhere.
+            return True
+        if self.source.startswith("git+"):
+            return False
+        return "crates.io" in self.source
+
     def to_component(self) -> Component:
         """Convert CargoPackage into SBOM component."""
-        return Component(name=self.name, version=self.version, purl=self.purl.to_string())
+        ref_rest = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+        proxy = [ExternalReference(url=str(self.proxy), **ref_rest)] if self._is_proxied else None
+        return Component(
+            name=self.name,
+            version=self.version,
+            purl=self.purl.to_string(),
+            external_references=proxy,
+        )
 
 
 @dataclass
@@ -198,9 +230,25 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendo
     #                    It is necessary to make Cargo keep dependencies that are already
     #                    present in the vendored directory. This flag has no effect on standalone
     #                    cargo operations however is crucial when it is invoked from pip.
-    cmd = ["cargo", "vendor", "--locked", "--versioned-dirs", "--no-delete", str(vendor_dir)]
+    # --respect-source-config tells cargo to respect config in .cargo/config.toml in the repository.
+    #                         Is necessary when working through a proxy or when custom registries
+    #                         must be used.
+    cmd = [
+        "cargo",
+        "vendor",
+        "--locked",
+        "--versioned-dirs",
+        "--no-delete",
+        "--respect-source-config",
+        str(vendor_dir),
+    ]
     log.info("Fetching cargo dependencies at %s", package_dir)
-    with _sanitized_cargo_config_file(package_dir):
+    # NOTE: ordering is important here, a config must be sanitized first, extended to use
+    # a proxy after that, otherwise proxy data will be scrubbed by the sanitizer.
+    with (
+        _sanitized_cargo_config_file(package_dir),
+        _inject_proxy_configuration_into_config_if_needed(package_dir),
+    ):
         # Prevent Cargo from invoking rustc
         env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
@@ -253,6 +301,59 @@ def _verify_lockfile_is_present(package_dir: RootedPath) -> None:
         )
 
 
+def _create_cargo_config_if_missing_in(package_dir: RootedPath) -> bool:
+    p = _path_to_package_config(package_dir)
+    if p.exists():
+        return False
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("")
+    return True
+
+
+@cache
+def _path_to_package_config(package_dir: RootedPath) -> Path:
+    # Cargo could be told to use vendored sources instead of a registry via .cargo/config.toml.
+    # Prior to cargo v1.39.0 .cargo/config.toml was known as .cargo/config.
+    # After v1.39.0 this name was considered obsolete, however .cargo/config would
+    # take precedence on .cargo/config.toml if present and the latter one would be ignored.
+    # The recommended practice for dealing with a situation when an older build system
+    # has to build a more modern project is to symlink .cargo/config.toml to .cargo/config.
+    # And vice versa: renaming .cargo/config to .cargo/config.toml would have no effect on
+    # any post-2019 toolchain.
+    # Refer to https://doc.rust-lang.org/cargo/reference/config.html for further details.
+    # Since we could potentially end up building a somewhat stale Rust-based
+    # Python extension it is better to check if there is an old-style config present and
+    # process it if found.
+    cfn = ".cargo/config" if _old_style_config_is_present_in(package_dir) else ".cargo/config.toml"
+    return package_dir.join_within_root(Path(cfn)).path
+
+
+@contextmanager
+def _inject_proxy_configuration_into_config_if_needed(
+    package_dir: RootedPath,
+) -> Generator[None, None, None]:
+    hermeto_configuration = get_config().cargo
+    if hermeto_configuration.proxy_url is None:
+        yield
+        return
+    config_was_absent = _create_cargo_config_if_missing_in(package_dir)
+    package_config = _path_to_package_config(package_dir)
+    parsed = tomlkit.parse(package_config.read_text())
+    modified_registries_section = _inject_cargo_proxy_registry(parsed.get("registries", {}))
+    updated_config = tomlkit.document()
+    updated_config["registries"] = modified_registries_section
+    updated_config.add("source", {"crates-io": {"replace-with": "cargo-proxy"}})
+    # cargo must be told explicitly to use tokens for authentication.
+    if hermeto_configuration.proxy_login:
+        updated_config["registry"] = {"global-credential-providers": ["cargo:token"]}
+    package_config.write_text(tomlkit.dumps(updated_config))
+    try:
+        yield
+    finally:
+        if config_was_absent:
+            package_config.unlink(missing_ok=True)
+
+
 @contextmanager
 def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, None, None]:
     """Replace Cargo config file to keep only alternate registry settings.
@@ -300,6 +401,24 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
                 config.path.write_text(data)
 
 
+def _make_basic_token_from_proxy_credential(cargo_config: CargoSettings) -> str:
+    credentials = f"{cargo_config.proxy_login}:{cargo_config.proxy_password}"
+    token = base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+    return f"Basic {token}"
+
+
+def _inject_cargo_proxy_registry(partial_cargo_config: dict) -> dict:
+    modified_cargo_config = {} if partial_cargo_config is None else partial_cargo_config
+    hermeto_config = get_config().cargo
+    if (proxy_url := hermeto_config.proxy_url) is not None:
+        modified_cargo_config["cargo-proxy"] = {"index": f"sparse+{proxy_url}"}
+        if hermeto_config.proxy_login is not None:
+            modified_cargo_config["cargo-proxy"] |= {
+                "token": _make_basic_token_from_proxy_credential(hermeto_config)
+            }
+    return modified_cargo_config
+
+
 def _sanitize_cargo_config(config_content: str) -> str:
     """Extract only the [registries] section from Cargo config, keeping only safe fields.
 
@@ -316,7 +435,7 @@ def _sanitize_cargo_config(config_content: str) -> str:
         raise UnexpectedFormat("Cargo config file contains invalid data and cannot be parsed")
 
     allowed_fields = {"index", "token", "credential-provider"}
-    filtered_registries = tomlkit.table()
+    filtered_registries = tomlkit.table(is_super_table=False)
     sanitized = tomlkit.document()
 
     if registries is None:
@@ -487,6 +606,7 @@ def _generate_sbom_components(
                     version=pkg_version,
                     source=pkg.get("source"),
                     checksum=pkg.get("checksum"),
+                    proxy=get_config().cargo.proxy_url,
                 ).to_component()
             )
 
@@ -507,20 +627,7 @@ def _old_style_config_is_present_in(package_dir: RootedPath) -> bool:
 
 def _use_vendored_sources(package_dir: RootedPath, config_template: dict) -> ProjectFile:
     """Make sure cargo will use the vendored sources when building the project."""
-    # Cargo could be told to use vendored sources instead of a registry via .cargo/config.toml.
-    # Prior to cargo v1.39.0 .cargo/config.toml was known as .cargo/config.
-    # After v1.39.0 this name was considered obsolete, however .cargo/config would
-    # take precedence on .cargo/config.toml if present and the latter one would be ignored.
-    # The recommended practice for dealing with a situation when an older build system
-    # has to build a more modern project is to symlink .cargo/config.toml to .cargo/config.
-    # And vice versa: renaming .cargo/config to .cargo/config.toml would have no effect on
-    # any post-2019 toolchain.
-    # Refer to https://doc.rust-lang.org/cargo/reference/config.html for further details.
-    # Since we could potentially end up building a somewhat stale Rust-based
-    # Python extension it is better to check if there is an old-style config present and
-    # process it if found.
-    cfn = ".cargo/config" if _old_style_config_is_present_in(package_dir) else ".cargo/config.toml"
-    config_path = package_dir.join_within_root(cfn).path
+    config_path = _path_to_package_config(package_dir)
 
     merged_content = _parse_toml_project_file(config_path) if config_path.exists() else {}
     merged_content.update(config_template)

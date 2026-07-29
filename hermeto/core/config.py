@@ -179,6 +179,13 @@ class BundlerSettings(ProxyMixin, extra="forbid"):
 class CargoSettings(ProxyMixin, extra="forbid"):
     """Cargo settings."""
 
+    @model_validator(mode="after")
+    def _ensure_proxy_url_ends_with_slash(self) -> Self:
+        # cargo fails when sparse registry URL does not end in a slash.
+        if self.proxy_url is not None and str(self.proxy_url)[-1] != "/":
+            self.proxy_url = HttpUrl(str(self.proxy_url) + "/")
+        return self
+
 
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""

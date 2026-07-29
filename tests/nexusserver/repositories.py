@@ -77,11 +77,24 @@ class GomodProxyConfig(ProxyRepositoryConfig):
     format: str = field(default="go", init=False)
 
 
+@dataclass
+class CargoProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a Cargo proxy repository."""
+
+    format: str = field(default="cargo", init=False)
+
+    def to_api_payload(self) -> dict[str, Any]:
+        result = super().to_api_payload()
+        result |= {"cargo": {"requireAuthentication": True}}
+        return result
+
+
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
     BundlerProxyConfig(name="rubygems-proxy", remote_url="https://rubygems.org"),
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
     PypiProxyConfig(name="pypi-proxy", remote_url="https://pypi.org"),
     GomodProxyConfig(name="go-proxy", remote_url="https://proxy.golang.org"),
+    CargoProxyConfig(name="cargo-proxy", remote_url="https://index.crates.io"),
     YumProxyConfig(
         name="yum-proxy",
         remote_url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9",

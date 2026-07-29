@@ -143,6 +143,7 @@ def test_cargo_package_purl_generation(pkg: dict[str, Any], expected_purl: str) 
             """,
             textwrap.dedent(
                 """
+                [registries]
                 [registries.example-registry]
                 index = "https://my-registry.example.com:8080/index"
                 """,
@@ -166,6 +167,7 @@ def test_cargo_package_purl_generation(pkg: dict[str, Any], expected_purl: str) 
             """,
             textwrap.dedent(
                 """
+                [registries]
                 [registries.my-registry]
                 index = "https://my-intranet:8080/git/index"
                 token = "secret-token"
