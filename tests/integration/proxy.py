@@ -25,6 +25,8 @@ from tests.nexusserver import DEFAULT_NEXUS_HOST, DEFAULT_NEXUS_TLS_PORT
 
 _NEXUS_BASE_URL = f"https://{DEFAULT_NEXUS_HOST}:{DEFAULT_NEXUS_TLS_PORT}"
 
+APP_NAME = APP_NAME.upper()
+
 _PROXY_URL_ENV_PATTERN = re.compile(rf"^{APP_NAME}_([A-Z0-9_]+)__PROXY_URL$", re.IGNORECASE)
 
 _DEFAULT_PROXY_LOGIN = "hermeto-user"
