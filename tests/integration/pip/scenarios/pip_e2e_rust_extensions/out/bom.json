@@ -204,7 +204,6 @@
         "pkg:cargo/lzxd@0.2.5?checksum=5de7336a183103429ad66d11d56d8bdc9c4a2916f6b85a8f11e5b127bde12001",
         "pkg:cargo/mailparse@0.15.0?checksum=3da03d5980411a724e8aaf7b61a7b5e386ec55a7fb49ee3d0ff79efc7e5e7c7e",
         "pkg:cargo/matchers@0.1.0?checksum=8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558",
-        "pkg:cargo/maturin@1.8.3",
         "pkg:cargo/memchr@2.7.4?checksum=78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3",
         "pkg:cargo/memoffset@0.9.1?checksum=488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a",
         "pkg:cargo/mimalloc@0.1.43?checksum=68914350ae34959d83f732418d51e2427a794055d0b9529f48259ac07af65633",
@@ -2807,19 +2806,6 @@
       "purl": "pkg:cargo/matchers@0.1.0?checksum=8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558",
       "type": "library",
       "version": "0.1.0"
-    },
-    {
-      "bom-ref": "pkg:cargo/maturin@1.8.3",
-      "name": "maturin",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:cargo/maturin@1.8.3",
-      "type": "library",
-      "version": "1.8.3"
     },
     {
       "bom-ref": "pkg:cargo/memchr@2.7.4?checksum=78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3",

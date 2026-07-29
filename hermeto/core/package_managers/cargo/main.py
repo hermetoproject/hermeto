@@ -133,7 +133,7 @@ class LocalCargoPackage:
         return Component(name=self.name, version=self.version, purl=self.purl.to_string())
 
 
-def fetch_cargo_source(request: Request) -> RequestOutput:
+def fetch_cargo_source(request: Request, invoked_through_pip: bool = False) -> RequestOutput:
     """Fetch the source code for all cargo packages specified in a request."""
     components: list[Component] = []
     project_files: list[ProjectFile] = []
@@ -151,7 +151,7 @@ def fetch_cargo_source(request: Request) -> RequestOutput:
                 vendor_result.config_template
             )
             project_files.append(_use_vendored_sources(package_dir, config_template))
-        package_components = _generate_sbom_components(package_dir, request)
+        package_components = _generate_sbom_components(package_dir, request, invoked_through_pip)
 
         if vendor_result.lockfile_was_generated:
             _update_permissive_mode_annotation(annotations, package_components)
@@ -419,7 +419,11 @@ def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
     return result
 
 
-def _generate_sbom_components(package_dir: RootedPath, request: Request) -> list[Component]:
+def _generate_sbom_components(
+    package_dir: RootedPath,
+    request: Request,
+    invoked_through_pip: bool = False,
+) -> list[Component]:
     """Generate SBOM components from Cargo.lock and for the main package."""
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
 
@@ -451,14 +455,21 @@ def _generate_sbom_components(package_dir: RootedPath, request: Request) -> list
         pkg_version = pkg.get("version")
 
         if pkg_name == main_package_name:
-            components.append(
-                LocalCargoPackage(
-                    name=main_package_name,
-                    version=main_package_version,
-                    vcs_url=vcs_url,
-                    subpath=str(package_dir.path.relative_to(package_dir.root)),
-                ).to_component()
-            )
+            if invoked_through_pip:
+                # The package was collected as a part of processing a python dependency,
+                # it has been already reported when collected with pip, so here it must
+                # be ignored.
+                pass
+            else:
+                components.append(
+                    LocalCargoPackage(
+                        name=main_package_name,
+                        version=main_package_version,
+                        vcs_url=vcs_url,
+                        subpath=str(package_dir.path.relative_to(package_dir.root)),
+                    ).to_component()
+                )
+
         elif pkg_name in local_packages:
             # Local packages have no other fields in the Cargo.lock file besides the name and version.
             components.append(

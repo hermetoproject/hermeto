@@ -156,7 +156,7 @@ def find_and_fetch_rust_dependencies(
         cargo_request = request.model_copy(
             update={"packages": packages_containing_rust_code, "source_dir": pip_deps_dir}
         )
-        result = fetch_cargo_source(cargo_request)
+        result = fetch_cargo_source(cargo_request, invoked_through_pip=True)
 
         template = _merge_cargo_config_files(result.build_config.project_files)
         # A config pointing to deps/cargo directory and an environment variable
