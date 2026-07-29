@@ -4,8 +4,9 @@ from pathlib import Path
 import pytest
 
 from hermeto.core.errors import ExitError
+from tests.integration import utils
 
-from . import utils
+SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 
 
 @pytest.mark.parametrize(
@@ -13,7 +14,6 @@ from . import utils
     [
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/corepack-ignored",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_output="Processing the request using yarn@1.22.",
@@ -22,7 +22,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/yarn-path-ignored",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_output="Processing the request using yarn@1.22.",
@@ -31,7 +30,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/invalid-checksum",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_error=ExitError.ERR_PACKAGE_MANAGER,
@@ -41,7 +39,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/updating-frozen-lockfile-fails",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_error=ExitError.ERR_PACKAGE_MANAGER,
@@ -51,7 +48,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/lifecycle-scripts",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
             ),
@@ -59,7 +55,6 @@ from . import utils
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/offline-mirror-collision",
                 packages=({"path": ".", "type": "yarn"},),
                 check_output=False,
                 expected_error=ExitError.ERR_PACKAGE_MANAGER,
@@ -73,8 +68,6 @@ def test_yarn_classic_packages(
     test_params: utils.TestParameters,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """
@@ -84,9 +77,11 @@ def test_yarn_classic_packages(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
 
@@ -95,7 +90,6 @@ def test_yarn_classic_packages(
     [
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/e2e",
                 packages=({"path": ".", "type": "yarn"},),
             ),
             ["yarn", "node", "index.js"],
@@ -104,7 +98,6 @@ def test_yarn_classic_packages(
         ),
         pytest.param(
             utils.TestParameters(
-                branch="yarn-classic/e2e-multiple-packages",
                 packages=(
                     {"path": "first-pkg", "type": "yarn"},
                     {"path": "second-pkg", "type": "yarn"},
@@ -122,23 +115,24 @@ def test_e2e_yarn_classic(
     expected_cmd_output: str,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
-    test_repo_dir: Path,
-    test_data_dir: Path,
     request: pytest.FixtureRequest,
 ) -> None:
     """End to end test for yarn classic."""
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
-        tmp_path, test_case, test_params, test_repo_dir, test_data_dir, hermeto_image
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
-        test_data_dir,
+        SCENARIOS_DIR,
         test_case,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
+        test_params=test_params,
     )

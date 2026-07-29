@@ -1,0 +1,9 @@
+{
+  "name": "yarn-test-project",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+	"package-a": "https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-a/example.tgz",
+	"package-b": "https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-b/example.tgz"
+  }
+}

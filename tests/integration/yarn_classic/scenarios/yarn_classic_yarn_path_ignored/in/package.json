@@ -1,0 +1,7 @@
+{
+  "name": "cachi2-yarn-yarnpath-ignored",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/cachito-testing/cachi2-yarn.git",
+  "license": "MIT"
+}

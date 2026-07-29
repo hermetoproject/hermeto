@@ -1,0 +1,27 @@
+{
+  "name": "yarn-test-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "@colors/colors": "^1.6.0",
+    "boxen": "file:external-packages/boxen-5.1.2.tgz",
+    "fecha": "https://github.com/taylorhakes/fecha.git",
+    "is-positive": "^3.1.0",
+    "mkdirp": "https://github.com/sindresorhus/camelcase/archive/2f1e273fc50281098d99627fef0853aa431139b5.tar.gz",
+    "rightpad": "npm:leftpad",
+    "is-buffer": "./external-packages/is-buffer-1.1.6.tgz"
+  },
+  "devDependencies": {
+    "chai": "^5.1.1"
+  },
+  "optionalDependencies": {
+    "chalk": "^5.3.0"
+  },
+  "peerDependencies": {
+    "tslib": "^2.6.3"
+  },
+  "workspaces": [
+    "packages/foo"
+  ]
+}
