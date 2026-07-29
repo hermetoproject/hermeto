@@ -85,6 +85,9 @@ class RootedPath(os.PathLike[str]):
         subpath_from_root = self.path.relative_to(self.root)
         return f"<{typename} root={str(self.root)!r} subpath={str(subpath_from_root)!r}>"
 
+    def __hash__(self) -> int:
+        return hash((self._path, self._root))
+
     def re_root(self: RootedPathT, *other: StrPath) -> RootedPathT:
         """Safely join other path components and make the result the new root.
 
