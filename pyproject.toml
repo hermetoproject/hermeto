@@ -17,6 +17,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
+  "aiofiles",
   "aiohttp",
   "aiohttp-retry",
   "createrepo-c ; sys_platform == 'linux'",
