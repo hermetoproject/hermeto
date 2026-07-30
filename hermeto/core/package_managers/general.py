@@ -8,6 +8,7 @@ from types import TracebackType
 from typing import Any, cast
 from urllib.parse import urlparse
 
+import aiofiles
 import aiohttp
 import aiohttp_retry
 import requests
@@ -166,12 +167,9 @@ async def _async_download_binary_file(
         async with session.get(
             url, timeout=timeout, raise_for_status=True, ssl=ssl_context, headers=headers
         ) as response:
-            with open(download_path, "wb") as f:
-                while True:
-                    chunk = await response.content.read(chunk_size)
-                    if not chunk:
-                        break
-                    f.write(chunk)
+            async with aiofiles.open(download_path, "wb") as f:
+                async for chunk in response.content.iter_chunked(chunk_size):
+                    await f.write(chunk)
 
     except Exception as e:
         raise FetchError(f"Could not download {url}") from e

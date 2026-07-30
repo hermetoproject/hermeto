@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
 import random
+from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -166,26 +167,16 @@ def test_extract_git_info(url: str, nonstandard_info: Any) -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_download_binary_file(
-    tmp_path: Path,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
+async def test_async_download_binary_file(tmp_path: Path) -> None:
     url = "http://example.com/file.tar"
     download_path = tmp_path / "file.tar"
 
-    class MockReadChunk:
-        def __init__(self) -> None:
-            """Create a call count."""
-            self.call_count = 0
-
-        async def read_chunk(self, size: int) -> bytes:
-            """Return a non-empty chunk for the first and second call, then an empty chunk."""
-            self.call_count += 1
-            chunks = {1: b"first_chunk-", 2: b"second_chunk-"}
-            return chunks.get(self.call_count, b"")
+    async def mock_iter_chunked(size: int) -> AsyncGenerator[bytes, None]:
+        yield b"first_chunk-"
+        yield b"second_chunk-"
 
     response, session = MagicMock(), MagicMock()
-    response.content.read = MockReadChunk().read_chunk
+    response.content.iter_chunked = mock_iter_chunked
 
     async def mock_aenter() -> MagicMock:
         return response
