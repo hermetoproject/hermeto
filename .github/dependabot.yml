@@ -8,12 +8,50 @@ updates:
     schedule:
       interval: "weekly"
 
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    exclude-paths:
+      - "tests/**"
+    ignore:
+      - dependency-name: "*"
+
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    exclude-paths:
+      - "tests/**"
+    ignore:
+      - dependency-name: "*"
+
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    exclude-paths:
+      - "tests/**"
+    ignore:
+      - dependency-name: "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    exclude-paths:
+      - "tests/**"
+    ignore:
+      - dependency-name: "*"
+
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "monthly"
     commit-message:
       prefix: "Dockerfile"
+    exclude-paths:
+      - "tests/**"
     ignore:
       # We must handle major.minor Go releases manually due to direct feature support
       - dependency-name: "library/golang"
@@ -34,6 +72,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    exclude-paths:
+      - "tests/**"
     ignore:
       - dependency-name: "pydantic-core"
       - dependency-name: "createrepo-c"
