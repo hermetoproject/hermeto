@@ -448,6 +448,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#bundler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gomod" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -964,6 +975,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#bundler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gomod" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1137,10 +1159,10 @@ backends.</p>
 </tbody>
 </table>
 <h3 id="proxy-settings">Proxy settings<a class="headerlink" href="#proxy-settings" title="Permanent link">&para;</a></h3>
-<p>Applies to <code>gomod</code>, <code>npm</code>, <code>pnpm</code>, and <code>yarn</code> when pulling dependencies
-through an artifact repository manager (e.g. Sonatype Nexus or JFrog
-Artifactory). The primary use of <code>proxy_login</code> and <code>proxy_password</code> is to
-authenticate with such a registry. Set <code>proxy_url</code> to its base URL. Do not
+<p>Applies to <code>bundler</code>, <code>gomod</code>, <code>npm</code>, <code>pnpm</code>, and <code>yarn</code> when pulling
+dependencies through an artifact repository manager (e.g. Sonatype Nexus or
+JFrog Artifactory). The primary use of <code>proxy_login</code> and <code>proxy_password</code> is
+to authenticate with such a registry. Set <code>proxy_url</code> to its base URL. Do not
 embed credentials in the URL.</p>
 <table>
 <thead>
@@ -1168,6 +1190,10 @@ embed credentials in the URL.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="bundler"><code>bundler</code><a class="headerlink" href="#bundler" title="Permanent link">&para;</a></h3>
+<p>Supports the <a href="#proxy-settings">proxy settings</a> above and has no additional
+keys. Only rubygems registry dependencies are proxied; git and path
+dependencies are unaffected.</p>
 <h3 id="gomod"><code>gomod</code><a class="headerlink" href="#gomod" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
