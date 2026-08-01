@@ -474,8 +474,7 @@ class TestFetchDeps:
                 "idk",
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
+                    "packages[0]: unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -483,8 +482,7 @@ class TestFetchDeps:
                 '[{"type": "idk"}]',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
+                    "packages[0]: unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -492,8 +490,7 @@ class TestFetchDeps:
                 '{"packages": [{"type": "idk"}]}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Requested backend type 'idk' doesn't match expected ones: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
+                    "packages[0]: unknown package manager 'idk'. Valid options are: 'bundler', 'cargo', 'generic', 'gomod', 'npm', 'pip', 'pnpm', 'rpm', 'x-maven', 'yarn'",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -502,8 +499,7 @@ class TestFetchDeps:
                 "{}",
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
-                    "Unable to extract tag using discriminator 'type'",
+                    "packages[0]: 'type' field is required.",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -511,8 +507,7 @@ class TestFetchDeps:
                 '[{"type": "gomod"}, {}]',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 1",
-                    "Unable to extract tag using discriminator 'type'",
+                    "packages[1]: 'type' field is required.",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -520,8 +515,7 @@ class TestFetchDeps:
                 '{"packages": [{}]}',
                 [
                     "1 validation error for user input",
-                    "packages -> 0",
-                    "Unable to extract tag using discriminator 'type'",
+                    "packages[0]: 'type' field is required.",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -530,7 +524,7 @@ class TestFetchDeps:
                 '{"type": "gomod", "path": "/absolute"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> path",
+                    "packages[0]: path",
                     "Value error, path must be relative: /absolute",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -539,8 +533,8 @@ class TestFetchDeps:
                 '{"type": "gomod", "path": "weird/../subpath"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> path",
-                    "Value error, path contains ..: weird/../subpath",
+                    "packages[0]: path",
+                    "Value error, path contains ..",
                 ],
                 ExitError.ERR_INVALID_INPUT,
             ),
@@ -548,7 +542,6 @@ class TestFetchDeps:
                 '{"type": "gomod", "path": "suspicious-symlink"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
                     "Value error, package path (a symlink?) leads outside source directory: suspicious-symlink",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -557,7 +550,6 @@ class TestFetchDeps:
                 '{"type": "gomod", "path": "no-such-dir"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
                     "Value error, package path does not exist (or is not a directory): no-such-dir",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -567,7 +559,7 @@ class TestFetchDeps:
                 '{"type": "gomod", "what": "dunno"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0 -> gomod -> what",
+                    "packages[0]: what",
                     "Extra inputs are not permitted",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -577,7 +569,6 @@ class TestFetchDeps:
                 '{"packages": "gomod"}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
                     "Input should be a valid list",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -586,7 +577,6 @@ class TestFetchDeps:
                 '{"packages": {"type":"gomod"}}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages",
                     "Input should be a valid list",
                 ],
                 ExitError.ERR_INVALID_INPUT,
@@ -595,7 +585,6 @@ class TestFetchDeps:
                 '{"packages": ["gomod"]}',
                 [
                     "Error: InvalidInput: 1 validation error for user input",
-                    "packages -> 0",
                     "Input should be a valid dictionary or object to extract fields from",
                 ],
                 ExitError.ERR_INVALID_INPUT,
