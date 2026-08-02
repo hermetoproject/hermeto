@@ -8,15 +8,22 @@ from unittest import mock
 import pytest
 
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
 )
 from hermeto.core.models.output import ProjectFile
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.package_managers.python.uv.main import (
     _download_dependencies,
     _download_git_package,
+    _generate_dependency_component,
+    _generate_dependency_components,
+    _generate_purl_main_package,
+    _get_project_vcs_qualifiers,
     _get_pyproject_metadata,
     _rewrite_lockfile,
     _validate_lockfile,
@@ -28,15 +35,18 @@ from hermeto.core.package_managers.python.uv.models import (
     PackageSourceGit,
     PackageSourceLocal,
     PackageSourceRegistry,
+    PackageSourceUrl,
     UvLock,
     UvPackage,
     load_lockfile_document,
 )
 from hermeto.core.rooted_path import RootedPath
+from tests.common_utils import GIT_REF
 
 SDIST = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234")
 URL_SOURCE = "https://example.org/downloads/example-1.0.0.tar.gz"
 GIT_TARBALL = "flask-gitcommit-7ef2946f5e6e1e573bb9796d47b09a3c0a94f973.tar.gz"
+WHEEL_URL = "https://example.org/example-1.0.0-py3-none-any.whl"
 
 
 def make_package(
@@ -310,6 +320,249 @@ def test_get_pyproject_metadata_missing_name(rooted_tmp_path: RootedPath) -> Non
     write_pyproject_toml(rooted_tmp_path, "[project]\n")
     with pytest.raises(PackageRejected, match="does not declare a project name"):
         _get_pyproject_metadata(rooted_tmp_path)
+
+
+@mock.patch("hermeto.core.scm.GitRepo")
+def test_get_project_vcs_qualifiers(mock_git_repo: mock.Mock, rooted_tmp_path: RootedPath) -> None:
+    mocked_repo = mock.Mock()
+    mocked_repo.remote.return_value.url = "ssh://git@github.com/my-org/my-repo"
+    mocked_repo.head.commit.hexsha = GIT_REF
+    mock_git_repo.return_value = mocked_repo
+
+    qualifiers = _get_project_vcs_qualifiers(rooted_tmp_path)
+
+    assert qualifiers == {"vcs_url": f"git+ssh://git@github.com/my-org/my-repo@{GIT_REF}"}
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+def test_get_project_vcs_qualifiers_permissive_mode_without_git_repo(
+    mock_get_config: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """rooted_tmp_path is not a git repo, so get_vcs_qualifiers genuinely raises NotAGitRepo."""
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+
+    assert _get_project_vcs_qualifiers(rooted_tmp_path) is None
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+def test_get_project_vcs_qualifiers_strict_mode_raises_without_git_repo(
+    mock_get_config: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    mock_get_config.return_value.mode = Mode.STRICT
+
+    with pytest.raises(NotAGitRepo):
+        _get_project_vcs_qualifiers(rooted_tmp_path)
+
+
+@pytest.mark.parametrize(
+    "subpath, vcs_qualifiers, expected_purl",
+    [
+        pytest.param(".", None, "pkg:pypi/foo@1.0.0", id="no_qualifiers_no_subpath"),
+        pytest.param(
+            "path/to/package",
+            None,
+            "pkg:pypi/foo@1.0.0#path/to/package",
+            id="no_qualifiers_with_subpath",
+        ),
+        pytest.param(
+            ".",
+            {"vcs_url": f"git+ssh://git@github.com/my-org/my-repo@{GIT_REF}"},
+            f"pkg:pypi/foo@1.0.0?vcs_url=git%2Bssh://git%40github.com/my-org/my-repo%40{GIT_REF}",
+            id="qualifiers_no_subpath",
+        ),
+        pytest.param(
+            "path/to/package",
+            {"vcs_url": f"git+ssh://git@github.com/my-org/my-repo@{GIT_REF}"},
+            f"pkg:pypi/foo@1.0.0?vcs_url=git%2Bssh://git%40github.com/my-org/my-repo%40{GIT_REF}"
+            "#path/to/package",
+            id="qualifiers_with_subpath",
+        ),
+    ],
+)
+def test_generate_purl_main_package(
+    subpath: Path,
+    vcs_qualifiers: dict[str, str] | None,
+    expected_purl: str,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    purl = _generate_purl_main_package(
+        "foo", "1.0.0", rooted_tmp_path.join_within_root(subpath), vcs_qualifiers
+    )
+
+    assert purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    "package, expected_purl",
+    [
+        pytest.param(
+            make_package(
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                sdist=SDIST,
+            ),
+            "pkg:pypi/example@1.0.0",
+            id="registry_source_uses_the_registry_purl",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceGit(
+                    kind="git", location=f"https://github.com/org/repo?rev=main#{GIT_REF}"
+                )
+            ),
+            f"pkg:pypi/example@1.0.0?vcs_url=git%2Bhttps://github.com/org/repo%40{GIT_REF}",
+            id="git_source_uses_the_vcs_url_purl",
+        ),
+        pytest.param(
+            make_package(PackageSourceLocal(kind="directory", location="libs/vendored-lib")),
+            "pkg:pypi/example@1.0.0#libs/vendored-lib",
+            id="local_source_uses_the_subpath_purl",
+        ),
+    ],
+)
+def test_generate_dependency_component_purl(
+    package: UvPackage, expected_purl: str, rooted_tmp_path: RootedPath
+) -> None:
+    """Every source kind has to reach its own PackageSource.purl implementation."""
+    component = _generate_dependency_component(
+        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+    )
+
+    assert component.purl == expected_purl
+
+
+@pytest.mark.parametrize(
+    "package, expected",
+    [
+        pytest.param(
+            make_package(
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                sdist=SDIST,
+            ),
+            frozenset(),
+            id="registry_sdist_whose_index_published_a_hash",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                sdist=ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz"),
+            ),
+            frozenset({"uv.lock"}),
+            id="registry_sdist_whose_index_published_no_hash",
+        ),
+        pytest.param(
+            make_package(PackageSourceUrl(kind="url", location=URL_SOURCE), sdist=SDIST),
+            frozenset(),
+            id="url_source_always_carries_a_hash",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceGit(
+                    kind="git", location=f"https://github.com/org/repo?rev=main#{GIT_REF}"
+                )
+            ),
+            frozenset({"uv.lock"}),
+            id="git_source_records_no_hash_like_pips_vcs_deps",
+        ),
+    ],
+)
+def test_generate_dependency_component_missing_hash_property(
+    package: UvPackage, expected: frozenset[str], rooted_tmp_path: RootedPath
+) -> None:
+    component = _generate_dependency_component(
+        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+    )
+
+    props = PropertySet.from_properties(component.properties)
+    assert props.missing_hash_in_file == expected
+
+
+@pytest.mark.parametrize("kind", ["path", "directory", "editable", "virtual"])
+def test_generate_dependency_component_local_has_no_missing_hash(
+    kind: str, rooted_tmp_path: RootedPath
+) -> None:
+    """Nothing is fetched for an in-tree source, so there is no checksum to miss."""
+    package = make_package(PackageSourceLocal(kind=kind, location="libs/vendored-lib"))
+
+    component = _generate_dependency_component(
+        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+    )
+
+    props = PropertySet.from_properties(component.properties)
+    assert props.missing_hash_in_file == frozenset()
+
+
+@pytest.mark.parametrize(
+    "package, expected",
+    [
+        pytest.param(
+            make_package(
+                PackageSourceUrl(kind="url", location=WHEEL_URL),
+                wheels=[ArtifactWheel(url=WHEEL_URL, hash="sha256:5678")],
+            ),
+            True,
+            id="url_wheel",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceUrl(kind="url", location="https://example.org/example-1.0.0.tar.gz"),
+                sdist=ArtifactSdist(hash="sha256:1234"),
+            ),
+            False,
+            id="url_sdist",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceLocal(kind="path", location="dist/example-1.0.0-py3-none-any.whl"),
+                wheels=[
+                    ArtifactWheel(filename="example-1.0.0-py3-none-any.whl", hash="sha256:5678")
+                ],
+            ),
+            True,
+            id="path_wheel",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                sdist=SDIST,
+            ),
+            False,
+            id="registry_sdist",
+        ),
+        pytest.param(
+            make_package(
+                PackageSourceGit(
+                    kind="git", location=f"https://github.com/org/repo?rev=main#{GIT_REF}"
+                )
+            ),
+            False,
+            id="git",
+        ),
+    ],
+)
+def test_generate_dependency_component_binary_property(
+    package: UvPackage, expected: bool, rooted_tmp_path: RootedPath
+) -> None:
+    """A dependency pinned to a wheel is marked binary, like pip marks its own."""
+    component = _generate_dependency_component(
+        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+    )
+
+    assert PropertySet.from_properties(component.properties).uv_package_binary is expected
+
+
+def test_generate_dependency_components_excludes_root_entry(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    root_entry = UvPackage(
+        name="root-app", version="0.1.0", source=PackageSourceLocal(kind="editable", location=".")
+    )
+    dep = make_package(
+        PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"), sdist=SDIST
+    )
+    components = _generate_dependency_components([root_entry, dep], rooted_tmp_path, None)
+
+    assert len(components) == 1
+    assert components[0].purl == "pkg:pypi/example@1.0.0"
 
 
 REWRITE_LOCKFILE = """\

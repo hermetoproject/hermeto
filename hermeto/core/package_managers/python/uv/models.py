@@ -6,7 +6,9 @@ from typing import Any, Literal, get_args
 from urllib.parse import ParseResult, urlparse
 
 import pydantic
+import pypi_simple
 import tomlkit
+from packageurl import PackageURL
 from tomlkit.exceptions import ParseError
 from typing_extensions import assert_never
 
@@ -16,6 +18,7 @@ from hermeto.core.errors import (
     LockfileNotFound,
     MissingChecksum,
     PackageRejected,
+    PathOutsideRoot,
     UnexpectedFormat,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -63,6 +66,23 @@ class PackageSourceRegistry(pydantic.BaseModel):
             )
         return self
 
+    def purl(self, name: str, version: str | None, **kwargs: Any) -> str:  # noqa: ARG002
+        """Get the purl for a registry-sourced package. Mirrors pip's PyPIPackage._make_purl."""
+        qualifiers = None
+        if self.location.rstrip("/") != pypi_simple.PYPI_SIMPLE_ENDPOINT.rstrip("/"):
+            qualifiers = {"repository_url": self.location}
+        return PackageURL(
+            type="pypi", name=name, version=version, qualifiers=qualifiers
+        ).to_string()
+
+    def records_no_checksum(self, artifacts: "list[PackageArtifact]") -> bool:
+        """Whether the artifacts fetched from the index carry no hash.
+
+        Registry hashes are optional in uv.lock: uv records one only when the
+        index published it.
+        """
+        return not artifacts or any(artifact.hash is None for artifact in artifacts)
+
 
 class PackageSourceGit(pydantic.BaseModel):
     """A package cloned from a git repository at a pinned commit."""
@@ -106,6 +126,19 @@ class PackageSourceGit(pydantic.BaseModel):
             )
         return commit
 
+    def purl(self, name: str, version: str | None, **kwargs: Any) -> str:  # noqa: ARG002
+        """Get the purl for a git-sourced package."""
+        return PackageURL(
+            type="pypi",
+            name=name,
+            version=version,
+            qualifiers={"vcs_url": f"git+{self.clone_url}@{self.commit}"},
+        ).to_string()
+
+    def records_no_checksum(self, artifacts: "list[PackageArtifact]") -> bool:  # noqa: ARG002
+        """Whether uv.lock pins no checksum for the clone; it never does."""
+        return True
+
 
 class PackageSourceUrl(pydantic.BaseModel):
     """A package downloaded from a direct URL.
@@ -115,6 +148,37 @@ class PackageSourceUrl(pydantic.BaseModel):
 
     kind: Literal["url"]
     location: str
+
+    def purl(
+        self,
+        name: str,
+        version: str | None,
+        checksum: str | None,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> str:
+        """Get the purl for a url-sourced package.
+
+        The download URL is on the source itself; only the checksum comes from
+        the one artifact uv records for it.
+        """
+        if checksum is None:
+            # should not happen: artifacts_to_download already rejects a url-kind
+            # artifact with no hash
+            raise RuntimeError(f"artifact for {name}=={version} has no hash")
+        return PackageURL(
+            type="pypi",
+            name=name,
+            version=version,
+            qualifiers={"download_url": self.location, "checksum": checksum},
+        ).to_string()
+
+    def records_no_checksum(self, artifacts: "list[PackageArtifact]") -> bool:
+        """Whether the single artifact recorded for the URL carries no hash.
+
+        uv requires one, and ``artifacts_to_download`` rejects a lockfile that
+        lacks it; the check stays so a missing hash can never go unmarked.
+        """
+        return not artifacts or any(artifact.hash is None for artifact in artifacts)
 
 
 class PackageSourceLocal(pydantic.BaseModel):
@@ -126,6 +190,54 @@ class PackageSourceLocal(pydantic.BaseModel):
 
     kind: LocalSourceKind
     location: str
+
+    def purl(
+        self,
+        name: str,
+        version: str | None,
+        package_dir: RootedPath,
+        project_vcs_qualifiers: dict[str, str] | None,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> str:
+        """Get the purl for a dependency whose files already live in the repo tree.
+
+        Covers the path/directory/editable/virtual sources. None of these are
+        fetched, so their purl points at the containing repo (like the main
+        project's purl) plus a subpath to where the dependency itself sits.
+
+        :raises PackageRejected: if the source escapes the repository root.
+        """
+        try:
+            dep_dir = package_dir.join_within_root(self.location)
+        except PathOutsideRoot as e:
+            raise PackageRejected(
+                reason=(
+                    f"{name}'s {self.kind} source "
+                    f"{self.location!r} in uv.lock escapes the repository root"
+                ),
+                solution=(
+                    "Hermeto can only fetch dependencies within the given source repository. "
+                    "This lockfile was likely generated against a local dependency or index "
+                    "that lives outside this repository on another machine."
+                ),
+            ) from e
+
+        if dep_dir.subpath_from_root != Path("."):
+            subpath = dep_dir.subpath_from_root.as_posix()
+        else:
+            subpath = None
+
+        return PackageURL(
+            type="pypi",
+            name=name,
+            version=version,
+            qualifiers=project_vcs_qualifiers,
+            subpath=subpath,
+        ).to_string()
+
+    def records_no_checksum(self, artifacts: "list[PackageArtifact]") -> bool:  # noqa: ARG002
+        """Whether anything fetched for this source lacks a checksum; nothing is fetched."""
+        return False
 
 
 # uv writes a source as a single-key table; UvPackage._normalize_source rewrites
@@ -344,6 +456,32 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
                 return []
             case _:
                 assert_never(self.source)
+
+    def purl(self, package_dir: RootedPath, project_vcs_qualifiers: dict[str, str] | None) -> str:
+        """Get the purl recording where this package came from.
+
+        Each source kind builds its own; this only hands over what is not in the
+        source itself. ``package_dir`` and the project's vcs qualifiers identify
+        the repository a local dependency sits in, which uv.lock never records.
+
+        :raises PackageRejected: if a local source escapes the repository root.
+        """
+        artifact = self.sole_artifact
+        return self.source.purl(
+            self.name,
+            self.version,
+            checksum=artifact.hash if artifact is not None else None,
+            package_dir=package_dir,
+            project_vcs_qualifiers=project_vcs_qualifiers,
+        )
+
+    @property
+    def records_no_checksum(self) -> bool:
+        """Whether uv.lock gives no checksum to verify this package against.
+
+        What is fetched differs per source kind, so each one answers for itself.
+        """
+        return self.source.records_no_checksum(self.artifacts_to_download)
 
 
 def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:

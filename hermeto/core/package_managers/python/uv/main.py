@@ -3,23 +3,28 @@ import asyncio
 import logging
 import subprocess
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, NamedTuple
 
 import tomlkit
+from packageurl import PackageURL
 from typing_extensions import assert_never
 
 from hermeto.core.checksum import must_match_any_checksum
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     LockfileNotFound,
+    NotAGitRepo,
     PackageManagerError,
     PackageRejected,
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Annotation, Component, create_backend_annotation
-from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.general import async_download_files, get_vcs_qualifiers
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML
 from hermeto.core.package_managers.python.uv.build_deps import (
     download_build_dependencies,
@@ -27,6 +32,7 @@ from hermeto.core.package_managers.python.uv.build_deps import (
 )
 from hermeto.core.package_managers.python.uv.models import (
     _WHEEL_LOCATIONS,
+    ArtifactWheel,
     PackageArtifact,
     PackageSourceGit,
     PackageSourceLocal,
@@ -100,6 +106,8 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
         )
 
     name, version = _get_pyproject_metadata(package_dir)
+    project_vcs_qualifiers = _get_project_vcs_qualifiers(package_dir)
+    main_purl = _generate_purl_main_package(name, version, package_dir, project_vcs_qualifiers)
 
     _validate_lockfile(package_dir)
 
@@ -108,9 +116,14 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
 
     _download_dependencies(output_dir, lock.packages)
+    dependency_components = _generate_dependency_components(
+        lock.packages, package_dir, project_vcs_qualifiers
+    )
 
     build_deps = download_build_dependencies(package_dir, output_dir)
-    components = [to_component(dep) for dep in build_deps]
+    components = [Component(name=name, version=version, purl=main_purl)]
+    components.extend(dependency_components)
+    components.extend(to_component(dep) for dep in build_deps)
 
     return UvPackageResolved(
         name=name,
@@ -210,6 +223,64 @@ def _download_dependencies(output_dir: RootedPath, packages: list[UvPackage]) ->
 def _is_local_package(package: UvPackage) -> bool:
     """Whether the package's files are already in the project tree, so nothing is fetched."""
     return isinstance(package.source, PackageSourceLocal)
+
+
+def _is_binary_package(package: UvPackage, artifacts: list[PackageArtifact]) -> bool:
+    """Whether what hermeto fetched for the package is a wheel.
+
+    Nothing is fetched for a local source, so its own entry is what says.
+    """
+    if _is_local_package(package):
+        return isinstance(package.sole_artifact, ArtifactWheel)
+    return any(isinstance(artifact, ArtifactWheel) for artifact in artifacts)
+
+
+def _generate_dependency_component(
+    package: UvPackage,
+    artifacts: list[PackageArtifact],
+    package_dir: RootedPath,
+    project_vcs_qualifiers: dict[str, str] | None,
+    lockfile_relpath: str,
+) -> Component:
+    """Build the SBOM component for a single uv.lock package."""
+    missing_hash: frozenset[str] = (
+        frozenset({lockfile_relpath}) if package.records_no_checksum else frozenset()
+    )
+
+    return Component(
+        name=package.name,
+        version=package.version,
+        purl=package.purl(package_dir, project_vcs_qualifiers),
+        properties=PropertySet(
+            missing_hash_in_file=missing_hash,
+            uv_package_binary=_is_binary_package(package, artifacts),
+        ).to_properties(),
+    )
+
+
+def _is_root_project_entry(package: UvPackage) -> bool:
+    """Whether the package is the uv project itself rather than one of its dependencies.
+
+    uv locks the project under the directory it lives in, so its own entry is
+    the local source pointing at the project directory.
+    """
+    return _is_local_package(package) and package.source.location == "."
+
+
+def _generate_dependency_components(
+    packages: list[UvPackage],
+    package_dir: RootedPath,
+    project_vcs_qualifiers: dict[str, str] | None,
+) -> list[Component]:
+    """Build one Component per uv.lock package, excluding the root project's own entry."""
+    lockfile_relpath = str(package_dir.join_within_root(DEFAULT_LOCKFILE_NAME).subpath_from_root)
+    gdc = partial(
+        _generate_dependency_component,
+        package_dir=package_dir,
+        project_vcs_qualifiers=project_vcs_qualifiers,
+        lockfile_relpath=lockfile_relpath,
+    )
+    return [gdc(p, p.artifacts_to_download) for p in packages if not _is_root_project_entry(p)]
 
 
 def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
@@ -316,6 +387,43 @@ def _get_pyproject_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
         log.warning("Could not resolve version from pyproject.toml at %s", package_dir)
 
     return name, version
+
+
+def _get_project_vcs_qualifiers(package_dir: RootedPath) -> dict[str, str] | None:
+    """Get vcs_url qualifiers for the repo containing package_dir, or None if unavailable.
+
+    Shared by the main project's purl and every path/directory/editable/virtual
+    dependency purl, since local dependencies live in the same repo and a
+    separate repo lookup per dependency would be redundant.
+    """
+    try:
+        return get_vcs_qualifiers(package_dir.root)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            return None
+        raise
+
+
+def _generate_purl_main_package(
+    name: str,
+    version: str | None,
+    package_dir: RootedPath,
+    project_vcs_qualifiers: dict[str, str] | None,
+) -> str:
+    """Get the purl for the uv project itself."""
+    if package_dir.subpath_from_root != Path("."):
+        subpath = package_dir.subpath_from_root.as_posix()
+    else:
+        subpath = None
+
+    purl = PackageURL(
+        type="pypi",
+        name=name,
+        version=version,
+        qualifiers=project_vcs_qualifiers,
+        subpath=subpath,
+    )
+    return purl.to_string()
 
 
 def _generate_environment_variables() -> list[EnvironmentVariable]:
