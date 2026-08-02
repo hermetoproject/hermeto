@@ -26,6 +26,7 @@ from hermeto.core.package_managers.python.uv.models import (
     UvPackage,
 )
 from hermeto.core.rooted_path import RootedPath
+from tests.common_utils import GIT_REF
 
 SDIST = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234")
 UNHASHED_SDIST = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz")
@@ -150,6 +151,37 @@ class TestPackageSourceRegistry:
         with pytest.raises(pydantic.ValidationError):
             PackageSourceRegistry(kind="registry", location="")
 
+    @pytest.mark.parametrize(
+        "index_url, expected_purl",
+        [
+            pytest.param(
+                "https://pypi.org/simple",
+                "pkg:pypi/example@1.0.0",
+                id="default_pypi_index_needs_no_repository_url",
+            ),
+            pytest.param(
+                "https://example.com/simple",
+                "pkg:pypi/example@1.0.0?repository_url=https://example.com/simple",
+                id="custom_index_is_recorded_as_repository_url",
+            ),
+        ],
+    )
+    def test_purl(self, index_url: str, expected_purl: str) -> None:
+        source = PackageSourceRegistry(kind="registry", location=index_url)
+        assert source.purl("example", "1.0.0") == expected_purl
+
+    @pytest.mark.parametrize(
+        "artifacts, expected",
+        [
+            pytest.param([SDIST], False, id="index_published_a_hash"),
+            pytest.param([UNHASHED_SDIST], True, id="index_published_no_hash"),
+            pytest.param([], True, id="nothing_fetched"),
+        ],
+    )
+    def test_records_no_checksum(self, artifacts: list[PackageArtifact], expected: bool) -> None:
+        source = PackageSourceRegistry(kind="registry", location="https://pypi.org/simple")
+        assert source.records_no_checksum(artifacts) is expected
+
 
 class TestPackageSourceGit:
     @pytest.mark.parametrize(
@@ -179,6 +211,94 @@ class TestPackageSourceGit:
     def test_missing_commit(self) -> None:
         with pytest.raises(PackageRejected):
             PackageSourceGit(kind="git", location="https://github.com/org/repo?rev=main")
+
+    def test_purl(self) -> None:
+        source = PackageSourceGit(
+            kind="git", location=f"https://github.com/org/repo?rev=main#{GIT_REF}"
+        )
+        assert source.purl("example", "1.0.0") == (
+            f"pkg:pypi/example@1.0.0?vcs_url=git%2Bhttps://github.com/org/repo%40{GIT_REF}"
+        )
+
+    def test_records_no_checksum(self) -> None:
+        """uv.lock never pins a checksum for a clone, whatever artifacts it records."""
+        source = PackageSourceGit(kind="git", location=f"https://github.com/org/repo#{GIT_REF}")
+        assert source.records_no_checksum([SDIST]) is True
+
+
+class TestPackageSourceUrl:
+    def test_purl(self) -> None:
+        source = PackageSourceUrl(kind="url", location=URL_SOURCE)
+        assert source.purl("example", "1.0.0", "sha256:abcd") == (
+            f"pkg:pypi/example@1.0.0?checksum=sha256:abcd&download_url={URL_SOURCE}"
+        )
+
+    @pytest.mark.parametrize(
+        "artifacts, expected",
+        [
+            pytest.param([SDIST], False, id="hash_recorded"),
+            pytest.param([UNHASHED_SDIST], True, id="no_hash_recorded"),
+            pytest.param([], True, id="nothing_fetched"),
+        ],
+    )
+    def test_records_no_checksum(self, artifacts: list[PackageArtifact], expected: bool) -> None:
+        """The last two are unreachable through UvPackage: artifacts_to_download rejects them
+        first. The guard is kept so a missing hash can never go unmarked, so test it directly.
+        """
+        source = PackageSourceUrl(kind="url", location=URL_SOURCE)
+        assert source.records_no_checksum(artifacts) is expected
+
+
+class TestPackageSourceLocal:
+    """The local purl is reached through UvPackage.purl, the way production builds it."""
+
+    @pytest.mark.parametrize(
+        "package, vcs_qualifiers, expected_purl",
+        [
+            pytest.param(
+                make_package(PackageSourceLocal(kind="directory", location="libs/vendored-lib")),
+                {"vcs_url": f"git+https://github.com/acme/monorepo@{GIT_REF}"},
+                f"pkg:pypi/example@1.0.0?vcs_url=git%2Bhttps://github.com/acme/monorepo%40{GIT_REF}"
+                "#libs/vendored-lib",
+                id="repo_vcs_url_plus_subpath_to_the_dependency",
+            ),
+            pytest.param(
+                make_package(PackageSourceLocal(kind="directory", location="libs/vendored-lib")),
+                None,
+                "pkg:pypi/example@1.0.0#libs/vendored-lib",
+                id="permissive_mode_without_a_git_repo_omits_vcs_url",
+            ),
+            pytest.param(
+                make_package(PackageSourceLocal(kind="editable", location=".")),
+                None,
+                "pkg:pypi/example@1.0.0",
+                id="dependency_at_the_project_root_gets_no_subpath",
+            ),
+            pytest.param(
+                UvPackage(
+                    name="ws-root",
+                    source=PackageSourceLocal(kind="editable", location="packages/member"),
+                ),
+                None,
+                "pkg:pypi/ws-root#packages/member",
+                id="dynamic_version_locks_without_one_so_purl_omits_it",
+            ),
+        ],
+    )
+    def test_purl(
+        self,
+        package: UvPackage,
+        vcs_qualifiers: dict[str, str] | None,
+        expected_purl: str,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        assert package.purl(rooted_tmp_path, vcs_qualifiers) == expected_purl
+
+    def test_purl_escapes_repo_root(self, rooted_tmp_path: RootedPath) -> None:
+        package = make_package(PackageSourceLocal(kind="directory", location="../outside-the-repo"))
+
+        with pytest.raises(PackageRejected):
+            package.purl(rooted_tmp_path, None)
 
 
 class TestPackageArtifact:
