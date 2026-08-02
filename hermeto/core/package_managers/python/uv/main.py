@@ -6,26 +6,33 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NamedTuple
 
+import pypi_simple
 import tomlkit
+from packageurl import PackageURL
 
 from hermeto.core.checksum import must_match_any_checksum
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     LockfileNotFound,
     MissingChecksum,
+    NotAGitRepo,
     PackageRejected,
+    PathOutsideRoot,
     UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
+from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Annotation, Component, create_backend_annotation
-from hermeto.core.package_managers.general import async_download_files
+from hermeto.core.package_managers.general import async_download_files, get_vcs_qualifiers
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML
 from hermeto.core.package_managers.python.uv.build_requirements import download_build_requirements
 from hermeto.core.package_managers.python.uv.models import (
     UvArtifact,
     UvLock,
     UvPackage,
+    UvWheel,
     load_lockfile_document,
 )
 from hermeto.core.rooted_path import RootedPath
@@ -90,6 +97,8 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
         )
 
     name, version = _get_pyproject_metadata(package_dir)
+    project_vcs_qualifiers = _get_project_vcs_qualifiers(package_dir)
+    main_purl = _generate_purl_main_package(name, version, package_dir, project_vcs_qualifiers)
 
     _validate_lockfile(package_dir)
 
@@ -98,9 +107,16 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvPackageRes
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
 
     _download_dependencies(output_dir, lock)
+    dependency_components = _generate_dependency_components(
+        lock, package_dir, project_vcs_qualifiers
+    )
 
     build_requires = download_build_requirements(package_dir, output_dir)
-    components = [dep.to_component(build_dependency=True, backend="uv") for dep in build_requires]
+    components = [Component(name=name, version=version, purl=main_purl)]
+    components.extend(dependency_components)
+    components.extend(
+        dep.to_component(build_dependency=True, backend="uv") for dep in build_requires
+    )
 
     return UvPackageResolved(
         name=name,
@@ -218,6 +234,156 @@ def _artifacts_to_download(package: UvPackage) -> list[UvArtifact]:
     return []
 
 
+def _generate_purl_registry_package(package: UvPackage) -> str:
+    """Get the purl for a registry-sourced package. Mirrors pip's PyPIPackage._make_purl."""
+    qualifiers = None
+    index_url = package.source.location
+    if index_url.rstrip("/") != pypi_simple.PYPI_SIMPLE_ENDPOINT.rstrip("/"):
+        qualifiers = {"repository_url": index_url}
+    return PackageURL(
+        type="pypi", name=package.name, version=package.version, qualifiers=qualifiers
+    ).to_string()
+
+
+def _generate_purl_git_package(package: UvPackage) -> str:
+    """Get the purl for a git-sourced package.
+
+    Uses the dependency's own recorded git URL/commit; no repo detection of
+    hermeto's own checkout is needed here.
+    """
+    commit = package.source.get_git_commit()
+    qualifiers = {"vcs_url": f"git+{package.source.git_clone_url}@{commit}"}
+    return PackageURL(
+        type="pypi", name=package.name, version=package.version, qualifiers=qualifiers
+    ).to_string()
+
+
+def _generate_purl_url_package(package: UvPackage, artifact: UvArtifact) -> str:
+    """Get the purl for a url-sourced package."""
+    if artifact.hash is None:
+        # should not happen: _artifacts_to_download already rejects a url-kind
+        # artifact with no hash
+        raise RuntimeError(f"artifact for {package.name}=={package.version} has no hash")
+    qualifiers = {"download_url": package.source.location, "checksum": artifact.hash}
+    return PackageURL(
+        type="pypi", name=package.name, version=package.version, qualifiers=qualifiers
+    ).to_string()
+
+
+def _generate_purl_local_package(
+    package: UvPackage, package_dir: RootedPath, project_vcs_qualifiers: dict[str, str] | None
+) -> str:
+    """Get the purl for a dependency whose files already live in the repo tree.
+
+    Covers the path/directory/editable/virtual sources. None of these are
+    fetched, so their purl points at the containing repo (like the main
+    project's purl) plus a subpath to where the dependency itself sits.
+    """
+    try:
+        dep_dir = package_dir.join_within_root(package.source.location)
+    except PathOutsideRoot as e:
+        raise PackageRejected(
+            reason=(
+                f"{package.name}'s {package.source.kind} source "
+                f"{package.source.location!r} in uv.lock escapes the repository root"
+            ),
+            solution=(
+                "Hermeto can only fetch dependencies within the given source repository. "
+                "This lockfile was likely generated against a local dependency or index "
+                "that lives outside this repository on another machine."
+            ),
+        ) from e
+
+    if dep_dir.subpath_from_root != Path("."):
+        subpath = dep_dir.subpath_from_root.as_posix()
+    else:
+        subpath = None
+
+    return PackageURL(
+        type="pypi",
+        name=package.name,
+        version=package.version,
+        qualifiers=project_vcs_qualifiers,
+        subpath=subpath,
+    ).to_string()
+
+
+def _records_no_checksum(package: UvPackage, artifacts: list[UvArtifact]) -> bool:
+    """Whether uv.lock gives no checksum to verify a fetched package against.
+
+    uv omits a hash for a git source, where it treats the pinned commit as the
+    package's identity, and for a registry artifact whose index published none.
+    Both are marked: hermeto reports what the user's lockfile did and did not
+    pin, and pip already flags its own git dependencies the same way. Local
+    sources are excluded because nothing is fetched for them.
+    """
+    if package.source.is_local:
+        return False
+    if package.source.kind == "git":
+        return True
+    return not artifacts or any(artifact.hash is None for artifact in artifacts)
+
+
+def _is_binary_package(package: UvPackage, artifacts: list[UvArtifact]) -> bool:
+    """Whether what hermeto fetched for the package is a wheel.
+
+    Nothing is fetched for a local source, so its own entry is what says.
+    """
+    if package.source.is_local:
+        return isinstance(package.sole_artifact, UvWheel)
+    return any(isinstance(artifact, UvWheel) for artifact in artifacts)
+
+
+def _generate_dependency_component(
+    package: UvPackage,
+    artifacts: list[UvArtifact],
+    package_dir: RootedPath,
+    project_vcs_qualifiers: dict[str, str] | None,
+    lockfile_relpath: str,
+) -> Component:
+    """Build the SBOM component for a single uv.lock package, dispatched by source kind."""
+    missing_hash: frozenset[str] = (
+        frozenset({lockfile_relpath}) if _records_no_checksum(package, artifacts) else frozenset()
+    )
+
+    if package.source.is_local:
+        purl = _generate_purl_local_package(package, package_dir, project_vcs_qualifiers)
+    elif package.source.kind == "registry":
+        purl = _generate_purl_registry_package(package)
+    elif package.source.kind == "git":
+        purl = _generate_purl_git_package(package)
+    else:
+        purl = _generate_purl_url_package(package, artifacts[0])
+
+    return Component(
+        name=package.name,
+        version=package.version,
+        purl=purl,
+        properties=PropertySet(
+            missing_hash_in_file=missing_hash,
+            uv_package_binary=_is_binary_package(package, artifacts),
+        ).to_properties(),
+    )
+
+
+def _generate_dependency_components(
+    lock: UvLock, package_dir: RootedPath, project_vcs_qualifiers: dict[str, str] | None
+) -> list[Component]:
+    """Build one Component per uv.lock package, excluding the root project's own entry."""
+    lockfile_relpath = str(package_dir.join_within_root(DEFAULT_LOCKFILE_NAME).subpath_from_root)
+    return [
+        _generate_dependency_component(
+            package,
+            _artifacts_to_download(package),
+            package_dir,
+            project_vcs_qualifiers,
+            lockfile_relpath,
+        )
+        for package in lock.packages
+        if not (package.source.is_local and package.source.location == ".")
+    ]
+
+
 def _git_tarball_filename(package: UvPackage) -> str:
     """Name of the tarball under deps/uv for a git package.
 
@@ -305,6 +471,43 @@ def _get_pyproject_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
         log.warning("Could not resolve version from pyproject.toml at %s", package_dir)
 
     return name, version
+
+
+def _get_project_vcs_qualifiers(package_dir: RootedPath) -> dict[str, str] | None:
+    """Get vcs_url qualifiers for the repo containing package_dir, or None if unavailable.
+
+    Shared by the main project's purl and every path/directory/editable/virtual
+    dependency purl, since local dependencies live in the same repo and a
+    separate repo lookup per dependency would be redundant.
+    """
+    try:
+        return get_vcs_qualifiers(package_dir.root)
+    except NotAGitRepo:
+        if get_config().mode == Mode.PERMISSIVE:
+            return None
+        raise
+
+
+def _generate_purl_main_package(
+    name: str,
+    version: str | None,
+    package_dir: RootedPath,
+    project_vcs_qualifiers: dict[str, str] | None,
+) -> str:
+    """Get the purl for the uv project itself."""
+    if package_dir.subpath_from_root != Path("."):
+        subpath = package_dir.subpath_from_root.as_posix()
+    else:
+        subpath = None
+
+    purl = PackageURL(
+        type="pypi",
+        name=name,
+        version=version,
+        qualifiers=project_vcs_qualifiers,
+        subpath=subpath,
+    )
+    return purl.to_string()
 
 
 def _generate_environment_variables() -> list[EnvironmentVariable]:
