@@ -74,14 +74,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: hadolint/hadolint-action@v3.3.0
+      - uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: Dockerfile
           # Ignore list:
           # * DL3041 - Specify version with dnf install -y <package>-<version>
           ignore: DL3041
           failure-threshold: warning
-      - uses: hadolint/hadolint-action@v3.3.0
+      - uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: tests/integration/Containerfile.test
           ignore: DL3006
