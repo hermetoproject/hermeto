@@ -1003,11 +1003,10 @@ class TestPipRequirementsFile:
 
         self._assert_pip_requirement(new_requirement, expected_changes)
 
-    def test_invalid_kind_for_url(self) -> None:
-        """Test extracting URL from a requirement that does not have one."""
-        requirement = PipRequirement()
-        requirement.download_line = "aiowsgi==0.7"
-        requirement.kind = "pypi"
+    def test_pypi_requirement_has_no_url(self) -> None:
+        """Test that a PyPI requirement has no URL."""
+        requirement = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert requirement.kind == "pypi"
 
         with pytest.raises(ValueError):
             _ = requirement.url
