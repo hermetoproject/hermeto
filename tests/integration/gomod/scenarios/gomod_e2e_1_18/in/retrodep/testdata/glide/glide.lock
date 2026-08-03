@@ -1,0 +1,5 @@
+imports:
+- name: github.com/pborman/uuid
+  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
+- name: github.com/spf13/pflag
+  version: 583c0c0531f06d5278b7d917446061adc344b5cd

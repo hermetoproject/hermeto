@@ -1,0 +1,56 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e",
+        "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e"
+      ],
+      "text": "hermeto:backend:gomod",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e",
+      "name": "github.com/hermetoproject/integration-tests",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-2cb7955a750f"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e",
+      "name": "github.com/hermetoproject/integration-tests",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto@v0.0.0-19700101000000-2cb7955a750f?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402cb7955a750ff22ef3382d1d73879d70f712168e",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-2cb7955a750f"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

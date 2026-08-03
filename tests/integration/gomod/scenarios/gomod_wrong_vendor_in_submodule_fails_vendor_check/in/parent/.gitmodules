@@ -1,0 +1,4 @@
+[submodule "integration-tests"]
+	path = integration-tests
+	url = https://github.com/hermetoproject/integration-tests
+	branch = gomod/wrong-vendor-fails-vendor-check
