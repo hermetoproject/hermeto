@@ -9,6 +9,7 @@ on:
     paths:
       - requirements.txt
       - requirements-extras.txt
+      - requirements-build.txt
   workflow_dispatch:
     inputs: {}
 
