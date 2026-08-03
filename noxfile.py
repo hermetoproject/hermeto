@@ -53,9 +53,9 @@ def lint(session: Session) -> None:
     exc = None
     install_requirements(session)
     cmds = [
-        "ruff check hermeto tests noxfile.py",
-        "ruff format --check --diff hermeto tests noxfile.py",
-        "mypy --install-types --non-interactive hermeto tests noxfile.py",
+        "ruff check hermeto tests noxfile.py skills/scripts/review-prep",
+        "ruff format --check --diff hermeto tests noxfile.py skills/scripts/review-prep",
+        "mypy --install-types --non-interactive hermeto tests noxfile.py skills/scripts/review-prep",
     ]
 
     for cmd in cmds:
@@ -73,8 +73,8 @@ def ruff_fix(session: Session) -> None:
     exc = None
     install_requirements(session)
     cmds = [
-        "ruff check --fix hermeto tests noxfile.py",
-        "ruff format hermeto tests noxfile.py",
+        "ruff check --fix hermeto tests noxfile.py skills/scripts/review-prep",
+        "ruff format hermeto tests noxfile.py skills/scripts/review-prep",
     ]
 
     for cmd in cmds:
