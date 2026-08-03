@@ -94,13 +94,13 @@
         "pkg:golang/github.com/davecgh/go-spew@v1.1.1?type=module",
         "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=module",
         "pkg:golang/github.com/golang-jwt/jwt@v3.2.2%2Bincompatible?type=package",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
-        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
+        "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
         "pkg:golang/github.com/labstack/gommon/bytes@v0.4.2?type=package",
         "pkg:golang/github.com/labstack/gommon/color@v0.4.2?type=package",
         "pkg:golang/github.com/labstack/gommon/log@v0.4.2?type=package",
@@ -1311,7 +1311,7 @@
       "version": "v3.2.2+incompatible"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "github.com/labstack/echo/v4/middleware",
       "properties": [
         {
@@ -1319,12 +1319,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo/middleware@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v4.0.0-19700101000000-e093ad383ea2"
+      "version": "v4.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "github.com/labstack/echo/v4",
       "properties": [
         {
@@ -1332,12 +1332,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v4.0.0-19700101000000-e093ad383ea2"
+      "version": "v4.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "github.com/labstack/echo/v4",
       "properties": [
         {
@@ -1345,12 +1345,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/echo@v4.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v4.0.0-19700101000000-e093ad383ea2"
+      "version": "v4.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "example.com/hiii",
       "properties": [
         {
@@ -1358,12 +1358,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v0.0.0-19700101000000-e093ad383ea2"
+      "version": "v0.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "example.com/hiii",
       "properties": [
         {
@@ -1371,12 +1371,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello/hi/hiii@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v0.0.0-19700101000000-e093ad383ea2"
+      "version": "v0.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "example.com/hello",
       "properties": [
         {
@@ -1384,12 +1384,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v0.0.0-19700101000000-e093ad383ea2"
+      "version": "v0.0.0-19700101000000-5f56d28e57e7"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "name": "example.com/hello",
       "properties": [
         {
@@ -1397,9 +1397,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-e093ad383ea2?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40e093ad383ea231f4bfba8a6832d6efcb8d471c32",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/workspace_modules/hello@v0.0.0-19700101000000-5f56d28e57e7?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%405f56d28e57e77114463032c9fddd67e9f38d28dd",
       "type": "library",
-      "version": "v0.0.0-19700101000000-e093ad383ea2"
+      "version": "v0.0.0-19700101000000-5f56d28e57e7"
     },
     {
       "bom-ref": "pkg:golang/github.com/labstack/gommon/bytes@v0.4.2?type=package",
