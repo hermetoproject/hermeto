@@ -40,6 +40,41 @@ log = logging.getLogger(__name__)
 container_engine = get_container_engine()
 
 
+class SyntheticRepo:
+    """A deterministic synthetic git repo created from scenario source files.
+
+    All git metadata (author, date, commit message) is fixed so that identical
+    source files always produce the same commit SHA.
+    """
+
+    _GIT_ENV = {
+        "GIT_AUTHOR_NAME": "Test Author",
+        "GIT_AUTHOR_EMAIL": "test@example.com",
+        "GIT_COMMITTER_NAME": "Test Author",
+        "GIT_COMMITTER_EMAIL": "test@example.com",
+        "GIT_AUTHOR_DATE": "1970-01-01T00:00:00+00:00",
+        "GIT_COMMITTER_DATE": "1970-01-01T00:00:00+00:00",
+    }
+
+    def __init__(self, repo_path: Path, origin_url: str) -> None:
+        # copy hermeto's root .gitignore into the synthetic repo
+        project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
+        gitignore = Path(project_repo_root) / ".gitignore"
+        if gitignore.is_file():
+            # we copy the .gitignore to .git/info/exclude instead of .gitignore, because we don't
+            # need nor want to commit more than test scenario data in the synthetic repo
+            exclude_file = repo_path / ".git" / "info" / "exclude"
+            exclude_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(gitignore, exclude_file)
+
+        self.repo = GitRepo.init(repo_path, env=GIT_PRISTINE_ENV)
+        with self.repo.git.custom_environment(**self._GIT_ENV):
+            self.repo.git.add(".")
+            self.repo.git.commit(m="test scenario", env=GIT_PRISTINE_ENV)
+        self.repo.create_remote("origin", origin_url)
+        self.path = repo_path
+
+
 def _default_hermeto_env() -> dict[str, str]:
     """Return default Hermeto env vars for the test session, if any are enabled."""
     if is_local_nexus_proxy_enabled():
@@ -307,43 +342,11 @@ def create_synthetic_repo(
     *,
     origin_url: str = "https://github.com/hermetoproject/hermeto.git",
 ) -> Path:
-    """Create a deterministic synthetic git repo from scenario source files.
-
-    All git metadata (author, date, commit message) is fixed so that identical
-    source files always produce the same commit SHA.
-    """
-    SYNTHETIC_AUTHOR = "Test Author"
-    SYNTHETIC_EMAIL = "test@example.com"
-    SYNTHETIC_DATE = "1970-01-01T00:00:00+00:00"
-    SYNTHETIC_MESSAGE = "test scenario"
-
+    """Create a deterministic synthetic git repo from scenario source files."""
     synthetic_repo_path = tmp_path / "repo"
     shutil.copytree(source_dir, synthetic_repo_path)
-
-    # copy hermeto's root .gitignore into the synthetic repo
-    project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
-    gitignore = Path(project_repo_root) / ".gitignore"
-    if gitignore.is_file():
-        # we copy the .gitignore to .git/info/exclude instead of .gitignore, because we don't need
-        # nor want to commit more than test scenario data in the synthetic repo
-        exclude_file = synthetic_repo_path / ".git" / "info" / "exclude"
-        exclude_file.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(gitignore, exclude_file)
-
-    synthetic_repo = GitRepo.init(synthetic_repo_path, env=GIT_PRISTINE_ENV)
-    with synthetic_repo.git.custom_environment(
-        GIT_AUTHOR_NAME=SYNTHETIC_AUTHOR,
-        GIT_AUTHOR_EMAIL=SYNTHETIC_EMAIL,
-        GIT_COMMITTER_NAME=SYNTHETIC_AUTHOR,
-        GIT_COMMITTER_EMAIL=SYNTHETIC_EMAIL,
-        GIT_AUTHOR_DATE=SYNTHETIC_DATE,
-        GIT_COMMITTER_DATE=SYNTHETIC_DATE,
-    ):
-        synthetic_repo.git.add(".")
-        synthetic_repo.git.commit(m=SYNTHETIC_MESSAGE, env=GIT_PRISTINE_ENV)
-    synthetic_repo.create_remote("origin", origin_url)
-
-    return synthetic_repo_path
+    synthetic = SyntheticRepo(synthetic_repo_path, origin_url)
+    return synthetic.path
 
 
 def fetch_deps_and_check_output(
