@@ -2,6 +2,7 @@ FROM registry.access.redhat.com/ubi10@sha256:be840bb76e74900d39d5e4620c184e89382
 FROM mirror.gcr.io/library/golang:1.26.5-alpine AS golang
 FROM mirror.gcr.io/library/node:24.18-bookworm-slim AS node
 FROM mirror.gcr.io/library/rust:1.93.1-slim-bookworm AS rust
+FROM ghcr.io/astral-sh/uv:0.12.1 AS uv
 
 ########################
 # PREPARE OUR BASE IMAGE
@@ -51,6 +52,7 @@ COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=rust /usr/local/rustup/toolchains/*/bin/cargo /usr/bin/cargo
+COPY --from=uv /uv /usr/bin/uv
 COPY --from=builder /venv /venv
 
 # link corepack, yarn, and go to standard PATH location
