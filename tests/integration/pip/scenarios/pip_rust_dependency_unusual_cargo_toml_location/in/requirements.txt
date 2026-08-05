@@ -2,7 +2,7 @@
 #    uv pip compile --output-file=requirements.txt --python=3.9 --refresh pyproject.toml
 cffi==1.17.1
     # via cryptography
-cryptography==42.0.8
+cryptography==50.0.0
     # via cargo-toml-placement (pyproject.toml)
 pycparser==2.22
     # via cffi
