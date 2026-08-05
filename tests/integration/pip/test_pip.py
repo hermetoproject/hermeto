@@ -85,6 +85,23 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="pip_no_sdists",
         ),
+        # A wheel-only requirement whose marker excludes the target arch must be
+        # skipped, not rejected -- this asserts the end-to-end run succeeds (exit 0,
+        # no PackageRejected) and logs the skip. That the skipped artifact is never
+        # downloaded is asserted deterministically at the unit level in
+        # test_main.py::TestDownloadDependenciesMarkerSkip (a skipped requirement
+        # never reaches the resolver/downloader), which needs no network.
+        # https://github.com/hermetoproject/hermeto/issues/1570
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {"path": ".", "type": "pip", "binary": {"arch": "ppc64le", "os": "linux"}},
+                ),
+                check_output=False,
+                expected_output="Skipping requirement excluded by its environment marker",
+            ),
+            id="pip_binary_marker_skip_excluded_arch",
+        ),
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "pip", "binary": {}},),
