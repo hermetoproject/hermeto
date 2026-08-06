@@ -78,6 +78,7 @@ def mock_requirement(
         hashes=hashes or [],
         qualifiers=qualifiers or {},
         url=url,
+        direct_access_url=url,
     )
 
 
@@ -629,7 +630,11 @@ def test_resolve_pip_invalid_file_path(
 )
 def test_get_external_requirement_filepath(component_kind: str, url: str) -> None:
     requirement = mock.Mock(
-        kind=component_kind, url=url, package="package", hashes=["sha256:noRealHash"]
+        kind=component_kind,
+        url=url,
+        direct_access_url=url,
+        package="package",
+        hashes=["sha256:noRealHash"],
     )
     filepath = pip._get_external_requirement_filepath(requirement)
     if component_kind == "url":

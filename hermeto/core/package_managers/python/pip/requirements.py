@@ -231,44 +231,48 @@ class PipRequirementsFile:
         return global_options, requirement_options, " ".join(requirement)
 
 
-class PipRequirement:
+class PipRequirement(Requirement):
     """Parse a requirement and its options from a requirement line."""
 
     # Regex used to determine if a direct access requirement specifies a
     # package name, e.g. "name @ https://..."
     HAS_NAME_IN_DIRECT_ACCESS_REQUIREMENT = re.compile(r"@.+://")
 
-    def __init__(self) -> None:
+    def __init__(self, requirement_string: str) -> None:
         """Initialize a PipRequirement."""
-        # The package name after it has been processed by setuptools, e.g. "_" are replaced
-        # with "-"
-        self.package: str = ""
-        # The package name as defined in the requirement line
-        self.raw_package: str = ""
-        self.extras: set[str] = set()
-        self.version_specs: list[tuple[str, str]] = []
-        self.environment_marker: str | None = None
+        super().__init__(requirement_string)
         self.hashes: list[str] = []
         self.qualifiers: dict[str, str] = {}
-
-        self.kind: Literal["pypi", "url", "vcs"]
-        self.download_line: str = ""
-
+        self.kind: Literal["pypi", "url", "vcs"] = "pypi"
+        self.download_line: str = requirement_string
         self.options: list[str] = []
 
-        self._url: Any = None
+    @property
+    def package(self) -> str:
+        """Return the canonicalized package name."""
+        return canonicalize_name(self.name)
 
     @property
-    def url(self) -> str:
-        """Extract the URL from the download line of a VCS or URL requirement."""
-        if self._url is None:
-            if self.kind not in ("url", "vcs"):
-                raise ValueError(f"Cannot extract URL from {self.kind} requirement")
-            # package @ url ; environment_marker
-            parts = self.download_line.split()
-            self._url = parts[2]
+    def raw_package(self) -> str:
+        """Return the package name as defined in the requirement line."""
+        return self.name
 
-        return self._url
+    @property
+    def direct_access_url(self) -> str:
+        """URL for url/vcs requirements. Raises ValueError if kind is pypi."""
+        if self.url is None:
+            raise ValueError(f"Cannot extract URL from {self.kind} requirement")
+        return self.url
+
+    @property
+    def version_specs(self) -> list[tuple[str, str]]:
+        """Return version specifiers as a list of (operator, version) tuples."""
+        return [(spec.operator, spec.version) for spec in self.specifier]
+
+    @property
+    def environment_marker(self) -> str | None:
+        """Return the environment marker as a string, or None."""
+        return str(self.marker) if self.marker else None
 
     def __str__(self) -> str:
         """Return the string representation of the PipRequirement."""
@@ -278,8 +282,20 @@ class PipRequirement:
         line.extend(f"--hash={h}" for h in self.hashes)
         return " ".join(line)
 
-    def copy(self, url: str | None = None, hashes: list[str] | None = None) -> "PipRequirement":
-        """Duplicate this instance of PipRequirement.
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PipRequirement):
+            return NotImplemented
+        return super().__eq__(other) and self.kind == other.kind
+
+    def __hash__(self) -> int:
+        return hash((super().__hash__(), self.kind))
+
+    def copy(self) -> "PipRequirement":
+        """Return an unmodified clone of this requirement."""
+        return self.update(None, None)
+
+    def update(self, url: str | None = None, hashes: list[str] | None = None) -> "PipRequirement":
+        """Return a clone of this requirement, optionally changing the URL and/or hashes.
 
         :param str url: set a new direct access URL for the requirement. If provided, the
             new requirement is always of ``url`` kind.
@@ -313,20 +329,10 @@ class PipRequirement:
                     "Removed editable option when copying the requirement %r", self.raw_package
                 )
 
-        requirement = self.__class__()
-        # Extras are incorrectly treated as part of the URL itself. If we're setting
-        # the URL, they must be skipped.
-        if not url:
-            requirement.extras = set(self.extras)
-        requirement.package = self.package
-        requirement.raw_package = self.raw_package
-        # Version specs are ignored by pip when applied to a URL, let's do the same.
-        requirement.version_specs = [] if url else list(self.version_specs)
-        requirement.environment_marker = self.environment_marker
-        requirement.hashes = list(hashes or self.hashes)
+        requirement = self.__class__(download_line)
+        requirement.hashes = list(self.hashes if hashes is None else hashes)
         requirement.qualifiers = dict(self.qualifiers)
         requirement.kind = "url" if url else self.kind
-        requirement.download_line = download_line
         requirement.options = options
 
         return requirement
@@ -343,31 +349,27 @@ class PipRequirement:
         """
         to_be_parsed = line
         qualifiers: dict[str, str] = {}
-        requirement = cls()
 
-        if not (direct_access_kind := cls._assess_direct_access_requirement(line)):
-            requirement.kind = "pypi"
-        else:
-            requirement.kind = direct_access_kind
+        direct_access_kind = cls._assess_direct_access_requirement(line)
+        if direct_access_kind:
             to_be_parsed, qualifiers = cls._adjust_direct_access_requirement(
                 to_be_parsed, cls.HAS_NAME_IN_DIRECT_ACCESS_REQUIREMENT
             )
 
         try:
-            req = Requirement(to_be_parsed)
+            requirement = cls(to_be_parsed)
         except InvalidRequirement as exc:
             # see https://github.com/pypa/setuptools/pull/2137
-            raise UnexpectedFormat(f"Unable to parse the requirement {to_be_parsed!r}: {exc}")
+            raise UnexpectedFormat(
+                f"Unable to parse the requirement {to_be_parsed!r}: {exc}"
+            ) from exc
 
         hashes, options = cls._split_hashes_from_options(options)
 
-        requirement.download_line = to_be_parsed
+        requirement.kind = direct_access_kind or "pypi"
+        if direct_access_kind and requirement.url is None:
+            raise UnexpectedFormat(f"Direct access requirement {to_be_parsed!r} has no URL")
         requirement.options = options
-        requirement.package = canonicalize_name(req.name)
-        requirement.raw_package = req.name
-        requirement.version_specs = [(spec.operator, spec.version) for spec in req.specifier]
-        requirement.extras = req.extras
-        requirement.environment_marker = str(req.marker) if req.marker else None
         requirement.hashes = hashes
         requirement.qualifiers = qualifiers
 
@@ -613,7 +615,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
 
         # Fail if VCS requirement uses any VCS other than git or does not have a valid ref
         elif req.kind == "vcs":
-            url = urlparse.urlparse(req.url)
+            url = urlparse.urlparse(req.direct_access_url)
 
             if not url.scheme.startswith("git"):
                 raise UnsupportedFeature(
@@ -643,7 +645,7 @@ def validate_requirements(requirements: list[PipRequirement]) -> None:
                     ),
                 )
 
-            url = urlparse.urlparse(req.url)
+            url = urlparse.urlparse(req.direct_access_url)
             if not any(url.path.endswith(ext) for ext in ALL_FILE_EXTENSIONS):
                 msg = (
                     "URL for requirement does not contain any recognized file extension: "
