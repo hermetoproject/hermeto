@@ -1,1 +1,7 @@
 .git_archival.txt  export-subst
+
+# Integration test fixtures contain real lockfiles and source trees
+# in many languages; exclude them from GitHub's language stats.
+# 'linguist-vendored' code setting picked as the best fit [1]
+# [1] https://github.com/github-linguist/linguist/blob/main/docs/overrides.md#summary
+tests/integration/*/scenarios/** linguist-vendored
