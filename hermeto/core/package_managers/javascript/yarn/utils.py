@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import os
 import subprocess
+from typing import TypeAlias
 
 from semver import Version
 
@@ -8,6 +9,13 @@ from hermeto.core.errors import PackageManagerError
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.type_aliases import SemverLike
 from hermeto.core.utils import run_cmd
+
+# Absolute path to a git-dep tarball under the output deps directory.
+TarballPath: TypeAlias = str
+# Canonical vcs_url PURL qualifier (e.g. git+ssh://git@host/path@ref).
+VcsUrl: TypeAlias = str
+# Maps cloned tarball paths to vcs_url qualifiers for PURL generation.
+TarballVcsUrlMap: TypeAlias = dict[TarballPath, VcsUrl]
 
 
 def run_yarn_cmd(cmd: list[str], source_dir: RootedPath, env: dict[str, str] | None = None) -> str:

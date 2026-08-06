@@ -25,11 +25,13 @@ from hermeto.core.package_managers.javascript.yarn.locators import (
     NpmLocator,
     PatchLocator,
     WorkspaceLocator,
+    parse_locator,
 )
 from hermeto.core.package_managers.javascript.yarn.project import PackageJson, Project, YarnRc
 from hermeto.core.package_managers.javascript.yarn.resolver import (
     Package,
     _ComponentResolver,
+    _ResolvedPackage,
     create_components,
     resolve_packages,
 )
@@ -109,9 +111,9 @@ def test_validate_unsupported_locators(
         resolve_packages(rooted_tmp_path)
 
     assert caplog.messages == [
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
-        f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
+        f"{APP_NAME} cannot process this Yarn Berry Git dependency: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
+        f"{APP_NAME} cannot process this Yarn Berry Git dependency: is-positive@git@github.com:kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678",
+        f"{APP_NAME} does not support Exec dependencies for Yarn Berry: holy-hand-grenade@exec:./generate-holy-hand-grenade.js#./generate-holy-hand-grenade.js::hash=3b5cbd&locator=berryscary%40workspace%3A.",
     ]
 
 
@@ -1234,3 +1236,76 @@ def test_resolve_packages_deduplicates_workspaces(
     mock_yarn_cmd.assert_any_call(
         ["workspace", "lib", "info", "--recursive", "--cache", "--json"], rooted_tmp_path
     )
+
+
+# --- Tests for git PURL mapping ---
+
+GIT_VCS_URL = "git+https://github.com/owner/my-git-dep.git@deadbeef"
+GIT_VCS_URL_ENCODED = quote(GIT_VCS_URL, safe=":/")  # matches PackageURL encoding
+
+
+class TestGitPurlMapping:
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_repo_id")
+    def test_file_dep_with_git_purl_map(
+        self,
+        mock_get_repo_id: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        mock_get_repo_id.return_value = MOCK_REPO_ID
+
+        tarball_path = "deps/my-git-dep.tgz"
+        file_locator = parse_locator(
+            f"my-git-dep@file:{tarball_path}::locator=berryscary%40workspace%3A."
+        )
+
+        mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+        output_dir = rooted_tmp_path.re_root("output")
+
+        resolver = _ComponentResolver(
+            {file_locator: mock.Mock()},
+            set(),
+            [],
+            mock_project,
+            output_dir,
+            tarball_vcs_url_map={tarball_path: GIT_VCS_URL},
+        )
+
+        resolved = _ResolvedPackage(
+            locator=file_locator, name="my-git-dep", version="1.0.0", checksum="abc123"
+        )
+        purl = resolver._generate_purl_for_package(resolved, mock_project)
+
+        assert purl == f"pkg:npm/my-git-dep@1.0.0?vcs_url={GIT_VCS_URL_ENCODED}"
+
+    @mock.patch("hermeto.core.package_managers.general.get_repo_id")
+    def test_file_dep_without_git_purl_map(
+        self,
+        mock_get_repo_id: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        mock_get_repo_id.return_value = MOCK_REPO_ID
+
+        file_locator = parse_locator(
+            "regular-file-dep@file:deps/regular.tgz::locator=berryscary%40workspace%3A."
+        )
+
+        mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+        output_dir = rooted_tmp_path.re_root("output")
+
+        resolver = _ComponentResolver(
+            {file_locator: mock.Mock()},
+            set(),
+            [],
+            mock_project,
+            output_dir,
+            tarball_vcs_url_map=None,
+        )
+
+        resolved = _ResolvedPackage(
+            locator=file_locator, name="regular-file-dep", version="1.0.0", checksum=None
+        )
+        purl = resolver._generate_purl_for_package(resolved, mock_project)
+
+        assert (
+            purl == f"pkg:npm/regular-file-dep@1.0.0?vcs_url={MOCK_REPO_VCS_URL}#deps/regular.tgz"
+        )

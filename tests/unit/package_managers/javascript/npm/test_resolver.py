@@ -9,7 +9,11 @@ import pytest
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import NpmSettings
-from hermeto.core.errors import LockfileNotFound, PackageRejected, UnsupportedFeature
+from hermeto.core.errors import (
+    LockfileNotFound,
+    PackageRejected,
+    UnsupportedFeature,
+)
 from hermeto.core.package_managers.javascript.npm.project import PackageLock
 from hermeto.core.package_managers.javascript.npm.resolver import (
     _get_npm_dependencies,
@@ -333,7 +337,7 @@ def test_update_package_json_files(
                 "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.11.tgz": "types-react-dom-18.0.11.tgz",
                 "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz": "abbrev-2.0.0.tgz",
                 "git+ssh://git@github.com/kevva/is-positive.git#97edff6f": "github.com/kevva/is-positive/is-positive-external-gitcommit-97edff6f.tgz",
-                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": "gitlab.foo.bar.com/osbs/hermetoproject/integration-tests/hermetoproject/integration-tests-external-gitcommit-c300503.tgz",
+                "git+ssh://git@gitlab.foo.bar.com/osbs/hermetoproject/integration-tests.git#c300503": "gitlab.foo.bar.com/osbs/hermetoproject/integration-tests/integration-tests-external-gitcommit-c300503.tgz",
             },
         ),
     ],
@@ -341,7 +345,7 @@ def test_update_package_json_files(
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.async_download_files")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.javascript.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.javascript.js_utils.clone_as_tarball")
 def test_get_npm_dependencies(
     mock_clone_as_tarball: mock.Mock,
     mock_from_sri: mock.Mock,
@@ -417,7 +421,7 @@ def test_npm_settings_rejects_proxy_urls_containing_credentials(
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.async_download_files")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.javascript.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.javascript.js_utils.clone_as_tarball")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.get_config")
 def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
     mocked_config: mock.Mock,
@@ -479,7 +483,7 @@ def test_npm_proxy_credentials_do_not_propagate_to_nonregistry_hosts(
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.async_download_files")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.javascript.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.javascript.js_utils.clone_as_tarball")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.get_config")
 def test_npm_proxy_credentials_propagate_to_registry_hosts(
     mocked_config: mock.Mock,
@@ -542,7 +546,7 @@ def test_npm_proxy_credentials_propagate_to_registry_hosts(
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.patch_url_to_point_to_proxy")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.must_match_any_checksum")
 @mock.patch("hermeto.core.checksum.ChecksumInfo.from_sri")
-@mock.patch("hermeto.core.package_managers.javascript.npm.resolver.clone_as_tarball")
+@mock.patch("hermeto.core.package_managers.javascript.js_utils.clone_as_tarball")
 @mock.patch("hermeto.core.package_managers.javascript.npm.resolver.get_config")
 def test_npm_proxy_url_gets_substituted_for_registry_hosts(
     mocked_config: mock.Mock,

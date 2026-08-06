@@ -2,8 +2,6 @@
 from typing import Literal, NewType
 from urllib.parse import urlparse
 
-from hermeto.core.errors import UnexpectedFormat
-
 # In rare cases, package-lock.json may contain resolved urls from the Yarn registry.
 # This most likely happens when converting a yarn.lock to package-lock.json
 # ("importing" one with npm or "exporting" with yarn).
@@ -56,48 +54,3 @@ def update_vcs_url_with_full_hostname(vcs: str) -> str:
     if ref:
         vcs = f"{vcs}#{ref}"
     return vcs
-
-
-def extract_git_info_npm(vcs_url: NormalizedUrl) -> dict[str, str]:
-    """
-    Extract important info from a VCS requirement URL.
-
-    Given a URL such as git+ssh://user@host/namespace/repo.git#9e164b970
-
-    this function will extract:
-    - the "clean" URL: ssh://user@host/namespace/repo.git
-    - the git ref: 9e164b970
-
-    The clean URL and ref can be passed straight to scm.Git to fetch the repo.
-    The host, namespace and repo will be used to construct the file path under deps/npm.
-
-    :param vcs_url: The URL of a VCS requirement, must be valid (have git ref in path)
-    :return: Dict with url, ref, host, namespace and repo keys
-    """
-    clean_url, _, ref = vcs_url.partition("#")
-    # if scheme is git+protocol://, keep only protocol://
-    clean_url = clean_url.removeprefix("git+")
-
-    url = urlparse(clean_url)
-    namespace_repo = url.path.strip("/").removesuffix(".git")
-
-    # Everything up to the last '/' is namespace, the rest is repo
-    namespace, _, repo = namespace_repo.partition("/")
-
-    vcs_url_info = {
-        "url": clean_url,
-        "ref": ref.lower(),
-        "namespace": namespace,
-        "repo": repo,
-    }
-
-    for key, value in vcs_url_info.items():
-        if not value:
-            raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. {key} is missing.")
-
-    if url.hostname:
-        vcs_url_info["host"] = url.hostname
-    else:
-        raise UnexpectedFormat(f"{vcs_url} is not valid VCS url. Host is missing.")
-
-    return vcs_url_info

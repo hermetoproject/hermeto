@@ -14,6 +14,10 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import LockfileNotFound, MissingChecksum, PackageRejected
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.package_managers.general import async_download_files, patch_url_to_point_to_proxy
+from hermeto.core.package_managers.javascript.js_utils import (
+    clone_repo_pack_archive,
+    parse_git_clone_url,
+)
 from hermeto.core.package_managers.javascript.npm.project import (
     PackageLock,
     ResolvedNpmPackage,
@@ -22,11 +26,9 @@ from hermeto.core.package_managers.javascript.npm.project import (
 from hermeto.core.package_managers.javascript.npm.utils import (
     NormalizedUrl,
     classify_resolved_url,
-    extract_git_info_npm,
     normalize_resolved_url,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.scm import clone_as_tarball
 
 DEPENDENCY_TYPES = (
     "dependencies",
@@ -35,33 +37,6 @@ DEPENDENCY_TYPES = (
     "peerDependencies",
 )
 log = logging.getLogger(__name__)
-
-
-def _clone_repo_pack_archive(
-    vcs: NormalizedUrl,
-    download_dir: RootedPath,
-) -> RootedPath:
-    """
-    Clone a repository and pack its content as tar.
-
-    :param url: URL for file download
-    :param download_dir: Output folder where dependencies will be downloaded
-    :raise FetchError: If download failed
-    """
-    info = extract_git_info_npm(vcs)
-    download_path = download_dir.join_within_root(
-        info["host"],  # host
-        info["namespace"],
-        info["repo"],
-        f"{info['repo']}-external-gitcommit-{info['ref']}.tgz",
-    )
-
-    # Create missing directories
-    directory = Path(download_path).parent
-    directory.mkdir(parents=True, exist_ok=True)
-    clone_as_tarball(info["url"], info["ref"], download_path.path)
-
-    return download_path
 
 
 async def async_download_with_auth(
@@ -122,7 +97,7 @@ def _get_npm_dependencies(
         if dep_type == "file":
             continue
         elif dep_type == "git":
-            download_paths[url] = _clone_repo_pack_archive(url, download_dir)
+            download_paths[url] = clone_repo_pack_archive(parse_git_clone_url(url), download_dir)
         else:
             if dep_type == "registry":
                 archive_name = f"{info['name']}-{info['version']}.tgz".removeprefix("@").replace(

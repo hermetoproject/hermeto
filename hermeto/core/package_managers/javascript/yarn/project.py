@@ -15,7 +15,8 @@ from typing import Any, Literal, NamedTuple, TypedDict
 import semver
 import yaml
 
-from hermeto.core.errors import PackageRejected, UnexpectedFormat
+from hermeto import APP_NAME
+from hermeto.core.errors import LockfileNotFound, PackageRejected, UnexpectedFormat
 from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.rooted_path import RootedPath
 
@@ -106,6 +107,15 @@ class Project(NamedTuple):
         return False
 
     @property
+    def lockfile_path(self) -> RootedPath:
+        """The path to the lockfile for this project.
+
+        The lockfile name is affected by the lockfileFilename configuration in yarnrc.
+        """
+        filename = self.yarn_rc.get("lockfileFilename", "yarn.lock")
+        return self.source_dir.join_within_root(filename)
+
+    @property
     def yarn_cache(self) -> RootedPath:
         """The path to the yarn cache folder.
 
@@ -116,7 +126,11 @@ class Project(NamedTuple):
 
     @classmethod
     def from_source_dir(cls, source_dir: RootedPath) -> "Project":
-        """Create a Project from a sources directory path."""
+        """Create a Project from a sources directory path.
+
+        Validates yarnrc paths, rejects zero-installs, and requires a lockfile
+        so a returned Project is already known-valid for hermeto.
+        """
         yarn_rc_path = source_dir.join_within_root(".yarnrc.yml")
 
         if yarn_rc_path.path.exists():
@@ -125,7 +139,57 @@ class Project(NamedTuple):
             yarn_rc = YarnRc(yarn_rc_path, {})
 
         package_json = PackageJson.from_dir(source_dir.path)
-        return cls(source_dir, yarn_rc, package_json)
+        project = cls(source_dir, yarn_rc, package_json)
+        _verify_yarnrc_paths(project)
+        _check_zero_installs(project)
+        _check_lockfile(project)
+        return project
+
+
+def _verify_yarnrc_paths(project: Project) -> None:
+    paths_conf_opts = {
+        # pnpDataPath is only configurable in Yarn v3
+        project.yarn_rc.get("pnpDataPath"): "pnpDataPath",
+        project.yarn_rc.get("pnpUnpluggedFolder"): "pnpUnpluggedFolder",
+        project.yarn_rc.get("installStatePath"): "installStatePath",
+        project.yarn_rc.get("patchFolder"): "patchFolder",
+        project.yarn_rc.get("virtualFolder"): "virtualFolder",
+    }
+
+    for path in paths_conf_opts:
+        if path is not None:
+            try:
+                project.source_dir.join_within_root(path)
+            except Exception:
+                raise PackageRejected(
+                    (
+                        f"YarnRC '{paths_conf_opts[path]}={path}' property: path points "
+                        "outside of the source directory"
+                    ),
+                    solution=(
+                        "Make sure that all Yarn RC configuration options specifying a path "
+                        "point to a relative location inside the main repository"
+                    ),
+                )
+
+
+def _check_zero_installs(project: Project) -> None:
+    if project.is_zero_installs:
+        raise PackageRejected(
+            (f"Yarn zero install detected, PnP zero installs are unsupported by {APP_NAME}"),
+            solution=(
+                "Please convert your project to a regular install-based one.\n"
+                "Depending on whether you use Yarn's PnP or a different node linker Yarn setting "
+                "make sure to remove '.yarn/cache' or 'node_modules' directories respectively."
+            ),
+        )
+
+
+def _check_lockfile(project: Project) -> None:
+    if not project.lockfile_path.path.exists():
+        raise LockfileNotFound(
+            files=project.lockfile_path.path,
+        )
 
 
 def get_semver_from_yarn_path(yarn_path: str | None) -> semver.version.Version | None:
