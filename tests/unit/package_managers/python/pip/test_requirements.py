@@ -685,7 +685,7 @@ class TestPipRequirementsFile:
         for pip_requirement in pip_requirements.requirements:
             url = new_urls.get(pip_requirement.raw_package)
             hashes = new_hashes.get(pip_requirement.raw_package)
-            new_requirements.append(pip_requirement.copy(url=url, hashes=hashes))
+            new_requirements.append(pip_requirement.update(url=url, hashes=hashes))
 
         # Verify a new PipRequirementsFile can be loaded in memory and written correctly to disk.
         new_file = PipRequirementsFile.from_requirements_and_options(
@@ -987,30 +987,27 @@ class TestPipRequirementsFile:
             ),
         ),
     )
-    def test_pip_requirement_copy(
+    def test_pip_requirement_update(
         self,
         requirement_line: str,
         requirement_options: list[str],
         new_values: dict[str, str] | dict[str, list[str]],
         expected_changes: dict[str, str],
     ) -> None:
-        """Test PipRequirement.copy method."""
+        """Test PipRequirement.update method."""
         original_requirement = PipRequirement.from_line(requirement_line, requirement_options)
-        new_requirement = original_requirement.copy(**new_values)
+        new_requirement = original_requirement.update(**new_values)
 
         for attr in self.PIP_REQUIREMENT_ATTRS:
             expected_changes.setdefault(attr, getattr(original_requirement, attr))
 
         self._assert_pip_requirement(new_requirement, expected_changes)
 
-    def test_invalid_kind_for_url(self) -> None:
-        """Test extracting URL from a requirement that does not have one."""
-        requirement = PipRequirement()
-        requirement.download_line = "aiowsgi==0.7"
-        requirement.kind = "pypi"
-
-        with pytest.raises(ValueError, match="Cannot extract URL from pypi requirement"):
-            _ = requirement.url
+    def test_pypi_requirement_has_no_url(self) -> None:
+        """Test that a PyPI requirement has no URL."""
+        requirement = PipRequirement.from_line("aiowsgi==0.7", [])
+        assert requirement.kind == "pypi"
+        assert requirement.url is None
 
     def _assert_pip_requirement(self, pip_requirement: Any, expected_requirement: Any) -> None:
         for attr, default_value in self.PIP_REQUIREMENT_ATTRS.items():
