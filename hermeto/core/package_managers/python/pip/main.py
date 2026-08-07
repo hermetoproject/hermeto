@@ -38,6 +38,9 @@ from hermeto.core.package_managers.general import (
     extract_git_info,
     get_vcs_qualifiers,
 )
+from hermeto.core.package_managers.python.pip.markers import (
+    requirement_matches_binary_filters,
+)
 from hermeto.core.package_managers.python.pip.package_distributions import (
     DistributionPackageInfo,
     process_package_distributions,
@@ -471,7 +474,8 @@ def _download_dependencies(
 
     :param output_dir: the root output directory for this request
     :param requirements_file: A requirements.txt file
-    :param binary_filters: process wheels?
+    :param binary_filters: target platform filters; when set, requirements whose
+        environment marker excludes the target platform are skipped (issue #1570)
     :return: list of PipPackage instances for each downloaded package
     """
     options: dict[str, Any] = process_requirements_options(requirements_file.options)
@@ -499,6 +503,25 @@ def _download_dependencies(
     pypi_reqs: list[PipRequirement] = []
     for req in requirements_file.requirements:
         log.info("-- Processing requirement line '%s'", req.download_line)
+        # A binary filter declares a target platform; a requirement whose PEP 508
+        # marker excludes that platform would never be installed by pip, so skip
+        # it rather than fail trying to resolve a wheel/sdist that does not exist.
+        # This deliberately runs *after* the whole-file hash and requirement
+        # validation above (not before): validation is a security control, so a
+        # skipped line with a missing/invalid hash must still be rejected rather
+        # than quietly bypassed. The extra strictness (a would-be-skipped line
+        # still needs a valid hash) is fail-closed and rare -- pip-compile hashes
+        # everything -- and is preferred over relaxing a security check.
+        # https://github.com/hermetoproject/hermeto/issues/1570
+        if binary_filters is not None and not requirement_matches_binary_filters(
+            req, binary_filters
+        ):
+            log.info(
+                "-- Skipping requirement excluded by its environment marker under the "
+                "binary filters: '%s'",
+                req.download_line,
+            )
+            continue
         if req.kind == "pypi":
             pypi_reqs.append(req)
             continue
