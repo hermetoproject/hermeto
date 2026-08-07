@@ -1,0 +1,12 @@
+FROM mirror.gcr.io/ruby:3.3
+
+RUN if curl -IsS www.google.com; then echo "Has network access!"; exit 1; fi
+
+WORKDIR /app
+
+COPY Gemfile .
+COPY Gemfile.lock .
+
+RUN bundle install --local
+
+CMD ["rails", "-v"]

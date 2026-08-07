@@ -10,6 +10,7 @@ import aiohttp
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
+from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
@@ -142,6 +143,24 @@ def _download_gems(
             headers=headers,
         )
     )
+
+    verify_checksums(gem_deps, deps_dir)
+
+
+def verify_checksums(
+    gem_deps: list[GemDependency],
+    deps_dir: RootedPath,
+) -> None:
+    """Verify checksums for downloaded gems."""
+    for dep in gem_deps:
+        if dep.checksum is None:
+            log.warning("No checksum found for %s-%s, skipping verification", dep.name, dep.version)
+            continue
+
+        must_match_any_checksum(
+            dep.download_location(deps_dir).path,
+            [ChecksumInfo.from_hash(dep.checksum)],
+        )
 
 
 def _clone_git_deps(
