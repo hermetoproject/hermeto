@@ -5,7 +5,7 @@ from unittest import mock
 import aiohttp
 import pytest
 from git.repo import Repo
-from pydantic import HttpUrl
+from pydantic import HttpUrl, SecretStr
 
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnsupportedFeature
@@ -241,7 +241,9 @@ def _mock_bundler_config(
     mock_config = mock.Mock()
     mock_config.bundler.proxy_url = proxy_url
     mock_config.bundler.proxy_login = proxy_login
-    mock_config.bundler.proxy_password = proxy_password
+    mock_config.bundler.proxy_password = (
+        SecretStr(proxy_password) if proxy_password is not None else None
+    )
     mock_config.bundler.proxy_url = proxy_url
     mock_config.runtime.concurrency_limit = 5
     return mock_config

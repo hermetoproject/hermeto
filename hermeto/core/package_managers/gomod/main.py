@@ -1507,9 +1507,11 @@ def prepare_netrc_contents() -> str:
     # uniquely addressable entity, having any backups here would jeopardize
     # fetch integrity.
     machine = urllib.parse.urlparse(config.gomod.proxy_url).netloc
+    password = config.gomod.proxy_password
+    secret = password.get_secret_value() if password is not None else ""
     return f"""machine {machine}
         login {config.gomod.proxy_login}
-        password {config.gomod.proxy_password}"""
+        password {secret}"""
 
 
 def inject_netrc(netrc_stuff: str, temp_netrc_dir: Path) -> str:

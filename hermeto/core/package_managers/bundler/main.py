@@ -113,7 +113,8 @@ def _download_gems(
     proxy_url = config.bundler.proxy_url
     proxy_auth = (
         aiohttp.encode_basic_auth(
-            login=config.bundler.proxy_login, password=config.bundler.proxy_password
+            login=config.bundler.proxy_login,
+            password=config.bundler.proxy_password.get_secret_value(),
         )
         if config.bundler.proxy_login and config.bundler.proxy_password
         else None
