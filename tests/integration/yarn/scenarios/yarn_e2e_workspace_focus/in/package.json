@@ -5,6 +5,6 @@
     "packages/*"
   ],
   "dependencies": {
-    "nanoid": "^5.1.9"
+    "nanoid": "^5.1.16"
   }
 }
