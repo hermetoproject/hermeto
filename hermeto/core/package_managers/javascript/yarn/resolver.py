@@ -11,7 +11,6 @@ import logging
 import re
 import zipfile
 from collections import defaultdict
-from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
@@ -248,9 +247,7 @@ def create_components(
         else:
             package_mapping[package.parsed_locator] = package
 
-    component_resolver = _ComponentResolver(
-        package_mapping, dev_locators, patch_locators, project, output_dir
-    )
+    component_resolver = _ComponentResolver(dev_locators, patch_locators, project, output_dir)
     return [component_resolver.get_component(package) for package in package_mapping.values()]
 
 
@@ -277,7 +274,6 @@ class _CouldNotResolve(ValueError):
 class _ComponentResolver:
     def __init__(
         self,
-        package_mapping: Mapping[Locator, Package],
         dev_raw_locators: set[str],
         patch_locators: list[PatchLocator],
         project: Project,
@@ -285,7 +281,6 @@ class _ComponentResolver:
     ) -> None:
         self._project = project
         self._output_dir = output_dir
-        self._package_mapping = package_mapping
         self._dev_raw_locators = dev_raw_locators
         self._pedigree_mapping = self._get_pedigree_mapping(patch_locators)
         self._proxy_url = get_config().yarn.proxy_url

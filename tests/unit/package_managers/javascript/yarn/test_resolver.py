@@ -905,7 +905,7 @@ def test_get_path_patch_url(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_url = resolver._get_path_patch_url(patch_locator, patch_path)
@@ -928,7 +928,7 @@ def test_get_builtin_patch_url(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_url = resolver._get_builtin_patch_url(builtin_patch, Version(3, 0, 0))
@@ -968,7 +968,7 @@ def test_pedigree_mapping_flattens_nested_patches(
 
     mock_project = mock.Mock(source_dir=source_dir)
     resolver = _ComponentResolver(
-        {}, set(), [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
+        set(), [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
     )
 
     actual_pedigree = resolver._get_pedigree_mapping([patch_locator1, patch_locator2])
@@ -1028,9 +1028,7 @@ def test_get_pedigree_with_unsupported_locators(
     mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
-        _ComponentResolver(
-            {}, set(), patch_locators, mock_project, rooted_tmp_path.re_root("output")
-        )
+        _ComponentResolver(set(), patch_locators, mock_project, rooted_tmp_path.re_root("output"))
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_config")
@@ -1177,7 +1175,7 @@ def test_path_patch_raises_without_repo_in_permissive_mode(
     mock_proj = mock.Mock(source_dir=source_dir)
 
     with pytest.raises(PackageRejected):
-        _ComponentResolver({}, set(), [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
+        _ComponentResolver(set(), [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.run_yarn_cmd")

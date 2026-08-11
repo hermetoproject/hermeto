@@ -10,7 +10,7 @@ import logging
 import re
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 import semver
 import yaml
@@ -20,11 +20,6 @@ from hermeto.core.package_managers.javascript.package_json import PackageJson
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
-
-
-ChecksumBehavior = Literal["throw", "update", "ignore"]
-PnpMode = Literal["strict", "loose"]
-NodeLinker = Literal["pnp", "pnpm", "node-modules"]
 
 
 class Plugin(TypedDict):
