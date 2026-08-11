@@ -152,7 +152,7 @@ def _fast_copy(src: Path, dest: Path) -> int:
             ex.filename2 = fdest.name
 
             if ex.errno == errno.ENOSYS or ex.errno == errno.EXDEV:
-                raise _FastCopyFailedFallback
+                raise _FastCopyFailedFallback()
 
             raise ex from None
 
@@ -206,15 +206,15 @@ def get_cache_dir() -> Path:
         cache_dir = Path(os.environ["XDG_CACHE_HOME"])
     except KeyError:
         cache_dir = Path.home().joinpath(".cache")
-    return cache_dir.joinpath(f"{APP_NAME}")
-
-
-def first_for(predicate: Callable, iterable: Iterable, fallback: Any) -> Any:
-    """Return the first match of predicate in iterable or fallback value."""
-    return next((x for x in iterable if predicate(x)), fallback)
+    return cache_dir.joinpath(APP_NAME)
 
 
 def partition_by(predicate: Callable, iterable: Iterable) -> tuple[Iterable, Iterable]:
     """Partition iterable in two by predicate."""
     i1, i2 = tee(iterable)
     return filterfalse(predicate, i1), filter(predicate, i2)
+
+
+def first_for(predicate: Callable, iterable: Iterable, fallback: Any) -> Any:
+    """Return the first match of predicate in iterable or fallback value."""
+    return next((x for x in iterable if predicate(x)), fallback)
