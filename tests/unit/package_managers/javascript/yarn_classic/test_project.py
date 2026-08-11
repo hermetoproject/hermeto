@@ -90,11 +90,6 @@ def _prepare_yarn_lock_file(rooted_tmp_path: RootedPath, content: str) -> YarnLo
     return YarnLock.from_file(path)
 
 
-def test_yarn_lock_path(rooted_tmp_path: RootedPath) -> None:
-    yarn_lock = _prepare_yarn_lock_file(rooted_tmp_path, VALID_YARN_LOCK_FILE)
-    assert yarn_lock.path.root == rooted_tmp_path.root
-
-
 def test_parse_yarn_lock(rooted_tmp_path: RootedPath) -> None:
     yarn_lock = _prepare_yarn_lock_file(rooted_tmp_path, VALID_YARN_LOCK_FILE)
     assert yarn_lock.data == lockfile.Lockfile.from_str(VALID_YARN_LOCK_FILE).data

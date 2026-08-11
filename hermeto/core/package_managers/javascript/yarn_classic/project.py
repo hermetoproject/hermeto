@@ -20,7 +20,6 @@ from hermeto.core.rooted_path import RootedPath
 class YarnLock:
     """A yarn.lock file."""
 
-    path: RootedPath
     data: dict[str, Any]
     yarn_lockfile: lockfile.Lockfile
 
@@ -50,7 +49,7 @@ class YarnLock:
                 solution="Please verify the content of the file.",
             )
 
-        return cls(path, yarn_lockfile.data, yarn_lockfile)
+        return cls(yarn_lockfile.data, yarn_lockfile)
 
 
 @dataclass(frozen=True)
