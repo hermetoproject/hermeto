@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import json
 import os
-import urllib.parse
 from typing import Any
 from unittest import mock
 
@@ -26,10 +25,6 @@ from hermeto.core.package_managers.javascript.npm.resolver import (
 )
 from hermeto.core.package_managers.javascript.npm.utils import NormalizedUrl
 from hermeto.core.rooted_path import RootedPath
-
-
-def urlq(url: str) -> str:
-    return urllib.parse.quote(url, safe=":/")
 
 
 @pytest.mark.parametrize(
