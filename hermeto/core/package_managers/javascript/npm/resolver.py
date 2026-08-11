@@ -96,9 +96,9 @@ def _get_npm_dependencies(
         dep_type = classify_resolved_url(url)
         proxy_auth = None
 
-        if dep_type == "file":
-            continue
-        elif dep_type == "git":
+        # dep_type is "git", "registry", or "https". "file" deps are filtered
+        # upstream by get_dependencies_to_download() and never reach here.
+        if dep_type == "git":
             download_paths[url] = clone_repo_pack_archive(parse_git_clone_url(url), download_dir)
         else:
             if dep_type == "registry":
