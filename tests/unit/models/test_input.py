@@ -271,7 +271,7 @@ class TestPackageInput:
             pytest.param(
                 {"type": "pip", "requirements_build_files": ["weird/../subpath"]},
                 r"pip.requirements_build_files\n  Value error, path contains ..: weird/../subpath",
-                id="pip_path_references_parent_directory",
+                id="pip_build_path_references_parent_directory",
             ),
             pytest.param(
                 {"type": "pip", "requirements_files": None},

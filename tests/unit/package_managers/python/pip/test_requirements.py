@@ -613,7 +613,7 @@ class TestPipRequirementsFile:
         """Test scenarios in PipRequirement that cannot be triggered via PipRequirementsFile."""
         # Empty lines are NOT ignored
         with pytest.raises(UnexpectedFormat):
-            assert PipRequirement.from_line("     ", []) is None
+            PipRequirement.from_line("     ", [])
 
         with pytest.raises(UnexpectedFormat):
             PipRequirement.from_line("aiowsgi==0.7 \nasn1crypto==1.3.0", [])
