@@ -83,6 +83,7 @@ ignore = [
     "D100",  # missing docstring in public module
     "D104",  # missing docstring in public package
     "D105",  # missing docstring in magic method
+    "D107",  # missing docstring in __init__
     "E501",  # line too long
     "E731",  # do not assign a lambda expression
     "S404",  # import subprocess
