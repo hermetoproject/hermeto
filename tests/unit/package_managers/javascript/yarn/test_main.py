@@ -83,15 +83,6 @@ class YarnVersions(Enum):
         )
 
 
-SAMPLE_PLUGINS = """
-plugins:
-  - path: .yarn/plugins/@yarnpkg/plugin-typescript.cjs
-    spec: "@yarnpkg/plugin-typescript"
-  - path: .yarn/plugins/@yarnpkg/plugin-exec.cjs
-    spec: "@yarnpkg/plugin-exec"
-"""
-
-
 @pytest.mark.parametrize(
     "yarn_path_version, package_manager_version",
     [
