@@ -357,4 +357,4 @@ def _reset_git_head(repo: GitRepo, ref: str) -> None:
         raise FetchError(
             "Failed on checking out the Git repository. Please verify the supplied reference "
             f'of "{ref}" is valid.'
-        )
+        ) from ex

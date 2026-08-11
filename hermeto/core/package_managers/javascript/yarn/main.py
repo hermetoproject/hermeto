@@ -31,7 +31,7 @@ from hermeto.core.package_managers.javascript.yarn.utils import (
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
-from hermeto.core.rooted_path import RootedPath
+from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 log = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ def _verify_yarnrc_paths(project: Project) -> None:
         if path is not None:
             try:
                 project.source_dir.join_within_root(path)
-            except Exception:
+            except PathOutsideRoot:
                 raise PackageRejected(
                     (
                         f"YarnRC '{paths_conf_opts[path]}={path}' property: path points "
@@ -329,7 +329,7 @@ def _strip_workspace_scripts(source_dir: RootedPath, packages: list[Package]) ->
             continue
 
         try:
-            pkg_json = PackageJson.from_dir(source_dir.path.joinpath(locator.relpath))
+            pkg_json = PackageJson.from_dir(source_dir.join_within_root(locator.relpath).path)
         except LockfileNotFound:
             continue
 

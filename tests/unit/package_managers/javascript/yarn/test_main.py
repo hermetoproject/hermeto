@@ -292,7 +292,7 @@ def test_verify_yarnrc_paths_fail(
     request: pytest.FixtureRequest, tmp_path: Path, opt_path: str
 ) -> None:
     project = mock.Mock()
-    project.source_dir = tmp_path
+    project.source_dir = RootedPath(tmp_path)
     project.yarn_rc = YarnRc(
         RootedPath(tmp_path / ".yarnrc.yml"), {request.node.callspec.id: opt_path}
     )
