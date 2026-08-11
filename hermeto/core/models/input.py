@@ -91,7 +91,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
             quoted = ", ".join(f"'{t}'" for t in sorted(expected))
             message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
 
-        if location != "__root__":
+        if location:
             message = f"{location}\n  {message}"
 
         return message
@@ -153,10 +153,8 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
 
         if not Path(val).is_file():
             raise ValueError(
-                (
-                    f"Specified ssl auth file '{info.field_name}':'{val}' is not a regular file.",
-                    "Make sure the file exists and that it has correct permissions.",
-                )
+                f"Specified ssl auth file '{info.field_name}':'{val}' is not a regular file."
+                " Make sure the file exists and that it has correct permissions."
             )
 
         return val
