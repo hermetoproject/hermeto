@@ -48,6 +48,7 @@ class SyntheticRepo:
     """
 
     _GIT_ENV = {
+        **GIT_PRISTINE_ENV,
         "GIT_AUTHOR_NAME": "Test Author",
         "GIT_AUTHOR_EMAIL": "test@example.com",
         "GIT_COMMITTER_NAME": "Test Author",
@@ -75,7 +76,7 @@ class SyntheticRepo:
         self.repo = GitRepo.init(repo_path, env=GIT_PRISTINE_ENV)
         with self.repo.git.custom_environment(**self._GIT_ENV):
             self.repo.git.add(".")
-            self.repo.git.commit(m="test scenario", env=GIT_PRISTINE_ENV)
+            self.repo.git.commit(m="test scenario")
         self.repo.create_remote("origin", origin_url)
         self.path = repo_path
 
