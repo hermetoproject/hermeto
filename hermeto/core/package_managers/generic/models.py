@@ -124,9 +124,12 @@ class LockfileArtifactAuth(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _check_mutually_exclusive(cls, values: dict) -> dict:
-        if ("basic" not in values and "bearer" not in values) or (
-            "basic" in values and "bearer" in values
-        ):
+        if not isinstance(values, dict):
+            # let pydantic reject non-mappings instead of .get() raising AttributeError
+            return values
+        has_basic = values.get("basic") is not None
+        has_bearer = values.get("bearer") is not None
+        if has_basic == has_bearer:
             raise ValueError("Exactly one of the auth types must be set")
         return values
 
