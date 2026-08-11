@@ -121,14 +121,11 @@ class LockfileArtifactAuth(BaseModel):
     bearer: BearerAuth | None = None
     model_config = ConfigDict(extra="forbid")
 
-    @model_validator(mode="before")
-    @classmethod
-    def _check_mutually_exclusive(cls, values: dict) -> dict:
-        if ("basic" not in values and "bearer" not in values) or (
-            "basic" in values and "bearer" in values
-        ):
+    @model_validator(mode="after")
+    def _check_mutually_exclusive(self) -> "LockfileArtifactAuth":
+        if (self.basic is None) == (self.bearer is None):
             raise ValueError("Exactly one of the auth types must be set")
-        return values
+        return self
 
     def get_headers(self) -> dict[str, str]:
         """Return the headers for the artifact."""
