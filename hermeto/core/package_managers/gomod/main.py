@@ -78,8 +78,6 @@ class ParsedOrigin(_ParsedModel):
     vcs: str
     url: str
     hash: str
-    tag_sum: str | None = None
-    ref: str | None = None
 
 
 class ParsedModule(_ParsedModel):
@@ -387,7 +385,7 @@ def _create_packages_from_parsed_data(
 
         relative_path = _resolve_package_relative_path(package, module)
 
-        return Package(relative_path=str(relative_path), module=module)
+        return Package(relative_path=relative_path, module=module)
 
     def _find_parent_module_by_name(package: ParsedPackage) -> Module:
         """Return the longest module name that is contained in package's import_path."""
@@ -682,7 +680,7 @@ def _disable_telemetry(go: Go, run_params: dict[str, Any]) -> None:
 
 
 def _go_list_deps(
-    go: Go, pattern: Literal["./...", "all"], run_params: dict[str, Any] | None = None
+    go: Go, pattern: Literal["./...", "all"], run_params: dict[str, Any]
 ) -> Iterator[ParsedPackage]:
     """Run go list -deps -json and return the parsed list of packages.
 
@@ -691,7 +689,7 @@ def _go_list_deps(
     The "all" pattern includes dependencies needed only for tests. Use it to get a more
     complete module list (roughly matching the list of downloaded modules).
     """
-    cmd = ["list", "-e", "-deps", "-json=ImportPath,Module,Standard,Deps", pattern]
+    cmd = ["list", "-e", "-deps", "-json=ImportPath,Module,Standard", pattern]
     return map(
         ParsedPackage.model_validate,
         load_json_stream(go(cmd, run_params)),
@@ -1360,14 +1358,10 @@ class ModuleVersionResolver:
 
 
 def _validate_local_replacements(modules: Iterable[ParsedModule], app_path: RootedPath) -> None:
-    replaced_paths = [
-        (module.path, module.replace.path)
-        for module in modules
-        if module.replace and module.replace.path.startswith(".")
-    ]
-
-    for _, path in replaced_paths:
-        app_path.join_within_root(path)
+    """Check that local replacements point to paths within app_path."""
+    for module in modules:
+        if module.replace and module.replace.path.startswith("."):
+            app_path.join_within_root(module.replace.path)
 
 
 def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
