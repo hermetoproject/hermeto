@@ -72,7 +72,6 @@ validation:
 # Irrelevant files
 exclude_docs: |
   dependency_confusion.md
-  adr/
   design/
 
 # Versioning with mike

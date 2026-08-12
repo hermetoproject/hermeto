@@ -61,7 +61,7 @@ If, for some reason, you feel this proposed workflow does not fit the feature yo
 
 #### Making experimental features production-ready
 
-When a feature's development has reached a stable point, you can propose making it an official part of the project. This signals to users that the feature is production-ready. To communicate this intent to the maintainers, open a pull request containing an Architecture Decision Record (ADR) with an outline of the implementation, and a clear statement of all decisions which were made (as well as their rationale).
+When a feature's development has reached a stable point, you can propose making it an official part of the project. This signals to users that the feature is production-ready. To communicate this intent to the maintainers, open a pull request containing a Design Document with an outline of the implementation, and a clear statement of all decisions which were made (as well as their rationale).
 
 Once maintainers are confident that they have enough information to maintain the new feature as officially supported they will accept it and help with moving it out from under experimental flag.
 
