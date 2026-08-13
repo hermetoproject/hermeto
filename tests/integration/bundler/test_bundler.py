@@ -39,6 +39,15 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="bundler_missing_git_revision",
         ),
+        pytest.param(
+            utils.TestParameters(
+                packages=({"path": ".", "type": "bundler"},),
+                check_output=False,
+                expected_error=ExitError.ERR_CHECKSUM_VERIFICATION_FAILED,
+                expected_output="Failed to verify",
+            ),
+            id="bundler_checksum_mismatch",
+        ),
     ],
 )
 def test_bundler_packages(
