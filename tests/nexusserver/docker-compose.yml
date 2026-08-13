@@ -27,9 +27,6 @@ services:
       - ../certificates/server.crt:/etc/nginx/certs/server.crt:ro,z
       - ../certificates/server.key:/etc/nginx/certs/server.key:ro,z
       - ../certificates/CA.crt:/etc/nginx/certs/CA.crt:ro,z
-    depends_on:
-      nexus:
-        condition: service_healthy
 
 volumes:
   nexus-data:
