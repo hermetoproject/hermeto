@@ -403,6 +403,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#inspecting-active-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspecting active configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#settings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -930,6 +941,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#inspecting-active-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspecting active configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#settings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1104,6 +1126,19 @@ override lower-priority ones (listed top to bottom):</p>
 <li><code>.hermeto.yaml</code></li>
 </ol>
 <p>Hermeto only supports YAML config files.</p>
+<h2 id="inspecting-active-configuration">Inspecting active configuration<a class="headerlink" href="#inspecting-active-configuration" title="Permanent link">&para;</a></h2>
+<p>Use <code>hermeto config</code> to display the effective configuration after all sources
+have been merged. Each field is annotated with its corresponding environment
+variable name, and values that differ from defaults are marked with <code>(*)</code>.</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>config
+</code></pre></div>
+<p>To show only values that differ from defaults:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>config<span class="w"> </span>--diff
+</code></pre></div>
+<p>By default, sensitive fields such as <code>proxy_password</code> are redacted. To reveal
+them, pass <code>--raw</code>:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>config<span class="w"> </span>--raw
+</code></pre></div>
 <h2 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h2>
 <p>Some settings apply to every package manager. Others apply only to specific
 backends.</p>
