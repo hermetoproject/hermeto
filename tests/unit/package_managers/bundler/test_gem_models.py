@@ -74,3 +74,43 @@ def test_to_component_non_registry_deps_ignore_proxy(rooted_tmp_path_repo: Roote
     for dep in deps:
         component = dep.to_component(proxy_url=HttpUrl(FAKE_PROXY_URL))
         assert component.external_references is None
+
+
+@pytest.mark.parametrize(
+    ("dep", "expected_purl"),
+    [
+        pytest.param(
+            GemDependency(name="rails", version="7.0.0", source="https://rubygems.org/"),
+            "pkg:gem/rails@7.0.0",
+            id="default-rubygems-source",
+        ),
+        pytest.param(
+            GemDependency(name="rails", version="7.0.0", source="http://rubygems.org/"),
+            "pkg:gem/rails@7.0.0",
+            id="default-rubygems-source-http",
+        ),
+        pytest.param(
+            GemDependency(name="custom_gem", version="1.0.0", source="https://gems.example.com"),
+            "pkg:gem/custom_gem@1.0.0?repository_url=https://gems.example.com",
+            id="custom-registry-source",
+        ),
+        pytest.param(
+            GemDependency(
+                name="trailing_slash_gem", version="1.0.0", source="https://gems.example.com/"
+            ),
+            "pkg:gem/trailing_slash_gem@1.0.0?repository_url=https://gems.example.com",
+            id="custom-registry-source-trailing-slash",
+        ),
+    ],
+)
+def test_gem_dependency_purl(dep: GemDependency, expected_purl: str) -> None:
+    """PURLs for non-default registries must include repository_url qualifier."""
+    assert dep.purl == expected_purl
+
+
+def test_purl_authenticated_default_registry() -> None:
+    gem = GemDependency(
+        name="test-gem", version="1.0.0", source="https://secretuser:secretpass@rubygems.org/"
+    )
+
+    assert gem.purl == "pkg:gem/test-gem@1.0.0"

@@ -3,7 +3,7 @@ import logging
 from functools import cached_property
 from pathlib import Path
 from typing import Annotated
-from urllib.parse import urljoin, urlparse
+from urllib.parse import ParseResult, urljoin, urlparse
 
 import pydantic
 from packageurl import PackageURL
@@ -18,6 +18,8 @@ from hermeto.core.models.sbom import PROXY_COMMENT, Component, ExternalReference
 from hermeto.core.package_managers.general import get_vcs_qualifiers
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo
+
+RUBYGEMS_URLS: tuple[str, str] = ("https://rubygems.org", "http://rubygems.org")
 
 AcceptedUrl = Annotated[
     pydantic.HttpUrl,
@@ -75,19 +77,35 @@ class GemDependency(_GemMetadata):
         checksum:   The checksum of the gem.
     """
 
-    source: str
+    source: HttpUrl
     checksum: str | None = None
 
     @cached_property
     def purl(self) -> str:
         """Get PURL for this dependency."""
-        purl = PackageURL(type="gem", name=self.name, version=self.version)
+        qualifiers: dict[str, str] | None = None
+        normalized_source: str = str(self.source).rstrip("/")
+
+        parsed: ParseResult = urlparse(normalized_source)
+
+        host: str = parsed.hostname or ""
+        if ":" in host:
+            host = f"[{host}]"
+        if parsed.port is not None:
+            host += f":{parsed.port}"
+
+        normalized_source = parsed._replace(netloc=host, query="", fragment="").geturl()
+
+        if normalized_source not in RUBYGEMS_URLS:
+            qualifiers = {"repository_url": normalized_source}
+
+        purl = PackageURL(type="gem", name=self.name, version=self.version, qualifiers=qualifiers)
         return purl.to_string()
 
     @cached_property
     def remote_location(self) -> str:
         """Return remote location to download this gem from."""
-        return urljoin(self.source, f"downloads/{self.name}-{self.version}.gem")
+        return urljoin(str(self.source), f"downloads/{self.name}-{self.version}.gem")
 
     def download_location(self, deps_dir: RootedPath) -> RootedPath:
         """Get the file system location of the gem."""
@@ -116,7 +134,9 @@ class GemPlatformSpecificDependency(GemDependency):
         # -gnu suffix being dropped from some platforms. This was observed on
         # sqlite3-aarch-linux-gnu. We discourage using outdated platforms
         # for building dependencies and cnsider this to be a limitation of Ruby.
-        return urljoin(self.source, f"downloads/{self.name}-{self.version}-{self.platform}.gem")
+        return urljoin(
+            str(self.source), f"downloads/{self.name}-{self.version}-{self.platform}.gem"
+        )
 
     def download_location(self, deps_dir: RootedPath) -> RootedPath:
         """Get the file system location of the gem."""
