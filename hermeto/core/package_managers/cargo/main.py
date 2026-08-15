@@ -587,11 +587,55 @@ def _run_cmd_watching_out_for_lock_mismatch(
             ) from e
 
 
+def _find_workspace_members(
+    package_dir: RootedPath, workspace_info: dict[str, Any]
+) -> dict[str, str]:
+    """Find cargo workspace members and return their subpaths keyed by crate name.
+
+    Members are paths relative to the workspace root and may be glob patterns. Every
+    manifest has to be read because a crate name does not have to match the name of the
+    directory the crate lives in.
+    https://doc.rust-lang.org/cargo/reference/workspaces.html#the-members-and-exclude-fields
+    """
+    # An excluded path also excludes everything below it.
+    excluded = [Path(path) for path in workspace_info.get("exclude", [])]
+    members = {}
+
+    for pattern in workspace_info.get("members", []):
+        # A pattern without wildcards matches just itself, so plain paths need no special
+        # treatment. Absolute paths are not valid members and Path.glob rejects them.
+        if Path(pattern).is_absolute():
+            continue
+
+        for member_path in sorted(package_dir.path.glob(pattern)):
+            subpath = member_path.relative_to(package_dir.path)
+            if any(subpath.is_relative_to(path) for path in excluded):
+                continue
+
+            manifest = package_dir.join_within_root(subpath, "Cargo.toml")
+            if not manifest.path.is_file():
+                continue
+
+            parsed_manifest = _parse_toml_project_file(manifest.path)
+            # A directory that defines its own workspace is a separate workspace root,
+            # cargo does not treat it as a member of the outer one.
+            if "workspace" in parsed_manifest:
+                continue
+
+            if name := parsed_manifest.get("package", {}).get("name"):
+                # Package URL subpaths are always separated with a forward slash.
+                members[name] = subpath.as_posix()
+
+    return members
+
+
 def _find_local_packages(package_dir: RootedPath) -> dict[str, str]:
     """Find local packages in the Cargo.toml file and return their subpaths."""
     parsed_toml = _parse_toml_project_file(package_dir.path / "Cargo.toml")
 
-    result = {}
+    # Explicit path dependencies take precedence over workspace members: the same crate
+    # can be reached both ways and the declared path is the more specific answer.
+    result = _find_workspace_members(package_dir, parsed_toml.get("workspace", {}))
 
     runtime_deps = parsed_toml.get("dependencies", {})
     # Patched dependencies are used to override crates.io dependencies with local versions.
