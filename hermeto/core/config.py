@@ -114,18 +114,59 @@ class ProxyMixin(BaseModel):
     proxy_login: str | None = None
     proxy_password: SecretStr | None = None
 
+    def _setting_name(self, field: str) -> str:
+        """Spell out one of this section's settings the way a user can set it.
+
+        Several backends can be misconfigured the same way, so an error message has to
+        name the offending backend. Both spellings are given because the value could
+        have come from a config file just as well as from the environment.
+
+        >>> PipSettings()._setting_name("proxy_login")
+        'pip.proxy_login (HERMETO_PIP__PROXY_LOGIN)'
+        """
+        # Every ProxyMixin subclass is named after the Config field holding it,
+        # which is also the config file key and the environment variable section.
+        section = type(self).__name__.removesuffix("Settings").lower()
+        env_var = f"{APP_NAME.upper()}_{section.upper()}__{field.upper()}"
+        return f"{section}.{field} ({env_var})"
+
+    def _explain(self, problem: str, set_field: str, unset_field: str) -> str:
+        """Restate a proxy misconfiguration in terms of the settings that caused it."""
+        return (
+            f"{problem}: found {self._setting_name(set_field)} set, "
+            f"{self._setting_name(unset_field)} undefined"
+        )
+
     @model_validator(mode="after")
     def _validate_login_and_password_both_set(self) -> Self:
         if self.proxy_login is not None and self.proxy_password is None:
-            raise InvalidInput("Proxy password must be set when proxy login is set")
+            raise InvalidInput(
+                self._explain(
+                    "Proxy password must be set when proxy login is set",
+                    "proxy_login",
+                    "proxy_password",
+                )
+            )
         if self.proxy_login is None and self.proxy_password is not None:
-            raise InvalidInput("Proxy login must be set when proxy password is set")
+            raise InvalidInput(
+                self._explain(
+                    "Proxy login must be set when proxy password is set",
+                    "proxy_password",
+                    "proxy_login",
+                )
+            )
         return self
 
     @model_validator(mode="after")
     def _validate_proxy_url_is_set_when_proxy_credentials_are_set(self) -> Self:
         if self.proxy_login is not None and self.proxy_url is None:
-            raise InvalidInput("Proxy URL must be set when proxy credentials are set")
+            raise InvalidInput(
+                self._explain(
+                    "Proxy URL must be set when proxy credentials are set",
+                    "proxy_login",
+                    "proxy_url",
+                )
+            )
         return self
 
     @field_serializer("proxy_password")

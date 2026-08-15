@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import re
 from pathlib import Path
 from typing import Any, Generator
 
@@ -6,6 +7,7 @@ import pytest
 import yaml
 
 import hermeto.core.config as config_module
+from hermeto.core.errors import InvalidInput
 
 DEFAULT_CONCURRENCY = config_module.RuntimeSettings.model_fields["concurrency_limit"].default
 
@@ -118,3 +120,54 @@ def test_cli_config_file_overrides_defaults(tmp_home_cwd: Path) -> None:
 
     config = config_module.get_config()
     assert config.runtime.concurrency_limit == cli_concurrency
+
+
+@pytest.mark.usefixtures("_clean_hermeto_env")
+def test_missing_proxy_password_is_reported_with_its_setting_names(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that an incomplete set of proxy credentials points at the settings to fix."""
+    monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "user")
+
+    expected = (
+        "Proxy password must be set when proxy login is set: "
+        "found pip.proxy_login (HERMETO_PIP__PROXY_LOGIN) set, "
+        "pip.proxy_password (HERMETO_PIP__PROXY_PASSWORD) undefined"
+    )
+    with pytest.raises(InvalidInput, match=re.escape(expected)):
+        config_module.get_config()
+
+
+@pytest.mark.usefixtures("_clean_hermeto_env")
+def test_missing_proxy_login_is_reported_with_its_setting_names(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that a password without a login points at the settings to fix."""
+    monkeypatch.setenv("HERMETO_YARN__PROXY_PASSWORD", "pass")
+
+    expected = (
+        "Proxy login must be set when proxy password is set: "
+        "found yarn.proxy_password (HERMETO_YARN__PROXY_PASSWORD) set, "
+        "yarn.proxy_login (HERMETO_YARN__PROXY_LOGIN) undefined"
+    )
+    with pytest.raises(InvalidInput, match=re.escape(expected)):
+        config_module.get_config()
+
+
+# gomod is absent because it defaults its proxy_url, so it cannot be left undefined.
+@pytest.mark.parametrize("section", ["cargo", "pip", "yarn", "npm", "pnpm", "bundler"])
+@pytest.mark.usefixtures("_clean_hermeto_env")
+def test_missing_proxy_url_is_reported_with_the_misconfigured_backend(
+    section: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that each backend names itself, so the right one gets fixed."""
+    monkeypatch.setenv(f"HERMETO_{section.upper()}__PROXY_LOGIN", "user")
+    monkeypatch.setenv(f"HERMETO_{section.upper()}__PROXY_PASSWORD", "pass")
+
+    expected = (
+        "Proxy URL must be set when proxy credentials are set: "
+        f"found {section}.proxy_login (HERMETO_{section.upper()}__PROXY_LOGIN) set, "
+        f"{section}.proxy_url (HERMETO_{section.upper()}__PROXY_URL) undefined"
+    )
+    with pytest.raises(InvalidInput, match=re.escape(expected)):
+        config_module.get_config()
