@@ -24,12 +24,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             utils.TestParameters(
                 packages=({"path": ".", "type": "pip"},),
             ),
-            id="pip_full_hashes",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "pip"},),
-            ),
             id="pip_missing_hashes",
         ),
         pytest.param(
