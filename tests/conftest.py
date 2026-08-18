@@ -3,8 +3,6 @@ import os
 
 import pytest
 
-from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO
-
 
 @pytest.fixture(autouse=True, scope="session")
 def _clean_git_env() -> None:
@@ -16,12 +14,6 @@ def _clean_git_env() -> None:
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Register custom CLI options for Hermeto integration tests."""
     group = parser.getgroup("hermeto integration", "hermeto integration test options")
-    group.addoption(
-        "--hermeto-integration-tests-repo",
-        action="store",
-        default=os.getenv("HERMETO_TEST_INTEGRATION_TESTS_REPO", DEFAULT_INTEGRATION_TESTS_REPO),
-        help="URL of the integration tests repository to clone (env: HERMETO_TEST_INTEGRATION_TESTS_REPO)",
-    )
     group.addoption(
         "--hermeto-image",
         action="store",

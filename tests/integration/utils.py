@@ -31,8 +31,6 @@ from tests.integration.proxy import (
 # force IPv4 localhost as 'localhost' can resolve with IPv6 as well
 TEST_SERVER_LOCALHOST = "127.0.0.1"
 
-DEFAULT_INTEGRATION_TESTS_REPO = "https://github.com/hermetoproject/integration-tests.git"
-
 HERMETO_TEST_IMAGE_TAG = "localhost/hermeto-test:latest"
 
 
@@ -167,13 +165,11 @@ CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specificatio
 @dataclass
 class TestParameters:
     packages: tuple[dict[str, Any], ...]
-    branch: str | None = None
     check_output: bool = True
     expected_error: ExitError = ExitError.ERR_OK
     expected_output: str = ""
     global_flags: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
-    repo_url: str | None = None
     hermeto_env: dict[str, str] = field(default_factory=dict)
     unset_hermeto_env: set[str] = field(default_factory=set)
     netrc_content: str | None = None
@@ -351,35 +347,6 @@ def _fetch_cyclone_dx_schema() -> dict[str, Any]:
     return response.json()
 
 
-def _clone_custom_test_repo(tmp_path: Path, repo_url: str, branch: str) -> Path:
-    """
-    Clone a custom integration test repository for a specific test.
-
-    This allows individual tests to use their own fork/repository without affecting
-    other tests. The repository is cloned to a temporary directory.
-
-    :param tmp_path: pytest fixture for temporary directory
-    :param repo_url: URL of the repository to clone
-    :param branch: Branch to checkout after cloning
-    :return: Path to the cloned repository
-    """
-    # Create unique directory name based on repo and branch
-    repo_name = repo_url.rstrip("/").split("/")[-1].removesuffix(".git")
-    safe_branch = branch.replace("/", "_")
-
-    repo_dir = tmp_path / f"{repo_name}_{safe_branch}"
-
-    log.info(f"Cloning custom test repository from {repo_url} (branch: {branch})")
-    GitRepo.clone_from(
-        url=repo_url,
-        to_path=repo_dir,
-        branch=branch,
-        depth=1,
-        recurse_submodules=True,
-    )
-    return repo_dir
-
-
 def create_synthetic_repo(
     tmp_path: Path,
     source_dir: Path,
@@ -412,8 +379,8 @@ def fetch_deps_and_check_output(
 
     :param tmp_path: pytest fixture for temporary directory
     :param test_case: Test case name retrieved from pytest id
-    :param test_params: Test case arguments (may include repo_url for custom repository)
-    :param test_repo_dir: Path to default source repository (ignored if test_params.repo_url is set)
+    :param test_params: Test case arguments
+    :param test_repo_dir: Path to source repository
     :param test_data_dir: Relative path to expected output test data
     :param hermeto_image: ContainerImage instance with Hermeto image
     :param mounts: Additional volumes to be mounted to the image
@@ -423,29 +390,7 @@ def fetch_deps_and_check_output(
     :param fetch_output_dirname: Name of the directory where the fetch output is stored
     :return: Path to the repository directory used (for passing to build_image_and_check_cmd)
     """
-    if test_params.branch is None:
-        actual_repo_dir = test_repo_dir
-    elif test_params.repo_url is not None:
-        actual_repo_dir = _clone_custom_test_repo(
-            tmp_path, test_params.repo_url, test_params.branch
-        )
-    else:
-        actual_repo_dir = test_repo_dir
-        repo = GitRepo(actual_repo_dir)
-        # Submodule could end up being in detached HEAD state which would
-        # result in a cascading failure for all tests that follow. This does
-        # not happen always and at the moment of writing it is not clear what
-        # exactly triggers such behavior. However ensuring that all submodules
-        # are hard-reset resolves the issue.
-        repo.git.reset("--hard", "--recurse-submodules")
-        # remove untracked files and directories from the working tree
-        # git will refuse to modify untracked nested git repositories unless a second -f is given
-        repo.git.clean("-ffdx")
-        # --recurse-submodules is to prevent checkout failures when submodule structure changes
-        # between branches
-        repo.git.checkout(test_params.branch, "--recurse-submodules")
-        # Ensure submodules are properly initialized and synchronized
-        repo.submodule_update(init=True, force_reset=True, recursive=True)
+    actual_repo_dir = test_repo_dir
 
     output_dir = tmp_path.joinpath(fetch_output_dirname)
     cmd = [
@@ -503,14 +448,8 @@ def fetch_deps_and_check_output(
             _replace_tmp_path_with_placeholder(build_config["project_files"], actual_repo_dir)
 
         # store .build_config as yaml for more readable test data
-        if test_params.branch is None:
-            expected_build_config_path = test_data_dir.joinpath(
-                test_case, "out", ".build-config.yaml"
-            )
-            expected_sbom_path = test_data_dir.joinpath(test_case, "out", "bom.json")
-        else:
-            expected_build_config_path = test_data_dir.joinpath(test_case, ".build-config.yaml")
-            expected_sbom_path = test_data_dir.joinpath(test_case, "bom.json")
+        expected_build_config_path = test_data_dir.joinpath(test_case, "out", ".build-config.yaml")
+        expected_sbom_path = test_data_dir.joinpath(test_case, "out", "bom.json")
 
         # If any proxy backends are configured, validate and strip proxy refs from the SBOM
         # before comparing to test data.
@@ -534,10 +473,7 @@ def fetch_deps_and_check_output(
         schema = _fetch_cyclone_dx_schema()
         jsonschema.validate(instance=sbom, schema=schema)
 
-    if test_params.branch is None:
-        deps_content_file = Path(test_data_dir, test_case, "out", "fetch_deps_file_contents.yaml")
-    else:
-        deps_content_file = Path(test_data_dir, test_case, "fetch_deps_file_contents.yaml")
+    deps_content_file = Path(test_data_dir, test_case, "out", "fetch_deps_file_contents.yaml")
     if deps_content_file.exists():
         _validate_expected_dep_file_contents(deps_content_file, output_dir)
 
@@ -564,7 +500,7 @@ def build_image_and_check_cmd(
     :param test_repo_dir: Path to source repository
     :param test_data_dir: Relative path to expected output test data
     :param test_case: Test case name retrieved from pytest id
-    :param test_params: Test case arguments (may include repo_url for custom repository)
+    :param test_params: Test case arguments
     :param check_cmd: Command to be run on image to check provided sources
     :param expected_cmd_output: Expected output of check_cmd
     :param hermeto_image: ContainerImage instance with Hermeto image
@@ -608,10 +544,8 @@ def build_image_and_check_cmd(
     assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     log.info("Build container image with all prerequisites retrieved in previous steps")
-    if test_params is not None and test_params.branch is None:
-        containerfile_path = test_data_dir.joinpath(test_case, "in", test_params.containerfile)
-    else:
-        containerfile_path = test_data_dir.joinpath(test_case, "container", "Containerfile")
+    assert test_params is not None
+    containerfile_path = test_data_dir.joinpath(test_case, "in", test_params.containerfile)
 
     with build_image_for_test_case(
         source_dir=test_repo_dir,

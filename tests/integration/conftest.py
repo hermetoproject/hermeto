@@ -9,11 +9,8 @@ from pathlib import Path
 import pytest
 import requests
 from filelock import FileLock
-from git import Repo
 
-from hermeto.core.utils import copy_directory
 from tests.integration.proxy import is_local_nexus_enabled, is_local_nexus_proxy_enabled
-from tests.integration.utils import DEFAULT_INTEGRATION_TESTS_REPO
 from tests.nexusserver import (
     DEFAULT_NEXUS_HOST,
     DEFAULT_NEXUS_MTLS_PORT,
@@ -26,7 +23,6 @@ from . import utils
 log = logging.getLogger(__name__)
 
 _ENV_VAR_CLI_MAP = [
-    ("HERMETO_TEST_INTEGRATION_TESTS_REPO", "--hermeto-integration-tests-repo"),
     ("HERMETO_TEST_IMAGE", "--hermeto-image"),
     ("HERMETO_TEST_GENERATE_DATA", "--hermeto-generate-test-data"),
     ("HERMETO_TEST_CONTAINER_ENGINE", "--hermeto-container-engine"),
@@ -51,28 +47,6 @@ def pytest_configure(config: pytest.Config) -> None:
 
     for env_var, cli_opt in _ENV_VAR_CLI_MAP:
         os.environ[env_var] = env_value(cli_opt)
-
-
-@pytest.fixture(scope="session")
-def test_repo_dir(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> Path:
-    """Copies the cloned integration tests repository to a temporary directory in
-    the base for each worker process.
-
-    :return: Path to the repository copy in the worker's temporary directory."""
-    base = tmp_path_factory.getbasetemp()
-    target = base / "integration-tests"
-    # In single process mode, the test repository is already cloned in the base directory.
-    # Fixtures are not executed by the master process in parallel mode. `worker_id` is `"master"`
-    # in single process mode.
-    if worker_id == "master":
-        return target
-    return copy_directory(base.parent / "integration-tests", target)
-
-
-@pytest.fixture(scope="session")
-def test_data_dir() -> Path:
-    """Path to the directory for storing unit test data."""
-    return Path(__file__).parent / "test_data"
 
 
 @pytest.fixture(scope="session")
@@ -131,7 +105,6 @@ def hermeto_image(tmp_path_factory: pytest.TempPathFactory, worker_id: str) -> u
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Prepare the integration test environment in the master process.
 
-    - Clone the integration tests repository.
     - Start nexus once (controller or single process).
 
     This function implements a standard pytest hook. Please refer to pytest
@@ -140,17 +113,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     """
     if os.getenv("PYTEST_XDIST_WORKER", "master") != "master":
         return
-
-    test_repo_url = os.getenv(
-        "HERMETO_TEST_INTEGRATION_TESTS_REPO",
-        DEFAULT_INTEGRATION_TESTS_REPO,
-    )
-    tmp_path_factory = getattr(session.config, "_tmp_path_factory")
-    base = tmp_path_factory.getbasetemp()
-    repo_dir = base / "integration-tests"
-    if not repo_dir.exists():
-        repo_dir.mkdir(parents=True)
-        Repo.clone_from(url=test_repo_url, to_path=repo_dir, depth=1, no_single_branch=True)
 
     stack = contextlib.ExitStack()
     try:
