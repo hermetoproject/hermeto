@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"package-a@https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-a/example.tgz":
+"package-a@http://127.0.0.1:8082/repository/yarn-v1-collision/a/example.tgz":
   version "1.0.0"
-  resolved "https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-a/example.tgz#8622b0e42e8fc610d63f95ca2127c1a954f1f4bb"
+  resolved "http://127.0.0.1:8082/repository/yarn-v1-collision/a/example.tgz#2583d96f83ca0e00ac32a7807bdb0e0a7c884d70"
 
-"package-b@https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-b/example.tgz":
+"package-b@http://127.0.0.1:8082/repository/yarn-v1-collision/b/example.tgz":
   version "1.0.0"
-  resolved "https://github.com/cachito-testing/cachi2-yarn/raw/refs/heads/offline-mirror-collision/package-b/example.tgz#e457c96791a275050811ad23720ff770185a5c78"
+  resolved "http://127.0.0.1:8082/repository/yarn-v1-collision/b/example.tgz#3f09df8529ec9a2e8a9ba4fe653a34c28749f723"

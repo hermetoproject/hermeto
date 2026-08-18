@@ -1,5 +1,5 @@
-# cachi2-yarn
+# Offline mirror collision test
 
-Repository for testing cachi2 Yarn 1.x support.
-
-The various branches are individual test cases containing both valid and invalid input. The `main` branch should remain clean.
+Two URL dependencies whose tarballs share the same filename (example.tgz)
+but contain different packages. Hermeto must detect the collision and reject
+the request. The tarballs are served from a local Nexus raw hosted repository.

@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 from pathlib import Path
 
 import pytest
@@ -53,15 +54,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="yarn_classic_lifecycle_scripts",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "yarn"},),
-                check_output=False,
-                expected_error=ExitError.ERR_PACKAGE_MANAGER,
-                expected_output="Tarball collision in the offline mirror",
-            ),
-            id="yarn_classic_offline_mirror_collision",
-        ),
     ],
 )
 def test_yarn_classic_packages(
@@ -77,6 +69,35 @@ def test_yarn_classic_packages(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    source_dir = SCENARIOS_DIR / test_case / "in"
+    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+
+    utils.fetch_deps_and_check_output(
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
+    )
+
+
+@pytest.mark.skipif(
+    os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+    reason="Requires HERMETO_TEST_LOCAL_NEXUS == 1",
+)
+def test_yarn_classic_offline_mirror_collision(
+    nexus_collision_tarballs: None,
+    hermeto_image: utils.HermetoImage,
+    tmp_path: Path,
+) -> None:
+    """Test that hermeto detects tarball collisions in the offline mirror.
+
+    Two URL dependencies resolve to tarballs with the same filename but
+    different content. The tarballs are served from a local Nexus instance.
+    """
+    test_case = "yarn_classic_offline_mirror_collision"
+    test_params = utils.TestParameters(
+        packages=({"path": ".", "type": "yarn"},),
+        check_output=False,
+        expected_error=ExitError.ERR_PACKAGE_MANAGER,
+        expected_output="Tarball collision in the offline mirror",
+    )
     source_dir = SCENARIOS_DIR / test_case / "in"
     repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
 
