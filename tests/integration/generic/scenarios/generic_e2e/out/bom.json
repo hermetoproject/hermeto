@@ -7,8 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
-        "pkg:generic/v1.0.0.zip?checksum=sha256:4fbcaa2a8d17c1f8042578627c122361ab18b7973311e7e9c598696732902f87&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v1.0.0.zip"
+        "pkg:generic/is-number-7.0.0.tgz?checksum=sha256:7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e&download_url=https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz"
       ],
       "text": "hermeto:backend:generic",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -17,39 +16,21 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
+      "bom-ref": "pkg:generic/is-number-7.0.0.tgz?checksum=sha256:7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e&download_url=https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz",
       "externalReferences": [
         {
           "type": "distribution",
-          "url": "https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip"
+          "url": "https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz"
         }
       ],
-      "name": "archive.zip",
+      "name": "is-number-7.0.0.tgz",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:generic/archive.zip?checksum=sha256:386428a82f37345fa24b74068e0e79f4c1f2ff38d4f5c106ea14de4a2926e584&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v2.0.0.zip",
-      "type": "file"
-    },
-    {
-      "bom-ref": "pkg:generic/v1.0.0.zip?checksum=sha256:4fbcaa2a8d17c1f8042578627c122361ab18b7973311e7e9c598696732902f87&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v1.0.0.zip",
-      "externalReferences": [
-        {
-          "type": "distribution",
-          "url": "https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v1.0.0.zip"
-        }
-      ],
-      "name": "v1.0.0.zip",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:generic/v1.0.0.zip?checksum=sha256:4fbcaa2a8d17c1f8042578627c122361ab18b7973311e7e9c598696732902f87&download_url=https://github.com/cachito-testing/cachi2-generic/archive/refs/tags/v1.0.0.zip",
+      "purl": "pkg:generic/is-number-7.0.0.tgz?checksum=sha256:7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e&download_url=https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz",
       "type": "file"
     }
   ],

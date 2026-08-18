@@ -54,7 +54,7 @@ def test_generic_fetcher(
                 check_output=True,
             ),
             ["ls", "/deps"],
-            ["archive.zip\nv1.0.0.zip\n"],
+            ["is-number-7.0.0.tgz\n"],
             id="generic_e2e",
         ),
         pytest.param(
