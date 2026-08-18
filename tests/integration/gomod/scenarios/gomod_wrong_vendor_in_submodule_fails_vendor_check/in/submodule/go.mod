@@ -1,4 +1,4 @@
-module github.com/cachito-testing/gomod-vendor-check-fail
+module example.com/gomod-vendor-check-fail
 
 go 1.14
 
