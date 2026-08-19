@@ -32,7 +32,7 @@
         "pkg:npm/etag@1.8.1?checksum=sha512:6882f9171ee66b055adf4d1a976067104e2236fa35a844f12eb3c8fe8d392fbcfa828edf0b0d49e844266cae05989d804bb920545fca1195ae7c17dd0a531c3e&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/express@4.18.2?checksum=sha512:e7f3ec2fa8863dd7d0fe528cd54ba27a5620bf7054a097f3d5a53053dbc767e27b832bf07505c510120421ac5e19fd0621cade013372044c6d6a58ac0dbb8ca9&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/finalhandler@1.2.0?checksum=sha512:e6e5dc5157ed9503059d60bdaaefecbe45afdc64ddd8f7d484aff73cb9183407bb15ba8932ddf9d791dac44e9e44bef819db2b8a2c2e8e26b075a0750691084a&repository_url=https://registry.yarnpkg.com",
-        "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#first-pkg",
+        "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#first-pkg",
         "pkg:npm/follow-redirects@1.15.9?checksum=sha512:81ec381ac5e2ccd81da11caa9b27cc1f20265ec64393a987912c59142cd6f60c256ed396e38083b586af33ecbeef6a83fd5ab6979e7490c179d834fc7ce2c9a9&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/form-data@4.0.0?checksum=sha512:1131249521a2e6dd10319ba25e803f43abdc9f170b40fe6f76e812a6e0328ba4951a2d9c94f3e9fb180486e31a1c2fb31a09f7d4a776df95b7e5fec7ca491ac3&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/forwarded@0.2.0?checksum=sha512:6ee446d1fa41b511d24c238049eea10f6e7cb44b9b16844b6f864d03a3713151cdc3680e7301e8f70c9a6e5ccccce039cfdc40f4bd4a36393f36de8c4fd698a3&repository_url=https://registry.yarnpkg.com",
@@ -152,7 +152,7 @@
         "pkg:npm/raw-body@2.5.1?checksum=sha512:aaa241b44c95812d1998f19d0853d627716b7a8aaf1b83154259ff902805ece96af7921b3a9d3f056c8cc1b76d9f8553be433c63b921090d97824fed72b0978a&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/safe-buffer@5.2.1?checksum=sha512:ae9dd2a34eca71d9a629b1af81a37141226bedb1954959394bd12ad45fa9a5b468ef4f9879a0f1930e4377c34f37e183e9b8e7626d95b8fb825e6a6e62f9825d&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/safer-buffer@2.1.2?checksum=sha512:619a372bcd920fb462ca2d04d4440fa232f3ee4a5ea6749023d2323db1c78355d75debdbe5d248eeda72376003c467106c71bbbdcc911e4d1c6f0a9c42b894b6&repository_url=https://registry.yarnpkg.com",
-        "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#second-pkg",
+        "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#second-pkg",
         "pkg:npm/send@0.18.0?checksum=sha512:aaa5b3b8e8d214ebaa3e315ee0d3ac30b69f4e8410c0148e1294be17012ddc0d95def2ae6d3aae4f7be62d3429160317a7c02515616e3f5a8a68964eb4fa555e&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/serve-static@1.15.0?checksum=sha512:5c6b910cd8d75228ec50bd2f97a9d20fb730511bb31208256ce685b9933d8379300d7396553724d232f38cfcc60fe4dacd66dba1962ee76ffdfd73dd5209def6&repository_url=https://registry.yarnpkg.com",
         "pkg:npm/set-function-length@1.2.2?checksum=sha512:a6045ce21278fec363582492f409a74b8d31ddb34c0d39271e02f951a3014ccc899d4f741205a1d51cfe302f5e16ee01b8dfd4c198ca42e63fd6fdeb33b1cc7e&repository_url=https://registry.yarnpkg.com",
@@ -510,7 +510,7 @@
       "version": "1.2.0"
     },
     {
-      "bom-ref": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#first-pkg",
+      "bom-ref": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#first-pkg",
       "name": "first-pkg",
       "properties": [
         {
@@ -518,7 +518,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#first-pkg",
+      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#first-pkg",
       "type": "library"
     },
     {
@@ -990,7 +990,7 @@
       "version": "2.1.2"
     },
     {
-      "bom-ref": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#second-pkg",
+      "bom-ref": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#second-pkg",
       "name": "second-pkg",
       "properties": [
         {
@@ -998,7 +998,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b4075af87da6165b561356127e50bfa4e4ea3b6f#second-pkg",
+      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4044beadc8c0d32f1866a3a7c661ff28a57755d990#second-pkg",
       "type": "library"
     },
     {
