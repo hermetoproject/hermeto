@@ -1,7 +1,1 @@
-package cachitoGomodVendoredTest
-
-import "rsc.io/quote"
-
-func CachitoGomodVendoredTest() string {
-    return quote.Hello()
-}
+../../../gomod_correct_vendor_in_submodule_passes_vendor_check/in/submodule/cachito_gomod.go
