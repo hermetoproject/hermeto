@@ -154,8 +154,8 @@ def test_pip_packages(
                     },
                 ),
             ),
-            ["python3", "/app/src/test_package_cachi2/main.py"],
-            ["registry.fedoraproject.org/fedora-minimal:37"],
+            ["python3", "/app/src/test_package/main.py"],
+            ["1.0.0"],
             id="pip_e2e",
         ),
         pytest.param(

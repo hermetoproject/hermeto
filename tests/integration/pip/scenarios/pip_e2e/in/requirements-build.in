@@ -1,3 +1,1 @@
 flit_core<4,>=3.2.0
-setuptools>=40.8.0
-wheel
