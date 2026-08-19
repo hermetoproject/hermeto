@@ -1,3 +1,3 @@
-# cachi2-pip-custom-index
+# pip custom index test
 
-This repo tests cachi2's ability to handle custom index urls.
+This scenario tests the ability to handle custom index urls.

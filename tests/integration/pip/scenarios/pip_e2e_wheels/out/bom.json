@@ -12,7 +12,7 @@
         "pkg:pypi/markdown@3.6",
         "pkg:pypi/markupsafe@2.1.5",
         "pkg:pypi/numpy@1.26.4",
-        "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df3f7c3b2c7d7f976a180ba5d9708b660583f7f4",
+        "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b0b099eb9904357fb55eb1302913e9f7ff67c376",
         "pkg:pypi/protobuf@4.25.3",
         "pkg:pypi/setuptools@70.0.0",
         "pkg:pypi/six@1.16.0",
@@ -112,7 +112,7 @@
       "version": "1.26.4"
     },
     {
-      "bom-ref": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df3f7c3b2c7d7f976a180ba5d9708b660583f7f4",
+      "bom-ref": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b0b099eb9904357fb55eb1302913e9f7ff67c376",
       "name": "package",
       "properties": [
         {
@@ -120,7 +120,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df3f7c3b2c7d7f976a180ba5d9708b660583f7f4",
+      "purl": "pkg:pypi/package@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b0b099eb9904357fb55eb1302913e9f7ff67c376",
       "type": "library",
       "version": "0.1.0"
     },

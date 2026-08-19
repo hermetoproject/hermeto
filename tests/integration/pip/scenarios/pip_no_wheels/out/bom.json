@@ -9,7 +9,7 @@
       "subjects": [
         "pkg:pypi/cryptos@2.0.9",
         "pkg:pypi/pyicu@2.12",
-        "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4027c3b9116e8e7f39f40a3215ced546aa5c261171"
+        "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b8117e16abac33793b9226701942229d1107ce0c"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -44,7 +44,7 @@
       "version": "2.12"
     },
     {
-      "bom-ref": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4027c3b9116e8e7f39f40a3215ced546aa5c261171",
+      "bom-ref": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b8117e16abac33793b9226701942229d1107ce0c",
       "name": "wheels-of-fortune",
       "properties": [
         {
@@ -52,7 +52,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4027c3b9116e8e7f39f40a3215ced546aa5c261171",
+      "purl": "pkg:pypi/wheels-of-fortune@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b8117e16abac33793b9226701942229d1107ce0c",
       "type": "library",
       "version": "0.1.0"
     }

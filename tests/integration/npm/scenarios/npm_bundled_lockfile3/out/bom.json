@@ -31,7 +31,7 @@
         "pkg:npm/lodash.keys@4.0.3",
         "pkg:npm/lodash.rest@4.0.1",
         "pkg:npm/normalize-package-data@2.3.5",
-        "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a46f9fd3d6e0e7292c2071adfe3c419f23069a4",
+        "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40276fd6507566794f243a184404f2f3c026f4abf3",
         "pkg:npm/number-is-nan@1.0.0",
         "pkg:npm/object-assign@4.0.1",
         "pkg:npm/os-locale@1.4.0",
@@ -544,7 +544,7 @@
       "version": "2.3.5"
     },
     {
-      "bom-ref": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a46f9fd3d6e0e7292c2071adfe3c419f23069a4",
+      "bom-ref": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40276fd6507566794f243a184404f2f3c026f4abf3",
       "name": "npm-cachi2-bundled",
       "properties": [
         {
@@ -552,7 +552,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a46f9fd3d6e0e7292c2071adfe3c419f23069a4",
+      "purl": "pkg:npm/npm-cachi2-bundled@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40276fd6507566794f243a184404f2f3c026f4abf3",
       "type": "library",
       "version": "1.0.0"
     },

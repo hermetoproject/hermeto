@@ -1,4 +1,4 @@
-# cachi2-pip-extra
+# pip no metadata test
 
 This integration test covers a scenario, when a Python project (or multiple projects)
 does not contain any supported setup files (setup.py, setup.cfg, pyproject.toml).

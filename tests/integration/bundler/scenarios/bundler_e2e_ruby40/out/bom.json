@@ -44,7 +44,7 @@
         "pkg:gem/nokogiri@1.16.7",
         "pkg:gem/prism@1.9.0",
         "pkg:gem/public_suffix@6.0.1",
-        "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0#quux",
+        "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939#quux",
         "pkg:gem/racc@1.8.1",
         "pkg:gem/rack-test@2.1.0",
         "pkg:gem/rack@2.2.9",
@@ -57,7 +57,7 @@
         "pkg:gem/sprockets@4.2.1",
         "pkg:gem/thor@1.3.2",
         "pkg:gem/timeout@0.4.1",
-        "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0",
+        "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939",
         "pkg:gem/tzinfo@2.0.6",
         "pkg:gem/websocket-driver@0.7.6",
         "pkg:gem/websocket-extensions@0.1.5",
@@ -555,7 +555,7 @@
       "version": "6.0.1"
     },
     {
-      "bom-ref": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0#quux",
+      "bom-ref": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939#quux",
       "name": "quux",
       "properties": [
         {
@@ -563,7 +563,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0#quux",
+      "purl": "pkg:gem/quux@0.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939#quux",
       "type": "library",
       "version": "0.0.1"
     },
@@ -724,7 +724,7 @@
       "version": "0.4.1"
     },
     {
-      "bom-ref": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0",
+      "bom-ref": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939",
       "name": "tmp",
       "properties": [
         {
@@ -732,7 +732,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a95ceee5d3cf1a4521422a4e74ffcad4227a86e0",
+      "purl": "pkg:gem/tmp@0.1.2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408c81e05ee821969e85d1f4926aab2f7434cdc939",
       "type": "library",
       "version": "0.1.2"
     },

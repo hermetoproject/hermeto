@@ -18,7 +18,7 @@ It does not use zero-installs feature - file `.pnp.cjs` and directory `.yarn/cac
 - [ ] ~~Exec~~
 - [x] Https
 
-_Cachi2 does not support the Git, GitHub and Exec protocols._
+_Hermeto does not support the Git, GitHub and Exec protocols._
 
 ## [Pre|Post install scripts](https://yarnpkg.com/advanced/lifecycle-scripts)
 

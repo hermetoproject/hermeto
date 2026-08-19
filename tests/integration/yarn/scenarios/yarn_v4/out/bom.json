@@ -22,13 +22,13 @@
         "pkg:npm/ansi-regex@3.0.1",
         "pkg:npm/ansi-regex@5.0.1",
         "pkg:npm/ansi-regex@6.0.1",
-        "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/ansi-regex",
+        "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/ansi-regex",
         "pkg:npm/ansi-styles@4.3.0",
         "pkg:npm/ansi-styles@6.2.1",
         "pkg:npm/aproba@2.0.0",
         "pkg:npm/are-we-there-yet@3.0.1",
         "pkg:npm/balanced-match@1.0.2",
-        "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898",
+        "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98",
         "pkg:npm/brace-expansion@1.1.11",
         "pkg:npm/brace-expansion@2.0.1",
         "pkg:npm/cacache@17.1.3",
@@ -67,7 +67,7 @@
         "pkg:npm/graceful-fs@4.2.11",
         "pkg:npm/has-flag@4.0.0",
         "pkg:npm/has-unicode@2.0.1",
-        "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#book-of-armaments",
+        "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#book-of-armaments",
         "pkg:npm/http-cache-semantics@4.1.1",
         "pkg:npm/http-proxy-agent@5.0.0",
         "pkg:npm/https-proxy-agent@5.0.1",
@@ -110,9 +110,9 @@
         "pkg:npm/nopt@6.0.0",
         "pkg:npm/npm-without-deps@1.0.0?checksum=sha512:da9ab3e8fcea43cf17fba24e5add8675bfa4002050b32853b8348588515d2bed19e4866d2071010048b170c129897eb1c4919239885c6a0eaf2bbf490ed840f8&download_url=https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz",
         "pkg:npm/npmlog@6.0.2",
-        "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/old-man-from-scene-24",
+        "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/old-man-from-scene-24",
         "pkg:npm/once@1.4.0",
-        "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/once",
+        "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/once",
         "pkg:npm/p-map@4.0.0",
         "pkg:npm/path-is-absolute@1.0.1",
         "pkg:npm/path-key@3.1.1",
@@ -138,13 +138,13 @@
         "pkg:npm/string-width@4.2.3",
         "pkg:npm/string-width@5.1.2",
         "pkg:npm/string_decoder@1.3.0",
-        "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/strip-ansi-4.0.0.tgz",
+        "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/strip-ansi-4.0.0.tgz",
         "pkg:npm/strip-ansi@6.0.1",
         "pkg:npm/strip-ansi@7.1.0",
         "pkg:npm/supports-color@7.2.0",
-        "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/supports-hyperlinks",
+        "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/supports-hyperlinks",
         "pkg:npm/tar@6.1.15",
-        "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/the-answer",
+        "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/the-answer",
         "pkg:npm/tree-sitter-json@0.20.0",
         "pkg:npm/typescript@5.1.6",
         "pkg:npm/unique-filename@3.0.0",
@@ -378,7 +378,7 @@
       "version": "6.0.1"
     },
     {
-      "bom-ref": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/ansi-regex",
+      "bom-ref": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/ansi-regex",
       "name": "ansi-regex",
       "properties": [
         {
@@ -386,7 +386,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/ansi-regex",
+      "purl": "pkg:npm/ansi-regex@6.0.1?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/ansi-regex",
       "type": "library",
       "version": "6.0.1"
     },
@@ -456,7 +456,7 @@
       "version": "1.0.2"
     },
     {
-      "bom-ref": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898",
+      "bom-ref": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98",
       "name": "berryscary",
       "properties": [
         {
@@ -464,7 +464,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898",
+      "purl": "pkg:npm/berryscary?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98",
       "type": "library"
     },
     {
@@ -868,7 +868,7 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/hermetoproject/hermeto.git@4a14fa81a6e910d12e935a2e62ea22d1d8b5a898#my-patches/fsevents.patch"
+              "url": "git+https://github.com/hermetoproject/hermeto.git@322ac8452ff6ed300faa84b339463657fe449f98#my-patches/fsevents.patch"
             },
             "type": "unofficial"
           },
@@ -982,7 +982,7 @@
       "version": "2.0.1"
     },
     {
-      "bom-ref": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#book-of-armaments",
+      "bom-ref": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#book-of-armaments",
       "name": "holy-hand-grenade",
       "properties": [
         {
@@ -990,7 +990,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#book-of-armaments",
+      "purl": "pkg:npm/holy-hand-grenade?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#book-of-armaments",
       "type": "library"
     },
     {
@@ -1208,13 +1208,13 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/hermetoproject/hermeto.git@4a14fa81a6e910d12e935a2e62ea22d1d8b5a898#my-patches/left-pad.patch"
+              "url": "git+https://github.com/hermetoproject/hermeto.git@322ac8452ff6ed300faa84b339463657fe449f98#my-patches/left-pad.patch"
             },
             "type": "unofficial"
           },
           {
             "diff": {
-              "url": "git+https://github.com/hermetoproject/hermeto.git@4a14fa81a6e910d12e935a2e62ea22d1d8b5a898#my-patches/left-pad-2.patch"
+              "url": "git+https://github.com/hermetoproject/hermeto.git@322ac8452ff6ed300faa84b339463657fe449f98#my-patches/left-pad-2.patch"
             },
             "type": "unofficial"
           }
@@ -1536,7 +1536,7 @@
         "patches": [
           {
             "diff": {
-              "url": "git+https://github.com/hermetoproject/hermeto.git@4a14fa81a6e910d12e935a2e62ea22d1d8b5a898#.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch"
+              "url": "git+https://github.com/hermetoproject/hermeto.git@322ac8452ff6ed300faa84b339463657fe449f98#.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch"
             },
             "type": "unofficial"
           }
@@ -1566,7 +1566,7 @@
       "version": "6.0.2"
     },
     {
-      "bom-ref": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/old-man-from-scene-24",
+      "bom-ref": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/old-man-from-scene-24",
       "name": "old-man-from-scene-24",
       "properties": [
         {
@@ -1574,7 +1574,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/old-man-from-scene-24",
+      "purl": "pkg:npm/old-man-from-scene-24?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/old-man-from-scene-24",
       "type": "library"
     },
     {
@@ -1591,7 +1591,7 @@
       "version": "1.4.0"
     },
     {
-      "bom-ref": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/once",
+      "bom-ref": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/once",
       "name": "once",
       "properties": [
         {
@@ -1599,7 +1599,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/once",
+      "purl": "pkg:npm/once@1.4.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/once",
       "type": "library",
       "version": "1.4.0"
     },
@@ -1929,7 +1929,7 @@
       "version": "1.3.0"
     },
     {
-      "bom-ref": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/strip-ansi-4.0.0.tgz",
+      "bom-ref": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/strip-ansi-4.0.0.tgz",
       "name": "strip-ansi",
       "properties": [
         {
@@ -1937,7 +1937,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/strip-ansi-4.0.0.tgz",
+      "purl": "pkg:npm/strip-ansi@4.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/strip-ansi-4.0.0.tgz",
       "type": "library",
       "version": "4.0.0"
     },
@@ -1981,7 +1981,7 @@
       "version": "7.2.0"
     },
     {
-      "bom-ref": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/supports-hyperlinks",
+      "bom-ref": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/supports-hyperlinks",
       "name": "supports-hyperlinks",
       "properties": [
         {
@@ -1993,7 +1993,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#external-packages/supports-hyperlinks",
+      "purl": "pkg:npm/supports-hyperlinks@3.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#external-packages/supports-hyperlinks",
       "type": "library",
       "version": "3.0.0"
     },
@@ -2011,7 +2011,7 @@
       "version": "6.1.15"
     },
     {
-      "bom-ref": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/the-answer",
+      "bom-ref": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/the-answer",
       "name": "the-answer",
       "properties": [
         {
@@ -2019,7 +2019,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404a14fa81a6e910d12e935a2e62ea22d1d8b5a898#packages/the-answer",
+      "purl": "pkg:npm/the-answer?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40322ac8452ff6ed300faa84b339463657fe449f98#packages/the-answer",
       "type": "library"
     },
     {

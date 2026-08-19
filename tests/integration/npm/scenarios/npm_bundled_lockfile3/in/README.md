@@ -1,6 +1,6 @@
 # Bundled dependencies test
 
-Verify cachi2's handling of direct and indirect bundled dependencies.
+Verify hermeto's handling of direct and indirect bundled dependencies.
 
 ## Indirect bundled dependencies
 
@@ -11,9 +11,9 @@ One of those dependencies (ansi-regex@2.0.0) is also a direct dependency.
 
 Expected behavior:
 
-* cachi2 shouldn't download indirect bundled dependencies
-* cachi2 *should* report them in the SBOM
-* cachi2 should treat ansi-regex as not bundled, because it's also a direct dependency
+* hermeto shouldn't download indirect bundled dependencies
+* hermeto *should* report them in the SBOM
+* hermeto should treat ansi-regex as not bundled, because it's also a direct dependency
 
 ## Direct bundled dependencies
 
@@ -26,8 +26,8 @@ The builtin-modules@1.1.1 dependency is also an indirect bundled dependency of b
 
 Expected behavior:
 
-* cachi2 should treat direct bundled dependencies as not bundled
-* cachi2 should treat builtin-modules as directly bundled (=> not bundled)
+* hermeto should treat direct bundled dependencies as not bundled
+* hermeto should treat builtin-modules as directly bundled (=> not bundled)
 
 ## Package creation
 

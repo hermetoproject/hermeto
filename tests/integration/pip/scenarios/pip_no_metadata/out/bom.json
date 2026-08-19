@@ -10,8 +10,8 @@
         "pkg:pypi/aiowsgi@0.8",
         "pkg:pypi/certifi@2023.7.22",
         "pkg:pypi/charset-normalizer@3.2.0",
-        "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f#subpath1/subpath2",
-        "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f",
+        "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8#subpath1/subpath2",
+        "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8",
         "pkg:pypi/idna@3.4",
         "pkg:pypi/requests@2.31.0",
         "pkg:pypi/six@1.16.0",
@@ -65,7 +65,7 @@
       "version": "3.2.0"
     },
     {
-      "bom-ref": "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f#subpath1/subpath2",
+      "bom-ref": "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8#subpath1/subpath2",
       "name": "hermeto-subpath1-subpath2",
       "properties": [
         {
@@ -73,11 +73,11 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f#subpath1/subpath2",
+      "purl": "pkg:pypi/hermeto-subpath1-subpath2?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8#subpath1/subpath2",
       "type": "library"
     },
     {
-      "bom-ref": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f",
+      "bom-ref": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8",
       "name": "hermeto",
       "properties": [
         {
@@ -85,7 +85,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40df565c89a7b253eb54d36bbdbabe30c11ba13c5f",
+      "purl": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4000742c2b79639956005900616fb1ea235f524aa8",
       "type": "library"
     },
     {

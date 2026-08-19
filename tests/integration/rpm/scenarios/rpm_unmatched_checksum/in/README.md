@@ -4,7 +4,7 @@ This scenario validates that Hermeto will refuse to proceed the prefetch of RPMs
 mismatch is found
 
 The test steps are as follow:
-- prefetch the dependencies with Cachi2
+- prefetch the dependencies
 - validate that the prefetch fails with the appropriate error
 
 NOTE: If you need to regenerate the lockfile, please run the lockfile generator as:

@@ -25,7 +25,7 @@
         "pkg:gem/date@3.3.4",
         "pkg:gem/erubi@1.13.0",
         "pkg:gem/globalid@1.2.1",
-        "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%407cedab893e8b7e7ec5eb7f70deefbb81a9c806cc",
+        "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
         "pkg:gem/i18n@1.14.5",
         "pkg:gem/json-schema@3.0.0?vcs_url=git%2Bhttps://github.com/3scale/json-schema%4026487618a68443e94d623bb585cb464b07d36702",
         "pkg:gem/loofah@2.22.0",
@@ -300,7 +300,7 @@
       "version": "1.2.1"
     },
     {
-      "bom-ref": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%407cedab893e8b7e7ec5eb7f70deefbb81a9c806cc",
+      "bom-ref": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
       "name": "hermeto",
       "properties": [
         {
@@ -308,7 +308,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%407cedab893e8b7e7ec5eb7f70deefbb81a9c806cc",
+      "purl": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
       "type": "library"
     },
     {

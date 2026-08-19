@@ -1,4 +1,4 @@
-# cachi2-pip-wheels
+# pip no sdists test
 
 This integration test covers a scenario with packages
 that have only wheels - no sdists are available on PyPI.

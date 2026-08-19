@@ -1,6 +1,6 @@
-# npm-cachi2-multiple-packages 
+# npm multiple packages test
 
-Repo to test cachi2 functionality with multiple packages within repo.
+Test npm functionality with multiple packages within a repo.
 
 
 ## Expected behavior

@@ -1,7 +1,7 @@
 # npm-with-aliased-deps
 
-This repo is used to test cachi2 npm functionality where the npm package
-has aliased dependencies.
+This scenario tests npm functionality where the npm package has aliased
+dependencies.
 
 The fecha package is included as a dependency several times, aliased under
 different names and with different versions. One of these aliased versions

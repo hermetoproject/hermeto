@@ -1,2 +1,1 @@
-# cachi2-testing
-Various correct and malformed structures to be processed by cachi2
+# Bundler e2e test
