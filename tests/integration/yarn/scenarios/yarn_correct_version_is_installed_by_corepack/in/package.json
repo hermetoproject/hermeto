@@ -1,4 +1,4 @@
 {
-  "name": "cachi2-yarn-packagemanager",
+  "name": "yarn-packagemanager",
   "packageManager": "yarn@3.6.1"
 }

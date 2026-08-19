@@ -4,7 +4,6 @@ exclude = ["packages/knights"]
 
 [workspace.package]
 version = "0.2.0"
-authors = ["Brian <b@thelife.of>"]
 
 [workspace.dependencies]
 rand = { version = "0.7.1" }

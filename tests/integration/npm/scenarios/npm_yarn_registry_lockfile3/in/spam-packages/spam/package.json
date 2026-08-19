@@ -1,21 +1,7 @@
 {
   "name": "spam",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hermetoproject/integration-tests.git#npm/yarn-registry-lockfile3"
-  },
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hermetoproject/integration-tests/issues"
-  },
-  "homepage": "https://github.com/hermetoproject/integration-tests/tree/npm/yarn-registry-lockfile3#readme",
   "dependencies": {
     "colors": "^1.4.0"
   }

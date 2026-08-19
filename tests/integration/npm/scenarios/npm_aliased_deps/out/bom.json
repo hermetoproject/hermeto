@@ -10,7 +10,7 @@
         "pkg:npm/fecha@4.2.0?vcs_url=git%2Bssh://git%40github.com/taylorhakes/fecha.git%4091680e4db1415fea33eac878cfd889c80a7b55c7",
         "pkg:npm/fecha@4.2.2",
         "pkg:npm/fecha@4.2.3",
-        "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c54300a76df5706242afcbe9f40ec5bda09593a1"
+        "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4001e77eedc461647c9cb7ac8f7137fd1801bfd4d0"
       ],
       "text": "hermeto:backend:npm",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -58,7 +58,7 @@
       "version": "4.2.3"
     },
     {
-      "bom-ref": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c54300a76df5706242afcbe9f40ec5bda09593a1",
+      "bom-ref": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4001e77eedc461647c9cb7ac8f7137fd1801bfd4d0",
       "name": "npm-with-aliased-deps",
       "properties": [
         {
@@ -66,7 +66,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c54300a76df5706242afcbe9f40ec5bda09593a1",
+      "purl": "pkg:npm/npm-with-aliased-deps@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4001e77eedc461647c9cb7ac8f7137fd1801bfd4d0",
       "type": "library",
       "version": "1.0.0"
     }

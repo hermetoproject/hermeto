@@ -715,22 +715,7 @@ project_files:
     {
       "name": "npm-yarn-registry-test",
       "version": "1.0.0",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git#npm/yarn-registry-lockfile3"
-      },
-      "keywords": [],
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests/tree/npm/yarn-registry-lockfile3#readme",
-      "description": "",
       "private": true,
       "dependencies": {
         "@types/react-dom": "^18.0.1",

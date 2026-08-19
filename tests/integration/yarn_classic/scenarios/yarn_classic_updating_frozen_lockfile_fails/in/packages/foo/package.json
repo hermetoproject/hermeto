@@ -1,7 +1,6 @@
 {
   "name": "foo",
   "version": "1.0.0",
-  "main": "index.js",
   "private": true,
   "dependencies": {
     "cowsay": "^1.6.0"

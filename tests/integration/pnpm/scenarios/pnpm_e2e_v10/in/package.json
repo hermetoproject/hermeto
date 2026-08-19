@@ -2,8 +2,6 @@
   "name": "integration-tests",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
-  "license": "ISC",
   "packageManager": "pnpm@10.34.4",
   "dependencies": {
     "@hono/hono": "jsr:^4.12.23",

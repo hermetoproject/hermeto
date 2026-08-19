@@ -720,21 +720,7 @@ project_files:
     {
       "name": "npm-first-package",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "devDependencies": {
         "express": "^4.18.2"
       },
@@ -1425,21 +1411,7 @@ project_files:
     {
       "name": "npm-second-pkg",
       "version": "1.0.0",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
-      "description": "",
       "dependencies": {
         "debug": "",
         "express": "^4.18.2",
@@ -1562,26 +1534,12 @@ project_files:
     {
       "name": "npm-third-package",
       "version": "1.0.0",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "npm-without-deps": "",
         "is-positive": "",
         "is-number": "file:is-number-7.0.0.tgz",
         "chai": "4.2.0",
         "sax": "0.1.1"
-      },
-      "description": ""
+      }
     }

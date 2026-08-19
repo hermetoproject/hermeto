@@ -1,7 +1,6 @@
 [package]
 name = "bombadil"
 version.workspace = true
-authors.workspace = true
 
 [dependencies]
 rand = { workspace = true }

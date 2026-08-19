@@ -7,10 +7,10 @@
         }
       },
       "subjects": [
-        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6#foo",
+        "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378#foo",
         "pkg:npm/is-positive@1.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%401187a61f2e18cf7c11c23d61a1bd52b9fa6a5fdf",
         "pkg:npm/is-positive@2.0.0?vcs_url=git%2Bssh://git%40github.com/kevva/is-positive.git%4075dd3a181375162eda014984f2decc663199b09e",
-        "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6",
+        "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378",
         "pkg:npm/npm-without-deps@1.0.0?vcs_url=git%2Bssh://git%40github.com/hermetoproject/integration-tests.git%40b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81"
       ],
       "text": "hermeto:backend:npm",
@@ -20,7 +20,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6#foo",
+      "bom-ref": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378#foo",
       "name": "foo",
       "properties": [
         {
@@ -28,7 +28,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6#foo",
+      "purl": "pkg:npm/foo@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378#foo",
       "type": "library",
       "version": "1.0.0"
     },
@@ -59,7 +59,7 @@
       "version": "2.0.0"
     },
     {
-      "bom-ref": "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6",
+      "bom-ref": "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378",
       "name": "npm-with-multiple-dep-versions",
       "properties": [
         {
@@ -67,7 +67,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40724834612b25247bae77ada7e7d0da2ad774e2a6",
+      "purl": "pkg:npm/npm-with-multiple-dep-versions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4030b29195a983911d5181d13909b37cf3c0b56378",
       "type": "library",
       "version": "1.0.0"
     },

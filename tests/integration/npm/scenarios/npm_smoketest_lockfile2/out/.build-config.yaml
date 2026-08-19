@@ -5,21 +5,7 @@ project_files:
     {
       "name": "bar",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "uuid": "^9.0.0"
       }
@@ -29,21 +15,7 @@ project_files:
     {
       "name": "not-baz",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "dateformat": "^5.0.3"
       }
@@ -53,22 +25,7 @@ project_files:
     {
       "name": "eggs",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "keywords": [],
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "classnames": "^2.3.2"
       }
@@ -78,22 +35,7 @@ project_files:
     {
       "name": "foo",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "keywords": [],
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "abbrev": "^2.0.0"
       }
@@ -1397,21 +1339,7 @@ project_files:
     {
       "name": "npm_test",
       "version": "1.1.0",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "keywords": [],
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "workspaces": [
         "foo",
         "./bar",
@@ -1419,7 +1347,6 @@ project_files:
         "spam-packages/spam",
         "eggs-packages/*"
       ],
-      "description": "",
       "dependencies": {
         "express": "^4.18.2",
         "@types/react-dom": "^18.0.1",
@@ -1435,21 +1362,7 @@ project_files:
     {
       "name": "spam",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hermetoproject/integration-tests.git"
-      },
-      "author": "",
       "license": "ISC",
-      "bugs": {
-        "url": "https://github.com/hermetoproject/integration-tests/issues"
-      },
-      "homepage": "https://github.com/hermetoproject/integration-tests#readme",
       "dependencies": {
         "colors": "^1.4.0"
       }

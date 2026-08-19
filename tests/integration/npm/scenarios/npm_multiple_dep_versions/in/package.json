@@ -1,12 +1,6 @@
 {
   "name": "npm-with-multiple-dep-versions",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "is-positive": "github:kevva/is-positive#1187a61f2e18cf7c11c23d61a1bd52b9fa6a5fdf"

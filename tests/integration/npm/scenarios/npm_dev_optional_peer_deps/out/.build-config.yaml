@@ -5,16 +5,10 @@ project_files:
     {
       "name": "foo",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
       "devDependencies": {
         "ansi-regex": "^6.0.1",
         "ms": ""
       },
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "author": "",
       "license": "ISC",
       "optionalDependencies": {
         "balanced-match": "^2.0.0",
@@ -181,13 +175,6 @@ project_files:
     {
       "name": "npm-dev-optional-peer-deps",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "keywords": [],
-      "author": "",
       "license": "ISC",
       "devDependencies": {
         "ansi-styles": "^6.2.1",

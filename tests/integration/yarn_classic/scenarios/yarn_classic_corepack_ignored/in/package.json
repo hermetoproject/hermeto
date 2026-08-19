@@ -1,5 +1,5 @@
 {
-  "name": "cachi2-yarn-corepack-install",
+  "name": "yarn-corepack-install",
   "version": "1.0.0",
   "packageManager": "yarn@3.6.2"
 }

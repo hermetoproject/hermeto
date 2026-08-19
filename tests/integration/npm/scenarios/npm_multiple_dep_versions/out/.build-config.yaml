@@ -5,13 +5,7 @@ project_files:
     {
       "name": "foo",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
       "devDependencies": {},
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "author": "",
       "license": "ISC",
       "dependencies": {
         "is-positive": ""
@@ -81,12 +75,6 @@ project_files:
     {
       "name": "npm-with-multiple-dep-versions",
       "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-      },
-      "author": "",
       "license": "ISC",
       "dependencies": {
         "is-positive": ""

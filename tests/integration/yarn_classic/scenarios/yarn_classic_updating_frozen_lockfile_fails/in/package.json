@@ -1,7 +1,6 @@
 {
   "name": "yarn-test-project",
   "version": "1.0.0",
-  "main": "index.js",
   "private": true,
   "dependencies": {
     "@colors/colors": "^1.6.0",
