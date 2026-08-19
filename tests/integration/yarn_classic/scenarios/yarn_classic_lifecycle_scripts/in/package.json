@@ -2,9 +2,6 @@
   "name": "yarn-lifecycle-scripts",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
-  "repository": "https://github.com/cachito-testing/cachi2-yarn.git",
-  "license": "MIT",
   "scripts": {
     "install": "exit 1",
     "preinstall": "exit 1",
