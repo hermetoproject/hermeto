@@ -57,12 +57,17 @@ class SyntheticRepo:
     }
 
     def __init__(self, repo_path: Path, origin_url: str) -> None:
-        # copy hermeto's root .gitignore into the synthetic repo
+        # Over time the test scenarios directories may accumulate some git untracked local-only
+        # build artifacts, e.g. __pycache__, which, if unfiltered and then committed to the
+        # synthetic repo would yield a different digest every time breaking the test suite
+        # constantly.
+        # Therefore, copy hermeto's root .gitignore into the synthetic repo as it already contains a
+        # good set of excludes. We copy the .gitignore file to .git/info/exclude instead of plain
+        # .gitignore because it would get committed automatically by the code below, we don't need
+        # nor want to commit more than the test scenario data in the synthetic repo
         project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
         gitignore = Path(project_repo_root) / ".gitignore"
         if gitignore.is_file():
-            # we copy the .gitignore to .git/info/exclude instead of .gitignore, because we don't
-            # need nor want to commit more than test scenario data in the synthetic repo
             exclude_file = repo_path / ".git" / "info" / "exclude"
             exclude_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(gitignore, exclude_file)
