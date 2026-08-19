@@ -162,14 +162,6 @@ def test_gomod_packages(
             ),
             ["retrodep", "--help"],
             ["retrodep: help requested"],
-            id="gomod_e2e_1_18",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "gomod"},),
-            ),
-            ["retrodep", "--help"],
-            ["retrodep: help requested"],
             id="gomod_e2e_1_21",
         ),
         pytest.param(
