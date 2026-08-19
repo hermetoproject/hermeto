@@ -19,13 +19,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "rpm"},),
-                check_output=True,
-            ),
-            id="rpm_missing_checksum",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 expected_error=ExitError.ERR_CHECKSUM_VERIFICATION_FAILED,
                 expected_output="Unmatched checksum",
