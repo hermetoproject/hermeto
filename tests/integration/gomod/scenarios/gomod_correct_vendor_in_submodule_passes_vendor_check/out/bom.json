@@ -11,8 +11,8 @@
         "pkg:golang/cmp?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
-        "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
+        "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
+        "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
         "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text/language@v0.0.0-20170915032832-14c0d48ead0c?type=package",
         "pkg:golang/golang.org/x/text@v0.0.0-20170915032832-14c0d48ead0c?type=module",
@@ -136,7 +136,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
       "name": "example.com/gomod-vendor-check-pass",
       "properties": [
         {
@@ -144,12 +144,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
       "type": "library",
-      "version": "v0.0.0-19700101000000-ff9bc5cb2d63"
+      "version": "v0.0.0-19700101000000-08eae77f624c"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
       "name": "example.com/gomod-vendor-check-pass",
       "properties": [
         {
@@ -157,9 +157,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-ff9bc5cb2d63?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40b123c389f30c60d46f636d0c3f70f45c198c5c7f",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/integration-tests@v0.0.0-19700101000000-08eae77f624c?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4032807e6de3c1c2cd85e2d28030fa1a272cbc1758",
       "type": "library",
-      "version": "v0.0.0-19700101000000-ff9bc5cb2d63"
+      "version": "v0.0.0-19700101000000-08eae77f624c"
     },
     {
       "bom-ref": "pkg:golang/golang.org/x/text/internal/tag@v0.0.0-20170915032832-14c0d48ead0c?type=package",

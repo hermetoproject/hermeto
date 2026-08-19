@@ -1,0 +1,1 @@
+../../../gomod_correct_vendor_in_submodule_passes_vendor_check/in/submodule/main.go
