@@ -485,13 +485,13 @@ def build_image_and_check_cmd(
     test_repo_dir: Path,
     test_data_dir: Path,
     test_case: str,
+    test_params: TestParameters,
     check_cmd: list,
     expected_cmd_output: str,
     hermeto_image: HermetoImage,
     hermeto_image_entrypoint: str | None = None,
     fetch_output_dirname: str = DEFAULT_OUTPUT,
     env_vars_filename: str = f"{APP_NAME}.env",
-    test_params: TestParameters | None = None,
 ) -> None:
     """
     Build image and check that Hermeto provided sources properly.
@@ -544,7 +544,6 @@ def build_image_and_check_cmd(
     assert exit_code == 0, f"Injecting project files failed. output-cmd: {output}"
 
     log.info("Build container image with all prerequisites retrieved in previous steps")
-    assert test_params is not None
     containerfile_path = test_data_dir.joinpath(test_case, "in", test_params.containerfile)
 
     with build_image_for_test_case(

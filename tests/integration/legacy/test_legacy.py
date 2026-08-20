@@ -77,11 +77,11 @@ def test_e2e_cargo(
         actual_repo_dir,
         SCENARIOS_DIR,
         test_case,
+        test_params,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
         fetch_output_dirname="cachi2-output",
         env_vars_filename="cachi2.env",
         hermeto_image_entrypoint="cachi2",
-        test_params=test_params,
     )

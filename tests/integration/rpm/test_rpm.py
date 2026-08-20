@@ -275,8 +275,8 @@ def test_e2e_rpm(
         actual_repo_dir,
         SCENARIOS_DIR,
         test_case,
+        test_params,
         check_cmd,
         expected_cmd_output,
         hermeto_image,
-        test_params=test_params,
     )
