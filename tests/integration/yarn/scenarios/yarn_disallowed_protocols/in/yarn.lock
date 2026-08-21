@@ -185,17 +185,15 @@ __metadata:
     "@types/node": ^20.4.5
     "@types/yargs": ^17
     ansi-regex-link: "link:external-packages/ansi-regex"
-    c2-wo-deps: "https://bitbucket.org/cachi-testing/cachi2-without-deps.git"
-    c2-wo-deps-2: "https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
-    ccto-wo-deps: "git@github.com:hermetoproject/integration-tests.git"
+    ccto-wo-deps: "https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz"
     chalk: ^5.3.0
     date-in-spanish: "npm:fecha@latest"
-    emoji-regex: "https://github.com/mathiasbynens/emoji-regex.git"
+    emoji-regex: "https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz"
     fsevents: "patch:fsevents@^2.3.2#./my-patches/fsevents.patch"
     holy-hand-grenade: "exec:./generate-holy-hand-grenade.js"
-    is-positive: "github:kevva/is-positive"
+    is-positive: "https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz"
     left-pad: "patch:left-pad@1.3.0#./my-patches/left-pad.patch&./my-patches/left-pad-2.patch"
-    minimist: minimistjs/minimist
+    minimist: "https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz"
     old-man-from-scene-24: "workspace:^"
     once-portal: "portal:external-packages/once"
     strip-ansi-tarball: "file:external-packages/strip-ansi-4.0.0.tgz"
@@ -236,20 +234,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz":
-  version: 2.0.0
-  resolution: "c2-wo-deps-2@https://bitbucket.org/cachi-testing/cachi2-without-deps-second/get/09992d418fc44a2895b7a9ff27c4e32d6f74a982.tar.gz"
-  checksum: b194fd1f4a79472a332fec936818d1713a222157e845a8d466a239fdc950130a7ad9b77c212d69d2947c07bce0c911446496ff47dec5a73b4368f0a9c9432b1d
-  languageName: node
-  linkType: hard
-
-"c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git":
-  version: 1.0.0
-  resolution: "c2-wo-deps@https://bitbucket.org/cachi-testing/cachi2-without-deps.git#commit=9e164b97043a2d91bbeb992f6cc68a3d1015086a"
-  checksum: 7af2e8eaba7023b13131489b6b8e6ebb1e2f07fcec6e2ac4a521be4bac29edc8f6e5e90cb3dd5e68fe7903a0ee2814deb5a1a7b975ff6c575b812daeac4996ec
-  languageName: node
-  linkType: hard
-
 "cacache@npm:^17.0.0":
   version: 17.1.3
   resolution: "cacache@npm:17.1.3"
@@ -270,17 +254,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ccto-wo-deps@git@github.com:hermetoproject/integration-tests.git#commit=b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81":
+"ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz":
   version: 1.0.0
-  resolution: "ccto-wo-deps@git@github.com:hermetoproject/integration-tests.git#commit=b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81"
-  checksum: 3ed9ea417c75a1999925159e67cf04bf2d522967692a55321559ef2b353fa690167b7bc40e989e4ee35e36d095f007f2d0c53faeb55f14d07ec3ece34faba206
+  resolution: "ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz"
+  checksum: da9ab3e8fcea43cf17fba24e5add8675bfa4002050b32853b8348588515d2bed19e4866d2071010048b170c129897eb1c4919239885c6a0eaf2bbf490ed840f8
   languageName: node
   linkType: hard
 
-"ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Ahermetoproject/integration-tests.git%23commit=b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::locator=berryscary%40workspace%3A.":
+"ccto-wo-deps@patch:ccto-wo-deps@https://github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::locator=berryscary%40workspace%3A.":
   version: 1.0.0
-  resolution: "ccto-wo-deps@patch:ccto-wo-deps@git@github.com%3Ahermetoproject/integration-tests.git%23commit=b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A."
-  checksum: 98355f046f66b70b4ae4aec87fb20c83eb635a7138b5bb25dcbfa567ae4fcc4240ff1178de2f985776ab6cea1f55af8e085d798f5077b8a8b5bb5cb5278293d4
+  resolution: "ccto-wo-deps@patch:ccto-wo-deps@https%3A//github.com/hermetoproject/integration-tests/archive/b7dacdbf112ce0ea17a75c389e9e0f2f70f5be81.tar.gz#./.yarn/patches/ccto-wo-deps-git@github.com-e0fce8c89c.patch::version=1.0.0&hash=51a91f&locator=berryscary%40workspace%3A."
+  checksum: 0b368057b2a14b3dee06b46bb461df65b143709e9fda4c5dd792357b0dbebbc6ae756b33c0ac89d20dea13ada05eed54c6668a277680f4ecfe588be658174658
   languageName: node
   linkType: hard
 
@@ -406,10 +390,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emoji-regex@https://github.com/mathiasbynens/emoji-regex.git":
+"emoji-regex@https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz":
   version: 10.2.1
-  resolution: "emoji-regex@https://github.com/mathiasbynens/emoji-regex.git#commit=6acf03a84f4ceb0728643057fd03ea8f0f970555"
-  checksum: 7dabb6b0b9d935869b7024a7b5c63bc0a47c22c62a6fe3de592e4fae6bf37a8fc42ec5ea3610a480d020e1e80fc2af52c1ef50922bd7636dcaf77393cd87196d
+  resolution: "emoji-regex@https://github.com/mathiasbynens/emoji-regex/archive/refs/tags/v10.2.1.tar.gz"
+  checksum: 1a63c8eb8f70c65e95dbc2f26d8f6b3f1ede1f7501224ed1d4f3325f7841b0d19ba21cd3d88baf05727056e8be1ea2fbd09d43bfd9437bb5c2f2ea025d42d967
   languageName: node
   linkType: hard
 
@@ -706,17 +690,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-positive@github:kevva/is-positive":
-  version: 3.1.0
-  resolution: "is-positive@https://github.com/kevva/is-positive.git#commit=97edff6f525f192a3f83cea1944765f769ae2678"
-  checksum: cc3d3247d509d5c272122be98eac520d1622043a330efaf0ed18645497cdce57996feff8a4a98cba72c6ec20d967ab1e1301e9b97d28f099ce81307008447d70
+"is-positive@https://github.com/kevva/is-positive/archive/refs/tags/3.0.0.tar.gz":
+  version: 3.0.0
+  resolution: "is-positive@https://github.com/kevva/is-positive/archive/refs/tags/3.0.0.tar.gz"
+  checksum: 9471d064690e6859044ecc450c1cd7643ac844b444511860f0945068ff0c3b49aaef6d86fa6fd39f1a814b1c0bcf15fd9ce03b0b6db690156fe613f2c99cf025
   languageName: node
   linkType: hard
 
-"is-positive@github:kevva/is-positive#semver=3.0.0":
-  version: 3.0.0
-  resolution: "is-positive@https://github.com/kevva/is-positive.git#commit=f0c336c9587d43d97932395b1d2798c298dad40b"
-  checksum: 9ae70022a3197b53acdf059109ff7745c0538f9520d3bccde2f1563895f803cc00cdb3ce66a405f29a6de66cbe8fbf10bfe65c5b53569269b839e68a4895a2f4
+"is-positive@https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz":
+  version: 3.1.0
+  resolution: "is-positive@https://github.com/kevva/is-positive/archive/refs/tags/3.1.0.tar.gz"
+  checksum: fd565d71ec5e6e6b14b12cbe46d87eefb18ae58b34b32c5e5e54096c6eb93f3b134b948ffb9c75ea717157f2e015143c6c59efaca6da74b61b8c95002fc6cedc
   languageName: node
   linkType: hard
 
@@ -818,10 +802,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-minimist@minimistjs/minimist:
-  version: 1.2.8
-  resolution: "minimist@https://github.com/minimistjs/minimist.git#commit=fdbb909cf916b3bac9f76f6ee72c64e05b73c2d9"
-  checksum: b319e4237910b2652cc7d8323a0c5e18939711f90a3f045e0c8600f53cb3017a140cdaae767176fe96c84db90ed90b9213ac7d2dede7615212860a91742957f8
+"minimist@https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz":
+  version: 0.2.4
+  resolution: "minimist@https://github.com/minimistjs/minimist/archive/refs/tags/v0.2.4.tar.gz"
+  checksum: b71cf4df4b03db6dbeb4c298b69f86ffc98c144ef4870faf94e455aea89b740fe75006429699394a16b969de907da473b12be6a261ae7538ee96d68b489e34d7
   languageName: node
   linkType: hard
 
@@ -1307,7 +1291,7 @@ minimist@minimistjs/minimist:
     "@types/proxy-from-env": ^1
     "@types/yargs": ^17
     berryscary: "workspace:^"
-    is-positive: "github:kevva/is-positive#semver=3.0.0"
+    is-positive: "https://github.com/kevva/is-positive/archive/refs/tags/3.0.0.tar.gz"
     old-man-from-scene-24: "workspace:^"
     proxy-from-env: ^1.1.0
     strip-ansi-tarball: "file:../../external-packages/strip-ansi-4.0.0.tgz"

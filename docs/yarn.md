@@ -3,6 +3,7 @@
 - [Hermeto's Yarn support scope](#hermetos-yarn-support-scope)
   - [Supported Yarn versions](#supported-yarn-versions)
   - [Supported Yarn protocols/locators](#supported-yarn-protocolslocators)
+  - [Git dependencies](#git-dependencies)
   - [Dealing with .yarnrc.yml](#dealing-with-yarnrcyml)
   - [Dealing with Yarn Zero-Installs](#dealing-with-yarn-zero-installs)
   - [Dealing with plugins](#dealing-with-plugins)
@@ -25,16 +26,43 @@ document describes Yarn v3 and v4 support.
 
 ### Supported Yarn protocols/locators
 
-Hermeto currently supports all standard [Yarn protocols][] except for
+Hermeto currently supports all standard [Yarn protocols][] except for the
+[Exec protocol][]. Exec remains unsupported because it can run arbitrary code
+during resolution. For practical `package.json` examples of each protocol, see
+the official Yarn protocols documentation.
 
-- [Exec protocol][]
-- [Git/GitHub protocol][]
+The [Git/GitHub protocol][] is supported with restrictions; see
+[Git dependencies](#git-dependencies).
 
-Due to the nature of how the two protocols above work, mainly related to
-potentially executing arbitrary code, adding support for them with future
-releases of Hermeto is unlikely. For further details on Yarn protocols and their
-practical `package.json` examples, please head to the official Yarn
-documentation on protocols linked earlier in this section.
+### Git dependencies
+
+Hermeto can prefetch plain [Git/GitHub protocol][] dependencies when you pass
+[`--mode=permissive`](configuration.md#modes). Strict mode rejects projects
+whose `yarn.lock` contains git-resolved packages, because Hermeto must rewrite
+`package.json` and `yarn.lock` to install from local tarballs instead of cloning
+during the hermetic build.
+
+```shell
+hermeto fetch-deps \
+  --mode=permissive \
+  --source ./my-repo \
+  --output ./hermeto-output \
+  yarn
+```
+
+Hermeto rejects the following variants during prefetch, before rewriting
+project files:
+
+- Patched git dependencies (a [patch][] applied to a package resolved from Git)
+- Git dependencies that select a workspace inside the cloned repository
+
+Permissive mode does not relax those cases. Patches applied to registry or
+other non-Git packages remain supported.
+
+After a successful prefetch of git dependencies, run
+[`hermeto inject-files`](usage.md#inject-project-files) before the hermetic
+build so the rewritten `package.json` and `yarn.lock` are applied in the source
+tree.
 
 ### Dealing with .yarnrc.yml
 
@@ -272,9 +300,19 @@ export YARN_GLOBAL_FOLDER=/tmp/hermeto-output/deps/yarn
 
 #### Inject project files
 
-Like the `gomod` package manager Yarn does not *currently* need to modify any
-content in the source directory for the cached dependencies to be used in a
-hermetic build, however that might change in the future.
+When the project has no git dependencies, Yarn does not need Hermeto to rewrite
+source files for the cached dependencies to be used in a hermetic build.
+
+When git dependencies are present, Hermeto updates `package.json` and
+`yarn.lock` to point at the local tarballs. Inject those changes before the
+hermetic build:
+
+```shell
+hermeto inject-files ./hermeto-output --for-output-dir /tmp/hermeto-output
+```
+
+See [Git dependencies](#git-dependencies) and
+[Inject project files](usage.md#inject-project-files).
 
 #### Build the application image
 
@@ -295,6 +333,7 @@ podman build . \
 [Git/GitHub protocol]: https://yarnpkg.com/protocol/git
 [nodeLinker]: https://yarnpkg.com/configuration/yarnrc#nodeLinker
 [package.json]: https://yarnpkg.com/configuration/manifest
+[patch]: https://yarnpkg.com/protocol/patch
 [PnP Zero-Installs]: https://yarnpkg.com/features/caching#zero-installs
 [PnP]: https://yarnpkg.com/features/pnp
 [the Yarn documentation]: yarn.md

@@ -20,6 +20,10 @@ The permissive mode currently suppresses:
 - Go `vendor` directory inconsistencies (see [gomod](gomod.md#vendoring))
 - `Cargo.toml` out of sync with `Cargo.lock`
 - non-Git sources (e.g., unpacked tarballs)
+- Yarn Berry plain git dependencies (see [yarn](yarn.md#git-dependencies));
+  strict mode rejects them because `package.json` and `yarn.lock` must be
+  rewritten. Patched git dependencies and git dependencies that select a
+  workspace inside the cloned repository fail in both modes
 
 Using permissive mode on non-Git trees is mainly useful for smoke tests; SBOM
 accuracy is reduced. See [usage](usage.md#general-process) for Git repository

@@ -169,15 +169,27 @@ def parse_locator(locator_str: str) -> Locator:
     :raises UnsupportedFeature: if the locator has a type that we don't support
     """
     try:
-        locator = _parse_locator(locator_str)
+        locator = parse_raw_locator(locator_str)
         parsed_reference = locator.parsed_reference
         protocol = (
             parsed_reference.protocol.removesuffix(":") if parsed_reference.protocol else None
         )
 
-        if "commit" in parse_qs(parsed_reference.selector) or protocol == "exec":
+        if protocol == "exec":
             raise UnsupportedFeature(
-                f"{APP_NAME} does not support Git or Exec dependencies for Yarn Berry: {locator_str}",
+                f"{APP_NAME} does not support Exec dependencies for Yarn Berry: {locator_str}",
+            )
+        if "commit" in parse_qs(parsed_reference.selector):
+            # Plain Git deps are rewritten to file: tarballs before parse_locator runs.
+            # Locators that still carry a commit here are unsupported forms (e.g. workspace
+            # selectors inside a cloned repo, or a patch whose original is a Git dependency).
+            raise UnsupportedFeature(
+                f"{APP_NAME} cannot process this Yarn Berry Git dependency: {locator_str}",
+                solution=(
+                    "Plain Git dependencies are supported with --mode=permissive. "
+                    "Patched Git dependencies and Git dependencies that select a workspace "
+                    "inside the cloned repository are not supported."
+                ),
             )
         elif protocol == "npm":
             return NpmLocator(locator.scope, locator.name, version=parsed_reference.selector)
@@ -202,7 +214,7 @@ def parse_locator(locator_str: str) -> Locator:
     raise UnexpectedFormat(f"parsing {locator_str!r}: unknown protocol")
 
 
-def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
+def _parse_patch_locator(locator: "ParsedLocator") -> PatchLocator:
     # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/plugin-patch/sources/patchUtils.ts#L13
     reference = locator.parsed_reference
     if not reference.source:
@@ -244,7 +256,7 @@ def _parse_patch_locator(locator: "_ParsedLocator") -> PatchLocator:
     return PatchLocator(original_package, patches, parent_locator)
 
 
-def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
+def _parse_file_locator(locator: "ParsedLocator") -> FileLocator:
     reference = locator.parsed_reference
 
     relpath = Path(reference.selector)
@@ -273,7 +285,18 @@ def _parse_file_locator(locator: "_ParsedLocator") -> FileLocator:
 
 # dataclass rather than NamedTuple because NamedTuple doesn't support cached_property
 @dataclass(frozen=True)
-class _ParsedLocator:
+class ParsedLocator:
+    """Locator split into scope, name and raw reference.
+
+    Sample locator string:
+        [@scope/]name@reference
+
+    Attributes:
+        scope: the scope of the dependency (without '@')
+        name: the name of the dependency
+        raw_reference: the unparsed reference following the '@'
+    """
+
     scope: str | None
     name: str
     raw_reference: str
@@ -285,17 +308,40 @@ class _ParsedLocator:
         return name_at_ref
 
     @cached_property
-    def parsed_reference(self) -> "_ParsedReference":
+    def parsed_reference(self) -> "ParsedReference":
+        """Return the parsed form of the raw reference.
+
+        :return: the structured reference for this locator
+        """
         return _parse_reference(self.raw_reference)
 
 
-class _ParsedReference(NamedTuple):
+class ParsedReference(NamedTuple):
+    """A parsed locator reference.
+
+    Sample reference string:
+        <protocol>:<selector>::<bindings>
+        <protocol>:<source>#<selector>::<bindings>
+
+    Attributes:
+        protocol: the protocol including the trailing colon (e.g. "npm:")
+        source: the source segment before '#'
+        selector: the selector identifying the dependency within its protocol
+        params: query-string bindings after '::'
+    """
+
     protocol: str | None
     source: str | None
     selector: str
     params: dict[str, list[str]] | None
 
     def get_param(self, param_name: str) -> str | None:
+        """Return a binding parameter value by name.
+
+        :param param_name: the binding key to look up
+        :return: the parameter value, or None if absent
+        :raises UnexpectedFormat: if the parameter is present more than once
+        """
         if not self.params or not (param_value := self.params.get(param_name)):
             return None
         if len(param_value) != 1:
@@ -303,17 +349,23 @@ class _ParsedReference(NamedTuple):
         return param_value[0]
 
 
-def _parse_locator(locator_str: str) -> _ParsedLocator:
+def parse_raw_locator(locator_str: str) -> ParsedLocator:
+    """Parse a locator into scope, name and raw reference.
+
+    :param locator_str: the locator string to parse
+    :return: the locator split into scope, name and raw reference
+    :raises UnexpectedFormat: if the locator doesn't match the expected format
+    """
     # https://github.com/yarnpkg/berry/blob/b6026842dfec4b012571b5982bb74420c7682a73/packages/yarnpkg-core/sources/structUtils.ts#L411
     locator_re = re.compile(r"^(?:@([^/]+?)/)?([^@/]+?)(?:@(.+))$")
     match = locator_re.match(locator_str)
     if not match:
         raise UnexpectedFormat("could not parse locator (expected [@scope/]name@reference)")
     scope, name, reference = match.groups()
-    return _ParsedLocator(scope, name, reference)
+    return ParsedLocator(scope, name, reference)
 
 
-def _parse_reference(reference_str: str) -> _ParsedReference:
+def _parse_reference(reference_str: str) -> ParsedReference:
     """Parse a reference string.
 
     [@scope/]name@reference
@@ -340,7 +392,7 @@ def _parse_reference(reference_str: str) -> _ParsedReference:
     selector = unquote(groups[2]) if has_source else unquote(groups[1])
     bindings = parse_qs(groups[3]) if groups[3] else None
 
-    return _ParsedReference(
+    return ParsedReference(
         protocol,
         source,
         selector,
