@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import aiohttp
+from more_itertools import partition
 
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
@@ -163,16 +164,11 @@ def _get_npm_dependencies(
                 "proxy_auth": proxy_auth,
             }
 
-    files_with_auth = {
-        str(f["fetch_url"]): f["download_path"]
-        for f in files_to_download.values()
-        if f["proxy_auth"] is not None
-    }
-    files_without_auth = {
-        str(f["fetch_url"]): f["download_path"]
-        for f in files_to_download.values()
-        if f["proxy_auth"] is None
-    }
+    without_auth, with_auth = partition(
+        lambda f: f["proxy_auth"] is not None, files_to_download.values()
+    )
+    files_with_auth = {str(f["fetch_url"]): f["download_path"] for f in with_auth}
+    files_without_auth = {str(f["fetch_url"]): f["download_path"] for f in without_auth}
     asyncio.run(async_download_with_auth(files_without_auth, files_with_auth, npm_proxy_basic_auth))
 
     # Check integrity of downloaded packages

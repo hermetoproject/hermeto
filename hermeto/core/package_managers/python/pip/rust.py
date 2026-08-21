@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import tomlkit
+from more_itertools import ilen
 
 from hermeto.core.models.input import CargoPackageInput, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
@@ -88,7 +89,7 @@ def filter_packages_with_rust_code(packages: list[PipPackage]) -> list[CargoPack
 
         # The unpacked URL/VCS package may have an arbitrary directory name that we cannot control.
         # Therefore, it is inside a predictable directory derived from the package name.
-        nitems = sum(1 for _ in extract_dir.iterdir())
+        nitems = ilen(extract_dir.iterdir())
         if nitems != 1:
             # non-standard packaging scheme that doesn't come with a top-level directory
             source_dir = extract_dir
