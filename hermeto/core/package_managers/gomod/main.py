@@ -78,8 +78,6 @@ class ParsedOrigin(_ParsedModel):
     vcs: str
     url: str
     hash: str
-    tag_sum: str | None = None
-    ref: str | None = None
 
 
 class ParsedModule(_ParsedModel):
@@ -387,7 +385,7 @@ def _create_packages_from_parsed_data(
 
         relative_path = _resolve_package_relative_path(package, module)
 
-        return Package(relative_path=str(relative_path), module=module)
+        return Package(relative_path=relative_path, module=module)
 
     def _find_parent_module_by_name(package: ParsedPackage) -> Module:
         """Return the longest module name that is contained in package's import_path."""
@@ -682,7 +680,7 @@ def _disable_telemetry(go: Go, run_params: dict[str, Any]) -> None:
 
 
 def _go_list_deps(
-    go: Go, pattern: Literal["./...", "all"], run_params: dict[str, Any] | None = None
+    go: Go, pattern: Literal["./...", "all"], run_params: dict[str, Any]
 ) -> Iterator[ParsedPackage]:
     """Run go list -deps -json and return the parsed list of packages.
 
@@ -691,7 +689,7 @@ def _go_list_deps(
     The "all" pattern includes dependencies needed only for tests. Use it to get a more
     complete module list (roughly matching the list of downloaded modules).
     """
-    cmd = ["list", "-e", "-deps", "-json=ImportPath,Module,Standard,Deps", pattern]
+    cmd = ["list", "-e", "-deps", "-json=ImportPath,Module,Standard", pattern]
     return map(
         ParsedPackage.model_validate,
         load_json_stream(go(cmd, run_params)),
@@ -1071,7 +1069,7 @@ class ModuleVersionResolver:
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
                 f"for {repo.working_tree_dir}: "
                 f"{str(ex)}"
-            )
+            ) from ex
 
         return cls(repo, commit)
 
@@ -1164,7 +1162,9 @@ class ModuleVersionResolver:
         module_major_version = int(match.group("major_version")) if match else None
 
         # If no match, prefer v1.x.x tags but fallback to v0.x.x tags if both are present
-        major_versions_to_try = (module_major_version,) if module_major_version else (1, 0)
+        major_versions_to_try = (
+            (module_major_version,) if module_major_version is not None else (1, 0)
+        )
 
         if app_dir.path == app_dir.root:
             subpath = None
@@ -1314,7 +1314,8 @@ class ModuleVersionResolver:
         if tag is None:
             # If the major version isn't in the import path and there is not a versioned commit with the
             # version of 1, the major version defaults to 0.
-            return f"v{module_major_version or '0'}.0.0-{commit_timestamp}-{commit_hash}"
+            major = module_major_version if module_major_version is not None else 0
+            return f"v{major}.0.0-{commit_timestamp}-{commit_hash}"
 
         tag_semantic_version = self._get_semantic_version_from_tag(tag.name, subpath)
 
@@ -1357,14 +1358,10 @@ class ModuleVersionResolver:
 
 
 def _validate_local_replacements(modules: Iterable[ParsedModule], app_path: RootedPath) -> None:
-    replaced_paths = [
-        (module.path, module.replace.path)
-        for module in modules
-        if module.replace and module.replace.path.startswith(".")
-    ]
-
-    for _, path in replaced_paths:
-        app_path.join_within_root(path)
+    """Check that local replacements point to paths within app_path."""
+    for module in modules:
+        if module.replace and module.replace.path.startswith("."):
+            app_path.join_within_root(module.replace.path)
 
 
 def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
@@ -1514,12 +1511,19 @@ def prepare_netrc_contents() -> str:
         password {secret}"""
 
 
+def _write_file_with_mode(path: Path, content: str, mode: int) -> None:
+    """Write content to a file with explicit permissions, bypassing umask."""
+    old_mask = os.umask(0)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+        with open(fd, "w") as f:
+            f.write(content)
+    finally:
+        os.umask(old_mask)
+
+
 def inject_netrc(netrc_stuff: str, temp_netrc_dir: Path) -> str:
     """Inject a temporary .netrc."""
     netrc = temp_netrc_dir / ".netrc"
-    old_mask = os.umask(0)
-    netrc_fd = os.open(path=netrc, flags=(os.O_WRONLY | os.O_CREAT | os.O_TRUNC), mode=0o600)
-    with open(netrc_fd, "w") as f:
-        f.write(netrc_stuff)
-    os.umask(old_mask)
+    _write_file_with_mode(netrc, netrc_stuff, 0o600)
     return str(netrc)

@@ -212,9 +212,6 @@ def process_package_distributions(
     filtered_wheels: list[DistributionPackageInfo] = []
 
     for package in to_process:
-        if package.package_type is None or package.package_type not in allowed_distros:
-            continue
-
         pypi_checksums: set[ChecksumInfo] = {
             ChecksumInfo(algorithm, digest) for algorithm, digest in package.digests.items()
         }
@@ -367,11 +364,14 @@ class WheelsFilter(BinaryPackageFilter):
         return self.abi is None or abi in ("abi3", "none") or any(a in abi for a in self.abi)
 
     def _compatible_tag_interpreter(self, interpreter: str, abi: str) -> bool:
-        compatible_py_impl = (
+        is_compatible_py_impl = (
             self.py_impl is None
             or "py3" in interpreter
             or any(impl in interpreter for impl in self.py_impl)
         )
+
+        if self.py_version is None:
+            return is_compatible_py_impl
 
         wheel_py_versions = _parse_py_versions(interpreter)
 
@@ -390,9 +390,9 @@ class WheelsFilter(BinaryPackageFilter):
             is_compatible_candidate(v, this) for v in wheel_py_versions
         )
 
-        compatible_py_version = self.py_version is None or some_candidate_is_compatible
+        compatible_py_version = some_candidate_is_compatible
 
-        return compatible_py_impl and compatible_py_version
+        return is_compatible_py_impl and compatible_py_version
 
 
 def _parse_py_versions(interpreter: str) -> list[int]:

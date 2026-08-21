@@ -28,9 +28,6 @@ from tests.integration.proxy import (
     validate_and_strip_proxy_refs,
 )
 
-# force IPv4 localhost as 'localhost' can resolve with IPv6 as well
-TEST_SERVER_LOCALHOST = "127.0.0.1"
-
 HERMETO_TEST_IMAGE_TAG = "localhost/hermeto-test:latest"
 
 

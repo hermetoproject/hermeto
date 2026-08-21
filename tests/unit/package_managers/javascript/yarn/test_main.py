@@ -12,7 +12,6 @@ from hermeto.core.errors import (
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.output import EnvironmentVariable
 from hermeto.core.package_managers.javascript.yarn.main import (
     _configure_yarn_version,
     _resolve_yarn_project,
@@ -25,16 +24,6 @@ from hermeto.core.package_managers.javascript.yarn.project import PackageJson, Y
 from hermeto.core.package_managers.javascript.yarn.resolver import Package
 from hermeto.core.package_managers.javascript.yarn.utils import VersionsRange
 from hermeto.core.rooted_path import RootedPath
-
-
-@pytest.fixture(scope="module")
-def yarn_env_variables() -> list[EnvironmentVariable]:
-    return [
-        EnvironmentVariable(name="YARN_ENABLE_GLOBAL_CACHE", value="false"),
-        EnvironmentVariable(name="YARN_ENABLE_IMMUTABLE_CACHE", value="false"),
-        EnvironmentVariable(name="YARN_ENABLE_MIRROR", value="true"),
-        EnvironmentVariable(name="YARN_GLOBAL_FOLDER", value="${output_dir}/deps/yarn"),
-    ]
 
 
 class YarnVersions(Enum):
@@ -61,15 +50,6 @@ class YarnVersions(Enum):
             set(cls.__members__.values()).difference(set(cls.supported())),
             key=lambda v: v.value,
         )
-
-
-SAMPLE_PLUGINS = """
-plugins:
-  - path: .yarn/plugins/@yarnpkg/plugin-typescript.cjs
-    spec: "@yarnpkg/plugin-typescript"
-  - path: .yarn/plugins/@yarnpkg/plugin-exec.cjs
-    spec: "@yarnpkg/plugin-exec"
-"""
 
 
 @pytest.mark.parametrize(
@@ -292,7 +272,7 @@ def test_verify_yarnrc_paths_fail(
     request: pytest.FixtureRequest, tmp_path: Path, opt_path: str
 ) -> None:
     project = mock.Mock()
-    project.source_dir = tmp_path
+    project.source_dir = RootedPath(tmp_path)
     project.yarn_rc = YarnRc(
         RootedPath(tmp_path / ".yarnrc.yml"), {request.node.callspec.id: opt_path}
     )

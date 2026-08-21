@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import tempfile
 from collections import UserDict
-from collections.abc import Iterable
+from collections.abc import Collection
 from functools import cache, cached_property, total_ordering
 from pathlib import Path
 from typing import Any, Sequence
@@ -201,7 +201,7 @@ class Go:
         # references below:
         # [1] https://github.com/golang/go/issues/26520
         # [2] https://golang.org/cl/34385
-        with tempfile.TemporaryDirectory(prefix=f"{APP_NAME}", suffix="go-download") as td:
+        with tempfile.TemporaryDirectory(prefix=APP_NAME, suffix="go-download") as td:
             log.debug("Installing Go %s toolchain shim from '%s'", release, url)
             env = {
                 "PATH": os.environ.get("PATH", ""),
@@ -270,6 +270,8 @@ class Go:
                 f"Go execution failed: {APP_NAME} re-tried running `{' '.join(cmd)}` command "
                 f"{n_tries} times."
             )
+            # run_cmd already logs stderr; the caught error only summarizes it,
+            # so `from None` avoids a redundant chained duplicate.
             raise PackageManagerError(err_msg) from None
 
     @staticmethod
@@ -395,7 +397,7 @@ def _get_gomod_version(go_mod_file: RootedPath) -> tuple[str | None, str | None]
     return (go_version, toolchain_version)
 
 
-def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go]) -> Go | None:
+def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Collection[Go]) -> Go | None:
     """
     Pick the closest matching installed toolchain give a go.mod file.
 
@@ -467,7 +469,7 @@ def _select_toolchain(go_mod_file: RootedPath, installed_toolchains: Iterable[Go
                 work_toolchain = next(iter(installed_toolchains))
                 go = Go.from_missing_toolchain(release_str, work_toolchain.binary)
                 log.debug("Using Go toolchain version '%s'", go.version)
-            except Exception as ex:
+            except (PackageManagerError, OSError, subprocess.CalledProcessError) as ex:
                 log.error("Failed to download a Go toolchain version '%s': '%s'", release_str, ex)
                 return None
     return go
@@ -506,9 +508,7 @@ def _list_installed_toolchains() -> set[Go]:
         try:
             log.debug("Probing %s toolchain...", bin_path)
             ret.add(Go(binary=bin_path.as_posix()))
-        except Exception as e:
-            # Logging toolchain probing failures due to [1].
-            # [1] https://bandit.readthedocs.io/en/1.8.3/plugins/b112_try_except_continue.html
+        except (PackageManagerError, OSError, subprocess.CalledProcessError) as e:
             log.debug("Toolchain %s failed probing: %s, skipping...", bin_path, e)
 
     log.debug(
