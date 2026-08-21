@@ -61,6 +61,50 @@ Generate data for test cases matching a pytest pattern:
 nox -s generate-test-data -- -k test_e2e_gomod
 ```
 
+## Adding integration test scenarios
+
+Each package manager backend has a corresponding test file and scenario data
+directory:
+
+- `tests/integration/{backend}/test_{backend}.py` - test case definitions
+- `tests/integration/{backend}/scenarios/` - test scenario data
+
+A scenario comprises:
+- `in/` - input files (lockfiles, application source code, Containerfile, etc.)
+- `out/`- expected output files (generated SBOM, intermediary artifacts, etc.)
+
+See [Generating test data](#generating-test-data) on how to generate the
+expected outputs for new scenarios.
+
+### Example scenario structure
+
+```
+bundler_e2e_ruby33/
+├── in/
+│   ├── Gemfile
+│   ├── Gemfile.lock
+│   ├── Containerfile.ruby33
+│   └── ... (source files)
+└── out/
+    ├── bom.json
+    └── .build-config.yaml
+```
+
+### Best practices
+
+- **Avoid duplication**: When the new scenario is a variant of an existing one
+  or any time you can simply re-use existing inputs, do so with the use of
+  symlinks in the `in/` directory for everything that can be shared among
+  scenarios rather than duplicating data.
+
+- **Keep scenarios minimal**: Strip unnecessary data and metadata from input
+  sources. Use tiny packages and keep dependencies (especially the transitive
+  ones) at bay - test the behavior you truly need without the added complexity
+  of comprehensive real-world projects.
+
+- **Re-use existing patterns**: See existing scenarios for the established
+  patterns & conventions.
+
 ## Resource tuning
 
 Some end-to-end tests build Rust code inside containers. With many parallel
