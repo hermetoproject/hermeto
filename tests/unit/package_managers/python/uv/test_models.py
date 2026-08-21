@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import re
+import textwrap
 from typing import Any
 
 import pydantic
 import pytest
 
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PackageRejected,
+)
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
     ArtifactWheel,
@@ -16,9 +21,135 @@ from hermeto.core.package_managers.python.uv.models import (
     PackageSourceLocal,
     PackageSourceRegistry,
     PackageSourceUrl,
+    UvLock,
+    UvPackage,
 )
+from hermeto.core.rooted_path import RootedPath
+
+URL_SOURCE = "https://example.org/downloads/example-1.0.0.tar.gz"
 
 PYPI_SOURCE = PackageSourceRegistry(kind="registry", location="https://pypi.org/simple")
+DIRECT_URL_SOURCE = PackageSourceUrl(kind="url", location=URL_SOURCE)
+
+
+def write_uv_lock(rooted_path: RootedPath, content: str) -> None:
+    (rooted_path.path / "uv.lock").write_text(textwrap.dedent(content))
+
+
+def make_package(
+    source: PackageSource,
+    sdist: ArtifactSdist | None = None,
+    wheels: list[ArtifactWheel] | None = None,
+) -> UvPackage:
+    return UvPackage(
+        name="example", version="1.0.0", source=source, sdist=sdist, wheels=wheels or []
+    )
+
+
+def validate_source(raw: dict[str, Any]) -> PackageSource:
+    """Validate a raw uv.lock source table the only way production does, through UvPackage."""
+    return UvPackage.model_validate({"name": "example", "source": raw}).source
+
+
+class TestPackageSourceNormalization:
+    @pytest.mark.parametrize(
+        "raw, expected_model, expected_kind, expected_location",
+        [
+            pytest.param(
+                {"registry": "https://pypi.org/simple"},
+                PackageSourceRegistry,
+                "registry",
+                "https://pypi.org/simple",
+                id="registry",
+            ),
+            pytest.param(
+                {"registry": "http://internal-mirror:8080/simple"},
+                PackageSourceRegistry,
+                "registry",
+                "http://internal-mirror:8080/simple",
+                id="registry_http_custom_index",
+            ),
+            pytest.param(
+                {"git": "https://github.com/org/repo?rev=main#0123abcd"},
+                PackageSourceGit,
+                "git",
+                "https://github.com/org/repo?rev=main#0123abcd",
+                id="git",
+            ),
+            pytest.param(
+                {"url": "https://example.org/pkg-1.0.tar.gz"},
+                PackageSourceUrl,
+                "url",
+                "https://example.org/pkg-1.0.tar.gz",
+                id="url",
+            ),
+            pytest.param(
+                {"path": "../local/pkg.tar.gz"},
+                PackageSourceLocal,
+                "path",
+                "../local/pkg.tar.gz",
+                id="path",
+            ),
+            pytest.param(
+                {"directory": "subdir"}, PackageSourceLocal, "directory", "subdir", id="directory"
+            ),
+            pytest.param({"editable": "."}, PackageSourceLocal, "editable", ".", id="editable"),
+            pytest.param({"virtual": "."}, PackageSourceLocal, "virtual", ".", id="virtual"),
+            pytest.param(
+                {"git": "https://github.com/org/repo#0123abcd", "subdirectory": "packages/sub"},
+                PackageSourceGit,
+                "git",
+                "https://github.com/org/repo#0123abcd",
+                id="extra_keys_are_ignored",
+            ),
+            pytest.param(
+                {"kind": "registry", "location": "https://pypi.org/simple"},
+                PackageSourceRegistry,
+                "registry",
+                "https://pypi.org/simple",
+                id="already_normalized_passthrough",
+            ),
+        ],
+    )
+    def test_normalizes_uv_source_table(
+        self,
+        raw: dict[str, Any],
+        expected_model: type[PackageSource],
+        expected_kind: str,
+        expected_location: str,
+    ) -> None:
+        source = validate_source(raw)
+        assert isinstance(source, expected_model)
+        assert source.kind == expected_kind
+        assert source.location == expected_location
+
+    @pytest.mark.parametrize(
+        "raw, expected_got",
+        [
+            pytest.param({}, "got []", id="no_source_key"),
+            pytest.param({"bogus": "https://example.org"}, "got []", id="unknown_source_key"),
+            pytest.param(
+                {"bogus": "x", "subdirectory": "sub"}, "got []", id="no_key_is_a_kind_key"
+            ),
+            pytest.param(
+                {"registry": "https://pypi.org/simple", "git": "https://github.com/org/repo#abc"},
+                "got ['registry', 'git']",
+                id="multiple_source_keys",
+            ),
+            pytest.param(
+                {"registry": "https://pypi.org/simple", "git": "https://h/r#abc", "extra": 1},
+                "got ['registry', 'git']",
+                id="reports_only_the_kind_keys",
+            ),
+        ],
+    )
+    def test_rejects_invalid_mappings(self, raw: dict[str, Any], expected_got: str) -> None:
+        """The message reports the kind keys uv could have written, not the whole table."""
+        with pytest.raises(
+            pydantic.ValidationError,
+            match=rf"source must contain exactly one of .*{re.escape(expected_got)}",
+        ):
+            validate_source(raw)
 
 
 class TestPackageSourceRegistry:
@@ -189,3 +320,172 @@ class TestArtifactWheel:
         self, artifact: PackageArtifact, source: PackageSource, expected: str
     ) -> None:
         assert artifact.get_target_filename(source) == expected
+
+
+class TestUvPackage:
+    @pytest.mark.parametrize(
+        "sdist, wheels, expected",
+        [
+            pytest.param(
+                ArtifactSdist(hash="sha256:1234"), [], ArtifactSdist(hash="sha256:1234"), id="sdist"
+            ),
+            pytest.param(
+                None,
+                [ArtifactWheel(filename="pkg-1.0-py3-none-any.whl")],
+                ArtifactWheel(filename="pkg-1.0-py3-none-any.whl"),
+                id="single_wheel",
+            ),
+            pytest.param(None, [], None, id="neither"),
+        ],
+    )
+    def test_sole_artifact(
+        self,
+        sdist: ArtifactSdist | None,
+        wheels: list[ArtifactWheel],
+        expected: PackageArtifact | None,
+    ) -> None:
+        package = make_package(DIRECT_URL_SOURCE, sdist=sdist, wheels=wheels)
+        assert package.sole_artifact == expected
+
+
+class TestUvLock:
+    def test_from_file(self, rooted_tmp_path: RootedPath) -> None:
+        """Parse a whole document. Every key below earns its place.
+
+        ``revision``, ``requires-python`` and ``[options]`` are unmodelled, so
+        ``extra="ignore"`` has to drop them instead of rejecting the file; ``size`` is
+        modelled, so it has to survive; and ``[[package]]`` has to land in ``packages``
+        through the alias. Deleting any of them stops testing something.
+        """
+        write_uv_lock(
+            rooted_tmp_path,
+            """
+            version = 1
+            revision = 2
+            requires-python = ">=3.9"
+
+            [options]
+            exclude-newer = "2024-01-01T00:00:00Z"
+
+            [[package]]
+            name = "example"
+            version = "1.0.0"
+            source = { registry = "https://pypi.org/simple" }
+            sdist = { url = "https://example.org/example-1.0.0.tar.gz", hash = "sha256:1234", size = 100 }
+            wheels = [
+                { url = "https://example.org/example-1.0.0-py3-none-any.whl", hash = "sha256:5678" },
+            ]
+
+            [[package]]
+            name = "local-pkg"
+            version = "0.1.0"
+            source = { editable = "." }
+            """,
+        )
+
+        lock = UvLock.from_file(rooted_tmp_path)
+
+        assert lock.version == 1
+        assert len(lock.packages) == 2
+
+        example = lock.packages[0]
+        assert example.name == "example"
+        assert example.version == "1.0.0"
+        assert example.source.kind == "registry"
+        assert example.sdist == ArtifactSdist(
+            url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234", size=100
+        )
+        assert example.wheels == [
+            ArtifactWheel(
+                url="https://example.org/example-1.0.0-py3-none-any.whl", hash="sha256:5678"
+            )
+        ]
+
+        local = lock.packages[1]
+        assert isinstance(local.source, PackageSourceLocal)
+
+    def test_from_file_dynamic_version(self, rooted_tmp_path: RootedPath) -> None:
+        """uv omits `version` for a source tree that declares `dynamic = ["version"]`."""
+        write_uv_lock(
+            rooted_tmp_path,
+            """
+            version = 1
+
+            [[package]]
+            name = "ws-root"
+            source = { editable = "." }
+
+            [[package]]
+            name = "member"
+            version = "2.0.0"
+            source = { editable = "packages/member" }
+            """,
+        )
+
+        lock = UvLock.from_file(rooted_tmp_path)
+
+        assert lock.packages[0].version is None
+        assert lock.packages[1].version == "2.0.0"
+
+    def test_from_file_missing(self, rooted_tmp_path: RootedPath) -> None:
+        with pytest.raises(LockfileNotFound):
+            UvLock.from_file(rooted_tmp_path)
+
+    def test_from_file_invalid_toml(self, rooted_tmp_path: RootedPath) -> None:
+        write_uv_lock(rooted_tmp_path, "version = [not toml")
+        with pytest.raises(InvalidLockfileFormat, match="Invalid TOML syntax"):
+            UvLock.from_file(rooted_tmp_path)
+
+    def test_from_file_unsupported_version(self, rooted_tmp_path: RootedPath) -> None:
+        write_uv_lock(rooted_tmp_path, "version = 2")
+        with pytest.raises(InvalidLockfileFormat, match="unsupported uv.lock version: 2"):
+            UvLock.from_file(rooted_tmp_path)
+
+    def test_from_file_error_names_the_offending_package(self, rooted_tmp_path: RootedPath) -> None:
+        """from_toml reports where in the document validation failed, not just why."""
+        write_uv_lock(
+            rooted_tmp_path,
+            """
+            version = 1
+
+            [[package]]
+            name = "example"
+            version = "1.0.0"
+            source = { registry = "" }
+            """,
+        )
+        with pytest.raises(
+            InvalidLockfileFormat, match=r"package\.0\.source.*registry source must not be empty"
+        ):
+            UvLock.from_file(rooted_tmp_path)
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            pytest.param(
+                """
+                version = 1
+
+                [[package]]
+                name = "example"
+                version = "1.0.0"
+                """,
+                id="package_without_a_source",
+            ),
+            pytest.param(
+                """
+                revision = 2
+
+                [[package]]
+                name = "example"
+                version = "1.0.0"
+                source = { registry = "https://pypi.org/simple" }
+                """,
+                id="lockfile_without_a_version",
+            ),
+        ],
+    )
+    def test_from_file_invalid_structure(self, content: str, rooted_tmp_path: RootedPath) -> None:
+        write_uv_lock(rooted_tmp_path, content)
+        with pytest.raises(InvalidLockfileFormat):
+            UvLock.from_file(rooted_tmp_path)

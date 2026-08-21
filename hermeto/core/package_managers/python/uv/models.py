@@ -1,13 +1,23 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from collections.abc import Mapping
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, get_args
 from urllib.parse import ParseResult, urlparse
 
 import pydantic
+import tomlkit
+from tomlkit.exceptions import ParseError
 
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.errors import PackageRejected
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PackageRejected,
+)
+from hermeto.core.rooted_path import RootedPath
+
+SUPPORTED_LOCKFILE_VERSION = 1
 
 PackageSourceKind = Literal[
     "registry",
@@ -224,3 +234,130 @@ class ArtifactWheel(PackageArtifact):
     def get_target_filename(self, source: PackageSource) -> str:
         """Use the recorded name; a wheel always records one of the three."""
         return self.filename or super().get_target_filename(source)
+
+
+class UvPackage(pydantic.BaseModel, extra="ignore"):
+    """A single ``[[package]]`` entry in uv.lock.
+
+    ``name`` is always present, ``version`` is not: uv omits it for a directory,
+    editable or virtual source whose project declares ``dynamic = ["version"]``.
+
+    Dependency edges, ``metadata``, ``optional-dependencies`` and
+    ``dev-dependencies`` are present in the file but not modelled, as they are
+    not used for fetch and verification.
+    """
+
+    name: str
+    version: str | None = None
+    source: PackageSource = pydantic.Field(discriminator="kind")
+    sdist: ArtifactSdist | None = None
+    wheels: list[ArtifactWheel] = pydantic.Field(default_factory=list)
+
+    @pydantic.field_validator("source", mode="before")
+    @classmethod
+    def _normalize_source(cls, data: Any) -> Any:
+        """Rewrite uv's single-key source table into the ``{kind, location}`` shape.
+
+        uv names the kind with the key itself (``{ registry = "..." }``) while the
+        union dispatches on a ``kind`` field: the key becomes ``kind``, its value
+        becomes ``location``, and the table's other keys (e.g. a git
+        ``subdirectory``) are dropped.
+
+        Two inputs pass through instead: a source model built in code, which is not
+        a mapping and which the union takes as it stands, and a mapping that already
+        has ``kind``. Anything else that is not a mapping is left for pydantic to
+        reject with its own error.
+        """
+        if not isinstance(data, Mapping) or "kind" in data:
+            return data
+        matched = [key for key in _SOURCE_KINDS if key in data]
+        if len(matched) != 1:
+            raise ValueError(f"source must contain exactly one of {_SOURCE_KINDS}, got {matched}")
+        kind = matched[0]
+        return {"kind": kind, "location": data[kind]}
+
+    @property
+    def sole_artifact(self) -> PackageArtifact | None:
+        """The single distribution a url or path package records, or None if it records none."""
+        if self.sdist is not None:
+            return self.sdist
+        return self.wheels[0] if self.wheels else None
+
+
+def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:
+    """Find and load the raw uv.lock document from a directory.
+
+    The raw document complements the deliberately lossy UvLock model: it
+    keeps the fields and formatting the model does not carry.
+
+    :raises LockfileNotFound: if no uv.lock file is found in the directory.
+    :raises InvalidLockfileFormat: if the file is not valid TOML.
+    """
+    path = directory.join_within_root("uv.lock")
+    if not path.path.exists():
+        raise LockfileNotFound(
+            files=path.path,
+            solution="Run `uv lock` in the project directory to generate uv.lock.",
+        )
+
+    with open(path) as f:
+        try:
+            return tomlkit.load(f)
+        except ParseError as e:
+            raise InvalidLockfileFormat(
+                lockfile_path=path.path,
+                err_details="Invalid TOML syntax.",
+                solution="Regenerate the lockfile with `uv lock`.",
+            ) from e
+
+
+class UvLock(pydantic.BaseModel, extra="ignore", populate_by_name=True):
+    """A parsed uv.lock file.
+
+    Only ``version`` and ``packages`` are modelled. ``revision`` is ignored
+    because revisions are forward/backward compatible within a major version;
+    ``requires-python``, ``resolution-markers``, ``manifest`` and ``options``
+    are ignored as they are not needed to fetch artifacts.
+    """
+
+    version: int
+    # uv.lock spells this ``package``; expose it as ``packages`` here.
+    packages: list[UvPackage] = pydantic.Field(default_factory=list, alias="package")
+
+    @pydantic.field_validator("version")
+    @classmethod
+    def _supported_version(cls, version: int) -> int:
+        if version != SUPPORTED_LOCKFILE_VERSION:
+            raise ValueError(
+                f"unsupported uv.lock version: {version} "
+                f"(only version {SUPPORTED_LOCKFILE_VERSION} is supported)"
+            )
+        return version
+
+    @classmethod
+    def from_toml(cls, doc: tomlkit.TOMLDocument, lockfile_path: Path) -> "UvLock":
+        """Validate an already-loaded uv.lock document.
+
+        :raises InvalidLockfileFormat: if the document does not match the
+            expected uv.lock structure/version.
+        """
+        try:
+            return cls.model_validate(doc)
+        except pydantic.ValidationError as e:
+            first = e.errors()[0]
+            raise InvalidLockfileFormat(
+                lockfile_path=lockfile_path,
+                err_details=f"{'.'.join(map(str, first['loc']))}: {first['msg']}",
+                solution="Regenerate the lockfile with `uv lock` (matching your uv version).",
+            ) from e
+
+    @classmethod
+    def from_file(cls, directory: RootedPath) -> "UvLock":
+        """Find, load, parse and validate a uv.lock file from a directory.
+
+        :raises InvalidLockfileFormat: if the file is not valid TOML, or does not
+            match the expected uv.lock structure/version.
+        :raises LockfileNotFound: if no uv.lock file is found in the directory.
+        """
+        path = directory.join_within_root("uv.lock")
+        return cls.from_toml(load_lockfile_document(directory), path.path)
