@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 from pathlib import Path
 
+from more_itertools import first
+
 from hermeto.core.package_managers.maven.main import (
     MIRROR_ID,
     _get_matching_pom_files,
@@ -22,7 +24,7 @@ def test_get_matching_pom_files(tmp_path: Path) -> None:
         }
     )
     poms = _get_matching_pom_files(tmp_path, [ma])
-    url = next(iter(poms.keys()))
+    url = first(poms.keys())
     assert url == "https://repo.maven.apache.org/maven2/g/a/1/a-1.pom"
 
 

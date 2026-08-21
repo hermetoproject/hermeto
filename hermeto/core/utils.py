@@ -7,11 +7,9 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from functools import cache
-from itertools import filterfalse, tee
 from pathlib import Path
-from typing import Any
 
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
@@ -207,14 +205,3 @@ def get_cache_dir() -> Path:
     except KeyError:
         cache_dir = Path.home().joinpath(".cache")
     return cache_dir.joinpath(f"{APP_NAME}")
-
-
-def first_for(predicate: Callable, iterable: Iterable, fallback: Any) -> Any:
-    """Return the first match of predicate in iterable or fallback value."""
-    return next((x for x in iterable if predicate(x)), fallback)
-
-
-def partition_by(predicate: Callable, iterable: Iterable) -> tuple[Iterable, Iterable]:
-    """Partition iterable in two by predicate."""
-    i1, i2 = tee(iterable)
-    return filterfalse(predicate, i1), filter(predicate, i2)

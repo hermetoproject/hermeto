@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from more_itertools import first_true
 from packageurl import PackageURL
 
 from hermeto.core.config import get_config
@@ -31,7 +32,6 @@ from hermeto.core.package_managers.javascript.yarn_classic.workspaces import (
     get_workspace_paths,
 )
 from hermeto.core.rooted_path import RootedPath
-from hermeto.core.utils import first_for
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +139,9 @@ def _generate_pedigree_for(
 
     # Dependencies can be patched by package ID or package name (including scope).
     search_keys = (package.id, package.full_name)
-    key = first_for(lambda search_key: search_key in patched_dependencies, search_keys, None)
+    key = first_true(
+        search_keys, default=None, pred=lambda search_key: search_key in patched_dependencies
+    )
 
     return Pedigree(patches=[Patch(diff=PatchDiff(url=get_patch_url(key)))]) if key else None
 
