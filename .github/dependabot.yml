@@ -78,6 +78,12 @@ updates:
       - dependency-name: "pydantic-core"
       - dependency-name: "createrepo-c"
         versions: [">=1.2.2"]
+      # the uv backend parses the exit codes and error messages of the uv binary, so a
+      # minor bump has to go through the integration tests before it lands
+      - dependency-name: "uv"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
     groups:
       minor-and-patch:
         update-types:

@@ -464,6 +464,7 @@ def _download_dependencies(
     output_dir: RootedPath,
     requirements_file: PipRequirementsFile,
     binary_filters: PipBinaryFilters | None = None,
+    deps_dir_name: str = "pip",
 ) -> list[PipPackage]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
@@ -471,6 +472,7 @@ def _download_dependencies(
     :param output_dir: the root output directory for this request
     :param requirements_file: A requirements.txt file
     :param binary_filters: process wheels?
+    :param deps_dir_name: subdirectory of {output_dir}/deps to download into
     :return: list of PipPackage instances for each downloaded package
     """
     options: dict[str, Any] = process_requirements_options(requirements_file.options)
@@ -492,7 +494,7 @@ def _download_dependencies(
     validate_requirements(requirements_file.requirements)
     validate_requirements_hashes(requirements_file.requirements, require_hashes)
 
-    pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
+    pip_deps_dir: RootedPath = output_dir.join_within_root("deps", deps_dir_name)
     pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     pypi_reqs: list[PipRequirement] = []
@@ -537,10 +539,11 @@ def _download_dependencies(
     return processed
 
 
-def _download_from_requirement_files(
+def download_from_requirement_files(
     output_dir: RootedPath,
     files: list[RootedPath],
     binary_filters: PipBinaryFilters | None = None,
+    deps_dir_name: str = "pip",
 ) -> list[PipPackage]:
     """
     Download dependencies listed in the requirement files.
@@ -548,6 +551,7 @@ def _download_from_requirement_files(
     :param output_dir: the root output directory for this request
     :param files: list of absolute paths to pip requirements files
     :param binary_filters: process wheels?
+    :param deps_dir_name: subdirectory of {output_dir}/deps to download into
     :return: list of PipPackage instances for each downloaded package
     :raises PackageRejected: If requirement file does not exist
     """
@@ -559,7 +563,9 @@ def _download_from_requirement_files(
                 solution="Please check that you have specified correct requirements file paths",
             )
         requirements.extend(
-            _download_dependencies(output_dir, PipRequirementsFile(req_file), binary_filters)
+            _download_dependencies(
+                output_dir, PipRequirementsFile(req_file), binary_filters, deps_dir_name
+            )
         )
 
     return requirements
@@ -620,8 +626,8 @@ def _resolve_pip(
             ", ".join(str(f.subpath_from_root) for f in resolved_build_req_files),
         )
 
-    requires = _download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
-    build_requires = _download_from_requirement_files(
+    requires = download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
+    build_requires = download_from_requirement_files(
         output_dir, resolved_build_req_files, binary_filters
     )
 
