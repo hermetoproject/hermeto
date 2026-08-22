@@ -2,17 +2,7 @@ name: Gating
 
 on:
   pull_request:
-    # Documentation-only changes cannot break CI.
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
   push:
-    # Documentation-only changes cannot break CI.
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
     branches:
       - main
   merge_group:
