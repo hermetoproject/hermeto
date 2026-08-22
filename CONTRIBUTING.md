@@ -13,8 +13,8 @@
   * [Error message guidelines](#error-message-guidelines)
   * [Test guidelines](#test-guidelines)
   * [Comment guidelines](#comment-guidelines)
-  * [Running unit tests](#running-unit-tests)
-  * [Running integration tests](#running-integration-tests)
+  * [Unit tests](#unit-tests)
+  * [Integration tests](#integration-tests)
   * [Adding new dependencies to the project](#adding-new-dependencies-to-the-project)
 * [Releasing](#releasing)
 
@@ -200,7 +200,7 @@ If your code was inspired by any third-party sources, consider adding a comment 
 
 When extending an existing feature, please add a new test case instead of modifying any existing ones. Large test scenarios with many branching paths are very hard to understand and to maintain. It is ok to copy and paste large parts of an existing test if needed for a new scenario. It is also fine to add a new parameter group to an existing test, as long as the test function remains unchanged.
 
-### Running unit tests
+### Unit tests
 
 Run all unit tests (but no other checks):
 
@@ -230,10 +230,11 @@ nox -s python-3.10 -- tests/unit/extras/test_envfile.py::test_cannot_determine_f
 
 In short, nox passes all arguments to the right of `--` directly to pytest.
 
-### Running integration tests
+### Integration tests
 
 See [tests/integration/README.md](tests/integration/README.md) for full details
-on running integration tests, available environment variables, and more.
+on running integration tests, available environment variables, adding new test
+scenarios and more.
 
 ### Adding new dependencies to the project
 
