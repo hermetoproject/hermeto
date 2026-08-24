@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:monthly",
+    ":enableVulnerabilityAlerts",
+    ":disableDependencyDashboard"
+  ],
+  "ignorePresets": [
+    ":ignoreModulesAndTests"
+  ],
+  "enabledManagers": [
+    "github-actions",
+    "dockerfile",
+    "pip_requirements"
+  ],
+  "registryAliases": {
+    "mirror.gcr.io": "docker.io"
+  },
+  "packageRules": []
+}
