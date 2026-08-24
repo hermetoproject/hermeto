@@ -17,5 +17,26 @@
   "registryAliases": {
     "mirror.gcr.io": "docker.io"
   },
-  "packageRules": []
+  "packageRules": [
+    {
+      "description": "Weekly GitHub Actions updates",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "extends": [
+        "schedule:weekly"
+      ],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "Disable Python updates in GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepNames": [
+        "python"
+      ],
+      "enabled": false
+    }
+  ]
 }
