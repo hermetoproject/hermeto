@@ -73,6 +73,30 @@
       ],
       "groupName": "production Dockerfile"
     },
+    {
+      "description": "Disable updates on test dependencies",
+      "matchFileNames": [
+        "tests/**"
+      ],
+      "vulnerabilityAlerts": {
+        "enabled": false
+      },
+      "enabled": false
+    },
+    {
+      "description": "Group all test Containerfile updates",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchFileNames": [
+        "tests/**"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "enabled": true,
+      "groupName": "test Containerfiles"
+    },
     // Disable only non-minor/patch types; disabling the whole manager stops all updates
     {
       "description": "Disable non-minor/patch Python updates",
