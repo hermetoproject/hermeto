@@ -37,6 +37,41 @@
         "python"
       ],
       "enabled": false
+    },
+    // Go: handle major.minor releases manually due to direct feature support
+    // Rust: handle major.minor manually; newer cargo has broken integration tests and production image builds
+    {
+      "description": "Disable golang and rust major and minor updates in production Dockerfile",
+      "matchFileNames": [
+        "Dockerfile"
+      ],
+      "matchPackageNames": [
+        "**/golang",
+        "**/rust"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    },
+    // Node v25 stopped shipping corepack which we need
+    {
+      "description": "Limit node to versions below 25 in production Dockerfile",
+      "matchFileNames": [
+        "Dockerfile"
+      ],
+      "matchPackageNames": [
+        "**/node"
+      ],
+      "allowedVersions": "<25"
+    },
+    {
+      "description": "Group production Dockerfile updates",
+      "matchFileNames": [
+        "Dockerfile"
+      ],
+      "groupName": "production Dockerfile"
     }
   ]
 }
