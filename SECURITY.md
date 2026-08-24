@@ -27,3 +27,12 @@ welcome). You'll be able to follow the whole process.
 - Once resolved, the issue will be disclosed responsibly and the fix released promptly.
 
 Thank you for helping us maintain a secure project!
+
+## EU Cyber Resilience Act — Open Source Steward Statement
+
+This project is stewarded by **Red Hat, Inc.**, an open-source software steward as defined in Article 3(14) of the [EU Cyber Resilience Act (Regulation 2024/2847)](https://eur-lex.europa.eu/eli/reg/2024/2847/oj/eng).
+Contact: [cra-steward@redhat.com](mailto:cra-steward@redhat.com)
+
+Refer to [Red Hat's security practices and vulnerability management policy](https://access.redhat.com/security/) for detailed information.
+
+Full details of Red Hat’s security disclosure and remediation process can be found here: <https://access.redhat.com/articles/red-hat-coordinated-vulnerability-disclosure>
