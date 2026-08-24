@@ -267,7 +267,7 @@ their required Go toolchain's micro release as soon as it becomes available
 upstream (i.e. not waiting for distributions to bundle them properly).
 
 To handle this, Hermeto's container image includes the latest official upstream
-Go toolchain, which is kept up to date via dependabot. Hermeto
+Go toolchain, which is kept up to date via Renovate. Hermeto
 configures `GOTOOLCHAIN=auto` so that if the `go.mod` requires a toolchain
 version newer than the one pre-installed, Go can automatically fetch a
 matching one.
