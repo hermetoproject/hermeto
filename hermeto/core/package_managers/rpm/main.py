@@ -400,7 +400,7 @@ def _verify_downloaded(metadata: dict[Path, Any]) -> None:
 
         # checksum is optional
         if file_metadata["checksum"] is not None:
-            alg, digest = file_metadata["checksum"].split(":")
+            alg, digest = file_metadata["checksum"].split(":", 1)
             method = getattr(hashlib, alg.lower(), None)
             if method is not None:
                 h = method(usedforsecurity=False)
@@ -431,8 +431,8 @@ def _generate_sbom_components(
             continue
         package = Package.from_filepath(file_path, file_metadata)
         component = package.to_component(lockfile_path)
-        if include_summary_in_sbom:
-            summary = Property(name=f"{APP_NAME}:rpm_summary", value=str(package.summary))
+        if include_summary_in_sbom and package.summary:
+            summary = Property(name=f"{APP_NAME}:rpm_summary", value=package.summary)
             component.properties.append(summary)
         components.append(component)
     return components

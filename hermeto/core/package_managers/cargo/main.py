@@ -532,8 +532,10 @@ def _sanitize_cargo_config(config_content: str) -> str:
 def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
     oldcwd = os.getcwd()
     os.chdir(path_to_new_cwd)
-    yield
-    os.chdir(oldcwd)
+    try:
+        yield
+    finally:
+        os.chdir(oldcwd)
 
 
 def _run_cmd_watching_out_for_lock_mismatch(
