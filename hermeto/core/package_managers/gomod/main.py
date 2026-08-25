@@ -1165,7 +1165,9 @@ class ModuleVersionResolver:
         module_major_version = int(match.group("major_version")) if match else None
 
         # If no match, prefer v1.x.x tags but fallback to v0.x.x tags if both are present
-        major_versions_to_try = (module_major_version,) if module_major_version else (1, 0)
+        major_versions_to_try = (
+            (module_major_version,) if module_major_version is not None else (1, 0)
+        )
 
         if app_dir.path == app_dir.root:
             subpath = None
@@ -1315,7 +1317,8 @@ class ModuleVersionResolver:
         if tag is None:
             # If the major version isn't in the import path and there is not a versioned commit with the
             # version of 1, the major version defaults to 0.
-            return f"v{module_major_version or '0'}.0.0-{commit_timestamp}-{commit_hash}"
+            major = module_major_version if module_major_version is not None else 0
+            return f"v{major}.0.0-{commit_timestamp}-{commit_hash}"
 
         tag_semantic_version = self._get_semantic_version_from_tag(tag.name, subpath)
 
@@ -1519,8 +1522,10 @@ def inject_netrc(netrc_stuff: str, temp_netrc_dir: Path) -> str:
     """Inject a temporary .netrc."""
     netrc = temp_netrc_dir / ".netrc"
     old_mask = os.umask(0)
-    netrc_fd = os.open(path=netrc, flags=(os.O_WRONLY | os.O_CREAT | os.O_TRUNC), mode=0o600)
-    with open(netrc_fd, "w") as f:
-        f.write(netrc_stuff)
-    os.umask(old_mask)
+    try:
+        netrc_fd = os.open(path=netrc, flags=(os.O_WRONLY | os.O_CREAT | os.O_TRUNC), mode=0o600)
+        with open(netrc_fd, "w") as f:
+            f.write(netrc_stuff)
+    finally:
+        os.umask(old_mask)
     return str(netrc)
