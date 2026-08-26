@@ -204,4 +204,4 @@ def get_cache_dir() -> Path:
         cache_dir = Path(os.environ["XDG_CACHE_HOME"])
     except KeyError:
         cache_dir = Path.home().joinpath(".cache")
-    return cache_dir.joinpath(f"{APP_NAME}")
+    return cache_dir.joinpath(APP_NAME)

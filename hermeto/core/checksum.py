@@ -23,18 +23,6 @@ class ChecksumInfo(NamedTuple):
     algorithm: str
     hexdigest: str
 
-    def to_sri(self) -> str:
-        """Return the Subresource Integrity representation of this ChecksumInfo.
-
-        https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
-
-        Note: npm and Yarn classic (v1) use this format in their lockfiles; newer Yarn
-        versions use a different integrity representation that does not go through this helper.
-        """
-        bytes_sha = bytes.fromhex(self.hexdigest)
-        base64_sha = base64.b64encode(bytes_sha).decode("utf-8")
-        return f"{self.algorithm}-{base64_sha}"
-
     def __str__(self) -> str:
         return f"{self.algorithm}:{self.hexdigest}"
 
