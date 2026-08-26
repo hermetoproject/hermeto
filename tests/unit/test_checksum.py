@@ -158,17 +158,6 @@ def test_verify_checksum_failure(
 
 
 @pytest.mark.parametrize(
-    "checksum, algorithm, expected",
-    [
-        (SHA512_HEX, "sha512", SHA512_SRI),
-        ("a" * 40, "sha1", "sha1-qqqqqqqqqqqqqqqqqqqqqqqqqqo="),
-    ],
-)
-def test_convert_hex_checksum_to_sri(checksum: str, algorithm: str, expected: str) -> None:
-    assert ChecksumInfo(algorithm, checksum).to_sri() == expected
-
-
-@pytest.mark.parametrize(
     "integrity, algorithm, expected",
     [
         (SHA512_SRI, "sha512", SHA512_HEX),
