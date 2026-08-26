@@ -162,7 +162,7 @@ class Pedigree(pydantic.BaseModel):
     patches: list[Patch]
 
 
-FOUND_BY_APP_PROPERTY: Property = Property(name=PropertyEnum.PROP_FOUND_BY, value=f"{APP_NAME}")
+FOUND_BY_APP_PROPERTY = Property(name=PropertyEnum.PROP_FOUND_BY, value=APP_NAME)
 
 
 class Component(pydantic.BaseModel):
@@ -226,7 +226,7 @@ class Tool(pydantic.BaseModel):
 class Metadata(pydantic.BaseModel):
     """Metadata field in a SBOM."""
 
-    tools: list[Tool] = [Tool(vendor="red hat", name=f"{APP_NAME}")]
+    tools: list[Tool] = [Tool(vendor="red hat", name=APP_NAME)]
 
 
 def spdx_now() -> datetime:

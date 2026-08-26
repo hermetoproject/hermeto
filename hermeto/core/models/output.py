@@ -59,7 +59,7 @@ class EnvironmentVariable(pydantic.BaseModel, frozen=True):
         log.debug(f"Resolving environment variable '{self.name}={self.value}'")
         ret = self.value
         substituted: set[str] = set()
-        for i, m in enumerate(mappings):
+        for i, _ in enumerate(mappings):
             log.debug(f"EnvironmentVariable resolution iteration {i + 1}.: {ret}")
 
             t_old = string.Template(ret)
