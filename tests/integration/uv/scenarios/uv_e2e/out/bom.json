@@ -1,0 +1,124 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/flit-core@3.12.0",
+        "pkg:pypi/flit-core@4.0.2",
+        "pkg:pypi/idna@3.10",
+        "pkg:pypi/itsdangerous@2.2.0?vcs_url=git%2Bhttps://github.com/pallets/itsdangerous%40096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+        "pkg:pypi/packaging@25.0?checksum=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f&download_url=https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz",
+        "pkg:pypi/uv-e2e@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40be3b97335c965afbe6e6c393e41adfd8277dc893"
+      ],
+      "text": "hermeto:backend:experimental:x-uv",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/flit-core@3.12.0",
+      "name": "flit-core",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:build-dependency",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/flit-core@3.12.0",
+      "type": "library",
+      "version": "3.12.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/flit-core@4.0.2",
+      "name": "flit-core",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:build-dependency",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/flit-core@4.0.2",
+      "type": "library",
+      "version": "4.0.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/idna@3.10",
+      "name": "idna",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/idna@3.10",
+      "type": "library",
+      "version": "3.10"
+    },
+    {
+      "bom-ref": "pkg:pypi/itsdangerous@2.2.0?vcs_url=git%2Bhttps://github.com/pallets/itsdangerous%40096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+      "name": "itsdangerous",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "uv.lock"
+        }
+      ],
+      "purl": "pkg:pypi/itsdangerous@2.2.0?vcs_url=git%2Bhttps://github.com/pallets/itsdangerous%40096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/packaging@25.0?checksum=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f&download_url=https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz",
+      "name": "packaging",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/packaging@25.0?checksum=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f&download_url=https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz",
+      "type": "library",
+      "version": "25.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/uv-e2e@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40be3b97335c965afbe6e6c393e41adfd8277dc893",
+      "name": "uv-e2e",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/uv-e2e@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40be3b97335c965afbe6e6c393e41adfd8277dc893",
+      "type": "library",
+      "version": "1.0.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

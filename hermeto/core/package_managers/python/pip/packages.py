@@ -22,20 +22,34 @@ class PipPackage(ABC):
     missing_req_file_checksum: bool
     package_type: str
 
+    @property
+    def missing_hash_in_file(self) -> frozenset[str]:
+        """The requirement file that gave no checksum to verify this package against."""
+        return frozenset({self.requirement_file}) if self.missing_req_file_checksum else frozenset()
+
     def to_component(self, build_dependency: bool) -> Component:
-        """Build an SBOM Component from this package."""
-        missing_hash = (
-            frozenset({self.requirement_file}) if self.missing_req_file_checksum else frozenset()
+        """Build an SBOM Component from this package, attributed to pip."""
+        return self.to_sbom_component(
+            PropertySet(
+                missing_hash_in_file=self.missing_hash_in_file,
+                pip_package_binary=(self.package_type == "wheel"),
+                pip_build_dependency=build_dependency,
+            )
         )
+
+    def to_sbom_component(self, properties: PropertySet) -> Component:
+        """Build an SBOM Component from this package, described by the given properties.
+
+        A backend that fetches its own dependencies through pip's machinery
+        reports them under its own properties, so that the SBOM names the
+        backend the dependencies belong to rather than the one that downloaded
+        them.
+        """
         return Component(
             name=self.name,
             version=self._sbom_version(),
             purl=self._make_purl(),
-            properties=PropertySet(
-                missing_hash_in_file=missing_hash,
-                pip_package_binary=(self.package_type == "wheel"),
-                pip_build_dependency=build_dependency,
-            ).to_properties(),
+            properties=properties.to_properties(),
             external_references=self._get_external_refs(),
         )
 
