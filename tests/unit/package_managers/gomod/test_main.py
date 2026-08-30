@@ -35,6 +35,7 @@ from hermeto.core.package_managers.gomod.main import (
     ParsedModule,
     ParsedOrigin,
     ParsedPackage,
+    RepoContext,
     StandardPackage,
     _create_main_module_from_parsed_data,
     _create_modules_from_parsed_data,
@@ -978,10 +979,10 @@ def test_create_main_module_from_parsed_data_repo_name_none(
     """PERMISSIVE mode without a git repo: resolved_path falls back to the module path."""
     parsed_main_module = ParsedModule(path="example.com/org/myapp", version="v1.2.3")
     main_module_dir = rooted_tmp_path  # subpath_from_root == "."
-
+    ctx = RepoContext.from_non_git_source(rooted_tmp_path)
     module = _create_main_module_from_parsed_data(
         main_module_dir=main_module_dir,
-        repo_name=None,
+        ctx=ctx,
         parsed_main_module=parsed_main_module,
     )
 
