@@ -35,6 +35,7 @@ from hermeto.core.package_managers.python.pip.packages import (
     VCSPackage,
     _check_metadata_present_in_sdist,
 )
+from hermeto.core.package_managers.python.pip.requirements import get_external_requirement_filepath
 from hermeto.core.package_managers.python.pylock.models import RemoteSourceUrl
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
@@ -307,8 +308,6 @@ class TestDownload:
         )
 
     def test_ignored_and_rejected_options(self, rooted_tmp_path: RootedPath) -> None:
-        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
-
         all_rejected = [
             "--extra-index-url",
             "--no-index",
@@ -318,7 +317,7 @@ class TestDownload:
         ]
         options = all_rejected + ["-c", "constraints.txt", "--use-feature", "some_feature", "--foo"]
         req_file = mock_requirements_file(options=options)
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         with pytest.raises(UnsupportedFeature):
             lockfile.dependencies(None, rooted_tmp_path)
 
@@ -482,12 +481,15 @@ class TestDownload:
         ],
     )
     def test_download_rejects_invalid_dependency(
-        self, req_kwargs: dict[str, Any], exc_type: type[Exception]
+        self,
+        req_kwargs: dict[str, Any],
+        exc_type: type[Exception],
+        rooted_tmp_path: RootedPath,
     ) -> None:
         """Test that invalid dependencies (unpinned, bad VCS ref, bad URL) are rejected."""
         req = mock_requirement(**req_kwargs)
         req_file = mock_requirements_file(requirements=[req])
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         with pytest.raises(exc_type):
             lockfile.validate()
 
@@ -573,11 +575,12 @@ class TestDownload:
         requirements: list[tuple[str, str, dict[str, Any]]],
         options: list[str],
         exc_type: type[Exception],
+        rooted_tmp_path: RootedPath,
     ) -> None:
         """Test that missing or malformed hashes cause the expected validation error."""
         reqs = [mock_requirement(pkg, kind, **kwargs) for pkg, kind, kwargs in requirements]
         req_file = mock_requirements_file(requirements=reqs, options=options)
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         with pytest.raises(exc_type):
             lockfile.validate()
 
@@ -604,19 +607,12 @@ def test_resolve_pip_invalid_file_path(
 @pytest.mark.parametrize(
     "component_kind, url",
     (
-        ["vcs", f"git+https://github.com/hermeto/mypkg.git@{'f' * 40}?egg=mypkg"],
-        ["url", "https://files.hermeto.rocks/mypkg.tar.gz"],
+        ["vcs", RemoteSourceUrl(f"git+https://github.com/hermeto/mypkg.git@{'f' * 40}?egg=mypkg")],
+        ["url", RemoteSourceUrl("https://files.hermeto.rocks/mypkg.tar.gz")],
     ),
 )
-def test_get_external_requirement_filepath(component_kind: str, url: str) -> None:
-    requirement = mock.Mock(
-        kind=component_kind,
-        url=url,
-        direct_access_url=url,
-        package="package",
-        hashes=["sha256:noRealHash"],
-    )
-    filepath = pip._get_external_requirement_filepath(requirement)
+def test_get_external_requirement_filepath(component_kind: str, url: RemoteSourceUrl) -> None:
+    filepath = get_external_requirement_filepath(component_kind, url, "package", "noRealHash")
     if component_kind == "url":
         assert filepath == Path("package-noRealHash.tar.gz")
     elif component_kind == "vcs":
@@ -706,7 +702,8 @@ def test_replace_external_requirements(
     requirements_file = rooted_tmp_path.join_within_root("requirements.txt")
     requirements_file.path.write_text(original_content)
 
-    replaced_file = pip._replace_external_requirements(requirements_file)
+    lockfile = RequirementsLockfile.from_file(requirements_file, rooted_tmp_path)
+    replaced_file = lockfile.prepare_rewrite([])
     if expect_replaced is None:
         assert replaced_file is None
     else:
@@ -737,7 +734,7 @@ def test_generate_purl_main_package(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -780,7 +777,7 @@ def test_generate_purl_main_package_permissive_mode_without_vcs_url(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -803,7 +800,7 @@ def test_generate_purl_main_package_strict_mode_raises_without_git_repo(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -846,7 +843,7 @@ def test_generate_purl_main_package_permissive_mode_with_vcs_url(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -903,7 +900,7 @@ class TestIndexUrl:
             requirements=[req],
             options=["-i", "ftp://bad.example.com/simple/"],
         )
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         with pytest.raises(InvalidInput):
             lockfile.dependencies(None, rooted_tmp_path)
 
@@ -954,7 +951,7 @@ class TestPipIndexUrlEnv:
         req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
         req_file = mock_requirements_file(requirements=[req], options=file_options)
 
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         lockfile.dependencies(None, rooted_tmp_path)
 
         call_args = mock_resolve.call_args
@@ -970,6 +967,6 @@ class TestPipIndexUrlEnv:
         req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
         req_file = mock_requirements_file(requirements=[req])
 
-        lockfile = RequirementsLockfile(req_file)
+        lockfile = RequirementsLockfile(req_file, rooted_tmp_path)
         with pytest.raises(InvalidInput):
             lockfile.dependencies(None, rooted_tmp_path)

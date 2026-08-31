@@ -8,20 +8,34 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from functools import cached_property, partial
 from pathlib import Path
-from typing import Any, ClassVar, NamedTuple
+from typing import Any, ClassVar, Literal, NamedTuple
 from urllib import parse as urlparse
 
 import aiohttp
 import pypi_simple
 import requests.auth
+import tomlkit
+from packaging.utils import canonicalize_name
 
+from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.config import get_config
-from hermeto.core.errors import InvalidInput, LockfileNotFound
+from hermeto.core.errors import (
+    InvalidInput,
+    LockfileNotFound,
+    PackageRejected,
+    PathOutsideRoot,
+    UnsupportedFeature,
+)
 from hermeto.core.models.input import PipBinaryFilters
-from hermeto.core.package_managers.general import async_download_files, extract_git_info
+from hermeto.core.models.output import ProjectFile
+from hermeto.core.package_managers.general import (
+    async_download_files,
+    extract_git_info,
+)
 from hermeto.core.package_managers.python.packaging_tool import PythonPackagingTool
 from hermeto.core.package_managers.python.pip.package_distributions import (
     DistributionPackageInfo,
+    WheelsFilter,
     process_package_distributions,
 )
 from hermeto.core.package_managers.python.pip.packages import (
@@ -34,17 +48,38 @@ from hermeto.core.package_managers.python.pip.requirements import (
     WHEEL_FILE_EXTENSION,
     PipRequirement,
     PipRequirementsFile,
+    get_external_requirement_filepath,
     process_requirements_options,
     validate_requirements,
     validate_requirements_hashes,
 )
 from hermeto.core.package_managers.python.pylock.models import (
+    ArchiveArtifact,
+    DirectorySource,
+    Hashes,
     IndexUrl,
+    Pylock,
+    PylockPackage,
     RemoteSourceUrl,
+    SdistArtifact,
+    VCSSource,
+    WheelArtifact,
 )
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
+
+
+class _ArtifactInfo(NamedTuple):
+    package_type: Literal["sdist", "wheel"]
+    url: RemoteSourceUrl
+    hashes: Hashes
+
+
+def _artifact_info(artifact: SdistArtifact | WheelArtifact) -> _ArtifactInfo:
+    if isinstance(artifact, SdistArtifact):
+        return _ArtifactInfo("sdist", artifact.url, artifact.hashes)
+    return _ArtifactInfo("wheel", artifact.url, artifact.hashes)
 
 
 class _ProxyAccess(NamedTuple):
@@ -154,7 +189,7 @@ class PipLockfile(ABC):
 
     @classmethod
     @abstractmethod
-    def from_file(cls, path: RootedPath) -> "PipLockfile":
+    def from_file(cls, path: RootedPath, package_path: RootedPath) -> "PipLockfile":
         """Create a lockfile instance from a file."""
 
     @property
@@ -171,6 +206,14 @@ class PipLockfile(ABC):
     def validate(self) -> None:
         """Validate the lockfile before downloading. No-op by default."""
 
+    @abstractmethod
+    def prepare_rewrite(self, dependencies: list[PipPackage]) -> ProjectFile | None:
+        """Stage a lockfile rewrite so external URLs point at pre-fetched local files.
+
+        Returns a ProjectFile with the rewritten content (not written to disk),
+        or None when nothing needs rewriting.
+        """
+
 
 class RequirementsLockfile(PipLockfile):
     """Requirements.txt lockfile format."""
@@ -178,13 +221,14 @@ class RequirementsLockfile(PipLockfile):
     default_file = "requirements.txt"
     default_build_file = "requirements-build.txt"
 
-    def __init__(self, requirements_file: PipRequirementsFile) -> None:
+    def __init__(self, requirements_file: PipRequirementsFile, package_path: RootedPath) -> None:
         self._requirements_file = requirements_file
+        self._package_path = package_path
 
     @classmethod
-    def from_file(cls, path: RootedPath) -> "RequirementsLockfile":
+    def from_file(cls, path: RootedPath, package_path: RootedPath) -> "RequirementsLockfile":
         """Create lockfile from a requirements.txt file."""
-        return cls(PipRequirementsFile(path))
+        return cls(PipRequirementsFile(path), package_path)
 
     @property
     def path(self) -> RootedPath:
@@ -269,6 +313,34 @@ class RequirementsLockfile(PipLockfile):
         pypi_deps, deps = self._deps
         deps += self._resolve_pypi_deps(pypi_deps, pip_deps_dir, binary_filters)
         return deps
+
+    def prepare_rewrite(self, _: Any) -> ProjectFile | None:
+        """Stage a rewrite of url/vcs requirement URLs to local file:// paths."""
+
+        def maybe_replace(requirement: PipRequirement) -> PipRequirement:
+            if requirement.kind in ("url", "vcs"):
+                digest = requirement.hashes[0].partition(":")[2] if requirement.hashes else ""
+                path = get_external_requirement_filepath(
+                    requirement.kind,
+                    RemoteSourceUrl(requirement.direct_access_url),
+                    requirement.package,
+                    digest,
+                )
+                templated_abspath = Path("${output_dir}", "deps", "pip", path)
+                return requirement.update(url=f"file://{templated_abspath}")
+            return requirement
+
+        requirements = [maybe_replace(req) for req in self._requirements_file.requirements]
+        if requirements == self._requirements_file.requirements:
+            return None
+
+        replaced_file = PipRequirementsFile.from_requirements_and_options(
+            requirements, self._requirements_file.options
+        )
+        return ProjectFile(
+            abspath=Path(self._requirements_file.file_path).resolve(),
+            template=replaced_file.generate_file_content(),
+        )
 
     def _get_index_url(self) -> IndexUrl:
         if self._options["index_url"]:
@@ -359,7 +431,7 @@ def infer_lockfile_type(
         if name.endswith(".txt"):
             return RequirementsLockfile
         if name.startswith("pylock.") and name.endswith(".toml"):
-            return None
+            return PylockLockfile
         raise InvalidInput(
             f"Cannot determine the lockfile format from the filename {name!r}",
             solution="Name the lockfile 'requirements.txt' or 'pylock.toml', or set "
@@ -383,28 +455,292 @@ def process_lockfiles(
     files: list[RootedPath],
     output_dir: RootedPath,
     binary_filters: PipBinaryFilters | None,
+    package_path: RootedPath,
     deps_dir_name: str = "pip",
-) -> list[PipPackage]:
-    """Parse, validate, download dependencies from, and prepare rewrites for each lockfile."""
+) -> tuple[list[PipPackage], list[ProjectFile]]:
+    """Parse, validate, download dependencies from, and prepare rewrites for each lockfile.
+
+    :param lockfile_type: concrete ``PipLockfile`` subclass used to parse each file
+    :param files: lockfile paths to process (must exist under the request root)
+    :param output_dir: request output directory; downloads go under ``deps/<deps_dir_name>``
+    :param binary_filters: optional wheel selection filters, or ``None`` for source-only
+    :param package_path: directory of the Hermeto package being processed
+    :param deps_dir_name: subdirectory name under ``deps/`` for downloaded artifacts
+    :returns: downloaded packages and staged lockfile rewrites (not written to disk)
+    :raises LockfileNotFound: if any path in ``files`` does not exist
+    """
     pip_deps_dir = output_dir.join_within_root("deps", deps_dir_name)
     pip_deps_dir.mkdir(parents=True, exist_ok=True)
 
     packages: list[PipPackage] = []
+    project_files: list[ProjectFile] = []
     for file_path in files:
         if not file_path.exists():
             raise LockfileNotFound(
                 files=file_path.path,
                 solution="Please check that you have specified correct lockfile paths",
             )
-        lockfile = lockfile_type.from_file(file_path)
+        lockfile = lockfile_type.from_file(file_path, package_path)
         lockfile.validate()
         deps = lockfile.dependencies(binary_filters, pip_deps_dir)
         downloaded = _download_dependencies(deps, pip_deps_dir)
         packages.extend(downloaded)
+        rewritten = lockfile.prepare_rewrite(downloaded)
+        if rewritten is not None:
+            project_files.append(rewritten)
 
-    return packages
+    return packages, project_files
+
+
+class PylockLockfile(PipLockfile):
+    """PEP 751 pylock.toml lockfile format."""
+
+    default_file = "pylock.toml"
+    default_build_file = "pylock.build.toml"
+
+    def __init__(self, pylock: Pylock, path: RootedPath, package_path: RootedPath) -> None:
+        self._pylock = pylock
+        self._path = path
+        self._package_path = package_path
+
+    @classmethod
+    def from_file(cls, path: RootedPath, package_path: RootedPath) -> "PylockLockfile":
+        """Create lockfile from a pylock.toml file."""
+        return cls(Pylock.from_file(path), path, package_path)
+
+    @property
+    def path(self) -> RootedPath:
+        """Return the pylock file path."""
+        return self._path
+
+    @property
+    def _requirement_file(self) -> str:
+        return str(self._path.subpath_from_root)
+
+    def dependencies(
+        self, binary_filters: PipBinaryFilters | None, _pip_deps_dir: RootedPath
+    ) -> list[PipPackage]:
+        """Extract dependencies from pylock.toml (no download, just build dep objects).
+
+        ``_pip_deps_dir`` is unused: pylock records an explicit artifact URL for
+        every dependency, so no index resolution (which is what needs the deps
+        dir) happens here. For the same reason the configured pip proxy is not
+        applied -- the proxy stands in for the PyPI index during resolution, and
+        pylock never resolves. Artifacts are fetched directly from the pinned
+        URLs, consistent with the ``archive``/``vcs`` sources below.
+        """
+        wheels_filter = WheelsFilter(binary_filters) if binary_filters is not None else None
+        return [
+            dep
+            for package in self._pylock.packages
+            for dep in self._packages_for(package, wheels_filter)
+        ]
+
+    def _packages_for(
+        self, package: PylockPackage, wheels_filter: WheelsFilter | None
+    ) -> list[PipPackage]:
+        """Convert one pylock package entry into zero or more fetchable PipPackage objects."""
+        name = canonicalize_name(package.name)
+
+        if package.directory is not None:
+            self._reject_unless_own_project(name, package.directory)
+            return []
+        if package.vcs is not None:
+            return [self._vcs_package(name, package.vcs)]
+        if package.archive is not None:
+            return [self._archive_package(name, package.archive)]
+        return self._index_packages(name, package, wheels_filter)
+
+    def _reject_unless_own_project(self, name: str, directory: DirectorySource) -> None:
+        """Skip the package being processed; reject every other local directory."""
+        try:
+            lockfile_dir = RootedPath(self._path.root).join_within_root(
+                self._path.path.parent.relative_to(self._path.root)
+            )
+            resolved = lockfile_dir.join_within_root(directory.path)
+        except PathOutsideRoot:
+            resolved = None
+
+        if resolved is None or resolved.path != self._package_path.path:
+            raise PackageRejected(
+                f"Package '{name}' is a local directory dependency, which Hermeto cannot fetch.",
+                solution="Depend on a released version from an index or a URL instead.",
+            )
+
+    def _vcs_package(self, name: str, vcs: VCSSource) -> VCSPackage:
+        return VCSPackage(
+            name=name,
+            requirement_file=self._requirement_file,
+            missing_req_file_checksum=True,
+            package_type="",
+            url=vcs.url,
+            ref=vcs.commit_id,
+        )
+
+    def _archive_package(self, name: str, archive: ArchiveArtifact) -> URLPackage:
+        archive_hashes = list(archive.hashes.items())
+        checksum = f"{archive_hashes[0][0]}:{archive_hashes[0][1]}" if archive_hashes else ""
+        archive_path = archive.url.path or ""
+        return URLPackage(
+            name=name,
+            requirement_file=self._requirement_file,
+            missing_req_file_checksum=False,
+            package_type=("wheel" if archive_path.endswith(WHEEL_FILE_EXTENSION) else ""),
+            url=archive.url,
+            checksum=checksum,
+            insecure=False,
+            checksums_to_match={ChecksumInfo(algo, digest) for algo, digest in archive_hashes},
+        )
+
+    def _select_index_artifacts(
+        self,
+        name: str,
+        version: str,
+        package: PylockPackage,
+        wheels_filter: WheelsFilter | None,
+    ) -> list[_ArtifactInfo]:
+        """Pick the sdist/wheel artifacts to fetch for an index package."""
+        sdist = _artifact_info(package.sdist) if package.sdist is not None else None
+        policy = (
+            wheels_filter.package_policy(name)
+            if wheels_filter is not None
+            else WheelsFilter.PackageFetchPolicy.NO_BINARY
+        )
+
+        if wheels_filter is None or policy is WheelsFilter.PackageFetchPolicy.NO_BINARY:
+            return [sdist] if sdist is not None else []
+
+        shims = [
+            pypi_simple.DistributionPackage(
+                filename=Path(wheel.url.path or "").name,
+                url=str(wheel.url),
+                project=None,
+                version=version,
+                package_type="wheel",
+                digests={},
+                requires_python=None,
+                has_sig=None,
+                is_yanked=False,
+            )
+            for wheel in package.wheel_artifacts
+        ]
+        matched_wheel_urls = {p.url for p in wheels_filter.filter(shims)}
+        artifacts = [
+            _artifact_info(wheel)
+            for wheel in package.wheel_artifacts
+            if str(wheel.url) in matched_wheel_urls
+        ]
+
+        if policy is WheelsFilter.PackageFetchPolicy.ONLY_BINARY:
+            # Binary-only packages require a matching wheel.
+            if not artifacts:
+                raise PackageRejected(
+                    f"No wheels for '{name}=={version}' match the requested binary filters.",
+                    solution="Adjust the binary filters or add a matching wheel to the lockfile.",
+                )
+            return artifacts
+
+        # Fall back to the sdist when wheels are preferred.
+        if sdist is not None:
+            artifacts.append(sdist)
+        return artifacts
+
+    def _index_packages(
+        self,
+        name: str,
+        package: PylockPackage,
+        wheels_filter: WheelsFilter | None,
+    ) -> list[PipPackage]:
+        version = package.version or ""
+        index_url = (
+            str(package.index) if package.index is not None else pypi_simple.PYPI_SIMPLE_ENDPOINT
+        )
+        artifacts = self._select_index_artifacts(name, version, package, wheels_filter)
+
+        if not artifacts:
+            raise UnsupportedFeature(
+                f"Package '{name}' provides no source distribution (sdist), which Hermeto "
+                "needs to fetch it hermetically.",
+                solution="Regenerate the lockfile with an sdist, or request wheels via the "
+                "binary/allow_binary option.",
+            )
+
+        return [
+            PyPIPackage(
+                name=name,
+                requirement_file=self._requirement_file,
+                missing_req_file_checksum=not hashes,
+                package_type=package_type,
+                version=version,
+                index_url=index_url,
+                url=url,
+                checksums_to_match={ChecksumInfo(algo, digest) for algo, digest in hashes.items()},
+            )
+            for package_type, url, hashes in artifacts
+        ]
+
+    def prepare_rewrite(self, dependencies: list[PipPackage]) -> ProjectFile | None:
+        """Stage a rewrite of vcs/archive source URLs to local file:// paths.
+
+        Index (sdist/wheels) and source-less packages are left unchanged: index
+        artifacts are installed via PIP_FIND_LINKS, not by their recorded URL.
+        """
+
+        def vcs_download_path(name: str, url: RemoteSourceUrl | str, ref: str) -> Path:
+            """Relative path under deps/pip/ for a VCS package, matching VCSPackage.download."""
+            return get_external_requirement_filepath(
+                "vcs", RemoteSourceUrl(f"git+{url}@{ref}"), name, ""
+            )
+
+        def index_vcs_packages_by_download_path() -> dict[Path, VCSPackage]:
+            indexed: dict[Path, VCSPackage] = {}
+            for dependency in dependencies:
+                if isinstance(dependency, VCSPackage):
+                    path = vcs_download_path(dependency.name, dependency.url, dependency.ref)
+                    indexed[path] = dependency
+            return indexed
+
+        data = self._pylock.document
+        modified = False
+        vcs_dependencies = index_vcs_packages_by_download_path()
+
+        for pkg in data.get("packages", []):
+            name = canonicalize_name(pkg["name"])
+            if "vcs" in pkg:
+                vcs = pkg["vcs"]
+                path = vcs_download_path(name, vcs["url"], vcs["commit-id"])
+                vcs_dependency = vcs_dependencies.get(path)
+                if vcs_dependency is None:
+                    raise PackageRejected(
+                        f"Downloaded VCS archive for '{name}' was not found.",
+                        solution="Retry the dependency fetch so the lockfile can be rewritten.",
+                    )
+                archive = tomlkit.table()
+                archive["url"] = f"file://{Path('${output_dir}', 'deps', 'pip', path)}"
+                if subdirectory := vcs.get("subdirectory"):
+                    archive["subdirectory"] = subdirectory
+                pkg["archive"] = archive
+                del pkg["vcs"]
+                modified = True
+            elif "archive" in pkg:
+                archive = pkg["archive"]
+                digest = next(iter(archive.get("hashes", {}).values()), "")
+                path = get_external_requirement_filepath(
+                    "url", RemoteSourceUrl(archive["url"]), name, digest
+                )
+                archive["url"] = f"file://{Path('${output_dir}', 'deps', 'pip', path)}"
+                modified = True
+
+        if not modified:
+            return None
+
+        return ProjectFile(
+            abspath=Path(self._path).resolve(),
+            template=tomlkit.dumps(data),
+        )
 
 
 LOCKFILE_TYPES: dict[PythonPackagingTool, type[PipLockfile]] = {
-    PythonPackagingTool.REQUIREMENTS: RequirementsLockfile
+    PythonPackagingTool.REQUIREMENTS: RequirementsLockfile,
+    PythonPackagingTool.PYLOCK: PylockLockfile,
 }
