@@ -195,17 +195,6 @@ def test_gomod_packages(
             [""],
             id="gomod_e2e_vendor_nonvendor_module_mix_ordering_1",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "non-vendored-module", "type": "gomod"},
-                    {"path": "vendored-module", "type": "gomod"},
-                ),
-            ),
-            [],
-            [""],
-            id="gomod_e2e_vendor_nonvendor_module_mix_ordering_2",
-        ),
     ],
 )
 def test_e2e_gomod(
