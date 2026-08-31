@@ -219,6 +219,11 @@ class PylockPackage(pydantic.BaseModel):
             return "index"
         return "directory"
 
+    @property
+    def wheel_artifacts(self) -> list[WheelArtifact]:
+        """Return the wheel artifacts for this package."""
+        return self.wheels or []
+
 
 class Pylock(pydantic.BaseModel):
     """A parsed PEP 751 ``pylock.toml`` lockfile."""
@@ -227,6 +232,14 @@ class Pylock(pydantic.BaseModel):
     # Optional because generators may omit it.
     created_by: str | None = pydantic.Field(default=None, alias="created-by")
     packages: list[PylockPackage] = []
+    _document: tomlkit.TOMLDocument | None = pydantic.PrivateAttr(default=None)
+
+    @property
+    def document(self) -> tomlkit.TOMLDocument:
+        """The source TOML document, retained for round-trip rewriting."""
+        if self._document is None:
+            raise RuntimeError("document is only available on a Pylock loaded via from_file")
+        return self._document
 
     @pydantic.field_validator("lock_version")
     @classmethod
@@ -257,11 +270,14 @@ class Pylock(pydantic.BaseModel):
     def from_file(cls, path: RootedPath) -> "Pylock":
         """Parse and validate a pylock.toml file at ``path``."""
         try:
-            data = tomlkit.parse(path.path.read_text()).unwrap()
+            document = tomlkit.parse(path.path.read_text())
         except tomlkit.exceptions.ParseError as e:
             raise InvalidLockfileFormat(path.path, f"not valid TOML: {e}")
 
         try:
-            return cls.model_validate(data)
+            pylock = cls.model_validate(document.unwrap())
         except pydantic.ValidationError as e:
             raise InvalidLockfileFormat(path.path, str(e))
+
+        pylock._document = document
+        return pylock

@@ -14,6 +14,7 @@ from packageurl import PackageURL
 from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.errors import PackageRejected
 from hermeto.core.models.input import CargoPackageInput
+from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE, Component, ExternalReference
 from hermeto.core.package_managers.general import download_binary_file
@@ -207,7 +208,7 @@ class PipPackageInfo:
     version: str | None
     requires: list[PipPackage]
     build_requires: list[PipPackage]
-    requirements: list[RootedPath]
+    project_files: list[ProjectFile]
     packages_containing_rust_code: list[CargoPackageInput]
 
 
