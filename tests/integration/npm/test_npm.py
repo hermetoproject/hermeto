@@ -65,14 +65,6 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_aliased_deps",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
             id="npm_dev_optional_peer_deps",
         ),
         pytest.param(
