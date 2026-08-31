@@ -23,6 +23,7 @@ from hermeto.core.errors import (
     UnsupportedFeature,
 )
 from hermeto.core.package_managers.python.pip import main as pip
+from hermeto.core.package_managers.python.pip.package_distributions import DistributionPackageInfo
 from hermeto.core.package_managers.python.pip.packages import PipPackageInfo, URLPackage, VCSPackage
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
@@ -39,8 +40,8 @@ def mock_distribution_package_info(
     is_yanked: bool = False,
     pypi_checksum: Collection[ChecksumInfo] = (),
     req_file_checksums: Collection[ChecksumInfo] = (),
-) -> pip.DistributionPackageInfo:
-    return pip.DistributionPackageInfo(
+) -> DistributionPackageInfo:
+    return DistributionPackageInfo(
         name=name,
         version=version,
         package_type=package_type,
@@ -204,33 +205,39 @@ def test_get_pip_metadata_from_remote_origin(
 class TestDownload:
     """Tests for dependency downloading."""
 
-    @mock.patch("hermeto.core.package_managers.python.pip.main.clone_as_tarball")
+    @mock.patch("hermeto.core.package_managers.python.pip.packages.clone_as_tarball")
     def test_download_vcs_package(
         self,
         mock_clone_as_tarball: Any,
         rooted_tmp_path: RootedPath,
     ) -> None:
         """Test downloading of a single VCS package."""
-        vcs_url = f"git+https://github.com/spam/eggs@{GIT_REF}"
+        req_file = mock_requirements_file(requirements=[])
 
-        req = mock_requirement("eggs", "vcs", url=vcs_url, download_line=f"eggs @ {vcs_url}")
-        req_file = mock_requirements_file(requirements=[req])
-
-        result = pip._download_vcs_package(req, req_file, rooted_tmp_path)
-
-        assert isinstance(result, VCSPackage)
-        assert result.name == "eggs"
-        assert (
-            result.path == rooted_tmp_path.join_within_root(f"eggs-gitcommit-{GIT_REF}.tar.gz").path
+        package = VCSPackage(
+            name="eggs",
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=True,
+            package_type="",
+            url="https://github.com/spam/eggs",
+            ref=GIT_REF,
         )
-        assert result.requirement_file == str(req_file.file_path.subpath_from_root)
-        assert result.missing_req_file_checksum is True
-        assert result.package_type == ""
-        assert result.url == "https://github.com/spam/eggs"
-        assert result.ref == GIT_REF
+        package.download(rooted_tmp_path)
+
+        assert isinstance(package, VCSPackage)
+        assert package.name == "eggs"
+        assert (
+            package.path
+            == rooted_tmp_path.join_within_root(f"eggs-gitcommit-{GIT_REF}.tar.gz").path
+        )
+        assert package.requirement_file == str(req_file.file_path.subpath_from_root)
+        assert package.missing_req_file_checksum is True
+        assert package.package_type == ""
+        assert package.url == "https://github.com/spam/eggs"
+        assert package.ref == GIT_REF
 
         mock_clone_as_tarball.assert_called_once_with(
-            "https://github.com/spam/eggs", GIT_REF, to_path=result.path
+            "https://github.com/spam/eggs", GIT_REF, to_path=package.path
         )
 
     @pytest.mark.parametrize(
@@ -246,10 +253,10 @@ class TestDownload:
         ],
     )
     @mock.patch(
-        "hermeto.core.package_managers.python.pip.main._checksum_must_match_or_path_unlink",
+        "hermeto.core.package_managers.python.pip.packages._checksum_must_match_or_path_unlink",
         return_value=True,
     )
-    @mock.patch("hermeto.core.package_managers.python.pip.main.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.python.pip.packages.download_binary_file")
     def test_download_url_package(
         self,
         mock_download_file: Any,
@@ -262,33 +269,30 @@ class TestDownload:
         """Test downloading of a single URL package."""
         original_url = f"https://{host_in_url}/foo.tar.gz"
 
-        req = mock_requirement(
-            "foo",
-            "url",
-            url=original_url,
-            download_line=f"foo @ {original_url}",
-            hashes=["sha256:abcdef"],
-        )
-        req_file = mock_requirements_file(requirements=[req])
+        req_file = mock_requirements_file(requirements=[])
 
-        result = pip._download_url_package(
-            req,
-            req_file,
-            rooted_tmp_path,
-            set(trusted_hosts),
+        package = URLPackage(
+            name="foo",
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=False,
+            package_type="",
+            original_url=original_url,
+            checksum="sha256:abcdef",
+            insecure=host_is_trusted,
         )
+        package.download(rooted_tmp_path)
 
-        assert isinstance(result, URLPackage)
-        assert result.name == "foo"
-        assert result.path == rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path
-        assert result.requirement_file == str(req_file.file_path.subpath_from_root)
-        assert result.missing_req_file_checksum is False
-        assert result.package_type == ""
-        assert result.original_url == original_url
-        assert result.checksum == "sha256:abcdef"
+        assert isinstance(package, URLPackage)
+        assert package.name == "foo"
+        assert package.path == rooted_tmp_path.join_within_root("foo-abcdef.tar.gz").path
+        assert package.requirement_file == str(req_file.file_path.subpath_from_root)
+        assert package.missing_req_file_checksum is False
+        assert package.package_type == ""
+        assert package.original_url == original_url
+        assert package.checksum == "sha256:abcdef"
 
         mock_download_file.assert_called_once_with(
-            original_url, result.path, insecure=host_is_trusted
+            original_url, package.path, insecure=host_is_trusted
         )
 
     @pytest.mark.parametrize(
@@ -303,10 +307,10 @@ class TestDownload:
         ],
     )
     @mock.patch(
-        "hermeto.core.package_managers.python.pip.main._checksum_must_match_or_path_unlink",
+        "hermeto.core.package_managers.python.pip.packages._checksum_must_match_or_path_unlink",
         return_value=True,
     )
-    @mock.patch("hermeto.core.package_managers.python.pip.main.download_binary_file")
+    @mock.patch("hermeto.core.package_managers.python.pip.packages.download_binary_file")
     def test_download_url_package_identifies_wheel_from_url(
         self,
         mock_download_file: Any,
@@ -317,17 +321,32 @@ class TestDownload:
     ) -> None:
         """Wheel detection works even when the URL contains fragments or query strings."""
         url = f"https://example.org{url_path}"
-        req = mock_requirement(
-            "foo", "url", url=url, download_line=f"foo @ {url}", hashes=["sha256:abcdef"]
+        req_file = mock_requirements_file(requirements=[])
+
+        from urllib import parse as urlparse
+
+        from hermeto.core.package_managers.python.pip.requirements import WHEEL_FILE_EXTENSION
+
+        parsed = urlparse.urlparse(url)
+        package_type = "wheel" if parsed.path.endswith(WHEEL_FILE_EXTENSION) else ""
+
+        package = URLPackage(
+            name="foo",
+            requirement_file=str(req_file.file_path.subpath_from_root),
+            missing_req_file_checksum=False,
+            package_type=package_type,
+            original_url=url,
+            checksum="sha256:abcdef",
+            insecure=False,
         )
-        req_file = mock_requirements_file(requirements=[req])
+        package.download(rooted_tmp_path)
 
-        result = pip._download_url_package(req, req_file, rooted_tmp_path, set())
+        assert isinstance(package, URLPackage)
+        assert package.package_type == expected_type
 
-        assert isinstance(result, URLPackage)
-        assert result.package_type == expected_type
+    def test_ignored_and_rejected_options(self, rooted_tmp_path: RootedPath) -> None:
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
 
-    def test_ignored_and_rejected_options(self) -> None:
         all_rejected = [
             "--extra-index-url",
             "--no-index",
@@ -337,8 +356,9 @@ class TestDownload:
         ]
         options = all_rejected + ["-c", "constraints.txt", "--use-feature", "some_feature", "--foo"]
         req_file = mock_requirements_file(options=options)
+        lockfile = RequirementsLockfile(req_file)
         with pytest.raises(UnsupportedFeature):
-            pip._download_dependencies(RootedPath("/output"), req_file)
+            lockfile.dependencies(None, rooted_tmp_path)
 
     @pytest.mark.parametrize(
         "req_kwargs, exc_type",
@@ -503,10 +523,13 @@ class TestDownload:
         self, req_kwargs: dict[str, Any], exc_type: type[Exception]
     ) -> None:
         """Test that invalid dependencies (unpinned, bad VCS ref, bad URL) are rejected."""
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
+
         req = mock_requirement(**req_kwargs)
         req_file = mock_requirements_file(requirements=[req])
+        lockfile = RequirementsLockfile(req_file)
         with pytest.raises(exc_type):
-            pip._download_dependencies(RootedPath("/output"), req_file)
+            lockfile.validate()
 
     @pytest.mark.parametrize(
         "requirements, options, exc_type",
@@ -592,10 +615,13 @@ class TestDownload:
         exc_type: type[Exception],
     ) -> None:
         """Test that missing or malformed hashes cause the expected validation error."""
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
+
         reqs = [mock_requirement(pkg, kind, **kwargs) for pkg, kind, kwargs in requirements]
         req_file = mock_requirements_file(requirements=reqs, options=options)
+        lockfile = RequirementsLockfile(req_file)
         with pytest.raises(exc_type):
-            pip._download_dependencies(RootedPath("/output"), req_file)
+            lockfile.validate()
 
 
 @pytest.mark.parametrize(
@@ -671,9 +697,11 @@ def test_metadata_check_fails_from_sdist(
     expected_error: str,
     data_dir: Path,
 ) -> None:
+    from hermeto.core.package_managers.python.pip.packages import _check_metadata_in_sdist
+
     sdist_path = data_dir / "archives" / sdist_filename
     with pytest.raises(exc_type, match=expected_error):
-        pip._check_metadata_in_sdist(sdist_path)
+        _check_metadata_in_sdist(sdist_path)
 
 
 @pytest.mark.parametrize(
@@ -898,7 +926,9 @@ class TestValidateIndexUrl:
     )
     def test_validate_index_url_accepts_valid(self, url: str) -> None:
         """Accept valid HTTP(S) index URLs."""
-        pip._validate_index_url(url, "--index-url")
+        from hermeto.core.package_managers.python.pip.lockfile import _validate_index_url
+
+        _validate_index_url(url, "--index-url")
 
     @pytest.mark.parametrize(
         "url",
@@ -911,20 +941,25 @@ class TestValidateIndexUrl:
     )
     def test_validate_index_url_rejects_invalid(self, url: str) -> None:
         """Reject index URLs with bad scheme, missing host, or embedded credentials."""
+        from hermeto.core.package_managers.python.pip.lockfile import _validate_index_url
+
         with pytest.raises(InvalidInput):
-            pip._validate_index_url(url, "--index-url")
+            _validate_index_url(url, "--index-url")
 
     def test_download_dependencies_rejects_invalid_file_index_url(
         self, rooted_tmp_path: RootedPath
     ) -> None:
         """--index-url from a requirements file is validated before use."""
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
+
         req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
         req_file = mock_requirements_file(
             requirements=[req],
             options=["-i", "ftp://bad.example.com/simple/"],
         )
+        lockfile = RequirementsLockfile(req_file)
         with pytest.raises(InvalidInput):
-            pip._download_dependencies(rooted_tmp_path, req_file)
+            lockfile.dependencies(None, rooted_tmp_path)
 
 
 class TestPipIndexUrlEnv:
@@ -953,7 +988,7 @@ class TestPipIndexUrlEnv:
             ),
         ],
     )
-    @mock.patch("hermeto.core.package_managers.python.pip.main._resolve_and_download_pypi_packages")
+    @mock.patch("hermeto.core.package_managers.python.pip.lockfile.process_package_distributions")
     def test_precedence(
         self,
         mock_resolve: Any,
@@ -964,6 +999,8 @@ class TestPipIndexUrlEnv:
         rooted_tmp_path: RootedPath,
     ) -> None:
         """Test precedence of index URL configuration sources."""
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
+
         if env_url is not None:
             monkeypatch.setenv("PIP_INDEX_URL", env_url)
         else:
@@ -973,10 +1010,11 @@ class TestPipIndexUrlEnv:
         req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
         req_file = mock_requirements_file(requirements=[req], options=file_options)
 
-        pip._download_dependencies(rooted_tmp_path, req_file)
+        lockfile = RequirementsLockfile(req_file)
+        lockfile.dependencies(None, rooted_tmp_path)
 
         call_args = mock_resolve.call_args
-        assert call_args[0][4] == expected_url
+        assert call_args[1]["index_url"] == expected_url
 
     def test_invalid_env_url_rejected(
         self,
@@ -984,9 +1022,12 @@ class TestPipIndexUrlEnv:
         rooted_tmp_path: RootedPath,
     ) -> None:
         """An invalid PIP_INDEX_URL is rejected when no --index-url is in the file."""
+        from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
+
         monkeypatch.setenv("PIP_INDEX_URL", "ftp://bad.example.com/simple/")
         req = mock_requirement("foo", "pypi", version_specs=[("==", "1.0")])
         req_file = mock_requirements_file(requirements=[req])
 
+        lockfile = RequirementsLockfile(req_file)
         with pytest.raises(InvalidInput):
-            pip._download_dependencies(rooted_tmp_path, req_file)
+            lockfile.dependencies(None, rooted_tmp_path)
