@@ -1338,28 +1338,28 @@ information.</p>
 shows required and optional fields:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Root level - all fields are required</span>
 <span class="nt">lockfileVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">                    </span><span class="c1"># Required: currently must be 1</span>
-<span class="nt">lockfileVendor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;redhat&quot;</span><span class="w">              </span><span class="c1"># Required: currently only &quot;redhat&quot; is allowed</span>
+<span class="nt">lockfileVendor</span><span class="p">:</span><span class="w"> </span><span class="s">"redhat"</span><span class="w">              </span><span class="c1"># Required: currently only "redhat" is allowed</span>
 <span class="nt">arches</span><span class="p">:</span><span class="w">                               </span><span class="c1"># Required: list of architecture objects</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                    </span><span class="c1"># Required: architecture name (e.g., x86_64, aarch64)</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">                    </span><span class="c1"># Required: architecture name (e.g., x86_64, aarch64)</span>
 
-<span class="w">    </span><span class="c1"># **At least one of &#39;packages&#39; or &#39;source&#39; list must be present and non-empty**</span>
+<span class="w">    </span><span class="c1"># **At least one of 'packages' or 'source' list must be present and non-empty**</span>
 <span class="w">    </span><span class="nt">packages</span><span class="p">:</span><span class="w">                         </span><span class="c1"># Optional: list of binary RPM packages</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the package</span>
-<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
-<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">                 </span><span class="c1"># Required: download URL for the package</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
 <span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
 
 <span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w">                           </span><span class="c1"># Optional: list of source RPM packages</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the source package</span>
-<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
-<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">                 </span><span class="c1"># Required: download URL for the source package</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">              </span><span class="c1"># Optional: repository ID</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">            </span><span class="c1"># Optional: package checksum</span>
 <span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
 
-<span class="w">    </span><span class="c1"># Modular metadata are needed when installing from RHEL-8 module &quot;streams&quot;</span>
+<span class="w">    </span><span class="c1"># Modular metadata are needed when installing from RHEL-8 module "streams"</span>
 <span class="w">    </span><span class="nt">module_metadata</span><span class="p">:</span><span class="w">                  </span><span class="c1"># Optional: list of module metadata files</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">                 </span><span class="c1"># Required: download URL for the metadata file</span>
-<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">              </span><span class="c1"># Required: repository ID (**mandatory for module metadata**)</span>
-<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w">            </span><span class="c1"># Optional: file checksum</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">                 </span><span class="c1"># Required: download URL for the metadata file</span>
+<span class="w">        </span><span class="nt">repoid</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">              </span><span class="c1"># Required: repository ID (**mandatory for module metadata**)</span>
+<span class="w">        </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"string"</span><span class="w">            </span><span class="c1"># Optional: file checksum</span>
 <span class="w">        </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w">                 </span><span class="c1"># Optional: file size in bytes</span>
 </code></pre></div>
 <p><strong>Notes on the schema:</strong></p>
@@ -1430,15 +1430,15 @@ input. The file must be located in the root directory of the given project
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="c1">// &quot;rpm&quot; tells Hermeto to process RPM packages</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// "rpm" tells Hermeto to process RPM packages</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"rpm"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the directory containing rpms.lock.yaml (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>or more simply by just invoking <code>hermeto fetch-deps rpm</code>.</p>
@@ -1447,24 +1447,24 @@ input. The file must be located in the root directory of the given project
 the JSON input:</p>
 <h4 id="basic-options">Basic options<a class="headerlink" href="#basic-options" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;include_summary_in_sbom&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w">    </span><span class="c1">// Include package&#39;s `Summary` RPM tag in the SBOM output</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"rpm"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"include_summary_in_sbom"</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w">    </span><span class="c1">// Include package's `Summary` RPM tag in the SBOM output</span>
 <span class="p">}</span>
 </code></pre></div>
 <h4 id="ssltls-configuration">SSL/TLS configuration<a class="headerlink" href="#ssltls-configuration" title="Permanent link">&para;</a></h4>
 <p>For downloading packages from repositories requiring TLS authentication (e.g.
 Red Hat's CDN for entitled contents):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;ssl&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="s2">&quot;client_cert&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/client.crt&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1">// Path to client certificate file</span>
-<span class="w">      </span><span class="s2">&quot;client_key&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/client.key&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1">// Path to client private key file</span>
-<span class="w">      </span><span class="s2">&quot;ca_bundle&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/path/to/ca-bundle.crt&quot;</span><span class="p">,</span><span class="w">   </span><span class="c1">// Path to CA certificate bundle</span>
-<span class="w">      </span><span class="s2">&quot;ssl_verify&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w">                       </span><span class="c1">// Enable/disable TLS server certificate and hostname</span>
-<span class="w">                                               </span><span class="c1">// verification, DON&#39;T disable unless testing!</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"rpm"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"options"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"ssl"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">"client_cert"</span><span class="o">:</span><span class="w"> </span><span class="s2">"/path/to/client.crt"</span><span class="p">,</span><span class="w">    </span><span class="c1">// Path to client certificate file</span>
+<span class="w">      </span><span class="s2">"client_key"</span><span class="o">:</span><span class="w"> </span><span class="s2">"/path/to/client.key"</span><span class="p">,</span><span class="w">     </span><span class="c1">// Path to client private key file</span>
+<span class="w">      </span><span class="s2">"ca_bundle"</span><span class="o">:</span><span class="w"> </span><span class="s2">"/path/to/ca-bundle.crt"</span><span class="p">,</span><span class="w">   </span><span class="c1">// Path to CA certificate bundle</span>
+<span class="w">      </span><span class="s2">"ssl_verify"</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w">                       </span><span class="c1">// Enable/disable TLS server certificate and hostname</span>
+<span class="w">                                               </span><span class="c1">// verification, DON'T disable unless testing!</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
@@ -1474,15 +1474,15 @@ Red Hat's CDN for entitled contents):</p>
 man page) that will be set for a particular repository in the generated
 <code>hermeto.repo</code> files:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;dnf&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                            </span><span class="c1">// These need to be set **per-repository**</span>
-<span class="w">      </span><span class="s2">&quot;my-repo-id&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                   </span><span class="c1">// Repository ID from the lockfile</span>
-<span class="w">        </span><span class="s2">&quot;gpgcheck&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0&quot;</span><span class="p">,</span><span class="w">                </span><span class="c1">// Disable GPG signature checking</span>
-<span class="w">        </span><span class="s2">&quot;enabled&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="w">                 </span><span class="c1">// Enable the repository</span>
-<span class="w">        </span><span class="s2">&quot;priority&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;10&quot;</span><span class="p">,</span><span class="w">               </span><span class="c1">// Set repository priority</span>
-<span class="w">        </span><span class="s2">&quot;sslverify&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;false&quot;</span><span class="w">            </span><span class="c1">// Disable TLS verification for this repo</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"rpm"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"options"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"dnf"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                            </span><span class="c1">// These need to be set **per-repository**</span>
+<span class="w">      </span><span class="s2">"my-repo-id"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">                   </span><span class="c1">// Repository ID from the lockfile</span>
+<span class="w">        </span><span class="s2">"gpgcheck"</span><span class="o">:</span><span class="w"> </span><span class="s2">"0"</span><span class="p">,</span><span class="w">                </span><span class="c1">// Disable GPG signature checking</span>
+<span class="w">        </span><span class="s2">"enabled"</span><span class="o">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">                 </span><span class="c1">// Enable the repository</span>
+<span class="w">        </span><span class="s2">"priority"</span><span class="o">:</span><span class="w"> </span><span class="s2">"10"</span><span class="p">,</span><span class="w">               </span><span class="c1">// Set repository priority</span>
+<span class="w">        </span><span class="s2">"sslverify"</span><span class="o">:</span><span class="w"> </span><span class="s2">"false"</span><span class="w">            </span><span class="c1">// Disable TLS verification for this repo</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
@@ -1490,19 +1490,19 @@ man page) that will be set for a particular repository in the generated
 </code></pre></div>
 <h4 id="a-complete-input-example">A complete input example<a class="headerlink" href="#a-complete-input-example" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rpm&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;include_summary_in_sbom&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;options&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;ssl&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="s2">&quot;client_cert&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/etc/pki/client.crt&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;client_key&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/etc/pki/client.key&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;ssl_verify&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"rpm"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"include_summary_in_sbom"</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"options"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"ssl"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">"client_cert"</span><span class="o">:</span><span class="w"> </span><span class="s2">"/etc/pki/client.crt"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"client_key"</span><span class="o">:</span><span class="w"> </span><span class="s2">"/etc/pki/client.key"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"ssl_verify"</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="s2">&quot;dnf&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="s2">&quot;rhel-8-appstream&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="s2">&quot;gpgcheck&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;priority&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;10&quot;</span>
+<span class="w">    </span><span class="s2">"dnf"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">"rhel-8-appstream"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s2">"gpgcheck"</span><span class="o">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"priority"</span><span class="o">:</span><span class="w"> </span><span class="s2">"10"</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
@@ -1577,7 +1577,7 @@ the lockfile generator tool):</p>
 <div class="highlight"><pre><span></span><code><span class="c"># Note the base image</span>
 <span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9:latest</span>
 <span class="k">RUN</span><span class="w"> </span>dnf<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>httpd-tools
-<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;ab&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-V&quot;</span><span class="p">]</span>
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">"ab"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-V"</span><span class="p">]</span>
 </code></pre></div>
 <p>We'll assume you have a <code>rpms.lock.yaml</code> file generated by the
 <a href="https://github.com/konflux-ci/rpm-lockfile-prototype">rpm-lockfile-prototype</a> tool based on the following <code>rpms.in.yaml</code> file:</p>
@@ -1622,8 +1622,8 @@ the <code>generate-env</code> command is not needed for RPM projects. This step 
 <h3 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h3>
 <p>We're now ready to build the application image using network isolation:</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output/deps/rpm/x86_64/repos.d<span class="k">)</span><span class="s2">&quot;</span>:/etc/yum.repos.d<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output/deps/rpm/x86_64/repos.d<span class="k">)</span><span class="s2">"</span>:/etc/yum.repos.d<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>my-ab
 </code></pre></div>

@@ -1783,27 +1783,27 @@ projects. They should have</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"pip"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// specify requirements files (relative to the package path)</span>
-<span class="w">  </span><span class="c1">// defaults to [&quot;requirements.txt&quot;] or [] if the file does not exist</span>
-<span class="w">  </span><span class="s2">&quot;requirements_files&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;requirements.txt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;requirements-extra.txt&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="c1">// defaults to ["requirements.txt"] or [] if the file does not exist</span>
+<span class="w">  </span><span class="s2">"requirements_files"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"requirements.txt"</span><span class="p">,</span><span class="w"> </span><span class="s2">"requirements-extra.txt"</span><span class="p">],</span>
 <span class="w">  </span><span class="c1">// specify *build* requirements files</span>
-<span class="w">  </span><span class="c1">// defaults to [&quot;requirements-build.txt&quot;] or [] if the file does not exist</span>
-<span class="w">  </span><span class="s2">&quot;requirements_build_files&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;requirements-build.txt&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="c1">// defaults to ["requirements-build.txt"] or [] if the file does not exist</span>
+<span class="w">  </span><span class="s2">"requirements_build_files"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"requirements-build.txt"</span><span class="p">],</span>
 <span class="w">  </span><span class="c1">// binary filter object to prefetch specific wheels</span>
 <span class="w">  </span><span class="c1">// defaults to None - only sdists are prefetched by default</span>
-<span class="w">  </span><span class="s2">&quot;binary&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;packages&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;tensorflow&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;arch&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;x86_64&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;os&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;py_version&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">312</span>
+<span class="w">  </span><span class="s2">"binary"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"packages"</span><span class="o">:</span><span class="w"> </span><span class="s2">"tensorflow"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arch"</span><span class="o">:</span><span class="w"> </span><span class="s2">"x86_64"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"os"</span><span class="o">:</span><span class="w"> </span><span class="s2">"linux"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"py_version"</span><span class="o">:</span><span class="w"> </span><span class="mf">312</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1824,11 +1824,11 @@ pyproject.toml, setup.cfg, setup.py) or from "requirements.in" input files.</p>
   <summary>Example: pyproject.toml</summary>
 
 <div class="highlight"><pre><span></span><code><span class="k">[project]</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_package"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
 <span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;requests&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz&quot;</span>
+<span class="w">    </span><span class="s2">"requests"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"dockerfile-parse @ https://github.com/containerbuildsystem/dockerfile-parse/archive/refs/tags/2.0.0.tar.gz"</span>
 <span class="p">]</span>
 </code></pre></div>
 
@@ -2058,13 +2058,13 @@ version.</p>
 <h3 id="pyprojecttoml-pep-621-metadata">pyproject.toml <a href="https://packaging.python.org/en/latest/specifications/declaring-project-metadata/">PEP 621 metadata</a><a class="headerlink" href="#pyprojecttoml-pep-621-metadata" title="Permanent link">&para;</a></h3>
 <p>Supported cases</p>
 <div class="highlight"><pre><span></span><code><span class="k">[project]</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_package"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
 </code></pre></div>
 <p>Unsupported cases</p>
 <div class="highlight"><pre><span></span><code><span class="k">[project]</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package&quot;</span>
-<span class="n">dynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_package"</span>
+<span class="n">dynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"version"</span><span class="p">]</span>
 </code></pre></div>
 <h3 id="setupcfg-declarative-config">setup.cfg <a href="https://setuptools.pypa.io/en/stable/userguide/declarative_config.html">declarative config</a><a class="headerlink" href="#setupcfg-declarative-config" title="Permanent link">&para;</a></h3>
 <p>Supported cases</p>
@@ -2084,7 +2084,7 @@ version.</p>
 <span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">attr: my_package.VERSION</span>
 <span class="c1"># taken from my_package/__init__.py or my_package.py</span>
 <span class="c1"># example content:</span>
-<span class="c1">#   VERSION = &quot;0.1.0&quot;</span>
+<span class="c1">#   VERSION = "0.1.0"</span>
 </code></pre></div>
 <p>Unsupported cases</p>
 <ul>
@@ -2094,13 +2094,13 @@ version.</p>
 <h3 id="setuppy">setup.py<a class="headerlink" href="#setuppy" title="Permanent link">&para;</a></h3>
 <p><em>Using setup.py is <a href="https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged">discouraged</a>.</em></p>
 <p>Supported cases</p>
-<div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_package&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"my_package"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"0.1.0"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="c1"># basic variable usage is supported</span>
-<span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;my_package&quot;</span>
-<span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">NAME</span> <span class="o">=</span> <span class="s2">"my_package"</span>
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="c1"># setup() call can be anywhere in the file</span>
     <span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">NAME</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">VERSION</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 </code></pre></div>
@@ -2194,27 +2194,27 @@ the total download size and ensure compatibility with your target platform.</p>
 <h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
 <p>Prefetch wheels with default filters:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pip"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"binary"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Prefetch wheels for Python 3.12 on Linux aarch64:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;os&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;arch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;aarch64&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;py_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">312</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;py_impl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cp,pp&quot;</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pip"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"binary"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"os"</span><span class="p">:</span><span class="w"> </span><span class="s2">"linux"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"arch"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aarch64"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"py_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">312</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"py_impl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cp,pp"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Prefetch wheels for specific packages and platforms:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pip&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;packages&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;numpy,pandas&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;^(any|musllinux.*)$&quot;</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pip"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"binary"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"packages"</span><span class="p">:</span><span class="w"> </span><span class="s2">"numpy,pandas"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"platform"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^(any|musllinux.*)$"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -2341,7 +2341,7 @@ flag can help debug faster.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># on your machine</span>
 virtualenv<span class="w"> </span>venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
 <span class="c1"># or in a container</span>
-podman<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:</span><span class="nv">$PWD</span><span class="s2">:z&quot;</span><span class="w"> </span>-w<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span><span class="w"> </span>ubi8/python-39<span class="w"> </span>bash
+podman<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">:</span><span class="nv">$PWD</span><span class="s2">:z"</span><span class="w"> </span>-w<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">"</span><span class="w"> </span>ubi8/python-39<span class="w"> </span>bash
 
 pip<span class="w"> </span>install<span class="w"> </span>--no-binary<span class="w"> </span>:all:<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </code></pre></div>
@@ -2410,11 +2410,11 @@ Hermeto pre-fetches using the <code>fetch-deps</code> command.</p>
 short-hand notation for package manager is used.</p>
 <p>It's possible to add parameters in JSON format to point Hermeto at a specific
 source directory, and/or additional requirements files, if needed, e.g.</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./foo-project<span class="s1">&#39;{</span>
-<span class="s1">  &quot;type&quot;: &quot;pip&quot;,</span>
-<span class="s1">  &quot;requirements_files&quot;: [&quot;requirements.txt&quot;],</span>
-<span class="s1">  &quot;requirements_build_files&quot;: [&quot;requirements-build.txt&quot;]</span>
-<span class="s1">}&#39;</span>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--source<span class="w"> </span>./foo-project<span class="s1">'{</span>
+<span class="s1">  "type": "pip",</span>
+<span class="s1">  "requirements_files": ["requirements.txt"],</span>
+<span class="s1">  "requirements_build_files": ["requirements-build.txt"]</span>
+<span class="s1">}'</span>
 </code></pre></div>
 <h4 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h4>
 <p>Next, we need to generate the environment file so that the <code>pip install</code> command
@@ -2442,12 +2442,12 @@ the environment file in the step that executes <code>pip install</code>.</p>
 <span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>.
 
-<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python3&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;simple_color_output&quot;</span><span class="p">]</span>
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">"python3"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-m"</span><span class="p">,</span><span class="w"> </span><span class="s2">"simple_color_output"</span><span class="p">]</span>
 </code></pre></div>
 <p>After mounting the required Hermeto data, we can then build the image!</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>simple_color_output
 </code></pre></div>

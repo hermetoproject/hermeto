@@ -1277,24 +1277,24 @@ Currently supported version: 2.0 (backwards compatible with 1.0). Version 2.0
 is required when using <a href="#authentication-v2-schema-only">authentication</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span><span class="w">  </span><span class="c1"># or &quot;2.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span><span class="w">  </span><span class="c1"># or "2.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </code></pre></div>
 <p>Hermeto can be run as follows</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;generic&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"generic"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// option to specify lockfile path: absolute or relative to package path</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;artifacts.lock.yaml&quot;, resolved relative to package path</span>
-<span class="w">  </span><span class="s2">&quot;lockfile&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;artifacts.lock.yaml&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// defaults to "artifacts.lock.yaml", resolved relative to package path</span>
+<span class="w">  </span><span class="s2">"lockfile"</span><span class="o">:</span><span class="w"> </span><span class="s2">"artifacts.lock.yaml"</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="arbitrary-files">Arbitrary files<a class="headerlink" href="#arbitrary-files" title="Permanent link">&para;</a></h3>
@@ -1302,11 +1302,11 @@ is required when using <a href="#authentication-v2-schema-only">authentication</
 do not fit neatly into other package managers.</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://example.com/file.zip&quot;</span>
-<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;algorithm:hash&quot;</span>
-<span class="w">    </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optional-custom-name.zip&quot;</span><span class="w">  </span><span class="c1"># optional</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://example.com/file.zip"</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"algorithm:hash"</span>
+<span class="w">    </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="s">"optional-custom-name.zip"</span><span class="w">  </span><span class="c1"># optional</span>
 </code></pre></div>
 <p>Each artifact requires:</p>
 <ul>
@@ -1325,17 +1325,17 @@ using GAV coordinates that are enumerated in the artifact's attributes in the
 lockfile. The download URL will be assembled using this information.</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;maven&quot;</span>
-<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ant.jar&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"maven"</span>
+<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="s">"ant.jar"</span>
 <span class="w">      </span><span class="nt">attributes</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">repository_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://repo1.maven.org/maven2&quot;</span>
-<span class="w">          </span><span class="nt">group_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;org.apache.ant&quot;</span>
-<span class="w">          </span><span class="nt">artifact_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ant&quot;</span>
-<span class="w">          </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.10.14&quot;</span>
-<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;jar&quot;</span>
-<span class="w">      </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:4cbbd9243de4c1042d61d9a15db4c43c90ff93b16d78b39481da1c956c8e9671&quot;</span>
+<span class="w">          </span><span class="nt">repository_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://repo1.maven.org/maven2"</span>
+<span class="w">          </span><span class="nt">group_id</span><span class="p">:</span><span class="w"> </span><span class="s">"org.apache.ant"</span>
+<span class="w">          </span><span class="nt">artifact_id</span><span class="p">:</span><span class="w"> </span><span class="s">"ant"</span>
+<span class="w">          </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.10.14"</span>
+<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"jar"</span>
+<span class="w">      </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"sha256:4cbbd9243de4c1042d61d9a15db4c43c90ff93b16d78b39481da1c956c8e9671"</span>
 </code></pre></div>
 <p>Each artifact requires</p>
 <ul>
@@ -1433,42 +1433,42 @@ and <code>value</code> must match what your platform expects — for example, Gi
 documentation when configuring <code>auth</code>.</em></p>
 <p><strong>GitLab</strong> (custom <code>PRIVATE-TOKEN</code> header, raw token value):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"2.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz&quot;</span>
-<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:abc123...&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz"</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"sha256:abc123..."</span>
 <span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">header</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE-TOKEN</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$GITLAB_TOKEN&quot;</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"$GITLAB_TOKEN"</span>
 </code></pre></div>
 <p><strong>GitHub</strong> (<code>Authorization</code> header with <code>Bearer</code> prefix in the value):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"2.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://api.github.com/repos/owner/repo/tarball/v1.0.0&quot;</span>
-<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:abc123...&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://api.github.com/repos/owner/repo/tarball/v1.0.0"</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"sha256:abc123..."</span>
 <span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Bearer</span><span class="nv"> </span><span class="s">$GITHUB_TOKEN&quot;</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Bearer</span><span class="nv"> </span><span class="s">$GITHUB_TOKEN"</span>
 </code></pre></div>
 <p><strong>Mixed</strong> (authenticated and public artifacts):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"2.0"</span>
 <span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz&quot;</span>
-<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:...&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://gitlab.example.com/api/v4/projects/123/repository/archive.tar.gz"</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"sha256:..."</span>
 <span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">bearer</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">header</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE-TOKEN</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$GITLAB_TOKEN&quot;</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"$GITLAB_TOKEN"</span>
 
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://example.com/public-file.zip&quot;</span>
-<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sha256:...&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">download_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://example.com/public-file.zip"</span>
+<span class="w">    </span><span class="nt">checksum</span><span class="p">:</span><span class="w"> </span><span class="s">"sha256:..."</span>
 </code></pre></div>
 <p>Then run hermeto with the required environment variables set:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">GITLAB_TOKEN</span><span class="o">=</span><span class="s2">&quot;glpat-xxxxxxxxxxxxxxxxxxxx&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span><span class="s2">&quot;github_pat_xxxxxxxxxxxxxxxxxxxxx&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">GITLAB_TOKEN</span><span class="o">=</span><span class="s2">"glpat-xxxxxxxxxxxxxxxxxxxx"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span><span class="s2">"github_pat_xxxxxxxxxxxxxxxxxxxxx"</span>
 hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>generic
 </code></pre></div>
 <h2 id="using-fetched-dependencies">Using fetched dependencies<a class="headerlink" href="#using-fetched-dependencies" title="Permanent link">&para;</a></h2>
@@ -1499,7 +1499,7 @@ object if you need a custom source directory or lockfile path instead.</p>
 <p>The repo already contains a <code>Containerfile</code> for this example. Build it while
 mounting the pre-fetched Hermeto output:</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>sample-generic-app
 </code></pre></div>

@@ -1094,14 +1094,14 @@ the <code>artifacts.lock.yaml</code> file yourself.</p>
 <p>Hermeto is distributed as a container image
 <code>ghcr.io/hermetoproject/hermeto</code> — it is not a standalone PyPI package.
 Pull the image and optionally set up an alias:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">alias</span><span class="w"> </span><span class="nv">hermeto</span><span class="o">=</span><span class="s1">&#39;podman run --rm -ti -v &quot;$PWD:$PWD:z&quot; -w &quot;$PWD&quot; ghcr.io/hermetoproject/hermeto:latest&#39;</span>
+<div class="highlight"><pre><span></span><code><span class="nb">alias</span><span class="w"> </span><span class="nv">hermeto</span><span class="o">=</span><span class="s1">'podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" ghcr.io/hermetoproject/hermeto:latest'</span>
 </code></pre></div>
 <p>The typical workflow has four steps:</p>
 <h3 id="1-pre-fetch-dependencies">1. Pre-fetch dependencies<a class="headerlink" href="#1-pre-fetch-dependencies" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;{&quot;path&quot;: &quot;.&quot;, &quot;type&quot;: &quot;gomod&quot;}&#39;</span><span class="w">  </span>
+<span class="w">  </span><span class="s1">'{"path": ".", "type": "gomod"}'</span><span class="w">  </span>
 </code></pre></div>
 <p>The output directory will contain the downloaded dependencies and a generated
 SBOM. For multiple packages in one repo, pass a JSON array or point to a JSON
@@ -1118,8 +1118,8 @@ find the cached dependencies.</p>
 this step applies them to your source tree automatically.</p>
 <h3 id="4-build-with-network-isolation">4. Build with network isolation<a class="headerlink" href="#4-build-with-network-isolation" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>my-app
 </code></pre></div>

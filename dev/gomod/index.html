@@ -1358,15 +1358,15 @@ list the required dependencies.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="c1">// &quot;gomod&quot; tells Hermeto to process a go module</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;gomod&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// "gomod" tells Hermeto to process a go module</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"gomod"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the module (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>The main argument accepts alternative forms of input,
@@ -1562,7 +1562,7 @@ older hermeto) as you could in the past for various reasons. Many projects bump
 their required Go toolchain's micro release as soon as it becomes available
 upstream (i.e. not waiting for distributions to bundle them properly).</p>
 <p>To handle this, Hermeto's container image includes the latest official upstream
-Go toolchain, which is kept up to date via dependabot. Hermeto
+Go toolchain, which is kept up to date via Renovate. Hermeto
 configures <code>GOTOOLCHAIN=auto</code> so that if the <code>go.mod</code> requires a toolchain
 version newer than the one pre-installed, Go can automatically fetch a
 matching one.
@@ -1583,7 +1583,7 @@ pre-fetching gomod dependencies.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./fzf<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;{&quot;path&quot;: &quot;.&quot;, &quot;type&quot;: &quot;gomod&quot;}&#39;</span>
+<span class="w">  </span><span class="s1">'{"path": ".", "type": "gomod"}'</span>
 </code></pre></div>
 <h4 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h4>
 <p>Next, we need to generate the environment file so that the <code>go build</code> command
@@ -1626,8 +1626,8 @@ the binary.</p>
 <p>Finally, we can build and test the container to ensure that we have successfully
 built the binary.</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>fzf
 

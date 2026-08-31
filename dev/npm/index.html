@@ -1100,15 +1100,15 @@ or higher)! Package-lock.json v1 is not supported in Hermeto.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="c1">// &quot;npm&quot; tells Hermeto to process npm packages</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;npm&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// "npm" tells Hermeto to process npm packages</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"npm"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>or more simply by just invoking <code>hermeto fetch-deps npm</code>.</p>
@@ -1137,11 +1137,11 @@ see the <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-json#depe
   <summary>Dependencies from npm registries</summary>
 
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;dependencies&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;foo&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1.0.0 - 2.9999.9999&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;bar&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&gt;=1.0.2 &lt;2.1.2&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;baz&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&gt;1.0.2 &lt;=2.3.4&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;boo&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;2.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"dependencies"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"foo"</span><span class="o">:</span><span class="w"> </span><span class="s2">"1.0.0 - 2.9999.9999"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"bar"</span><span class="o">:</span><span class="w"> </span><span class="s2">"&gt;=1.0.2 &lt;2.1.2"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"baz"</span><span class="o">:</span><span class="w"> </span><span class="s2">"&gt;1.0.2 &lt;=2.3.4"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"boo"</span><span class="o">:</span><span class="w"> </span><span class="s2">"2.0.1"</span><span class="p">,</span>
 <span class="w">    </span><span class="p">...</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
@@ -1153,9 +1153,9 @@ see the <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-json#depe
   <summary>URLs as dependencies</summary>
 
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;dependencies&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;cli_bar&quot;</span><span class="o">:</span><span class="w"> </span><span class="nx">git</span><span class="o">+</span><span class="nx">ssh</span><span class="o">:</span><span class="c1">//git@github.com:npm/cli.git#v1.0.27,</span>
-<span class="w">    </span><span class="s2">&quot;cli_foo&quot;</span><span class="o">:</span><span class="w"> </span><span class="nx">git</span><span class="o">:</span><span class="c1">//github.com/npm/cli.git#v1.0.1</span>
+<span class="w">  </span><span class="s2">"dependencies"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"cli_bar"</span><span class="o">:</span><span class="w"> </span><span class="nx">git</span><span class="o">+</span><span class="nx">ssh</span><span class="o">:</span><span class="c1">//git@github.com:npm/cli.git#v1.0.27,</span>
+<span class="w">    </span><span class="s2">"cli_foo"</span><span class="o">:</span><span class="w"> </span><span class="nx">git</span><span class="o">:</span><span class="c1">//github.com/npm/cli.git#v1.0.1</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1166,10 +1166,10 @@ see the <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-json#depe
   <summary>GitHub URLs</summary>
 
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;dependencies&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;express&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;expressjs/express&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;mocha&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;mochajs/mocha#4727d357ea&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;module&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;user/repo#feature/branch&quot;</span>
+<span class="w">  </span><span class="s2">"dependencies"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"express"</span><span class="o">:</span><span class="w"> </span><span class="s2">"expressjs/express"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"mocha"</span><span class="o">:</span><span class="w"> </span><span class="s2">"mochajs/mocha#4727d357ea"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"module"</span><span class="o">:</span><span class="w"> </span><span class="s2">"user/repo#feature/branch"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1180,9 +1180,9 @@ see the <a href="https://docs.npmjs.com/cli/v9/configuring-npm/package-json#depe
   <summary>Local paths</summary>
 
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;name&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;baz&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;dependencies&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s2">&quot;bar&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;file:../foo/bar&quot;</span>
+<span class="w">  </span><span class="s2">"name"</span><span class="o">:</span><span class="w"> </span><span class="s2">"baz"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"dependencies"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"bar"</span><span class="o">:</span><span class="w"> </span><span class="s2">"file:../foo/bar"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1225,8 +1225,8 @@ each <a href="https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true">workspa
 </ul>
 <p>After running <code>inject-files</code>, <code>resolved</code> URLs in <code>package-lock.json</code> point to
 the output directory, for example:</p>
-<div class="highlight"><pre><span></span><code><span class="gd">-      &quot;resolved&quot;: &quot;https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz&quot;,</span>
-<span class="gi">+      &quot;resolved&quot;: &quot;file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz&quot;,</span>
+<div class="highlight"><pre><span></span><code><span class="gd">-      "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",</span>
+<span class="gi">+      "resolved": "file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz",</span>
 </code></pre></div>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
 <p>Let's build a <a href="https://github.com/hermetoproject/doc-examples/tree/npm-basic">basic npm project</a>.</p>
@@ -1258,15 +1258,15 @@ to the local file system.</p>
 <p>We can look at the <code>git diff</code> to see what the package remapping looks like. As
 an example,</p>
 <div class="highlight"><pre><span></span><code><span class="gh">diff --git a/package-lock.json b/package-lock.json</span>
-<span class="gd">-      &quot;resolved&quot;: &quot;https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz&quot;,</span>
-<span class="gi">+      &quot;resolved&quot;: &quot;file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz&quot;,</span>
+<span class="gd">-      "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",</span>
+<span class="gi">+      "resolved": "file:///tmp/hermeto-output/deps/npm/accepts-1.3.8.tgz",</span>
 </code></pre></div>
 <h4 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h4>
 <p>The repo already contains a <code>Containerfile</code> for this example. Build it while
 mounting the pre-fetched Hermeto data:</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>npm-example
 </code></pre></div>

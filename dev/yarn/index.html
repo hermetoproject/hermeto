@@ -1338,15 +1338,15 @@ error.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;&lt;JSON input&gt;&#39;</span>
+<span class="w">  </span><span class="s1">'&lt;JSON input&gt;'</span>
 </code></pre></div>
 <p>where 'JSON input' is</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="c1">// &quot;yarn&quot; tells Hermeto to process Yarn packages</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;yarn&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// "yarn" tells Hermeto to process Yarn packages</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"yarn"</span><span class="p">,</span>
 <span class="w">  </span><span class="c1">// path to the package (relative to the --source directory)</span>
-<span class="w">  </span><span class="c1">// defaults to &quot;.&quot;</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// defaults to "."</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>or more simply by just invoking <code>hermeto fetch-deps yarn</code>.</p>
@@ -1358,10 +1358,10 @@ fetch only the dependencies needed for specific workspaces rather than the
 entire project. This is done by specifying the <code>workspaces</code> field in the JSON
 input:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;yarn&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="s2">&quot;path&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="c1">// Only fetch dependencies for the &quot;my-app&quot; workspace</span>
-<span class="w">  </span><span class="s2">&quot;workspaces&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;my-app&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="s2">"type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"yarn"</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"path"</span><span class="o">:</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// Only fetch dependencies for the "my-app" workspace</span>
+<span class="w">  </span><span class="s2">"workspaces"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"my-app"</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Hermeto will fetch only the dependencies needed for the specified workspaces
@@ -1371,7 +1371,7 @@ also included and will appear in the SBOM.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--source<span class="w"> </span>./my-monorepo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;{&quot;type&quot;: &quot;yarn&quot;, &quot;workspaces&quot;: [&quot;app-frontend&quot;, &quot;lib-shared&quot;]}&#39;</span>
+<span class="w">  </span><span class="s1">'{"type": "yarn", "workspaces": ["app-frontend", "lib-shared"]}'</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1427,17 +1427,17 @@ in the build environment along with explanation</p>
 <span class="nv">YARN_GLOBAL_FOLDER</span><span class="o">=</span>&lt;hermeto_output_dir&gt;/deps/yarn
 
 <span class="c1"># Yarn must not rely solely on the global cache (the pre-fetched one) because</span>
-<span class="c1"># it&#39;ll likely only be available (i.e. mounted) during the (container) build</span>
+<span class="c1"># it'll likely only be available (i.e. mounted) during the (container) build</span>
 <span class="c1"># time, but not runtime. We specifically want Yarn to copy those dependencies</span>
-<span class="c1"># from the global cache to the project&#39;s local cache</span>
+<span class="c1"># from the global cache to the project's local cache</span>
 <span class="nv">YARN_ENABLE_GLOBAL_CACHE</span><span class="o">=</span><span class="nb">false</span>
 
 <span class="c1"># Must be set to true, otherwise Yarn will not make use of the pre-populated</span>
-<span class="c1"># global cache we&#39;re pointing it at with YARN_GLOBAL_FOLDER at build time.</span>
+<span class="c1"># global cache we're pointing it at with YARN_GLOBAL_FOLDER at build time.</span>
 <span class="nv">YARN_ENABLE_MIRROR</span><span class="o">=</span><span class="nb">true</span>
 
-<span class="c1"># Must be false otherwise &#39;yarn install&#39; will fail to populate the project&#39;s</span>
-<span class="c1"># local cache (pointed to by the &#39;cacheFolder&#39; setting) from the global cache</span>
+<span class="c1"># Must be false otherwise 'yarn install' will fail to populate the project's</span>
+<span class="c1"># local cache (pointed to by the 'cacheFolder' setting) from the global cache</span>
 <span class="c1"># (the pre-fetched one).</span>
 <span class="nv">YARN_ENABLE_IMMUTABLE_CACHE</span><span class="o">=</span><span class="nb">false</span>
 </code></pre></div>
@@ -1453,7 +1453,7 @@ examples, this time using the Yarn package manager. Like with the previous
 examples the default path for the package we assume is <code>.</code>.</p>
 <p>See <a href="./">the Yarn documentation</a> for more details about running Hermeto for
 pre-fetching Yarn dependencies.</p>
-<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="s1">&#39;{&quot;type&quot;: &quot;yarn&quot;}&#39;</span>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="s1">'{"type": "yarn"}'</span>
 </code></pre></div>
 <p>OR more simply (without the need of a JSON formatted argument) just</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span>yarn
@@ -1476,8 +1476,8 @@ hermetic build, however that might change in the future.</p>
 <p>The repo already contains a <code>Containerfile</code> for this example. Build it while
 mounting the pre-fetched Hermeto data:</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>yarn-example
 </code></pre></div>

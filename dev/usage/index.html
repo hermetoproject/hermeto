@@ -1078,7 +1078,7 @@ of the supported package managers.</p>
 <span class="w">  </span>--source<span class="w"> </span>./foo<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--sbom-output-type<span class="w"> </span>cyclonedx<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;{&quot;path&quot;: &quot;.&quot;, &quot;type&quot;: &quot;&lt;supported package manager&gt;&quot;}&#39;</span>
+<span class="w">  </span><span class="s1">'{"path": ".", "type": "&lt;supported package manager&gt;"}'</span>
 </code></pre></div>
 <ul>
 <li><code>--source</code> the path to a <em>git repository</em> on the local disk <code>[default: .]</code></li>
@@ -1215,8 +1215,8 @@ environment variable that is being <code>source</code>d within the build. Since 
 dependencies are cached, we can confidently restrict the network from the
 container build as well!</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--volume<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">&quot;</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto-output<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto-output:Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span>./hermeto.env<span class="k">)</span><span class="s2">"</span>:/tmp/hermeto.env:Z<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--network<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--tag<span class="w"> </span>foo
 
