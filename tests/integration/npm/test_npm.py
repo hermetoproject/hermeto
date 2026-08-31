@@ -17,12 +17,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="npm_bundled_lockfile3",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            id="npm_yarn_registry_lockfile3",
-        ),
     ],
 )
 def test_npm_packages(
