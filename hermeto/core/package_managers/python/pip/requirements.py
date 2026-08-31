@@ -6,6 +6,7 @@ import io
 import logging
 import re
 from collections.abc import Iterator
+from pathlib import Path
 from typing import IO, Any, Literal
 from urllib import parse as urlparse
 
@@ -22,6 +23,7 @@ from hermeto.core.errors import (
     UnrecognizedFileExtension,
     UnsupportedFeature,
 )
+from hermeto.core.package_managers.general import extract_git_info
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -34,6 +36,32 @@ GIT_REF_IN_PATH = re.compile(r"@[a-fA-F0-9]{40}$")
 SDIST_FILE_EXTENSIONS = [".zip", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.Z", ".tar"]
 WHEEL_FILE_EXTENSION = ".whl"
 ALL_FILE_EXTENSIONS = SDIST_FILE_EXTENSIONS + [WHEEL_FILE_EXTENSION]
+
+
+def get_external_requirement_filepath(kind: str, url: str, package_name: str, digest: str) -> Path:
+    """Get the relative path under deps/pip/ where a URL or VCS requirement is placed.
+
+    Single source of truth shared by the download step and the requirements-file
+    rewrite, so the downloaded filename and the rewritten ``file://`` path cannot drift.
+    """
+    if kind == "url":
+        orig_url = urlparse.urlparse(url)
+        file_ext = ""
+        for ext in ALL_FILE_EXTENSIONS:
+            if orig_url.path.endswith(ext):
+                file_ext = ext
+                break
+
+        # wheel filename must remain unchanged and unquoted
+        if file_ext == WHEEL_FILE_EXTENSION:
+            return Path(urlparse.unquote(Path(orig_url.path).name))
+        return Path(f"{package_name}-{digest}{file_ext}")
+
+    if kind == "vcs":
+        git_info = extract_git_info(url)
+        return Path(f"{git_info['repo']}-gitcommit-{git_info['ref']}.tar.gz")
+
+    raise ValueError(f"{kind=} is neither 'url' nor 'vcs'")
 
 
 class PipRequirementsFile:
