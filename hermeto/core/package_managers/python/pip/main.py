@@ -21,11 +21,6 @@ from hermeto.core.package_managers.python.pip.lockfile import (
 )
 from hermeto.core.package_managers.python.pip.packages import PipPackageInfo
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML, SetupCFG, SetupPY
-from hermeto.core.package_managers.python.pip.requirements import (
-    PipRequirement,
-    PipRequirementsFile,
-    get_external_requirement_filepath,
-)
 from hermeto.core.package_managers.python.pip.rust import (
     filter_packages_with_rust_code,
     find_and_fetch_rust_dependencies,
@@ -66,8 +61,7 @@ def fetch_pip_source(request: Request) -> RequestOutput:
         for dep in info.build_requires:
             components.append(dep.to_component(build_dependency=True))
 
-        replaced_requirements_files = map(_replace_external_requirements, info.requirements)
-        project_files.extend(filter(None, replaced_requirements_files))
+        project_files.extend(info.project_files)
         # each package can have Rust dependencies
         packages_containing_rust_code += info.packages_containing_rust_code
 
@@ -215,25 +209,17 @@ def _resolve_pip(
     pkg_name, pkg_version = _get_pip_metadata(package_path)
 
     tool = _infer_packaging_tool(packaging_tool, lockfile)
-    if tool == PythonPackagingTool.PYLOCK:
-        raise NotImplementedError("pylock is not supported yet")
-
     lockfile_type = _LOCKFILE_TYPES[tool]
 
-    if lockfile is not None:
-        resolved_lockfiles = _resolve_lockfile_paths(
-            package_path, [lockfile], lockfile_type.default_file
-        )
-        resolved_extras = _resolve_lockfile_paths(
-            package_path, lockfile_extras, lockfile_type.default_build_file
-        )
-    else:
-        resolved_lockfiles = _resolve_lockfile_paths(
-            package_path, requirement_files, lockfile_type.default_file
-        )
-        resolved_extras = _resolve_lockfile_paths(
-            package_path, build_requirement_files, lockfile_type.default_build_file
-        )
+    main_explicit = [lockfile] if lockfile is not None else requirement_files
+    extras_explicit = lockfile_extras if lockfile_extras is not None else build_requirement_files
+
+    resolved_lockfiles = _resolve_lockfile_paths(
+        package_path, main_explicit, lockfile_type.default_file
+    )
+    resolved_extras = _resolve_lockfile_paths(
+        package_path, extras_explicit, lockfile_type.default_build_file
+    )
 
     if not resolved_lockfiles:
         log.warning("No lockfiles found, no dependencies will be fetched")
@@ -251,8 +237,12 @@ def _resolve_pip(
             ", ".join(str(f.subpath_from_root) for f in resolved_extras),
         )
 
-    requires = _download_lockfiles(lockfile_type, resolved_lockfiles, output_dir, binary_filters)
-    build_requires = _download_lockfiles(lockfile_type, resolved_extras, output_dir, binary_filters)
+    requires, main_project_files = _download_lockfiles(
+        lockfile_type, resolved_lockfiles, output_dir, binary_filters
+    )
+    build_requires, build_project_files = _download_lockfiles(
+        lockfile_type, resolved_extras, output_dir, binary_filters
+    )
 
     all_deps = requires + build_requires
     if get_config().pip.ignore_dependencies_crates:
@@ -265,47 +255,6 @@ def _resolve_pip(
         version=pkg_version,
         requires=requires,
         build_requires=build_requires,
-        requirements=[*resolved_lockfiles, *resolved_extras],
+        project_files=[*main_project_files, *build_project_files],
         packages_containing_rust_code=packages_containing_rust_code,
-    )
-
-
-def _get_external_requirement_filepath(requirement: PipRequirement) -> Path:
-    """Get the relative path under deps/pip/ where a URL or VCS requirement should be placed."""
-    digest = requirement.hashes[0].partition(":")[2] if requirement.hashes else ""
-    return get_external_requirement_filepath(
-        requirement.kind, requirement.direct_access_url, requirement.package, digest
-    )
-
-
-def _replace_external_requirements(requirements_file_path: RootedPath) -> ProjectFile | None:
-    """Generate an updated requirements file.
-
-    Replace the urls of external dependencies with file paths (templated).
-    If no updates are needed, return None.
-    """
-    requirements_file = PipRequirementsFile(requirements_file_path)
-
-    def maybe_replace(requirement: PipRequirement) -> PipRequirement | None:
-        if requirement.kind in ("url", "vcs"):
-            path = _get_external_requirement_filepath(requirement)
-            templated_abspath = Path("${output_dir}", "deps", "pip", path)
-            return requirement.update(url=f"file://{templated_abspath}")
-        return None
-
-    replaced = [maybe_replace(requirement) for requirement in requirements_file.requirements]
-    if not any(replaced):
-        # No need for a custom requirements file
-        return None
-
-    requirements = [
-        replaced or original for replaced, original in zip(replaced, requirements_file.requirements)
-    ]
-    replaced_requirements_file = PipRequirementsFile.from_requirements_and_options(
-        requirements, requirements_file.options
-    )
-
-    return ProjectFile(
-        abspath=Path(requirements_file_path).resolve(),
-        template=replaced_requirements_file.generate_file_content(),
     )
