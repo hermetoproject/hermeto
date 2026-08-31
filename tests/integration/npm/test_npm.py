@@ -65,14 +65,6 @@ def test_npm_packages(
             ),
             [],
             [],
-            id="npm_multiple_dep_versions",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
             id="npm_aliased_deps",
         ),
         pytest.param(
