@@ -1,6 +1,0 @@
-environment_variables:
-- name: YARN_YARN_OFFLINE_MIRROR
-  value: ${output_dir}/deps/yarn-classic
-- name: YARN_YARN_OFFLINE_MIRROR_PRUNING
-  value: 'false'
-project_files: []
