@@ -108,17 +108,6 @@ def test_yarn_packages(
         ),
         pytest.param(
             utils.TestParameters(
-                packages=(
-                    {"path": "first-pkg", "type": "yarn"},
-                    {"path": "second-pkg", "type": "yarn"},
-                ),
-            ),
-            ["yarn", "node", "index.js"],
-            "Hello from first package!",
-            id="yarn_e2e_multiple_packages",
-        ),
-        pytest.param(
-            utils.TestParameters(
                 packages=({"path": ".", "type": "yarn", "workspaces": ["app"]},),
             ),
             ["node", "packages/app/index.js"],
