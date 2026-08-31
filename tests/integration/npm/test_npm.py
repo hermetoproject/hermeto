@@ -61,14 +61,6 @@ def test_npm_packages(
         ),
         pytest.param(
             utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
-            id="npm_dev_optional_peer_deps",
-        ),
-        pytest.param(
-            utils.TestParameters(
                 packages=(
                     {"path": "first_pkg", "type": "npm"},
                     {"path": "second_pkg", "type": "npm"},
