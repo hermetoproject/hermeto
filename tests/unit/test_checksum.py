@@ -4,7 +4,11 @@ from typing import Literal
 
 import pytest
 
-from hermeto.core.checksum import SUPPORTED_ALGORITHMS, ChecksumInfo, must_match_any_checksum
+from hermeto.core.checksum import (
+    SUPPORTED_ALGORITHMS,
+    ChecksumInfo,
+    must_match_any_checksum,
+)
 from hermeto.core.errors import ChecksumVerificationFailed, PackageRejected
 
 FILE_CONTENT = "Beetlejuice! Beetlejuice! Beetlejuice!"

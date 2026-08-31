@@ -209,8 +209,7 @@ class PylockPackage(pydantic.BaseModel):
         """Return which kind of source this package is fetched from.
 
         ``directory`` is the root project's own entry (``path = "."``); it is
-        skipped, not fetched. ``metadata`` means the package has no fetchable
-        source; it is reported in the SBOM but not downloaded.
+        skipped, not fetched.
         """
         if self.vcs is not None:
             return "vcs"
@@ -228,6 +227,14 @@ class Pylock(pydantic.BaseModel):
     # Optional because generators may omit it.
     created_by: str | None = pydantic.Field(default=None, alias="created-by")
     packages: list[PylockPackage] = []
+    _document: tomlkit.TOMLDocument | None = pydantic.PrivateAttr(default=None)
+
+    @property
+    def document(self) -> tomlkit.TOMLDocument:
+        """The source TOML document, retained for round-trip rewriting."""
+        if self._document is None:
+            raise RuntimeError("document is only available on a Pylock loaded via from_file")
+        return self._document
 
     @pydantic.field_validator("lock_version")
     @classmethod
@@ -258,11 +265,14 @@ class Pylock(pydantic.BaseModel):
     def from_file(cls, path: RootedPath) -> "Pylock":
         """Parse and validate a pylock.toml file at ``path``."""
         try:
-            data = tomlkit.parse(path.path.read_text()).unwrap()
+            document = tomlkit.parse(path.path.read_text())
         except tomlkit.exceptions.ParseError as e:
             raise InvalidLockfileFormat(path.path, f"not valid TOML: {e}")
 
         try:
-            return cls.model_validate(data)
+            pylock = cls.model_validate(document.unwrap())
         except pydantic.ValidationError as e:
             raise InvalidLockfileFormat(path.path, str(e))
+
+        pylock._document = document
+        return pylock

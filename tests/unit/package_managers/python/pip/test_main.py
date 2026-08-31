@@ -23,8 +23,15 @@ from hermeto.core.errors import (
     UnsupportedFeature,
 )
 from hermeto.core.package_managers.python.pip import main as pip
+from hermeto.core.package_managers.python.pip.lockfile import RequirementsLockfile
 from hermeto.core.package_managers.python.pip.package_distributions import DistributionPackageInfo
-from hermeto.core.package_managers.python.pip.packages import PipPackageInfo, URLPackage, VCSPackage
+from hermeto.core.package_managers.python.pip.packages import (
+    PipPackageInfo,
+    URLPackage,
+    VCSPackage,
+    _check_metadata_in_sdist,
+)
+from hermeto.core.package_managers.python.pip.requirements import get_external_requirement_filepath
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -655,14 +662,7 @@ def test_resolve_pip_invalid_file_path(
     ),
 )
 def test_get_external_requirement_filepath(component_kind: str, url: str) -> None:
-    requirement = mock.Mock(
-        kind=component_kind,
-        url=url,
-        direct_access_url=url,
-        package="package",
-        hashes=["sha256:noRealHash"],
-    )
-    filepath = pip._get_external_requirement_filepath(requirement)
+    filepath = get_external_requirement_filepath(component_kind, url, "package", "noRealHash")
     if component_kind == "url":
         assert filepath == Path("package-noRealHash.tar.gz")
     elif component_kind == "vcs":
@@ -697,8 +697,6 @@ def test_metadata_check_fails_from_sdist(
     expected_error: str,
     data_dir: Path,
 ) -> None:
-    from hermeto.core.package_managers.python.pip.packages import _check_metadata_in_sdist
-
     sdist_path = data_dir / "archives" / sdist_filename
     with pytest.raises(exc_type, match=expected_error):
         _check_metadata_in_sdist(sdist_path)
@@ -754,7 +752,7 @@ def test_replace_external_requirements(
     requirements_file = rooted_tmp_path.join_within_root("requirements.txt")
     requirements_file.path.write_text(original_content)
 
-    replaced_file = pip._replace_external_requirements(requirements_file)
+    replaced_file = RequirementsLockfile.from_file(requirements_file).rewrite([])
     if expect_replaced is None:
         assert replaced_file is None
     else:
@@ -785,7 +783,7 @@ def test_generate_purl_main_package(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -828,7 +826,7 @@ def test_generate_purl_main_package_permissive_mode_without_vcs_url(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -851,7 +849,7 @@ def test_generate_purl_main_package_strict_mode_raises_without_git_repo(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
@@ -894,7 +892,7 @@ def test_generate_purl_main_package_permissive_mode_with_vcs_url(
         version="1.0.0",
         requires=[],
         build_requires=[],
-        requirements=[],
+        project_files=[],
         packages_containing_rust_code=[],
     )
 
