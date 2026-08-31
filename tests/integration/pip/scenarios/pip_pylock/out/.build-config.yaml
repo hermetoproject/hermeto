@@ -1,0 +1,42 @@
+environment_variables:
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files:
+- abspath: ${test_case_tmp_path}/pylock.toml
+  template: |
+    lock-version = "1.0"
+
+    [[packages]]
+    name = "gitdb"
+    version = "4.0.12"
+
+    [packages.sdist]
+    name = "gitdb-4.0.12.tar.gz"
+    url = "https://files.pythonhosted.org/packages/72/94/63b0fc47eb32792c7ba1fe1b694daec9a63620db1e313033d18140c2320a/gitdb-4.0.12.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571"
+
+    [[packages]]
+    name = "gitpython"
+
+    [packages.archive]
+    url = "file://${output_dir}/deps/pip/GitPython-gitcommit-3c638d25420c19209e3730bafd49c89e43c54429.tar.gz"
+    [[packages]]
+    name = "smmap"
+    version = "5.0.3"
+
+    [packages.sdist]
+    name = "smmap-5.0.3.tar.gz"
+    url = "https://files.pythonhosted.org/packages/1f/ea/49c993d6dfdd7338c9b1000a0f36817ed7ec84577ae2e52f890d1a4ff909/smmap-5.0.3.tar.gz"
+
+    [packages.sdist.hashes]
+    sha256 = "4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c"
+
+    [[packages]]
+    name = "pip-pylock"
+
+    [packages.directory]
+    path = "."
