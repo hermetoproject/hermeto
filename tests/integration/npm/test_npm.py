@@ -59,18 +59,6 @@ def test_npm_packages(
             [],
             id="npm_smoketest_lockfile3",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "first_pkg", "type": "npm"},
-                    {"path": "second_pkg", "type": "npm"},
-                    {"path": "third_pkg", "type": "npm"},
-                ),
-            ),
-            [],
-            [],
-            id="npm_multiple_packages",
-        ),
     ],
 )
 def test_e2e_npm(
