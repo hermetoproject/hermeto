@@ -52,20 +52,17 @@ def test_npm_packages(
             id="npm_smoketest_lockfile2",
         ),
         pytest.param(
+            # Broad smoke test: its lockfile carries the shapes that used to
+            # have dedicated scenarios, so those are folded in here. It holds a
+            # dependency at two versions (ms 2.0.0 and 2.1.3) and git-resolved
+            # dependencies; hermeto processes all of them through the same path
+            # with no version-collision or dependency-kind branch.
             utils.TestParameters(
                 packages=({"path": ".", "type": "npm"},),
             ),
             [],
             [],
             id="npm_smoketest_lockfile3",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
-            id="npm_multiple_dep_versions",
         ),
         pytest.param(
             utils.TestParameters(
