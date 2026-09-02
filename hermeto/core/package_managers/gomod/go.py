@@ -89,7 +89,7 @@ class GoVersion(version.Version):
     # required Go version in one's go.mod file.
 
     # !THIS IS WHERE THE SUPPORTED GO VERSION BY HERMETO NEEDS TO BE BUMPED!
-    MAX_VERSION: str = "1.26"
+    MAX_VERSION: str = "1.27"
 
     def __init__(self, version_str: str) -> None:
         """Initialize the GoVersion instance.
