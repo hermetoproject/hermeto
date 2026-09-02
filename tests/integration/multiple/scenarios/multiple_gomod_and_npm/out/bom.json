@@ -11,8 +11,16 @@
         "pkg:golang/bytes?type=package",
         "pkg:golang/cmp?type=package",
         "pkg:golang/context?type=package",
+        "pkg:golang/encoding/base32?type=package",
         "pkg:golang/encoding/base64?type=package",
         "pkg:golang/encoding/binary?type=package",
+        "pkg:golang/encoding/hex?type=package",
+        "pkg:golang/encoding/json/internal/jsonflags?type=package",
+        "pkg:golang/encoding/json/internal/jsonopts?type=package",
+        "pkg:golang/encoding/json/internal/jsonwire?type=package",
+        "pkg:golang/encoding/json/internal?type=package",
+        "pkg:golang/encoding/json/jsontext?type=package",
+        "pkg:golang/encoding/json/v2?type=package",
         "pkg:golang/encoding/json?type=package",
         "pkg:golang/encoding?type=package",
         "pkg:golang/errors?type=package",
@@ -26,7 +34,6 @@
         "pkg:golang/golang.org/x/sys@v0.32.0?type=module",
         "pkg:golang/internal/abi?type=package",
         "pkg:golang/internal/asan?type=package",
-        "pkg:golang/internal/bisect?type=package",
         "pkg:golang/internal/bytealg?type=package",
         "pkg:golang/internal/byteorder?type=package",
         "pkg:golang/internal/chacha8rand?type=package",
@@ -35,7 +42,6 @@
         "pkg:golang/internal/filepathlite?type=package",
         "pkg:golang/internal/fmtsort?type=package",
         "pkg:golang/internal/goarch?type=package",
-        "pkg:golang/internal/godebug?type=package",
         "pkg:golang/internal/godebugs?type=package",
         "pkg:golang/internal/goexperiment?type=package",
         "pkg:golang/internal/goos?type=package",
@@ -194,6 +200,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/base32?type=package",
+      "name": "encoding/base32",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/base32?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/encoding/base64?type=package",
       "name": "encoding/base64",
       "properties": [
@@ -215,6 +233,90 @@
         }
       ],
       "purl": "pkg:golang/encoding/binary?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/hex?type=package",
+      "name": "encoding/hex",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/hex?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonflags?type=package",
+      "name": "encoding/json/internal/jsonflags",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonflags?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonopts?type=package",
+      "name": "encoding/json/internal/jsonopts",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonopts?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonwire?type=package",
+      "name": "encoding/json/internal/jsonwire",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonwire?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal?type=package",
+      "name": "encoding/json/internal",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/jsontext?type=package",
+      "name": "encoding/json/jsontext",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/jsontext?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/v2?type=package",
+      "name": "encoding/json/v2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/v2?type=package",
       "type": "library"
     },
     {
@@ -381,18 +483,6 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/internal/bisect?type=package",
-      "name": "internal/bisect",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/internal/bisect?type=package",
-      "type": "library"
-    },
-    {
       "bom-ref": "pkg:golang/internal/bytealg?type=package",
       "name": "internal/bytealg",
       "properties": [
@@ -486,18 +576,6 @@
         }
       ],
       "purl": "pkg:golang/internal/goarch?type=package",
-      "type": "library"
-    },
-    {
-      "bom-ref": "pkg:golang/internal/godebug?type=package",
-      "name": "internal/godebug",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/internal/godebug?type=package",
       "type": "library"
     },
     {

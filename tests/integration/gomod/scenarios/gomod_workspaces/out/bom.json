@@ -44,6 +44,7 @@
         "pkg:golang/crypto/internal/fips140/edwards25519?type=package",
         "pkg:golang/crypto/internal/fips140/hkdf?type=package",
         "pkg:golang/crypto/internal/fips140/hmac?type=package",
+        "pkg:golang/crypto/internal/fips140/mldsa?type=package",
         "pkg:golang/crypto/internal/fips140/mlkem?type=package",
         "pkg:golang/crypto/internal/fips140/nistec/fiat?type=package",
         "pkg:golang/crypto/internal/fips140/nistec?type=package",
@@ -67,6 +68,7 @@
         "pkg:golang/crypto/internal/randutil?type=package",
         "pkg:golang/crypto/internal/sysrand?type=package",
         "pkg:golang/crypto/md5?type=package",
+        "pkg:golang/crypto/mldsa?type=package",
         "pkg:golang/crypto/mlkem?type=package",
         "pkg:golang/crypto/rand?type=package",
         "pkg:golang/crypto/rc4?type=package",
@@ -82,9 +84,16 @@
         "pkg:golang/crypto/x509?type=package",
         "pkg:golang/crypto?type=package",
         "pkg:golang/encoding/asn1?type=package",
+        "pkg:golang/encoding/base32?type=package",
         "pkg:golang/encoding/base64?type=package",
         "pkg:golang/encoding/binary?type=package",
         "pkg:golang/encoding/hex?type=package",
+        "pkg:golang/encoding/json/internal/jsonflags?type=package",
+        "pkg:golang/encoding/json/internal/jsonopts?type=package",
+        "pkg:golang/encoding/json/internal/jsonwire?type=package",
+        "pkg:golang/encoding/json/internal?type=package",
+        "pkg:golang/encoding/json/jsontext?type=package",
+        "pkg:golang/encoding/json/v2?type=package",
         "pkg:golang/encoding/json?type=package",
         "pkg:golang/encoding/pem?type=package",
         "pkg:golang/encoding/xml?type=package",
@@ -205,7 +214,9 @@
         "pkg:golang/net/http/httptrace?type=package",
         "pkg:golang/net/http/httputil?type=package",
         "pkg:golang/net/http/internal/ascii?type=package",
+        "pkg:golang/net/http/internal/http2?type=package",
         "pkg:golang/net/http/internal/httpcommon?type=package",
+        "pkg:golang/net/http/internal/httpsfv?type=package",
         "pkg:golang/net/http/internal?type=package",
         "pkg:golang/net/http?type=package",
         "pkg:golang/net/netip?type=package",
@@ -704,6 +715,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/internal/fips140/mldsa?type=package",
+      "name": "crypto/internal/fips140/mldsa",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/internal/fips140/mldsa?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/crypto/internal/fips140/mlkem?type=package",
       "name": "crypto/internal/fips140/mlkem",
       "properties": [
@@ -980,6 +1003,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/crypto/mldsa?type=package",
+      "name": "crypto/mldsa",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/crypto/mldsa?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/crypto/mlkem?type=package",
       "name": "crypto/mlkem",
       "properties": [
@@ -1160,6 +1195,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/encoding/base32?type=package",
+      "name": "encoding/base32",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/base32?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/encoding/base64?type=package",
       "name": "encoding/base64",
       "properties": [
@@ -1193,6 +1240,78 @@
         }
       ],
       "purl": "pkg:golang/encoding/hex?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonflags?type=package",
+      "name": "encoding/json/internal/jsonflags",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonflags?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonopts?type=package",
+      "name": "encoding/json/internal/jsonopts",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonopts?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal/jsonwire?type=package",
+      "name": "encoding/json/internal/jsonwire",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal/jsonwire?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/internal?type=package",
+      "name": "encoding/json/internal",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/internal?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/jsontext?type=package",
+      "name": "encoding/json/jsontext",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/jsontext?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/encoding/json/v2?type=package",
+      "name": "encoding/json/v2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/encoding/json/v2?type=package",
       "type": "library"
     },
     {
@@ -2694,6 +2813,18 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/net/http/internal/http2?type=package",
+      "name": "net/http/internal/http2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/net/http/internal/http2?type=package",
+      "type": "library"
+    },
+    {
       "bom-ref": "pkg:golang/net/http/internal/httpcommon?type=package",
       "name": "net/http/internal/httpcommon",
       "properties": [
@@ -2703,6 +2834,18 @@
         }
       ],
       "purl": "pkg:golang/net/http/internal/httpcommon?type=package",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:golang/net/http/internal/httpsfv?type=package",
+      "name": "net/http/internal/httpsfv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/net/http/internal/httpsfv?type=package",
       "type": "library"
     },
     {
