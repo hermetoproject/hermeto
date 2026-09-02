@@ -52,12 +52,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^5.1.9":
-  version: 5.1.9
-  resolution: "nanoid@npm:5.1.9"
+"nanoid@npm:^5.1.16":
+  version: 5.1.16
+  resolution: "nanoid@npm:5.1.16"
   bin:
     nanoid: bin/nanoid.js
-  checksum: 10c0/02cb4e48d30469eee3959795e2af6c113342e7f492906e43bd1e3c264d2dcee6c8236b0e441d4a9895b58c4ddb1c7c02170f63a2ca854a229cc4c7a544699cc1
+  checksum: 10c0/04b4f96237f5639716da0e98f453361b313bebaf458bb67dea2d384724fc8b3340a28f032a4373052150bcf3b801d122e291d81ae4fc522969f55c134f4401a3
   languageName: node
   linkType: hard
 
@@ -65,7 +65,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    nanoid: "npm:^5.1.9"
+    nanoid: "npm:^5.1.16"
   languageName: unknown
   linkType: soft
 
