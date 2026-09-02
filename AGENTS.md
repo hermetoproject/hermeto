@@ -66,7 +66,6 @@ files or ask. Do not assume.
 
 ## Code Style
 
-- Include type annotations for all new code
 - Error messages must be friendly and actionable. Suggest
   a solution or where to look for help, link to docs when
   suitable
