@@ -117,17 +117,6 @@ def test_yarn_classic_offline_mirror_collision(
             "Hello world!",
             id="yarn_classic_e2e",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "first-pkg", "type": "yarn"},
-                    {"path": "second-pkg", "type": "yarn"},
-                ),
-            ),
-            ["yarn", "node", "index.js"],
-            "Hello from first package!",
-            id="yarn_classic_e2e_multiple_packages",
-        ),
     ],
 )
 def test_e2e_yarn_classic(

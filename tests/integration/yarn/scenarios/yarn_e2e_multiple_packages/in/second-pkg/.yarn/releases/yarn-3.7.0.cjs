@@ -1,1 +1,0 @@
-../../../first-pkg/.yarn/releases/yarn-3.7.0.cjs

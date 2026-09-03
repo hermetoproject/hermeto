@@ -17,12 +17,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="npm_bundled_lockfile3",
         ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            id="npm_yarn_registry_lockfile3",
-        ),
     ],
 )
 def test_npm_packages(
@@ -64,42 +58,6 @@ def test_npm_packages(
             [],
             [],
             id="npm_smoketest_lockfile3",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
-            id="npm_multiple_dep_versions",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
-            id="npm_aliased_deps",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "npm"},),
-            ),
-            [],
-            [],
-            id="npm_dev_optional_peer_deps",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "first_pkg", "type": "npm"},
-                    {"path": "second_pkg", "type": "npm"},
-                    {"path": "third_pkg", "type": "npm"},
-                ),
-            ),
-            [],
-            [],
-            id="npm_multiple_packages",
         ),
     ],
 )

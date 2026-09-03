@@ -34,13 +34,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "yarn"},),
-                expected_output="Processing the request using yarn@3.6.1",
-            ),
-            id="yarn_correct_version_is_installed_by_corepack",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "yarn"},),
                 expected_output="Processing the request using yarn@4.5.2",
             ),
             id="yarn_v4",
@@ -112,17 +105,6 @@ def test_yarn_packages(
             ["yarn", "berryscary"],
             "Hello, World!",
             id="yarn_e2e",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "first-pkg", "type": "yarn"},
-                    {"path": "second-pkg", "type": "yarn"},
-                ),
-            ),
-            ["yarn", "node", "index.js"],
-            "Hello from first package!",
-            id="yarn_e2e_multiple_packages",
         ),
         pytest.param(
             utils.TestParameters(

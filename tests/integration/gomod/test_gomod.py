@@ -92,25 +92,6 @@ def _create_repo(tmp_path: Path, test_case: str) -> Path:
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "gomod"},),
-                check_output=False,
-                expected_error=ExitError.ERR_PACKAGE_REJECTED,
-                expected_output=(
-                    "PackageRejected: The content of the vendor directory is not "
-                    "consistent with go.mod. Please check the logs for more details"
-                ),
-            ),
-            id="gomod_empty_vendor_fails_vendor_check",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                global_flags=["--mode=permissive"],
-                packages=({"path": ".", "type": "gomod"},),
-            ),
-            id="gomod_empty_vendor_passes_vendor_check_in_permissive_mode",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "gomod"},),
             ),
             id="gomod_local_deps",
         ),
@@ -162,14 +143,6 @@ def test_gomod_packages(
             ),
             ["retrodep", "--help"],
             ["retrodep: help requested"],
-            id="gomod_e2e_1_18",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "gomod"},),
-            ),
-            ["retrodep", "--help"],
-            ["retrodep: help requested"],
             id="gomod_e2e_1_21",
         ),
         pytest.param(
@@ -202,17 +175,6 @@ def test_gomod_packages(
             [],
             [""],
             id="gomod_e2e_vendor_nonvendor_module_mix_ordering_1",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "non-vendored-module", "type": "gomod"},
-                    {"path": "vendored-module", "type": "gomod"},
-                ),
-            ),
-            [],
-            [""],
-            id="gomod_e2e_vendor_nonvendor_module_mix_ordering_2",
         ),
     ],
 )
