@@ -6,12 +6,14 @@ from unittest import mock
 
 import pytest
 import tomlkit
+from packageurl import PackageURL
 
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, UnexpectedFormat
 from hermeto.core.models.input import Request
 from hermeto.core.package_managers.cargo.main import (
     CargoPackage,
+    _find_local_packages,
     _generate_sbom_components,
     _resolve_main_package,
     _sanitize_cargo_config,
@@ -508,3 +510,117 @@ def test_generate_sbom_components_strict_mode_raises_without_git_repo(
 
     with pytest.raises(NotAGitRepo):
         _generate_sbom_components(rooted_tmp_path, request)
+
+
+def _write_member(package_dir: RootedPath, subpath: str, content: str) -> None:
+    member_dir = package_dir.path / subpath
+    member_dir.mkdir(parents=True)
+    (member_dir / "Cargo.toml").write_text(content)
+
+
+def test_find_local_packages_resolves_workspace_members(rooted_tmp_path: RootedPath) -> None:
+    """Members are globbed, read from their manifests and never override explicit path deps."""
+    write_cargo_toml(
+        rooted_tmp_path,
+        textwrap.dedent(
+            """
+            [package]
+            name = "root-crate"
+            version = "0.1.0"
+
+            [workspace]
+            members = ["crates/*"]
+            exclude = ["crates/excluded"]
+
+            [dependencies]
+            shared = { path = "./crates/shared-dir" }
+            """
+        ),
+    )
+    # The crate name intentionally differs from the name of the directory it lives in.
+    _write_member(rooted_tmp_path, "crates/lib-dir", '[package]\nname = "lib-crate"\n')
+    _write_member(rooted_tmp_path, "crates/shared-dir", '[package]\nname = "shared"\n')
+    _write_member(rooted_tmp_path, "crates/excluded", '[package]\nname = "excluded-crate"\n')
+    _write_member(rooted_tmp_path, "crates/nested", "[workspace]\nmembers = []\n")
+    (rooted_tmp_path.path / "crates" / "no-manifest").mkdir()
+
+    assert _find_local_packages(rooted_tmp_path) == {
+        "lib-crate": "crates/lib-dir",
+        "shared": "./crates/shared-dir",
+    }
+
+
+_WORKSPACE_CARGO_TOML = """[workspace]
+members = ["crates/*"]
+"""
+
+_WORKSPACE_CARGO_LOCK = """version = 3
+
+[[package]]
+name = "foo-crate"
+version = "0.1.0"
+
+[[package]]
+name = "serde"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abc123"
+"""
+
+
+@pytest.fixture
+def workspace_dir(rooted_tmp_path: RootedPath) -> RootedPath:
+    """Virtual workspace with a globbed member whose directory name is not the crate name."""
+    write_cargo_toml(rooted_tmp_path, _WORKSPACE_CARGO_TOML)
+    write_cargo_lock(rooted_tmp_path, _WORKSPACE_CARGO_LOCK)
+    _write_member(rooted_tmp_path, "crates/foo", '[package]\nname = "foo-crate"\n')
+    return rooted_tmp_path
+
+
+@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+def test_generate_sbom_components_workspace_member_is_local(
+    mock_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    workspace_dir: RootedPath,
+) -> None:
+    """A workspace member is reported as a local package with VCS metadata."""
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+    fake_vcs_url = "git+https://github.com/example/my-workspace@abc1234"
+    mock_get_repo_id.return_value.as_vcs_url_qualifier.return_value = fake_vcs_url
+
+    request = _make_request(workspace_dir.path, workspace_dir.path / "output")
+    components = _generate_sbom_components(workspace_dir, request)
+
+    member_purl = PackageURL.from_string(
+        next(c.purl for c in components if c.name == "foo-crate"),
+    )
+    assert member_purl.type == "cargo"
+    assert member_purl.version == "0.1.0"
+    assert member_purl.qualifiers == {"vcs_url": fake_vcs_url}
+    assert member_purl.subpath == "crates/foo"
+
+
+@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+def test_generate_sbom_components_registry_package_stays_external(
+    mock_get_repo_id: mock.Mock,
+    mock_get_config: mock.Mock,
+    workspace_dir: RootedPath,
+) -> None:
+    """Registry dependencies of a workspace keep being reported as external packages."""
+    mock_get_config.return_value.mode = Mode.PERMISSIVE
+    mock_get_config.return_value.cargo.proxy_url = None
+    mock_get_repo_id.return_value.as_vcs_url_qualifier.return_value = (
+        "git+https://github.com/example/my-workspace@abc1234"
+    )
+
+    request = _make_request(workspace_dir.path, workspace_dir.path / "output")
+    components = _generate_sbom_components(workspace_dir, request)
+
+    registry_purl = PackageURL.from_string(
+        next(c.purl for c in components if c.name == "serde"),
+    )
+    assert registry_purl.version == "1.0.0"
+    assert registry_purl.qualifiers == {"checksum": "abc123"}
+    assert registry_purl.subpath is None
