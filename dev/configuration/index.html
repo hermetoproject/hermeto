@@ -1107,6 +1107,10 @@ inaccurate.</p>
 <li>Go <code>vendor</code> directory inconsistencies (see <a href="../gomod/#vendoring">gomod</a>)</li>
 <li><code>Cargo.toml</code> out of sync with <code>Cargo.lock</code></li>
 <li>non-Git sources (e.g., unpacked tarballs)</li>
+<li>Yarn Berry plain git dependencies (see <a href="../yarn/#git-dependencies">yarn</a>);
+  strict mode rejects them because <code>package.json</code> and <code>yarn.lock</code> must be
+  rewritten. Patched git dependencies and git dependencies that select a
+  workspace inside the cloned repository fail in both modes</li>
 </ul>
 <p>Using permissive mode on non-Git trees is mainly useful for smoke tests; SBOM
 accuracy is reduced. See <a href="../usage/#general-process">usage</a> for Git repository

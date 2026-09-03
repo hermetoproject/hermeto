@@ -1252,6 +1252,35 @@ actually used (some backends cannot provide that). It is represented as follows:
 <li><strong>SPDX</strong>: The same information is mapped to the package field <code>sourceInfo</code>
   (semicolon-separated when there are several).</li>
 </ul>
+<p><strong>Permissive mode</strong> &mdash; When Hermeto runs with
+<a href="../configuration/#modes"><code>--mode=permissive</code></a> and bypasses a check that would
+fail in strict mode, it records that fact as a top-level annotation whose
+<code>subjects</code> list the affected components (by <code>bom-ref</code>). Annotation text uses
+the form <code>hermeto:permissive-mode:&lt;backend&gt;:&lt;reason&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Annotation suffix (<code>&lt;backend&gt;:&lt;reason&gt;</code>)</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gomod:vendor-directory-changed-after-vendoring</code></td>
+<td>Contents of the Go <code>vendor</code> directory differed from what <code>go mod vendor</code> would produce</td>
+</tr>
+<tr>
+<td><code>cargo:generated-lockfile</code></td>
+<td>Hermeto generated a <code>Cargo.lock</code> that was missing or out of sync with <code>Cargo.toml</code></td>
+</tr>
+<tr>
+<td><code>yarn:using-git-dependencies</code></td>
+<td>Yarn Berry project used plain git dependencies (see <a href="../yarn/#git-dependencies">yarn</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>In SPDX output, these become per-package annotations on the matching packages
+(see <a href="#cyclonedx-to-spdx-mapping">CycloneDX to SPDX mapping</a>).</p>
 <h2 id="main-package-representation">Main package representation<a class="headerlink" href="#main-package-representation" title="Permanent link">&para;</a></h2>
 <p>The SBOM does <strong>not</strong> mark which dependency is the main package. All are
 listed as peers. The SBOM alone does not distinguish "the app" from its

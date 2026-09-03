@@ -773,6 +773,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#git-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Git dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#dealing-with-yarnrcyml" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1037,6 +1048,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#git-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Git dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#dealing-with-yarnrcyml" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1262,6 +1284,7 @@
 <li><a href="#hermetos-yarn-support-scope">Hermeto's Yarn support scope</a></li>
 <li><a href="#supported-yarn-versions">Supported Yarn versions</a></li>
 <li><a href="#supported-yarn-protocolslocators">Supported Yarn protocols/locators</a></li>
+<li><a href="#git-dependencies">Git dependencies</a></li>
 <li><a href="#dealing-with-yarnrcyml">Dealing with .yarnrc.yml</a></li>
 <li><a href="#dealing-with-yarn-zero-installs">Dealing with Yarn Zero-Installs</a></li>
 <li><a href="#dealing-with-plugins">Dealing with plugins</a></li>
@@ -1280,16 +1303,36 @@
 "Yarn Classic" and is covered in Hermeto's <a href="https://hermetoproject.github.io/hermeto/yarn_classic">Yarn Classic</a> doc. <strong>This</strong>
 document describes Yarn v3 and v4 support.</p>
 <h3 id="supported-yarn-protocolslocators">Supported Yarn protocols/locators<a class="headerlink" href="#supported-yarn-protocolslocators" title="Permanent link">&para;</a></h3>
-<p>Hermeto currently supports all standard <a href="https://yarnpkg.com/protocols">Yarn protocols</a> except for</p>
+<p>Hermeto currently supports all standard <a href="https://yarnpkg.com/protocols">Yarn protocols</a> except for the
+<a href="https://yarnpkg.com/protocol/exec">Exec protocol</a>. Exec remains unsupported because it can run arbitrary code
+during resolution. For practical <code>package.json</code> examples of each protocol, see
+the official Yarn protocols documentation.</p>
+<p>The <a href="https://yarnpkg.com/protocol/git">Git/GitHub protocol</a> is supported with restrictions; see
+<a href="#git-dependencies">Git dependencies</a>.</p>
+<h3 id="git-dependencies">Git dependencies<a class="headerlink" href="#git-dependencies" title="Permanent link">&para;</a></h3>
+<p>Hermeto can prefetch plain <a href="https://yarnpkg.com/protocol/git">Git/GitHub protocol</a> dependencies when you pass
+<a href="../configuration/#modes"><code>--mode=permissive</code></a>. Strict mode rejects projects
+whose <code>yarn.lock</code> contains git-resolved packages, because Hermeto must rewrite
+<code>package.json</code> and <code>yarn.lock</code> to install from local tarballs instead of cloning
+during the hermetic build.</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>fetch-deps<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mode<span class="o">=</span>permissive<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>./my-repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>./hermeto-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>yarn
+</code></pre></div>
+<p>Hermeto rejects the following variants during prefetch, before rewriting
+project files:</p>
 <ul>
-<li><a href="https://yarnpkg.com/protocol/exec">Exec protocol</a></li>
-<li><a href="https://yarnpkg.com/protocol/git">Git/GitHub protocol</a></li>
+<li>Patched git dependencies (a <a href="https://yarnpkg.com/protocol/patch">patch</a> applied to a package resolved from Git)</li>
+<li>Git dependencies that select a workspace inside the cloned repository</li>
 </ul>
-<p>Due to the nature of how the two protocols above work, mainly related to
-potentially executing arbitrary code, adding support for them with future
-releases of Hermeto is unlikely. For further details on Yarn protocols and their
-practical <code>package.json</code> examples, please head to the official Yarn
-documentation on protocols linked earlier in this section.</p>
+<p>Permissive mode does not relax those cases. Patches applied to registry or
+other non-Git packages remain supported.</p>
+<p>After a successful prefetch of git dependencies, run
+<a href="../usage/#inject-project-files"><code>hermeto inject-files</code></a> before the hermetic
+build so the rewritten <code>package.json</code> and <code>yarn.lock</code> are applied in the source
+tree.</p>
 <h3 id="dealing-with-yarnrcyml">Dealing with .yarnrc.yml<a class="headerlink" href="#dealing-with-yarnrcyml" title="Permanent link">&para;</a></h3>
 <p>Hermeto parses the project's <code>.yarnrc.yml</code> file and analyzes configuration
 settings. Before hermeto proceeds with the actual dependency fetching, it
@@ -1469,9 +1512,15 @@ $<span class="w"> </span>cat<span class="w"> </span>./hermeto.env
 <span class="nb">export</span><span class="w"> </span><span class="nv">YARN_GLOBAL_FOLDER</span><span class="o">=</span>/tmp/hermeto-output/deps/yarn
 </code></pre></div>
 <h4 id="inject-project-files">Inject project files<a class="headerlink" href="#inject-project-files" title="Permanent link">&para;</a></h4>
-<p>Like the <code>gomod</code> package manager Yarn does not <em>currently</em> need to modify any
-content in the source directory for the cached dependencies to be used in a
-hermetic build, however that might change in the future.</p>
+<p>When the project has no git dependencies, Yarn does not need Hermeto to rewrite
+source files for the cached dependencies to be used in a hermetic build.</p>
+<p>When git dependencies are present, Hermeto updates <code>package.json</code> and
+<code>yarn.lock</code> to point at the local tarballs. Inject those changes before the
+hermetic build:</p>
+<div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>inject-files<span class="w"> </span>./hermeto-output<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
+</code></pre></div>
+<p>See <a href="#git-dependencies">Git dependencies</a> and
+<a href="../usage/#inject-project-files">Inject project files</a>.</p>
 <h4 id="build-the-application-image">Build the application image<a class="headerlink" href="#build-the-application-image" title="Permanent link">&para;</a></h4>
 <p>The repo already contains a <code>Containerfile</code> for this example. Build it while
 mounting the pre-fetched Hermeto data:</p>
