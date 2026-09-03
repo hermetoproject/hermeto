@@ -16,6 +16,7 @@ from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
+    RetryAfterJitterRetry,
     _async_download_binary_file,
     async_download_files,
     download_binary_file,
@@ -267,3 +268,79 @@ async def test_async_download_files_exception(
 
     assert f"Unsuccessful download: {url}" in caplog.text
     assert str(exc_info.value) == f"exception_name: Exception, details: {exception_message}"
+
+
+class TestRetryAfterJitterRetry:
+    @pytest.fixture()
+    def retry(self) -> RetryAfterJitterRetry:
+        return RetryAfterJitterRetry()
+
+    @pytest.fixture()
+    def mock_response(self) -> MagicMock:
+        resp = MagicMock(spec=aiohttp.ClientResponse)
+        resp.headers = {}
+        resp.url = "http://example.com/pkg.tar.gz"
+        return resp
+
+    @pytest.mark.parametrize(
+        "header, expected",
+        [("5", 5.0), ("0", 0.0), ("2.5", 2.5)],
+    )
+    def test_get_timeout_valid_seconds(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: MagicMock,
+        header: str,
+        expected: float,
+    ) -> None:
+        mock_response.headers["Retry-After"] = header
+        assert retry.get_timeout(0, mock_response) == expected
+
+    def test_get_timeout_valid_http_date(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: MagicMock,
+    ) -> None:
+        import email.utils
+        import time
+
+        future = time.time() + 10
+        mock_response.headers["Retry-After"] = email.utils.formatdate(future, usegmt=True)
+        result = retry.get_timeout(0, mock_response)
+        assert result == pytest.approx(10, abs=1)
+
+    def test_get_timeout_capped_at_max_timeout(
+        self,
+        mock_response: MagicMock,
+    ) -> None:
+        retry = RetryAfterJitterRetry(max_timeout=10.0)
+        mock_response.headers["Retry-After"] = "60"
+        assert retry.get_timeout(0, mock_response) == 10.0
+
+    @pytest.mark.parametrize(
+        "header",
+        [None, "-5", "not-a-date-or-number"],
+        ids=["no-header", "negative", "unparseable"],
+    )
+    def test_get_timeout_falls_back_to_jitter(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: MagicMock,
+        header: str | None,
+    ) -> None:
+        if header is not None:
+            mock_response.headers["Retry-After"] = header
+
+        with mock.patch.object(
+            aiohttp_retry.JitterRetry, "get_timeout", return_value=42.0
+        ):
+            assert retry.get_timeout(0, mock_response) == 42.0
+
+    def test_get_timeout_no_response_falls_back_to_jitter(
+        self,
+        retry: RetryAfterJitterRetry,
+    ) -> None:
+        with mock.patch.object(
+            aiohttp_retry.JitterRetry, "get_timeout", return_value=42.0
+        ):
+            assert retry.get_timeout(0, None) == 42.0

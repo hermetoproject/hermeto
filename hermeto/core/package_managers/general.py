@@ -2,6 +2,8 @@
 import asyncio
 import logging
 import ssl
+import time
+from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlparse
 
@@ -22,6 +24,54 @@ from hermeto.core.type_aliases import StrPath
 pkg_requests_session = get_requests_session(retry_options={"allowed_methods": SAFE_REQUEST_METHODS})
 
 log = logging.getLogger(__name__)
+
+
+class RetryAfterJitterRetry(aiohttp_retry.JitterRetry):
+    """JitterRetry subclass that honours the Retry-After header."""
+
+    def __init__(self, *args: Any, max_timeout: float = 3600.0, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._max_timeout = max_timeout
+
+    def get_timeout(
+        self,
+        attempt: int,
+        response: aiohttp.ClientResponse | None = None,
+    ) -> float:
+        default: float = super().get_timeout(attempt, response)
+
+        if response is None:
+            return default
+
+        retry_after = response.headers.get("Retry-After")
+        if retry_after is None:
+            return default
+
+        parsed = self._parse_retry_after(retry_after)
+        if parsed is None:
+            url = str(response.url)
+            log.warning("Unparseable Retry-After header %r from %s, using default backoff", retry_after, url)
+            return default
+
+        if parsed < 0:
+            url = str(response.url)
+            log.warning("Negative Retry-After value %.1fs from %s, using default backoff", parsed, url)
+            return default
+
+        return min(parsed, self._max_timeout)
+
+    @staticmethod
+    def _parse_retry_after(retry_after: str) -> float | None:
+        try:
+            return float(retry_after)
+        except ValueError:
+            pass
+
+        try:
+            parsed_dt = datetime.strptime(retry_after, "%a, %d %b %Y %H:%M:%S %Z")
+            return parsed_dt.replace(tzinfo=timezone.utc).timestamp() - time.time()
+        except ValueError:
+            return None
 
 
 def download_binary_file(
@@ -128,7 +178,7 @@ async def async_download_files(
     """
     trace_config = aiohttp.TraceConfig()
     num_attempts: int = int(DEFAULT_RETRY_OPTIONS["total"])
-    retry_options = aiohttp_retry.JitterRetry(
+    retry_options = RetryAfterJitterRetry(
         attempts=num_attempts,
         statuses=set(DEFAULT_RETRY_OPTIONS["status_forcelist"]),
         exceptions={
