@@ -1,0 +1,21 @@
+lock-version = "1.0"
+
+[[packages]]
+name = "smmap"
+version = "5.0.2"
+
+[[packages]]
+name = "gitdb"
+version = "4.0.12"
+
+[[packages]]
+name = "aiowsgi"
+version = "0.7"
+
+[[packages]]
+name = "gitpython"
+
+[packages.vcs]
+type = "git"
+url = "https://github.com/gitpython-developers/GitPython.git"
+commit-id = "80065ff915dc972a60e3eacd8a31b9ed40de8200"
