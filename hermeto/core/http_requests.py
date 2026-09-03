@@ -20,7 +20,7 @@ DEFAULT_RETRY_OPTIONS: dict[str, Any] = {
     "read": 5,
     "connect": 5,
     "backoff_factor": 1.3,
-    "status_forcelist": (500, 502, 503, 504),
+    "status_forcelist": (429, 500, 502, 503, 504),
 }
 
 
