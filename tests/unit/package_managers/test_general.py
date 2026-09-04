@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import importlib.metadata
 import random
 from collections.abc import AsyncGenerator
 from pathlib import Path
@@ -20,6 +21,7 @@ from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
     _async_download_binary_file,
     _get_pkg_requests_session,
+    _get_user_agent,
     async_download_files,
     download_binary_file,
 )
@@ -78,6 +80,63 @@ def test_max_retries_propagated_to_session(monkeypatch: pytest.MonkeyPatch) -> N
     adapter = session.get_adapter("https://example.com")
     assert isinstance(adapter, HTTPAdapter)
     assert adapter.max_retries.total == 7
+
+
+def test_get_user_agent() -> None:
+    """The User-Agent must identify hermeto by name, version, and project URL."""
+    with mock.patch("importlib.metadata.version", return_value="1.2.3"):
+        user_agent = _get_user_agent()
+
+    assert user_agent == f"{general.APP_NAME}/1.2.3 (+https://github.com/hermetoproject/hermeto)"
+
+
+def test_get_user_agent_falls_back_when_package_not_found() -> None:
+    """Building the User-Agent must not fail if hermeto's own package metadata is missing.
+
+    This can happen when hermeto is run from source without being installed (e.g. `python -m`
+    against a checkout with no matching dist-info).
+    """
+    with mock.patch(
+        "importlib.metadata.version",
+        side_effect=importlib.metadata.PackageNotFoundError,
+    ):
+        user_agent = _get_user_agent()
+
+    assert user_agent == f"{general.APP_NAME}/unknown (+https://github.com/hermetoproject/hermeto)"
+
+
+def test_pkg_requests_session_sends_custom_user_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Requests must identify themselves as hermeto, not as the default python-requests UA.
+
+    Some package registries block the generic library-default User-Agent as a suspected
+    scraper/bot signature (see https://central.sonatype.org/faq/429-tooling-provider/).
+    """
+    monkeypatch.setattr("hermeto.core.package_managers.general._pkg_requests_session", None)
+    monkeypatch.setattr("hermeto.core.package_managers.general.USER_AGENT", "hermeto/test-ua")
+
+    session = _get_pkg_requests_session()
+
+    assert session.headers["User-Agent"] == "hermeto/test-ua"
+
+
+@pytest.mark.asyncio
+@mock.patch("hermeto.core.package_managers.general.aiohttp_retry.RetryClient")
+async def test_async_download_files_sends_custom_user_agent(
+    mock_retry_client: MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """aiohttp downloads must identify themselves as hermeto, not as the default aiohttp UA.
+
+    Some package registries block the generic library-default User-Agent as a suspected
+    scraper/bot signature (see https://central.sonatype.org/faq/429-tooling-provider/).
+    """
+    monkeypatch.setattr("hermeto.core.package_managers.general.USER_AGENT", "hermeto/test-ua")
+    mock_session = mock_retry_client.return_value
+    mock_session.__aenter__.return_value = MagicMock()
+
+    await async_download_files({}, concurrency_limit=1)
+
+    assert mock_retry_client.call_args.kwargs["headers"] == {"User-Agent": "hermeto/test-ua"}
 
 
 @pytest.mark.parametrize(
