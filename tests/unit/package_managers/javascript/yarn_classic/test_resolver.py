@@ -39,7 +39,6 @@ VALID_GIT_URLS = [
     "git+https://git.host.com/some/path",
     "git+ssh://git.host.com/some/path",
     "git+file://git.host.com/some/path",
-    "git+file://git.host.com/some/path",
     "http://git.host.com/some/path.git",
     "https://git.host.com/some/path.git",
     "http://git.host.com/some/path.git#fffffff",
@@ -66,7 +65,6 @@ INVALID_GIT_URLS = [
 ]
 INVALID_TARBALL_URLS = [
     "ftp://foo.com/bar.tar",
-    "git+https://git.host.com/some/path",
     "https://foo.com/bar",
     "https://foo.com/bar.txt",
     *VALID_GIT_URLS,
