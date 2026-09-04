@@ -582,6 +582,31 @@ class TestLockfileArtifactAuth:
         with pytest.raises(ValidationError):
             LockfileArtifactAuth()
 
+    @pytest.mark.parametrize(
+        "kwargs",
+        [
+            pytest.param({"basic": None}, id="basic_explicitly_set_to_none"),
+            pytest.param({"bearer": None}, id="bearer_none"),
+            pytest.param({"basic": None, "bearer": None}, id="both_none"),
+        ],
+    )
+    def test_raise_error_when_auth_value_is_none(self, kwargs: dict[str, Any]) -> None:
+        with pytest.raises(ValidationError):
+            LockfileArtifactAuth(**kwargs)
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            pytest.param("not-a-mapping", id="string"),
+            pytest.param(["basic"], id="list"),
+        ],
+    )
+    def test_raise_error_when_auth_is_not_a_mapping(self, value: Any) -> None:
+        # A non-mapping value in the before-validator must yield a clean
+        # ValidationError, not an AttributeError from calling .get() on it.
+        with pytest.raises(ValidationError):
+            LockfileArtifactAuth.model_validate(value)
+
 
 @pytest.mark.parametrize(
     ["lockfile_content", "expected_url", "expected_headers"],

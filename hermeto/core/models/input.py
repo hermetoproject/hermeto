@@ -16,7 +16,7 @@ from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 BINARY_FILTER_ALL = ":all:"
 
 if TYPE_CHECKING:
-    from pydantic.error_wrappers import ErrorDict
+    from pydantic_core import ErrorDetails
 
 
 log = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
     errors = validation_error.errors()
     n_errors = len(errors)
 
-    def show_error(error: "ErrorDict") -> str:
+    def show_error(error: "ErrorDetails") -> str:
         location = " -> ".join(map(str, error["loc"]))
         if error.get("type") != "union_tag_invalid":
             message = error["msg"]
@@ -91,7 +91,7 @@ def _present_user_input_error(validation_error: pydantic.ValidationError) -> str
             quoted = ", ".join(f"'{t}'" for t in sorted(expected))
             message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
 
-        if location != "__root__":
+        if location:
             message = f"{location}\n  {message}"
 
         return message
@@ -153,10 +153,8 @@ class SSLOptions(pydantic.BaseModel, extra="forbid"):
 
         if not Path(val).is_file():
             raise ValueError(
-                (
-                    f"Specified ssl auth file '{info.field_name}':'{val}' is not a regular file.",
-                    "Make sure the file exists and that it has correct permissions.",
-                )
+                f"Specified ssl auth file '{info.field_name}':'{val}' is not a regular file."
+                " Make sure the file exists and that it has correct permissions."
             )
 
         return val

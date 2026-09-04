@@ -384,6 +384,30 @@ def test_select_toolchain(
         assert str(result.version) == expected_result
 
 
+@mock.patch("hermeto.core.package_managers.gomod.go.Go.from_missing_toolchain")
+@mock.patch("hermeto.core.package_managers.gomod.go.Go._get_release")
+@mock.patch("hermeto.core.package_managers.gomod.go._get_gomod_version")
+def test_select_toolchain_returns_none_on_download_timeout(
+    mock_get_gomod_version: mock.Mock,
+    mock_go_get_release: mock.Mock,
+    mock_from_missing_toolchain: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    # A download timeout must return None, not escape: TimeoutExpired is caught by
+    # neither _run nor _retry, so only _select_toolchain's handler stops it.
+    installed_versions = ["1.20", "1.19.2"]
+    mock_get_gomod_version.return_value = ("1.22", "1.22.1")
+    mock_go_get_release.side_effect = [f"go{v}" for v in installed_versions]
+    mock_from_missing_toolchain.side_effect = subprocess.TimeoutExpired(["go"], 1)
+
+    go_mod_file = rooted_tmp_path.join_within_root("go.mod")
+    go_mod_file.path.touch()
+
+    installed_toolchains = [Go(f"/usr/bin/go{v}") for v in installed_versions]
+
+    assert _select_toolchain(go_mod_file, installed_toolchains) is None
+
+
 @pytest.mark.parametrize(
     "PATH,file_tree,binary_count",
     [

@@ -159,7 +159,7 @@ def version_callback(value: bool) -> None:
     if not value:
         return
 
-    print(f"{APP_NAME}", importlib.metadata.version("hermeto"))
+    print(APP_NAME, importlib.metadata.version("hermeto"))
     raise typer.Exit()
 
 

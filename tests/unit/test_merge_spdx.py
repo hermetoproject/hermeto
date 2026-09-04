@@ -280,7 +280,7 @@ def test_merging_spdx_on_self_does_not_modify_the_sbom(
 
 
 def _same_relationship_order(sbom1: SPDXSbom, sbom2: SPDXSbom) -> bool:
-    for r1, r2 in zip(sbom1.relationships, sbom2.relationships):
+    for r1, r2 in zip(sbom1.relationships, sbom2.relationships, strict=True):
         if r1 != r2:
             return False
     return True

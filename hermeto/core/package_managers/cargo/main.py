@@ -442,8 +442,7 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
         yield
     finally:
         for config, data in configs_contents:
-            if data is not None:
-                config.path.write_text(data)
+            config.path.write_text(data)
 
 
 def _make_basic_token_from_proxy_credential(cargo_config: CargoSettings) -> str:
@@ -532,8 +531,10 @@ def _sanitize_cargo_config(config_content: str) -> str:
 def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
     oldcwd = os.getcwd()
     os.chdir(path_to_new_cwd)
-    yield
-    os.chdir(oldcwd)
+    try:
+        yield
+    finally:
+        os.chdir(oldcwd)
 
 
 def _run_cmd_watching_out_for_lock_mismatch(
@@ -571,8 +572,7 @@ def _run_cmd_watching_out_for_lock_mismatch(
                 log.warning(warn_about_imminent_update_to_cargo_lock)
                 with _temporary_cwd(package_dir):
                     # Extract env from params if present to pass to cargo generate-lockfile
-                    env = params.get("env", {})
-                    update_cmd_params = {"env": env} if env else {}
+                    update_cmd_params = {"env": params.get("env", {})}
                     run_cmd(cmd=update_cargo_lock_cmd, params=update_cmd_params)
                 # If it fails here then something else is horribly broken.
                 # No more attempts to salvage the situation will be made.

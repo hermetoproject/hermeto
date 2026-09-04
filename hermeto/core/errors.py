@@ -300,12 +300,10 @@ class MissingChecksum(InvalidChecksum):
         """
         if element is None:
             reason = "Checksum is missing"
-            checksum_value = ""
         else:
             reason = f"{element!r} is missing mandatory integrity checksum."
-            checksum_value = element
 
-        super().__init__(checksum=checksum_value, reason=reason, solution=solution)
+        super().__init__(checksum="", reason=reason, solution=solution)
 
     default_solution = "Please check that the checksum exists"
 
