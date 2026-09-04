@@ -83,6 +83,8 @@ def _get_npm_dependencies(
     files_to_download: dict[str, dict[str, Any]] = {}
     download_paths = {}
     config = get_config()
+    if (proxy_url := config.npm.proxy_url) is not None:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     npm_proxy_basic_auth = None
     if config.npm.proxy_login and config.npm.proxy_password:
         npm_proxy_basic_auth = aiohttp.encode_basic_auth(

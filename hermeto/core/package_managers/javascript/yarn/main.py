@@ -352,6 +352,7 @@ def _set_yarnrc_configuration(
 
     config = get_config()
     if (proxy_url := config.yarn.proxy_url) is not None:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
         yarn_rc["npmRegistryServer"] = str(proxy_url)
         login = config.yarn.proxy_login
         password = config.yarn.proxy_password

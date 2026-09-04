@@ -112,6 +112,8 @@ def _download_gems(
     """Download rubygems registry dependencies, rewriting URLs through a proxy if configured."""
     config = get_config()
     proxy_url = config.bundler.proxy_url
+    if proxy_url is not None:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     proxy_auth = (
         aiohttp.encode_basic_auth(
             login=config.bundler.proxy_login,

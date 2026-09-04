@@ -243,6 +243,8 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendo
         str(vendor_dir),
     ]
     log.info("Fetching cargo dependencies at %s", package_dir)
+    if (proxy_url := get_config().cargo.proxy_url) is not None:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     # NOTE: ordering is important here, a config must be sanitized first, extended to use
     # a proxy after that, otherwise proxy data will be scrubbed by the sanitizer.
     with (
