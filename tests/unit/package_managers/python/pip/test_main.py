@@ -22,8 +22,13 @@ from hermeto.core.errors import (
     UnrecognizedFileExtension,
     UnsupportedFeature,
 )
+from hermeto.core.models.input import PipBinaryFilters
 from hermeto.core.package_managers.python.pip import main as pip
 from hermeto.core.package_managers.python.pip.packages import PipPackageInfo, URLPackage, VCSPackage
+from hermeto.core.package_managers.python.pip.requirements import (
+    PipRequirement,
+    PipRequirementsFile,
+)
 from hermeto.core.rooted_path import RootedPath
 from tests.common_utils import GIT_REF
 
@@ -990,3 +995,102 @@ class TestPipIndexUrlEnv:
 
         with pytest.raises(InvalidInput):
             pip._download_dependencies(rooted_tmp_path, req_file)
+
+
+class TestDownloadDependenciesMarkerSkip:
+    """_download_dependencies skips marker-excluded requirements under binary filters.
+
+    Regression guard for the wiring in the download loop, complementing the pure
+    helper tests in test_markers.py.
+    https://github.com/hermetoproject/hermeto/issues/1570
+    """
+
+    DIGEST = "sha256:" + "0" * 64
+
+    @pytest.mark.parametrize(
+        "arch, bcrypt_expected",
+        [
+            pytest.param("ppc64le", False, id="excluded_arch_skips_bcrypt"),
+            pytest.param("x86_64", True, id="included_arch_keeps_bcrypt"),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.python.pip.main._resolve_and_download_pypi_packages")
+    def test_pypi_marker_excluded_never_reaches_resolve(
+        self,
+        mock_resolve: Any,
+        arch: str,
+        bcrypt_expected: bool,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        mock_resolve.return_value = []
+        marker = 'platform_machine != "ppc64le" and platform_machine != "s390x"'
+        bcrypt = PipRequirement.from_line(f"bcrypt==5.0.0 ; {marker}", ["--hash", self.DIGEST])
+        sibling = PipRequirement.from_line("click==8.0.0", ["--hash", self.DIGEST])
+        req_file = PipRequirementsFile.from_requirements_and_options([bcrypt, sibling], [])
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, PipBinaryFilters(arch=arch, os="linux")
+        )
+
+        resolved_names = {req.package for req in mock_resolve.call_args[0][0]}
+        # The unmarked sibling is always resolved; bcrypt only when the arch matches.
+        assert "click" in resolved_names
+        assert ("bcrypt" in resolved_names) is bcrypt_expected
+
+    @pytest.mark.parametrize(
+        "arch, expected_downloaded",
+        [
+            pytest.param("ppc64le", False, id="excluded_arch_skips_url"),
+            pytest.param("s390x", True, id="included_arch_downloads_url"),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.python.pip.main._download_url_package")
+    def test_url_marker_gates_download(
+        self,
+        mock_download_url: Any,
+        arch: str,
+        expected_downloaded: bool,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        # The keep path matters as much as the skip path: a regression that dropped
+        # every non-pypi requirement would still pass a skip-only assertion.
+        mock_download_url.return_value = None
+        url_req = PipRequirement.from_line(
+            'foo @ https://example.com/foo-1.0.tar.gz ; platform_machine == "s390x"',
+            ["--hash", self.DIGEST],
+        )
+        req_file = PipRequirementsFile.from_requirements_and_options([url_req], [])
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, PipBinaryFilters(arch=arch, os="linux")
+        )
+
+        assert mock_download_url.called is expected_downloaded
+
+    @pytest.mark.parametrize(
+        "arch, expected_downloaded",
+        [
+            pytest.param("ppc64le", False, id="excluded_arch_skips_vcs"),
+            pytest.param("s390x", True, id="included_arch_downloads_vcs"),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.python.pip.main._download_vcs_package")
+    def test_vcs_marker_gates_download(
+        self,
+        mock_download_vcs: Any,
+        arch: str,
+        expected_downloaded: bool,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        mock_download_vcs.return_value = mock.Mock()
+        vcs_req = PipRequirement.from_line(
+            f'bar @ git+https://github.com/org/repo@{GIT_REF} ; platform_machine == "s390x"',
+            [],
+        )
+        req_file = PipRequirementsFile.from_requirements_and_options([vcs_req], [])
+
+        pip._download_dependencies(
+            rooted_tmp_path, req_file, PipBinaryFilters(arch=arch, os="linux")
+        )
+
+        assert mock_download_vcs.called is expected_downloaded
