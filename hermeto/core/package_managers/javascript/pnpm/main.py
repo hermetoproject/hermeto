@@ -77,6 +77,8 @@ def _resolve_pnpm_project(
 def _download_resolved_packages(packages: list[PnpmPackage], deps_dir: Path) -> None:
     config = get_config()
     proxy_url = config.pnpm.proxy_url
+    if proxy_url is not None:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     proxy_login = config.pnpm.proxy_login
     proxy_password = config.pnpm.proxy_password
 

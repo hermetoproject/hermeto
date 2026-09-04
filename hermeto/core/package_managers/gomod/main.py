@@ -756,6 +756,7 @@ def _prepare_run_params(
         "GOTOOLCHAIN": "auto",
     }
     if config.gomod.proxy_url:
+        log.info("Using registry proxy %s for registry dependencies", config.gomod.proxy_url)
         go_vars["GOPROXY"] = config.gomod.proxy_url
 
     if config.gomod.proxy_login is not None:
