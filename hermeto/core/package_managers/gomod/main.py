@@ -467,14 +467,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     components: list[Component] = []
     annotations: list[Annotation] = []
 
-    repo_name = _get_repository_name(request.source_dir)
-    try:
-        version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
-    except NotAGitRepo:
-        if get_config().mode == Mode.PERMISSIVE:
-            version_resolver = ModuleVersionResolver.from_non_git_source()
-        else:
-            raise
+    resolvers: dict[RootedPath, ModuleVersionResolver] = {}
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
@@ -485,6 +478,37 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             go_work: GoWork | None = None
 
             main_module_dir = request.source_dir.join_within_root(subpath)
+            try:
+                repo, repo_relative_path = get_repo_for_path(
+                    request.source_dir.root, main_module_dir.path
+                )
+                if repo.working_tree_dir is None:
+                    raise NotAGitRepo(
+                        f"Git repository at {main_module_dir} has no working tree (bare clone).",
+                        solution="Use a non-bare git clone when running hermeto.",
+                    )
+                repo_dir = RootedPath(repo.working_tree_dir)
+                repo_root_module_dir = repo_dir.join_within_root(repo_relative_path)
+            except NotAGitRepo:
+                log.warning(
+                    "Could not find a git repository for %s, falling back to source directory",
+                    main_module_dir.path,
+                )
+                repo_dir = request.source_dir
+                repo_root_module_dir = main_module_dir
+
+            repo_name = _get_repository_name(repo_dir)
+
+            if repo_dir not in resolvers:
+                try:
+                    resolvers[repo_dir] = ModuleVersionResolver.from_repo_path(repo_dir)
+                except NotAGitRepo:
+                    if get_config().mode == Mode.PERMISSIVE:
+                        resolvers[repo_dir] = ModuleVersionResolver.from_non_git_source()
+                    else:
+                        raise
+
+            version_resolver = resolvers[repo_dir]
             go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
             if go is None:
                 raise FetchError(
@@ -524,7 +548,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 )
 
             main_module = _create_main_module_from_parsed_data(
-                main_module_dir, repo_name, resolve_result.parsed_main_module
+                repo_root_module_dir, repo_name, resolve_result.parsed_main_module
             )
 
             modules = [main_module]
@@ -1166,10 +1190,16 @@ class ModuleVersionResolver:
         # If no match, prefer v1.x.x tags but fallback to v0.x.x tags if both are present
         major_versions_to_try = (module_major_version,) if module_major_version else (1, 0)
 
-        if app_dir.path == app_dir.root:
+        repo_dir = (
+            Path(self._repo.working_tree_dir)
+            if self._repo and self._repo.working_tree_dir
+            else app_dir.root
+        )
+
+        if app_dir.path == repo_dir or not app_dir.path.is_relative_to(repo_dir):
             subpath = None
         else:
-            subpath = app_dir.path.relative_to(app_dir.root).as_posix()
+            subpath = app_dir.path.relative_to(repo_dir).as_posix()
 
         tag_on_commit = self._get_highest_semver_tag_on_current_commit(
             major_versions_to_try, subpath
