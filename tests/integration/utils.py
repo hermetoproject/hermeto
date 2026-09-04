@@ -55,9 +55,11 @@ class SyntheticRepo:
 
     _GIT_ENV = {
         **GIT_PRISTINE_ENV,
-        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_COUNT": "2",
         "GIT_CONFIG_KEY_0": "protocol.file.allow",
         "GIT_CONFIG_VALUE_0": "always",
+        "GIT_CONFIG_KEY_1": "gc.auto",
+        "GIT_CONFIG_VALUE_1": "0",
         "GIT_AUTHOR_NAME": "Test Author",
         "GIT_AUTHOR_EMAIL": "test@example.com",
         "GIT_COMMITTER_NAME": "Test Author",

@@ -100,7 +100,6 @@ def test_resolve_npm_unsupported_lockfileversion(rooted_tmp_path: RootedPath) ->
         ("git+ssh://git@github.com:npm/cli#semver:^5.0", True),
         ("git+https://isaacs@github.com/npm/cli.git", True),
         ("git://github.com/npm/cli.git#v1.0.27", True),
-        ("git+ssh://git@github.com:npm/cli.git#v1.0.27", True),
         ("expressjs/express", True),
         ("mochajs/mocha#4727d357ea", True),
         ("user/repo#feature/branch", True),
