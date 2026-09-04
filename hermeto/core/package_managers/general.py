@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import importlib.metadata
 import logging
 import ssl
 import types
@@ -20,6 +21,7 @@ from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
 from urllib3.util.retry import Retry
 
+from hermeto import APP_NAME
 from hermeto.core.config import ProxyUrl, get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.scm import get_repo_id
@@ -31,6 +33,27 @@ SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 BACKOFF_FACTOR = 1.3
 STATUS_FORCELIST = (500, 502, 503, 504)
 DEFAULT_CHUNK_SIZE = 65536  # 64KB
+
+
+def _get_user_agent() -> str:
+    """
+    Build a descriptive User-Agent string identifying hermeto to remote servers.
+
+    The default User-Agent sent by requests/aiohttp (e.g. "python-requests/2.34.2",
+    "Python/3.12 aiohttp/3.14.1") is indistinguishable from generic scraping traffic
+    and gets blocked by some package registries' WAFs (see
+    https://central.sonatype.org/faq/429-tooling-provider/). This affects every
+    hermeto HTTP request, including ones unrelated to the artifact that tripped the
+    block, since some WAFs blackhole the whole source IP once triggered.
+    """
+    try:
+        version = importlib.metadata.version("hermeto")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown"
+    return f"{APP_NAME}/{version} (+https://github.com/hermetoproject/hermeto)"
+
+
+USER_AGENT: str = _get_user_agent()
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +107,7 @@ def _get_pkg_requests_session() -> requests.Session:
     if _pkg_requests_session is None:
         max_retries = get_config().http.max_retries
         _pkg_requests_session = Session()
+        _pkg_requests_session.headers["User-Agent"] = USER_AGENT
         adapter = HTTPAdapter(
             max_retries=SyncLoggingRetry(
                 backoff_factor=BACKOFF_FACTOR,
@@ -256,6 +280,7 @@ async def async_download_files(
         trust_env=True,
         # preserve percent-encoding in redirect URLs (e.g. signed CloudFront URLs)
         requote_redirect_url=False,
+        headers={"User-Agent": USER_AGENT},
     )
 
     async with retry_client as session:
