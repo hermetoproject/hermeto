@@ -3,7 +3,7 @@ import logging
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union, get_args
 
 import pydantic
 from typing_extensions import Self
@@ -67,40 +67,8 @@ def parse_user_input(to_model: Callable[[T], ModelT], input_obj: T) -> ModelT:
         raise InvalidInput(_present_user_input_error(e)) from e
 
 
-def _present_user_input_error(validation_error: pydantic.ValidationError) -> str:
-    """Make a slightly nicer representation of a pydantic.ValidationError.
-
-    Compared to pydantic's default message:
-    - don't show the model name, just say "user input"
-    - don't show the underlying error type (e.g. "type=value_error.const")
-    """
-    errors = validation_error.errors()
-    n_errors = len(errors)
-
-    def show_error(error: "ErrorDict") -> str:
-        location = " -> ".join(map(str, error["loc"]))
-        if error.get("type") != "union_tag_invalid":
-            message = error["msg"]
-        else:
-            # Handle regular union tag errors (i.e. errors which stem from
-            # a missing package manager implementation). Errors in experimental
-            # package managers are handled elsewhere.
-            ctx = error.get("ctx", {})
-            raw = ctx.get("expected_tags", "")
-            expected = [t.strip(" '") for t in raw.split(",")]
-            quoted = ", ".join(f"'{t}'" for t in sorted(expected))
-            message = f"Requested backend type '{ctx.get('tag', '<unknown>')}' doesn't match expected ones: {quoted}"
-
-        if location != "__root__":
-            message = f"{location}\n  {message}"
-
-        return message
-
-    header = f"{n_errors} validation error{'' if n_errors == 1 else 's'} for user input"
-    details = "\n".join(map(show_error, errors))
-    return f"{header}\n{details}"
-
-
+# The canonical list of supported package manager types, used as the discriminator
+# for the PackageInput union. Experimental backends use the 'x-' prefix.
 PackageManagerType = Literal[
     "bundler",
     "cargo",
@@ -115,6 +83,111 @@ PackageManagerType = Literal[
     # here with an x- prefix (e.g. "x-foo"):
     "x-maven",
 ]
+
+# Derived programmatically so that adding a new backend to PackageManagerType
+# automatically keeps this set in sync, without requiring a separate manual update.
+_KNOWN_BACKEND_TYPES: frozenset[str] = frozenset(
+    t for t in get_args(PackageManagerType) if not t.startswith("x-")
+)
+
+
+def _simplify_location(loc: tuple[str | int, ...]) -> str:
+    """Strip pydantic-internal prefixes from an error location, keeping only meaningful parts.
+
+    Removes leading 'packages', numeric indices, and discriminated-union type names
+    so that users see the field name rather than the full internal path.
+
+    >>> _simplify_location(("packages", 0, "gomod", "path"))
+    'path'
+    >>> _simplify_location(("packages", 0))
+    ''
+    >>> _simplify_location(("packages",))
+    ''
+    >>> _simplify_location(("what",))
+    'what'
+    >>> _simplify_location(("packages", 0, "pip", "requirements_files", 0))
+    'requirements_files -> 0'
+    """
+    parts: list[str | int] = list(loc)
+    while parts:
+        head = parts[0]
+        if head == "packages" or head in _KNOWN_BACKEND_TYPES or isinstance(head, int):
+            parts = parts[1:]
+        else:
+            break
+    return " -> ".join(str(e) for e in parts)
+
+
+def _package_index(loc: tuple[str | int, ...]) -> int | None:
+    """Return the package index embedded in a pydantic error location, if present.
+
+    When pydantic validates ``Request.packages`` (a discriminated union list) the
+    location tuple always starts with ``("packages", <int>, ...)``.  Extracting
+    the index lets error messages say *which* package entry is invalid.
+
+    >>> _package_index(("packages", 0, "gomod", "path"))
+    0
+    >>> _package_index(("packages", 2))
+    2
+    >>> _package_index(("source_dir",)) is None
+    True
+    >>> _package_index(()) is None
+    True
+    """
+    if len(loc) >= 2 and loc[0] == "packages" and isinstance(loc[1], int):
+        return loc[1]
+    return None
+
+
+def _present_user_input_error(validation_error: pydantic.ValidationError) -> str:
+    """Make a slightly nicer representation of a pydantic.ValidationError.
+
+    Compared to pydantic's default message:
+    - don't show the model name, just say "user input"
+    - don't show the underlying error type (e.g. "type=value_error.const")
+    - strip internal pydantic location prefixes (package indices, union type names)
+    - rewrite pydantic jargon into plain language
+    - include the offending package index so users know which entry is invalid
+    """
+    errors = validation_error.errors()
+    n_errors = len(errors)
+
+    def show_error(error: "ErrorDict") -> str:
+        loc = error["loc"]
+        location = _simplify_location(loc)
+        pkg_idx = _package_index(loc)
+        # Prefix errors tied to a specific package entry with "packages[N]: " so
+        # the user immediately knows which item in a multi-package request is bad.
+        position = f"packages[{pkg_idx}]: " if pkg_idx is not None else ""
+
+        error_type = error.get("type")
+        if error_type == "union_tag_invalid":
+            # The user specified a 'type' value that doesn't map to any known
+            # package manager.  Errors in experimental (x-) managers are handled
+            # elsewhere, so only stable backends appear in the suggestion list.
+            ctx = error.get("ctx", {})
+            raw = ctx.get("expected_tags", "")
+            expected = [t.strip(" '") for t in raw.split(",")]
+            quoted = ", ".join(f"'{t}'" for t in sorted(expected))
+            tag = ctx.get("tag", "<unknown>")
+            message = f"{position}unknown package manager '{tag}'. Valid options are: {quoted}"
+        elif error_type == "union_tag_not_found":
+            # The 'type' field is missing entirely from the package entry.
+            valid = ", ".join(f"'{t}'" for t in sorted(get_args(PackageManagerType)))
+            message = f"{position}'type' field is required. Valid options are: {valid}"
+        else:
+            message = error["msg"]
+            if location:
+                message = f"{position}{location}\n  {message}"
+            elif position:
+                message = f"{position}{message}"
+            return message
+
+        return message
+
+    header = f"{n_errors} validation error{'s' if n_errors != 1 else ''} for user input"
+    details = "\n".join(map(show_error, errors))
+    return f"{header}\n{details}"
 
 
 Flag = Literal[
