@@ -84,8 +84,7 @@ def test_max_retries_propagated_to_session(monkeypatch: pytest.MonkeyPatch) -> N
 def test_pkg_requests_session_sends_custom_user_agent(
     mock_get_user_agent: MagicMock, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Requests must identify themselves as hermeto, not as the default python-requests UA.
-    """
+    """Requests must identify themselves as hermeto, not as the default python-requests UA."""
     monkeypatch.setattr("hermeto.core.package_managers.general._pkg_requests_session", None)
 
     session = _get_pkg_requests_session()
@@ -100,8 +99,7 @@ async def test_async_download_files_sends_custom_user_agent(
     mock_retry_client: MagicMock,
     mock_get_user_agent: MagicMock,
 ) -> None:
-    """aiohttp downloads must identify themselves as hermeto, not as the default aiohttp UA.
-    """
+    """aiohttp downloads must identify themselves as hermeto, not as the default aiohttp UA."""
     mock_session = mock_retry_client.return_value
     mock_session.__aenter__.return_value = MagicMock()
 
@@ -224,8 +222,44 @@ async def test_async_download_binary_file(tmp_path: Path) -> None:
         timeout=aiohttp.ClientTimeout(total=None, connect=30, sock_read=300),
         raise_for_status=True,
         ssl=None,
-        headers=None,
+        headers={"User-Agent": general._get_user_agent()},
     )
+
+
+@pytest.mark.asyncio
+async def test_async_download_binary_file_user_agent_not_overridable(tmp_path: Path) -> None:
+    """Per-URL headers must not be able to override hermeto's User-Agent.
+
+    aiohttp gives per-request headers precedence over session defaults, so a caller-supplied
+    "User-Agent" in the per-URL headers dict (e.g. auth headers assembled by a backend) would
+    otherwise silently replace hermeto's own identification.
+    """
+    url = "http://example.com/file.tar"
+    download_path = tmp_path / "file.tar"
+
+    async def mock_iter_chunked(size: int) -> AsyncGenerator[bytes, None]:
+        yield b"chunk-"
+
+    response, session = MagicMock(), MagicMock()
+    response.content.iter_chunked = mock_iter_chunked
+
+    async def mock_aenter() -> MagicMock:
+        return response
+
+    session.get().__aenter__.side_effect = mock_aenter
+
+    await _async_download_binary_file(
+        session,
+        url,
+        download_path,
+        headers={"User-Agent": "caller-supplied-ua", "Authorization": "token"},
+        ssl_context=None,
+    )
+
+    assert session.get.call_args.kwargs["headers"] == {
+        "User-Agent": general._get_user_agent(),
+        "Authorization": "token",
+    }
 
 
 @pytest.mark.asyncio
