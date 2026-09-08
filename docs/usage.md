@@ -165,14 +165,14 @@ hermeto merge-sboms <hermeto_sbom_1.json> ... <hermeto_sbom_n.json> -o <merged_s
 
 After the pre-fetch and the above steps to inform the package manager(s) of the
 cache have been completed, it all needs to be wired up into a build. The primary
-use case for building these is within a Dockerfile or Dockerfile but the same
+use case for building these is within a Dockerfile but the same
 principles can be applied to other build strategies.
 
 #### Write the Dockerfile
 
 Now that we have pre-fetched our dependencies and enabled package manager
 configuration to point to them, we now need to ensure that the build process
-(i.e. a Dockerfile or Dockerfile for a container build) is properly written
+(i.e. a Dockerfile) is properly written
 to build in a network isolated mode. All injected files are changed in the
 source itself, so they will be present in the build context for the
 Dockerfile. The environment variables added to the `hermeto.env` file,
@@ -247,12 +247,7 @@ The absolute path to ./hermeto-output on your machine is (probably) not
 /tmp/hermeto-output. That is why we had to tell the generate-env command what
 the path inside the container is eventually going to be.
 
-In order to run the build with network isolation, use the `--network=none`
-option. Note that this option only works if your podman/buildah version contains
-the fix for [buildah#4227][] (buildah >= 1.28). In older versions, a workaround
-could be to manually create an internal network (but you'll need root
-privileges): `sudo podman network create --internal isolated-network; sudo
-podman build --network isolated-network ...`.
+In order to run the build with network isolation, use the `--network=none` option.
 
 ## Exit codes
 
@@ -260,7 +255,6 @@ Hermeto uses a set of exit codes to signal different error conditions. These are
 internal only and serve informational purposes and hence may change in between
 releases, please do NOT depend on them!
 
-[buildah#4227]: https://github.com/containers/buildah/issues/4227
 [CycloneDX v1.6]: https://cyclonedx.org/docs/1.6/json
 [limited set]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13
 [properties]: https://cyclonedx.org/docs/1.6/json/#components_items_properties

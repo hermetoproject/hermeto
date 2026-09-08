@@ -333,7 +333,7 @@ hermeto inject-files ./hermeto-output --for-output-dir /tmp/hermeto-output
 #### Write the Dockerfile
 
 As mentioned in the steps above, the only change that needs to be made in the
-Dockerfile or Dockerfile is to source the environment file before building
+Dockerfile is to source the environment file before building
 the binary.
 
 ```dockerfile

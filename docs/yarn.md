@@ -306,4 +306,4 @@ podman build . \
 [Yarn protocols]: https://yarnpkg.com/protocols
 [Yarn workspaces]: https://yarnpkg.com/features/workspaces
 [yarn]: https://yarnpkg.com
-[ZIP archives]: https://yarnpkg.com/features/pnp/#packages-are-stored-inside-zip-archives-how-can-i-access-their-files
+[ZIP archives]: https://v3.yarnpkg.com/features/pnp#packages-are-stored-inside-zip-archives-how-can-i-access-their-files
