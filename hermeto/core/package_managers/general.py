@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
+import functools
 import importlib.metadata
 import logging
 import ssl
@@ -37,6 +38,7 @@ STATUS_FORCELIST = (429, 500, 502, 503, 504)
 DEFAULT_CHUNK_SIZE = 65536  # 64KB
 
 
+@functools.cache
 def _get_user_agent() -> str:
     """
     Build a descriptive User-Agent string identifying hermeto to remote servers.
@@ -54,8 +56,6 @@ def _get_user_agent() -> str:
         version = "unknown"
     return f"{APP_NAME}/{version} (+https://github.com/hermetoproject/hermeto)"
 
-
-USER_AGENT: str = _get_user_agent()
 
 log = logging.getLogger(__name__)
 
@@ -171,7 +171,7 @@ def _get_pkg_requests_session() -> requests.Session:
     if _pkg_requests_session is None:
         max_retries = get_config().http.max_retries
         _pkg_requests_session = Session()
-        _pkg_requests_session.headers["User-Agent"] = USER_AGENT
+        _pkg_requests_session.headers["User-Agent"] = _get_user_agent()
         adapter = HTTPAdapter(
             max_retries=SyncLoggingRetry(
                 backoff_factor=BACKOFF_FACTOR,
@@ -344,7 +344,7 @@ async def async_download_files(
         trust_env=True,
         # preserve percent-encoding in redirect URLs (e.g. signed CloudFront URLs)
         requote_redirect_url=False,
-        headers={"User-Agent": USER_AGENT},
+        headers={"User-Agent": _get_user_agent()},
     )
 
     async with retry_client as session:
