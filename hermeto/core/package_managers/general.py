@@ -193,7 +193,7 @@ async def _async_download_binary_file(
             timeout=timeout,
             raise_for_status=True,
             ssl=ssl_context,
-            headers={**(headers or {}), "User-Agent": _get_user_agent()},
+            headers=(headers or {}) | {"User-Agent": _get_user_agent()},
         ) as response:
             async with aiofiles.open(download_path, "wb") as f:
                 async for chunk in response.content.iter_chunked(chunk_size):
