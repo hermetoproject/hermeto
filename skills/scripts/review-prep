@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""Prepare review metadata for the /review skill.
+
+Outputs JSON to stdout. Errors and progress go to stderr.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import re
+import shutil
+import subprocess
+import sys
+
+log = logging.getLogger("review-prep")
+
+
+class ReviewPrepError(Exception):
+    """Fatal error during review preparation."""
+
+
+def _run(cmd: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    """Run a command and return the result."""
+    return subprocess.run(cmd, capture_output=True, text=True, check=check)
+
+
+def _git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    """Run a git command."""
+    return _run(["git", *args], check=check)
+
+
+def _gh(*args: str) -> subprocess.CompletedProcess[str]:
+    """Run a gh CLI command, never raising on failure."""
+    return _run(["gh", *args], check=False)
+
+
+def _parse_diff_lines(shortstat: str) -> int:
+    """Extract total changed lines from ``git diff --shortstat`` output."""
+    insertions = re.search(r"(\d+) insertion", shortstat)
+    deletions = re.search(r"(\d+) deletion", shortstat)
+    return (int(insertions.group(1)) if insertions else 0) + (
+        int(deletions.group(1)) if deletions else 0
+    )
+
+
+def _prepare_pr(pr_number: str) -> dict[str, str | None]:
+    """Fetch PR ref and resolve to a concrete SHA."""
+    log.info("Fetching PR %s ref and updating origin/main", pr_number)
+    result = _git("fetch", "origin", f"pull/{pr_number}/head", "main", check=False)
+    if result.returncode != 0:
+        raise ReviewPrepError(
+            f"failed to fetch PR {pr_number} — check that the PR exists "
+            f"and you have network access\n{result.stderr}"
+        )
+
+    log.info("Resolving FETCH_HEAD to concrete SHA")
+    result = _git("rev-parse", "FETCH_HEAD", check=False)
+    if result.returncode != 0:
+        raise ReviewPrepError(f"failed to resolve FETCH_HEAD after fetching PR {pr_number}")
+
+    pr_sha = result.stdout.strip()
+    log.info("PR %s resolved to %s", pr_number, pr_sha[:12])
+    return {
+        "diff_args": f"origin/main...{pr_sha}",
+        "log_range": f"origin/main..{pr_sha}",
+        "pr_sha": pr_sha,
+    }
+
+
+def _prepare_ref(ref: str) -> dict[str, str | None]:
+    """Compute diff and log arguments for a git ref or range."""
+    if ".." in ref:
+        log.info("Using range %s as-is", ref)
+        return {"diff_args": ref, "log_range": ref, "pr_sha": None}
+
+    log.info("Computing merge-base between '%s' and HEAD", ref)
+    result = _git("merge-base", "--", ref, "HEAD", check=False)
+    if result.returncode != 0:
+        raise ReviewPrepError(f"failed to compute merge-base between '{ref}' and HEAD")
+
+    merge_base = result.stdout.strip()
+    log.info("Merge base: %s", merge_base[:12])
+    return {
+        "diff_args": f"{merge_base}..HEAD",
+        "log_range": f"{merge_base}..HEAD",
+        "pr_sha": None,
+    }
+
+
+def _prepare_uncommitted() -> tuple[dict[str, str | None], list[str]]:
+    """Prepare diff args for uncommitted changes and check for untracked files."""
+    log.info("Reviewing uncommitted changes against HEAD")
+    warnings: list[str] = []
+
+    result = _git("ls-files", "--others", "--exclude-standard", check=False)
+    if result.returncode == 0 and result.stdout.strip():
+        files = ", ".join(result.stdout.strip().splitlines())
+        warnings.append(f"untracked files found (not included in review): {files}")
+        log.warning("Found untracked files: %s", files)
+
+    return {"diff_args": "HEAD", "log_range": "", "pr_sha": None}, warnings
+
+
+def _fetch_github_metadata(pr_number: str) -> dict[str, object] | None:
+    """Fetch PR description, review comments, and threads via gh CLI."""
+    if not shutil.which("gh"):
+        log.info("gh CLI not found, skipping GitHub metadata")
+        return None
+
+    log.info("Checking gh authentication")
+    result = _gh("auth", "status")
+    if result.returncode != 0:
+        log.info("gh not authenticated, skipping GitHub metadata")
+        return None
+
+    log.info("Resolving repository slug")
+    result = _gh("repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner")
+    if result.returncode != 0 or not result.stdout.strip():
+        return {"available": False, "warning": "could not resolve repository slug"}
+
+    slug = result.stdout.strip()
+    if not re.fullmatch(r"[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+", slug):
+        return {"available": False, "warning": f"unexpected repository slug format: {slug}"}
+    log.info("Repository: %s", slug)
+
+    log.info("Fetching PR description")
+    pr_desc = _gh("pr", "view", pr_number, "--json", "body", "--jq", ".body // empty")
+
+    log.info("Fetching review comments")
+    comments = _gh(
+        "api",
+        "--paginate",
+        f"repos/{slug}/pulls/{pr_number}/comments",
+        "--jq",
+        ".[] | select(.in_reply_to_id == null) | {path, line, body}",
+    )
+
+    log.info("Fetching review threads")
+    reviews = _gh(
+        "api",
+        "--paginate",
+        f"repos/{slug}/pulls/{pr_number}/reviews",
+        "--jq",
+        ".[] | {user: .user.login, state: .state, body: .body}",
+    )
+
+    return {
+        "available": True,
+        "slug": slug,
+        "pr_description": pr_desc.stdout if pr_desc.returncode == 0 else "",
+        "review_comments": comments.stdout if comments.returncode == 0 else "",
+        "review_threads": reviews.stdout if reviews.returncode == 0 else "",
+    }
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the argument parser."""
+    parser = argparse.ArgumentParser(description="Prepare review metadata")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--pr", metavar="N", help="PR number to review")
+    group.add_argument("--ref", metavar="RANGE", help="Git ref or range to review")
+    group.add_argument("--uncommitted", action="store_true", help="Review uncommitted changes")
+    return parser
+
+
+def main() -> int:
+    """Entry point."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(name)s: %(message)s",
+        stream=sys.stderr,
+    )
+
+    args = _build_parser().parse_args()
+    warnings: list[str] = []
+
+    if args.pr:
+        if not args.pr.isdigit():
+            log.error("PR number must be an integer, got: %s", args.pr)
+            return 1
+        target = _prepare_pr(args.pr)
+        mode = "pr"
+    elif args.ref:
+        target = _prepare_ref(args.ref)
+        mode = "ref"
+    else:
+        target, warnings = _prepare_uncommitted()
+        mode = "uncommitted"
+
+    log.info("Measuring diff size")
+    # diff_args is always str; the Optional in the dict type is for pr_sha only
+    diff_stat_result = _git("diff", "--shortstat", target["diff_args"], check=False)  # type: ignore[arg-type]
+    diff_stat = diff_stat_result.stdout.strip() if diff_stat_result.returncode == 0 else ""
+    diff_lines = _parse_diff_lines(diff_stat)
+    log.info("Diff size: %d lines changed", diff_lines)
+
+    github = None
+    if mode == "pr":
+        github = _fetch_github_metadata(args.pr)
+        if github and not github.get("available", True):
+            warnings.append(str(github.pop("warning", "GitHub metadata unavailable")))
+            github = None
+
+    output = {
+        "mode": mode,
+        "diff_args": target["diff_args"],
+        "log_range": target["log_range"],
+        "pr_sha": target["pr_sha"],
+        "diff_stat": diff_stat,
+        "diff_lines": diff_lines,
+        "warnings": warnings,
+        "github": github,
+    }
+
+    json.dump(output, sys.stdout, indent=2)
+    print()
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except ReviewPrepError as exc:
+        log.error("%s", exc)
+        sys.exit(1)
