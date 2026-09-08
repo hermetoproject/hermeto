@@ -216,4 +216,4 @@ Dockerfile won't take effect, consider `BUNDLE_PATH` instead.
 
 [Bundler]: https://bundler.io
 [configuration options]: https://bundler.io/v2.5/man/bundle-config.1.html#DESCRIPTION
-[deployment mode]: https://www.bundler.cn/man/bundle-install.1.html#DEPLOYMENT-MODE
+[deployment mode]: https://guides.rubygems.org/command-reference/bundle-install#DEPLOYMENT-MODE
