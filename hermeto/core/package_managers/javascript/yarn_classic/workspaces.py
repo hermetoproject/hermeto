@@ -85,7 +85,7 @@ def extract_workspace_metadata(package_path: RootedPath) -> list[Workspace]:
 
         # Ignore "workspaces" with missing package.json
         # https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/config.js#L833
-        if not package_json_path.path.exists():
+        if not package_json_path.exists():
             log.warning(
                 (
                     "The Yarn workspace located at %s does not contain a "

@@ -66,7 +66,7 @@ def resolve_packages(request: Request) -> RequestOutput:
         for project_file in output.build_config.project_files:
             try:
                 subpath = project_file.abspath.relative_to(source_backup)
-                project_file.abspath = original_source_dir / subpath
+                project_file.abspath = (original_source_dir / subpath).path
             except ValueError:
                 # '<project_file.abspath> is not in the subpath of <source_backup>', i.e the file
                 # is referenced directly from the output directory and doesn't need replacing

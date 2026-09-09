@@ -98,7 +98,7 @@ def _check_zero_installs(project: Project) -> None:
 
 def _check_lockfile(project: Project) -> None:
     lockfile_filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
-    if not project.source_dir.join_within_root(lockfile_filename).path.exists():
+    if not project.source_dir.join_within_root(lockfile_filename).exists():
         raise LockfileNotFound(
             files=project.source_dir.join_within_root(lockfile_filename).path,
         )

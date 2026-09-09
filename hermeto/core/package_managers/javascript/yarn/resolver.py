@@ -443,7 +443,7 @@ class _ComponentResolver:
                     "expected a zip archive in the cache but 'yarn info' says there is none",
                 )
             cache_path = self._cache_path_as_rooted(package.cache_path)
-            if not cache_path.path.exists():
+            if not cache_path.exists():
                 raise _CouldNotResolve(
                     f"cache archive does not exist: {cache_path.subpath_from_root}"
                 )
@@ -456,7 +456,7 @@ class _ComponentResolver:
             packjson = self._project_subpath(
                 parent_locator.relpath, locator.relpath, "package.json"
             )
-            if isinstance(locator, LinkLocator) and not packjson.path.exists():
+            if isinstance(locator, LinkLocator) and not packjson.exists():
                 # if a link dependency doesn't have a package.json, we have to rely on the locator
                 name = self._scoped_name(locator)
                 version = None

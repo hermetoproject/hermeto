@@ -103,7 +103,7 @@ class SetupFile(ABC):
 
     def exists(self) -> bool:
         """Check if file exists."""
-        return self._setup_file.path.is_file()
+        return self._setup_file.is_file()
 
     @abstractmethod
     def get_name(self) -> str | None:
@@ -265,7 +265,7 @@ class SetupCFG(SetupFile):
     def _read_version_from_file(self, file_path: str) -> str | None:
         """Read version from file."""
         version_file = self._top_dir.join_within_root(file_path)
-        if version_file.path.is_file():
+        if version_file.is_file():
             version = version_file.path.read_text().strip()
             log.debug("Read version from %r: %r", file_path, version)
             return version
@@ -300,7 +300,7 @@ class SetupCFG(SetupFile):
             return None
 
         try:
-            module_ast = ast.parse(module_file.path.read_text(), module_file.path.name)
+            module_ast = ast.parse(module_file.path.read_text(), module_file.name)
         except SyntaxError as e:
             log.error("Syntax error when parsing module: %s", e)
             return None
@@ -339,11 +339,11 @@ class SetupCFG(SetupFile):
             module_path = custom_path / module_path
 
         package_init = self._top_dir.join_within_root(module_path).join_within_root("__init__.py")
-        if package_init.path.is_file():
+        if package_init.is_file():
             return package_init
 
         module_py = self._top_dir.join_within_root(f"{module_path}.py")
-        if module_py.path.is_file():
+        if module_py.is_file():
             return module_py
 
         return None

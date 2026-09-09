@@ -553,7 +553,7 @@ def _download_from_requirement_files(
     """
     requirements: list[PipPackage] = []
     for req_file in files:
-        if not req_file.path.exists():
+        if not req_file.exists():
             raise LockfileNotFound(
                 files=req_file.path,
                 solution="Please check that you have specified correct requirements file paths",
@@ -575,7 +575,7 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
     """
     filename = DEFAULT_BUILD_REQUIREMENTS_FILE if devel else DEFAULT_REQUIREMENTS_FILE
     req = path.join_within_root(filename)
-    return [req] if req.path.is_file() else []
+    return [req] if req.is_file() else []
 
 
 def _resolve_pip(

@@ -280,7 +280,7 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
     # https://docs.npmjs.com/files/package-lock.json.
     for lock_file in ("npm-shrinkwrap.json", "package-lock.json"):
         package_lock_path = pkg_path.join_within_root(lock_file)
-        if package_lock_path.path.exists():
+        if package_lock_path.exists():
             break
     else:
         raise LockfileNotFound(
@@ -292,7 +292,7 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
         )
 
     node_modules_path = pkg_path.join_within_root("node_modules")
-    if node_modules_path.path.exists():
+    if node_modules_path.exists():
         raise PackageRejected(
             "The 'node_modules' directory cannot be present in the source repository",
             solution="Ensure that there are no 'node_modules' directories in your repo",

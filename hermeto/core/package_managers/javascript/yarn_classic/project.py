@@ -74,7 +74,7 @@ class Project:
         pnp_enabled = install_config.get("pnp", False)
 
         pnp_cjs_exists = any(self.source_dir.path.glob("*.pnp.cjs"))
-        node_modules_exists = self.source_dir.join_within_root("node_modules").path.exists()
+        node_modules_exists = self.source_dir.join_within_root("node_modules").exists()
         return pnp_enabled or pnp_cjs_exists or node_modules_exists
 
     @classmethod

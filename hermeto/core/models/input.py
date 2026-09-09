@@ -469,7 +469,7 @@ class Request(pydantic.BaseModel):
                     raise ValueError(
                         f"package path (a symlink?) leads outside source directory: {p.path}"
                     )
-                if not abspath.path.is_dir():
+                if not abspath.is_dir():
                     raise ValueError(
                         f"package path does not exist (or is not a directory): {p.path}"
                     )

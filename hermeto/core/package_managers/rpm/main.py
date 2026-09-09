@@ -283,7 +283,7 @@ def _resolve_rpm_project(
     ssl_options = options.ssl if options and options.ssl else None
 
     # Check the availability of the input lockfile.
-    if not source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path.exists():
+    if not source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).exists():
         raise LockfileNotFound(
             files=source_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path,
         )
