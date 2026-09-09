@@ -91,6 +91,10 @@ class RootedPath(os.PathLike[str]):
     def __hash__(self) -> int:
         return hash((self._path, self._root))
 
+    def __truediv__(self: RootedPathT, other: StrPath) -> RootedPathT:
+        """Join via ``join_within_root``; raises PathOutsideRoot on escape."""
+        return self.join_within_root(other)
+
     # Read-only Path operations that cannot escape the root boundary.
     # Mutating or navigating operations (e.g. parent, rename, iterdir)
     # are deliberately excluded.
