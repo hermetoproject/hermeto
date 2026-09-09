@@ -123,6 +123,34 @@ def test_rooted_path_eq() -> None:
     assert a == RootedPath("/some/directory").join_within_root("subpath")
 
 
+@pytest.mark.parametrize(
+    "attr",
+    [
+        pytest.param("name", id="name"),
+        pytest.param("stem", id="stem"),
+        pytest.param("suffix", id="suffix"),
+        pytest.param("exists", id="exists"),
+        pytest.param("is_dir", id="is_dir"),
+        pytest.param("is_file", id="is_file"),
+        pytest.param("as_posix", id="as_posix"),
+    ],
+)
+def test_passthrough_matches_inner_path(test_path: Path, attr: str) -> None:
+    rp = RootedPath(test_path)
+    rp_val = getattr(rp, attr)
+    path_val = getattr(test_path, attr)
+    if callable(rp_val):
+        assert rp_val() == path_val()
+    else:
+        assert rp_val == path_val
+
+
+def test_relative_to(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("subpath")
+    assert rp.relative_to(test_path) == Path("subpath")
+    assert rp.is_relative_to(test_path)
+
+
 def test_pydantic_integration() -> None:
     class SomeModel(pydantic.BaseModel):
         path: RootedPath

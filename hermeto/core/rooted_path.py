@@ -34,6 +34,9 @@ class RootedPath(os.PathLike[str]):
     The join_within_root method remembers the original root. See the join_within_root
     and re_root docstrings for more details.
 
+    Exposes common Path queries (exists, is_dir, name, stem, etc.) directly so
+    callers need not reach through the .path accessor for everyday operations.
+
     Implements the PathLike interface -> most stdlib methods that accept paths will work
     with a RootedPath as well.
 
@@ -87,6 +90,49 @@ class RootedPath(os.PathLike[str]):
 
     def __hash__(self) -> int:
         return hash((self._path, self._root))
+
+    # Read-only Path operations that cannot escape the root boundary.
+    # Mutating or navigating operations (e.g. parent, rename, iterdir)
+    # are deliberately excluded.
+
+    @property
+    def name(self) -> str:
+        """Return the final component of the path."""
+        return self._path.name
+
+    @property
+    def stem(self) -> str:
+        """Return the final component without its suffix."""
+        return self._path.stem
+
+    @property
+    def suffix(self) -> str:
+        """Return the file extension of the final component."""
+        return self._path.suffix
+
+    def exists(self) -> bool:
+        """Return whether the path points to an existing filesystem entry."""
+        return self._path.exists()
+
+    def is_dir(self) -> bool:
+        """Return whether the path points to a directory."""
+        return self._path.is_dir()
+
+    def is_file(self) -> bool:
+        """Return whether the path points to a regular file."""
+        return self._path.is_file()
+
+    def is_relative_to(self, other: StrPath) -> bool:
+        """Return whether this path is relative to *other*."""
+        return self._path.is_relative_to(other)
+
+    def relative_to(self, other: StrPath) -> Path:
+        """Return a relative version of this path against *other*."""
+        return self._path.relative_to(other)
+
+    def as_posix(self) -> str:
+        """Return the path as a POSIX string."""
+        return self._path.as_posix()
 
     def re_root(self: RootedPathT, *other: StrPath) -> RootedPathT:
         """Safely join other path components and make the result the new root.
