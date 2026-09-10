@@ -1,0 +1,6 @@
+environment_variables:
+- name: PIP_FIND_LINKS
+  value: ${output_dir}/deps/pip
+- name: PIP_NO_INDEX
+  value: 'true'
+project_files: []
