@@ -170,6 +170,41 @@ def test_project_files_fix_for_work_copy(
     assert output.build_config.project_files[0].abspath == tmp_path / "package.json"
 
 
+@mock.patch("hermeto.core.resolver.repo_head_resolves")
+def test_source_copy_validator_accepts_consistent_copy(
+    mock_resolves: mock.Mock, tmp_path: Path
+) -> None:
+    # original resolves HEAD, so a copy that also resolves is accepted
+    mock_resolves.side_effect = [True, True]
+    validate = resolver._source_copy_validator(tmp_path)
+
+    assert validate(tmp_path / "copy") is True
+
+
+@mock.patch("hermeto.core.resolver.repo_head_resolves")
+def test_source_copy_validator_rejects_copy_that_lost_head(
+    mock_resolves: mock.Mock, tmp_path: Path
+) -> None:
+    # original resolves HEAD but the copy does not: the race dropped it, reject so it gets retried
+    mock_resolves.side_effect = [True, False]
+    validate = resolver._source_copy_validator(tmp_path)
+
+    assert validate(tmp_path / "copy") is False
+
+
+@mock.patch("hermeto.core.resolver.repo_head_resolves")
+def test_source_copy_validator_skips_when_original_has_no_head(
+    mock_resolves: mock.Mock, tmp_path: Path
+) -> None:
+    # a commit-less or non-git original never resolved HEAD, so its copy is accepted without
+    # re-checking
+    mock_resolves.side_effect = [False]
+    validate = resolver._source_copy_validator(tmp_path)
+
+    assert validate(tmp_path / "copy") is True
+    mock_resolves.assert_called_once_with(tmp_path)
+
+
 def test_resolve_with_multiple_stable_package_managers(tmp_path: Path) -> None:
     mock_resolve_gomod = mock.Mock(return_value=RequestOutput.empty())
     mock_resolve_pip = mock.Mock(return_value=RequestOutput.empty())
