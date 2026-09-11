@@ -47,7 +47,6 @@ gitignore: true
 
 # Define file glob expressions to ignore
 ignores:
-  - docs/adr
   - docs/design
   - tests/
   - docs/dependency_confusion.md
