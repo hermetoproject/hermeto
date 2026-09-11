@@ -1307,7 +1307,7 @@ Dockerfile, build the image with the following command</p>
 <p>Hermeto ignores Bundler plugins. Prefetching may fail if the project depends
 on plugin behavior. Try to avoid using Bundler plugins with Hermeto.</p>
 </div>
-<p>[^1] <code>BUNDLE_DEPLOYMENT</code> enforces <a href="https://www.bundler.cn/man/bundle-install.1.html#DEPLOYMENT-MODE">deployment mode</a> which is essentially
+<p>[^1] <code>BUNDLE_DEPLOYMENT</code> enforces <a href="https://guides.rubygems.org/command-reference/bundle-install#DEPLOYMENT-MODE">deployment mode</a> which is essentially
 vendoring your application and its dependencies. In other words, deployment will
 install your application to a local <code>vendor/bundle</code> directory instead of using
 the standard system-wide location. This is currently the only way of forcing

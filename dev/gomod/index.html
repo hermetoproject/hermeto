@@ -1606,7 +1606,7 @@ becomes a requirement in the future.</p>
 </code></pre></div>
 <h4 id="write-the-dockerfile">Write the Dockerfile<a class="headerlink" href="#write-the-dockerfile" title="Permanent link">&para;</a></h4>
 <p>As mentioned in the steps above, the only change that needs to be made in the
-Dockerfile or Dockerfile is to source the environment file before building
+Dockerfile is to source the environment file before building
 the binary.</p>
 <div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.19.2-alpine3.16</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">build</span>
 

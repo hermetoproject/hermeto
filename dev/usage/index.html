@@ -1168,12 +1168,12 @@ to stdout. To save it to a file use <code>-o</code> option</p>
 <h3 id="building-the-artifact-with-the-pre-fetched-dependencies">Building the Artifact with the Pre-fetched dependencies<a class="headerlink" href="#building-the-artifact-with-the-pre-fetched-dependencies" title="Permanent link">&para;</a></h3>
 <p>After the pre-fetch and the above steps to inform the package manager(s) of the
 cache have been completed, it all needs to be wired up into a build. The primary
-use case for building these is within a Dockerfile or Dockerfile but the same
+use case for building these is within a Dockerfile but the same
 principles can be applied to other build strategies.</p>
 <h4 id="write-the-dockerfile">Write the Dockerfile<a class="headerlink" href="#write-the-dockerfile" title="Permanent link">&para;</a></h4>
 <p>Now that we have pre-fetched our dependencies and enabled package manager
 configuration to point to them, we now need to ensure that the build process
-(i.e. a Dockerfile or Dockerfile for a container build) is properly written
+(i.e. a Dockerfile for a container build) is properly written
 to build in a network isolated mode. All injected files are changed in the
 source itself, so they will be present in the build context for the
 Dockerfile. The environment variables added to the <code>hermeto.env</code> file,
@@ -1236,11 +1236,7 @@ The absolute path to ./hermeto-output on your machine is (probably) not
 /tmp/hermeto-output. That is why we had to tell the generate-env command what
 the path inside the container is eventually going to be.</p>
 <p>In order to run the build with network isolation, use the <code>--network=none</code>
-option. Note that this option only works if your podman/buildah version contains
-the fix for <a href="https://github.com/containers/buildah/issues/4227">buildah#4227</a> (buildah &gt;= 1.28). In older versions, a workaround
-could be to manually create an internal network (but you'll need root
-privileges): <code>sudo podman network create --internal isolated-network; sudo
-podman build --network isolated-network ...</code>.</p>
+option.</p>
 <h2 id="exit-codes">Exit codes<a class="headerlink" href="#exit-codes" title="Permanent link">&para;</a></h2>
 <p>Hermeto uses a set of exit codes to signal different error conditions. These are
 internal only and serve informational purposes and hence may change in between
