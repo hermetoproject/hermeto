@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import urllib
 from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import chain
@@ -259,6 +260,47 @@ class StandardPackage(NamedTuple):
         return Component(name=self.name, purl=self.purl)
 
 
+@dataclass
+class RepoContext:
+    """Resolved repository context used for Go module processing.
+
+    repo_dir: root directory of the source repository
+    repo_name: repository name, or None for non-Git sources
+    repo_id: repository identity, or None for non-Git sources
+    version_resolver: resolver used to determine module versions
+    """
+
+    repo_dir: RootedPath
+    repo_name: str | None
+    repo_id: RepoID | None
+    version_resolver: "ModuleVersionResolver"
+
+    @classmethod
+    def from_repo_path(cls, repo_dir: RootedPath) -> "RepoContext":
+        """Create a repository context from a Git repository path."""
+        return cls(
+            repo_dir=repo_dir,
+            repo_name=_get_repository_name(repo_dir),
+            repo_id=get_repo_id(repo_dir.path),
+            version_resolver=ModuleVersionResolver.from_repo_path(repo_dir),
+        )
+
+    @classmethod
+    def from_non_git_source(cls, source_dir: RootedPath) -> "RepoContext":
+        """Create a repository context for a source without Git metadata."""
+        return cls(
+            repo_dir=source_dir,
+            repo_name=None,
+            repo_id=None,
+            version_resolver=ModuleVersionResolver.from_non_git_source(),
+        )
+
+    def subpath_for(self, module_dir: RootedPath) -> str | None:
+        """Return the module path relative to the repository root."""
+        relative = module_dir.path.relative_to(self.repo_dir.path)
+        return None if str(relative) == "." else str(relative)
+
+
 ModuleID = tuple[str, str]
 
 
@@ -467,14 +509,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     components: list[Component] = []
     annotations: list[Annotation] = []
 
-    repo_name = _get_repository_name(request.source_dir)
-    try:
-        version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
-    except NotAGitRepo:
-        if get_config().mode == Mode.PERMISSIVE:
-            version_resolver = ModuleVersionResolver.from_non_git_source()
-        else:
-            raise
+    repo_contexts: dict[RootedPath, RepoContext] = {}
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
     gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
@@ -485,6 +520,31 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             go_work: GoWork | None = None
 
             main_module_dir = request.source_dir.join_within_root(subpath)
+            try:
+                repo, _ = get_repo_for_path(request.source_dir.root, main_module_dir.path)
+                if repo.working_tree_dir is None:
+                    raise NotAGitRepo(
+                        f"Git repository at {main_module_dir} has no working tree (bare clone).",
+                        solution="Use a non-bare git clone when running hermeto.",
+                    )
+                repo_dir = RootedPath(repo.working_tree_dir)
+            except NotAGitRepo:
+                log.warning(
+                    "Could not find a git repository for %s, falling back to source directory",
+                    main_module_dir.path,
+                )
+                repo_dir = request.source_dir
+
+            if repo_dir not in repo_contexts:
+                try:
+                    repo_contexts[repo_dir] = RepoContext.from_repo_path(repo_dir)
+                except NotAGitRepo:
+                    if get_config().mode == Mode.PERMISSIVE:
+                        repo_contexts[repo_dir] = RepoContext.from_non_git_source(repo_dir)
+                    else:
+                        raise
+
+            ctx = repo_contexts[repo_dir]
             go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
             if go is None:
                 raise FetchError(
@@ -498,7 +558,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
             try:
                 resolve_result = _resolve_gomod(
-                    main_module_dir, request, Path(tmp_dir.name), version_resolver, go, go_work
+                    main_module_dir, request, Path(tmp_dir.name), ctx.version_resolver, go, go_work
                 )
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
@@ -524,7 +584,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                 )
 
             main_module = _create_main_module_from_parsed_data(
-                main_module_dir, repo_name, resolve_result.parsed_main_module
+                main_module_dir, ctx, resolve_result.parsed_main_module
             )
 
             modules = [main_module]
@@ -534,7 +594,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
                     main_module_dir,
                     resolve_result.parsed_modules,
                     resolve_result.modules_in_go_sum,
-                    version_resolver,
+                    ctx.version_resolver,
                     go_work,
                 )
             )
@@ -585,25 +645,23 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
 
 
 def _create_main_module_from_parsed_data(
-    main_module_dir: RootedPath, repo_name: str | None, parsed_main_module: ParsedModule
+    main_module_dir: RootedPath,
+    ctx: RepoContext,
+    parsed_main_module: ParsedModule,
 ) -> Module:
-    resolved_subpath = main_module_dir.subpath_from_root
-
-    if repo_name is None:
-        # PERMISSIVE mode without git repo - use the module path as resolved_path
+    if ctx.repo_name is None:
         resolved_path = parsed_main_module.path
         repo_id = None
-    elif str(resolved_subpath) == ".":
-        resolved_path = repo_name
-        repo_id = get_repo_id(main_module_dir)
     else:
-        resolved_path = f"{repo_name}/{resolved_subpath}"
-        repo_id = get_repo_id(main_module_dir)
+        subpath = ctx.subpath_for(main_module_dir)
+        resolved_path = ctx.repo_name if subpath is None else f"{ctx.repo_name}/{subpath}"
+        repo_id = ctx.repo_id
 
     if not parsed_main_module.version:
         # Should not happen, since the version is always resolved from the Git repo
-        raise RuntimeError(f"Version was not identified for main module at {resolved_subpath}")
-
+        raise RuntimeError(
+            f"Version was not identified for main module at {main_module_dir.subpath_from_root}"
+        )
     return Module(
         name=parsed_main_module.path,
         original_name=parsed_main_module.path,
@@ -1167,10 +1225,16 @@ class ModuleVersionResolver:
         # If no match, prefer v1.x.x tags but fallback to v0.x.x tags if both are present
         major_versions_to_try = (module_major_version,) if module_major_version else (1, 0)
 
-        if app_dir.path == app_dir.root:
+        repo_dir = (
+            Path(self._repo.working_tree_dir)
+            if self._repo and self._repo.working_tree_dir
+            else app_dir.root
+        )
+
+        if app_dir.path == repo_dir or not app_dir.path.is_relative_to(repo_dir):
             subpath = None
         else:
-            subpath = app_dir.path.relative_to(app_dir.root).as_posix()
+            subpath = app_dir.path.relative_to(repo_dir).as_posix()
 
         tag_on_commit = self._get_highest_semver_tag_on_current_commit(
             major_versions_to_try, subpath
