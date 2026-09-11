@@ -70,9 +70,7 @@ class Package:
             # Red Hat PURL RPM guideline suggests injecting 'src' into the arch qualifier for SRPMS
             kwargs["arch"] = "src"
 
-        kwargs["repository_id"] = (
-            repoid if repoid and not repoid.startswith(f"{APP_NAME}") else None
-        )
+        kwargs["repository_id"] = repoid if repoid and not repoid.startswith(APP_NAME) else None
         kwargs["download_url"] = rpm_download_metadata["url"]
         kwargs["checksum"] = rpm_download_metadata.get("checksum")
 
@@ -169,7 +167,7 @@ class Package:
 
         if self.modularity_label:
             properties.append(
-                Property(name=f"{APP_NAME}:rpm_modularity_label", value=str(self.modularity_label))
+                Property(name=f"{APP_NAME}:rpm_modularity_label", value=self.modularity_label)
             )
 
         return Component(
@@ -400,7 +398,7 @@ def _verify_downloaded(metadata: dict[Path, Any]) -> None:
 
         # checksum is optional
         if file_metadata["checksum"] is not None:
-            alg, digest = file_metadata["checksum"].split(":")
+            alg, digest = file_metadata["checksum"].split(":", 1)
             method = getattr(hashlib, alg.lower(), None)
             if method is not None:
                 h = method(usedforsecurity=False)
@@ -431,8 +429,8 @@ def _generate_sbom_components(
             continue
         package = Package.from_filepath(file_path, file_metadata)
         component = package.to_component(lockfile_path)
-        if include_summary_in_sbom:
-            summary = Property(name=f"{APP_NAME}:rpm_summary", value=str(package.summary))
+        if include_summary_in_sbom and package.summary:
+            summary = Property(name=f"{APP_NAME}:rpm_summary", value=package.summary)
             component.properties.append(summary)
         components.append(component)
     return components
@@ -481,11 +479,9 @@ def _generate_repofiles(
     in the project file.
     """
     dnf_options = None
-    dnf_options_repos = None
 
     if options:
         dnf_options = options.get("rpm", {}).get("dnf", {})
-        dnf_options_repos = dnf_options.keys()
 
     package_dir = from_output_dir.joinpath(DEFAULT_PACKAGE_DIR)
     for arch in package_dir.iterdir():
@@ -503,7 +499,7 @@ def _generate_repofiles(
             # TODO: purposefully ignoring the fact that options might be passed within the "main"
             # context of DNF options which would mean we'd have to generate a dnf.conf since such
             # options are global, skipping that for now
-            if dnf_options and dnf_options_repos and repoid in dnf_options_repos:
+            if dnf_options and repoid in dnf_options:
                 repofile[repoid] = dnf_options[repoid]
 
             localpath = for_output_dir.joinpath(DEFAULT_PACKAGE_DIR, arch.name, repoid)
