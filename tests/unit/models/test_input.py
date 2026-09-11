@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import re
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, Literal
 from unittest import mock
 
 import pydantic
@@ -36,15 +36,17 @@ class TestPackageInput:
     @pytest.mark.parametrize(
         "input_data, expect_data",
         [
-            (
+            pytest.param(
                 {"type": "gomod"},
                 {"type": "gomod", "path": Path(".")},
+                id="multiple_gomod_packages",
             ),
-            (
+            pytest.param(
                 {"type": "gomod", "path": "./some/path"},
                 {"type": "gomod", "path": Path("some/path")},
+                id="multiple_gomod_packages_with_relative_path",
             ),
-            (
+            pytest.param(
                 {"type": "pip"},
                 {
                     "type": "pip",
@@ -54,32 +56,9 @@ class TestPackageInput:
                     "allow_binary": False,
                     "binary": None,
                 },
+                id="multiple_pip_packages",
             ),
-            (
-                {
-                    "type": "pip",
-                    "requirements_files": ["reqs.txt"],
-                    "requirements_build_files": [],
-                    "allow_binary": True,
-                },
-                {
-                    "type": "pip",
-                    "path": Path("."),
-                    "requirements_files": [Path("reqs.txt")],
-                    "requirements_build_files": [],
-                    "allow_binary": False,
-                    "binary": {
-                        "arch": BINARY_FILTER_ALL,
-                        "os": BINARY_FILTER_ALL,
-                        "py_impl": BINARY_FILTER_ALL,
-                        "py_version": None,
-                        "abi": BINARY_FILTER_ALL,
-                        "platform": None,
-                        "packages": BINARY_FILTER_ALL,
-                    },
-                },
-            ),
-            (
+            pytest.param(
                 {"type": "rpm"},
                 {
                     "type": "rpm",
@@ -88,8 +67,9 @@ class TestPackageInput:
                     "include_summary_in_sbom": False,
                     "binary": None,
                 },
+                id="multiple_rpm_packages",
             ),
-            (
+            pytest.param(
                 {
                     "type": "rpm",
                     "options": {
@@ -113,8 +93,9 @@ class TestPackageInput:
                     "include_summary_in_sbom": False,
                     "binary": None,
                 },
+                id="multiple_rpm_packages_with_ssl_options",
             ),
-            (
+            pytest.param(
                 {
                     "type": "rpm",
                     "options": {"ssl": {"ssl_verify": 0}},
@@ -134,8 +115,9 @@ class TestPackageInput:
                     "include_summary_in_sbom": False,
                     "binary": None,
                 },
+                id="multiple_rpm_packages_with_none_ssl_options",
             ),
-            (
+            pytest.param(
                 {
                     "type": "rpm",
                     "options": {
@@ -164,6 +146,7 @@ class TestPackageInput:
                     "include_summary_in_sbom": False,
                     "binary": None,
                 },
+                id="rpm_with_ssl_options",
             ),
             pytest.param(
                 {
@@ -194,6 +177,31 @@ class TestPackageInput:
                     },
                 },
                 id="pip_with_binary_filters",
+            ),
+            pytest.param(
+                {
+                    "type": "pip",
+                    "requirements_files": ["reqs.txt"],
+                    "requirements_build_files": [],
+                    "allow_binary": True,
+                },
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": [Path("reqs.txt")],
+                    "requirements_build_files": [],
+                    "allow_binary": False,
+                    "binary": {
+                        "arch": BINARY_FILTER_ALL,
+                        "os": BINARY_FILTER_ALL,
+                        "py_impl": BINARY_FILTER_ALL,
+                        "py_version": None,
+                        "abi": BINARY_FILTER_ALL,
+                        "platform": None,
+                        "packages": BINARY_FILTER_ALL,
+                    },
+                },
+                id="pip_with_binary_filter_all",
             ),
             pytest.param(
                 {
@@ -234,14 +242,16 @@ class TestPackageInput:
     )
     def test_valid_packages(self, input_data: dict[str, Any], expect_data: dict[str, Any]) -> None:
         adapter: pydantic.TypeAdapter[PackageInput] = pydantic.TypeAdapter(PackageInput)
-        package = cast(PackageInput, adapter.validate_python(input_data))
+        package = adapter.validate_python(input_data)
         assert package.model_dump() == expect_data
 
     @pytest.mark.parametrize(
         "input_data, expect_error",
         [
             pytest.param(
-                {}, r"Unable to extract tag using discriminator 'type'", id="no_type_discrinator"
+                {},
+                r"Unable to extract tag using discriminator 'type'",
+                id="no_type_discrinator",
             ),
             pytest.param(
                 {"type": "go-package"},
@@ -266,12 +276,12 @@ class TestPackageInput:
             pytest.param(
                 {"type": "pip", "requirements_files": ["weird/../subpath"]},
                 r"pip.requirements_files\n  Value error, path contains ..: weird/../subpath",
-                id="pip_path_references_parent_directory",
+                id="pip_requirements_files_path_references_parent_directory",
             ),
             pytest.param(
                 {"type": "pip", "requirements_build_files": ["weird/../subpath"]},
                 r"pip.requirements_build_files\n  Value error, path contains ..: weird/../subpath",
-                id="pip_path_references_parent_directory",
+                id="pip_requirements_build_files_path_references_parent_directory",
             ),
             pytest.param(
                 {"type": "pip", "requirements_files": None},
