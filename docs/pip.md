@@ -2,6 +2,7 @@
 
 - [Specifying packages to process](#specifying-packages-to-process)
 - [requirements.txt](#requirementstxt)
+- [pylock.toml](#pylocktoml)
 - [Project metadata](#project-metadata)
 - [Distribution formats](#distribution-formats)
 - [Using fetched dependencies](#using-fetched-dependencies)
@@ -337,6 +338,80 @@ Disables HTTPS validation for a host. Don't use this for production builds.
 
 Specifies the expected hashes for package archives. See also the
 [hashes](#hashes) section.
+
+## pylock.toml
+
+[pylock.toml][PEP 751] is a standardized lockfile format for Python, supported as
+an alternative to [requirements.txt](#requirementstxt). Like requirements.txt, it
+must be fully resolved and record hashes for archive, sdist, and wheel artifacts;
+VCS sources are pinned by their full commit IDs. Tools such as
+[pip lock][] and [uv export][] can generate one.
+
+### Selecting the pylock.toml format
+
+Point the generic `lockfile` field at your lockfile:
+
+```js
+{
+  "type": "pip",
+  // main lockfile, relative to the package path (pylock default: "pylock.toml")
+  "lockfile": "pylock.toml",
+  // build lockfiles (pylock default: ["pylock.build.toml"] if present; see below)
+  "lockfile_extras": ["pylock.build.toml"],
+  // optional: override the format inferred from the filename
+  "packaging_tool": "pylock"
+}
+```
+
+`packaging_tool` and the lockfile name work together: setting `packaging_tool`
+(`pylock` or `requirements`) selects the format and the default lockfile name to
+auto-discover, while omitting it infers the format from the `lockfile` name
+(`pylock.toml` or `pylock.<name>.toml` is pylock, `*.txt` is requirements). An
+unrecognized name with no `packaging_tool` fails with an error.
+
+### Generating a pylock.toml
+
+Any tool that follows PEP 751 can produce the lockfile. For example:
+
+```shell
+# with pip (25.1+)
+pip lock -r requirements.txt -o pylock.toml
+
+# with uv
+uv export --format pylock.toml -o pylock.toml
+```
+
+> [!NOTE]
+> `pip lock` resolves for the current platform and Python version only. For a
+> lockfile that installs across multiple platforms or Python versions, generate
+> a universal lock (for example `uv export` or `uv pip compile --universal`).
+> Hermeto prefetches everything the lockfile records, so a universal lock
+> produces a cache that works on every environment it covers.
+
+### Build dependencies
+
+Building packages from source in a network-isolated environment also needs the
+[PEP 517][] build dependencies. List them in a second lockfile and pass it via
+`lockfile_extras` (default `pylock.build.toml`); Hermeto prefetches them so pip
+can install them offline during the build.
+
+### Notes
+
+- **The project's own entry is not fetched.** If the lockfile lists the project
+  being built (a directory entry with `path = "."`), Hermeto reports it as the
+  main SBOM component instead of fetching it.
+- **Environment markers are not evaluated.** Hermeto prefetches every package the
+  lockfile records, including those gated by markers such as
+  `sys_platform == "win32"`. The marker is preserved so the installer applies it
+  at build time and installs only the packages relevant to the target
+  environment.
+- **Only verifiable remote sources are fetched.** By design, Hermeto rejects
+  sources it cannot fetch and verify: local paths and directories, `file://`
+  URLs, non-git version-control sources, and artifacts without hashes.
+- **External sources are rewritten for offline installation.** After fetching,
+  Hermeto emits a rewritten copy of the lockfile where direct archive and VCS
+  entries point to local files under `${output_dir}/deps/pip`. VCS entries are
+  represented as local archives with a generated SHA-256 hash.
 
 ## Project metadata
 
@@ -887,11 +962,14 @@ these steps for you.
 [PEP 517]: https://peps.python.org/pep-0517
 [PEP 518]: https://peps.python.org/pep-0518
 [PEP 621 metadata]: https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+[PEP 751]: https://packaging.python.org/en/latest/specifications/pylock-toml/
 [Pip docs]: https://pip.pypa.io/en/stable/reference/requirements-file-format/#supported-options
+[pip lock]: https://pip.pypa.io/en/stable/cli/pip_lock/
 [pip-compile]: https://pip-tools.readthedocs.io/en/stable/
 [pip]: https://pip.pypa.io/en/stable
 [pybuild-deps]: https://pypi.org/project/pybuild-deps
 [source format]: https://packaging.python.org/en/latest/specifications/source-distribution-format
 [tensorflow]: https://pypi.org/project/tensorflow/2.11.0/#files
 [ubi8/python-39]: https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f
+[uv export]: https://docs.astral.sh/uv/reference/cli/#uv-export
 [uv pip compile]: https://docs.astral.sh/uv/pip/compile/#locking-environments
