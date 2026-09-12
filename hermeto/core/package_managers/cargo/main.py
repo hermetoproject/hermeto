@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import base64
+import json
 import logging
 import os
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -27,7 +30,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnexpectedFormat,
 )
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import CargoPackageInput, CargoPackageSelection, Request
 from hermeto.core.models.output import Annotation, Component, ProjectFile, RequestOutput
 from hermeto.core.models.sbom import (
     PROXY_COMMENT,
@@ -43,6 +46,9 @@ from hermeto.core.utils import run_cmd
 log = logging.getLogger(__name__)
 
 
+CARGO_VENDOR_FILTERER = "cargo-vendor-filterer"
+
+
 class CargoVendorResult(NamedTuple):
     """
     Vendoring result from running the `cargo vendor` command.
@@ -50,6 +56,8 @@ class CargoVendorResult(NamedTuple):
 
     config_template: str
     lockfile_was_generated: bool
+    # (name, version) of the crates the selected packages can reach, None when unfiltered
+    reachable_crates: frozenset[tuple[str, str]] | None = None
 
 
 class PackageWithCorruptLockfileRejected(PackageRejected):
@@ -175,7 +183,7 @@ def fetch_cargo_source(request: Request, invoked_through_pip: bool = False) -> R
         package_dir = request.source_dir.join_within_root(package.path)
         _verify_lockfile_is_present(package_dir)
 
-        vendor_result = _fetch_dependencies(package_dir, request)
+        vendor_result = _fetch_dependencies(package_dir, request, package)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
         if vendor_result.config_template:
@@ -183,7 +191,9 @@ def fetch_cargo_source(request: Request, invoked_through_pip: bool = False) -> R
                 vendor_result.config_template
             )
             project_files.append(_use_vendored_sources(package_dir, config_template))
-        package_components = _generate_sbom_components(package_dir, request, invoked_through_pip)
+        package_components = _generate_sbom_components(
+            package_dir, request, invoked_through_pip, vendor_result.reachable_crates
+        )
 
         if vendor_result.lockfile_was_generated:
             _update_permissive_mode_annotation(annotations, package_components)
@@ -221,27 +231,95 @@ def _update_permissive_mode_annotation(
     )
 
 
-def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendorResult:
+def _fetch_dependencies(
+    package_dir: RootedPath, request: Request, package: CargoPackageInput | None = None
+) -> CargoVendorResult:
     """Fetch cargo dependencies and return a config template for hermetic build."""
     vendor_dir = request.output_dir.join_within_root("deps/cargo")
-    # --locked           Assert that `Cargo.lock` will remain unchanged.
-    # --versioned-dirs   Always include version in subdir name.
-    # --no-delete        Don't delete older crates in the vendor directory.
-    #                    It is necessary to make Cargo keep dependencies that are already
-    #                    present in the vendored directory. This flag has no effect on standalone
-    #                    cargo operations however is crucial when it is invoked from pip.
-    # --respect-source-config tells cargo to respect config in .cargo/config.toml in the repository.
-    #                         Is necessary when working through a proxy or when custom registries
-    #                         must be used.
+    selection = package.packages if package is not None else None
+
+    # A crate stubbed out for one input must neither replace nor shadow the real crate another
+    # input needs, and `cargo vendor` on its own cannot express that: without --no-delete it
+    # drops crates other inputs vendored, and with it a stub left in place shadows a real crate.
+    # Every run therefore vendors into a staging directory and merges. The staging directory is
+    # a sibling of the vendor directory, so merging renames rather than copies.
+    vendor_dir.path.parent.mkdir(parents=True, exist_ok=True)
+    staging_root = Path(tempfile.mkdtemp(prefix=".cargo-staging-", dir=vendor_dir.path.parent))
+    # cargo-vendor-filterer refuses to write into an existing directory
+    staging_dir = staging_root / "vendor"
+    report_path = staging_root / "filter-report.json"
+    try:
+        if selection is None:
+            cmd = [
+                "cargo",
+                "vendor",
+                "--locked",
+                "--versioned-dirs",
+                "--respect-source-config",
+                str(staging_dir),
+            ]
+        else:
+            cmd = _cargo_vendor_filterer_cmd(selection, package, staging_dir, report_path)
+        result = _run_vendor_command(cmd, package_dir)
+        reachable: frozenset[tuple[str, str]] | None = None
+        stubbed: frozenset[str] = frozenset()
+        if selection is not None:
+            reachable, stubbed = _read_filter_report(report_path, staging_dir)
+        _merge_vendored_crates(staging_dir, vendor_dir.path, stubbed)
+    finally:
+        shutil.rmtree(staging_root, ignore_errors=True)
+    return result._replace(reachable_crates=reachable)
+
+
+def _cargo_vendor_filterer_cmd(
+    selection: list[CargoPackageSelection],
+    package: CargoPackageInput | None,
+    output_dir: Path,
+    report_path: Path,
+) -> list[str]:
+    """Build the cargo-vendor-filterer command that keeps only what the selection can reach."""
+    if len({p.no_default_features for p in selection}) > 1 or (
+        len({p.all_features for p in selection}) > 1
+    ):
+        raise PackageRejected(
+            "Packages selected from one cargo input must agree on 'no_default_features' and "
+            "'all_features': cargo-vendor-filterer applies these flags to every selected package",
+            solution=(
+                "Use the same 'no_default_features' and 'all_features' values for every entry in "
+                "'packages', and enable the remaining differences through 'features'"
+            ),
+        )
+    # --keep-dep-kinds no-dev  dev-dependencies are never part of a shipped build, and keeping
+    #                          them pulls back crates (e.g. TLS backends) the build cannot reach.
+    # --json                   names the crates replaced with stubs, so neither the merge nor
+    #                          the SBOM has to guess which vendored directories are stubs.
     cmd = [
-        "cargo",
-        "vendor",
+        CARGO_VENDOR_FILTERER,
         "--locked",
         "--versioned-dirs",
-        "--no-delete",
         "--respect-source-config",
-        str(vendor_dir),
+        "--keep-dep-kinds",
+        "no-dev",
+        "--json",
+        str(report_path),
     ]
+    for selected in selection:
+        cmd += ["--package", selected.name]
+    # member/feature enables a feature on that selected member only
+    features = [f"{p.name}/{feature}" for p in selection for feature in p.features]
+    if features:
+        cmd += ["--features", ",".join(features)]
+    if selection[0].no_default_features:
+        cmd.append("--no-default-features")
+    if selection[0].all_features:
+        cmd.append("--all-features")
+    for platform in (package.platforms if package is not None else None) or []:
+        cmd += ["--platform", platform]
+    cmd.append(str(output_dir))
+    return cmd
+
+
+def _run_vendor_command(cmd: list[str], package_dir: RootedPath) -> CargoVendorResult:
     log.info("Fetching cargo dependencies at %s", package_dir)
     if (proxy_url := get_config().cargo.proxy_url) is not None:
         log.info("Using registry proxy %s for registry dependencies", proxy_url)
@@ -261,6 +339,70 @@ def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendo
             params={"cwd": package_dir, "env": env},
             package_dir=package_dir.path,
         )
+
+
+def _read_filter_report(
+    report_path: Path, vendor_dir: Path
+) -> tuple[frozenset[tuple[str, str]], frozenset[str]]:
+    """Read which vendored crates cargo-vendor-filterer replaced with stubs.
+
+    Returns the real crates as (name, version), and the stubs as the directory names
+    `cargo vendor --versioned-dirs` gives them. The report names only the stubs; every other
+    directory in vendor_dir is a real crate. Those are identified by their own manifest, since a
+    directory name cannot be split into name and version unambiguously (both may contain '-').
+    Asking the tool beats inspecting the directories: a stub is only recognisable by its shape
+    or its contents, and both misread real crates (memchr and anyhow carry `compile_error!` in
+    their own sources).
+    """
+    solution = (
+        f"Check that the {CARGO_VENDOR_FILTERER} on PATH supports --json; "
+        "the version Hermeto's container image ships does."
+    )
+    try:
+        report = json.loads(report_path.read_text())
+    except (OSError, ValueError) as e:
+        raise PackageRejected(
+            f"{CARGO_VENDOR_FILTERER} did not write a readable filter report: {e}",
+            solution=solution,
+        ) from e
+
+    stubs = report.get("stubs") if isinstance(report, dict) else None
+    if not isinstance(stubs, list) or not all(isinstance(stub, str) for stub in stubs):
+        raise PackageRejected(
+            f"{CARGO_VENDOR_FILTERER} wrote a filter report without a list of stubs",
+            solution=solution,
+        )
+
+    stubbed = frozenset(stubs)
+    kept = frozenset(
+        _vendored_crate_identity(crate)
+        for crate in vendor_dir.iterdir()
+        if crate.is_dir() and crate.name not in stubbed
+    )
+    return kept, stubbed
+
+
+def _vendored_crate_identity(crate_dir: Path) -> tuple[str, str]:
+    """Return the (name, version) a vendored crate's manifest declares."""
+    package = _parse_toml_project_file(crate_dir / "Cargo.toml").get("package", {})
+    # https://doc.rust-lang.org/cargo/reference/manifest.html#the-version-field
+    return package["name"], package.get("version", "0.0.0")
+
+
+def _merge_vendored_crates(source_dir: Path, vendor_dir: Path, stubbed: frozenset[str]) -> None:
+    """Move vendored crates into the shared vendor directory, a real crate always winning.
+
+    A stub is only moved where nothing is present yet, so it can never shadow a crate another
+    input vendored for real; everything else replaces whatever is there.
+    """
+    vendor_dir.mkdir(parents=True, exist_ok=True)
+    for crate in source_dir.iterdir():
+        target = vendor_dir / crate.name
+        if target.exists():
+            if crate.name in stubbed:
+                continue
+            shutil.rmtree(target)
+        shutil.move(crate, target)
 
 
 def _parse_toml_project_file(path: Path) -> dict[str, Any]:
@@ -613,8 +755,13 @@ def _generate_sbom_components(
     package_dir: RootedPath,
     request: Request,
     invoked_through_pip: bool = False,
+    reachable_crates: frozenset[tuple[str, str]] | None = None,
 ) -> list[Component]:
-    """Generate SBOM components from Cargo.lock and for the main package."""
+    """Generate SBOM components from Cargo.lock and for the main package.
+
+    When reachable_crates is given, vendored dependencies outside it were stubbed out and are
+    not reported.
+    """
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
 
     all_packages = parsed_lockfile.get("package", [])
@@ -670,7 +817,12 @@ def _generate_sbom_components(
                     subpath=local_packages.get(pkg_name),
                 ).to_component()
             )
-        else:
+        # Workspace and path packages have no source and are never vendored or stubbed
+        elif (
+            reachable_crates is None
+            or pkg.get("source") is None
+            or (pkg_name, pkg_version) in reachable_crates
+        ):
             components.append(
                 CargoPackage(
                     name=pkg_name,
