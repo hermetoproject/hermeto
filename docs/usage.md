@@ -96,7 +96,7 @@ customizations by environment variables.
 In order to simplify this process, Hermeto provides a helper command to generate
 the environment variables in an easy-to-use format. The example above uses the
 "env" format which generates a simple shell script that `export`s the required
-variables (properly shell quoted when necessary). You can `source` this file to
+variables (properly shell quoted when necessary). You can source this file to
 set the variables.
 
 ```shell
@@ -177,9 +177,9 @@ to build in a network isolated mode. All injected files are changed in the
 source itself, so they will be present in the build context for the
 Dockerfile. The environment variables added to the `hermeto.env` file,
 however, will not be pulled into the build process without a specific action to
-`source` the generated file.
+source the generated file.
 
-Outside of this additional `source` directive in any relevant `RUN` command, the
+Outside of this additional sourcing directive in any relevant `RUN` command, the
 rest of a container build can remain unchanged.
 
 ```dockerfile
@@ -188,7 +188,7 @@ FROM golang:1.19.2-alpine3.16 AS build
 COPY ./foo /src/foo
 WORKDIR /src/foo
 
-RUN source /tmp/hermeto.env && \
+RUN . /tmp/hermeto.env && \
     make build
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.0.0
@@ -196,20 +196,20 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.0.0
 COPY --from=build /foo /usr/bin/foo
 ```
 
-*⚠ The `source`d environment variables do not persist to the next RUN
+*⚠ The sourced environment variables do not persist to the next RUN
 instruction. The sourcing of the file and the package manager command(s) need to
 be in the same instruction. If the build needs more than one command and you
-would like to split them into separate RUN instructions, `source` the
+would like to split them into separate RUN instructions, source the
 environment file in each one.*
 
 ```dockerfile
-RUN source /tmp/hermeto.env && \
+RUN . /tmp/hermeto.env && \
     go build -o /foo cmd/foo && \
     go build -o /bar cmd/bar
 
 # or, if preferable
-RUN source /tmp/hermeto.env && go build -o /foo cmd/foo
-RUN source /tmp/hermeto.env && go build -o /bar cmd/bar
+RUN . /tmp/hermeto.env && go build -o /foo cmd/foo
+RUN . /tmp/hermeto.env && go build -o /bar cmd/bar
 ```
 
 #### Build the container
@@ -218,7 +218,7 @@ Now that the Dockerfile or Container file is configured, the next step is to
 build the container itself. Since more than just the source code context is
 needed to build the container, we also need to make sure that there are
 appropriate volumes mounted for the Hermeto output as well as the Hermeto
-environment variable that is being `source`d within the build. Since all
+environment variable that is being sourced within the build. Since all
 dependencies are cached, we can confidently restrict the network from the
 container build as well!
 

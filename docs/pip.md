@@ -734,7 +734,7 @@ pip==22.3.1 --hash=...
 ```
 
 ```dockerfile
-RUN source /tmp/hermeto.env && \
+RUN . /tmp/hermeto.env && \
     pip install -U pip && \
     pip install .
 ```
@@ -846,7 +846,7 @@ WORKDIR /src/simple-color-output
 
 # Need to source the hermeto.env file to set the environment variables
 # (in the same RUN instruction as the pip commands)
-RUN source /tmp/hermeto.env \
+RUN . /tmp/hermeto.env \
     && python3 -m pip install -U pip \
     && python3 -m pip install --use-pep517 -r requirements.txt \
     && python3 -m pip install --use-pep517 .

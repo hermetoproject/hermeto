@@ -141,7 +141,7 @@ RUN npm install -g /tmp/hermeto-output/deps/generic/pnpm-11.x.y.tgz
 WORKDIR /app
 COPY . .
 
-RUN source /tmp/hermeto.env && pnpm install
+RUN . /tmp/hermeto.env && pnpm install
 
 # ...
 ```
