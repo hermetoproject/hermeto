@@ -4,8 +4,10 @@ from typing import Any, Generator
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 import hermeto.core.config as config_module
+from hermeto.core.errors import InvalidInput
 
 DEFAULT_CONCURRENCY = config_module.RuntimeSettings.model_fields["concurrency_limit"].default
 
@@ -118,3 +120,82 @@ def test_cli_config_file_overrides_defaults(tmp_home_cwd: Path) -> None:
 
     config = config_module.get_config()
     assert config.runtime.concurrency_limit == cli_concurrency
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        pytest.param("https://proxy.golang.org,direct", id="default_list"),
+        pytest.param("https://goproxy.example.com", id="single_url"),
+        pytest.param("https://goproxy.example.com,direct", id="url_and_direct"),
+        pytest.param(
+            "https://goproxy.example.com,https://proxy.golang.org,direct",
+            id="url_url_direct",
+        ),
+        pytest.param("off", id="off"),
+        pytest.param("direct", id="direct"),
+    ],
+)
+def test_gomod_proxy_url_accepts_goproxy_lists(proxy_url: str) -> None:
+    settings = config_module.GomodSettings(proxy_url=proxy_url)
+    assert settings.proxy_url == proxy_url
+
+
+def test_gomod_proxy_url_default() -> None:
+    assert config_module.GomodSettings().proxy_url == "https://proxy.golang.org,direct"
+    assert config_module.Config().gomod.proxy_url == "https://proxy.golang.org,direct"
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        pytest.param("https://user:pass@goproxy.example.com", id="single_url_credentials"),
+        pytest.param(
+            "https://goproxy.example.com,https://user:pass@evil.example.com,direct",
+            id="list_with_credentials",
+        ),
+        pytest.param("https://user@goproxy.example.com", id="user_only"),
+        pytest.param("https://:pass@goproxy.example.com", id="password_only"),
+    ],
+)
+def test_gomod_proxy_url_rejects_embedded_credentials(proxy_url: str) -> None:
+    with pytest.raises(ValidationError, match="embedded credentials") as exc_info:
+        config_module.GomodSettings(proxy_url=proxy_url)
+    messages = " ".join(error["msg"] for error in exc_info.value.errors())
+    assert "user:pass" not in messages
+    assert "pass@" not in messages
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        pytest.param("", id="empty"),
+        pytest.param(",", id="empty_entries"),
+        pytest.param("https://goproxy.example.com,", id="trailing_comma"),
+        pytest.param("https://goproxy.example.com,,direct", id="blank_middle_entry"),
+        pytest.param("not-a-url", id="invalid_token"),
+        pytest.param("Direct", id="direct_wrong_case"),
+        pytest.param("OFF", id="off_wrong_case"),
+        pytest.param("ftp://goproxy.example.com", id="non_http_scheme"),
+    ],
+)
+def test_gomod_proxy_url_rejects_empty_or_invalid_entries(proxy_url: str) -> None:
+    with pytest.raises(ValidationError):
+        config_module.GomodSettings(proxy_url=proxy_url)
+
+
+def test_gomod_proxy_login_and_password_still_pair() -> None:
+    settings = config_module.GomodSettings(
+        proxy_url="https://goproxy.example.com",
+        proxy_login="user",
+        proxy_password="secret",  # noqa: S106
+    )
+    assert settings.proxy_login == "user"
+    assert settings.proxy_password is not None
+    assert settings.proxy_password.get_secret_value() == "secret"
+
+    with pytest.raises(InvalidInput, match="Proxy password must be set"):
+        config_module.GomodSettings(proxy_login="user")
+
+    with pytest.raises(InvalidInput, match="Proxy login must be set"):
+        config_module.GomodSettings(proxy_password="secret")  # noqa: S106

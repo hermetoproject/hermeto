@@ -10,6 +10,7 @@ from pydantic import (
     FieldSerializationInfo,
     HttpUrl,
     SecretStr,
+    TypeAdapter,
     ValidationError,
     field_serializer,
     model_validator,
@@ -103,6 +104,41 @@ ProxyUrl = Annotated[
     AfterValidator(_proxy_url_must_not_contain_credentials),
 ]
 
+# Go's GOPROXY tokens are case-sensitive; see https://go.dev/ref/mod#environment-variables
+_GOPROXY_SPECIAL_TOKENS = frozenset({"direct", "off"})
+_HTTP_URL_ADAPTER: TypeAdapter[HttpUrl] = TypeAdapter(HttpUrl)
+_GOPROXY_SYNTAX_HINT = (
+    "Set gomod.proxy_url to a comma-separated list of HTTP(S) URLs and the tokens "
+    "'direct' or 'off' (for example https://proxy.golang.org,direct) using "
+    "HERMETO_GOMOD__PROXY_URL or a configuration file."
+)
+
+
+def _validate_goproxy(value: str) -> str:
+    if not value:
+        raise ValueError(f"gomod.proxy_url must not be empty. {_GOPROXY_SYNTAX_HINT}")
+
+    for entry in value.split(","):
+        if entry in _GOPROXY_SPECIAL_TOKENS:
+            continue
+        if not entry:
+            raise ValueError(
+                f"gomod.proxy_url must not contain empty GOPROXY entries. {_GOPROXY_SYNTAX_HINT}"
+            )
+        try:
+            parsed_url = _HTTP_URL_ADAPTER.validate_python(entry)
+        except ValidationError:
+            raise ValueError(
+                "Each GOPROXY entry must be an HTTP(S) URL or the special token "
+                f"'direct' or 'off' (case-sensitive). {_GOPROXY_SYNTAX_HINT}"
+            ) from None
+        _proxy_url_must_not_contain_credentials(parsed_url)
+
+    return value
+
+
+GoProxy = Annotated[str, AfterValidator(_validate_goproxy)]
+
 
 class ProxyMixin(BaseModel):
     """Proxy URL and authorization mixin.
@@ -156,9 +192,8 @@ class YarnSettings(ProxyMixin, extra="forbid"):
 class GomodSettings(ProxyMixin, extra="forbid"):
     """Settings for Go modules."""
 
-    # TODO: refactor typesystem to trivially include comma-separated lists of URLs.
-    # Ignore type error until that happens.
-    proxy_url: str = "https://proxy.golang.org,direct"  # type: ignore
+    # GOPROXY is a comma-separated list, not a single HttpUrl like other backends.
+    proxy_url: GoProxy = "https://proxy.golang.org,direct"  # type: ignore[assignment]
     download_max_tries: int = 5
     environment_variables: dict[str, str] = {}
 
