@@ -166,8 +166,13 @@ def _generate_sbom_components(
     package_dir: RootedPath,
     request: Request,
     invoked_through_pip: bool = False,
+    reachable_crates: frozenset[tuple[str, str]] | None = None,
 ) -> list[Component]:
-    """Generate SBOM components from Cargo.lock and for the main package."""
+    """Generate SBOM components from Cargo.lock and for the main package.
+
+    When reachable_crates is given, vendored dependencies outside it were stubbed out and are
+    not reported.
+    """
     parsed_lockfile = _parse_toml_project_file(package_dir.path / "Cargo.lock")
 
     all_packages = parsed_lockfile.get("package", [])
@@ -223,7 +228,12 @@ def _generate_sbom_components(
                     subpath=local_packages.get(pkg_name),
                 ).to_component()
             )
-        else:
+        # Workspace and path packages have no source and are never vendored or stubbed
+        elif (
+            reachable_crates is None
+            or pkg.get("source") is None
+            or (pkg_name, pkg_version) in reachable_crates
+        ):
             components.append(
                 CargoPackage(
                     name=pkg_name,
