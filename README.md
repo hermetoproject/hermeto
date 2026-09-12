@@ -106,7 +106,7 @@ podman build . \
   --tag my-app
 ```
 
-Inside the Dockerfile, run `source /tmp/hermeto.env` before your package
+Inside the Dockerfile, run `. /tmp/hermeto.env` before your package
 manager commands.
 
 ### Merging SBOMs

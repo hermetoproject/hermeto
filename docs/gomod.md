@@ -342,7 +342,7 @@ FROM golang:1.19.2-alpine3.16 AS build
 COPY ./fzf /src/fzf
 WORKDIR /src/fzf
 
-RUN source /tmp/hermeto.env && \
+RUN . /tmp/hermeto.env && \
     go build -o /fzf
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.0.0
