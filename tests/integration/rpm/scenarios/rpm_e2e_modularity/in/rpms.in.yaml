@@ -6,4 +6,4 @@ contentOrigin:
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/appstream/os
 
 packages:
-  - vim 
+  - httpd-tools 

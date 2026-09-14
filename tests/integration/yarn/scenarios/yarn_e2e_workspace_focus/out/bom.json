@@ -7,13 +7,13 @@
         }
       },
       "subjects": [
-        "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/app",
+        "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/app",
         "pkg:npm/is-number@6.0.0",
         "pkg:npm/is-number@7.0.0",
         "pkg:npm/is-odd@3.0.1",
         "pkg:npm/ms@2.1.3",
-        "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/shared",
-        "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/tooling"
+        "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/shared",
+        "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/tooling"
       ],
       "text": "hermeto:backend:yarn",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -22,7 +22,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/app",
+      "bom-ref": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/app",
       "name": "app",
       "properties": [
         {
@@ -30,7 +30,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/app",
+      "purl": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/app",
       "type": "library",
       "version": "1.0.0"
     },
@@ -91,7 +91,7 @@
       "version": "2.1.3"
     },
     {
-      "bom-ref": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/shared",
+      "bom-ref": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/shared",
       "name": "shared",
       "properties": [
         {
@@ -99,12 +99,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/shared",
+      "purl": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/shared",
       "type": "library",
       "version": "1.0.0"
     },
     {
-      "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/tooling",
+      "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/tooling",
       "name": "tooling",
       "properties": [
         {
@@ -116,7 +116,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4003a90b06573a23937c6734de276af42054957e57#packages/tooling",
+      "purl": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400e26284b98f3ba963269185df4cdd570cd46fe1c#packages/tooling",
       "type": "library",
       "version": "1.0.0"
     }
