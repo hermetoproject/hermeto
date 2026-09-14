@@ -50,7 +50,9 @@ FROM docker.io/library/rust:latest
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock .cargo .
+COPY Cargo.toml Cargo.lock ./
+COPY .cargo .cargo
+COPY src src
 
 RUN cargo build --release
 ```
