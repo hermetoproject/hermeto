@@ -1,0 +1,17 @@
+lock-version = "1.0"
+
+[[packages]]
+name = "packaging"
+version = "25.0"
+
+[packages.sdist]
+url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c43ba12ce8f7d75970b32084ebe25e9ca9db/packaging-25.0.tar.gz"
+
+[packages.sdist.hashes]
+sha256 = "d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
+
+[[packages.wheels]]
+url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"
