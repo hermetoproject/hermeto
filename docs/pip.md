@@ -807,7 +807,7 @@ It's possible to add parameters in JSON format to point Hermeto at a specific
 source directory, and/or additional requirements files, if needed, e.g.
 
 ```shell
-hermeto fetch-deps --source ./foo-project'{
+hermeto fetch-deps --source ./foo-project '{
   "type": "pip",
   "requirements_files": ["requirements.txt"],
   "requirements_build_files": ["requirements-build.txt"]
