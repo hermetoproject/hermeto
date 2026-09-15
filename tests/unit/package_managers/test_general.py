@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import asyncio
 import random
+import time
 from collections.abc import AsyncGenerator
+from email.utils import formatdate
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -13,11 +15,13 @@ import pytest
 import requests
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase, HTTPBasicAuth
+from yarl import URL
 
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.package_managers import general
 from hermeto.core.package_managers.general import (
+    RetryAfterJitterRetry,
     _async_download_binary_file,
     _get_pkg_requests_session,
     async_download_files,
@@ -283,3 +287,155 @@ async def test_async_download_preserves_redirect_url_encoding(tmp_path: Path) ->
         download_path = tmp_path / "artifact"
         await async_download_files({url: str(download_path)}, concurrency_limit=1)
         assert b"text%2Fplain" in download_path.read_bytes()
+
+
+class TestRetryAfterJitterRetry:
+    _FALLBACK_TIMEOUT: float = 1.0
+
+    @pytest.fixture()
+    def retry(self) -> RetryAfterJitterRetry:
+        return RetryAfterJitterRetry()
+
+    @pytest.fixture()
+    def mock_response(self) -> mock.Mock:
+        resp = mock.Mock(spec=aiohttp_retry.ClientResponse)
+        resp.headers = {}
+        resp.url = URL("https://example.org/artifact?token=secret")
+        return resp
+
+    @pytest.mark.parametrize(
+        "retry_after, expected",
+        [
+            pytest.param("5", 5.0, id="integer"),
+            pytest.param("0", 0.0, id="zero"),
+            pytest.param("2.5", 2.5, id="float"),
+        ],
+    )
+    def test_get_timeout_valid_seconds(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        retry_after: str,
+        expected: float,
+    ) -> None:
+        mock_response.headers = {"Retry-After": retry_after}
+        assert retry.get_timeout(attempt=1, response=mock_response) == expected
+
+    def test_get_timeout_valid_http_date(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+    ) -> None:
+        future = time.time() + 10
+        mock_response.headers = {"Retry-After": formatdate(future, usegmt=True)}
+        timeout = retry.get_timeout(attempt=1, response=mock_response)
+        assert timeout == pytest.approx(10, abs=1)
+
+    def test_get_timeout_capped_at_max_timeout(self, mock_response: mock.Mock) -> None:
+        retry = RetryAfterJitterRetry(max_timeout=10.0)
+        mock_response.headers = {"Retry-After": "60"}
+        assert retry.get_timeout(attempt=1, response=mock_response) == 10.0
+
+    @pytest.mark.parametrize(
+        "headers",
+        [
+            pytest.param({}, id="no-header"),
+            pytest.param({"Retry-After": "-5"}, id="negative"),
+            pytest.param({"Retry-After": "not-a-number"}, id="unparseable"),
+            pytest.param({"Retry-After": "NaN"}, id="nan"),
+            pytest.param({"Retry-After": "Infinity"}, id="infinity"),
+            pytest.param({"Retry-After": "-Infinity"}, id="negative-infinity"),
+        ],
+    )
+    @mock.patch("aiohttp_retry.JitterRetry.get_timeout", return_value=_FALLBACK_TIMEOUT)
+    def test_get_timeout_falls_back_to_jitter(
+        self,
+        mock_get_timeout: mock.Mock,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        headers: dict[str, str],
+    ) -> None:
+        mock_response.headers = headers
+        assert retry.get_timeout(attempt=1, response=mock_response) == self._FALLBACK_TIMEOUT
+
+    @mock.patch("aiohttp_retry.JitterRetry.get_timeout", return_value=_FALLBACK_TIMEOUT)
+    def test_get_timeout_no_response_falls_back_to_jitter(
+        self, mock_get_timeout: mock.Mock, retry: RetryAfterJitterRetry
+    ) -> None:
+        assert retry.get_timeout(attempt=1, response=None) == self._FALLBACK_TIMEOUT
+
+    @pytest.mark.parametrize(
+        "retry_after",
+        [
+            "Sun, 06 Nov 1994 08:49:37 GMT",
+            "Sunday, 06-Nov-94 08:49:37 GMT",
+            "Sun Nov  6 08:49:37 1994",
+            "Sun, 06 Nov 1994 08:49:37 -0000",
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.general.time.time", return_value=784111767.0)
+    def test_http_dates_use_utc(
+        self,
+        mock_time: mock.Mock,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        retry_after: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        try:
+            with monkeypatch.context() as timezone_patch:
+                timezone_patch.setenv("TZ", "EST5")
+                time.tzset()
+                mock_response.headers = {"Retry-After": retry_after}
+                assert retry.get_timeout(attempt=1, response=mock_response) == 10.0
+        finally:
+            time.tzset()
+
+    @pytest.mark.parametrize("retry_after", ["invalid", "-5"])
+    def test_warning_identifies_host_without_query(
+        self,
+        retry: RetryAfterJitterRetry,
+        mock_response: mock.Mock,
+        retry_after: str,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_response.headers = {"Retry-After": retry_after}
+        retry.get_timeout(attempt=1, response=mock_response)
+        assert "example.org" in caplog.text
+        assert "token=secret" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_async_download_retries_429(tmp_path: Path) -> None:
+    from aiohttp import web
+    from aiohttp.test_utils import TestServer
+
+    requests_seen = 0
+
+    async def handler(request: web.Request) -> web.Response:
+        nonlocal requests_seen
+        requests_seen += 1
+        if requests_seen == 1:
+            return web.Response(status=429, headers={"Retry-After": "0"})
+        return web.Response(body=b"artifact")
+
+    app = web.Application()
+    app.router.add_get("/artifact", handler)
+    async with TestServer(app) as server:
+        download_path = tmp_path / "artifact"
+        await async_download_files(
+            {str(server.make_url("/artifact")): download_path}, concurrency_limit=1
+        )
+    assert requests_seen == 2
+    assert download_path.read_bytes() == b"artifact"
+
+
+def test_sync_session_retries_429_without_retry_after(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(general, "_pkg_requests_session", None)
+    session = _get_pkg_requests_session()
+    try:
+        adapter = session.get_adapter("https://example.org")
+        assert isinstance(adapter, HTTPAdapter)
+        assert adapter.max_retries.is_retry("GET", 429, has_retry_after=False)
+    finally:
+        session.close()
