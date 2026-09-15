@@ -1119,7 +1119,7 @@ customizations by environment variables.</p>
 <p>In order to simplify this process, Hermeto provides a helper command to generate
 the environment variables in an easy-to-use format. The example above uses the
 "env" format which generates a simple shell script that <code>export</code>s the required
-variables (properly shell quoted when necessary). You can <code>source</code> this file to
+variables (properly shell quoted when necessary). You can source this file to
 set the variables.</p>
 <div class="highlight"><pre><span></span><code>hermeto<span class="w"> </span>generate-env<span class="w"> </span>./hermeto-output<span class="w"> </span>-o<span class="w"> </span>./hermeto.env<span class="w"> </span>--for-output-dir<span class="w"> </span>/tmp/hermeto-output
 </code></pre></div>
@@ -1178,40 +1178,40 @@ to build in a network isolated mode. All injected files are changed in the
 source itself, so they will be present in the build context for the
 Dockerfile. The environment variables added to the <code>hermeto.env</code> file,
 however, will not be pulled into the build process without a specific action to
-<code>source</code> the generated file.</p>
-<p>Outside of this additional <code>source</code> directive in any relevant <code>RUN</code> command, the
+source the generated file.</p>
+<p>Outside of this additional sourcing directive in any relevant <code>RUN</code> command, the
 rest of a container build can remain unchanged.</p>
 <div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.19.2-alpine3.16</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">build</span>
 
 <span class="k">COPY</span><span class="w"> </span>./foo<span class="w"> </span>/src/foo
 <span class="k">WORKDIR</span><span class="w"> </span><span class="s">/src/foo</span>
 
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>make<span class="w"> </span>build
 
 <span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9/ubi-minimal:9.0.0</span>
 
 <span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>build<span class="w"> </span>/foo<span class="w"> </span>/usr/bin/foo
 </code></pre></div>
-<p><em>⚠ The <code>source</code>d environment variables do not persist to the next RUN
+<p><em>⚠ The sourced environment variables do not persist to the next RUN
 instruction. The sourcing of the file and the package manager command(s) need to
 be in the same instruction. If the build needs more than one command and you
-would like to split them into separate RUN instructions, <code>source</code> the
+would like to split them into separate RUN instructions, source the
 environment file in each one.</em></p>
-<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/foo<span class="w"> </span>cmd/foo<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bar<span class="w"> </span>cmd/bar
 
 <span class="c"># or, if preferable</span>
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/foo<span class="w"> </span>cmd/foo
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bar<span class="w"> </span>cmd/bar
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/foo<span class="w"> </span>cmd/foo
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bar<span class="w"> </span>cmd/bar
 </code></pre></div>
 <h4 id="build-the-container">Build the container<a class="headerlink" href="#build-the-container" title="Permanent link">&para;</a></h4>
 <p>Now that the Dockerfile or Container file is configured, the next step is to
 build the container itself. Since more than just the source code context is
 needed to build the container, we also need to make sure that there are
 appropriate volumes mounted for the Hermeto output as well as the Hermeto
-environment variable that is being <code>source</code>d within the build. Since all
+environment variable that is being sourced within the build. Since all
 dependencies are cached, we can confidently restrict the network from the
 container build as well!</p>
 <div class="highlight"><pre><span></span><code>podman<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>

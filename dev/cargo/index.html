@@ -972,7 +972,9 @@ Dockerfile with basic instructions to build a Rust project</p>
 
 <span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
 
-<span class="k">COPY</span><span class="w"> </span>Cargo.toml<span class="w"> </span>Cargo.lock<span class="w"> </span>.cargo<span class="w"> </span>.
+<span class="k">COPY</span><span class="w"> </span>Cargo.toml<span class="w"> </span>Cargo.lock<span class="w"> </span>./
+<span class="k">COPY</span><span class="w"> </span>.cargo<span class="w"> </span>.cargo
+<span class="k">COPY</span><span class="w"> </span>src<span class="w"> </span>src
 
 <span class="k">RUN</span><span class="w"> </span>cargo<span class="w"> </span>build<span class="w"> </span>--release
 </code></pre></div>

@@ -2361,7 +2361,7 @@ the prefetched archive.</p>
 <div class="highlight"><pre><span></span><code># add to requirements-build.txt or use a separate file
 pip==22.3.1 --hash=...
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </code></pre></div>
@@ -2437,7 +2437,7 @@ the environment file in the step that executes <code>pip install</code>.</p>
 
 <span class="c"># Need to source the hermeto.env file to set the environment variables</span>
 <span class="c"># (in the same RUN instruction as the pip commands)</span>
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="se">\</span>
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--use-pep517<span class="w"> </span>.

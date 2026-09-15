@@ -1613,7 +1613,7 @@ the binary.</p>
 <span class="k">COPY</span><span class="w"> </span>./fzf<span class="w"> </span>/src/fzf
 <span class="k">WORKDIR</span><span class="w"> </span><span class="s">/src/fzf</span>
 
-<span class="k">RUN</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="k">RUN</span><span class="w"> </span>.<span class="w"> </span>/tmp/hermeto.env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/fzf
 
 <span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9/ubi-minimal:9.0.0</span>
