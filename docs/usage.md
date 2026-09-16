@@ -257,6 +257,6 @@ internal only and serve informational purposes and hence may change in between
 releases, please do NOT depend on them!
 
 [CycloneDX v1.6]: https://cyclonedx.org/docs/1.6/json
-[limited set]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13
+[limited set]: https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/property_semantics.py
 [properties]: https://cyclonedx.org/docs/1.6/json/#components_items_properties
 [SPDX v2.3]: https://spdx.github.io/spdx-spec/v2.3/
