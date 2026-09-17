@@ -159,7 +159,9 @@ yaml.representer.SafeRepresenter.add_representer(
 )
 
 
-CYCLONEDX_SCHEMA_URL = "https://raw.githubusercontent.com/CycloneDX/specification/refs/heads/master/schema/bom-1.6.schema.json"
+CYCLONEDX_SCHEMA_URL = (
+    "https://raw.githubusercontent.com/CycloneDX/specification/1.6.2/schema/bom-1.6.schema.json"
+)
 
 
 @dataclass

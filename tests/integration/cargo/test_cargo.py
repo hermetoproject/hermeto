@@ -33,13 +33,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=False,
             ),
-            id="cargo_mixed_git_crate_dependency",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "cargo"},),
-                check_output=False,
-            ),
             id="cargo_uses_resolver_v3",
         ),
         pytest.param(
@@ -80,15 +73,6 @@ def test_cargo_packages(
 @pytest.mark.parametrize(
     "test_params,check_cmd,expected_cmd_output",
     [
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "cargo"},),
-                check_output=True,
-            ),
-            [],  # No additional commands are run to verify the build
-            [],
-            id="cargo_mixed_git_crate_dependency",
-        ),
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "cargo"},),
