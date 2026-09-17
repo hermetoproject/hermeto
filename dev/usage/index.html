@@ -1159,7 +1159,7 @@ with <code>hermeto merge-sboms</code></p>
 </code></pre></div>
 <p>The subcommand expects at least two SBOMs, all produced by Hermeto, and will
 exit with error otherwise. The reason for this is that Hermeto supports a
-<a href="https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/sbom.py#L7-L13">limited set</a> of component <a href="https://cyclonedx.org/docs/1.6/json/#components_items_properties">properties</a>
+<a href="https://github.com/hermetoproject/hermeto/blob/main/hermeto/core/models/property_semantics.py">limited set</a> of component <a href="https://cyclonedx.org/docs/1.6/json/#components_items_properties">properties</a>
 (documented in <a href="../sbom/">SBOM documentation</a>), and it validates that no other
 properties exist in the SBOM. By default the result of a merge will be printed
 to stdout. To save it to a file use <code>-o</code> option</p>
