@@ -26,6 +26,11 @@
       "/(^|/)[\\w-]*requirements([-._]\\w+)?\\.in$/"
     ]
   },
+  // Ignore pip requirements files in tests. If left enabled, Renovate will try to raise
+  // vulnerability alerts for them.
+  "ignorePaths": [
+    "tests/**/*requirements*.{in,txt,pip}"
+  ],
   "packageRules": [
     {
       "description": "Weekly GitHub Actions updates",
@@ -51,8 +56,8 @@
     // Rust: handle major.minor manually; newer cargo has broken integration tests and production image builds
     {
       "description": "Disable golang and rust major and minor updates in production Dockerfile",
-      "matchFileNames": [
-        "Dockerfile"
+      "matchManagers": [
+        "dockerfile"
       ],
       "matchPackageNames": [
         "**/golang",
@@ -67,8 +72,8 @@
     // Node v25 stopped shipping corepack which we need
     {
       "description": "Limit node to versions below 25 in production Dockerfile",
-      "matchFileNames": [
-        "Dockerfile"
+      "matchManagers": [
+        "dockerfile"
       ],
       "matchPackageNames": [
         "**/node"
@@ -83,16 +88,6 @@
       "groupName": "production Dockerfile"
     },
     {
-      "description": "Disable updates on test dependencies",
-      "matchFileNames": [
-        "tests/**"
-      ],
-      "vulnerabilityAlerts": {
-        "enabled": false
-      },
-      "enabled": false
-    },
-    {
       "description": "Group all test Containerfile updates",
       "matchManagers": [
         "dockerfile"
@@ -100,11 +95,19 @@
       "matchFileNames": [
         "tests/**"
       ],
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "enabled": true,
       "groupName": "test Containerfiles"
+    },
+    {
+      "description": "Disable updates on version specific tests",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchFileNames": [
+        "tests/integration/bundler/scenarios/bundler_e2e_ruby{33,40}/**",
+        "tests/integration/gomod/scenarios/gomod_e2e_1_{18,21,22}*/**",
+        "tests/integration/pip/scenarios/pip_e2e_wheels/**"
+      ],
+      "enabled": false
     },
     // Disable only non-minor/patch types; disabling the whole manager stops all updates
     {
