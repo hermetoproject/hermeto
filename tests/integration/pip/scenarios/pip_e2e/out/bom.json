@@ -9,7 +9,7 @@
       "subjects": [
         "pkg:pypi/flit-core@3.12.0",
         "pkg:pypi/packaging@24.2",
-        "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a46837b4585f88a518283bfeb61d1e2b6c67bd86",
+        "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4087b0769441130c54d987004900f0b7a4ee030de5",
         "pkg:pypi/tomli?checksum=sha256:3af7c4b571d1ccddaba020c558da0ce5b5e24edc830e478a903d82dc2d9013ae&download_url=https://github.com/hukkin/tomli/archive/refs/tags/2.2.1.tar.gz"
       ],
       "text": "hermeto:backend:pip",
@@ -49,7 +49,7 @@
       "version": "24.2"
     },
     {
-      "bom-ref": "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a46837b4585f88a518283bfeb61d1e2b6c67bd86",
+      "bom-ref": "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4087b0769441130c54d987004900f0b7a4ee030de5",
       "name": "test_package",
       "properties": [
         {
@@ -57,7 +57,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40a46837b4585f88a518283bfeb61d1e2b6c67bd86",
+      "purl": "pkg:pypi/test-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%4087b0769441130c54d987004900f0b7a4ee030de5",
       "type": "library",
       "version": "1.0.0"
     },
