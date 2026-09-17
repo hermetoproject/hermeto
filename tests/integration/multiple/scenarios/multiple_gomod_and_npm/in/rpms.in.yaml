@@ -1,9 +1,9 @@
 contentOrigin:
   repos:
-    - repoid: ubi-9-baseos-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/os
-    - repoid: ubi-9-appstream-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/appstream/os
+    - repoid: ubi-10-baseos-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/baseos/os
+    - repoid: ubi-10-appstream-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/appstream/os
 
 packages:
   - golang

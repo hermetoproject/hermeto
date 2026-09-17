@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.75 as builder
+FROM mirror.gcr.io/library/rust:1.97.1-slim-bookworm as builder
 
 COPY . /source
 

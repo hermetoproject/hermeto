@@ -25,8 +25,8 @@
         "pkg:golang/encoding?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
-        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
+        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
+        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
         "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=module",
         "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=package",
         "pkg:golang/github.com/stretchr/testify@v1.10.0?type=module",
@@ -104,7 +104,7 @@
         }
       },
       "subjects": [
-        "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2#npm-package",
+        "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9#npm-package",
         "pkg:npm/react@19.1.0"
       ],
       "text": "hermeto:backend:npm",
@@ -117,33 +117,123 @@
         }
       },
       "subjects": [
-        "pkg:rpm/redhat/binutils-gold@2.35.2-63.el9?arch=x86_64&checksum=sha256:339d9bb2dc0e41c4756f1a4f82e82f6654818b72de74f1f0377c76277617352b&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/binutils@2.35.2-63.el9?arch=x86_64&checksum=sha256:4eb918b63dee7daf32117df2e3fcb02ad4ba3d96cb25677cf55315deceb7e22a&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/cpp@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:b5567c690d46d4f5a2cb13be6a4f962dbe8cc7e821b9d3baa09a4f10c59014d9&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/diffutils@3.7-12.el9?arch=x86_64&checksum=sha256:2d4c4fdfc10215af3c957c24995b79a26e27e6d76de4ed1f5198d25bf7ef9671&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/elfutils-debuginfod-client@0.192-5.el9?arch=x86_64&checksum=sha256:e5b1a7a9e1467bfe00913e9b22ba5665852f8c61900205a32d3043ace9e1c7c2&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/gcc@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:03c99bc1021dbe54dd93120ed6b5249bbb02dbd5da9e0dc5d8c4a21d674fb1fd&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/glibc-devel@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:1565ca914cb58037fc9f50af64be3a43d5ae854b5d30f01882eb06d57c44d52c&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/glibc-headers@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:10579e7e1a0140841209c023fdb9034aae1b3723ab5807f6e6c61e8dd2dbffa7&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/golang-bin@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:0c28b320d792c2984006eae41792a47bc827a875607fd16ed0604397d549812e&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/golang-race@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:8112bfa5292cfbe4f670b689aba65e8d7a0a9985d0f8845bde1313849f4d6aad&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/golang-src@1.23.6-2.el9_6?arch=noarch&checksum=sha256:8c5a8b16db661b76afda382c55749692277a3fd7482a4ab4838822e467c7560c&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/golang@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:3f868f055d64ba4450eddd5bf8aed497990454fb4f314e2d0fb4a0b22ff5bab2&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/kernel-headers@5.14.0-570.16.1.el9_6?arch=x86_64&checksum=sha256:c1d00377558618566384ca3a4decd24b32ca1138292e07110c80539cb4056b61&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/libbrotli@1.0.9-7.el9_5?arch=x86_64&checksum=sha256:bb3175e435723e98cc1a5063eafa82231092eca3bf6276d24505eaeaaa817113&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/libmpc@1.2.1-4.el9?arch=x86_64&checksum=sha256:b97b4e98c3c6f41dcfc2ceb4ffa1aba7a338b7cfd9e6c4f63e3160dd3cc033d3&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/libpkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:4feae5941b73640bd86b8d506a657cac5b770043db1464fbcd207721b2159dda&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/libxcrypt-devel@4.4.18-3.el9?arch=x86_64&checksum=sha256:c1d171391a7d2e043a6953efd3df3e01edc9b4c6cdb54517e1608d204a5fce18&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/make@4.3-8.el9?arch=x86_64&checksum=sha256:561f0c2251e9217c81a6c88de4d2d9231a039aaab37e8a0d2559d36ce9fa85fd&epoch=1&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/nodejs-docs@16.20.2-8.el9_4?arch=noarch&checksum=sha256:6dc10d979e48243cfee61e4ce95ec7a1e90bbf5ff5e7ac00af065d1f68e43270&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/nodejs-full-i18n@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:ced787ff387945af3c1e6c96905120e4a9fb939feca6d6b9a017ad14a6908ccb&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/nodejs-libs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:68d15f8a48676fbf9f4c891da8b651eaeb133e1eb7a776eaec8f5db2a5e83cec&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/nodejs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:d5b23abda3f4ed68d4986fdbca82a15a63a179dc2ca4cb772e08e3d9ac3ae43f&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/npm@8.19.4-1.16.20.2.8.el9_4?arch=x86_64&checksum=sha256:f09f99be52843be351dda149a819bbcb10218b4460e0f89554b7a44532498e64&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/openssl-devel@3.2.2-6.el9_5.1?arch=x86_64&checksum=sha256:30cd1b3dec089a7da71e9167532693bef7c202a5dbe3c010af2a9387106a0b36&epoch=1&repository_id=ubi-9-appstream-rpms",
-        "pkg:rpm/redhat/pkgconf-m4@1.7.3-10.el9?arch=noarch&checksum=sha256:91bafd6e06099451f60288327b275cfcc651822f6145176a157c6b0fa5131e02&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/pkgconf-pkg-config@1.7.3-10.el9?arch=x86_64&checksum=sha256:9a502d81d73d3303ceb53a06ad7ce525c97117ea64352174a33708bf3429283d&repository_id=ubi-9-baseos-rpms",
-        "pkg:rpm/redhat/pkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:bb47b4ecc499c308f41031a99e723827d152d5d750f59849d0c265d820944a26&repository_id=ubi-9-baseos-rpms"
+        "pkg:rpm/redhat/apr-util-lmdb@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:828d1b9054655bcd3d5ccfea75c58b22198d051217b2e62bddffe7101612c898&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/apr-util-openssl@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:b4d257c53186c410bc6f41e4f520ba58885f3cb5794ba559ed10ddf1dbce6038&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/apr-util@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:e715db5124ac3f11602a70371445f1b64cf625abacce80457f07b9807761b17c&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/apr@1.7.5-3.el10?arch=x86_64&checksum=sha256:fa3e93365206a18e39fcb76787f4027a7537f7d3a2e4eb28346082a46c3ac57c&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/binutils-gold@2.41-63.el10?arch=x86_64&checksum=sha256:da272acde4bce4b8421c3b5ac9940f0bd8a9f3d88176769e05687d59ce700552&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/binutils@2.41-63.el10?arch=x86_64&checksum=sha256:6c9a5b31e855a216845858b4c642f67fe31cfd3dff5aa5d63e8ecff963904c0c&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/c-ares@1.34.6-2.el10_2?arch=x86_64&checksum=sha256:4d973e180e78f109489e33534a1121f4315edf70e0ed3fe75779dca1786f763e&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/cpp@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:52a30ef8bfce05a3a5417f19eb141c566c33d17891c23af93d29b2744104ed7c&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/cyrus-sasl-lib@2.1.28-30.el10_2?arch=x86_64&checksum=sha256:6c61ebc24e3acb4f6adc12e16e982d9759ff22a0f86d9e15009dedf20c70244d&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/elfutils-debuginfod-client@0.194-2.el10_2?arch=x86_64&checksum=sha256:41d8283ea8b643836aa1885a79c55919885d2009bdf31d81b35c179877d9a483&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/gcc@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:ccba654a3d240e2a3a3c4a1c3c2f8b1adb841db4f69879c823613735476765d1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/git-core-doc@2.52.0-1.el10?arch=noarch&checksum=sha256:0a69ab9204f3994ae5c16ca3e8fdf15a650918ca16c0e7c660c9afda69123142&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/git-core@2.52.0-1.el10?arch=x86_64&checksum=sha256:bb244ca5fe4ad18b8e628861556b57569d51546d3e4f2a3f478dabc0f158712f&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/git@2.52.0-1.el10?arch=x86_64&checksum=sha256:622dffee89bf78f57e572f156d216e75785b184dc1db2b5ea943871d790b2abf&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/glibc-common@2.39-128.el10_2?arch=x86_64&checksum=sha256:18044ab8318d974b54cd3ef812340a7cc44242cd32fc3db45b90816dceee7372&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/glibc-devel@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5567978471d6447e41b921a8e3d95491292e4b6da1487abf3b87e80b2f9057a&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/glibc-langpack-en@2.39-128.el10_2?arch=x86_64&checksum=sha256:266458a6a80ea817983b88bc9ce514d8ba2af16fd9579b52a452d732bce994be&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/glibc-minimal-langpack@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5c47cf2079ad177d11872dc8a5084b51a64c24f727e94712f2d2f1215dabdeb&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/glibc@2.39-128.el10_2?arch=x86_64&checksum=sha256:52abca1c1e3fa18532631d7a995c2c193739e226569bc6366ad372f60796599f&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/golang-bin@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:90e7cacb08933e095b2013aae11c50f7ab4fda8cbe71f050b897fb41336e018c&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/golang-race@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:f976e6027f2f661782de1a0176aafdf9523ef396573c9f7e5176d62e045e5822&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/golang-src@1.26.7-1.el10_2?arch=noarch&checksum=sha256:c37617677f14a61fc7150c7d751719452f3a0e8959693352a7a405ebdf2172c2&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/golang@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:ee945bd180f1683b9e29a77fa1cd12842c759f95796385e3248bb73a5f27cd79&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/groff-base@1.23.0-10.el10?arch=x86_64&checksum=sha256:fe7aaba08cf90b86523b7435aa4caaf08942ec82b04129e44435a3013555c6b3&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/jansson@2.14-3.el10?arch=x86_64&checksum=sha256:b5d6eeea14961f64ece8b3bbefeb53a61424822ccbaedb833f7fc7e50f6707c5&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/kernel-headers@6.12.0-211.55.1.el10_2?arch=x86_64&checksum=sha256:0a38e481e5e4b5f642639625bef1b9c02d80d2ab4984e1ca280a88be29a65885&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/less@661-3.el10?arch=x86_64&checksum=sha256:7a785313031788418857f3ef6a82617ad5527e56153174ac44482f74289d1f33&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libbrotli@1.1.0-7.el10_1?arch=x86_64&checksum=sha256:894800ee7893f8e4aa1d3870afb22b54d92624134bc7cf5d2cdc1a1db92366db&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libcbor@0.11.0-3.el10?arch=x86_64&checksum=sha256:fdf8446ec31ab2efddc92e0164946192bcec3b8290a3a810aa01418cdc3522c8&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libedit@3.1-52.20230828cvs.el10?arch=x86_64&checksum=sha256:d984e5aa4856820528bd2829f086c2f3883173b91daa0a304af215e3a0c6a6be&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libfido2@1.14.0-7.el10?arch=x86_64&checksum=sha256:132ad4a76f742a97a670255869b9422e38dfa5a6885c474963242d4a0c50a088&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libmpc@1.3.1-7.el10?arch=x86_64&checksum=sha256:0ffe6cc4aa8936e1ed0d807c8bb059a864aa5cb687cde85f211f3d050a45a1a2&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/libpkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:3c771e6212564874eb7e6200f22cb2e05265e7319984590c0f4de3eb5733b75f&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/libserf@1.3.10-7.el10?arch=x86_64&checksum=sha256:aacb3db4118c92c0311489d013ca3a2c9beed54d184bc78e266aa4f4a524c306&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/libuv@1.52.1-1.el10_2?arch=x86_64&checksum=sha256:46ff203b97efdfdc81764b7eca1f56b71d26afd16fcf26db5e86afbc0fcaa73d&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/libxcrypt-devel@4.4.36-10.el10?arch=x86_64&checksum=sha256:5e98ac0095da4e23b8a7b0dfc8d6fc97b0fa0d6c5d7bb0d70fe1dbf97ae64eb6&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/lmdb-libs@0.9.32-4.el10?arch=x86_64&checksum=sha256:83b34a97fc0201716a490c4ccd64d6119d2ccd2d84160d0ad146934cfee36522&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/make@4.4.1-9.el10?arch=x86_64&checksum=sha256:1c7b61c065106c0eb3a958e55ffbe37734aebcf440b0c36435ca7eb41b8e0110&epoch=1&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/ncurses@6.4-15.20240127.el10_1?arch=x86_64&checksum=sha256:420a86b376c70f56cd06f8cea4614b7c4287223a4602b2d6e46e54cd7778e398&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/nodejs-docs@22.23.2-1.el10_2?arch=noarch&checksum=sha256:929a0f31333a61a31501de766550e8dda6da569baf65f21932873774766679f1&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/nodejs-full-i18n@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c02ad25a9cc8bd3eb364465ca6c6dfbfd0946d4eeaa8b05995695ae26b8bf1ef&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/nodejs-libs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:ab0187530a692251c0497acb3bff83978d4808fbc2123d8e9210057caf569a71&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/nodejs-npm@10.9.8-1.22.23.2.1.el10_2?arch=x86_64&checksum=sha256:36edc11113245a864de4fff5299a98497dcc10cc1a0b8d28c3ec929d03d4c7e5&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/nodejs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c879b5a7c70b9287c257aef0b333d9b197ec1ee915e041716bfe0df24b9d4952&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/openssh-clients@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:822f2f5e93bcd8aba0af4b4bcdc0d541f83f60196ed9128f9373553daba34146&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/openssh@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:74a11d1eee8f254e30be4e6c7d661b876ee91fe9f9fbb75d8c266f9aa921efb8&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/openssl-devel@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b4edabb7640bdc31d4bf718070d010aeb59741beb54c16153c5d17b41e93c0df&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/openssl-libs@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:f7a77a5c5897d4bf6e3abcf536c6d92bb60cf698db4e2334908dabdbac54486a&epoch=1&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/openssl@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b3e0a119be23f061ffcb13263de6bc91026c27bd62d5d93778a8241c9d9c3cb6&epoch=1&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/perl-AutoLoader@5.74-515.el10_2?arch=noarch&checksum=sha256:bb19724c1172dc09ee19c26871152ae42fc415344f83ab2baa42aa096220a63c&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-B@1.89-515.el10_2?arch=x86_64&checksum=sha256:ca48fdc20045cda96b86bd23667ea8b3d7a0a6b7302a3f4f974df74273c61d43&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Carp@1.54-511.el10?arch=noarch&checksum=sha256:e33d8c709b3dbb274aaafcfe4226a7f4b3b134554a08ba16140dda9368f0655e&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Class-Struct@0.68-515.el10_2?arch=noarch&checksum=sha256:a09900d358c9980ff778ff8bfb75d13028bdb4065ab52fb508149f1c216a2303&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Data-Dumper@2.189-512.el10?arch=x86_64&checksum=sha256:12f7afba0d8e2fdca00a7a391b9c536026e8c8e7ca044b42a434917a1caf56a3&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Digest-MD5@2.59-6.el10?arch=x86_64&checksum=sha256:e71faadc86b93185a2c41fb80f54ab4d407b85eb011013c5d31079d7aff8cc30&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Digest@1.20-511.el10?arch=noarch&checksum=sha256:f3fc3d8bc266271194c9c22ef75fee991dc188855dae762f8a0dde140d1ae3b3&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-DynaLoader@1.56-515.el10_2?arch=x86_64&checksum=sha256:f4dc0cae55a3873176c87a86ed39663c40365db8ee68061d2745dace46192b7b&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Encode@3.21-511.el10?arch=x86_64&checksum=sha256:9bb023e78910e4a88076d9cef63094fbfec89dfc4d7dd2e8195288ed5f8cfe3d&epoch=4&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Errno@1.38-515.el10_2?arch=x86_64&checksum=sha256:1c56ee6d403bab3720410ab8b8a58884875613ae28b1932f624fbdeb592714d2&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Error@0.17029-18.el10?arch=noarch&checksum=sha256:e19f238b73c9dac0041cf031ff89d653e72a2217fdd102143c8bf170843c7b6c&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Exporter@5.78-511.el10?arch=noarch&checksum=sha256:7717ade5f90dab98aea4217afdc0ffff8971ddc79a1ba34e133d4dd719e7f499&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Fcntl@1.18-515.el10_2?arch=x86_64&checksum=sha256:07f375ba0edff5420b17ed4206f1c78bb318ffde39eb0dc9d8f06bdffae65edf&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-File-Basename@2.86-515.el10_2?arch=noarch&checksum=sha256:5dbe9129690efedfef04e1d257c526e7aee99db61bd91e71484bc62e4add4c16&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-File-Path@2.18-512.el10?arch=noarch&checksum=sha256:de5f9cb446da59c4b6bacacf253a8be44ca8d094fe1e569189d99e762724ee5f&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-File-Temp@0.231.100-512.el10?arch=noarch&checksum=sha256:d7cec8ac7e8a4fe82d09fb3f5fcddc7723b41b0baef680a250ae0f5c27f3709c&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-File-stat@1.14-515.el10_2?arch=noarch&checksum=sha256:20dfe9203e8695f07b39fedf51a181a27593779a567fea769750f308731a28b5&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-FileHandle@2.05-515.el10_2?arch=noarch&checksum=sha256:b8cf07a92ebfc5f3f3ad2b104b3c5c523a8f2518c75ea0719cf29cbcbdebf622&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Getopt-Long@2.58-3.el10?arch=noarch&checksum=sha256:18bcc4a23330f281c9d882843d9a552aefea14012a4a5a71896a646e94f87bd6&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Getopt-Std@1.14-515.el10_2?arch=noarch&checksum=sha256:185c7418709f22db5a08fbd68236f1ed321b1e828fd2c678b456feacf27bf2b1&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Git@2.52.0-1.el10?arch=noarch&checksum=sha256:3294e57cc05763a07f3ee1d1f1f3707d2b88afee72fb9fb90215bcce9e5d7a36&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-HTTP-Tiny@0.088-512.el10?arch=noarch&checksum=sha256:aaba92b1d9a41f453d92c4a37c236331595556d8b1ef3ba27efe79191b2ee348&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-IO-Socket-IP@0.42-512.el10?arch=noarch&checksum=sha256:fc53776bb07d9a12c61b2e2160abda314f0fb3e3bdccbeedc5d186a9bb9bf162&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-IO-Socket-SSL@2.085-3.el10?arch=noarch&checksum=sha256:f78f083f60a73ca447d6727d11cd2182de85acc787369f378e6b1067dbe94eba&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-IO@1.55-515.el10_2?arch=x86_64&checksum=sha256:0d36b9c2e660ac67780743996304a396afdf33ef76d56785cf41dcb47097b846&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-IPC-Open3@1.22-515.el10_2?arch=noarch&checksum=sha256:528428cfb77491ef21fb107294381feccc08943c031229e9aee66104aa75e6d5&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-MIME-Base64@3.16-511.el10?arch=x86_64&checksum=sha256:b42ad237a9243106c919cfd59fe863b78912c6d49f7d7b7afa649b02550fac07&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Mozilla-CA@20231213-5.el10?arch=noarch&checksum=sha256:c73ab5645016c9965737ee0871cd91ca898ed6220e63c270d852b015f24e1ec6&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-NDBM_File@1.17-515.el10_2?arch=x86_64&checksum=sha256:82e12fae31f711c8a287d887afdd1969eac2541d6cf3b23a47d6e872b7a6c423&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Net-SSLeay@1.94-8.el10?arch=x86_64&checksum=sha256:b81610e8911a065044d009316a4d76f9ea09e0810494b752d92273831d27f57b&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-POSIX@2.20-515.el10_2?arch=x86_64&checksum=sha256:b7d036db98860078d0755fa8790e69cfd6320f07d96db50b8edafaddfad5bb62&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-PathTools@3.91-512.el10?arch=x86_64&checksum=sha256:c32a4dfcd0782cbcd8560d4d5c19df5cea108d818d55461f377422f05bdd7c7d&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Pod-Escapes@1.07-511.el10?arch=noarch&checksum=sha256:c200e23d737f4f08e231c082ba9efa1151c142b95c2e93668a861ec6e8af6387&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Pod-Perldoc@3.28.01-512.el10?arch=noarch&checksum=sha256:a58c465c213515cfde8645985bbe1381d2d705c0da208a8629d292288247c186&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Pod-Simple@3.45-511.el10?arch=noarch&checksum=sha256:14a770a6482afb5d6e59aeb6d9243018fbed2a775f584f1d5aad8bf57436419e&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Pod-Usage@2.03-511.el10?arch=noarch&checksum=sha256:526d436304ad58ac2ae714211b4e633ff1dfa5f481c4669c4b3aac36345c3069&epoch=4&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Scalar-List-Utils@1.63-511.el10?arch=x86_64&checksum=sha256:0c49a699f11160173f7f96c864d64a05b0bed2ea6a6ec090aef3c3914de405dc&epoch=5&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-SelectSaver@1.02-515.el10_2?arch=noarch&checksum=sha256:15683a0debfc26284f806085400578b9169b665e9a8d6a85b035d55401792ecb&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Socket@2.038-511.el10?arch=x86_64&checksum=sha256:a0cabaab2498a22f30eb695efc836a0245907823487c07993236c4f725569a3b&epoch=4&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Storable@3.32-511.el10?arch=x86_64&checksum=sha256:c1606e0986462e8dee953955f864045b84e4efc568333c26e5bb2ab9a5102ae1&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Symbol@1.09-515.el10_2?arch=noarch&checksum=sha256:435a6381ec6ab206fc580917fae0fa4b981c3348c98a2951b27fee452f1a5889&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Term-ANSIColor@5.01-512.el10?arch=noarch&checksum=sha256:1911e024055c4912acf9cb7b36dcafcaaf9011280baf0fb57f8c0f0557f1ee7a&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Term-Cap@1.18-511.el10?arch=noarch&checksum=sha256:1a74bbcf53f340c2db848c898d6a1eccb296503576bd803be46716a3f2d07f05&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-TermReadKey@2.38-24.el10?arch=x86_64&checksum=sha256:3337a0f46d16e35dd5314019f15c57d63402742816846aca591e0676603219da&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Text-ParseWords@3.31-511.el10?arch=noarch&checksum=sha256:1888de997708159ded07c0a55ea8b843ca8f8b2a6499d7b7841969ac36825ca5&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Text-Tabs%2BWrap@2024.001-511.el10?arch=noarch&checksum=sha256:939259f36c6068e64c071f6b9904e8013330a06ba7c07569a8db47723afdfeaa&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-Time-Local@1.350-511.el10?arch=noarch&checksum=sha256:bc30eb0596ae24503e5baf578b84122b68e3ca8d012562a73406d4afdabfbd6b&epoch=2&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-URI@5.27-3.el10?arch=noarch&checksum=sha256:27d79250ed875e4700f8e10334e670dacb6692ea3f60f225924d238a015dd4c5&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-base@2.27-515.el10_2?arch=noarch&checksum=sha256:fd0c3533eecf3acaae4968dda7e7019498fc0b9aacc80bfa2c191a2bb8762c13&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-constant@1.33-512.el10?arch=noarch&checksum=sha256:2004a0ea190e5bf30a12dae628333d4f31bf89c1611ae4283c77fcdadc921f07&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-if@0.61.000-515.el10_2?arch=noarch&checksum=sha256:6633dcfb384e9e62b81bb75e79dc8892cad5aa067193154f7a8dd07189e1351f&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-interpreter@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:3e3e25218e1299a14cd9d48e83e666df212c1e828d433a53110f009d8da93d9d&epoch=4&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-lib@0.65-515.el10_2?arch=x86_64&checksum=sha256:a3dcc8855937b785005809885120d0650ab1006582ac62d0ede7dc0032e74353&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-libnet@3.15-512.el10?arch=noarch&checksum=sha256:328e9e9c9c216a2bda6f205ff4637754914a6a21cb9fb792c6c3e7dd8adf8bde&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-libs@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:5e1303edcc1c5fdbeed8a1264af4cebee983acb3b6a3735245e151496b3366fd&epoch=4&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-locale@1.12-515.el10_2?arch=noarch&checksum=sha256:a0a9d2e42da26f086046f0f708cc37819f2ab9d7c59dffaa014786d7cd0e8823&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-mro@1.29-515.el10_2?arch=x86_64&checksum=sha256:ec9938a15934801a5947a9022a65d73988cae13c77e4dfe926762f4e7aceb063&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-overload@1.37-515.el10_2?arch=noarch&checksum=sha256:3082541b29d0e0dcba0ab87b2515b60c173d0aa5d3fe76ce3ce8eb067dbe6668&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-overloading@0.02-515.el10_2?arch=noarch&checksum=sha256:9580567af6d1a37641677655dc51be300a8c4b026906254078a192ffad447268&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-parent@0.241-512.el10?arch=noarch&checksum=sha256:f1f3a1a07d86b752c46d96da1ef18e2243732c6354c9a3fd1d17a7e224031d5f&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-podlators@5.01-511.el10?arch=noarch&checksum=sha256:6b8001129818f1f4615a4704e679d380b736ae7333a837ba567967660320a6b2&epoch=1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/perl-vars@1.05-515.el10_2?arch=noarch&checksum=sha256:1f1137469608a6dd9d1f8fa8768874fa3f0a4f46dcc13a5957904d77e5802f81&epoch=0&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/pkgconf-m4@2.1.0-3.el10?arch=noarch&checksum=sha256:f6a99c6e64b9358a0b4db60e4fb2b5c858eb0487a504690e80d1b84b9d044995&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/pkgconf-pkg-config@2.1.0-3.el10?arch=x86_64&checksum=sha256:b90a31630640ca9a05ba842032ccbe7ae786318bb808ffb49f252acdb1419235&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/pkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:63c965654dfd260d755bd36bdb19ced0036aa4c1e2b64d726c95fad98b2dc041&repository_id=ubi-10-baseos-rpms",
+        "pkg:rpm/redhat/subversion-libs@1.14.5-3.el10?arch=x86_64&checksum=sha256:e7d1379a03bb05fd6db7a06cc72562c82e387e60fe8568b7748d191f8abc8b69&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/subversion@1.14.5-3.el10?arch=x86_64&checksum=sha256:255c26aec3a47b57e66dbfff334fe9af48439efcc782132c5e5b3239c78699a1&repository_id=ubi-10-appstream-rpms",
+        "pkg:rpm/redhat/utf8proc@2.7.0-9.el10?arch=x86_64&checksum=sha256:5c04230a07c93e0470781b7a803722828804e414ba447a16d7320282619f866d&repository_id=ubi-10-appstream-rpms"
       ],
       "text": "hermeto:backend:rpm",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -368,7 +458,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
       "name": "example.com/greetings",
       "properties": [
         {
@@ -376,12 +466,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
       "type": "library",
-      "version": "v0.0.0-19700101000000-6e7e11ebd16a"
+      "version": "v0.0.0-19700101000000-3a44f6b77ea1"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
+      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
       "name": "example.com/greetings",
       "properties": [
         {
@@ -389,9 +479,9 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-6e7e11ebd16a?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2",
+      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-3a44f6b77ea1?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9",
       "type": "library",
-      "version": "v0.0.0-19700101000000-6e7e11ebd16a"
+      "version": "v0.0.0-19700101000000-3a44f6b77ea1"
     },
     {
       "bom-ref": "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=module",
@@ -1191,7 +1281,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2#npm-package",
+      "bom-ref": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9#npm-package",
       "name": "npm-package",
       "properties": [
         {
@@ -1199,7 +1289,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406e7e11ebd16af4608bd3f97a0de12d0de24ba2a2#npm-package",
+      "purl": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%403a44f6b77ea1248addc53b40e3d02be7fd3812b9#npm-package",
       "type": "library",
       "version": "1.0.0"
     },
@@ -1217,7 +1307,59 @@
       "version": "19.1.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/binutils-gold@2.35.2-63.el9?arch=x86_64&checksum=sha256:339d9bb2dc0e41c4756f1a4f82e82f6654818b72de74f1f0377c76277617352b&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/apr-util-lmdb@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:828d1b9054655bcd3d5ccfea75c58b22198d051217b2e62bddffe7101612c898&repository_id=ubi-10-appstream-rpms",
+      "name": "apr-util-lmdb",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/apr-util-lmdb@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:828d1b9054655bcd3d5ccfea75c58b22198d051217b2e62bddffe7101612c898&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.6.3"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/apr-util-openssl@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:b4d257c53186c410bc6f41e4f520ba58885f3cb5794ba559ed10ddf1dbce6038&repository_id=ubi-10-appstream-rpms",
+      "name": "apr-util-openssl",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/apr-util-openssl@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:b4d257c53186c410bc6f41e4f520ba58885f3cb5794ba559ed10ddf1dbce6038&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.6.3"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/apr-util@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:e715db5124ac3f11602a70371445f1b64cf625abacce80457f07b9807761b17c&repository_id=ubi-10-appstream-rpms",
+      "name": "apr-util",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/apr-util@1.6.3-23.el10_2.1?arch=x86_64&checksum=sha256:e715db5124ac3f11602a70371445f1b64cf625abacce80457f07b9807761b17c&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.6.3"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/apr@1.7.5-3.el10?arch=x86_64&checksum=sha256:fa3e93365206a18e39fcb76787f4027a7537f7d3a2e4eb28346082a46c3ac57c&repository_id=ubi-10-appstream-rpms",
+      "name": "apr",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/apr@1.7.5-3.el10?arch=x86_64&checksum=sha256:fa3e93365206a18e39fcb76787f4027a7537f7d3a2e4eb28346082a46c3ac57c&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.7.5"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/binutils-gold@2.41-63.el10?arch=x86_64&checksum=sha256:da272acde4bce4b8421c3b5ac9940f0bd8a9f3d88176769e05687d59ce700552&repository_id=ubi-10-baseos-rpms",
       "name": "binutils-gold",
       "properties": [
         {
@@ -1225,12 +1367,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/binutils-gold@2.35.2-63.el9?arch=x86_64&checksum=sha256:339d9bb2dc0e41c4756f1a4f82e82f6654818b72de74f1f0377c76277617352b&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/binutils-gold@2.41-63.el10?arch=x86_64&checksum=sha256:da272acde4bce4b8421c3b5ac9940f0bd8a9f3d88176769e05687d59ce700552&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "2.35.2"
+      "version": "2.41"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/binutils@2.35.2-63.el9?arch=x86_64&checksum=sha256:4eb918b63dee7daf32117df2e3fcb02ad4ba3d96cb25677cf55315deceb7e22a&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/binutils@2.41-63.el10?arch=x86_64&checksum=sha256:6c9a5b31e855a216845858b4c642f67fe31cfd3dff5aa5d63e8ecff963904c0c&repository_id=ubi-10-baseos-rpms",
       "name": "binutils",
       "properties": [
         {
@@ -1238,12 +1380,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/binutils@2.35.2-63.el9?arch=x86_64&checksum=sha256:4eb918b63dee7daf32117df2e3fcb02ad4ba3d96cb25677cf55315deceb7e22a&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/binutils@2.41-63.el10?arch=x86_64&checksum=sha256:6c9a5b31e855a216845858b4c642f67fe31cfd3dff5aa5d63e8ecff963904c0c&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "2.35.2"
+      "version": "2.41"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/cpp@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:b5567c690d46d4f5a2cb13be6a4f962dbe8cc7e821b9d3baa09a4f10c59014d9&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/c-ares@1.34.6-2.el10_2?arch=x86_64&checksum=sha256:4d973e180e78f109489e33534a1121f4315edf70e0ed3fe75779dca1786f763e&repository_id=ubi-10-baseos-rpms",
+      "name": "c-ares",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/c-ares@1.34.6-2.el10_2?arch=x86_64&checksum=sha256:4d973e180e78f109489e33534a1121f4315edf70e0ed3fe75779dca1786f763e&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "1.34.6"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/cpp@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:52a30ef8bfce05a3a5417f19eb141c566c33d17891c23af93d29b2744104ed7c&repository_id=ubi-10-appstream-rpms",
       "name": "cpp",
       "properties": [
         {
@@ -1251,25 +1406,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/cpp@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:b5567c690d46d4f5a2cb13be6a4f962dbe8cc7e821b9d3baa09a4f10c59014d9&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/cpp@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:52a30ef8bfce05a3a5417f19eb141c566c33d17891c23af93d29b2744104ed7c&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "11.5.0"
+      "version": "14.3.1"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/diffutils@3.7-12.el9?arch=x86_64&checksum=sha256:2d4c4fdfc10215af3c957c24995b79a26e27e6d76de4ed1f5198d25bf7ef9671&repository_id=ubi-9-baseos-rpms",
-      "name": "diffutils",
+      "bom-ref": "pkg:rpm/redhat/cyrus-sasl-lib@2.1.28-30.el10_2?arch=x86_64&checksum=sha256:6c61ebc24e3acb4f6adc12e16e982d9759ff22a0f86d9e15009dedf20c70244d&repository_id=ubi-10-baseos-rpms",
+      "name": "cyrus-sasl-lib",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/diffutils@3.7-12.el9?arch=x86_64&checksum=sha256:2d4c4fdfc10215af3c957c24995b79a26e27e6d76de4ed1f5198d25bf7ef9671&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/cyrus-sasl-lib@2.1.28-30.el10_2?arch=x86_64&checksum=sha256:6c61ebc24e3acb4f6adc12e16e982d9759ff22a0f86d9e15009dedf20c70244d&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "3.7"
+      "version": "2.1.28"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/elfutils-debuginfod-client@0.192-5.el9?arch=x86_64&checksum=sha256:e5b1a7a9e1467bfe00913e9b22ba5665852f8c61900205a32d3043ace9e1c7c2&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/elfutils-debuginfod-client@0.194-2.el10_2?arch=x86_64&checksum=sha256:41d8283ea8b643836aa1885a79c55919885d2009bdf31d81b35c179877d9a483&repository_id=ubi-10-baseos-rpms",
       "name": "elfutils-debuginfod-client",
       "properties": [
         {
@@ -1277,12 +1432,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/elfutils-debuginfod-client@0.192-5.el9?arch=x86_64&checksum=sha256:e5b1a7a9e1467bfe00913e9b22ba5665852f8c61900205a32d3043ace9e1c7c2&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/elfutils-debuginfod-client@0.194-2.el10_2?arch=x86_64&checksum=sha256:41d8283ea8b643836aa1885a79c55919885d2009bdf31d81b35c179877d9a483&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "0.192"
+      "version": "0.194"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/gcc@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:03c99bc1021dbe54dd93120ed6b5249bbb02dbd5da9e0dc5d8c4a21d674fb1fd&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/gcc@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:ccba654a3d240e2a3a3c4a1c3c2f8b1adb841db4f69879c823613735476765d1&repository_id=ubi-10-appstream-rpms",
       "name": "gcc",
       "properties": [
         {
@@ -1290,12 +1445,64 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/gcc@11.5.0-5.el9_5?arch=x86_64&checksum=sha256:03c99bc1021dbe54dd93120ed6b5249bbb02dbd5da9e0dc5d8c4a21d674fb1fd&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/gcc@14.3.1-4.4.el10?arch=x86_64&checksum=sha256:ccba654a3d240e2a3a3c4a1c3c2f8b1adb841db4f69879c823613735476765d1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "11.5.0"
+      "version": "14.3.1"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/glibc-devel@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:1565ca914cb58037fc9f50af64be3a43d5ae854b5d30f01882eb06d57c44d52c&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/git-core-doc@2.52.0-1.el10?arch=noarch&checksum=sha256:0a69ab9204f3994ae5c16ca3e8fdf15a650918ca16c0e7c660c9afda69123142&repository_id=ubi-10-appstream-rpms",
+      "name": "git-core-doc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/git-core-doc@2.52.0-1.el10?arch=noarch&checksum=sha256:0a69ab9204f3994ae5c16ca3e8fdf15a650918ca16c0e7c660c9afda69123142&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.52.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/git-core@2.52.0-1.el10?arch=x86_64&checksum=sha256:bb244ca5fe4ad18b8e628861556b57569d51546d3e4f2a3f478dabc0f158712f&repository_id=ubi-10-appstream-rpms",
+      "name": "git-core",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/git-core@2.52.0-1.el10?arch=x86_64&checksum=sha256:bb244ca5fe4ad18b8e628861556b57569d51546d3e4f2a3f478dabc0f158712f&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.52.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/git@2.52.0-1.el10?arch=x86_64&checksum=sha256:622dffee89bf78f57e572f156d216e75785b184dc1db2b5ea943871d790b2abf&repository_id=ubi-10-appstream-rpms",
+      "name": "git",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/git@2.52.0-1.el10?arch=x86_64&checksum=sha256:622dffee89bf78f57e572f156d216e75785b184dc1db2b5ea943871d790b2abf&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.52.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/glibc-common@2.39-128.el10_2?arch=x86_64&checksum=sha256:18044ab8318d974b54cd3ef812340a7cc44242cd32fc3db45b90816dceee7372&repository_id=ubi-10-baseos-rpms",
+      "name": "glibc-common",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/glibc-common@2.39-128.el10_2?arch=x86_64&checksum=sha256:18044ab8318d974b54cd3ef812340a7cc44242cd32fc3db45b90816dceee7372&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "2.39"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/glibc-devel@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5567978471d6447e41b921a8e3d95491292e4b6da1487abf3b87e80b2f9057a&repository_id=ubi-10-appstream-rpms",
       "name": "glibc-devel",
       "properties": [
         {
@@ -1303,25 +1510,51 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/glibc-devel@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:1565ca914cb58037fc9f50af64be3a43d5ae854b5d30f01882eb06d57c44d52c&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/glibc-devel@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5567978471d6447e41b921a8e3d95491292e4b6da1487abf3b87e80b2f9057a&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "2.34"
+      "version": "2.39"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/glibc-headers@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:10579e7e1a0140841209c023fdb9034aae1b3723ab5807f6e6c61e8dd2dbffa7&repository_id=ubi-9-appstream-rpms",
-      "name": "glibc-headers",
+      "bom-ref": "pkg:rpm/redhat/glibc-langpack-en@2.39-128.el10_2?arch=x86_64&checksum=sha256:266458a6a80ea817983b88bc9ce514d8ba2af16fd9579b52a452d732bce994be&repository_id=ubi-10-baseos-rpms",
+      "name": "glibc-langpack-en",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/glibc-headers@2.34-168.el9_6.14?arch=x86_64&checksum=sha256:10579e7e1a0140841209c023fdb9034aae1b3723ab5807f6e6c61e8dd2dbffa7&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/glibc-langpack-en@2.39-128.el10_2?arch=x86_64&checksum=sha256:266458a6a80ea817983b88bc9ce514d8ba2af16fd9579b52a452d732bce994be&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "2.34"
+      "version": "2.39"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/golang-bin@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:0c28b320d792c2984006eae41792a47bc827a875607fd16ed0604397d549812e&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/glibc-minimal-langpack@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5c47cf2079ad177d11872dc8a5084b51a64c24f727e94712f2d2f1215dabdeb&repository_id=ubi-10-baseos-rpms",
+      "name": "glibc-minimal-langpack",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/glibc-minimal-langpack@2.39-128.el10_2?arch=x86_64&checksum=sha256:e5c47cf2079ad177d11872dc8a5084b51a64c24f727e94712f2d2f1215dabdeb&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "2.39"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/glibc@2.39-128.el10_2?arch=x86_64&checksum=sha256:52abca1c1e3fa18532631d7a995c2c193739e226569bc6366ad372f60796599f&repository_id=ubi-10-baseos-rpms",
+      "name": "glibc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/glibc@2.39-128.el10_2?arch=x86_64&checksum=sha256:52abca1c1e3fa18532631d7a995c2c193739e226569bc6366ad372f60796599f&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "2.39"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/golang-bin@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:90e7cacb08933e095b2013aae11c50f7ab4fda8cbe71f050b897fb41336e018c&repository_id=ubi-10-appstream-rpms",
       "name": "golang-bin",
       "properties": [
         {
@@ -1329,12 +1562,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/golang-bin@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:0c28b320d792c2984006eae41792a47bc827a875607fd16ed0604397d549812e&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/golang-bin@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:90e7cacb08933e095b2013aae11c50f7ab4fda8cbe71f050b897fb41336e018c&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "1.23.6"
+      "version": "1.26.7"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/golang-race@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:8112bfa5292cfbe4f670b689aba65e8d7a0a9985d0f8845bde1313849f4d6aad&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/golang-race@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:f976e6027f2f661782de1a0176aafdf9523ef396573c9f7e5176d62e045e5822&repository_id=ubi-10-appstream-rpms",
       "name": "golang-race",
       "properties": [
         {
@@ -1342,12 +1575,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/golang-race@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:8112bfa5292cfbe4f670b689aba65e8d7a0a9985d0f8845bde1313849f4d6aad&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/golang-race@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:f976e6027f2f661782de1a0176aafdf9523ef396573c9f7e5176d62e045e5822&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "1.23.6"
+      "version": "1.26.7"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/golang-src@1.23.6-2.el9_6?arch=noarch&checksum=sha256:8c5a8b16db661b76afda382c55749692277a3fd7482a4ab4838822e467c7560c&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/golang-src@1.26.7-1.el10_2?arch=noarch&checksum=sha256:c37617677f14a61fc7150c7d751719452f3a0e8959693352a7a405ebdf2172c2&repository_id=ubi-10-appstream-rpms",
       "name": "golang-src",
       "properties": [
         {
@@ -1355,12 +1588,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/golang-src@1.23.6-2.el9_6?arch=noarch&checksum=sha256:8c5a8b16db661b76afda382c55749692277a3fd7482a4ab4838822e467c7560c&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/golang-src@1.26.7-1.el10_2?arch=noarch&checksum=sha256:c37617677f14a61fc7150c7d751719452f3a0e8959693352a7a405ebdf2172c2&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "1.23.6"
+      "version": "1.26.7"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/golang@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:3f868f055d64ba4450eddd5bf8aed497990454fb4f314e2d0fb4a0b22ff5bab2&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/golang@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:ee945bd180f1683b9e29a77fa1cd12842c759f95796385e3248bb73a5f27cd79&repository_id=ubi-10-appstream-rpms",
       "name": "golang",
       "properties": [
         {
@@ -1368,12 +1601,38 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/golang@1.23.6-2.el9_6?arch=x86_64&checksum=sha256:3f868f055d64ba4450eddd5bf8aed497990454fb4f314e2d0fb4a0b22ff5bab2&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/golang@1.26.7-1.el10_2?arch=x86_64&checksum=sha256:ee945bd180f1683b9e29a77fa1cd12842c759f95796385e3248bb73a5f27cd79&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "1.23.6"
+      "version": "1.26.7"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/kernel-headers@5.14.0-570.16.1.el9_6?arch=x86_64&checksum=sha256:c1d00377558618566384ca3a4decd24b32ca1138292e07110c80539cb4056b61&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/groff-base@1.23.0-10.el10?arch=x86_64&checksum=sha256:fe7aaba08cf90b86523b7435aa4caaf08942ec82b04129e44435a3013555c6b3&repository_id=ubi-10-baseos-rpms",
+      "name": "groff-base",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/groff-base@1.23.0-10.el10?arch=x86_64&checksum=sha256:fe7aaba08cf90b86523b7435aa4caaf08942ec82b04129e44435a3013555c6b3&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "1.23.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/jansson@2.14-3.el10?arch=x86_64&checksum=sha256:b5d6eeea14961f64ece8b3bbefeb53a61424822ccbaedb833f7fc7e50f6707c5&repository_id=ubi-10-baseos-rpms",
+      "name": "jansson",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/jansson@2.14-3.el10?arch=x86_64&checksum=sha256:b5d6eeea14961f64ece8b3bbefeb53a61424822ccbaedb833f7fc7e50f6707c5&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "2.14"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/kernel-headers@6.12.0-211.55.1.el10_2?arch=x86_64&checksum=sha256:0a38e481e5e4b5f642639625bef1b9c02d80d2ab4984e1ca280a88be29a65885&repository_id=ubi-10-appstream-rpms",
       "name": "kernel-headers",
       "properties": [
         {
@@ -1381,12 +1640,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/kernel-headers@5.14.0-570.16.1.el9_6?arch=x86_64&checksum=sha256:c1d00377558618566384ca3a4decd24b32ca1138292e07110c80539cb4056b61&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/kernel-headers@6.12.0-211.55.1.el10_2?arch=x86_64&checksum=sha256:0a38e481e5e4b5f642639625bef1b9c02d80d2ab4984e1ca280a88be29a65885&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "5.14.0"
+      "version": "6.12.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/libbrotli@1.0.9-7.el9_5?arch=x86_64&checksum=sha256:bb3175e435723e98cc1a5063eafa82231092eca3bf6276d24505eaeaaa817113&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/less@661-3.el10?arch=x86_64&checksum=sha256:7a785313031788418857f3ef6a82617ad5527e56153174ac44482f74289d1f33&repository_id=ubi-10-baseos-rpms",
+      "name": "less",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/less@661-3.el10?arch=x86_64&checksum=sha256:7a785313031788418857f3ef6a82617ad5527e56153174ac44482f74289d1f33&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "661"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libbrotli@1.1.0-7.el10_1?arch=x86_64&checksum=sha256:894800ee7893f8e4aa1d3870afb22b54d92624134bc7cf5d2cdc1a1db92366db&repository_id=ubi-10-baseos-rpms",
       "name": "libbrotli",
       "properties": [
         {
@@ -1394,12 +1666,51 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/libbrotli@1.0.9-7.el9_5?arch=x86_64&checksum=sha256:bb3175e435723e98cc1a5063eafa82231092eca3bf6276d24505eaeaaa817113&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/libbrotli@1.1.0-7.el10_1?arch=x86_64&checksum=sha256:894800ee7893f8e4aa1d3870afb22b54d92624134bc7cf5d2cdc1a1db92366db&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "1.0.9"
+      "version": "1.1.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/libmpc@1.2.1-4.el9?arch=x86_64&checksum=sha256:b97b4e98c3c6f41dcfc2ceb4ffa1aba7a338b7cfd9e6c4f63e3160dd3cc033d3&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/libcbor@0.11.0-3.el10?arch=x86_64&checksum=sha256:fdf8446ec31ab2efddc92e0164946192bcec3b8290a3a810aa01418cdc3522c8&repository_id=ubi-10-baseos-rpms",
+      "name": "libcbor",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libcbor@0.11.0-3.el10?arch=x86_64&checksum=sha256:fdf8446ec31ab2efddc92e0164946192bcec3b8290a3a810aa01418cdc3522c8&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "0.11.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libedit@3.1-52.20230828cvs.el10?arch=x86_64&checksum=sha256:d984e5aa4856820528bd2829f086c2f3883173b91daa0a304af215e3a0c6a6be&repository_id=ubi-10-baseos-rpms",
+      "name": "libedit",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libedit@3.1-52.20230828cvs.el10?arch=x86_64&checksum=sha256:d984e5aa4856820528bd2829f086c2f3883173b91daa0a304af215e3a0c6a6be&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "3.1"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libfido2@1.14.0-7.el10?arch=x86_64&checksum=sha256:132ad4a76f742a97a670255869b9422e38dfa5a6885c474963242d4a0c50a088&repository_id=ubi-10-baseos-rpms",
+      "name": "libfido2",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libfido2@1.14.0-7.el10?arch=x86_64&checksum=sha256:132ad4a76f742a97a670255869b9422e38dfa5a6885c474963242d4a0c50a088&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "1.14.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libmpc@1.3.1-7.el10?arch=x86_64&checksum=sha256:0ffe6cc4aa8936e1ed0d807c8bb059a864aa5cb687cde85f211f3d050a45a1a2&repository_id=ubi-10-appstream-rpms",
       "name": "libmpc",
       "properties": [
         {
@@ -1407,12 +1718,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/libmpc@1.2.1-4.el9?arch=x86_64&checksum=sha256:b97b4e98c3c6f41dcfc2ceb4ffa1aba7a338b7cfd9e6c4f63e3160dd3cc033d3&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/libmpc@1.3.1-7.el10?arch=x86_64&checksum=sha256:0ffe6cc4aa8936e1ed0d807c8bb059a864aa5cb687cde85f211f3d050a45a1a2&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "1.2.1"
+      "version": "1.3.1"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/libpkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:4feae5941b73640bd86b8d506a657cac5b770043db1464fbcd207721b2159dda&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/libpkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:3c771e6212564874eb7e6200f22cb2e05265e7319984590c0f4de3eb5733b75f&repository_id=ubi-10-baseos-rpms",
       "name": "libpkgconf",
       "properties": [
         {
@@ -1420,12 +1731,38 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/libpkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:4feae5941b73640bd86b8d506a657cac5b770043db1464fbcd207721b2159dda&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/libpkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:3c771e6212564874eb7e6200f22cb2e05265e7319984590c0f4de3eb5733b75f&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "1.7.3"
+      "version": "2.1.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/libxcrypt-devel@4.4.18-3.el9?arch=x86_64&checksum=sha256:c1d171391a7d2e043a6953efd3df3e01edc9b4c6cdb54517e1608d204a5fce18&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/libserf@1.3.10-7.el10?arch=x86_64&checksum=sha256:aacb3db4118c92c0311489d013ca3a2c9beed54d184bc78e266aa4f4a524c306&repository_id=ubi-10-appstream-rpms",
+      "name": "libserf",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libserf@1.3.10-7.el10?arch=x86_64&checksum=sha256:aacb3db4118c92c0311489d013ca3a2c9beed54d184bc78e266aa4f4a524c306&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.3.10"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libuv@1.52.1-1.el10_2?arch=x86_64&checksum=sha256:46ff203b97efdfdc81764b7eca1f56b71d26afd16fcf26db5e86afbc0fcaa73d&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "libuv",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/libuv@1.52.1-1.el10_2?arch=x86_64&checksum=sha256:46ff203b97efdfdc81764b7eca1f56b71d26afd16fcf26db5e86afbc0fcaa73d&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.52.1"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/libxcrypt-devel@4.4.36-10.el10?arch=x86_64&checksum=sha256:5e98ac0095da4e23b8a7b0dfc8d6fc97b0fa0d6c5d7bb0d70fe1dbf97ae64eb6&repository_id=ubi-10-appstream-rpms",
       "name": "libxcrypt-devel",
       "properties": [
         {
@@ -1433,12 +1770,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/libxcrypt-devel@4.4.18-3.el9?arch=x86_64&checksum=sha256:c1d171391a7d2e043a6953efd3df3e01edc9b4c6cdb54517e1608d204a5fce18&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/libxcrypt-devel@4.4.36-10.el10?arch=x86_64&checksum=sha256:5e98ac0095da4e23b8a7b0dfc8d6fc97b0fa0d6c5d7bb0d70fe1dbf97ae64eb6&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "4.4.18"
+      "version": "4.4.36"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/make@4.3-8.el9?arch=x86_64&checksum=sha256:561f0c2251e9217c81a6c88de4d2d9231a039aaab37e8a0d2559d36ce9fa85fd&epoch=1&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/lmdb-libs@0.9.32-4.el10?arch=x86_64&checksum=sha256:83b34a97fc0201716a490c4ccd64d6119d2ccd2d84160d0ad146934cfee36522&repository_id=ubi-10-baseos-rpms",
+      "name": "lmdb-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/lmdb-libs@0.9.32-4.el10?arch=x86_64&checksum=sha256:83b34a97fc0201716a490c4ccd64d6119d2ccd2d84160d0ad146934cfee36522&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "0.9.32"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/make@4.4.1-9.el10?arch=x86_64&checksum=sha256:1c7b61c065106c0eb3a958e55ffbe37734aebcf440b0c36435ca7eb41b8e0110&epoch=1&repository_id=ubi-10-baseos-rpms",
       "name": "make",
       "properties": [
         {
@@ -1446,12 +1796,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/make@4.3-8.el9?arch=x86_64&checksum=sha256:561f0c2251e9217c81a6c88de4d2d9231a039aaab37e8a0d2559d36ce9fa85fd&epoch=1&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/make@4.4.1-9.el10?arch=x86_64&checksum=sha256:1c7b61c065106c0eb3a958e55ffbe37734aebcf440b0c36435ca7eb41b8e0110&epoch=1&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "4.3"
+      "version": "4.4.1"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/nodejs-docs@16.20.2-8.el9_4?arch=noarch&checksum=sha256:6dc10d979e48243cfee61e4ce95ec7a1e90bbf5ff5e7ac00af065d1f68e43270&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/ncurses@6.4-15.20240127.el10_1?arch=x86_64&checksum=sha256:420a86b376c70f56cd06f8cea4614b7c4287223a4602b2d6e46e54cd7778e398&repository_id=ubi-10-baseos-rpms",
+      "name": "ncurses",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/ncurses@6.4-15.20240127.el10_1?arch=x86_64&checksum=sha256:420a86b376c70f56cd06f8cea4614b7c4287223a4602b2d6e46e54cd7778e398&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "6.4"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/nodejs-docs@22.23.2-1.el10_2?arch=noarch&checksum=sha256:929a0f31333a61a31501de766550e8dda6da569baf65f21932873774766679f1&epoch=1&repository_id=ubi-10-appstream-rpms",
       "name": "nodejs-docs",
       "properties": [
         {
@@ -1459,12 +1822,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/nodejs-docs@16.20.2-8.el9_4?arch=noarch&checksum=sha256:6dc10d979e48243cfee61e4ce95ec7a1e90bbf5ff5e7ac00af065d1f68e43270&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/nodejs-docs@22.23.2-1.el10_2?arch=noarch&checksum=sha256:929a0f31333a61a31501de766550e8dda6da569baf65f21932873774766679f1&epoch=1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "16.20.2"
+      "version": "22.23.2"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/nodejs-full-i18n@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:ced787ff387945af3c1e6c96905120e4a9fb939feca6d6b9a017ad14a6908ccb&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/nodejs-full-i18n@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c02ad25a9cc8bd3eb364465ca6c6dfbfd0946d4eeaa8b05995695ae26b8bf1ef&epoch=1&repository_id=ubi-10-appstream-rpms",
       "name": "nodejs-full-i18n",
       "properties": [
         {
@@ -1472,12 +1835,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/nodejs-full-i18n@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:ced787ff387945af3c1e6c96905120e4a9fb939feca6d6b9a017ad14a6908ccb&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/nodejs-full-i18n@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c02ad25a9cc8bd3eb364465ca6c6dfbfd0946d4eeaa8b05995695ae26b8bf1ef&epoch=1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "16.20.2"
+      "version": "22.23.2"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/nodejs-libs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:68d15f8a48676fbf9f4c891da8b651eaeb133e1eb7a776eaec8f5db2a5e83cec&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/nodejs-libs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:ab0187530a692251c0497acb3bff83978d4808fbc2123d8e9210057caf569a71&epoch=1&repository_id=ubi-10-appstream-rpms",
       "name": "nodejs-libs",
       "properties": [
         {
@@ -1485,12 +1848,25 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/nodejs-libs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:68d15f8a48676fbf9f4c891da8b651eaeb133e1eb7a776eaec8f5db2a5e83cec&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/nodejs-libs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:ab0187530a692251c0497acb3bff83978d4808fbc2123d8e9210057caf569a71&epoch=1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "16.20.2"
+      "version": "22.23.2"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/nodejs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:d5b23abda3f4ed68d4986fdbca82a15a63a179dc2ca4cb772e08e3d9ac3ae43f&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/nodejs-npm@10.9.8-1.22.23.2.1.el10_2?arch=x86_64&checksum=sha256:36edc11113245a864de4fff5299a98497dcc10cc1a0b8d28c3ec929d03d4c7e5&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "nodejs-npm",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/nodejs-npm@10.9.8-1.22.23.2.1.el10_2?arch=x86_64&checksum=sha256:36edc11113245a864de4fff5299a98497dcc10cc1a0b8d28c3ec929d03d4c7e5&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "10.9.8"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/nodejs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c879b5a7c70b9287c257aef0b333d9b197ec1ee915e041716bfe0df24b9d4952&epoch=1&repository_id=ubi-10-appstream-rpms",
       "name": "nodejs",
       "properties": [
         {
@@ -1498,25 +1874,38 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/nodejs@16.20.2-8.el9_4?arch=x86_64&checksum=sha256:d5b23abda3f4ed68d4986fdbca82a15a63a179dc2ca4cb772e08e3d9ac3ae43f&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/nodejs@22.23.2-1.el10_2?arch=x86_64&checksum=sha256:c879b5a7c70b9287c257aef0b333d9b197ec1ee915e041716bfe0df24b9d4952&epoch=1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "16.20.2"
+      "version": "22.23.2"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/npm@8.19.4-1.16.20.2.8.el9_4?arch=x86_64&checksum=sha256:f09f99be52843be351dda149a819bbcb10218b4460e0f89554b7a44532498e64&epoch=1&repository_id=ubi-9-appstream-rpms",
-      "name": "npm",
+      "bom-ref": "pkg:rpm/redhat/openssh-clients@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:822f2f5e93bcd8aba0af4b4bcdc0d541f83f60196ed9128f9373553daba34146&repository_id=ubi-10-baseos-rpms",
+      "name": "openssh-clients",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/npm@8.19.4-1.16.20.2.8.el9_4?arch=x86_64&checksum=sha256:f09f99be52843be351dda149a819bbcb10218b4460e0f89554b7a44532498e64&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/openssh-clients@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:822f2f5e93bcd8aba0af4b4bcdc0d541f83f60196ed9128f9373553daba34146&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "8.19.4"
+      "version": "9.9p1"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/openssl-devel@3.2.2-6.el9_5.1?arch=x86_64&checksum=sha256:30cd1b3dec089a7da71e9167532693bef7c202a5dbe3c010af2a9387106a0b36&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "bom-ref": "pkg:rpm/redhat/openssh@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:74a11d1eee8f254e30be4e6c7d661b876ee91fe9f9fbb75d8c266f9aa921efb8&repository_id=ubi-10-baseos-rpms",
+      "name": "openssh",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/openssh@9.9p1-25.el10_2?arch=x86_64&checksum=sha256:74a11d1eee8f254e30be4e6c7d661b876ee91fe9f9fbb75d8c266f9aa921efb8&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "9.9p1"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/openssl-devel@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b4edabb7640bdc31d4bf718070d010aeb59741beb54c16153c5d17b41e93c0df&epoch=1&repository_id=ubi-10-appstream-rpms",
       "name": "openssl-devel",
       "properties": [
         {
@@ -1524,12 +1913,844 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/openssl-devel@3.2.2-6.el9_5.1?arch=x86_64&checksum=sha256:30cd1b3dec089a7da71e9167532693bef7c202a5dbe3c010af2a9387106a0b36&epoch=1&repository_id=ubi-9-appstream-rpms",
+      "purl": "pkg:rpm/redhat/openssl-devel@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b4edabb7640bdc31d4bf718070d010aeb59741beb54c16153c5d17b41e93c0df&epoch=1&repository_id=ubi-10-appstream-rpms",
       "type": "library",
-      "version": "3.2.2"
+      "version": "3.5.8"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/pkgconf-m4@1.7.3-10.el9?arch=noarch&checksum=sha256:91bafd6e06099451f60288327b275cfcc651822f6145176a157c6b0fa5131e02&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/openssl-libs@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:f7a77a5c5897d4bf6e3abcf536c6d92bb60cf698db4e2334908dabdbac54486a&epoch=1&repository_id=ubi-10-baseos-rpms",
+      "name": "openssl-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/openssl-libs@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:f7a77a5c5897d4bf6e3abcf536c6d92bb60cf698db4e2334908dabdbac54486a&epoch=1&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "3.5.8"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/openssl@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b3e0a119be23f061ffcb13263de6bc91026c27bd62d5d93778a8241c9d9c3cb6&epoch=1&repository_id=ubi-10-baseos-rpms",
+      "name": "openssl",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/openssl@3.5.8-1.el10_2?arch=x86_64&checksum=sha256:b3e0a119be23f061ffcb13263de6bc91026c27bd62d5d93778a8241c9d9c3cb6&epoch=1&repository_id=ubi-10-baseos-rpms",
+      "type": "library",
+      "version": "3.5.8"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-AutoLoader@5.74-515.el10_2?arch=noarch&checksum=sha256:bb19724c1172dc09ee19c26871152ae42fc415344f83ab2baa42aa096220a63c&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-AutoLoader",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-AutoLoader@5.74-515.el10_2?arch=noarch&checksum=sha256:bb19724c1172dc09ee19c26871152ae42fc415344f83ab2baa42aa096220a63c&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.74"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-B@1.89-515.el10_2?arch=x86_64&checksum=sha256:ca48fdc20045cda96b86bd23667ea8b3d7a0a6b7302a3f4f974df74273c61d43&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-B",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-B@1.89-515.el10_2?arch=x86_64&checksum=sha256:ca48fdc20045cda96b86bd23667ea8b3d7a0a6b7302a3f4f974df74273c61d43&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.89"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Carp@1.54-511.el10?arch=noarch&checksum=sha256:e33d8c709b3dbb274aaafcfe4226a7f4b3b134554a08ba16140dda9368f0655e&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Carp",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Carp@1.54-511.el10?arch=noarch&checksum=sha256:e33d8c709b3dbb274aaafcfe4226a7f4b3b134554a08ba16140dda9368f0655e&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.54"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Class-Struct@0.68-515.el10_2?arch=noarch&checksum=sha256:a09900d358c9980ff778ff8bfb75d13028bdb4065ab52fb508149f1c216a2303&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Class-Struct",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Class-Struct@0.68-515.el10_2?arch=noarch&checksum=sha256:a09900d358c9980ff778ff8bfb75d13028bdb4065ab52fb508149f1c216a2303&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.68"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Data-Dumper@2.189-512.el10?arch=x86_64&checksum=sha256:12f7afba0d8e2fdca00a7a391b9c536026e8c8e7ca044b42a434917a1caf56a3&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Data-Dumper",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Data-Dumper@2.189-512.el10?arch=x86_64&checksum=sha256:12f7afba0d8e2fdca00a7a391b9c536026e8c8e7ca044b42a434917a1caf56a3&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.189"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Digest-MD5@2.59-6.el10?arch=x86_64&checksum=sha256:e71faadc86b93185a2c41fb80f54ab4d407b85eb011013c5d31079d7aff8cc30&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Digest-MD5",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Digest-MD5@2.59-6.el10?arch=x86_64&checksum=sha256:e71faadc86b93185a2c41fb80f54ab4d407b85eb011013c5d31079d7aff8cc30&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.59"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Digest@1.20-511.el10?arch=noarch&checksum=sha256:f3fc3d8bc266271194c9c22ef75fee991dc188855dae762f8a0dde140d1ae3b3&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Digest",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Digest@1.20-511.el10?arch=noarch&checksum=sha256:f3fc3d8bc266271194c9c22ef75fee991dc188855dae762f8a0dde140d1ae3b3&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.20"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-DynaLoader@1.56-515.el10_2?arch=x86_64&checksum=sha256:f4dc0cae55a3873176c87a86ed39663c40365db8ee68061d2745dace46192b7b&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-DynaLoader",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-DynaLoader@1.56-515.el10_2?arch=x86_64&checksum=sha256:f4dc0cae55a3873176c87a86ed39663c40365db8ee68061d2745dace46192b7b&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.56"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Encode@3.21-511.el10?arch=x86_64&checksum=sha256:9bb023e78910e4a88076d9cef63094fbfec89dfc4d7dd2e8195288ed5f8cfe3d&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Encode",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Encode@3.21-511.el10?arch=x86_64&checksum=sha256:9bb023e78910e4a88076d9cef63094fbfec89dfc4d7dd2e8195288ed5f8cfe3d&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.21"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Errno@1.38-515.el10_2?arch=x86_64&checksum=sha256:1c56ee6d403bab3720410ab8b8a58884875613ae28b1932f624fbdeb592714d2&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Errno",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Errno@1.38-515.el10_2?arch=x86_64&checksum=sha256:1c56ee6d403bab3720410ab8b8a58884875613ae28b1932f624fbdeb592714d2&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.38"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Error@0.17029-18.el10?arch=noarch&checksum=sha256:e19f238b73c9dac0041cf031ff89d653e72a2217fdd102143c8bf170843c7b6c&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Error",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Error@0.17029-18.el10?arch=noarch&checksum=sha256:e19f238b73c9dac0041cf031ff89d653e72a2217fdd102143c8bf170843c7b6c&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.17029"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Exporter@5.78-511.el10?arch=noarch&checksum=sha256:7717ade5f90dab98aea4217afdc0ffff8971ddc79a1ba34e133d4dd719e7f499&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Exporter",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Exporter@5.78-511.el10?arch=noarch&checksum=sha256:7717ade5f90dab98aea4217afdc0ffff8971ddc79a1ba34e133d4dd719e7f499&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.78"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Fcntl@1.18-515.el10_2?arch=x86_64&checksum=sha256:07f375ba0edff5420b17ed4206f1c78bb318ffde39eb0dc9d8f06bdffae65edf&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Fcntl",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Fcntl@1.18-515.el10_2?arch=x86_64&checksum=sha256:07f375ba0edff5420b17ed4206f1c78bb318ffde39eb0dc9d8f06bdffae65edf&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.18"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-File-Basename@2.86-515.el10_2?arch=noarch&checksum=sha256:5dbe9129690efedfef04e1d257c526e7aee99db61bd91e71484bc62e4add4c16&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-File-Basename",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-File-Basename@2.86-515.el10_2?arch=noarch&checksum=sha256:5dbe9129690efedfef04e1d257c526e7aee99db61bd91e71484bc62e4add4c16&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.86"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-File-Path@2.18-512.el10?arch=noarch&checksum=sha256:de5f9cb446da59c4b6bacacf253a8be44ca8d094fe1e569189d99e762724ee5f&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-File-Path",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-File-Path@2.18-512.el10?arch=noarch&checksum=sha256:de5f9cb446da59c4b6bacacf253a8be44ca8d094fe1e569189d99e762724ee5f&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.18"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-File-Temp@0.231.100-512.el10?arch=noarch&checksum=sha256:d7cec8ac7e8a4fe82d09fb3f5fcddc7723b41b0baef680a250ae0f5c27f3709c&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-File-Temp",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-File-Temp@0.231.100-512.el10?arch=noarch&checksum=sha256:d7cec8ac7e8a4fe82d09fb3f5fcddc7723b41b0baef680a250ae0f5c27f3709c&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.231.100"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-File-stat@1.14-515.el10_2?arch=noarch&checksum=sha256:20dfe9203e8695f07b39fedf51a181a27593779a567fea769750f308731a28b5&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-File-stat",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-File-stat@1.14-515.el10_2?arch=noarch&checksum=sha256:20dfe9203e8695f07b39fedf51a181a27593779a567fea769750f308731a28b5&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.14"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-FileHandle@2.05-515.el10_2?arch=noarch&checksum=sha256:b8cf07a92ebfc5f3f3ad2b104b3c5c523a8f2518c75ea0719cf29cbcbdebf622&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-FileHandle",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-FileHandle@2.05-515.el10_2?arch=noarch&checksum=sha256:b8cf07a92ebfc5f3f3ad2b104b3c5c523a8f2518c75ea0719cf29cbcbdebf622&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.05"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Getopt-Long@2.58-3.el10?arch=noarch&checksum=sha256:18bcc4a23330f281c9d882843d9a552aefea14012a4a5a71896a646e94f87bd6&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Getopt-Long",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Getopt-Long@2.58-3.el10?arch=noarch&checksum=sha256:18bcc4a23330f281c9d882843d9a552aefea14012a4a5a71896a646e94f87bd6&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.58"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Getopt-Std@1.14-515.el10_2?arch=noarch&checksum=sha256:185c7418709f22db5a08fbd68236f1ed321b1e828fd2c678b456feacf27bf2b1&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Getopt-Std",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Getopt-Std@1.14-515.el10_2?arch=noarch&checksum=sha256:185c7418709f22db5a08fbd68236f1ed321b1e828fd2c678b456feacf27bf2b1&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.14"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Git@2.52.0-1.el10?arch=noarch&checksum=sha256:3294e57cc05763a07f3ee1d1f1f3707d2b88afee72fb9fb90215bcce9e5d7a36&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Git",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Git@2.52.0-1.el10?arch=noarch&checksum=sha256:3294e57cc05763a07f3ee1d1f1f3707d2b88afee72fb9fb90215bcce9e5d7a36&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.52.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-HTTP-Tiny@0.088-512.el10?arch=noarch&checksum=sha256:aaba92b1d9a41f453d92c4a37c236331595556d8b1ef3ba27efe79191b2ee348&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-HTTP-Tiny",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-HTTP-Tiny@0.088-512.el10?arch=noarch&checksum=sha256:aaba92b1d9a41f453d92c4a37c236331595556d8b1ef3ba27efe79191b2ee348&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.088"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-IO-Socket-IP@0.42-512.el10?arch=noarch&checksum=sha256:fc53776bb07d9a12c61b2e2160abda314f0fb3e3bdccbeedc5d186a9bb9bf162&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-IO-Socket-IP",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-IO-Socket-IP@0.42-512.el10?arch=noarch&checksum=sha256:fc53776bb07d9a12c61b2e2160abda314f0fb3e3bdccbeedc5d186a9bb9bf162&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.42"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-IO-Socket-SSL@2.085-3.el10?arch=noarch&checksum=sha256:f78f083f60a73ca447d6727d11cd2182de85acc787369f378e6b1067dbe94eba&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-IO-Socket-SSL",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-IO-Socket-SSL@2.085-3.el10?arch=noarch&checksum=sha256:f78f083f60a73ca447d6727d11cd2182de85acc787369f378e6b1067dbe94eba&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.085"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-IO@1.55-515.el10_2?arch=x86_64&checksum=sha256:0d36b9c2e660ac67780743996304a396afdf33ef76d56785cf41dcb47097b846&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-IO",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-IO@1.55-515.el10_2?arch=x86_64&checksum=sha256:0d36b9c2e660ac67780743996304a396afdf33ef76d56785cf41dcb47097b846&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.55"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-IPC-Open3@1.22-515.el10_2?arch=noarch&checksum=sha256:528428cfb77491ef21fb107294381feccc08943c031229e9aee66104aa75e6d5&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-IPC-Open3",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-IPC-Open3@1.22-515.el10_2?arch=noarch&checksum=sha256:528428cfb77491ef21fb107294381feccc08943c031229e9aee66104aa75e6d5&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.22"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-MIME-Base64@3.16-511.el10?arch=x86_64&checksum=sha256:b42ad237a9243106c919cfd59fe863b78912c6d49f7d7b7afa649b02550fac07&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-MIME-Base64",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-MIME-Base64@3.16-511.el10?arch=x86_64&checksum=sha256:b42ad237a9243106c919cfd59fe863b78912c6d49f7d7b7afa649b02550fac07&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.16"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Mozilla-CA@20231213-5.el10?arch=noarch&checksum=sha256:c73ab5645016c9965737ee0871cd91ca898ed6220e63c270d852b015f24e1ec6&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Mozilla-CA",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Mozilla-CA@20231213-5.el10?arch=noarch&checksum=sha256:c73ab5645016c9965737ee0871cd91ca898ed6220e63c270d852b015f24e1ec6&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "20231213"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-NDBM_File@1.17-515.el10_2?arch=x86_64&checksum=sha256:82e12fae31f711c8a287d887afdd1969eac2541d6cf3b23a47d6e872b7a6c423&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-NDBM_File",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-NDBM_File@1.17-515.el10_2?arch=x86_64&checksum=sha256:82e12fae31f711c8a287d887afdd1969eac2541d6cf3b23a47d6e872b7a6c423&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.17"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Net-SSLeay@1.94-8.el10?arch=x86_64&checksum=sha256:b81610e8911a065044d009316a4d76f9ea09e0810494b752d92273831d27f57b&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Net-SSLeay",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Net-SSLeay@1.94-8.el10?arch=x86_64&checksum=sha256:b81610e8911a065044d009316a4d76f9ea09e0810494b752d92273831d27f57b&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.94"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-POSIX@2.20-515.el10_2?arch=x86_64&checksum=sha256:b7d036db98860078d0755fa8790e69cfd6320f07d96db50b8edafaddfad5bb62&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-POSIX",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-POSIX@2.20-515.el10_2?arch=x86_64&checksum=sha256:b7d036db98860078d0755fa8790e69cfd6320f07d96db50b8edafaddfad5bb62&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.20"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-PathTools@3.91-512.el10?arch=x86_64&checksum=sha256:c32a4dfcd0782cbcd8560d4d5c19df5cea108d818d55461f377422f05bdd7c7d&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-PathTools",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-PathTools@3.91-512.el10?arch=x86_64&checksum=sha256:c32a4dfcd0782cbcd8560d4d5c19df5cea108d818d55461f377422f05bdd7c7d&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.91"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Pod-Escapes@1.07-511.el10?arch=noarch&checksum=sha256:c200e23d737f4f08e231c082ba9efa1151c142b95c2e93668a861ec6e8af6387&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Pod-Escapes",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Pod-Escapes@1.07-511.el10?arch=noarch&checksum=sha256:c200e23d737f4f08e231c082ba9efa1151c142b95c2e93668a861ec6e8af6387&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.07"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Pod-Perldoc@3.28.01-512.el10?arch=noarch&checksum=sha256:a58c465c213515cfde8645985bbe1381d2d705c0da208a8629d292288247c186&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Pod-Perldoc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Pod-Perldoc@3.28.01-512.el10?arch=noarch&checksum=sha256:a58c465c213515cfde8645985bbe1381d2d705c0da208a8629d292288247c186&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.28.01"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Pod-Simple@3.45-511.el10?arch=noarch&checksum=sha256:14a770a6482afb5d6e59aeb6d9243018fbed2a775f584f1d5aad8bf57436419e&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Pod-Simple",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Pod-Simple@3.45-511.el10?arch=noarch&checksum=sha256:14a770a6482afb5d6e59aeb6d9243018fbed2a775f584f1d5aad8bf57436419e&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.45"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Pod-Usage@2.03-511.el10?arch=noarch&checksum=sha256:526d436304ad58ac2ae714211b4e633ff1dfa5f481c4669c4b3aac36345c3069&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Pod-Usage",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Pod-Usage@2.03-511.el10?arch=noarch&checksum=sha256:526d436304ad58ac2ae714211b4e633ff1dfa5f481c4669c4b3aac36345c3069&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.03"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Scalar-List-Utils@1.63-511.el10?arch=x86_64&checksum=sha256:0c49a699f11160173f7f96c864d64a05b0bed2ea6a6ec090aef3c3914de405dc&epoch=5&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Scalar-List-Utils",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Scalar-List-Utils@1.63-511.el10?arch=x86_64&checksum=sha256:0c49a699f11160173f7f96c864d64a05b0bed2ea6a6ec090aef3c3914de405dc&epoch=5&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.63"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-SelectSaver@1.02-515.el10_2?arch=noarch&checksum=sha256:15683a0debfc26284f806085400578b9169b665e9a8d6a85b035d55401792ecb&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-SelectSaver",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-SelectSaver@1.02-515.el10_2?arch=noarch&checksum=sha256:15683a0debfc26284f806085400578b9169b665e9a8d6a85b035d55401792ecb&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.02"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Socket@2.038-511.el10?arch=x86_64&checksum=sha256:a0cabaab2498a22f30eb695efc836a0245907823487c07993236c4f725569a3b&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Socket",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Socket@2.038-511.el10?arch=x86_64&checksum=sha256:a0cabaab2498a22f30eb695efc836a0245907823487c07993236c4f725569a3b&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.038"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Storable@3.32-511.el10?arch=x86_64&checksum=sha256:c1606e0986462e8dee953955f864045b84e4efc568333c26e5bb2ab9a5102ae1&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Storable",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Storable@3.32-511.el10?arch=x86_64&checksum=sha256:c1606e0986462e8dee953955f864045b84e4efc568333c26e5bb2ab9a5102ae1&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.32"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Symbol@1.09-515.el10_2?arch=noarch&checksum=sha256:435a6381ec6ab206fc580917fae0fa4b981c3348c98a2951b27fee452f1a5889&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Symbol",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Symbol@1.09-515.el10_2?arch=noarch&checksum=sha256:435a6381ec6ab206fc580917fae0fa4b981c3348c98a2951b27fee452f1a5889&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.09"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Term-ANSIColor@5.01-512.el10?arch=noarch&checksum=sha256:1911e024055c4912acf9cb7b36dcafcaaf9011280baf0fb57f8c0f0557f1ee7a&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Term-ANSIColor",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Term-ANSIColor@5.01-512.el10?arch=noarch&checksum=sha256:1911e024055c4912acf9cb7b36dcafcaaf9011280baf0fb57f8c0f0557f1ee7a&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.01"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Term-Cap@1.18-511.el10?arch=noarch&checksum=sha256:1a74bbcf53f340c2db848c898d6a1eccb296503576bd803be46716a3f2d07f05&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Term-Cap",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Term-Cap@1.18-511.el10?arch=noarch&checksum=sha256:1a74bbcf53f340c2db848c898d6a1eccb296503576bd803be46716a3f2d07f05&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.18"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-TermReadKey@2.38-24.el10?arch=x86_64&checksum=sha256:3337a0f46d16e35dd5314019f15c57d63402742816846aca591e0676603219da&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-TermReadKey",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-TermReadKey@2.38-24.el10?arch=x86_64&checksum=sha256:3337a0f46d16e35dd5314019f15c57d63402742816846aca591e0676603219da&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.38"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Text-ParseWords@3.31-511.el10?arch=noarch&checksum=sha256:1888de997708159ded07c0a55ea8b843ca8f8b2a6499d7b7841969ac36825ca5&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Text-ParseWords",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Text-ParseWords@3.31-511.el10?arch=noarch&checksum=sha256:1888de997708159ded07c0a55ea8b843ca8f8b2a6499d7b7841969ac36825ca5&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.31"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Text-Tabs%2BWrap@2024.001-511.el10?arch=noarch&checksum=sha256:939259f36c6068e64c071f6b9904e8013330a06ba7c07569a8db47723afdfeaa&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Text-Tabs+Wrap",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Text-Tabs%2BWrap@2024.001-511.el10?arch=noarch&checksum=sha256:939259f36c6068e64c071f6b9904e8013330a06ba7c07569a8db47723afdfeaa&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2024.001"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-Time-Local@1.350-511.el10?arch=noarch&checksum=sha256:bc30eb0596ae24503e5baf578b84122b68e3ca8d012562a73406d4afdabfbd6b&epoch=2&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-Time-Local",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-Time-Local@1.350-511.el10?arch=noarch&checksum=sha256:bc30eb0596ae24503e5baf578b84122b68e3ca8d012562a73406d4afdabfbd6b&epoch=2&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.350"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-URI@5.27-3.el10?arch=noarch&checksum=sha256:27d79250ed875e4700f8e10334e670dacb6692ea3f60f225924d238a015dd4c5&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-URI",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-URI@5.27-3.el10?arch=noarch&checksum=sha256:27d79250ed875e4700f8e10334e670dacb6692ea3f60f225924d238a015dd4c5&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.27"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-base@2.27-515.el10_2?arch=noarch&checksum=sha256:fd0c3533eecf3acaae4968dda7e7019498fc0b9aacc80bfa2c191a2bb8762c13&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-base",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-base@2.27-515.el10_2?arch=noarch&checksum=sha256:fd0c3533eecf3acaae4968dda7e7019498fc0b9aacc80bfa2c191a2bb8762c13&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.27"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-constant@1.33-512.el10?arch=noarch&checksum=sha256:2004a0ea190e5bf30a12dae628333d4f31bf89c1611ae4283c77fcdadc921f07&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-constant",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-constant@1.33-512.el10?arch=noarch&checksum=sha256:2004a0ea190e5bf30a12dae628333d4f31bf89c1611ae4283c77fcdadc921f07&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.33"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-if@0.61.000-515.el10_2?arch=noarch&checksum=sha256:6633dcfb384e9e62b81bb75e79dc8892cad5aa067193154f7a8dd07189e1351f&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-if",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-if@0.61.000-515.el10_2?arch=noarch&checksum=sha256:6633dcfb384e9e62b81bb75e79dc8892cad5aa067193154f7a8dd07189e1351f&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.61.000"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-interpreter@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:3e3e25218e1299a14cd9d48e83e666df212c1e828d433a53110f009d8da93d9d&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-interpreter",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-interpreter@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:3e3e25218e1299a14cd9d48e83e666df212c1e828d433a53110f009d8da93d9d&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.40.2"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-lib@0.65-515.el10_2?arch=x86_64&checksum=sha256:a3dcc8855937b785005809885120d0650ab1006582ac62d0ede7dc0032e74353&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-lib",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-lib@0.65-515.el10_2?arch=x86_64&checksum=sha256:a3dcc8855937b785005809885120d0650ab1006582ac62d0ede7dc0032e74353&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.65"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-libnet@3.15-512.el10?arch=noarch&checksum=sha256:328e9e9c9c216a2bda6f205ff4637754914a6a21cb9fb792c6c3e7dd8adf8bde&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-libnet",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-libnet@3.15-512.el10?arch=noarch&checksum=sha256:328e9e9c9c216a2bda6f205ff4637754914a6a21cb9fb792c6c3e7dd8adf8bde&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "3.15"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-libs@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:5e1303edcc1c5fdbeed8a1264af4cebee983acb3b6a3735245e151496b3366fd&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-libs@5.40.2-515.el10_2?arch=x86_64&checksum=sha256:5e1303edcc1c5fdbeed8a1264af4cebee983acb3b6a3735245e151496b3366fd&epoch=4&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.40.2"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-locale@1.12-515.el10_2?arch=noarch&checksum=sha256:a0a9d2e42da26f086046f0f708cc37819f2ab9d7c59dffaa014786d7cd0e8823&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-locale",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-locale@1.12-515.el10_2?arch=noarch&checksum=sha256:a0a9d2e42da26f086046f0f708cc37819f2ab9d7c59dffaa014786d7cd0e8823&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.12"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-mro@1.29-515.el10_2?arch=x86_64&checksum=sha256:ec9938a15934801a5947a9022a65d73988cae13c77e4dfe926762f4e7aceb063&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-mro",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-mro@1.29-515.el10_2?arch=x86_64&checksum=sha256:ec9938a15934801a5947a9022a65d73988cae13c77e4dfe926762f4e7aceb063&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.29"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-overload@1.37-515.el10_2?arch=noarch&checksum=sha256:3082541b29d0e0dcba0ab87b2515b60c173d0aa5d3fe76ce3ce8eb067dbe6668&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-overload",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-overload@1.37-515.el10_2?arch=noarch&checksum=sha256:3082541b29d0e0dcba0ab87b2515b60c173d0aa5d3fe76ce3ce8eb067dbe6668&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.37"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-overloading@0.02-515.el10_2?arch=noarch&checksum=sha256:9580567af6d1a37641677655dc51be300a8c4b026906254078a192ffad447268&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-overloading",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-overloading@0.02-515.el10_2?arch=noarch&checksum=sha256:9580567af6d1a37641677655dc51be300a8c4b026906254078a192ffad447268&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.02"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-parent@0.241-512.el10?arch=noarch&checksum=sha256:f1f3a1a07d86b752c46d96da1ef18e2243732c6354c9a3fd1d17a7e224031d5f&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-parent",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-parent@0.241-512.el10?arch=noarch&checksum=sha256:f1f3a1a07d86b752c46d96da1ef18e2243732c6354c9a3fd1d17a7e224031d5f&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "0.241"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-podlators@5.01-511.el10?arch=noarch&checksum=sha256:6b8001129818f1f4615a4704e679d380b736ae7333a837ba567967660320a6b2&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-podlators",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-podlators@5.01-511.el10?arch=noarch&checksum=sha256:6b8001129818f1f4615a4704e679d380b736ae7333a837ba567967660320a6b2&epoch=1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "5.01"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/perl-vars@1.05-515.el10_2?arch=noarch&checksum=sha256:1f1137469608a6dd9d1f8fa8768874fa3f0a4f46dcc13a5957904d77e5802f81&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "name": "perl-vars",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/perl-vars@1.05-515.el10_2?arch=noarch&checksum=sha256:1f1137469608a6dd9d1f8fa8768874fa3f0a4f46dcc13a5957904d77e5802f81&epoch=0&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.05"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/pkgconf-m4@2.1.0-3.el10?arch=noarch&checksum=sha256:f6a99c6e64b9358a0b4db60e4fb2b5c858eb0487a504690e80d1b84b9d044995&repository_id=ubi-10-baseos-rpms",
       "name": "pkgconf-m4",
       "properties": [
         {
@@ -1537,12 +2758,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/pkgconf-m4@1.7.3-10.el9?arch=noarch&checksum=sha256:91bafd6e06099451f60288327b275cfcc651822f6145176a157c6b0fa5131e02&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/pkgconf-m4@2.1.0-3.el10?arch=noarch&checksum=sha256:f6a99c6e64b9358a0b4db60e4fb2b5c858eb0487a504690e80d1b84b9d044995&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "1.7.3"
+      "version": "2.1.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/pkgconf-pkg-config@1.7.3-10.el9?arch=x86_64&checksum=sha256:9a502d81d73d3303ceb53a06ad7ce525c97117ea64352174a33708bf3429283d&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/pkgconf-pkg-config@2.1.0-3.el10?arch=x86_64&checksum=sha256:b90a31630640ca9a05ba842032ccbe7ae786318bb808ffb49f252acdb1419235&repository_id=ubi-10-baseos-rpms",
       "name": "pkgconf-pkg-config",
       "properties": [
         {
@@ -1550,12 +2771,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/pkgconf-pkg-config@1.7.3-10.el9?arch=x86_64&checksum=sha256:9a502d81d73d3303ceb53a06ad7ce525c97117ea64352174a33708bf3429283d&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/pkgconf-pkg-config@2.1.0-3.el10?arch=x86_64&checksum=sha256:b90a31630640ca9a05ba842032ccbe7ae786318bb808ffb49f252acdb1419235&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "1.7.3"
+      "version": "2.1.0"
     },
     {
-      "bom-ref": "pkg:rpm/redhat/pkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:bb47b4ecc499c308f41031a99e723827d152d5d750f59849d0c265d820944a26&repository_id=ubi-9-baseos-rpms",
+      "bom-ref": "pkg:rpm/redhat/pkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:63c965654dfd260d755bd36bdb19ced0036aa4c1e2b64d726c95fad98b2dc041&repository_id=ubi-10-baseos-rpms",
       "name": "pkgconf",
       "properties": [
         {
@@ -1563,9 +2784,48 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:rpm/redhat/pkgconf@1.7.3-10.el9?arch=x86_64&checksum=sha256:bb47b4ecc499c308f41031a99e723827d152d5d750f59849d0c265d820944a26&repository_id=ubi-9-baseos-rpms",
+      "purl": "pkg:rpm/redhat/pkgconf@2.1.0-3.el10?arch=x86_64&checksum=sha256:63c965654dfd260d755bd36bdb19ced0036aa4c1e2b64d726c95fad98b2dc041&repository_id=ubi-10-baseos-rpms",
       "type": "library",
-      "version": "1.7.3"
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/subversion-libs@1.14.5-3.el10?arch=x86_64&checksum=sha256:e7d1379a03bb05fd6db7a06cc72562c82e387e60fe8568b7748d191f8abc8b69&repository_id=ubi-10-appstream-rpms",
+      "name": "subversion-libs",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/subversion-libs@1.14.5-3.el10?arch=x86_64&checksum=sha256:e7d1379a03bb05fd6db7a06cc72562c82e387e60fe8568b7748d191f8abc8b69&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.14.5"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/subversion@1.14.5-3.el10?arch=x86_64&checksum=sha256:255c26aec3a47b57e66dbfff334fe9af48439efcc782132c5e5b3239c78699a1&repository_id=ubi-10-appstream-rpms",
+      "name": "subversion",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/subversion@1.14.5-3.el10?arch=x86_64&checksum=sha256:255c26aec3a47b57e66dbfff334fe9af48439efcc782132c5e5b3239c78699a1&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "1.14.5"
+    },
+    {
+      "bom-ref": "pkg:rpm/redhat/utf8proc@2.7.0-9.el10?arch=x86_64&checksum=sha256:5c04230a07c93e0470781b7a803722828804e414ba447a16d7320282619f866d&repository_id=ubi-10-appstream-rpms",
+      "name": "utf8proc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:rpm/redhat/utf8proc@2.7.0-9.el10?arch=x86_64&checksum=sha256:5c04230a07c93e0470781b7a803722828804e414ba447a16d7320282619f866d&repository_id=ubi-10-appstream-rpms",
+      "type": "library",
+      "version": "2.7.0"
     }
   ],
   "metadata": {
