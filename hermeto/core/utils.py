@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from collections.abc import Callable, Iterator, Sequence
 from functools import cache
 from pathlib import Path
@@ -166,14 +167,34 @@ def _fast_copy(src: Path, dest: Path) -> int:
     return total
 
 
-def copy_directory(origin: Path, destination: Path) -> Path:
+# A concurrent 'git gc' on the source repo can make a copy fail or copy an inconsistent .git.
+# Housekeeping is short-lived, so a few retries are enough to land on a clean tree.
+_COPY_MAX_ATTEMPTS = 5
+_COPY_RETRY_BACKOFF = 0.1
+
+
+def copy_directory(
+    origin: Path,
+    destination: Path,
+    is_valid: Callable[[Path], bool] = lambda _: True,
+) -> Path:
     """
     Recursively copy directory to another path.
 
     Use fast in-kernel copying (including reflink file system optimization) and fall back to
     regular copy if the former fails for some reason.
 
-    :raise FileExistsError: if the destination path already exists.
+    copytree first scans a directory and then copies each entry, so a process that mutates the tree
+    between those steps can make an entry disappear mid-copy. The usual cause is a concurrent
+    'git gc' on a source repo, which packs loose objects and refs and then removes the loose
+    originals. Such a race either raises shutil.Error or produces an inconsistent .git, so the copy
+    is retried until it succeeds.
+
+    :param is_valid: predicate run on a successful copy; returning False rejects the copy and
+        triggers another attempt. Callers copying a source repo use it to reject an inconsistent
+        .git that copied without raising. Defaults to accepting every copy.
+    :raise shutil.Error: if the copy keeps failing, or keeps validating as inconsistent, across
+        all retries.
     :raise FileNotFoundError: if the origin directory does not exist.
     """
 
@@ -187,15 +208,39 @@ def copy_directory(origin: Path, destination: Path) -> Path:
             ignore=shutil.ignore_patterns(destination.name),
         )
 
-    try:
-        log.debug("Copying %s to %s using fast in-kernel copy.", origin, destination)
-        _copy_using(_fast_copy)
-    except _FastCopyFailedFallback:
-        log.debug("Fast copying failed, falling back to standard copy.")
-        shutil.rmtree(destination)
-        _copy_using(shutil.copy2)
+    def _attempt() -> None:
+        # a previous attempt may have left a partial copy behind; start clean
+        if destination.exists():
+            shutil.rmtree(destination)
+        try:
+            log.debug("Copying %s to %s using fast in-kernel copy.", origin, destination)
+            _copy_using(_fast_copy)
+        except _FastCopyFailedFallback:
+            log.debug("Fast copying failed, falling back to standard copy.")
+            shutil.rmtree(destination)
+            _copy_using(shutil.copy2)
 
-    return destination
+    # Retry the copy while it keeps losing the race. On the last attempt a persistent failure
+    # propagates instead of silently returning a broken copy.
+    for attempt in range(_COPY_MAX_ATTEMPTS):
+        last_attempt = attempt == _COPY_MAX_ATTEMPTS - 1
+        try:
+            _attempt()
+        except shutil.Error:
+            if last_attempt:
+                raise  # lost every race, give up
+        else:
+            if is_valid(destination):
+                return destination
+            if last_attempt:
+                raise shutil.Error(
+                    f"Copy of {origin} failed validation after {_COPY_MAX_ATTEMPTS} attempts; "
+                    "the source tree kept changing during the copy."
+                )
+        log.debug("Source copy lost a race with git gc, retrying (attempt %d)", attempt + 1)
+        time.sleep(_COPY_RETRY_BACKOFF * (attempt + 1))
+
+    raise AssertionError("unreachable: the retry loop returns or raises on the last attempt")
 
 
 def get_cache_dir() -> Path:

@@ -9,7 +9,14 @@ import git
 import pytest
 
 from hermeto.core.errors import FetchError, NotAGitRepo, UnsupportedFeature
-from hermeto.core.scm import RepoID, clone_as_tarball, get_repo_for_path, get_repo_id
+from hermeto.core.rooted_path import RootedPath
+from hermeto.core.scm import (
+    RepoID,
+    clone_as_tarball,
+    get_repo_for_path,
+    get_repo_id,
+    repo_head_resolves,
+)
 
 INITIAL_COMMIT = "78510c591e2be635b010a52a7048b562bad855a3"
 
@@ -154,3 +161,23 @@ def test_get_repo_for_path(
         resolved_repo, resolved_relative_path = get_repo_for_path(main_repo_root, path_to_resolve)
         assert Path(resolved_repo.working_dir) == expected_repo_root
         assert resolved_relative_path == Path(expected_path_in_repo)
+
+
+def test_repo_head_resolves_non_git(tmp_path: Path) -> None:
+    # a path that is not a git repo has nothing to verify
+    assert repo_head_resolves(tmp_path) is True
+
+
+def test_repo_head_resolves_healthy_repo(rooted_tmp_path_repo: RootedPath) -> None:
+    assert repo_head_resolves(rooted_tmp_path_repo.path) is True
+
+
+def test_repo_head_resolves_unresolvable_head(rooted_tmp_path_repo: RootedPath) -> None:
+    # simulate a copy that raced git housekeeping: HEAD points to a branch whose ref no longer
+    # exists (loose file gone, never packed), leaving HEAD unresolvable
+    git_dir = rooted_tmp_path_repo.path / ".git"
+    (git_dir / "HEAD").write_text("ref: refs/heads/gone\n")
+    for ref in ("master", "main"):
+        (git_dir / "refs" / "heads" / ref).unlink(missing_ok=True)
+
+    assert repo_head_resolves(rooted_tmp_path_repo.path) is False
