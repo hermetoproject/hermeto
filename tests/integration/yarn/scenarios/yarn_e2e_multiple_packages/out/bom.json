@@ -30,7 +30,7 @@
         "pkg:npm/etag@1.8.1",
         "pkg:npm/express@4.18.2",
         "pkg:npm/finalhandler@1.2.0",
-        "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+        "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
         "pkg:npm/follow-redirects@1.15.4",
         "pkg:npm/form-data@4.0.0",
         "pkg:npm/forwarded@0.2.0",
@@ -148,7 +148,7 @@
         "pkg:npm/raw-body@2.5.1",
         "pkg:npm/safe-buffer@5.2.1",
         "pkg:npm/safer-buffer@2.1.2",
-        "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+        "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
         "pkg:npm/send@0.18.0",
         "pkg:npm/serve-static@1.15.0",
         "pkg:npm/set-function-length@1.2.0",
@@ -480,7 +480,7 @@
       "version": "1.2.0"
     },
     {
-      "bom-ref": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+      "bom-ref": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
       "name": "first-pkg",
       "properties": [
         {
@@ -488,7 +488,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+      "purl": "pkg:npm/first-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
       "type": "library"
     },
     {
@@ -973,7 +973,7 @@
       "version": "2.1.2"
     },
     {
-      "bom-ref": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+      "bom-ref": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
       "name": "second-pkg",
       "properties": [
         {
@@ -981,7 +981,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%402a0064598517d20cd465ee6f9ce349dacb5e15c6",
+      "purl": "pkg:npm/second-pkg?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40c638643b1eb454d5c2225016ae09cdd61cc1aa15",
       "type": "library"
     },
     {

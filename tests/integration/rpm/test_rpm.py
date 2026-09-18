@@ -207,13 +207,13 @@ def test_repo_files(
                     {
                         "type": "rpm",
                         "options": {
-                            "dnf": {"ubi-7": {"gpgcheck": 0}},
+                            "dnf": {"ubi-10": {"gpgcheck": 0}},
                         },
                     },
                 ),
             ),
             ["vim", "--version"],
-            ["Vi IMproved 7.4"],
+            ["Vi IMproved 9.1"],
             id="rpm_repo_metadata_compression_type",
         ),
         # Test case that checks fetching RPM files, generating repos and repofiles, building an
