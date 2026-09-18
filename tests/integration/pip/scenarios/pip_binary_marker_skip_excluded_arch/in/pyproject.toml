@@ -1,0 +1,4 @@
+[project]
+name = "package"
+version = "0.1.0"
+dependencies = ["bcrypt==5.0.0"]

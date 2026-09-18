@@ -165,6 +165,12 @@ The pip backend will be updated to filter Python wheels based on user-provided p
   - For OS, linux
   - For architecture, x86_64
 
+**Environment marker evaluation**:
+- Before artifact selection, the pip backend evaluates each requirement's [PEP 508 environment marker][] against an environment synthesized *only* from the user-provided binary filters (`arch`, `os`, `py_impl`, `py_version`), never from the host — consistent with **No Runtime Platform Detection**. This is separate from, and precedes, the wheel-tag filtering described above.
+- A requirement whose marker is false for every selected filter combination is skipped entirely (no wheel and no sdist). This restores pip's own behavior for wheel-only locks (e.g. private indexes without sdists) that mark a package unavailable on an arch: instead of failing with `PackageRejected` while searching for a nonexistent wheel, Hermeto skips it. See [#1570](https://github.com/hermetoproject/hermeto/issues/1570).
+- A marker is evaluated only when every environment variable it reads is pinned by the filters; if it reads any unpinned dimension the requirement is kept (fail-open). This referenced-variable gate is used rather than relying on evaluation to fail on unpinned values, because packaging routes operators through different code paths (`x in y` runs `str.__contains__` on the literal; `<`/`>` on non-version keys are a constant `False`), so no sentinel value can signal "unknown" for every operator. Unpinnable dimensions include `platform_release`, `extra`, and `python_full_version`'s patch level (`py_version` pins only the minor). A false *keep* wastes bandwidth or surfaces as a diagnosable error; a false *skip* would silently omit a needed dependency, which is worse for a hermetic build.
+- `os` tokens live in a different string space than PEP 508 `sys_platform`: they are substring-matched against wheel platform *tags* (`macosx_*`, `manylinux*`, `win*`), so the canonical macOS token is `macosx` (not `darwin`). The marker env therefore translates each `os` token to PEP 508 values (`macosx`/`macos`/`osx`/`darwin` → `sys_platform="darwin"`, `win`/`win32`/`windows` → `win32`); an unrecognized token leaves the OS marker fields unknown (fail-open). The `platform` (regex) filter pins no marker fields at all — it matches tags directly — so markers are always kept in that mode.
+
 **Platform Matching Examples**:
 - Example 1: Prefetching for Python 3.11 on Linux
   ```json
@@ -269,4 +275,5 @@ The rpm backend will filter packages based on a user-provided architecture list,
 [prebuildify]: https://github.com/prebuild/prebuildify
 [wheelios]: https://github.com/chmeliik/wheelios
 [packaging platform tags]: https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/
+[PEP 508 environment marker]: https://peps.python.org/pep-0508/#environment-markers
 [Gem:Platform]: https://github.com/rubygems/rubygems/blob/8ad4509f95c90cf9523a82ca917b6b842fd37132/lib/rubygems/platform.rb#L10
