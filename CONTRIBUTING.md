@@ -7,6 +7,7 @@
   * [Hermeto's ethos](#hermetos-ethos)
 * [Development](#development)
   * [Virtual environment](#virtual-environment)
+  * [Toolbox image](#toolbox-image)
   * [Experimental features](#experimental-features)
   * [Coding standards](#coding-standards)
   * [Pull request guidelines](#pull-request-guidelines)
@@ -113,6 +114,54 @@ The CLI also depends on the following non-Python dependencies:
 ```shell
 dnf install golang-bin git
 ```
+
+### Toolbox image
+
+Hermeto depends on several language runtimes and tools (Go, Node.js, Rust, Ruby,
+Python) which all need to be installed on your local system. To
+make this easier, we publish a [toolbox](https://containertoolbx.org/) container
+image that ships all of them pre-installed to make development of Hermeto more
+convenient. The image is based on our production image with the necessary
+toolbox bits layered on top, so it is not a full blown toolbox image (it lacks
+some desktop integration features), but it provides everything you need for
+command-line development and testing of Hermeto.
+
+Pull the nightly build from our GitHub registry:
+
+```shell
+podman pull ghcr.io/hermetoproject/hermeto-toolbox:nightly
+```
+
+Or build it yourself from the current checkout:
+
+```shell
+podman build --target toolbox -t hermeto-toolbox .
+```
+
+Then create and enter a toolbox container (use the pulled image reference instead
+of `localhost/hermeto-toolbox` if you didn't build it locally):
+
+```shell
+toolbox create --image localhost/hermeto-toolbox hermeto-toolbox
+toolbox enter hermeto-toolbox
+```
+
+Once inside the container, install Hermeto in editable mode so that your source
+changes take effect immediately:
+
+```shell
+/venv/bin/pip install -e ~/path/to/hermeto
+```
+
+A toolbox container persists across `toolbox enter` sessions, so this setup only
+needs to be done once per container.
+
+> [!CAUTION]
+> Toolbox bind-mounts your home directory (`$HOME`) into the container. This is
+> what makes your dotfiles, git checkouts, and editor configuration seamlessly
+> available inside, but it also means that file operations in the container
+> directly affect your host filesystem. Treat the toolbox as a convenience layer
+> for dependencies, not as a sandbox.
 
 ### Experimental features
 Use `x-<pkg>` in the request JSON to enable an experimental package manager (positional argument, not a CLI flag).
