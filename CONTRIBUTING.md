@@ -3,6 +3,7 @@
 ## Table of contents
 
 * [How to start a contribution](#how-to-start-a-contribution)
+  * [I would like to contribute, but I am not sure where to start](#i-would-like-to-contribute-but-i-am-not-sure-where-to-start)
   * [How we deal with larger features](#how-we-deal-with-larger-features)
   * [Hermeto's ethos](#hermetos-ethos)
 * [Development](#development)
@@ -33,6 +34,26 @@ request guidelines](#pull-request-guidelines). For AI-assisted contributions,
 make sure to comply with the [AI Contribution Policy](AI_CONTRIBUTION_POLICY.md).
 Please consult [Development](#development) section, it contains a lot of helpful
 information which will make contributing fast and pleasant process.
+
+### I would like to contribute, but I am not sure where to start
+
+Do not pick issues right away, especially those which look complex or
+partially defined. For starters consider working on easier fixes to
+get familiar with review and contribution processes. Begin with
+reading the documentation and trying to follow the examples.
+If you find something factually wrong or unclear or even a typo then
+create a pull request to address that (note, no need to create a separate
+issues for small changes like that). Any behavior oddities like inconsistent
+error messages or confusing error messages found this way
+could also be good candidates for the first (or second) pull request.
+
+Once it is clear how to run the project, the tests, and how to contribute changes
+one could venture deeper into the code: find a package manager that is familiar or
+sparks the brightest interest and study its implementation. The code is meant to
+be easy to comprehend, if it is not, if, for example, naming or separation
+of concerns is confusing, or a docstring is misleading, then it is a good candidate for
+a small refactoring pull request. After a few such changes it will make sense to
+revisit the issues tracker and pick something more substantial.
 
 ### How we deal with larger features
 
