@@ -1518,14 +1518,19 @@ def prepare_netrc_contents() -> str:
         password {secret}"""
 
 
+def _write_file_with_mode(path: Path, content: str, mode: int) -> None:
+    """Write content to a file with explicit permissions, bypassing umask."""
+    old_mask = os.umask(0)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+        with open(fd, "w") as f:
+            f.write(content)
+    finally:
+        os.umask(old_mask)
+
+
 def inject_netrc(netrc_stuff: str, temp_netrc_dir: Path) -> str:
     """Inject a temporary .netrc."""
     netrc = temp_netrc_dir / ".netrc"
-    old_mask = os.umask(0)
-    try:
-        netrc_fd = os.open(path=netrc, flags=(os.O_WRONLY | os.O_CREAT | os.O_TRUNC), mode=0o600)
-        with open(netrc_fd, "w") as f:
-            f.write(netrc_stuff)
-    finally:
-        os.umask(old_mask)
+    _write_file_with_mode(netrc, netrc_stuff, 0o600)
     return str(netrc)
