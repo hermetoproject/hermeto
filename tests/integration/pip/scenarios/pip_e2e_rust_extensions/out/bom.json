@@ -10,7 +10,7 @@
         "pkg:pypi/cffi@1.17.1",
         "pkg:pypi/cryptography?checksum=sha256:94ce632f0cb9162cdc282c35b2c9f203e805106673a05a3d193332e4c2f9d905&download_url=https://github.com/pyca/cryptography/archive/refs/tags/44.0.2.zip",
         "pkg:pypi/flit-core@3.12.0",
-        "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408131300eaff08afac75f7fb95da0332784b1f1d4",
+        "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ac35c09cf72787c429396b5557cfee0eeb802446",
         "pkg:pypi/maturin@1.8.3",
         "pkg:pypi/packaging@24.2",
         "pkg:pypi/pycparser@2.22",
@@ -6222,7 +6222,7 @@
       "version": "3.12.0"
     },
     {
-      "bom-ref": "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408131300eaff08afac75f7fb95da0332784b1f1d4",
+      "bom-ref": "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ac35c09cf72787c429396b5557cfee0eeb802446",
       "name": "integration-tests",
       "properties": [
         {
@@ -6230,7 +6230,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%408131300eaff08afac75f7fb95da0332784b1f1d4",
+      "purl": "pkg:pypi/integration-tests@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ac35c09cf72787c429396b5557cfee0eeb802446",
       "type": "library",
       "version": "0.1.0"
     },

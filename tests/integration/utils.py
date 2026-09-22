@@ -88,6 +88,10 @@ class SyntheticRepo:
             exclude_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(gitignore, exclude_file)
 
+            with open(exclude_file, "a") as f:
+                f.write("Dockerfile*\n")
+                f.write("Containerfile*\n")
+
         # main repo creation
         self.repo = GitRepo.init(repo_path, env=GIT_PRISTINE_ENV)
         with self.repo.git.custom_environment(**self._GIT_ENV):
