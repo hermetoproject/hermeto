@@ -17,6 +17,9 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
+from tenacity import RetryCallState, retry, retry_if_exception_type, wait_exponential
+from tenacity.stop import stop_base
+from typing_extensions import override
 from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
 from urllib3.util.retry import Retry
@@ -154,6 +157,10 @@ def _get_pkg_requests_session() -> requests.Session:
                 status_forcelist=STATUS_FORCELIST,
                 allowed_methods=SAFE_REQUEST_METHODS,
                 total=max_retries,
+                # `read` enables retries for ConnectionTimeout and ProtocolError
+                # See https://github.com/urllib3/urllib3/blob/911bc94d227519483c82e516e2bf10860396afd5/src/urllib3/util/retry.py#L43
+                # for details.
+                read=get_config().http.max_retries,
             )
         )
         _pkg_requests_session.mount("http://", adapter)
@@ -162,7 +169,36 @@ def _get_pkg_requests_session() -> requests.Session:
     return _pkg_requests_session
 
 
-def download_binary_file(
+# Snake case is used to match the style of tenacity.
+# For further details see:
+#   https://github.com/jd/tenacity/blob/32ac68f0941319c0d2f4fb927f96e4ee29bb46c6/tenacity/stop.py
+class stop_after_attempt_with_attempt_number_evalutaion_deferred(stop_base):
+    """A stop that lets a user set the desired number of attempts."""
+
+    @override
+    def __call__(self, retry_state: "RetryCallState") -> bool:
+        return retry_state.attempt_number >= get_config().http.max_retries
+
+
+def _raise_fetch_error_when_retries_exhausted(retry_state: Any) -> None:
+    e = retry_state.outcome.exception()
+    url = retry_state.kwargs["url"]
+    raise FetchError(f"Could not download {url}") from e
+
+
+# ChunkedEncodingError apparently happens after a connection was successfully made,
+# headers were received, some data were received and the connection closed. By this
+# time urllib3 appears to get past the retry mechanism that deals with ConnectionTimeout
+# or ProtocolError exceptions and thus a download fails without retry. This is why
+# an external retry is necessary here.
+@retry(
+    stop=stop_after_attempt_with_attempt_number_evalutaion_deferred(),
+    wait=wait_exponential(),
+    retry=retry_if_exception_type(requests.exceptions.ChunkedEncodingError),
+    retry_error_callback=_raise_fetch_error_when_retries_exhausted,
+)
+def _download_binary_file_with_retry(
+    *,
     url: str,
     download_path: StrPath,
     auth: AuthBase | None = None,
@@ -192,8 +228,27 @@ def download_binary_file(
             for chunk in response.iter_content(chunk_size=chunk_size):
                 f.write(chunk)
 
+    except requests.exceptions.ChunkedEncodingError:
+        raise
     except requests.RequestException as e:
         raise FetchError(f"Could not download {url}") from e
+
+
+def download_binary_file(
+    url: str,
+    download_path: StrPath,
+    auth: AuthBase | None = None,
+    insecure: bool = False,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+) -> None:
+    """A wrapper for _download_binary_file_with_retry that pins values to keywords."""
+    _download_binary_file_with_retry(
+        url=url,
+        download_path=download_path,
+        auth=auth,
+        insecure=insecure,
+        chunk_size=chunk_size,
+    )
 
 
 def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
