@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import os
 from pathlib import Path
 from typing import Any, Generator
 
@@ -118,3 +119,71 @@ def test_cli_config_file_overrides_defaults(tmp_home_cwd: Path) -> None:
 
     config = config_module.get_config()
     assert config.runtime.concurrency_limit == cli_concurrency
+
+
+def test_set_config_invalid_yaml(tmp_home_cwd: Path) -> None:
+    """set_config() wraps YAML parse errors in InvalidInput so main() can handle them."""
+    from hermeto.core.errors import InvalidInput
+
+    bad_yaml = tmp_home_cwd / "bad.yaml"
+    bad_yaml.write_text("key: [unclosed bracket\n")
+
+    with pytest.raises(InvalidInput, match="Invalid YAML in configuration file"):
+        config_module.set_config(bad_yaml)
+
+
+def test_get_source_data_empty(tmp_home_cwd: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no env vars and no config files both source dicts are empty."""
+    for key in list(os.environ):
+        if key.startswith("HERMETO_") and not key.startswith("HERMETO_TEST_"):
+            monkeypatch.delenv(key)
+    monkeypatch.setattr(config_module, "CONFIG_FILE_PATHS", [])
+
+    sources = config_module.get_source_data()
+
+    assert sources["env"] == {}
+    assert sources["file"] == {}
+
+
+def test_get_source_data_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Values set via env vars appear in the 'env' key of source data."""
+    monkeypatch.setenv("HERMETO_RUNTIME__CONCURRENCY_LIMIT", "99")
+    monkeypatch.setattr(config_module, "CONFIG_FILE_PATHS", [])
+
+    sources = config_module.get_source_data()
+
+    # EnvSettingsSource returns raw strings without pydantic coercion — that is
+    # intentional since we bypass full model validation for source attribution.
+    assert sources["env"].get("runtime", {}).get("concurrency_limit") == "99"
+    assert sources["file"] == {}
+
+
+def test_get_source_data_file(tmp_home_cwd: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Values set in a config file appear in the 'file' key of source data."""
+    for key in list(os.environ):
+        if key.startswith("HERMETO_") and not key.startswith("HERMETO_TEST_"):
+            monkeypatch.delenv(key)
+
+    config_path = tmp_home_cwd / "hermeto.yaml"
+    _write_yaml_config(config_path, {"http": {"read_timeout": 999}})
+    monkeypatch.setattr(config_module, "CONFIG_FILE_PATHS", [str(config_path)])
+
+    sources = config_module.get_source_data()
+
+    assert sources["env"] == {}
+    assert sources["file"].get("http", {}).get("read_timeout") == 999
+
+
+def test_get_source_data_cli_file(tmp_home_cwd: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Values in the CLI-specified config file appear in the 'file' source."""
+    for key in list(os.environ):
+        if key.startswith("HERMETO_") and not key.startswith("HERMETO_TEST_"):
+            monkeypatch.delenv(key)
+    monkeypatch.setattr(config_module, "CONFIG_FILE_PATHS", [])
+
+    cli_path = tmp_home_cwd / "cli.yaml"
+    _write_yaml_config(cli_path, {"http": {"connect_timeout": 5}})
+
+    sources = config_module.get_source_data(cli_config_path=cli_path)
+
+    assert sources["file"].get("http", {}).get("connect_timeout") == 5
