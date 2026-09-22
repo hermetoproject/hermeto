@@ -153,6 +153,146 @@ class TestTopLevelOpts:
         assert "s3cret-value" in result.output
         assert "**********" not in result.output
 
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_command_shows_source_annotations(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Each field comment includes a source annotation when config is shown."""
+        monkeypatch.setenv("HERMETO_RUNTIME__CONCURRENCY_LIMIT", "6")
+
+        config_file.config = None
+        result = invoke_expecting_sucess(app, ["config"])
+        config_file.config = None
+
+        # The changed field must show [env]; any unset field must show [default].
+        concurrency_comment = next(
+            line
+            for line in result.output.splitlines()
+            if "HERMETO_RUNTIME__CONCURRENCY_LIMIT" in line
+        )
+        assert "[env]" in concurrency_comment
+
+        proxy_url_comment = next(
+            line for line in result.output.splitlines() if "HERMETO_GOMOD__PROXY_URL" in line
+        )
+        assert "[default]" in proxy_url_comment
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_command_shows_file_source_annotation(
+        self, tmp_cwd: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A value loaded from a config file is annotated [file]."""
+        config_path = tmp_cwd / "hermeto.yaml"
+        config_path.write_text("http:\n  read_timeout: 999\n")
+        monkeypatch.setattr("hermeto.core.config.CONFIG_FILE_PATHS", [str(config_path)])
+
+        config_file.config = None
+        result = invoke_expecting_sucess(app, ["config"])
+        config_file.config = None
+
+        timeout_comment = next(
+            line for line in result.output.splitlines() if "HERMETO_HTTP__READ_TIMEOUT" in line
+        )
+        assert "[file]" in timeout_comment
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_diff_shows_source_annotation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """--diff output includes source annotation on changed lines."""
+        monkeypatch.setenv("HERMETO_RUNTIME__CONCURRENCY_LIMIT", "6")
+
+        config_file.config = None
+        result = invoke_expecting_sucess(app, ["config", "--diff"])
+        config_file.config = None
+
+        changed_line = next(
+            line for line in result.output.splitlines() if "concurrency_limit" in line
+        )
+        assert "[env]" in changed_line
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_fallback_hides_user_values_keeps_defaults(self) -> None:
+        """User-supplied values must be hidden; schema defaults must stay visible."""
+        env = {
+            "HERMETO_GOMOD__PROXY_URL": "https://proxy.example.com",
+            "HERMETO_GOMOD__PROXY_LOGIN": "user",
+            "HERMETO_GOMOD__PROXY_PASSWORD": "s3cret-value",
+            # Trigger the invalid-config fallback path via a separate broken field.
+            "HERMETO_PIP__PROXY_LOGIN": "foo",
+        }
+        with mock.patch.dict(os.environ, env):
+            config_file.config = None
+            result = runner.invoke(app, ["config"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        assert "s3cret-value" not in result.output
+        assert "https://proxy.example.com" not in result.output
+        assert "<not shown>" in result.output
+        assert "concurrency_limit: 5" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_fallback_raw_still_hides_values(self) -> None:
+        """--raw must not reveal values in the fallback path.
+
+        The fallback path hides all values regardless of --raw because we
+        cannot determine which fields are secret when the config is invalid.
+        """
+        env = {
+            "HERMETO_GOMOD__PROXY_URL": "https://proxy.example.com",
+            "HERMETO_GOMOD__PROXY_LOGIN": "user",
+            "HERMETO_GOMOD__PROXY_PASSWORD": "s3cret-value",
+            "HERMETO_PIP__PROXY_LOGIN": "foo",
+        }
+        with mock.patch.dict(os.environ, env):
+            config_file.config = None
+            result = runner.invoke(app, ["config", "--raw"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        assert "s3cret-value" not in result.output
+        assert "<not shown>" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_command_with_invalid_config(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """config subcommand must not fail when the config is invalid.
+
+        A proxy_login without proxy_password would normally cause a validation
+        error that prevents any output.  The config command should instead show
+        the raw config values with source annotations so the user can diagnose
+        where the bad value came from.
+        """
+        monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "foo")
+
+        config_file.config = None
+        result = runner.invoke(app, ["config"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        # Warning (stderr) is merged into output by the test runner
+        assert "configuration is invalid" in result.output.lower()
+        # The actual error reason must be printed so the user can act on it
+        assert "proxy password must be set" in result.output.lower()
+        # The offending field and its source must be visible
+        assert "proxy_login" in result.output
+        assert "[env]" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_config_command_invalid_cli_file_shows_warning(self, tmp_cwd: Path) -> None:
+        """When --config-file contains invalid config, the warning must still appear.
+
+        Previously set_config() raised before writing the global, so config()
+        called get_config() which reloaded without the CLI file and silently
+        succeeded — hiding the bad value and printing no warning.
+        """
+        config_path = tmp_cwd / "bad.yaml"
+        config_path.write_text("pip:\n  proxy_login: foo\n")  # login without password
+
+        config_file.config = None
+        result = runner.invoke(app, ["--config-file", str(config_path), "config"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        assert "configuration is invalid" in result.output.lower()
+        assert "proxy password must be set" in result.output.lower()
+
     @pytest.mark.parametrize(
         "config_values",
         [

@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from typing import Any
+
 import pytest
 import yaml
 
 from hermeto.core.config import Config
 from hermeto.core.extras.config_show import (
     ConfigDiff,
+    SourceMap,
     _get_env_var_name,
+    build_source_map,
     format_diff_output,
     format_yaml_output,
     get_config_diff,
@@ -254,3 +258,197 @@ class TestSecretStrRedaction:
         raw_output = get_effective_config(config, raw=True)
         assert default_output["gomod"]["proxy_login"] == raw_output["gomod"]["proxy_login"]
         assert default_output["gomod"]["proxy_url"] == raw_output["gomod"]["proxy_url"]
+
+
+class TestBuildSourceMap:
+    """Tests for source attribution map construction."""
+
+    def test_env_wins_over_file(self) -> None:
+        """When the same key is set in both env and file, env wins."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"http": {"read_timeout": 600}},
+            "file": {"http": {"read_timeout": 900}},
+        }
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30}}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["http"]["read_timeout"] == "env"
+
+    def test_file_used_when_no_env(self) -> None:
+        """A key only in file gets 'file' label."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {},
+            "file": {"http": {"read_timeout": 900}},
+        }
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30}}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["http"]["read_timeout"] == "file"
+
+    def test_default_when_no_sources(self) -> None:
+        """A key absent from all sources gets 'default' label."""
+        sources: dict[str, dict[str, Any]] = {"env": {}, "file": {}}
+        defaults = {"http": {"read_timeout": 300}}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["http"]["read_timeout"] == "default"
+
+    def test_nested_section_mixed_sources(self) -> None:
+        """Env and file can each provide different fields within the same section."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"gomod": {"download_max_tries": 10}},
+            "file": {"gomod": {"proxy_url": "https://custom.proxy"}},
+        }
+        defaults = {
+            "gomod": {
+                "proxy_url": "https://proxy.golang.org,direct",
+                "download_max_tries": 5,
+            }
+        }
+
+        sm = build_source_map(sources, defaults)
+        gomod_sm = sm["gomod"]
+        assert isinstance(gomod_sm, dict)
+        assert gomod_sm["download_max_tries"] == "env"
+        assert gomod_sm["proxy_url"] == "file"
+
+    def test_all_labels_present_in_full_config(self) -> None:
+        """build_source_map covers every field that defaults defines."""
+        sources: dict[str, dict[str, Any]] = {"env": {}, "file": {}}
+        defaults = get_default_config()
+
+        sm = build_source_map(sources, defaults)
+
+        # Every top-level section must be present
+        assert set(sm.keys()) == set(defaults.keys())
+
+    def test_source_only_scalar_key_gets_label(self) -> None:
+        """A scalar key absent from defaults but present in a source is annotated."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"extra_key": "value"},
+            "file": {},
+        }
+        defaults: dict[str, Any] = {}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["extra_key"] == "env"
+
+    def test_source_only_scalar_env_wins_over_file(self) -> None:
+        """When a source-only key appears in both env and file, env takes priority."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"shared_key": "from-env"},
+            "file": {"shared_key": "from-file"},
+        }
+        defaults: dict[str, Any] = {}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["shared_key"] == "env"
+
+    def test_scalar_overrides_dict_section_gets_source_label(self) -> None:
+        """A source providing a scalar where the schema expects a dict is labelled,
+        not silently dropped — the user needs to see which source is at fault."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"http": "not-a-dict"},
+            "file": {},
+        }
+        defaults = {"http": {"read_timeout": 300}}
+
+        sm = build_source_map(sources, defaults)
+
+        # Section key gets the source label rather than a nested SourceMap.
+        assert sm["http"] == "env"
+
+
+class TestFormatYamlWithSources:
+    """Tests for source annotations in format_yaml_output."""
+
+    def test_env_source_annotation(self) -> None:
+        """[env] annotation appears for a field provided via env source."""
+        effective = {"gomod": {"proxy_url": "https://custom.proxy", "download_max_tries": 5}}
+        defaults = {
+            "gomod": {"proxy_url": "https://proxy.golang.org,direct", "download_max_tries": 5}
+        }
+        sm: SourceMap = {"gomod": {"proxy_url": "env", "download_max_tries": "default"}}
+
+        output = format_yaml_output(effective, defaults, source_map=sm)
+
+        assert "[env]" in output
+        # The env annotation should appear on the comment line for proxy_url
+        proxy_url_comment_line = next(
+            line for line in output.splitlines() if "HERMETO_GOMOD__PROXY_URL" in line
+        )
+        assert "[env]" in proxy_url_comment_line
+
+    def test_file_source_annotation(self) -> None:
+        """[file] annotation appears for a field provided via a config file."""
+        effective = {"http": {"read_timeout": 600, "connect_timeout": 30, "max_retries": 5}}
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+        sm: SourceMap = {
+            "http": {"read_timeout": "file", "connect_timeout": "default", "max_retries": "default"}
+        }
+
+        output = format_yaml_output(effective, defaults, source_map=sm)
+
+        timeout_line = next(
+            line for line in output.splitlines() if "HERMETO_HTTP__READ_TIMEOUT" in line
+        )
+        assert "[file]" in timeout_line
+
+    def test_default_annotation_present(self) -> None:
+        """[default] annotation appears for every field that uses the default value."""
+        effective = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+        sm: SourceMap = {
+            "http": {
+                "read_timeout": "default",
+                "connect_timeout": "default",
+                "max_retries": "default",
+            }
+        }
+
+        output = format_yaml_output(effective, defaults, source_map=sm)
+
+        comment_lines = [line for line in output.splitlines() if "HERMETO_HTTP__" in line]
+        assert all("[default]" in line for line in comment_lines)
+
+    def test_no_source_annotation_without_source_map(self) -> None:
+        """When source_map is None, no source annotations appear."""
+        effective = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+
+        output = format_yaml_output(effective, defaults)
+
+        assert "[env]" not in output
+        assert "[file]" not in output
+        assert "[default]" not in output
+
+
+class TestFormatDiffWithSources:
+    """Tests for source annotations in format_diff_output."""
+
+    def test_source_annotation_on_changed_line(self) -> None:
+        """[env] annotation appears on a changed line when source_map provided."""
+        diff: ConfigDiff = {"http": {"read_timeout": (600, 300)}}
+        sm: SourceMap = {"http": {"read_timeout": "env"}}
+
+        output = format_diff_output(diff, source_map=sm)
+
+        assert "[env]" in output
+        changed_line = next(line for line in output.splitlines() if "read_timeout" in line)
+        assert "# default: 300" in changed_line
+        assert "[env]" in changed_line
+
+    def test_no_source_annotation_without_source_map(self) -> None:
+        """format_diff_output without source_map behaves exactly as before."""
+        diff: ConfigDiff = {"http": {"read_timeout": (600, 300)}}
+
+        output = format_diff_output(diff)
+
+        assert "[env]" not in output
+        assert "[file]" not in output
+        assert "[default]" not in output
