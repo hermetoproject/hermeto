@@ -32,12 +32,5 @@ arches:
         name: vim-filesystem
         evr: 2:8.2.2637-41.el9
         sourcerpm: vim-8.2.2637-41.el9.src.rpm
-      - url: https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/Packages/which-2.21-30.el9.x86_64.rpm
-        repoid: baseos
-        size: 41976
-        checksum: sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b
-        name: which
-        evr: 2.21-30.el9
-        sourcerpm: which-2.21-30.el9.src.rpm
     source: []
     module_metadata: []
