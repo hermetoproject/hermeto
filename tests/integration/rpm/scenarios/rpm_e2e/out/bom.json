@@ -69,19 +69,6 @@
       "purl": "pkg:rpm/centos/vim-filesystem@8.2.2637-41.el9?arch=noarch&checksum=sha256:87e89ef4be6520e24dd30e68420d3037add5ac286989555fa3063f448d1e9ac0&epoch=2&repository_id=baseos",
       "type": "library",
       "version": "8.2.2637"
-    },
-    {
-      "bom-ref": "pkg:rpm/centos/which@2.21-30.el9?arch=x86_64&checksum=sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b&repository_id=baseos",
-      "name": "which",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:rpm/centos/which@2.21-30.el9?arch=x86_64&checksum=sha256:d602350243d5950c473624788e78e783461e5db242cc0a2d7a988e1b9a3e079b&repository_id=baseos",
-      "type": "library",
-      "version": "2.21"
     }
   ],
   "metadata": {
