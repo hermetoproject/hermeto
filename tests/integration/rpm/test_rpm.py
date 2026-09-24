@@ -19,13 +19,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
         pytest.param(
             utils.TestParameters(
                 packages=({"path": ".", "type": "rpm"},),
-                check_output=True,
-            ),
-            id="rpm_missing_checksum",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=({"path": ".", "type": "rpm"},),
                 check_output=False,
                 expected_error=ExitError.ERR_CHECKSUM_VERIFICATION_FAILED,
                 expected_output="Unmatched checksum",
@@ -42,6 +35,9 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             id="rpm_unexpected_size",
         ),
         pytest.param(
+            # Also covers the missing-checksum path: this-project pulls
+            # centos-stream-repos without a checksum, another-project pulls the
+            # same package with one, and the expected SBOM records both forms.
             utils.TestParameters(
                 packages=(
                     {"path": "this-project", "type": "rpm"},
