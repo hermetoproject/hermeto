@@ -540,6 +540,55 @@ Prefetch wheels for specific packages and platforms:
 }
 ```
 
+#### Environment markers
+
+When a `binary` filter is set, Hermeto evaluates each requirement's [PEP 508
+environment marker][] against an environment derived from the filters — never
+from the host. Each filter pins the marker fields it fully determines:
+
+- `arch` → `platform_machine`
+- `os` → `sys_platform`, `os_name`, `platform_system` (the `os` token is
+  translated to PEP 508 values, e.g. `macosx`/`macos` → `darwin`, `win` →
+  `win32`; a token Hermeto does not recognize leaves these fields unknown)
+- `py_impl` → `implementation_name`, `platform_python_implementation`
+- `py_version` → `python_version` (the minor version only; the patch level in
+  `python_full_version` is left unknown)
+
+The `platform` (regex) filter is mutually exclusive with `arch`/`os` and pins
+**no** marker fields — it matches wheel platform tags directly — so markers are
+always kept (fail-open) in that mode.
+
+A requirement whose marker is false for **all** selected filter combinations is
+**skipped** (neither its wheel nor its sdist is fetched), because `pip install`
+would not install it on the target platform either.
+
+This matters for multi-arch locks that mark a package unavailable on
+`ppc64le`/`s390x` with wheel-only hashes (e.g. private indexes without sdists):
+without this, Hermeto would fail with `PackageRejected` trying to find a wheel
+that does not exist, instead of skipping the requirement.
+
+Markers that read a dimension the filters do not pin stay "unknown" rather than
+being guessed:
+
+- If a marker reads a dimension you did not pin (`:all:`, an omitted
+  `py_version`, or `python_full_version`'s patch level), or one Hermeto does not
+  model (`platform_release`, `extra`, …), the requirement is **kept**
+  (fail-open) and an `info` log names the dimension.
+- In source-only mode (no `binary`), markers are **not** used to skip anything
+  (there is no declared target platform).
+- With `platform` (regex) instead of `arch`/`os`, markers that depend on
+  `platform_machine`/`sys_platform` are not used to skip (kept, fail-open).
+
+For example, under `"binary": {"arch": "ppc64le", "os": "linux"}` a requirement
+pinned as:
+
+```text
+bcrypt==5.0.0 ; platform_machine != "ppc64le" and sys_platform == "linux" \
+    --hash=sha256:...
+```
+
+is skipped, because its marker is false for `ppc64le`.
+
 ### Building from source
 
 Building wheels from sdists takes a long time, but building from source gives
@@ -884,6 +933,7 @@ these steps for you.
 [discouraged]: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#setuppy-discouraged
 [Hashes]: https://pip.pypa.io/en/stable/topics/secure-installs/#hash-checking-mode
 [PEP 440]: https://peps.python.org/pep-0440/#direct-references
+[PEP 508 environment marker]: https://peps.python.org/pep-0508/#environment-markers
 [PEP 517]: https://peps.python.org/pep-0517
 [PEP 518]: https://peps.python.org/pep-0518
 [PEP 621 metadata]: https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
