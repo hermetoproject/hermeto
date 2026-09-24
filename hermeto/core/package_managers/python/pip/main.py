@@ -20,6 +20,7 @@ from hermeto.core.checksum import ChecksumInfo, must_match_any_checksum
 from hermeto.core.config import get_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
+    ChecksumVerificationFailed,
     InvalidInput,
     LockfileNotFound,
     NotAGitRepo,
@@ -101,7 +102,7 @@ def _validate_index_url(url: str, source: str) -> None:
 
 class _PyPIArtifact(NamedTuple):
     requirement: PipRequirement
-    dpi: DistributionPackageInfo
+    dpis: list[DistributionPackageInfo]
 
 
 def fetch_pip_source(request: Request) -> RequestOutput:
@@ -280,7 +281,9 @@ def _download_pypi_packages(
     proxy_url: str | None = None,
     auth: str | None = None,
 ) -> list[PyPIPackage]:
-    files = {dpi.url: dpi.path for _, dpi in pypi_artifacts if not dpi.path.exists()}
+    files = {
+        dpi.url: dpi.path for _, dpis in pypi_artifacts for dpi in dpis if not dpi.path.exists()
+    }
     if files:
         headers = None
         if auth is not None:
@@ -291,30 +294,38 @@ def _download_pypi_packages(
         )
 
     result: list[PyPIPackage] = []
-    for req, dpi in pypi_artifacts:
-        missing_req_file_checksum = not bool(dpi.req_file_checksums)
-        if dpi.checksums_to_match:
-            if not _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match):
-                continue
-        if dpi.package_type == "sdist":
-            _check_metadata_in_sdist(dpi.path)
+    for req, dpis in pypi_artifacts:
+        req_processed = False
+        for dpi in dpis:
+            missing_req_file_checksum = not bool(dpi.req_file_checksums)
+            if dpi.checksums_to_match:
+                if not _checksum_must_match_or_path_unlink(dpi.path, dpi.checksums_to_match):
+                    continue
+            if dpi.package_type == "sdist":
+                _check_metadata_in_sdist(dpi.path)
 
-        dep = PyPIPackage(
-            name=dpi.name,
-            path=dpi.path,
-            requirement_file=str(requirements_file.file_path.subpath_from_root),
-            missing_req_file_checksum=missing_req_file_checksum,
-            package_type=dpi.package_type,
-            version=dpi.version,
-            index_url=index_url,
-            proxy_url=proxy_url,
-        )
-        log.debug(
-            "Successfully processed '%s' in path '%s'",
-            req.download_line,
-            dep.path.relative_to(pip_deps_dir.root),
-        )
-        result.append(dep)
+            dep = PyPIPackage(
+                name=dpi.name,
+                path=dpi.path,
+                requirement_file=str(requirements_file.file_path.subpath_from_root),
+                missing_req_file_checksum=missing_req_file_checksum,
+                package_type=dpi.package_type,
+                version=dpi.version,
+                index_url=index_url,
+                proxy_url=proxy_url,
+            )
+            log.debug(
+                "Successfully processed '%s' in path '%s'",
+                req.download_line,
+                dep.path.relative_to(pip_deps_dir.root),
+            )
+            req_processed = True
+            result.append(dep)
+        if not req_processed:
+            raise ChecksumVerificationFailed(
+                req.download_line,
+            )
+
     return result
 
 
@@ -448,7 +459,7 @@ def _resolve_and_download_pypi_packages(
     )
     pypi_dpis = asyncio.run(_resolve_pypi_distributions(pypi_reqs, resolve_callback))
     reqs_dpis_zipped = zip(pypi_reqs, pypi_dpis)
-    pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
+    pypi_artifacts = [_PyPIArtifact(req, dpis) for req, dpis in reqs_dpis_zipped]
     # If a standard PyPI index is used with proxy URL then proxy URL must be reported,
     # if a custom index is used then proxy URL must not be reported even if set.
     proxy_to_report = proxy_url if (proxy_url is not None and (proxy_url != index_url)) else None
