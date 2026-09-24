@@ -24,7 +24,7 @@ def _create_repo(tmp_path: Path, test_case: str) -> Path:
             submodules=[
                 utils.SyntheticSubmoduleSpec(
                     source_dir=scenario_dir / "in" / "submodule",
-                    path="integration-tests",
+                    path_in_parent="integration-tests",
                 ),
             ],
         )
