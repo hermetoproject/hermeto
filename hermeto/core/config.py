@@ -114,18 +114,32 @@ class ProxyMixin(BaseModel):
     proxy_login: str | None = None
     proxy_password: SecretStr | None = None
 
+    def _backend_name(self) -> str:
+        """Return the lowercase backend name for use in error messages.
+
+        Derived from the concrete subclass name by stripping the "Settings" suffix,
+        so e.g. PipSettings → "pip", NpmSettings → "npm".
+        """
+        return type(self).__name__.removesuffix("Settings").lower()
+
     @model_validator(mode="after")
     def _validate_login_and_password_both_set(self) -> Self:
         if self.proxy_login is not None and self.proxy_password is None:
-            raise InvalidInput("Proxy password must be set when proxy login is set")
+            raise InvalidInput(
+                f"{self._backend_name()}: Proxy password must be set when proxy login is set"
+            )
         if self.proxy_login is None and self.proxy_password is not None:
-            raise InvalidInput("Proxy login must be set when proxy password is set")
+            raise InvalidInput(
+                f"{self._backend_name()}: Proxy login must be set when proxy password is set"
+            )
         return self
 
     @model_validator(mode="after")
     def _validate_proxy_url_is_set_when_proxy_credentials_are_set(self) -> Self:
         if self.proxy_login is not None and self.proxy_url is None:
-            raise InvalidInput("Proxy URL must be set when proxy credentials are set")
+            raise InvalidInput(
+                f"{self._backend_name()}: Proxy URL must be set when proxy credentials are set"
+            )
         return self
 
     @field_serializer("proxy_password")
