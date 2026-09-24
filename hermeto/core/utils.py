@@ -11,6 +11,8 @@ from collections.abc import Callable, Iterator, Sequence
 from functools import cache
 from pathlib import Path
 
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
 from hermeto import APP_NAME
 from hermeto.core.config import get_config
 from hermeto.core.errors import ExecutableNotFound
@@ -166,14 +168,37 @@ def _fast_copy(src: Path, dest: Path) -> int:
     return total
 
 
-def copy_directory(origin: Path, destination: Path) -> Path:
+# A concurrent 'git gc' on the source repo can make a copy fail or copy an inconsistent .git.
+# Housekeeping is short-lived, so a few retries are enough to land on a clean tree.
+_COPY_MAX_ATTEMPTS = 5
+
+
+class _CopyValidationError(shutil.Error):
+    """A copy completed without error but failed its is_valid check."""
+
+
+def copy_directory(
+    origin: Path,
+    destination: Path,
+    is_valid: Callable[[Path], bool] = lambda _: True,
+) -> Path:
     """
     Recursively copy directory to another path.
 
     Use fast in-kernel copying (including reflink file system optimization) and fall back to
     regular copy if the former fails for some reason.
 
-    :raise FileExistsError: if the destination path already exists.
+    copytree first scans a directory and then copies each entry, so a process that mutates the tree
+    between those steps can make an entry disappear mid-copy. The usual cause is a concurrent
+    'git gc' on a source repo, which packs loose objects and refs and then removes the loose
+    originals. Such a race either raises shutil.Error or produces an inconsistent .git, so the copy
+    is retried until it succeeds.
+
+    :param is_valid: predicate run on a successful copy; returning False rejects the copy and
+        triggers another attempt. Callers copying a source repo use it to reject an inconsistent
+        .git that copied without raising. Defaults to accepting every copy.
+    :raise shutil.Error: if the copy keeps failing, or keeps validating as inconsistent, across
+        all retries.
     :raise FileNotFoundError: if the origin directory does not exist.
     """
 
@@ -187,15 +212,28 @@ def copy_directory(origin: Path, destination: Path) -> Path:
             ignore=shutil.ignore_patterns(destination.name),
         )
 
-    try:
-        log.debug("Copying %s to %s using fast in-kernel copy.", origin, destination)
-        _copy_using(_fast_copy)
-    except _FastCopyFailedFallback:
-        log.debug("Fast copying failed, falling back to standard copy.")
-        shutil.rmtree(destination)
-        _copy_using(shutil.copy2)
+    @retry(
+        retry=retry_if_exception_type((shutil.Error, FileNotFoundError)),
+        stop=stop_after_attempt(_COPY_MAX_ATTEMPTS),
+        wait=wait_exponential(multiplier=0.1),
+        reraise=True,
+    )
+    def _attempt() -> Path:
+        # a previous attempt may have left a partial copy behind; start clean
+        if destination.exists():
+            shutil.rmtree(destination)
+        try:
+            log.debug("Copying %s to %s using fast in-kernel copy.", origin, destination)
+            _copy_using(_fast_copy)
+        except _FastCopyFailedFallback:
+            log.debug("Fast copying failed, falling back to standard copy.")
+            shutil.rmtree(destination)
+            _copy_using(shutil.copy2)
+        if not is_valid(destination):
+            raise _CopyValidationError(f"Copy of {origin} did not pass its validity check.")
+        return destination
 
-    return destination
+    return _attempt()
 
 
 def get_cache_dir() -> Path:
