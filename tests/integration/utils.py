@@ -38,10 +38,11 @@ container_engine = get_container_engine()
 
 @dataclass
 class SyntheticSubmoduleSpec:
-    """Specification for a submodule to embed inside a synthetic parent repo."""
+    """Source, path within the parent repo, and canonical origin for a submodule."""
 
     source_dir: Path
     path_in_parent: str
+    canonical_origin_url: str
 
 
 _SYNTHETIC_REPO_GIT_ENV = {
@@ -95,23 +96,50 @@ def _commit_synthetic_repo(repo: git.Repo, message: str) -> None:
 def _add_synthetic_submodule(
     parent_repo: git.Repo,
     parent_repo_path: Path,
-    child_path: Path,
-    canonical_origin_url: str,
+    submodule_origin_path: Path,
     submodule: SyntheticSubmoduleSpec,
 ) -> None:
     with parent_repo.git.custom_environment(**_SYNTHETIC_REPO_GIT_ENV):
-        parent_repo.git.submodule("add", str(child_path), submodule.path_in_parent)
+        parent_repo.git.submodule("add", str(submodule_origin_path), submodule.path_in_parent)
 
         # .gitmodules and the cloned submodule both record the local
         # tmp path which changes per run; replace with the canonical origin so
         # the parent commit is deterministic and hermeto can
         # canonicalize the submodule's origin
         submodule_repo = GitRepo(parent_repo_path / submodule.path_in_parent)
-        submodule_repo.remotes.origin.set_url(canonical_origin_url)
+        submodule_repo.remotes.origin.set_url(submodule.canonical_origin_url)
+        _configure_synthetic_origin_rewrite(
+            submodule_repo, submodule.canonical_origin_url, submodule_origin_path
+        )
 
         parent_repo.git.config(
-            f"submodule.{submodule.path_in_parent}.url", canonical_origin_url, file=".gitmodules"
+            f"submodule.{submodule.path_in_parent}.url",
+            submodule.canonical_origin_url,
+            file=".gitmodules",
         )
+    _configure_synthetic_origin_rewrite(
+        parent_repo, submodule.canonical_origin_url, submodule_origin_path
+    )
+
+
+def _configure_synthetic_origin_rewrite(
+    repo: git.Repo, canonical_origin_url: str, origin_path: Path
+) -> None:
+    """Fetch from the local origin while preserving the canonical URL in Git metadata."""
+    repo.git.config(
+        "--local", f"url.{origin_path.resolve().as_uri()}.insteadOf", canonical_origin_url
+    )
+    repo.git.config("--local", "protocol.file.allow", "always")
+
+
+def _clone_parent_origin(
+    parent_repo_path: Path, parent_origin_path: Path, canonical_origin_url: str
+) -> None:
+    with GitRepo.clone_from(
+        parent_repo_path, parent_origin_path, env=_SYNTHETIC_REPO_GIT_ENV
+    ) as parent_origin_repo:
+        # The origin clone also records the fixture's identity, not its temporary source path.
+        parent_origin_repo.remotes.origin.set_url(canonical_origin_url)
 
 
 def _default_hermeto_env() -> dict[str, str]:
@@ -351,24 +379,27 @@ def create_synthetic_repo(
     canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git",
     submodules: Sequence[SyntheticSubmoduleSpec] = (),
 ) -> Path:
-    """Create a deterministic synthetic git repo from scenario source files."""
+    """Create the parent test repo and its local origins from scenario source files."""
     parent_repo_path = tmp_path / "repo"
+    local_origins_dir = tmp_path / "origins"
+
+    local_origins_dir.mkdir()
     parent_repo = _initialize_synthetic_repo_from_source(
         source_dir, parent_repo_path, canonical_origin_url
     )
-    _commit_synthetic_repo(parent_repo, "test scenario")
 
     for submodule in submodules:
-        child_path = tmp_path / f"submodule-{submodule.path_in_parent}"
-        # Child repos currently reuse the parent's canonical origin to preserve existing fixture data.
-        child_repo = _initialize_synthetic_repo_from_source(
-            submodule.source_dir, child_path, canonical_origin_url
+        submodule_origin_path = local_origins_dir / "submodules" / submodule.path_in_parent
+        submodule_origin_repo = _initialize_synthetic_repo_from_source(
+            submodule.source_dir, submodule_origin_path, submodule.canonical_origin_url
         )
-        _commit_synthetic_repo(child_repo, "test scenario")
-        _add_synthetic_submodule(
-            parent_repo, parent_repo_path, child_path, canonical_origin_url, submodule
-        )
-        _commit_synthetic_repo(parent_repo, f"add submodule {submodule.path_in_parent}")
+        _commit_synthetic_repo(submodule_origin_repo, "test scenario")
+        _add_synthetic_submodule(parent_repo, parent_repo_path, submodule_origin_path, submodule)
+
+    _commit_synthetic_repo(parent_repo, "test scenario")
+    parent_origin_path = local_origins_dir / "parent"
+    _clone_parent_origin(parent_repo_path, parent_origin_path, canonical_origin_url)
+    _configure_synthetic_origin_rewrite(parent_repo, canonical_origin_url, parent_origin_path)
 
     return parent_repo_path
 

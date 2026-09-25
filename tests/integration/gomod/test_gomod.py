@@ -21,10 +21,16 @@ def _create_repo(tmp_path: Path, test_case: str) -> Path:
         return utils.create_synthetic_repo(
             tmp_path,
             scenario_dir / "in" / "parent",
+            canonical_origin_url=(
+                f"https://git.example.invalid/hermeto-tests/{test_case}/parent.git"
+            ),
             submodules=[
                 utils.SyntheticSubmoduleSpec(
                     source_dir=scenario_dir / "in" / "submodule",
                     path_in_parent="integration-tests",
+                    canonical_origin_url=(
+                        f"https://git.example.invalid/hermeto-tests/{test_case}/submodule.git"
+                    ),
                 ),
             ],
         )
