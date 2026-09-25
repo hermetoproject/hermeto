@@ -376,7 +376,7 @@ def create_synthetic_repo(
     tmp_path: Path,
     source_dir: Path,
     *,
-    canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git",
+    canonical_origin_url: str = "https://git.example.invalid/hermeto-tests/parent.git",
     submodules: Sequence[SyntheticSubmoduleSpec] = (),
 ) -> Path:
     """Create the parent test repo and its local origins from scenario source files."""

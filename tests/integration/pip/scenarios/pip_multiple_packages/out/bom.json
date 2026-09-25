@@ -8,9 +8,9 @@
       },
       "subjects": [
         "pkg:pypi/click@8.2.1",
-        "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
+        "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
         "pkg:pypi/packaging@25.0",
-        "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second"
+        "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -32,7 +32,7 @@
       "version": "8.2.1"
     },
     {
-      "bom-ref": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
+      "bom-ref": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
       "name": "first",
       "properties": [
         {
@@ -40,7 +40,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
+      "purl": "pkg:pypi/first@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#first",
       "type": "library",
       "version": "0.1.0"
     },
@@ -58,7 +58,7 @@
       "version": "25.0"
     },
     {
-      "bom-ref": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second",
+      "bom-ref": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second",
       "name": "second",
       "properties": [
         {
@@ -66,7 +66,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second",
+      "purl": "pkg:pypi/second@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40eeea655e1f227e1e1063faa31a9ef5405d3995ba#second",
       "type": "library",
       "version": "0.1.0"
     }
