@@ -411,6 +411,17 @@ class TestFetchDeps:
                     {"type": "gomod", "path": "pkg_b"},
                 ],
             ),
+            # a package with its own 'packages' field is still a single package
+            pytest.param(
+                '{"type": "cargo", "packages": [{"name": "server"}]}',
+                [{"type": "cargo", "packages": [{"name": "server"}]}],
+                id="single-package-with-packages-field",
+            ),
+            pytest.param(
+                '{"packages": [{"type": "cargo", "packages": [{"name": "server"}]}]}',
+                [{"type": "cargo", "packages": [{"name": "server"}]}],
+                id="packages-key-with-packages-field",
+            ),
             pytest.param(
                 dedent(
                     """
