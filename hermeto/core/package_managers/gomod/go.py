@@ -160,6 +160,15 @@ class Go:
         if params is None:
             params = {}
 
+        if "env" in params:
+            # Go needs at least the very basic env vars, otherwise it might fail to derive
+            # GOMODCACHE and GOPATH variables to their default values and complain.
+            base_env = {
+                "PATH": os.environ.get("PATH", ""),
+                "HOME": os.environ.get("HOME", Path.home().as_posix()),
+            }
+            params["env"] = {**base_env, **params["env"]}
+
         cmd = [self.binary] + cmd
         if retry:
             return self._retry(cmd, **params)
