@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import os
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import IO, Any, TypeVar
 
 from pydantic_core import CoreSchema, core_schema
 
@@ -95,9 +95,10 @@ class RootedPath(os.PathLike[str]):
         """Join via ``join_within_root``; raises PathOutsideRoot on escape."""
         return self.join_within_root(other)
 
-    # Read-only Path operations that cannot escape the root boundary.
-    # Mutating or navigating operations (e.g. parent, rename, iterdir)
-    # are deliberately excluded.
+    # Path operations delegated directly to the inner path. Only operations
+    # that act on the path itself are exposed; navigating operations that
+    # return new paths (e.g. parent, iterdir, glob) are deliberately excluded
+    # as they would return unrooted Path objects.
 
     @property
     def name(self) -> str:
@@ -137,6 +138,34 @@ class RootedPath(os.PathLike[str]):
     def as_posix(self) -> str:
         """Return the path as a POSIX string."""
         return self._path.as_posix()
+
+    def read_text(self, encoding: str | None = None, errors: str | None = None) -> str:
+        """Open the file, read it, and return the contents as a string."""
+        return self._path.read_text(encoding=encoding, errors=errors)
+
+    def write_text(self, data: str, encoding: str | None = None, errors: str | None = None) -> int:
+        """Open the file, write to it, and return the number of characters written."""
+        return self._path.write_text(data, encoding=encoding, errors=errors)
+
+    def open(
+        self,
+        mode: str = "r",
+        buffering: int = -1,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> IO[Any]:
+        """Open the file and return a file object."""
+        return self._path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
+
+    # Default mode mirrors pathlib.Path.mkdir — https://github.com/python/cpython/blob/3.10/Lib/pathlib.py#L1152
+    def mkdir(self, mode: int = 0o777, parents: bool = False, exist_ok: bool = False) -> None:
+        """Create this directory."""
+        self._path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
+
+    def unlink(self, missing_ok: bool = False) -> None:
+        """Remove this file or symbolic link."""
+        self._path.unlink(missing_ok=missing_ok)
 
     def re_root(self: RootedPathT, *other: StrPath) -> RootedPathT:
         """Safely join other path components and make the result the new root.

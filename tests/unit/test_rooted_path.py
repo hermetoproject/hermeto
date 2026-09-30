@@ -177,6 +177,39 @@ def test_relative_to(test_path: Path) -> None:
     assert rp.is_relative_to(test_path)
 
 
+def test_read_text(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.write_text("hello")
+    assert RootedPath(test_path).join_within_root("file.txt").read_text() == f.read_text()
+
+
+def test_write_text(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("file.txt")
+    rp.write_text("hello")
+    assert (test_path / "file.txt").read_text() == "hello"
+
+
+def test_open(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.write_text("hello")
+    rp = RootedPath(test_path).join_within_root("file.txt")
+    with rp.open() as fh:
+        assert fh.read() == "hello"
+
+
+def test_mkdir(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("newdir")
+    rp.mkdir()
+    assert (test_path / "newdir").is_dir()
+
+
+def test_unlink(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.touch()
+    RootedPath(test_path).join_within_root("file.txt").unlink()
+    assert not f.exists()
+
+
 def test_pydantic_integration() -> None:
     class SomeModel(pydantic.BaseModel):
         path: RootedPath
