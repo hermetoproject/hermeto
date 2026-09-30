@@ -351,6 +351,35 @@ class TestFetchDependencies:
         # the staging directory and its report are gone
         assert [p.name for p in (output_dir / "deps").iterdir()] == ["cargo"]
 
+    @pytest.mark.parametrize(
+        "package, expect_path",
+        [
+            pytest.param({"type": "cargo"}, False, id="cargo_vendor"),
+            pytest.param(
+                {"type": "cargo", "packages": [{"name": "server"}]}, True, id="vendor_filterer"
+            ),
+        ],
+    )
+    @mock.patch(RUN_CMD)
+    def test_only_vendor_filterer_gets_path(
+        self,
+        mock_run: mock.Mock,
+        rooted_tmp_path: RootedPath,
+        monkeypatch: pytest.MonkeyPatch,
+        package: dict[str, Any],
+        expect_path: bool,
+    ) -> None:
+        monkeypatch.setenv("PATH", "/home/user/.cargo/bin:/usr/bin")
+        output_dir = rooted_tmp_path.path / "out"
+        request = _request(rooted_tmp_path.path, output_dir, package)
+        mock_run.side_effect = _vendor_into_last_arg(("openssl", "0.10.0", True))
+
+        _fetch_dependencies(rooted_tmp_path, request, request.cargo_packages[0])
+
+        env = mock_run.call_args.kwargs["params"]["env"]
+        assert env["CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS"] == "allow"
+        assert env.get("PATH") == ("/home/user/.cargo/bin:/usr/bin" if expect_path else None)
+
     @mock.patch(RUN_CMD)
     def test_unfiltered_input_after_filtered_one_restores_stubbed_crates(
         self, mock_run: mock.Mock, rooted_tmp_path: RootedPath
