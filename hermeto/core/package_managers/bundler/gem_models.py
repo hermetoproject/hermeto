@@ -182,7 +182,7 @@ class GitDependency(_GemMetadata):
             log.info("Skipping existing git repository %s", self.url)
             return
 
-        git_repo_path.path.mkdir(parents=True)
+        git_repo_path.mkdir(parents=True)
 
         log.info("Cloning git repository %s", self.url)
         GitRepo.clone_from(

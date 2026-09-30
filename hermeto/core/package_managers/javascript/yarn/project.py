@@ -52,14 +52,14 @@ class YarnRc(UserDict):
 
     def write(self) -> None:
         """Write the data to the yarnrc file."""
-        with self._path.path.open("w") as f:
+        with self._path.open("w") as f:
             yaml.safe_dump(self.data, f)
 
     @classmethod
     def from_file(cls, file_path: RootedPath) -> "YarnRc":
         """Parse the content of a yarnrc file."""
         try:
-            with file_path.path.open("r") as f:
+            with file_path.open("r") as f:
                 yarnrc_data = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise PackageRejected(

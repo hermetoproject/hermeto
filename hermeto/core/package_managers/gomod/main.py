@@ -477,7 +477,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             raise
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
-    gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+    gomod_download_dir.mkdir(exist_ok=True, parents=True)
 
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
         for subpath in subpaths:
@@ -970,7 +970,7 @@ def _parse_go_sum(go_sum: RootedPath) -> frozenset[ModuleID]:
     modules: list[ModuleID] = []
 
     # https://github.com/golang/go/blob/d5c5808534f0ad97333b1fd5fff81998f44986fe/src/cmd/go/internal/modfetch/fetch.go#L507-L534
-    lines = go_sum.path.read_text().splitlines()
+    lines = go_sum.read_text().splitlines()
     for i, go_sum_line in enumerate(lines):
         parts = go_sum_line.split()
         if not parts:
@@ -1411,7 +1411,7 @@ def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
     modules: list[ParsedModule] = []
     module_has_packages: list[bool] = []
 
-    for line in modules_txt.path.read_text().splitlines():
+    for line in modules_txt.read_text().splitlines():
         if line.startswith("# "):  # module line
             modules.append(parse_module_line(line))
             module_has_packages.append(False)

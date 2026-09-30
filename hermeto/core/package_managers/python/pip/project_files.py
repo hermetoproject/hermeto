@@ -154,7 +154,7 @@ class PyProjectTOML(SetupFile):
     def _parsed_toml(self) -> dict[str, Any]:
         try:
             log.debug("Parsing pyproject.toml at %r", str(self._setup_file))
-            return tomlkit.parse(self._setup_file.path.read_text())
+            return tomlkit.parse(self._setup_file.read_text())
         except tomlkit.exceptions.ParseError as e:
             log.error("Failed to parse pyproject.toml: %s", e)
             return {}
@@ -233,7 +233,7 @@ class SetupCFG(SetupFile):
         log.debug("Parsing setup.cfg at %r", str(self._setup_file))
         parsed = configparser.ConfigParser()
 
-        with self._setup_file.path.open() as f:
+        with self._setup_file.open() as f:
             try:
                 parsed.read_file(f)
                 return parsed
@@ -266,7 +266,7 @@ class SetupCFG(SetupFile):
         """Read version from file."""
         version_file = self._top_dir.join_within_root(file_path)
         if version_file.is_file():
-            version = version_file.path.read_text().strip()
+            version = version_file.read_text().strip()
             log.debug("Read version from %r: %r", file_path, version)
             return version
         else:
@@ -300,7 +300,7 @@ class SetupCFG(SetupFile):
             return None
 
         try:
-            module_ast = ast.parse(module_file.path.read_text(), module_file.name)
+            module_ast = ast.parse(module_file.read_text(), module_file.name)
         except SyntaxError as e:
             log.error("Syntax error when parsing module: %s", e)
             return None
@@ -535,7 +535,7 @@ class SetupPY(SetupFile):
             # The file is decoded as utf-8-sig because plain utf-8 has proven to be problematic with certain sources from pypi:
             # https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
             return ast.parse(
-                self._setup_file.path.read_text(encoding="utf-8-sig"), self._setup_file.path.name
+                self._setup_file.read_text(encoding="utf-8-sig"), self._setup_file.path.name
             )
         except SyntaxError as e:
             log.error("Syntax error when parsing setup.py: %s", e)

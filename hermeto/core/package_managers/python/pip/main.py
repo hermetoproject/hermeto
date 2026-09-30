@@ -493,7 +493,7 @@ def _download_dependencies(
     validate_requirements_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
-    pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
+    pip_deps_dir.mkdir(parents=True, exist_ok=True)
 
     pypi_reqs: list[PipRequirement] = []
     for req in requirements_file.requirements:

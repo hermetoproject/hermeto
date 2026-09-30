@@ -514,7 +514,7 @@ class _ComponentResolver:
 
     def _read_name_version_from_packjson(self, packjson_path: RootedPath) -> tuple[str, str | None]:
         try:
-            packjson = json.loads(packjson_path.path.read_text())
+            packjson = json.loads(packjson_path.read_text())
         except FileNotFoundError as e:
             raise _CouldNotResolve(f"missing {packjson_path.subpath_from_root}") from e
         except json.JSONDecodeError as e:
