@@ -332,6 +332,9 @@ def _run_vendor_command(cmd: list[str], package_dir: RootedPath) -> CargoVendorR
     ):
         # Prevent Cargo from invoking rustc
         env = {"CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS": "allow"}
+        if cmd[0] == CARGO_VENDOR_FILTERER:
+            # it runs cargo and rustc by name, which fails outside /usr/bin without PATH
+            env["PATH"] = os.environ.get("PATH", os.defpath)
         # The necessary configuration to use the vendored sources will be printed to STDOUT.
         # https://doc.rust-lang.org/cargo/commands/cargo-vendor.html#description
         return _run_cmd_watching_out_for_lock_mismatch(
