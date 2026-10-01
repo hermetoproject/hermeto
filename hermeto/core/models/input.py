@@ -113,6 +113,7 @@ PackageManagerType = Literal[
     "yarn",
     # Add experimental package managers (or package managers whose implementation is in progress)
     # here with an x- prefix (e.g. "x-foo"):
+    "x-ansible",
     "x-maven",
 ]
 
@@ -287,6 +288,13 @@ class GenericPackageInput(_PackageInputBase):
     lockfile: Path | None = None
 
 
+class AnsiblePackageInput(_PackageInputBase):
+    """Accepted input for an ansible collections package (experimental)."""
+
+    type: Literal["x-ansible"]
+    lockfile: Path | None = None
+
+
 class GomodPackageInput(_PackageInputBase):
     """Accepted input for a gomod package."""
 
@@ -420,7 +428,8 @@ class YarnPackageInput(_PackageInputBase):
 
 
 PackageInput = Annotated[
-    BundlerPackageInput
+    AnsiblePackageInput
+    | BundlerPackageInput
     | CargoPackageInput
     | GenericPackageInput
     | GomodPackageInput
@@ -500,6 +509,11 @@ class Request(pydantic.BaseModel):
         if len(packages) == 0:
             raise ValueError("at least one package must be defined, got an empty list")
         return packages
+
+    @property
+    def ansible_packages(self) -> list[AnsiblePackageInput]:
+        """Get the ansible packages specified for this request."""
+        return self._packages_by_type(AnsiblePackageInput)
 
     @property
     def bundler_packages(self) -> list[BundlerPackageInput]:

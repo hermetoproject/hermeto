@@ -8,6 +8,7 @@ from hermeto import APP_NAME
 from hermeto.core.models.input import PackageManagerType, Request
 from hermeto.core.models.output import RequestOutput
 from hermeto.core.package_managers import (
+    ansible,
     bundler,
     cargo,
     generic,
@@ -27,6 +28,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "cargo": cargo.fetch_cargo_source,
     "gomod": gomod.fetch_gomod_source,
     "x-maven": maven.fetch_maven_source,
+    "x-ansible": ansible.fetch_ansible_source,
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "pnpm": pnpm.fetch_pnpm_source,
