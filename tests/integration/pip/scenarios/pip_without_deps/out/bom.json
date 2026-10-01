@@ -7,7 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b"
+        "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%400c9d918448e38e55dc8587b3e51e44647339685b"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -16,7 +16,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b",
+      "bom-ref": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%400c9d918448e38e55dc8587b3e51e44647339685b",
       "name": "pip-empty",
       "properties": [
         {
@@ -24,7 +24,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%400c9d918448e38e55dc8587b3e51e44647339685b",
+      "purl": "pkg:pypi/pip-empty@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%400c9d918448e38e55dc8587b3e51e44647339685b",
       "type": "library",
       "version": "1.0.0"
     }

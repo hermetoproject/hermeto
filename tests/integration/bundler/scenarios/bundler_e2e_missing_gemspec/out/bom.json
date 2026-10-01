@@ -25,7 +25,6 @@
         "pkg:gem/date@3.3.4",
         "pkg:gem/erubi@1.13.0",
         "pkg:gem/globalid@1.2.1",
-        "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
         "pkg:gem/i18n@1.14.5",
         "pkg:gem/json-schema@3.0.0?vcs_url=git%2Bhttps://github.com/3scale/json-schema%4026487618a68443e94d623bb585cb464b07d36702",
         "pkg:gem/loofah@2.22.0",
@@ -41,6 +40,7 @@
         "pkg:gem/net-smtp@0.5.0",
         "pkg:gem/nio4r@2.7.3",
         "pkg:gem/nokogiri@1.16.7",
+        "pkg:gem/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%404d5852cda340c882927f74231bf2edd45e43dac0",
         "pkg:gem/public_suffix@6.0.1",
         "pkg:gem/racc@1.8.1",
         "pkg:gem/rack-test@2.1.0",
@@ -300,18 +300,6 @@
       "version": "1.2.1"
     },
     {
-      "bom-ref": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
-      "name": "hermeto",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%404d5852cda340c882927f74231bf2edd45e43dac0",
-      "type": "library"
-    },
-    {
       "bom-ref": "pkg:gem/i18n@1.14.5",
       "name": "i18n",
       "properties": [
@@ -509,6 +497,18 @@
       "purl": "pkg:gem/nokogiri@1.16.7",
       "type": "library",
       "version": "1.16.7"
+    },
+    {
+      "bom-ref": "pkg:gem/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%404d5852cda340c882927f74231bf2edd45e43dac0",
+      "name": "parent",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:gem/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%404d5852cda340c882927f74231bf2edd45e43dac0",
+      "type": "library"
     },
     {
       "bom-ref": "pkg:gem/public_suffix@6.0.1",
