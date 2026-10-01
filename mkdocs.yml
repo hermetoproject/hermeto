@@ -38,6 +38,7 @@ nav:
   - Configuration: configuration.md
   - SBOM: sbom.md
   - Package managers:
+      - ansible: ansible.md
       - bundler: bundler.md
       - cargo: cargo.md
       - generic: generic.md
