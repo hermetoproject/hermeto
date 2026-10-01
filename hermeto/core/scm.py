@@ -209,6 +209,20 @@ def get_repo_id(repo: StrPath | GitRepo | git.Repo) -> RepoID:
     return RepoID(url, commit_id)
 
 
+def repo_head_resolves(repo_path: StrPath) -> bool:
+    """Return whether the git repo at repo_path resolves HEAD to an existing commit.
+
+    A path that is not a git repository returns True: there is nothing to verify.
+    """
+    try:
+        GitRepo(repo_path).head.commit
+    except NotAGitRepo:
+        return True
+    except GitInvalidRevisionError:
+        return False
+    return True
+
+
 def _find_submodule_containing_path(repo: GitRepo, target_path: Path) -> git.Submodule | None:
     """Find the submodule containing the target path, if any.
 

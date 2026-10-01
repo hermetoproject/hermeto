@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import errno
 import io
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -11,6 +12,7 @@ import pytest
 from hermeto import APP_NAME
 from hermeto.core.errors import ExecutableNotFound
 from hermeto.core.utils import (
+    _COPY_MAX_ATTEMPTS,
     _fast_copy,
     _FastCopyFailedFallback,
     copy_directory,
@@ -185,6 +187,105 @@ def test_copy_directory(
     # check we called both copy_functions (_fast_copy, copy2)
     mock_copy_range.assert_called_once()
     mock_shutil_copy2.assert_called_once()
+
+
+@mock.patch("time.sleep")
+@mock.patch("shutil.copytree")
+def test_copy_directory_retries_on_transient_error(
+    mock_copytree: mock.Mock,
+    mock_sleep: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that a shutil.Error from a mid-copy mutation is retried and recovers."""
+    origin = tmp_path.joinpath("src")
+    origin.mkdir()
+    destination = tmp_path.joinpath("dst")
+
+    # first attempt leaves a partial copy behind then fails as if an entry vanished mid-copy; the
+    # retry cleans up that partial destination (the rmtree-before-attempt branch) and succeeds
+    def copytree(*args: object, **kwargs: object) -> None:
+        if mock_copytree.call_count == 1:
+            destination.mkdir()
+            destination.joinpath("partial").touch()
+            raise shutil.Error([("src", "dst", "vanished")])
+
+    mock_copytree.side_effect = copytree
+
+    assert copy_directory(origin, destination) == destination
+    assert mock_copytree.call_count == 2
+    assert not destination.joinpath("partial").exists()
+
+
+@mock.patch("time.sleep")
+@mock.patch("shutil.copytree")
+def test_copy_directory_recovers_on_final_attempt(
+    mock_copytree: mock.Mock,
+    mock_sleep: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that a copy failing on every attempt but the last still succeeds."""
+    mock_copytree.side_effect = [shutil.Error([("src", "dst", "vanished")])] * (
+        _COPY_MAX_ATTEMPTS - 1
+    ) + [None]
+
+    origin = tmp_path.joinpath("src")
+    origin.mkdir()
+    destination = tmp_path.joinpath("dst")
+
+    assert copy_directory(origin, destination) == destination
+    assert mock_copytree.call_count == _COPY_MAX_ATTEMPTS
+
+
+@mock.patch("time.sleep")
+@mock.patch("shutil.copytree")
+def test_copy_directory_reraises_persistent_error(
+    mock_copytree: mock.Mock,
+    mock_sleep: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that a copy failing on every attempt propagates the error."""
+    mock_copytree.side_effect = shutil.Error([("src", "dst", "boom")])
+
+    origin = tmp_path.joinpath("src")
+    origin.mkdir()
+
+    with pytest.raises(shutil.Error):
+        copy_directory(origin, tmp_path.joinpath("dst"))
+
+
+@mock.patch("time.sleep")
+@mock.patch("shutil.copytree")
+def test_copy_directory_retries_until_validation_passes(
+    mock_copytree: mock.Mock,
+    mock_sleep: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that a copy validating as inconsistent is retried until validation passes."""
+    mock_copytree.return_value = None
+    is_valid = mock.Mock(side_effect=[False, False, True])
+
+    origin = tmp_path.joinpath("src")
+    origin.mkdir()
+
+    assert copy_directory(origin, tmp_path.joinpath("dst"), is_valid=is_valid) == tmp_path / "dst"
+    assert is_valid.call_count == 3
+
+
+@mock.patch("time.sleep")
+@mock.patch("shutil.copytree")
+def test_copy_directory_raises_when_validation_never_passes(
+    mock_copytree: mock.Mock,
+    mock_sleep: mock.Mock,
+    tmp_path: Path,
+) -> None:
+    """Test that a copy that never validates raises instead of returning silently."""
+    mock_copytree.return_value = None
+
+    origin = tmp_path.joinpath("src")
+    origin.mkdir()
+
+    with pytest.raises(shutil.Error):
+        copy_directory(origin, tmp_path.joinpath("dst"), is_valid=lambda _: False)
 
 
 @pytest.mark.parametrize("environ", [{"XDG_CACHE_HOME": "/tmp/xdg_home/"}, {}])
