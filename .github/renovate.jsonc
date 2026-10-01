@@ -42,8 +42,8 @@
     // Rust: handle major.minor manually; newer cargo has broken integration tests and production image builds
     {
       "description": "Disable golang and rust major and minor updates in production Dockerfile",
-      "matchFileNames": [
-        "Dockerfile"
+      "matchManagers": [
+        "dockerfile"
       ],
       "matchPackageNames": [
         "**/golang",
@@ -74,14 +74,13 @@
       "groupName": "production Dockerfile"
     },
     {
-      "description": "Disable updates on test dependencies",
+      "description": "Disable vulnerability alerts on test dependencies",
       "matchFileNames": [
         "tests/**"
       ],
       "vulnerabilityAlerts": {
         "enabled": false
-      },
-      "enabled": false
+      }
     },
     {
       "description": "Group all test Containerfile updates",
@@ -91,11 +90,19 @@
       "matchFileNames": [
         "tests/**"
       ],
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "enabled": true,
       "groupName": "test Containerfiles"
+    },
+    {
+      "description": "Disable updates on version specific tests",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchFileNames": [
+        "tests/integration/bundler/scenarios/bundler_e2e_ruby{33,40}/**",
+        "tests/integration/gomod/scenarios/gomod_e2e_1_{18,21,22}*/**",
+        "tests/integration/pip/scenarios/pip_e2e_wheels/**"
+      ],
+      "enabled": false
     },
     // Disable only non-minor/patch types; disabling the whole manager stops all updates
     {
