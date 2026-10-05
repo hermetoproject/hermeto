@@ -1,10 +1,8 @@
-from cryptography.fernet import Fernet
-
+from hello import get_number
 
 def main() -> None:
-    Fernet.generate_key()
+    get_number()
     print("Hello, world!")
-
 
 if __name__ == "__main__":
     main()
