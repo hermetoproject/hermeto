@@ -1463,30 +1463,26 @@ def _vendor_changed(context_dir: RootedPath) -> bool:
     vendor = context_relative_path / "vendor"
     modules_txt = vendor / "modules.txt"
 
-    # Add untracked files but do not stage them
-    repo.git.add("--intent-to-add", "--force", "--", context_relative_path)
-
     try:
-        # Diffing modules.txt should catch most issues and produce relatively useful output
-        modules_txt_diff = repo.git.diff("--", str(modules_txt), env=GIT_PRISTINE_ENV)
-        if modules_txt_diff:
-            log.error_or_warn(
-                "%s changed after vendoring:\n%s",
-                modules_txt,
-                modules_txt_diff,
-                enforcing_mode=enforcing_mode,
-            )
+        # Add untracked files but do not stage them
+        repo.git.add("--intent-to-add", "--force", "--", context_relative_path)
+        # Structured Diff objects
+        index = repo.index
+        modules_txt_diffs = index.diff(None, paths=[str(modules_txt)], env=GIT_PRISTINE_ENV)
+        vendor_diffs = index.diff(None, paths=[str(vendor)], env=GIT_PRISTINE_ENV)
+        if modules_txt_diffs:
+            for d in modules_txt_diffs:
+                log.error_or_warn(
+                    f"modules.txt changed: {d.change_type} {d.a_path or d.b_path}",
+                    enforcing_mode=enforcing_mode,
+                )
             return True
-
-        # Show only if files were added/deleted/modified, not the full diff
-        vendor_diff = repo.git.diff("--name-status", "--", str(vendor), env=GIT_PRISTINE_ENV)
-        if vendor_diff:
-            log.error_or_warn(
-                "%s directory changed after vendoring:\n%s",
-                vendor,
-                vendor_diff,
-                enforcing_mode=enforcing_mode,
-            )
+        if vendor_diffs:
+            for d in vendor_diffs:
+                log.error_or_warn(
+                    f"vendor changed: {d.change_type}\t{d.a_path or d.b_path}",
+                    enforcing_mode=enforcing_mode,
+                )
             return True
     finally:
         repo.git.reset("--", context_relative_path)
