@@ -87,6 +87,11 @@ output and source paths are the same, some package managers may add missing data
 like checksums as dependency data is resolved. If this occurs from a clean git
 tree then the tree has the possibility to become dirty.*
 
+*⚠ Do not run git operations on the source repository while Hermeto is running.
+Hermeto copies the source tree, including `.git`, before processing it, and a
+concurrent git operation (including a background `git gc`) can corrupt that copy
+and produce an inaccurate SBOM.*
+
 ### Generate environment variables
 
 Once the dependencies have been cached, the build process needs to be made aware
