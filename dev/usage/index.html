@@ -1112,6 +1112,10 @@ dependencies in the same repository.</p>
 output and source paths are the same, some package managers may add missing data
 like checksums as dependency data is resolved. If this occurs from a clean git
 tree then the tree has the possibility to become dirty.</em></p>
+<p><em>⚠ Do not run git operations on the source repository while Hermeto is running.
+Hermeto copies the source tree, including <code>.git</code>, before processing it, and a
+concurrent git operation (including a background <code>git gc</code>) can corrupt that copy
+and produce an inaccurate SBOM.</em></p>
 <h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
 <p>Once the dependencies have been cached, the build process needs to be made aware
 of the dependencies. Some package managers need to be informed of cache
