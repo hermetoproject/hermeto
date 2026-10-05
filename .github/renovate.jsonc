@@ -17,6 +17,15 @@
   "registryAliases": {
     "mirror.gcr.io": "docker.io"
   },
+  // The default pip_requirements patterns only cover *.txt/*.pip. Without the
+  // *.in files, Renovate bumps the compiled requirements-build.txt while the
+  // pin in requirements-build.in stays put, so any pip-compile run (e.g. pip-compile workflow)
+  // will suggest downgrading a given dependency again.
+  "pip_requirements": {
+    "managerFilePatterns": [
+      "/(^|/)[\\w-]*requirements([-._]\\w+)?\\.in$/"
+    ]
+  },
   "packageRules": [
     {
       "description": "Weekly GitHub Actions updates",
