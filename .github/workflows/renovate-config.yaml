@@ -1,0 +1,23 @@
+name: Validate Renovate config
+
+on:
+  pull_request:
+    paths:
+      - ".github/renovate.jsonc"
+
+permissions:
+  contents: read
+
+jobs:
+  renovate-config-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate
+        uses: docker://ghcr.io/renovatebot/renovate:44.133.0
+        with:
+          entrypoint: renovate-config-validator
+          args: --strict
