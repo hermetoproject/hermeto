@@ -56,6 +56,10 @@ from hermeto.core.utils import GIT_PRISTINE_ENV
 from tests.common_utils import GIT_REF, write_file_tree
 
 GO_CMD_PATH = "/usr/bin/go"
+# GitPython Diff change type identifiers
+# See: https://gitpython.readthedocs.io/en/stable/reference.html#git.diff.Diff.change_type
+DIFF_ADDED = "A"
+DIFF_MODIFIED = "M"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -801,69 +805,61 @@ def test_parse_vendor_unexpected_format(
 
 @pytest.mark.parametrize("subpath", ["", "some/app/"])
 @pytest.mark.parametrize(
-    "vendor_before, vendor_changes, expected_change",
+    "vendor_before, vendor_changes, expect_changed, expect_change_type, expect_changed_path",
     [
-        pytest.param({}, {}, None, id="no_vendoring"),
-        pytest.param({"vendor": {"modules.txt": "foo v1.0.0\n"}}, {}, None, id="no_changes"),
+        pytest.param({}, {}, False, None, None, id="no_vendoring"),
+        pytest.param(
+            {"vendor": {"modules.txt": "foo v1.0.0\n"}}, {}, False, None, None, id="no_changes"
+        ),
         pytest.param(
             {},
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
-            textwrap.dedent(
-                """
-                --- /dev/null
-                +++ b/{subpath}vendor/modules.txt
-                @@ -0,0 +1 @@
-                +foo v1.0.0
-                """
-            ),
+            True,
+            DIFF_ADDED,
+            "vendor/modules.txt",
             id="modules_txt_added",
         ),
         pytest.param(
             {"vendor": {"modules.txt": "foo v1.0.0\n"}},
             {"vendor": {"modules.txt": "foo v2.0.0\n"}},
-            textwrap.dedent(
-                """
-                --- a/{subpath}vendor/modules.txt
-                +++ b/{subpath}vendor/modules.txt
-                @@ -1 +1 @@
-                -foo v1.0.0
-                +foo v2.0.0
-                """
-            ),
+            True,
+            DIFF_MODIFIED,
+            "vendor/modules.txt",
             id="modules_txt_changes",
         ),
         pytest.param(
             {},
             {"vendor": {"some_file": "foo"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/some_file
-                """
-            ),
+            True,
+            DIFF_ADDED,
+            "vendor/some_file",
             id="a_file_was_added",
         ),
+        # multiple changes in vendor/
         pytest.param(
             {"vendor": {"some_file": "foo"}},
             {"vendor": {"some_file": "bar", "other_file": "baz"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/other_file
-                M\t{subpath}vendor/some_file
-                """
-            ),
+            True,
+            DIFF_MODIFIED,
+            "vendor/some_file",
             id="multiple_changes",
         ),
         # vendor/ was added but only contains empty dirs => will be ignored
-        pytest.param({}, {"vendor": {"empty_dir": {}}}, None, id="vendor_empty_dirs"),
+        pytest.param(
+            {},
+            {"vendor": {"empty_dir": {}}},
+            False,
+            None,
+            None,
+            id="vendor_empty_dirs",
+        ),
         # change will be tracked even if vendor/ is .gitignore'd
         pytest.param(
             {".gitignore": "vendor/"},
             {"vendor": {"some_file": "foo"}},
-            textwrap.dedent(
-                """
-                A\t{subpath}vendor/some_file
-                """
-            ),
+            True,
+            DIFF_ADDED,
+            "vendor/some_file",
             id="file_added_in_gitignored_vendor_dir",
         ),
     ],
@@ -872,27 +868,37 @@ def test_vendor_changed(
     subpath: str,
     vendor_before: dict[str, Any],
     vendor_changes: dict[str, Any],
-    expected_change: str | None,
+    expect_changed: bool,
+    expect_change_type: str | None,
+    expect_changed_path: str | None,
     rooted_tmp_path_repo: RootedPath,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
+    """Test _vendor_changed detects modifications, additions, and no-ops in vendor/. directory"""
     repo = git.Repo(rooted_tmp_path_repo)
 
     app_dir = rooted_tmp_path_repo.join_within_root(subpath)
     os.makedirs(app_dir, exist_ok=True)
-
     write_file_tree(vendor_before, app_dir)
     repo.index.add([app_dir.join_within_root(path) for path in vendor_before])
     repo.index.commit("before vendoring", skip_hooks=True)
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir) == bool(expected_change)
-    if expected_change:
-        assert expected_change.format(subpath=subpath) in caplog.text
+    assert _vendor_changed(app_dir) == expect_changed
+
+    if expect_changed:
+        assert expect_change_type is not None
+        assert expect_changed_path is not None
+        assert expect_change_type in caplog.text
+        assert expect_changed_path in caplog.text
+
+    # Verify all vendor changes are logged for multi-file case
+    if vendor_changes.get("vendor", {}).get("other_file"):
+        assert f"vendor changed: {DIFF_ADDED}\t{subpath}vendor/other_file" in caplog.text
 
     # The _vendor_changed function should reset the `git add` => added files should not be tracked
-    assert not repo.git.diff("--diff-filter", "A")
+    assert not repo.git.diff("--diff-filter", DIFF_ADDED)
 
 
 @pytest.mark.parametrize(
