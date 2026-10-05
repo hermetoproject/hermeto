@@ -7,7 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
+        "pkg:pypi/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
         "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple"
       ],
       "text": "hermeto:backend:pip",
@@ -17,15 +17,15 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
-      "name": "hermeto",
+      "bom-ref": "pkg:pypi/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
+      "name": "parent",
       "properties": [
         {
           "name": "hermeto:found_by",
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
+      "purl": "pkg:pypi/parent?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
       "type": "library"
     },
     {

@@ -57,13 +57,13 @@
         "pkg:golang/encoding?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
+        "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+        "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+        "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+        "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+        "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
         "pkg:golang/github.com/google/uuid@v1.6.0?type=module",
         "pkg:golang/github.com/google/uuid@v1.6.0?type=package",
-        "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-        "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-        "pkg:golang/github.com/hermetoproject/hermeto/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-        "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-        "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
         "pkg:golang/hash?type=package",
         "pkg:golang/internal/abi?type=package",
         "pkg:golang/internal/asan?type=package",
@@ -744,6 +744,71 @@
       "type": "library"
     },
     {
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-ae834623068b"
+    },
+    {
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/parent/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-ae834623068b"
+    },
+    {
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module/utils",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-ae834623068b"
+    },
+    {
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-ae834623068b"
+    },
+    {
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/parent/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
+      "type": "library",
+      "version": "v0.0.0-19700101000000-ae834623068b"
+    },
+    {
       "bom-ref": "pkg:golang/github.com/google/uuid@v1.6.0?type=module",
       "name": "github.com/google/uuid",
       "properties": [
@@ -768,71 +833,6 @@
       "purl": "pkg:golang/github.com/google/uuid@v1.6.0?type=package",
       "type": "library",
       "version": "v1.6.0"
-    },
-    {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "type": "library",
-      "version": "v0.0.0-19700101000000-ae834623068b"
-    },
-    {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/non-vendored-module",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/non-vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "type": "library",
-      "version": "v0.0.0-19700101000000-ae834623068b"
-    },
-    {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module/utils",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module/utils@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "type": "library",
-      "version": "v0.0.0-19700101000000-ae834623068b"
-    },
-    {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "type": "library",
-      "version": "v0.0.0-19700101000000-ae834623068b"
-    },
-    {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "name": "github.com/hermetoproject/integration-tests/gomod-vendor-non-vendor-mix/vendored-module",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/vendored-module@v0.0.0-19700101000000-ae834623068b?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40ae834623068b1b03ee79f5494c337ebdaefcfaeb",
-      "type": "library",
-      "version": "v0.0.0-19700101000000-ae834623068b"
     },
     {
       "bom-ref": "pkg:golang/hash?type=package",

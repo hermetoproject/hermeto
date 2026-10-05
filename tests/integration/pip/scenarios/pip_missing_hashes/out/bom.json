@@ -11,7 +11,7 @@
         "pkg:pypi/charset-normalizer@3.4.2",
         "pkg:pypi/idna@3.10",
         "pkg:pypi/requests@2.32.4",
-        "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+        "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%406cf41898d81bcc16315e93a1af365065db7fac34",
         "pkg:pypi/urllib3@2.5.0"
       ],
       "text": "hermeto:backend:pip",
@@ -89,7 +89,7 @@
       "version": "2.32.4"
     },
     {
-      "bom-ref": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+      "bom-ref": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%406cf41898d81bcc16315e93a1af365065db7fac34",
       "name": "test",
       "properties": [
         {
@@ -97,7 +97,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406cf41898d81bcc16315e93a1af365065db7fac34",
+      "purl": "pkg:pypi/test@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/parent.git%406cf41898d81bcc16315e93a1af365065db7fac34",
       "type": "library",
       "version": "0.1.0"
     },

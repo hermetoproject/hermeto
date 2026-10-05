@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import git
 import jsonschema
 import requests
 import yaml
@@ -37,81 +38,108 @@ container_engine = get_container_engine()
 
 @dataclass
 class SyntheticSubmoduleSpec:
-    """Specification for a submodule to embed inside a synthetic parent repo."""
+    """Source, path within the parent repo, and canonical origin for a submodule."""
 
     source_dir: Path
-    path: str
+    path_in_parent: str
+    canonical_origin_url: str
 
 
-class SyntheticRepo:
-    """A deterministic synthetic git repo created from scenario source files.
+_SYNTHETIC_REPO_GIT_ENV = {
+    **GIT_PRISTINE_ENV,
+    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_KEY_0": "protocol.file.allow",
+    "GIT_CONFIG_VALUE_0": "always",
+    "GIT_AUTHOR_NAME": "Test Author",
+    "GIT_AUTHOR_EMAIL": "test@example.com",
+    "GIT_COMMITTER_NAME": "Test Author",
+    "GIT_COMMITTER_EMAIL": "test@example.com",
+    "GIT_AUTHOR_DATE": "1970-01-01T00:00:00+00:00",
+    "GIT_COMMITTER_DATE": "1970-01-01T00:00:00+00:00",
+}
 
-    All git metadata (author, date, commit message) is fixed so that identical
-    source files always produce the same commit SHA.
-    """
 
-    _GIT_ENV = {
-        **GIT_PRISTINE_ENV,
-        "GIT_CONFIG_COUNT": "1",
-        "GIT_CONFIG_KEY_0": "protocol.file.allow",
-        "GIT_CONFIG_VALUE_0": "always",
-        "GIT_AUTHOR_NAME": "Test Author",
-        "GIT_AUTHOR_EMAIL": "test@example.com",
-        "GIT_COMMITTER_NAME": "Test Author",
-        "GIT_COMMITTER_EMAIL": "test@example.com",
-        "GIT_AUTHOR_DATE": "1970-01-01T00:00:00+00:00",
-        "GIT_COMMITTER_DATE": "1970-01-01T00:00:00+00:00",
-    }
+def _copy_synthetic_repo_gitignore(repo_path: Path) -> None:
+    # Over time the test scenarios directories may accumulate some git untracked local-only
+    # build artifacts, e.g. __pycache__, which, if unfiltered and then committed to the
+    # synthetic repo would yield a different digest every time breaking the test suite
+    # constantly.
+    # Therefore, copy hermeto's root .gitignore into the synthetic repo as it already contains a
+    # good set of excludes. We copy the .gitignore file to .git/info/exclude instead of plain
+    # .gitignore because it would get committed automatically by the code below, we don't need
+    # nor want to commit more than the test scenario data in the synthetic repo
+    project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
+    gitignore = Path(project_repo_root) / ".gitignore"
+    if gitignore.is_file():
+        exclude_file = repo_path / ".git" / "info" / "exclude"
+        exclude_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(gitignore, exclude_file)
 
-    def __init__(
-        self,
-        repo_path: Path,
-        origin_url: str,
-        submodules: Sequence[SyntheticSubmoduleSpec] = (),
-    ) -> None:
-        # Over time the test scenarios directories may accumulate some git untracked local-only
-        # build artifacts, e.g. __pycache__, which, if unfiltered and then committed to the
-        # synthetic repo would yield a different digest every time breaking the test suite
-        # constantly.
-        # Therefore, copy hermeto's root .gitignore into the synthetic repo as it already contains a
-        # good set of excludes. We copy the .gitignore file to .git/info/exclude instead of plain
-        # .gitignore because it would get committed automatically by the code below, we don't need
-        # nor want to commit more than the test scenario data in the synthetic repo
-        project_repo_root = GitRepo(Path(__file__), search_parent_directories=True).working_dir
-        gitignore = Path(project_repo_root) / ".gitignore"
-        if gitignore.is_file():
-            exclude_file = repo_path / ".git" / "info" / "exclude"
-            exclude_file.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(gitignore, exclude_file)
 
-        # main repo creation
-        self.repo = GitRepo.init(repo_path, env=GIT_PRISTINE_ENV)
-        with self.repo.git.custom_environment(**self._GIT_ENV):
-            self.repo.git.add(".")
-            self.repo.git.commit(m="test scenario")
-        self.repo.create_remote("origin", origin_url)
-        self.path = repo_path
+def _initialize_synthetic_repo_from_source(
+    source_dir: Path, repo_path: Path, canonical_origin_url: str
+) -> git.Repo:
+    """Copy scenario source files and initialize Git with the canonical origin."""
+    shutil.copytree(source_dir, repo_path)
+    _copy_synthetic_repo_gitignore(repo_path)
+    repo = GitRepo.init(repo_path, env=GIT_PRISTINE_ENV)
+    repo.create_remote("origin", canonical_origin_url)
+    return repo
 
-        # adding submodules
-        for sub in submodules:
-            child_path = repo_path.parent / f"submodule-{sub.path}"
-            shutil.copytree(sub.source_dir, child_path)
 
-            # child repos use parent's origin_url rather than their own (URL is meaningless in tests)
-            child = SyntheticRepo(child_path, origin_url)
-            with self.repo.git.custom_environment(**self._GIT_ENV):
-                self.repo.git.submodule("add", str(child.path), sub.path)
+def _commit_synthetic_repo(repo: git.Repo, message: str) -> None:
+    with repo.git.custom_environment(**_SYNTHETIC_REPO_GIT_ENV):
+        repo.git.add(".")
+        repo.git.commit(m=message)
 
-                # .gitmodules and the cloned submodule both record the local
-                # tmp path which changes per run; replace with origin_url so
-                # the parent commit is deterministic and hermeto can
-                # canonicalize the submodule's origin
-                sub_repo = GitRepo(repo_path / sub.path)
-                sub_repo.remotes.origin.set_url(origin_url)
 
-                self.repo.git.config(f"submodule.{sub.path}.url", origin_url, file=".gitmodules")
-                self.repo.git.add(".")
-                self.repo.git.commit(m=f"add submodule {sub.path}")
+def _add_synthetic_submodule(
+    parent_repo: git.Repo,
+    parent_repo_path: Path,
+    submodule_origin_path: Path,
+    submodule: SyntheticSubmoduleSpec,
+) -> None:
+    with parent_repo.git.custom_environment(**_SYNTHETIC_REPO_GIT_ENV):
+        parent_repo.git.submodule("add", str(submodule_origin_path), submodule.path_in_parent)
+
+        # .gitmodules and the cloned submodule both record the local
+        # tmp path which changes per run; replace with the canonical origin so
+        # the parent commit is deterministic and hermeto can
+        # canonicalize the submodule's origin
+        submodule_repo = GitRepo(parent_repo_path / submodule.path_in_parent)
+        submodule_repo.remotes.origin.set_url(submodule.canonical_origin_url)
+        _configure_synthetic_origin_rewrite(
+            submodule_repo, submodule.canonical_origin_url, submodule_origin_path
+        )
+
+        parent_repo.git.config(
+            f"submodule.{submodule.path_in_parent}.url",
+            submodule.canonical_origin_url,
+            file=".gitmodules",
+        )
+    _configure_synthetic_origin_rewrite(
+        parent_repo, submodule.canonical_origin_url, submodule_origin_path
+    )
+
+
+def _configure_synthetic_origin_rewrite(
+    repo: git.Repo, canonical_origin_url: str, origin_path: Path
+) -> None:
+    """Fetch from the local origin while preserving the canonical URL in Git metadata."""
+    repo.git.config(
+        "--local", f"url.{origin_path.resolve().as_uri()}.insteadOf", canonical_origin_url
+    )
+    repo.git.config("--local", "protocol.file.allow", "always")
+
+
+def _clone_parent_origin(
+    parent_repo_path: Path, parent_origin_path: Path, canonical_origin_url: str
+) -> None:
+    with GitRepo.clone_from(
+        parent_repo_path, parent_origin_path, env=_SYNTHETIC_REPO_GIT_ENV
+    ) as parent_origin_repo:
+        # The origin clone also records the fixture's identity, not its temporary source path.
+        parent_origin_repo.remotes.origin.set_url(canonical_origin_url)
 
 
 def _default_hermeto_env() -> dict[str, str]:
@@ -348,14 +376,32 @@ def create_synthetic_repo(
     tmp_path: Path,
     source_dir: Path,
     *,
-    origin_url: str = "https://github.com/hermetoproject/hermeto.git",
+    canonical_origin_url: str = "https://git.example.invalid/hermeto-tests/parent.git",
     submodules: Sequence[SyntheticSubmoduleSpec] = (),
 ) -> Path:
-    """Create a deterministic synthetic git repo from scenario source files."""
-    synthetic_repo_path = tmp_path / "repo"
-    shutil.copytree(source_dir, synthetic_repo_path)
-    repo = SyntheticRepo(synthetic_repo_path, origin_url, submodules)
-    return repo.path
+    """Create the parent test repo and its local origins from scenario source files."""
+    parent_repo_path = tmp_path / "repo"
+    local_origins_dir = tmp_path / "origins"
+
+    local_origins_dir.mkdir()
+    parent_repo = _initialize_synthetic_repo_from_source(
+        source_dir, parent_repo_path, canonical_origin_url
+    )
+
+    for submodule in submodules:
+        submodule_origin_path = local_origins_dir / "submodules" / submodule.path_in_parent
+        submodule_origin_repo = _initialize_synthetic_repo_from_source(
+            submodule.source_dir, submodule_origin_path, submodule.canonical_origin_url
+        )
+        _commit_synthetic_repo(submodule_origin_repo, "test scenario")
+        _add_synthetic_submodule(parent_repo, parent_repo_path, submodule_origin_path, submodule)
+
+    _commit_synthetic_repo(parent_repo, "test scenario")
+    parent_origin_path = local_origins_dir / "parent"
+    _clone_parent_origin(parent_repo_path, parent_origin_path, canonical_origin_url)
+    _configure_synthetic_origin_rewrite(parent_repo, canonical_origin_url, parent_origin_path)
+
+    return parent_repo_path
 
 
 def fetch_deps_and_check_output(
