@@ -10,6 +10,8 @@ on:
       - requirements.txt
       - requirements-extras.txt
       - requirements-build.txt
+      - requirements-build.in
+      - pyproject.toml
   workflow_dispatch:
     inputs: {}
 
