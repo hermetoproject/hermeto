@@ -48,7 +48,7 @@ from hermeto.core.package_managers.gomod.main import (
     _process_modules_json_stream,
     _resolve_gomod,
     _validate_local_replacements,
-    _vendor_changed,
+    _vendor_change_list,
 )
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 from hermeto.core.scm import GitRepo, RepoID
@@ -872,7 +872,6 @@ def test_vendor_changed(
     expect_change_type: str | None,
     expect_changed_path: str | None,
     rooted_tmp_path_repo: RootedPath,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test _vendor_changed detects modifications, additions, and no-ops in vendor/. directory"""
     repo = git.Repo(rooted_tmp_path_repo)
@@ -880,24 +879,30 @@ def test_vendor_changed(
     app_dir = rooted_tmp_path_repo.join_within_root(subpath)
     os.makedirs(app_dir, exist_ok=True)
     write_file_tree(vendor_before, app_dir)
-    repo.index.add([app_dir.join_within_root(path) for path in vendor_before])
-    repo.index.commit("before vendoring", skip_hooks=True)
+    # Accessing index is costly
+    index = repo.index
+    index.add([app_dir.join_within_root(path) for path in vendor_before])
+    index.commit("before vendoring", skip_hooks=True)
 
     write_file_tree(vendor_changes, app_dir, exist_ok=True)
 
-    assert _vendor_changed(app_dir) == expect_changed
+    vendor_change_list = _vendor_change_list(app_dir)
+
+    assert bool(vendor_change_list) == expect_changed
+
+    change_types = {d.change_type for d in vendor_change_list}
+    paths = {d.a_path or d.b_path for d in vendor_change_list}
 
     if expect_changed:
-        assert expect_change_type is not None
-        assert expect_changed_path is not None
-        assert expect_change_type in caplog.text
-        assert expect_changed_path in caplog.text
+        assert expect_change_type in change_types
+        assert f"{subpath}{expect_changed_path}" in paths
 
-    # Verify all vendor changes are logged for multi-file case
+    # For multi-file case, verify both changes are returned
     if vendor_changes.get("vendor", {}).get("other_file"):
-        assert f"vendor changed: {DIFF_ADDED}\t{subpath}vendor/other_file" in caplog.text
+        assert DIFF_ADDED in change_types
+        assert f"{subpath}vendor/other_file" in paths
 
-    # The _vendor_changed function should reset the `git add` => added files should not be tracked
+    # The _vendor_change_list function should reset the `git add` => added files should not be tracked
     assert not repo.git.diff("--diff-filter", DIFF_ADDED)
 
 
