@@ -1,0 +1,18 @@
+[project]
+name = "uv-e2e"
+version = "1.0.0"
+description = "uv end-to-end test project"
+requires-python = ">=3.12"
+dependencies = [
+    "idna==3.10",   # registry source
+    "packaging",    # url source
+    "itsdangerous", # git source
+]
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.uv.sources]
+itsdangerous = { git = "https://github.com/pallets/itsdangerous", tag = "2.2.0" }
+packaging = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz" }
