@@ -441,6 +441,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     :raises PackageManagerError: if failed to fetch gomod dependencies
     """
     config = get_config()
+    enforcing_mode = config.mode
     subpaths = [str(package.path) for package in request.gomod_packages]
 
     if not subpaths:
@@ -469,7 +470,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
     try:
         version_resolver = ModuleVersionResolver.from_repo_path(request.source_dir)
     except NotAGitRepo:
-        if get_config().mode == Mode.PERMISSIVE:
+        if enforcing_mode == Mode.PERMISSIVE:
             version_resolver = ModuleVersionResolver.from_non_git_source()
         else:
             raise
@@ -482,6 +483,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             log.info("Fetching the gomod dependencies at subpath %s", subpath)
             go_work: GoWork | None = None
 
+            vendor_diffs: list = []
             main_module_dir = request.source_dir.join_within_root(subpath)
             go = _select_toolchain(main_module_dir.join_within_root("go.mod"), installed_toolchains)
             if go is None:
@@ -501,25 +503,28 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             except PackageManagerError:
                 log.error("Failed to fetch gomod dependencies")
                 raise
-
             try:
-                vendor_changed = _vendor_changed(main_module_dir)
+                vendor_diffs = _vendor_change_list(main_module_dir)
             except NotAGitRepo:
-                if get_config().mode == Mode.PERMISSIVE:
-                    vendor_changed = False
-                else:
+                if enforcing_mode != Mode.PERMISSIVE:
                     raise
-            if vendor_changed and get_config().mode != Mode.PERMISSIVE:
-                raise PackageRejected(
-                    reason=(
-                        "The content of the vendor directory is not consistent with go.mod. "
-                        "Please check the logs for more details."
-                    ),
-                    solution=(
-                        "Please try running `go mod vendor` and committing the changes.\n"
-                        "Note that you may need to `git add --force` ignored files in the vendor/ dir."
-                    ),
-                )
+            if vendor_diffs:
+                for d in vendor_diffs:
+                    log.error_or_warn(
+                        f"vendor changed: {d.change_type}\t{d.a_path or d.b_path}",
+                        enforcing_mode=enforcing_mode,
+                    )
+                if enforcing_mode != Mode.PERMISSIVE:
+                    raise PackageRejected(
+                        reason=(
+                            "The content of the vendor directory is not consistent with go.mod. "
+                            "Please check the logs for more details."
+                        ),
+                        solution=(
+                            "Please try running `go mod vendor` and committing the changes.\n"
+                            "Note that you may need to `git add --force` ignored files in the vendor/ dir."
+                        ),
+                    )
 
             main_module = _create_main_module_from_parsed_data(
                 main_module_dir, repo_name, resolve_result.parsed_main_module
@@ -543,7 +548,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             package_components = [package.to_component() for package in packages]
             subpath_components = module_components + package_components
 
-            if vendor_changed:
+            if vendor_diffs:
                 _update_sbom_annotations(subpath_components, annotations)
 
             components.extend(subpath_components)
@@ -1448,13 +1453,13 @@ def _vendor_deps(
     return _parse_vendor(context_dir)
 
 
-def _vendor_changed(context_dir: RootedPath) -> bool:
+def _vendor_change_list(context_dir: RootedPath) -> git.DiffIndex[git.Diff] | list:
     """Check for changes in the vendor directory.
 
     :param context_dir: main module dir OR workspace context (directory containing go.work)
+    :return: list of Diff objects representing detected changes (empty if no changes)
     """
     repo_root = context_dir.root
-    enforcing_mode = get_config().mode
 
     # Get the correct repo context (main or submodule)
     repo, context_relative_path = get_repo_for_path(repo_root, context_dir.path)
@@ -1469,25 +1474,19 @@ def _vendor_changed(context_dir: RootedPath) -> bool:
         # Structured Diff objects
         index = repo.index
         modules_txt_diffs = index.diff(None, paths=[str(modules_txt)], env=GIT_PRISTINE_ENV)
-        vendor_diffs = index.diff(None, paths=[str(vendor)], env=GIT_PRISTINE_ENV)
+
         if modules_txt_diffs:
-            for d in modules_txt_diffs:
-                log.error_or_warn(
-                    f"modules.txt changed: {d.change_type} {d.a_path or d.b_path}",
-                    enforcing_mode=enforcing_mode,
-                )
-            return True
+            return modules_txt_diffs
+
+        vendor_diffs = index.diff(None, paths=[str(vendor)], env=GIT_PRISTINE_ENV)
+
         if vendor_diffs:
-            for d in vendor_diffs:
-                log.error_or_warn(
-                    f"vendor changed: {d.change_type}\t{d.a_path or d.b_path}",
-                    enforcing_mode=enforcing_mode,
-                )
-            return True
+            return vendor_diffs
+
     finally:
         repo.git.reset("--", context_relative_path)
 
-    return False
+    return []
 
 
 def prepare_netrc_contents() -> str:
