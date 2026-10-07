@@ -684,6 +684,21 @@ def _temporary_cwd(path_to_new_cwd: Path) -> Generator[None, None, None]:
         os.chdir(oldcwd)
 
 
+def _is_lockfile_mismatch(stderr: str) -> bool:
+    """Tell whether cargo failed because --locked stopped it from updating Cargo.lock.
+
+    This is not a robust solution in any way, however it seems to be the only one readily
+    available: cargo returns a generic 101 code on this failure and on multiple others, thus
+    the only way to check for this specific type of failure is to process stderr.
+    """
+    # Since Cargo version 1.93.0, the error message for an unsynchronized lockfile has changed.
+    variants = (
+        "needs to be updated but --locked was passed",
+        "because --locked was passed to prevent this",
+    )
+    return any(variant in stderr for variant in variants)
+
+
 def _run_cmd_watching_out_for_lock_mismatch(
     cmd: list, params: dict, package_dir: Path
 ) -> CargoVendorResult:
@@ -700,21 +715,7 @@ def _run_cmd_watching_out_for_lock_mismatch(
         stdout = run_cmd(cmd=cmd, params=params, suppress_errors=(mode == Mode.PERMISSIVE))
         return CargoVendorResult(config_template=stdout, lockfile_was_generated=False)
     except subprocess.CalledProcessError as e:
-        # Search for a very specific failure state to better report it.
-        # This is not a robust solution in any way, however it seems to be the only one
-        # readily available: cargo returns a generic 101 code on this failure and on multiple
-        # others, thus the only way to check for this specific type of failure is to process
-        # stderr. Two parts of a string are used to decrease the likelihood of false positives.
-        generic_vendor_error = "failed to sync"
-        # Since Cargo version 1.93.0, the error message for an unsynchronized lockfile has changed.
-        specific_vendor_error_variants = (
-            "needs to be updated but --locked was passed",
-            "because --locked was passed to prevent this",
-        )
-
-        if generic_vendor_error in e.stderr and any(
-            error in e.stderr for error in specific_vendor_error_variants
-        ):
+        if _is_lockfile_mismatch(e.stderr):
             if mode == Mode.PERMISSIVE:
                 log.warning(warn_about_imminent_update_to_cargo_lock)
                 with _temporary_cwd(package_dir):
