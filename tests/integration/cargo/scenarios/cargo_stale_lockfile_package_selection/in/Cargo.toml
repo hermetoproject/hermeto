@@ -1,0 +1,9 @@
+[package]
+name = "stale-lockfile"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitflags = "1.3"
+# Not in Cargo.lock.
+itoa = "1"
