@@ -8,7 +8,7 @@ FROM mirror.gcr.io/library/rust:1.97.1-slim-bookworm AS rust
 FROM rust AS cargo-vendor-filterer
 RUN cargo install --locked --root /cvf \
     --git https://github.com/wseaton/cargo-vendor-filterer \
-    --rev f119d94003cf60dbb3fe18bdcb766360720b4312 \
+    --rev 7f83a9d9e57e5e08705953d53f70ce6c29a71c0b \
     cargo-vendor-filterer
 
 ########################
