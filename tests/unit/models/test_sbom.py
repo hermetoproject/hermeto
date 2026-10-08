@@ -547,7 +547,7 @@ class TestSbom:
         )
 
         spdx_sbom = sbom.to_spdx("NOASSERTION")
-        pkg = next((pkg for pkg in spdx_sbom.packages if pkg.name == "test-package"))
+        pkg = next(pkg for pkg in spdx_sbom.packages if pkg.name == "test-package")
 
         assert {a.comment for a in pkg.annotations} == {
             '{"name": "hermeto:found_by", "value": "hermeto"}',

@@ -3,10 +3,11 @@ import copy
 import json
 import logging
 import tempfile
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generator, cast
+from typing import Any, cast
 from urllib.parse import parse_qs
 
 import semver

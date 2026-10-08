@@ -4,19 +4,18 @@ import json
 import logging
 import re
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property, partial, reduce
 from itertools import groupby
 from pathlib import Path
-from typing import Annotated, Any, Callable, Literal, Union
+from typing import Annotated, Any, Literal, Self, Union
 from urllib.parse import urlparse
 
 import pydantic
 from more_itertools import first_true, flatten
 from packageurl import PackageURL
-from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import UnexpectedFormat

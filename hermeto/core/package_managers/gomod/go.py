@@ -7,10 +7,10 @@ import shutil
 import subprocess
 import tempfile
 from collections import UserDict
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from functools import cache, cached_property, total_ordering
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import pydantic
 from more_itertools import first

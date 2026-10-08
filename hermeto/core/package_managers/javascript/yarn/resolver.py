@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any
+from typing import Any, assert_never
 from urllib.parse import quote
 
 import pydantic
@@ -61,12 +61,6 @@ from hermeto.core.package_managers.javascript.yarn.utils import (
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
-
-if TYPE_CHECKING:
-    # Import conditionally so that we don't have to introduce a runtime dependency on
-    # typing-extensions. This is only imported when a type-checker is running.
-    # In python 3.11, it can be imported directly from the stdlib 'typing' module.
-    from typing_extensions import assert_never
 
 log = logging.getLogger(__name__)
 

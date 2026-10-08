@@ -3,7 +3,7 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 from unittest import mock
 from urllib.parse import quote
 
@@ -881,7 +881,7 @@ def test_get_path_patch_url(
     mock_get_repo_id_resolver: mock.Mock,
     rooted_tmp_path: RootedPath,
     patch_path_template: str,
-    workspace_locator: Optional[WorkspaceLocator],
+    workspace_locator: WorkspaceLocator | None,
     expected_url: str,
 ) -> None:
     mock_get_yarn_version.return_value = Version(3, 0, 0)

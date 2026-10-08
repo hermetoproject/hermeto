@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional
 from urllib.parse import parse_qs, unquote
 
 from hermeto import APP_NAME
@@ -222,7 +222,7 @@ def _parse_patch_locator(locator: "ParsedLocator") -> PatchLocator:
 
     original_package = parse_locator(reference.source)
 
-    def process_patch_path(patch: str) -> Union[str, Path]:
+    def process_patch_path(patch: str) -> str | Path:
         # Almost verbatim from
         # https://github.com/yarnpkg/berry/blob/8ff18d709a4211f92837ff2f59eaf4972ca579c0/packages/plugin-patch/sources/patchUtils.ts#L122
         #

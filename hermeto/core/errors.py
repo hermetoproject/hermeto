@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import textwrap
+from collections.abc import Iterable
 from enum import IntEnum, unique
 from pathlib import Path
-from typing import Any, ClassVar, Iterable
+from typing import Any, ClassVar
 
 from hermeto import APP_NAME
 

@@ -6,10 +6,9 @@ requires = ["setuptools", "setuptools-scm"]
 name = "hermeto"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -66,7 +65,7 @@ fallback_version = "0.0.0+dev.fallback"
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 extend-exclude = ["tests/integration/*/scenarios/*/in", "tests/integration/*/scenarios/*/out"]
 
 [tool.ruff.lint]
@@ -112,7 +111,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 plugins = ["pydantic.mypy"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

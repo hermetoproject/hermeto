@@ -144,11 +144,11 @@ def pip_compile(session: Session) -> None:
     compile_cmds = [
         "pip install uv",
         # requirements.txt
-        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.10 --no-strip-markers pyproject.toml",
+        "uv pip compile --generate-hashes --output-file=requirements.txt --python=3.11 --no-strip-markers pyproject.toml",
         # requirements-build.txt
-        "uv pip compile --generate-hashes --output-file=requirements-build.txt --python=3.10 --no-strip-markers requirements-build.in",
+        "uv pip compile --generate-hashes --output-file=requirements-build.txt --python=3.11 --no-strip-markers requirements-build.in",
         # requirements-extras.txt
-        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.10 --no-strip-markers pyproject.toml",
+        "uv pip compile --all-extras --generate-hashes --output-file=requirements-extras.txt --python=3.11 --no-strip-markers pyproject.toml",
     ]
     pwd = os.environ["PWD"]
     cmd = [
@@ -159,7 +159,7 @@ def pip_compile(session: Session) -> None:
         f"{pwd}:/hermeto:rw,Z",
         "--workdir",
         "/hermeto",
-        "mirror.gcr.io/library/python:3.10-alpine",
+        "mirror.gcr.io/library/python:3.11-alpine",
         "sh",
         "-c",
         " && ".join(compile_cmds),

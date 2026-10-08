@@ -2,14 +2,11 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import Self, assert_never
 
 import pydantic
 
 from hermeto import APP_NAME
-
-if TYPE_CHECKING:
-    from typing_extensions import Self, assert_never
 
 
 class PropertyEnum(str, Enum):

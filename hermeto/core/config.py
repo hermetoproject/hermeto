@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Self
 
 import yaml
 from pydantic import (
@@ -21,7 +21,6 @@ from pydantic_settings import (
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
-from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.constants import Mode

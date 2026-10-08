@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 import yaml

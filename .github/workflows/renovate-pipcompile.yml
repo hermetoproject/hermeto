@@ -24,7 +24,7 @@ jobs:
   versions-check:
     runs-on: ubuntu-24.04
     container:
-      image: python:3.10-alpine
+      image: python:3.11-alpine
 
     steps:
       # Need to install git before running the checkout action in a container
@@ -48,20 +48,20 @@ jobs:
           uv pip compile \
             --generate-hashes \
             --output-file=requirements.txt \
-            --python=3.10 \
+            --python=3.11 \
             --no-strip-markers \
             pyproject.toml
           uv pip compile \
             --all-extras \
             --generate-hashes \
             --output-file=requirements-extras.txt \
-            --python=3.10 \
+            --python=3.11 \
             --no-strip-markers \
             pyproject.toml
           uv pip compile \
             --generate-hashes \
             --output-file=requirements-build.txt \
-            --python=3.10 \
+            --python=3.11 \
             --no-strip-markers \
             requirements-build.in
           {

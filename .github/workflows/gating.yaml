@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     container:
       image: python:${{ matrix.python-version }}-slim
@@ -42,7 +42,7 @@ jobs:
           nox -s "python-${{ matrix.python-version }}"
 
       - name: Upload coverage reports to Codecov
-        if: matrix.python-version == '3.10'
+        if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
       fail-fast: false
 
     container:
-      image: python:3.10-slim
+      image: python:3.11-slim
 
     steps:
       - name: Install dependencies

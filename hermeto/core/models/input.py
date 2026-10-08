@@ -3,10 +3,9 @@ import logging
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, TypeVar, Union
 
 import pydantic
-from typing_extensions import Self
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput

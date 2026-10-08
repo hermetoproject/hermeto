@@ -12,19 +12,15 @@ from itertools import chain
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, Optional
+from typing import Any, Literal, NamedTuple, NoReturn, Optional, Self
 
 import git
 import semver
 from packageurl import PackageURL
 
 from hermeto import APP_NAME
-from hermeto.core.constants import Mode
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-
 from hermeto.core.config import get_config
+from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     FetchError,
     GitError,
@@ -92,7 +88,7 @@ class ParsedModule(_ParsedModel):
     version: str | None = None
     main: bool = False
     replace: Optional["ParsedModule"] = None
-    origin: Optional[ParsedOrigin] = None
+    origin: ParsedOrigin | None = None
 
 
 class ParsedPackage(_ParsedModel):

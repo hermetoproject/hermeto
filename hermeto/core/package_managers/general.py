@@ -7,7 +7,7 @@ import types
 from collections.abc import Mapping
 from email.utils import parsedate_to_datetime
 from types import TracebackType
-from typing import Any, cast
+from typing import Any, Self, cast
 from urllib.parse import urlparse
 
 import aiofiles
@@ -17,7 +17,6 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
-from typing_extensions import Self
 from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
 from urllib3.util.retry import Retry
