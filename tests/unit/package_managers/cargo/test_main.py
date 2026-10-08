@@ -10,12 +10,14 @@ import tomlkit
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, UnexpectedFormat
 from hermeto.core.models.input import Request
-from hermeto.core.package_managers.cargo.main import (
+from hermeto.core.package_managers.cargo.config import (
+    _sanitize_cargo_config,
+    _use_vendored_sources,
+)
+from hermeto.core.package_managers.cargo.resolver import (
     CargoPackage,
     _generate_sbom_components,
     _resolve_main_package,
-    _sanitize_cargo_config,
-    _use_vendored_sources,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -405,8 +407,8 @@ def _make_request(source_dir: Path, output_dir: Path) -> Request:
     )
 
 
-@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
-@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_repo_id")
 def test_generate_sbom_components_permissive_no_git_vcs_url_is_none(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -429,8 +431,8 @@ def test_generate_sbom_components_permissive_no_git_vcs_url_is_none(
     assert "vcs_url" not in components[0].purl
 
 
-@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
-@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_repo_id")
 def test_generate_sbom_components_permissive_with_git_vcs_url_populated(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -454,8 +456,8 @@ def test_generate_sbom_components_permissive_with_git_vcs_url_populated(
     assert "vcs_url=" in components[0].purl
 
 
-@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
-@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_repo_id")
 def test_generate_sbom_components_strict_source_inside_output_no_git_no_raise(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
@@ -488,8 +490,8 @@ def test_generate_sbom_components_strict_source_inside_output_no_git_no_raise(
     assert "vcs_url" not in components[0].purl
 
 
-@mock.patch("hermeto.core.package_managers.cargo.main.get_config")
-@mock.patch("hermeto.core.package_managers.cargo.main.get_repo_id")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_config")
+@mock.patch("hermeto.core.package_managers.cargo.resolver.get_repo_id")
 def test_generate_sbom_components_strict_mode_raises_without_git_repo(
     mock_get_repo_id: mock.Mock,
     mock_get_config: mock.Mock,
