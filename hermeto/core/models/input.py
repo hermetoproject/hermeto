@@ -11,6 +11,7 @@ from typing_extensions import Self
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
 from hermeto.core.models.validators import check_sane_relpath, unique
+from hermeto.core.package_managers.python.packaging_tool import PythonPackagingTool
 from hermeto.core.rooted_path import PathOutsideRoot, RootedPath
 
 BINARY_FILTER_ALL = ":all:"
@@ -313,27 +314,49 @@ class PipPackageInput(_PackageInputBase):
     requirements_build_files: list[Path] | None = None
     allow_binary: bool = False
     binary: PipBinaryFilters | None = None
+    lockfile: Path | None = None
+    lockfile_extras: list[Path] | None = None
+    packaging_tool: PythonPackagingTool | None = None
 
-    @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @pydantic.field_validator(
+        "requirements_files", "requirements_build_files", "lockfile", "lockfile_extras"
+    )
     @classmethod
-    def _no_explicit_none(cls, paths: list[Path] | None) -> list[Path]:
+    def _no_explicit_none(cls, value: T | None) -> T:
         """Fail if the user explicitly passes None."""
-        if paths is None:
+        if value is None:
             # Note: same error message as pydantic's default
             raise ValueError("none is not an allowed value")
-        return paths
+        return value
 
-    @pydantic.field_validator("requirements_files", "requirements_build_files")
+    @pydantic.field_validator("requirements_files", "requirements_build_files", "lockfile_extras")
     @classmethod
     def _requirements_file_path_is_relative(cls, paths: list[Path]) -> list[Path]:
         for p in paths:
             check_sane_relpath(p)
         return paths
 
+    @pydantic.field_validator("lockfile")
+    @classmethod
+    def _lockfile_path_is_relative(cls, path: Path) -> Path:
+        return check_sane_relpath(path)
+
     @pydantic.model_validator(mode="after")
     def _handle_legacy_allow_binary_field(self) -> Self:
         """Handle backward compatibility for allow_binary field."""
         _handle_legacy_allow_binary(self, PipBinaryFilters)
+        return self
+
+    @pydantic.model_validator(mode="after")
+    def _validate_lockfile_inputs(self) -> Self:
+        """Reject mixing input modes because they are incompatible."""
+        has_requirements_files = (
+            self.requirements_files is not None or self.requirements_build_files is not None
+        )
+        has_lockfile = self.lockfile is not None or self.lockfile_extras is not None
+        uses_lockfile_tool = self.packaging_tool not in (None, PythonPackagingTool.REQUIREMENTS)
+        if has_requirements_files and (has_lockfile or uses_lockfile_tool):
+            raise ValueError("cannot combine requirements files with a lockfile; provide only one")
         return self
 
 
