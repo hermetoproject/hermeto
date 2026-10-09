@@ -123,6 +123,32 @@ def test_rooted_path_eq() -> None:
     assert a == RootedPath("/some/directory").join_within_root("subpath")
 
 
+class TestTruediv:
+    """The / operator must behave identically to join_within_root."""
+
+    def test_basic_join(self, test_path: Path) -> None:
+        rp = RootedPath(test_path)
+        result = rp / "subpath"
+        assert_attrs(result, path=test_path / "subpath", root=test_path)
+
+    def test_chained_join(self, test_path: Path) -> None:
+        rp = RootedPath(test_path)
+        result = rp / "subpath" / ".."
+        assert_attrs(result, path=test_path, root=test_path)
+
+    @pytest.mark.parametrize(
+        "subpath",
+        [
+            pytest.param("..", id="parent-escape"),
+            pytest.param("/abspath", id="absolute-path"),
+            pytest.param("symlink-to-parent", id="symlink-escape"),
+        ],
+    )
+    def test_rejects_outside_root(self, test_path: Path, subpath: str) -> None:
+        with pytest.raises(PathOutsideRoot):
+            RootedPath(test_path) / subpath
+
+
 @pytest.mark.parametrize(
     "attr",
     [
