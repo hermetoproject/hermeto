@@ -349,7 +349,9 @@ def fetch_deps(  # noqa: D103 -- docstring becomes part of --help message
             parsed_input = json.loads(input_str)
 
             if isinstance(parsed_input, dict):
-                if "packages" in parsed_input.keys():
+                # A package input may have a 'packages' field of its own (cargo), but only a
+                # package has a 'type'
+                if "packages" in parsed_input and "type" not in parsed_input:
                     # is a dict with list of packages and possibly flags
                     return parsed_input
                 else:

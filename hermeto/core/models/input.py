@@ -274,10 +274,62 @@ class BundlerPackageInput(_PackageInputBase):
         return self
 
 
+class CargoPackageSelection(pydantic.BaseModel, extra="forbid"):
+    """A workspace package that is built from a cargo input, and how it is built."""
+
+    name: Annotated[str, pydantic.StringConstraints(strip_whitespace=True, min_length=1)]
+    features: list[str] = []
+    no_default_features: bool = False
+    all_features: bool = False
+
+    @pydantic.model_validator(mode="after")
+    def _all_features_excludes_other_feature_flags(self) -> Self:
+        if self.all_features and (self.features or self.no_default_features):
+            raise ValueError(
+                f"package '{self.name}': 'all_features' already enables every feature, "
+                "remove 'features' and 'no_default_features'"
+            )
+        return self
+
+
 class CargoPackageInput(_PackageInputBase):
     """Accepted input for a cargo package."""
 
     type: Literal["cargo"]
+    packages: list[CargoPackageSelection] | None = None
+    platforms: list[str] | None = None
+
+    @pydantic.field_validator("packages")
+    @classmethod
+    def _packages_not_empty_and_unique(
+        cls, packages: list[CargoPackageSelection] | None
+    ) -> list[CargoPackageSelection] | None:
+        if packages is None:
+            return None
+        if not packages:
+            raise ValueError("'packages' must not be an empty list, omit the field instead")
+        names = [p.name for p in packages]
+        if duplicates := sorted({n for n in names if names.count(n) > 1}):
+            raise ValueError(
+                f"package {', '.join(map(repr, duplicates))} listed more than once, "
+                "merge the entries into one"
+            )
+        return packages
+
+    @pydantic.field_validator("platforms")
+    @classmethod
+    def _platforms_not_empty(cls, platforms: list[str] | None) -> list[str] | None:
+        if platforms is not None and not platforms:
+            raise ValueError("'platforms' must not be an empty list, omit the field instead")
+        return platforms
+
+    @pydantic.model_validator(mode="after")
+    def _platforms_require_packages(self) -> Self:
+        if self.platforms is not None and self.packages is None:
+            raise ValueError(
+                "'platforms' only narrows a package selection, add 'packages' or remove 'platforms'"
+            )
+        return self
 
 
 class GenericPackageInput(_PackageInputBase):

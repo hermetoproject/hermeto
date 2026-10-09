@@ -3,6 +3,14 @@ FROM mirror.gcr.io/library/golang:1.27.1-alpine AS golang
 FROM mirror.gcr.io/library/node:24.21-bookworm-slim AS node
 FROM mirror.gcr.io/library/rust:1.97.1-slim-bookworm AS rust
 
+# cargo-vendor-filterer only runs cargo metadata/tree and cargo vendor; it
+# never compiles dependencies or runs their build scripts.
+FROM rust AS cargo-vendor-filterer
+RUN cargo install --locked --root /cvf \
+    --git https://github.com/wseaton/cargo-vendor-filterer \
+    --rev 7f83a9d9e57e5e08705953d53f70ce6c29a71c0b \
+    cargo-vendor-filterer
+
 ########################
 # PREPARE OUR BASE IMAGE
 ########################
@@ -51,6 +59,10 @@ COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=node /usr/local/lib/node_modules/corepack /usr/local/lib/corepack
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=rust /usr/local/rustup/toolchains/*/bin/cargo /usr/bin/cargo
+# rustc answers cargo's target cfg queries for per-platform filtering; nothing is compiled
+COPY --from=rust /usr/local/rustup/toolchains/*/bin/rustc /usr/bin/rustc
+COPY --from=rust /usr/local/rustup/toolchains/*/lib/*.so* /usr/lib/
+COPY --from=cargo-vendor-filterer /cvf/bin/cargo-vendor-filterer /usr/bin/cargo-vendor-filterer
 COPY --from=builder /venv /venv
 
 # link corepack, yarn, and go to standard PATH location
