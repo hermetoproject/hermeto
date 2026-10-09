@@ -103,7 +103,7 @@ class SetupFile(ABC):
 
     def exists(self) -> bool:
         """Check if file exists."""
-        return self._setup_file.path.is_file()
+        return self._setup_file.is_file()
 
     @abstractmethod
     def get_name(self) -> str | None:
@@ -154,7 +154,7 @@ class PyProjectTOML(SetupFile):
     def _parsed_toml(self) -> dict[str, Any]:
         try:
             log.debug("Parsing pyproject.toml at %r", str(self._setup_file))
-            return tomlkit.parse(self._setup_file.path.read_text())
+            return tomlkit.parse(self._setup_file.read_text())
         except tomlkit.exceptions.ParseError as e:
             log.error("Failed to parse pyproject.toml: %s", e)
             return {}
@@ -233,7 +233,7 @@ class SetupCFG(SetupFile):
         log.debug("Parsing setup.cfg at %r", str(self._setup_file))
         parsed = configparser.ConfigParser()
 
-        with self._setup_file.path.open() as f:
+        with self._setup_file.open() as f:
             try:
                 parsed.read_file(f)
                 return parsed
@@ -265,8 +265,8 @@ class SetupCFG(SetupFile):
     def _read_version_from_file(self, file_path: str) -> str | None:
         """Read version from file."""
         version_file = self._top_dir.join_within_root(file_path)
-        if version_file.path.is_file():
-            version = version_file.path.read_text().strip()
+        if version_file.is_file():
+            version = version_file.read_text().strip()
             log.debug("Read version from %r: %r", file_path, version)
             return version
         else:
@@ -300,7 +300,7 @@ class SetupCFG(SetupFile):
             return None
 
         try:
-            module_ast = ast.parse(module_file.path.read_text(), module_file.path.name)
+            module_ast = ast.parse(module_file.read_text(), module_file.name)
         except SyntaxError as e:
             log.error("Syntax error when parsing module: %s", e)
             return None
@@ -339,11 +339,11 @@ class SetupCFG(SetupFile):
             module_path = custom_path / module_path
 
         package_init = self._top_dir.join_within_root(module_path).join_within_root("__init__.py")
-        if package_init.path.is_file():
+        if package_init.is_file():
             return package_init
 
         module_py = self._top_dir.join_within_root(f"{module_path}.py")
-        if module_py.path.is_file():
+        if module_py.is_file():
             return module_py
 
         return None
@@ -535,7 +535,7 @@ class SetupPY(SetupFile):
             # The file is decoded as utf-8-sig because plain utf-8 has proven to be problematic with certain sources from pypi:
             # https://github.com/hermetoproject/pybuild-deps/blob/4dc40ffabddb8aad1279978b8741111fb64452e6/src/pybuild_deps/finder.py#L45-L51
             return ast.parse(
-                self._setup_file.path.read_text(encoding="utf-8-sig"), self._setup_file.path.name
+                self._setup_file.read_text(encoding="utf-8-sig"), self._setup_file.name
             )
         except SyntaxError as e:
             log.error("Syntax error when parsing setup.py: %s", e)
