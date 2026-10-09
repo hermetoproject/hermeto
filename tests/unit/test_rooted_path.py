@@ -123,6 +123,11 @@ def test_rooted_path_eq() -> None:
     assert a == RootedPath("/some/directory").join_within_root("subpath")
 
 
+def test_truediv_delegates_to_join_within_root(test_path: Path) -> None:
+    rp = RootedPath(test_path)
+    assert rp / "subpath" == rp.join_within_root("subpath")
+
+
 @pytest.mark.parametrize(
     "attr",
     [
