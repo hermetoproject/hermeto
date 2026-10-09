@@ -178,11 +178,11 @@ class GitDependency(_GemMetadata):
         short_ref = self.ref[:short_ref_length]
 
         git_repo_path = deps_dir.join_within_root(f"{self.repo_name}-{short_ref}")
-        if git_repo_path.path.exists():
+        if git_repo_path.exists():
             log.info("Skipping existing git repository %s", self.url)
             return
 
-        git_repo_path.path.mkdir(parents=True)
+        git_repo_path.mkdir(parents=True)
 
         log.info("Cloning git repository %s", self.url)
         GitRepo.clone_from(

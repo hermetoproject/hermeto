@@ -495,7 +495,7 @@ def _download_dependencies(
     validate_requirements_hashes(requirements_file.requirements, require_hashes)
 
     pip_deps_dir: RootedPath = output_dir.join_within_root("deps", "pip")
-    pip_deps_dir.path.mkdir(parents=True, exist_ok=True)
+    pip_deps_dir.mkdir(parents=True, exist_ok=True)
 
     pypi_reqs: list[PipRequirement] = []
     for req in requirements_file.requirements:
@@ -555,7 +555,7 @@ def _download_from_requirement_files(
     """
     requirements: list[PipPackage] = []
     for req_file in files:
-        if not req_file.path.exists():
+        if not req_file.exists():
             raise LockfileNotFound(
                 files=req_file.path,
                 solution="Please check that you have specified correct requirements file paths",
@@ -577,7 +577,7 @@ def _default_requirement_file_list(path: RootedPath, devel: bool = False) -> lis
     """
     filename = DEFAULT_BUILD_REQUIREMENTS_FILE if devel else DEFAULT_REQUIREMENTS_FILE
     req = path.join_within_root(filename)
-    return [req] if req.path.is_file() else []
+    return [req] if req.is_file() else []
 
 
 def _resolve_pip(

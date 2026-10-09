@@ -475,7 +475,7 @@ def fetch_gomod_source(request: Request) -> RequestOutput:
             raise
 
     gomod_download_dir = request.output_dir.join_within_root("deps/gomod/pkg/mod/cache/download")
-    gomod_download_dir.path.mkdir(exist_ok=True, parents=True)
+    gomod_download_dir.mkdir(exist_ok=True, parents=True)
 
     with GoCacheTemporaryDirectory(prefix=f"{APP_NAME}-") as tmp_dir:
         for subpath in subpaths:
@@ -825,7 +825,7 @@ def _resolve_gomod(
     :raises PackageManagerError: if fetching dependencies fails
     """
     _protect_against_symlinks(app_dir)
-    should_vendor = app_dir.join_within_root("vendor").path.is_dir()
+    should_vendor = app_dir.join_within_root("vendor").is_dir()
 
     with TemporaryDirectory() as temp_netrc_dir:
         run_params = _prepare_run_params(
@@ -963,13 +963,13 @@ def _parse_go_sum(go_sum: RootedPath) -> frozenset[ModuleID]:
     A module is considered present if the checksum for its .zip file is present. The go.mod file
     checksums are not relevant for our purposes.
     """
-    if not go_sum.path.exists():
+    if not go_sum.exists():
         return frozenset()
 
     modules: list[ModuleID] = []
 
     # https://github.com/golang/go/blob/d5c5808534f0ad97333b1fd5fff81998f44986fe/src/cmd/go/internal/modfetch/fetch.go#L507-L534
-    lines = go_sum.path.read_text().splitlines()
+    lines = go_sum.read_text().splitlines()
     for i, go_sum_line in enumerate(lines):
         parts = go_sum_line.split()
         if not parts:
@@ -1170,7 +1170,7 @@ class ModuleVersionResolver:
         if app_dir.path == app_dir.root:
             subpath = None
         else:
-            subpath = app_dir.path.relative_to(app_dir.root).as_posix()
+            subpath = app_dir.relative_to(app_dir.root).as_posix()
 
         tag_on_commit = self._get_highest_semver_tag_on_current_commit(
             major_versions_to_try, subpath
@@ -1368,7 +1368,7 @@ def _validate_local_replacements(modules: Iterable[ParsedModule], app_path: Root
 def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
     """Parse modules from vendor/modules.txt."""
     modules_txt = context_dir.join_within_root("vendor", "modules.txt")
-    if not modules_txt.path.exists():
+    if not modules_txt.exists():
         return []
 
     def fail_for_unexpected_format(msg: str) -> NoReturn:
@@ -1409,7 +1409,7 @@ def _parse_vendor(context_dir: RootedPath) -> Iterable[ParsedModule]:
     modules: list[ParsedModule] = []
     module_has_packages: list[bool] = []
 
-    for line in modules_txt.path.read_text().splitlines():
+    for line in modules_txt.read_text().splitlines():
         if line.startswith("# "):  # module line
             modules.append(parse_module_line(line))
             module_has_packages.append(False)
