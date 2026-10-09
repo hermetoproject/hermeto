@@ -81,7 +81,7 @@ def _resolve_bundler_package(
 ) -> tuple[list[Component], list[tuple[DepName, FSDepName, DepURL]]]:
     """Process a request for a single bundler package."""
     deps_dir = output_dir.join_within_root("deps", "bundler")
-    deps_dir.path.mkdir(parents=True, exist_ok=True)
+    deps_dir.mkdir(parents=True, exist_ok=True)
     dependencies = parse_lockfile(package_dir, binary_filters)
     proxy_url = get_config().bundler.proxy_url
 

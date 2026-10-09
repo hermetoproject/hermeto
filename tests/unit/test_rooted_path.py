@@ -123,6 +123,93 @@ def test_rooted_path_eq() -> None:
     assert a == RootedPath("/some/directory").join_within_root("subpath")
 
 
+class TestTruediv:
+    """The / operator must behave identically to join_within_root."""
+
+    def test_basic_join(self, test_path: Path) -> None:
+        rp = RootedPath(test_path)
+        result = rp / "subpath"
+        assert_attrs(result, path=test_path / "subpath", root=test_path)
+
+    def test_chained_join(self, test_path: Path) -> None:
+        rp = RootedPath(test_path)
+        result = rp / "subpath" / ".."
+        assert_attrs(result, path=test_path, root=test_path)
+
+    @pytest.mark.parametrize(
+        "subpath",
+        [
+            pytest.param("..", id="parent-escape"),
+            pytest.param("/abspath", id="absolute-path"),
+            pytest.param("symlink-to-parent", id="symlink-escape"),
+        ],
+    )
+    def test_rejects_outside_root(self, test_path: Path, subpath: str) -> None:
+        with pytest.raises(PathOutsideRoot):
+            RootedPath(test_path) / subpath
+
+
+@pytest.mark.parametrize(
+    "attr",
+    [
+        pytest.param("name", id="name"),
+        pytest.param("stem", id="stem"),
+        pytest.param("suffix", id="suffix"),
+        pytest.param("exists", id="exists"),
+        pytest.param("is_dir", id="is_dir"),
+        pytest.param("is_file", id="is_file"),
+        pytest.param("as_posix", id="as_posix"),
+    ],
+)
+def test_passthrough_matches_inner_path(test_path: Path, attr: str) -> None:
+    rp = RootedPath(test_path)
+    rp_val = getattr(rp, attr)
+    path_val = getattr(test_path, attr)
+    if callable(rp_val):
+        assert rp_val() == path_val()
+    else:
+        assert rp_val == path_val
+
+
+def test_relative_to(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("subpath")
+    assert rp.relative_to(test_path) == Path("subpath")
+    assert rp.is_relative_to(test_path)
+
+
+def test_read_text(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.write_text("hello")
+    assert RootedPath(test_path).join_within_root("file.txt").read_text() == f.read_text()
+
+
+def test_write_text(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("file.txt")
+    rp.write_text("hello")
+    assert (test_path / "file.txt").read_text() == "hello"
+
+
+def test_open(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.write_text("hello")
+    rp = RootedPath(test_path).join_within_root("file.txt")
+    with rp.open() as fh:
+        assert fh.read() == "hello"
+
+
+def test_mkdir(test_path: Path) -> None:
+    rp = RootedPath(test_path).join_within_root("newdir")
+    rp.mkdir()
+    assert (test_path / "newdir").is_dir()
+
+
+def test_unlink(test_path: Path) -> None:
+    f = test_path / "file.txt"
+    f.touch()
+    RootedPath(test_path).join_within_root("file.txt").unlink()
+    assert not f.exists()
+
+
 def test_pydantic_integration() -> None:
     class SomeModel(pydantic.BaseModel):
         path: RootedPath

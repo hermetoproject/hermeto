@@ -34,7 +34,7 @@ def test_resolve_rpm_project_no_lockfile(rooted_tmp_path: RootedPath) -> None:
     with pytest.raises(LockfileNotFound):
         # MagicMock is to pass Path/str to LockfileNotFound and avoid TypeError
         mock_source_dir = mock.MagicMock()
-        mock_source_dir.join_within_root.return_value.path.exists.return_value = False
+        mock_source_dir.join_within_root.return_value.exists.return_value = False
         _resolve_rpm_project(mock_source_dir, mock.Mock())
 
 

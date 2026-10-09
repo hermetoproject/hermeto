@@ -48,14 +48,14 @@ class YarnRc(UserDict):
 
     def write(self) -> None:
         """Write the data to the yarnrc file."""
-        with self._path.path.open("w") as f:
+        with self._path.open("w") as f:
             yaml.safe_dump(self.data, f)
 
     @classmethod
     def from_file(cls, file_path: RootedPath) -> "YarnRc":
         """Parse the content of a yarnrc file."""
         try:
-            with file_path.path.open("r") as f:
+            with file_path.open("r") as f:
                 yarnrc_data = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise PackageRejected(
@@ -90,14 +90,14 @@ class Project(NamedTuple):
         """
         node_linker = self.yarn_rc.get("nodeLinker")
         if node_linker is None or node_linker == "pnp":
-            if self.yarn_cache.path.exists() and self.yarn_cache.path.is_dir():
+            if self.yarn_cache.exists() and self.yarn_cache.is_dir():
                 # in this case the cache folder will be populated with downloaded ZIP dependencies
                 return any(file.suffix == ".zip" for file in self.yarn_cache.path.iterdir())
 
         elif node_linker == "pnpm" or node_linker == "node-modules":
             # in this case the cache may or may not be populated with ZIP files because an expanded
             # node_modules directory tree just like with NPM is enough for zero installs to work
-            return self.source_dir.join_within_root("node_modules").path.exists()
+            return self.source_dir.join_within_root("node_modules").exists()
 
         return False
 
@@ -128,7 +128,7 @@ class Project(NamedTuple):
         """
         yarn_rc_path = source_dir.join_within_root(".yarnrc.yml")
 
-        if yarn_rc_path.path.exists():
+        if yarn_rc_path.exists():
             yarn_rc = YarnRc.from_file(yarn_rc_path)
         else:
             yarn_rc = YarnRc(yarn_rc_path, {})

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import os
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import IO, Any, TypeVar
 
 from pydantic_core import CoreSchema, core_schema
 
@@ -33,6 +33,9 @@ class RootedPath(os.PathLike[str]):
 
     The join_within_root method remembers the original root. See the join_within_root
     and re_root docstrings for more details.
+
+    Exposes common Path queries (exists, is_dir, name, stem, etc.) directly so
+    callers need not reach through the .path accessor for everyday operations.
 
     Implements the PathLike interface -> most stdlib methods that accept paths will work
     with a RootedPath as well.
@@ -87,6 +90,90 @@ class RootedPath(os.PathLike[str]):
 
     def __hash__(self) -> int:
         return hash((self._path, self._root))
+
+    def __truediv__(self: RootedPathT, other: StrPath) -> RootedPathT:
+        """Join via ``join_within_root``; raises PathOutsideRoot on escape."""
+        return self.join_within_root(other)
+
+    # Path operations delegated directly to the inner path. Only operations
+    # that act on the path itself are exposed; navigating operations that
+    # return new paths (e.g. parent, iterdir, glob) are deliberately excluded
+    # as they would return unrooted Path objects.
+
+    @property
+    def name(self) -> str:
+        """Return the final component of the path."""
+        return self._path.name
+
+    @property
+    def stem(self) -> str:
+        """Return the final component without its suffix."""
+        return self._path.stem
+
+    @property
+    def suffix(self) -> str:
+        """Return the file extension of the final component."""
+        return self._path.suffix
+
+    def exists(self) -> bool:
+        """Return whether the path points to an existing filesystem entry."""
+        return self._path.exists()
+
+    def is_dir(self) -> bool:
+        """Return whether the path points to a directory."""
+        return self._path.is_dir()
+
+    def is_file(self) -> bool:
+        """Return whether the path points to a regular file."""
+        return self._path.is_file()
+
+    def is_relative_to(self, other: StrPath) -> bool:
+        """Return whether this path is relative to *other*."""
+        return self._path.is_relative_to(other)
+
+    def relative_to(self, other: StrPath) -> Path:
+        """Return a relative version of this path against *other*."""
+        return self._path.relative_to(other)
+
+    def as_posix(self) -> str:
+        """Return the path as a POSIX string."""
+        return self._path.as_posix()
+
+    def read_text(self, encoding: str | None = None, errors: str | None = None) -> str:
+        """Open the file, read it, and return the contents as a string."""
+        return self._path.read_text(encoding=encoding, errors=errors)
+
+    def write_text(
+        self,
+        data: str,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> int:
+        """Open the file, write to it, and return the number of characters written."""
+        return self._path.write_text(data, encoding=encoding, errors=errors, newline=newline)
+
+    def open(
+        self,
+        mode: str = "r",
+        buffering: int = -1,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> IO[Any]:
+        """Open the file and return a file object."""
+        return self._path.open(
+            mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline
+        )
+
+    # Default mode mirrors pathlib.Path.mkdir — https://github.com/python/cpython/blob/3.10/Lib/pathlib.py#L1152
+    def mkdir(self, mode: int = 0o777, parents: bool = False, exist_ok: bool = False) -> None:
+        """Create this directory."""
+        self._path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
+
+    def unlink(self, missing_ok: bool = False) -> None:
+        """Remove this file or symbolic link."""
+        self._path.unlink(missing_ok=missing_ok)
 
     def re_root(self: RootedPathT, *other: StrPath) -> RootedPathT:
         """Safely join other path components and make the result the new root.
