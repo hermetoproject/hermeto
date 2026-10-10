@@ -7,7 +7,7 @@ import types
 from collections.abc import Mapping
 from email.utils import parsedate_to_datetime
 from types import TracebackType
-from typing import Any, cast
+from typing import Any, Callable, cast
 from urllib.parse import urlparse
 
 import aiofiles
@@ -17,6 +17,7 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from typing_extensions import Self
 from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
@@ -33,6 +34,8 @@ SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 BACKOFF_FACTOR = 1.3
 STATUS_FORCELIST = (429, 500, 502, 503, 504)
 DEFAULT_CHUNK_SIZE = 65536  # 64KB
+TIMES_TO_RETRY_ON_READ_ERRORS = 5  # i.e. errors stemming from connection timeouts or drops
+TIMES_TO_RETRY_ON_CHUNKING_ERRORS = 5
 
 
 log = logging.getLogger(__name__)
@@ -155,6 +158,10 @@ def _get_pkg_requests_session() -> requests.Session:
                 status_forcelist=STATUS_FORCELIST,
                 allowed_methods=SAFE_REQUEST_METHODS,
                 total=max_retries,
+                # `read` enables retries for ConnectionTimeout and ProtocolError
+                # See https://github.com/urllib3/urllib3/blob/911bc94d227519483c82e516e2bf10860396afd5/src/urllib3/util/retry.py#L43
+                # for details.
+                read=TIMES_TO_RETRY_ON_READ_ERRORS,
             )
         )
         _pkg_requests_session.mount("http://", adapter)
@@ -163,6 +170,33 @@ def _get_pkg_requests_session() -> requests.Session:
     return _pkg_requests_session
 
 
+# The function is effectively internal, prefixing _ to everything creates noise, hence noqa
+def raise_fetch_error_when_retries_exhausted(url_extractor: Callable) -> Callable:  # noqa: D103
+    # url_extractor should know how to process arguments to the function that
+    # is being retied, namely it should be able to extract a URL from them.
+    # This looks like the only way to get it when retrying on certain types of
+    # errors.
+    # retry_state is hinted as Any to shut up mypy, "proper" hinting creates an
+    # incredible mess otherwise (in practice it is RetryCallState).
+    def raiser(retry_state: Any) -> None:
+        e = retry_state.outcome.exception()
+        url = url_extractor(retry_state)
+        raise FetchError(f"Could not download {url}") from e
+
+    return raiser
+
+
+# ChunkedEncodingError apparently happens after a connection was successfully made,
+# headers were received, some data were received and the connection closed. By this
+# time urllib3 appears to get past the retry mechanism that deals with ConnectionTimeout
+# or ProtocolError exceptions and thus a download fails without retry. This is why
+# an external retry is necessary here.
+@retry(
+    stop=stop_after_attempt(TIMES_TO_RETRY_ON_CHUNKING_ERRORS),
+    wait=wait_exponential(),
+    retry=retry_if_exception_type(requests.exceptions.ChunkedEncodingError),
+    retry_error_callback=raise_fetch_error_when_retries_exhausted(lambda rs: rs.args[0]),
+)
 def download_binary_file(
     url: str,
     download_path: StrPath,
@@ -193,6 +227,8 @@ def download_binary_file(
             for chunk in response.iter_content(chunk_size=chunk_size):
                 f.write(chunk)
 
+    except requests.exceptions.ChunkedEncodingError as e:
+        raise e
     except requests.RequestException as e:
         raise FetchError(f"Could not download {url}") from e
 
@@ -207,6 +243,14 @@ def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
     )
 
 
+# See comment to download_binary_file(), the same applies here
+# too with a correction for a different retry mechanism in use.
+@retry(
+    stop=stop_after_attempt(TIMES_TO_RETRY_ON_CHUNKING_ERRORS),
+    wait=wait_exponential(),
+    retry=retry_if_exception_type(aiohttp.client_exceptions.ClientPayloadError),
+    retry_error_callback=raise_fetch_error_when_retries_exhausted(lambda rs: rs.args[1]),
+)
 async def _async_download_binary_file(
     session: aiohttp_retry.RetryClient,
     url: str,
@@ -236,6 +280,8 @@ async def _async_download_binary_file(
                 async for chunk in response.content.iter_chunked(chunk_size):
                     await f.write(chunk)
 
+    except aiohttp.client_exceptions.ClientPayloadError as e:
+        raise e
     except Exception as e:
         raise FetchError(f"Could not download {url}") from e
 
