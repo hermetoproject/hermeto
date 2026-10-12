@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate
-        uses: docker://ghcr.io/renovatebot/renovate:44.133.0
+        uses: docker://ghcr.io/renovatebot/renovate:44.151.2
         with:
           entrypoint: renovate-config-validator
           args: --strict
