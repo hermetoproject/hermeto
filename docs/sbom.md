@@ -76,6 +76,8 @@ below lists all custom properties:
 | `hermeto:pip:package:build-dependency` | Pip package is a build-time dependency | When the package is required at build time |
 | `hermeto:rpm_modularity_label` | RPM modularity label | When the RPM has a modularity label |
 | `hermeto:rpm_summary` | RPM summary | [When you set `include_summary_in_sbom` to `true`](rpm.md#basic-options) |
+| `hermeto:uv:package:binary` | Uv package is a binary wheel | When the package is a binary wheel |
+| `hermeto:uv:package:build-dependency` | Uv package is a build-time dependency | When the package is required at build time |
 
 ### Backend and source information
 

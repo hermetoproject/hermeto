@@ -16,7 +16,7 @@ from hermeto.core.package_managers import (
     rpm,
 )
 from hermeto.core.package_managers.javascript import metayarn, npm, pnpm
-from hermeto.core.package_managers.python import pip
+from hermeto.core.package_managers.python import pip, uv
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import copy_directory
 
@@ -30,6 +30,7 @@ _package_managers: dict[PackageManagerType, Handler] = {
     "npm": npm.fetch_npm_source,
     "pip": pip.fetch_pip_source,
     "pnpm": pnpm.fetch_pnpm_source,
+    "x-uv": uv.fetch_uv_source,
     "yarn": metayarn.fetch_yarn_source,
     "generic": generic.fetch_generic_source,
     "rpm": rpm.fetch_rpm_source,
