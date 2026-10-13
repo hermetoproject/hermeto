@@ -257,6 +257,27 @@ See [tests/integration/README.md](tests/integration/README.md) for full details
 on running integration tests, available environment variables, adding new test
 scenarios and more.
 
+### Behavior tests
+
+User-visible behavior is specified in Gherkin before it is implemented. The
+specifications live in `features/*.feature` and the step definitions that bind
+them to hermeto in `tests/bdd/steps/`.
+
+Run the scenarios:
+
+```shell
+nox -s bdd
+```
+
+A specification is often written and reviewed before any step definition
+exists. `nox -s bdd` cannot check it in that state, because pytest-bdd only
+parses a feature file that a test module binds. Check the Gherkin syntax on its
+own with:
+
+```shell
+nox -s bdd-lint
+```
+
 ### Adding new dependencies to the project
 
 Sometimes when working on adding a new feature you may need to add a new dependency to the project.

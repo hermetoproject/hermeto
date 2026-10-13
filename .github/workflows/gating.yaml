@@ -47,6 +47,34 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  behavior:
+    name: Behavior tests
+    runs-on: ubuntu-latest
+
+    container:
+      image: python:3.11-slim
+
+    steps:
+      - name: Install dependencies
+        run: |
+          # We need to install git inside the container otherwise the checkout action will use Git
+          # REST API and the .git directory won't be present which fails due to setuptools-scm
+          apt-get update && apt-get install --no-install-recommends --no-install-suggests -y git
+          pip install --upgrade pip nox
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Runs first and independently of the scenarios: pytest-bdd only collects
+      # scenarios bound from a test module, so a feature file awaiting its step
+      # definitions is never parsed by the bdd session.
+      - name: Validate Gherkin syntax
+        run: nox -s bdd-lint
+
+      - name: Run behavior scenarios
+        run: nox -s bdd
+
   linters:
     name: Linters
     runs-on: ubuntu-latest

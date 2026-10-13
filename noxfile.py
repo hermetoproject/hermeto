@@ -103,6 +103,35 @@ def unit_tests(session: Session) -> None:
     session.run(*cmd.split(), *session.posargs, env=env)
 
 
+@nox.session(name="bdd-lint")
+def bdd_lint(session: Session) -> None:
+    """Validate Gherkin syntax without executing step definitions.
+
+    Used by the specification phase, where a .feature file is written and
+    reviewed before any step definitions exist. The bdd session cannot check
+    it: pytest-bdd only collects scenarios bound from a test module, so an
+    unbound feature file is never parsed and a syntax error goes unnoticed.
+    """
+    install_requirements(session)
+    session.run("python", "hack/bdd_lint.py")
+
+
+@nox.session(name="bdd")
+def bdd(session: Session) -> None:
+    """Run behavior scenarios."""
+    install_requirements(session)
+    # install the application package
+    session.install(".")
+    # disable color output in GitHub Actions
+    env = {"TERM": "dumb"} if os.getenv("CI") == "true" else None
+    cmd = "pytest --log-cli-level=WARNING tests/bdd"
+    # Exit code 5 is "no tests collected", which is the correct state while the
+    # suite is being bootstrapped and no scenario is bound yet. Drop this once
+    # the first step definitions land, otherwise an emptied tests/bdd/ passes
+    # silently. Feature files themselves are always checked by bdd-lint.
+    session.run(*cmd.split(), *session.posargs, env=env, success_codes=[0, 5])
+
+
 def _run_integration_tests(session: Session, env: dict[str, str]) -> None:
     install_requirements(session)
     cmd = "pytest --log-cli-level=WARNING tests/integration"
