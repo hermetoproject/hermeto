@@ -45,10 +45,13 @@ dev = [
 ]
 test = [
   "filelock",
+  # syntax-only Gherkin validation for specs that have no step definitions yet
+  "gherkin-official",
   "jsonschema",
   "podman-compose",
   "pytest",
   "pytest-asyncio",
+  "pytest-bdd",
   "pytest-cov",
   "pytest-env",
   "pytest-xdist",
@@ -151,5 +154,9 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 markers = [
   "no_proxy_mode: marks tests that are incompatible with HERMETO_TEST_LOCAL_NEXUS_PROXY=1",
+  # pytest-bdd turns Gherkin tags into pytest markers, and `strict` above rejects
+  # unregistered ones -- every tag used in features/ must be declared here
+  "slow: scenario is slow to execute",
+  "wip: scenario is work in progress and not expected to pass",
 ]
 tmp_path_retention_count = 1

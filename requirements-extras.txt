@@ -755,6 +755,12 @@ frozenlist==1.8.0 \
     # via
     #   aiohttp
     #   aiosignal
+gherkin-official==42.0.1 \
+    --hash=sha256:6bf291733d126712eb167f6f75be57931dd8b9c9eb606de28013f3669007ec06 \
+    --hash=sha256:adcc1f392d97dc044861bb645a614e335632330cc2653d23acb7097c923f75cd
+    # via
+    #   hermeto (pyproject.toml)
+    #   pytest-bdd
 ghp-import==2.1.0 \
     --hash=sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619 \
     --hash=sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343
@@ -938,6 +944,10 @@ mailbits==0.2.3 \
     --hash=sha256:13140be94825d440986dee0a6e653d81d3b4df4b0059fbdb6d78ba8ccb0c4ec0 \
     --hash=sha256:75082106ed1b9a19fdd86f73aee268b3662a42df5aa024a06018b1d1bedac7dc
     # via pypi-simple
+mako==1.4.3 \
+    --hash=sha256:723296007c870bfd6b3f0c3230dba7198096e5269297ebf5e4eff9e7ffa39d4f \
+    --hash=sha256:cd6537fe88d5fec315c55c2f8529bc4ce7a9a352ad7db3eeaa6a66e2dd4ec37a
+    # via pytest-bdd
 markdown==3.11 \
     --hash=sha256:180224db6aed87ba9ce1f2781ebcd5826253de8ff637112090e24b84502bbf9f \
     --hash=sha256:cd6c89e7eb308c8b332ed673215a52d208a43f8bacc030b1419376129408719e
@@ -1103,6 +1113,7 @@ markupsafe==3.0.4 \
     --hash=sha256:fdb4ca07ab75ffadab4a8b135ad59cdbb3156b99310f3d565370da74a15d6bd3
     # via
     #   jinja2
+    #   mako
     #   mkdocs
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
@@ -1385,11 +1396,22 @@ packaging==26.3 \
     #   nox
     #   pypi-simple
     #   pytest
+    #   pytest-bdd
     #   virtualenv
 paginate==0.5.7 \
     --hash=sha256:22bd083ab41e1a8b4f3690544afb2c60c25e5c9a63a30fa2f483f6c60c8e5945 \
     --hash=sha256:b885e2af73abcf01d9559fd5216b57ef722f8c42affbb63942377668e35c7591
     # via mkdocs-material
+parse==1.22.3 \
+    --hash=sha256:2cd33a301b5a4b400ee79952f42364fe486e5f10701fbf819fbbab1eab478139 \
+    --hash=sha256:7e79bb39c72c3bf1613510fd5cdffe5baa9a7873892bef1d4566f1672c8a42f4
+    # via
+    #   parse-type
+    #   pytest-bdd
+parse-type==0.6.6 \
+    --hash=sha256:3ca79bbe71e170dfccc8ec6c341edfd1c2a0fc1e5cfd18330f93af938de2348c \
+    --hash=sha256:513a3784104839770d690e04339a8b4d33439fcd5dd99f2e4580f9fc1097bfb2
+    # via pytest-bdd
 pathspec==1.1.1 \
     --hash=sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a \
     --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
@@ -1734,12 +1756,17 @@ pytest==9.1.1 \
     # via
     #   hermeto (pyproject.toml)
     #   pytest-asyncio
+    #   pytest-bdd
     #   pytest-cov
     #   pytest-env
     #   pytest-xdist
 pytest-asyncio==1.4.0 \
     --hash=sha256:933ca923a23075a87fb7070c0ec272a6848489824d887c85c812670932835aa1 \
     --hash=sha256:c6c0d2259945122819f171a32ecea2c349ead889ee28176caaf492143424be42
+    # via hermeto (pyproject.toml)
+pytest-bdd==9.0.0 \
+    --hash=sha256:e407a361d8a07bff7d37df2ae0bf93e6b3542ed57e2c6bb89ba46b786ac7984e \
+    --hash=sha256:f22450a98345590c2b3aac5ed3412662788e0a7afac34aa8d650c14445b87046
     # via hermeto (pyproject.toml)
 pytest-cov==7.1.0 \
     --hash=sha256:30674f2b5f6351aa09702a9c8c364f6a01c27aae0c1366ae8016160d1efc56b2 \
@@ -2035,7 +2062,9 @@ shellingham==1.5.4 \
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
-    # via python-dateutil
+    # via
+    #   parse-type
+    #   python-dateutil
 smmap==5.0.3 \
     --hash=sha256:4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c \
     --hash=sha256:c106e05d5a61449cf6ba9a1e650227ecfb141590d2a98412103ff35d89fc7b2f
@@ -2131,10 +2160,12 @@ typing-extensions==4.16.0 \
     #   aiohttp
     #   aiosignal
     #   beautifulsoup4
+    #   gherkin-official
     #   mypy
     #   pydantic
     #   pydantic-core
     #   pytest-asyncio
+    #   pytest-bdd
     #   referencing
     #   typing-inspection
 typing-inspection==0.4.4 \
