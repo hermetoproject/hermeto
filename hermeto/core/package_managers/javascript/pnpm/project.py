@@ -33,7 +33,11 @@ class PnpmLock(UserDict):
 
         try:
             with path.open() as f:
-                data = yaml.safe_load(f)
+                # Since pnpm 12, pnpm-lock.yaml may be a multi-document YAML stream: an
+                # optional leading "env" document precedes the project's dependency graph,
+                # which is always the last document. The last document is also the only one
+                # for the single-document lockfiles of pnpm <= 11. https://pnpm.io/lockfile
+                documents = [doc for doc in yaml.safe_load_all(f) if doc is not None]
         except yaml.YAMLError as e:
             raise InvalidLockfileFormat(
                 path,
@@ -41,7 +45,9 @@ class PnpmLock(UserDict):
                 solution="The pnpm-lock.yaml file must contain valid YAML.",
             )
 
-        return cls(path, data)
+        # Fall back to an empty mapping for an empty file to preserve the old behavior:
+        # the missing lockfileVersion is reported instead of crashing on the lookup below.
+        return cls(path, documents[-1] if documents else {})
 
     @classmethod
     def from_dir(cls, path: Path) -> "PnpmLock":
