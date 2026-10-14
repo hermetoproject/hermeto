@@ -261,7 +261,16 @@ def _get_aiohttp_timeout() -> aiohttp.ClientTimeout:
     )
 
 
-async def _async_download_binary_file(
+# See comment to _download_binary_file(), the same applies here
+# too with a correction for a different retry mechanism in use.
+@retry(
+    stop=stop_after_attempt_with_attempt_number_evalutaion_deferred(),
+    wait=wait_exponential(),
+    retry=retry_if_exception_type(aiohttp.client_exceptions.ClientPayloadError),
+    retry_error_callback=_raise_fetch_error_when_retries_exhausted,
+)
+async def _async_download_binary_file_with_retry(
+    *,
     session: aiohttp_retry.RetryClient,
     url: str,
     download_path: StrPath,
@@ -290,8 +299,29 @@ async def _async_download_binary_file(
                 async for chunk in response.content.iter_chunked(chunk_size):
                     await f.write(chunk)
 
+    except aiohttp.client_exceptions.ClientPayloadError:
+        raise
     except Exception as e:
         raise FetchError(f"Could not download {url}") from e
+
+
+async def _async_download_binary_file(
+    session: aiohttp_retry.RetryClient,
+    url: str,
+    download_path: StrPath,
+    headers: dict[str, str] | None = None,
+    ssl_context: ssl.SSLContext | None = None,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+) -> None:
+    """A wrapper to _async_download_binary_file_with_retry pinning values to keywords."""
+    await _async_download_binary_file_with_retry(
+        session=session,
+        url=url,
+        download_path=download_path,
+        headers=headers,
+        ssl_context=ssl_context,
+        chunk_size=chunk_size,
+    )
 
 
 def _aiohttp_create_retry_trace_config(
