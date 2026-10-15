@@ -72,6 +72,7 @@ directory:
 A scenario comprises:
 - `in/` - input files (lockfiles, application source code, Containerfile, etc.)
 - `out/`- expected output files (generated SBOM, intermediary artifacts, etc.)
+- `repo.yaml` (optional) - synthetic Git repository settings, including submodules and tags
 
 See [Generating test data](#generating-test-data) on how to generate the
 expected outputs for new scenarios.
@@ -89,6 +90,37 @@ bundler_e2e_ruby33/
     ├── bom.json
     └── .build-config.yaml
 ```
+
+### Synthetic Git repositories
+
+Files used as integration-test data, such as application source code and
+lockfiles, are stored in this repository under each scenario's `in/` directory.
+This lets changes to Hermeto and the corresponding test data be made and reviewed
+together, without coordinating changes across separately hosted test
+repositories.
+
+The test framework turns these files into temporary Git repositories with deterministic
+commits. This supports testing behavior that depends on Git metadata, such as Go module
+versions and some package identities in the SBOMs. Stable placeholder origin URLs
+identify the fixtures in SBOMs; Git fetches use local origins. Other dependency downloads
+may still use the network.
+
+By default, a scenario creates one repository from `in/` with no tags or
+submodules. To customize it, place `repo.yaml` beside `in/` and `out/`. Omitted
+settings retain their defaults. For example, a scenario that only needs a tag can use:
+
+```yaml
+tags: [v1.2.3]
+```
+
+For submodules or other settings, copy the [commented template](repo.yaml.example)
+as the scenario's `repo.yaml` and adapt its source directories, origins, and tags.
+Each repository's tags are configured independently and point to its assembled
+commit.
+
+Changes to source files or repository settings can affect expected SBOMs.
+[Regenerate the affected expected outputs](#generating-test-data) after making
+these changes.
 
 ### Best practices
 

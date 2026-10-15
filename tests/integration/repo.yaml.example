@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Copy this file to a scenario directory as repo.yaml, beside in/ and out/.
+# Adapt the source directories, origins, and tags; omit unneeded settings.
+# Source paths are relative to the scenario directory; create them with the
+# files for each repository. Each repository gets one deterministic commit.
+
+# Main repository source directory, relative to the scenario directory.
+# Defaults to in/. Separate sources keep submodule files out of the parent tree.
+source_dir: in/parent
+
+# Optional reporting identity; the value below is the default.
+# Git fetches are redirected to a temporary local origin, even with an override.
+# Use distinct URLs for different repositories so fetches resolve unambiguously.
+canonical_origin_url: https://git.example.invalid/hermeto-tests/scenario.git
+
+# Optional lightweight tags on the assembled parent commit. Defaults to [].
+tags:
+  - v1.2.3
+
+# Optional submodules to add before committing the parent. Defaults to [].
+# Nested submodule configuration is not supported.
+submodules:
+  # Each submodule requires its own source directory and installation path.
+  - source_dir: in/library
+    # Installation path relative to the parent repository.
+    path_in_parent: deps/library
+    # Optional; defaults to https://git.example.invalid/hermeto-tests/submodules/{path_in_parent}.git.
+    canonical_origin_url: https://git.example.invalid/hermeto-tests/submodules/deps/library.git
+    # Optional tags on this submodule's commit. Defaults to [].
+    tags:
+      - v0.4.0
+
+  - source_dir: in/tooling
+    path_in_parent: tools
+    # A scenario can override each repository's reporting identity independently.
+    canonical_origin_url: https://git.example.invalid/example/tooling.git
+    tags:
+      - v1.2.3
