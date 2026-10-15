@@ -69,8 +69,7 @@ def test_yarn_classic_packages(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
@@ -98,8 +97,7 @@ def test_yarn_classic_offline_mirror_collision(
         expected_error=ExitError.ERR_PACKAGE_MANAGER,
         expected_output="Tarball collision in the offline mirror",
     )
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
@@ -140,8 +138,7 @@ def test_e2e_yarn_classic(
 ) -> None:
     """End to end test for yarn classic."""
     test_case = request.node.callspec.id
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image

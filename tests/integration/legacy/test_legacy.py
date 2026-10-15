@@ -58,8 +58,9 @@ def test_e2e_cargo(
     TODO: Drop this when we no longer support the legacy entrypoint.
     """
     test_case = request.node.callspec.id
-    source_dir = CARGO_SCENARIOS_DIR / "cargo_mixed_git_crate_dependency" / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(
+        tmp_path, CARGO_SCENARIOS_DIR / "cargo_mixed_git_crate_dependency"
+    )
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path,

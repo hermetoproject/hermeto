@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+source_dir: in/parent
+submodules:
+  - path_in_parent: integration-tests
+    source_dir: in/submodule
