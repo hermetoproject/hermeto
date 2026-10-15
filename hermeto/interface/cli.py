@@ -165,6 +165,7 @@ def version_callback(value: bool) -> None:
 @app.callback()
 @handle_errors
 def main(  # noqa: D103 -- docstring becomes part of --help message
+    ctx: typer.Context,
     version: bool = typer.Option(  # noqa: ARG001
         False,
         "--version",
@@ -199,12 +200,27 @@ def main(  # noqa: D103 -- docstring becomes part of --help message
     ),
 ) -> None:
     setup_logging(log_level, color=color)
-    if config_file:
-        config = set_config(config_file)
-    else:
-        config = get_config()
-    # Typer ensures `mode` is already a valid Mode enum value
-    config.mode = mode
+    # Pass the CLI config path to subcommands via ctx.obj so they can forward
+    # it to get_source_data() without relying on module-level global state.
+    ctx.ensure_object(dict)
+    ctx.obj["config_file"] = config_file
+    # For the `config` subcommand we deliberately defer validation errors so
+    # that the command can still display source annotations to help diagnose
+    # where the bad value originated.
+    is_config_cmd = ctx.invoked_subcommand == "config"
+    try:
+        if config_file:
+            loaded_config = set_config(config_file)
+        else:
+            loaded_config = get_config()
+        # Typer ensures `mode` is already a valid Mode enum value
+        loaded_config.mode = mode
+    except InvalidInput as e:
+        if not is_config_cmd:
+            e.solution = f"Run '{APP_NAME.lower()} config' to diagnose the issue."
+            raise
+        ctx.obj["config_error"] = str(e)
+        log.debug("Config validation failed, the config subcommand will display raw source data")
 
 
 def _if_json_then_validate(value: str) -> str:
