@@ -8,28 +8,6 @@ from tests.integration import utils
 
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 
-_SUBMODULE_SCENARIOS = {
-    "gomod_correct_vendor_in_submodule_passes_vendor_check",
-    "gomod_wrong_vendor_in_submodule_fails_vendor_check",
-}
-
-
-def _create_repo(tmp_path: Path, test_case: str) -> Path:
-    """Create a synthetic repo, handling submodule scenarios transparently."""
-    scenario_dir = SCENARIOS_DIR / test_case
-    if test_case in _SUBMODULE_SCENARIOS:
-        return utils.create_synthetic_repo(
-            tmp_path,
-            scenario_dir / "in" / "parent",
-            submodules=[
-                utils.SyntheticSubmoduleSpec(
-                    source_dir=scenario_dir / "in" / "submodule",
-                    path_in_parent="integration-tests",
-                ),
-            ],
-        )
-    return utils.create_synthetic_repo(tmp_path, scenario_dir / "in")
-
 
 @pytest.mark.parametrize(
     "test_params",
@@ -146,7 +124,7 @@ def test_gomod_packages(
 ) -> None:
     """Test fetched dependencies for gomod."""
     test_case = request.node.callspec.id
-    repo_dir = _create_repo(tmp_path, test_case)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
@@ -226,7 +204,7 @@ def test_e2e_gomod(
 ) -> None:
     """End to end test for gomod."""
     test_case = request.node.callspec.id
-    repo_dir = _create_repo(tmp_path, test_case)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image

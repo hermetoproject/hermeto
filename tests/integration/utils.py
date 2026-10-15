@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import jsonschema
+import pydantic
 import requests
 import yaml
 
@@ -35,12 +36,36 @@ log = logging.getLogger(__name__)
 container_engine = get_container_engine()
 
 
-@dataclass
-class SyntheticSubmoduleSpec:
-    """Specification for a submodule to embed inside a synthetic parent repo."""
+class SyntheticSubmoduleConfig(pydantic.BaseModel):
+    """Source, path within the parent repo, and canonical origin for a submodule."""
 
-    source_dir: Path
+    model_config = pydantic.ConfigDict(extra="forbid", strict=True)
+
+    source_dir: str
     path_in_parent: str
+    canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git"
+
+
+class SyntheticRepoConfig(pydantic.BaseModel):
+    """Main repository settings and independently configured submodules."""
+
+    model_config = pydantic.ConfigDict(extra="forbid", strict=True)
+
+    source_dir: str = "in"
+    canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git"
+    submodules: list[SyntheticSubmoduleConfig] = pydantic.Field(default_factory=list)
+
+    @classmethod
+    def from_scenario(cls, scenario_dir: Path) -> "SyntheticRepoConfig":
+        """Load repository settings from the scenario's optional repo.yaml."""
+        config_path = scenario_dir / "repo.yaml"
+        try:
+            data = yaml.safe_load(config_path.read_text()) if config_path.exists() else None
+            return cls.model_validate({} if data is None else data)
+        except (pydantic.ValidationError, yaml.YAMLError) as exc:
+            raise ValueError(
+                f"Cannot configure synthetic repository from {config_path}: {exc}"
+            ) from exc
 
 
 _SYNTHETIC_REPO_GIT_ENV = {
@@ -103,8 +128,7 @@ def _add_synthetic_submodule(
     parent_repo: GitRepo,
     parent_repo_path: Path,
     child_path: Path,
-    canonical_origin_url: str,
-    submodule: SyntheticSubmoduleSpec,
+    submodule: SyntheticSubmoduleConfig,
 ) -> None:
     # .gitmodules and the cloned submodule both record the local
     # tmp path which changes per run; replace with the canonical origin so
@@ -113,11 +137,13 @@ def _add_synthetic_submodule(
     with parent_repo.git.custom_environment(**_SYNTHETIC_REPO_GIT_ENV):
         parent_repo.git.submodule("add", str(child_path), submodule.path_in_parent)
         parent_repo.git.config(
-            f"submodule.{submodule.path_in_parent}.url", canonical_origin_url, file=".gitmodules"
+            f"submodule.{submodule.path_in_parent}.url",
+            submodule.canonical_origin_url,
+            file=".gitmodules",
         )
 
     submodule_repo = GitRepo(parent_repo_path / submodule.path_in_parent)
-    submodule_repo.remotes.origin.set_url(canonical_origin_url)
+    submodule_repo.remotes.origin.set_url(submodule.canonical_origin_url)
 
 
 def _default_hermeto_env() -> dict[str, str]:
@@ -352,28 +378,23 @@ def _fetch_cyclone_dx_schema() -> dict[str, Any]:
 
 def create_synthetic_repo(
     tmp_path: Path,
-    source_dir: Path,
-    *,
-    canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git",
-    submodules: Sequence[SyntheticSubmoduleSpec] = (),
+    scenario_dir: Path,
 ) -> Path:
-    """Create a deterministic synthetic git repo from scenario source files."""
+    """Create a deterministic Git repo using the scenario's optional repo.yaml settings."""
+    config = SyntheticRepoConfig.from_scenario(scenario_dir)
     parent_repo_path = tmp_path / "repo"
     parent_repo = _initialize_synthetic_repo_from_source(
-        source_dir, parent_repo_path, canonical_origin_url
+        scenario_dir / config.source_dir, parent_repo_path, config.canonical_origin_url
     )
     _commit_synthetic_repo(parent_repo, "test scenario")
 
-    for submodule in submodules:
+    for submodule in config.submodules:
         child_path = tmp_path / f"submodule-{submodule.path_in_parent}"
-        # Child repos currently reuse the parent's canonical origin to preserve existing fixture data.
         child_repo = _initialize_synthetic_repo_from_source(
-            submodule.source_dir, child_path, canonical_origin_url
+            scenario_dir / submodule.source_dir, child_path, submodule.canonical_origin_url
         )
         _commit_synthetic_repo(child_repo, "test scenario")
-        _add_synthetic_submodule(
-            parent_repo, parent_repo_path, child_path, canonical_origin_url, submodule
-        )
+        _add_synthetic_submodule(parent_repo, parent_repo_path, child_path, submodule)
         _commit_synthetic_repo(parent_repo, f"add submodule {submodule.path_in_parent}")
 
     return parent_repo_path
