@@ -25,8 +25,8 @@
         "pkg:golang/encoding?type=package",
         "pkg:golang/errors?type=package",
         "pkg:golang/fmt?type=package",
-        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
-        "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+        "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+        "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
         "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=module",
         "pkg:golang/github.com/sirupsen/logrus@v1.9.3?type=package",
         "pkg:golang/github.com/stretchr/testify@v1.10.0?type=module",
@@ -104,7 +104,7 @@
         }
       },
       "subjects": [
-        "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
+        "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
         "pkg:npm/react@19.1.0"
       ],
       "text": "hermeto:backend:npm",
@@ -458,7 +458,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
       "name": "example.com/greetings",
       "properties": [
         {
@@ -466,12 +466,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=module&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
       "type": "library",
       "version": "v0.0.0-19700101000000-de2838e3dae3"
     },
     {
-      "bom-ref": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+      "bom-ref": "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
       "name": "example.com/greetings",
       "properties": [
         {
@@ -479,7 +479,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:golang/github.com/hermetoproject/hermeto/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
+      "purl": "pkg:golang/git.example.invalid/hermeto-tests/scenario/gomod-package@v0.0.0-19700101000000-de2838e3dae3?type=package&vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5",
       "type": "library",
       "version": "v0.0.0-19700101000000-de2838e3dae3"
     },
@@ -1281,7 +1281,7 @@
       "type": "library"
     },
     {
-      "bom-ref": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
+      "bom-ref": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
       "name": "npm-package",
       "properties": [
         {
@@ -1289,7 +1289,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
+      "purl": "pkg:npm/npm-package@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40de2838e3dae3f302eb7bc696555e37802ff213f5#npm-package",
       "type": "library",
       "version": "1.0.0"
     },

@@ -25,7 +25,6 @@
         "pkg:gem/date@3.3.4",
         "pkg:gem/erubi@1.13.0",
         "pkg:gem/globalid@1.2.1",
-        "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
         "pkg:gem/i18n@1.14.5",
         "pkg:gem/json-schema@3.0.0?vcs_url=git%2Bhttps://github.com/3scale/json-schema%4026487618a68443e94d623bb585cb464b07d36702",
         "pkg:gem/loofah@2.22.0",
@@ -50,6 +49,7 @@
         "pkg:gem/rails@6.1.7",
         "pkg:gem/railties@6.1.7",
         "pkg:gem/rake@13.2.1",
+        "pkg:gem/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
         "pkg:gem/sprockets-rails@3.5.2",
         "pkg:gem/sprockets@4.2.1",
         "pkg:gem/thor@1.3.1",
@@ -298,18 +298,6 @@
       "purl": "pkg:gem/globalid@1.2.1",
       "type": "library",
       "version": "1.2.1"
-    },
-    {
-      "bom-ref": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
-      "name": "hermeto",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:gem/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
-      "type": "library"
     },
     {
       "bom-ref": "pkg:gem/i18n@1.14.5",
@@ -626,6 +614,18 @@
       "purl": "pkg:gem/rake@13.2.1",
       "type": "library",
       "version": "13.2.1"
+    },
+    {
+      "bom-ref": "pkg:gem/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
+      "name": "scenario",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:gem/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%401bb3dc725d760c55e5043999403aa022b14fdabc",
+      "type": "library"
     },
     {
       "bom-ref": "pkg:gem/sprockets-rails@3.5.2",
