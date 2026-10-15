@@ -19,6 +19,7 @@ from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
+    SettingsError,
     YamlConfigSettingsSource,
 )
 
@@ -351,6 +352,18 @@ def _present_config_error(validation_error: ValidationError) -> str:
     )
 
 
+def _present_settings_error(settings_error: SettingsError) -> str:
+    """Format pydantic-settings source errors into an actionable message."""
+    msg = str(settings_error)
+    # SettingsError format: 'error parsing value for field "http" from source "EnvSettingsSource"'
+    field = msg.split('"')[1] if '"' in msg else "unknown"
+
+    return (
+        f"Failed to parse environment variable for the '{field}' section. "
+        f"Nested sections must be valid JSON when set via environment variables."
+    )
+
+
 def get_config() -> Config:
     """Get the configuration singleton."""
     global config
@@ -360,6 +373,8 @@ def get_config() -> Config:
             config = Config()
         except ValidationError as e:
             raise InvalidInput(_present_config_error(e)) from e
+        except SettingsError as e:
+            raise InvalidInput(_present_settings_error(e)) from e
 
     return config
 
@@ -372,8 +387,17 @@ def set_config(path: Path) -> Config:
         Config.model_validate(yaml.safe_load(path.read_text()))
     except ValidationError as e:
         raise InvalidInput(_present_config_error(e)) from e
+    except yaml.YAMLError as e:
+        # Only report file path and location, never raw snippets — secrets
+        # in the file must not leak into error output (GHSA-w9qc-9m5h-qqmh).
+        mark = getattr(e, "problem_mark", None)
+        location = f" at line {mark.line + 1}, column {mark.column + 1}" if mark is not None else ""
+        raise InvalidInput(f"Invalid YAML in configuration file {path}{location}") from e
 
     # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
     cli_config_class = create_cli_config_class(path)
-    config = cli_config_class()
+    try:
+        config = cli_config_class()
+    except SettingsError as e:
+        raise InvalidInput(_present_settings_error(e)) from e
     return config
