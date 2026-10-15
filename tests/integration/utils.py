@@ -57,7 +57,7 @@ class SyntheticRepoConfig(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(extra="forbid", strict=True)
 
     source_dir: str = "in"
-    canonical_origin_url: str = "https://github.com/hermetoproject/hermeto.git"
+    canonical_origin_url: str = "https://git.example.invalid/hermeto-tests/scenario.git"
     tags: list[str] = pydantic.Field(default_factory=list)
     submodules: list[SyntheticSubmoduleConfig] = pydantic.Field(default_factory=list)
 
