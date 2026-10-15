@@ -312,7 +312,17 @@ class WheelsFilter(BinaryPackageFilter):
         - multiple fields are combined with AND logic
         - if a field is not provided (None), it is treated as `:all:` and treated as a match
         """
-        self.packages = self._parse_filter_spec(filters.packages)
+        package_specs = [package.strip() for package in filters.packages.split(",")]
+        self.excluded_packages = {
+            canonicalize_name(package[1:]) for package in package_specs if package.startswith("!")
+        }
+
+        # Negative-only selections retain the implicit :all: default.
+        included_packages = set(package for package in package_specs if not package.startswith("!"))
+
+        self.packages = (
+            self._parse_filter_spec(",".join(included_packages)) if included_packages else None
+        )
         if self.packages is not None:
             self.packages = {canonicalize_name(package) for package in self.packages}
 
@@ -395,6 +405,8 @@ class WheelsFilter(BinaryPackageFilter):
 
     def package_policy(self, package: str) -> PackageFetchPolicy:
         """Wheel fetching policy."""
+        if package in self.excluded_packages:
+            return self.PackageFetchPolicy.NO_BINARY
         if self.packages is None:
             return self.PackageFetchPolicy.PREFER_BINARY
         if package in self.packages:

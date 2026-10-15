@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, TypeVar, Union
 
 import pydantic
+from packaging.utils import InvalidName, canonicalize_name
 
 from hermeto import APP_NAME
 from hermeto.core.errors import InvalidInput
@@ -206,6 +207,32 @@ class PipBinaryFilters(BinaryModeOptions):
     py_impl: BinaryFilterStr = "cp"
     abi: BinaryFilterStr = BINARY_FILTER_ALL
     platform: str | None = None
+
+    @pydantic.field_validator("packages")
+    @classmethod
+    def _validate_package_exclusions(cls, value: str) -> str:
+        included_packages: set[str] = set()
+        excluded_packages: set[str] = set()
+        for package in value.split(","):
+            package = package.strip()
+            if package.startswith("!"):
+                try:
+                    excluded_packages.add(canonicalize_name(package[1:], validate=True))
+                except InvalidName as e:
+                    raise ValueError(
+                        f"Invalid package exclusion: {package!r}. "
+                        "Use '!' followed by a Python package name, for example '!numpy'."
+                    ) from e
+            elif package != BINARY_FILTER_ALL:
+                included_packages.add(canonicalize_name(package))
+
+        if conflicts := included_packages & excluded_packages:
+            packages_str = ", ".join(conflicts)
+            raise ValueError(
+                f"Invalid 'packages' filter: '{packages_str}' both explicitly included and excluded."
+            )
+
+        return value
 
     @pydantic.model_validator(mode="after")
     def _validate_platform_exclusivity(self) -> Self:

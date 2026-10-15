@@ -15,6 +15,7 @@ from hermeto.core.package_managers.python.pip.package_distributions import (
     _sdist_preference,
     process_package_distributions,
 )
+from hermeto.core.package_managers.python.pip.requirements import PipRequirement
 from hermeto.core.rooted_path import RootedPath
 from tests.unit.package_managers.python.pip.test_main import (
     mock_distribution_package_info,
@@ -391,6 +392,94 @@ def test_process_package_distributions_noncanonical_version(
     assert artifacts[0].package_type == "sdist"
     assert artifacts[0].version == requested_version
     assert all(w.version == requested_version for w in artifacts[1:])
+
+
+@pytest.mark.parametrize(
+    "packages_filter, package, expected_package_types",
+    [
+        pytest.param("!foo", "foo", {"sdist"}, id="simple_exclusion"),
+        pytest.param(":all:,!foo", "foo", {"sdist"}, id="explicit_all_exclusion"),
+        pytest.param(":all:, !foo", "bar", {"sdist", "wheel"}, id="explicit_all_exclusion_other"),
+        pytest.param("!Foo_bar", "foo-bar", {"sdist"}, id="normalized_exclusion"),
+        pytest.param("foo,!bar", "foo", {"wheel"}, id="explicit_inclusion"),
+        pytest.param("foo,!bar", "baz", {"sdist"}, id="outside_of_filter"),
+    ],
+)
+@mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
+def test_process_package_distributions_with_binary_exclusions(
+    mock_get_project_page: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    packages_filter: str,
+    package: str,
+    expected_package_types: set[str],
+) -> None:
+    version = "1.0.0"
+    requirement = PipRequirement(f"{package}=={version}")
+    canonical_name = requirement.package
+    mock_get_project_page.return_value = pypi_simple.ProjectPage(
+        canonical_name,
+        [
+            mock_pypi_simple_distribution_package(f"{canonical_name}-{version}.tar.gz", version),
+            mock_pypi_simple_distribution_package(
+                f"{canonical_name.replace('-', '_')}-{version}-py3-none-any.whl",
+                version,
+                "wheel",
+            ),
+        ],
+        None,
+        None,
+    )
+
+    artifacts = process_package_distributions(
+        requirement, rooted_tmp_path, PipBinaryFilters(packages=packages_filter)
+    )
+
+    assert set(artifact.package_type for artifact in artifacts) == expected_package_types
+
+
+@pytest.mark.parametrize(
+    "packages_filter, arch, sdist_available, sdist_hash_matches",
+    [
+        pytest.param("!foo", "x86_64", False, True, id="excluded_without_sdist"),
+        pytest.param("!foo", "x86_64", True, False, id="excluded_no_matching_sdist_hash"),
+    ],
+)
+@mock.patch.object(pypi_simple.PyPISimple, "get_project_page")
+def test_process_binary_exclusions_with_missing_artifacts_fail(
+    mock_get_project_page: mock.Mock,
+    rooted_tmp_path: RootedPath,
+    packages_filter: str,
+    arch: str,
+    sdist_available: bool,
+    sdist_hash_matches: bool,
+) -> None:
+    name = "foo"
+    version = "1.0.0"
+    distributions = [
+        mock_pypi_simple_distribution_package(
+            f"{name}-{version}-cp312-cp312-manylinux_2_28_x86_64.whl",
+            version,
+            "wheel",
+            digests={"sha256": "wheel-hash"},
+        )
+    ]
+
+    if sdist_available:
+        distributions.append(
+            mock_pypi_simple_distribution_package(
+                f"{name}-{version}.tar.gz", version, digests={"sha256": "sdist-hash"}
+            )
+        )
+    mock_get_project_page.return_value = pypi_simple.ProjectPage(name, distributions, None, None)
+    req = mock_requirement(
+        name,
+        "pypi",
+        version_specs=[("==", version)],
+        hashes=["sha256:wheel-hash"] + (["sha256:sdist-hash"] if sdist_hash_matches else []),
+    )
+    filters = PipBinaryFilters(packages=packages_filter, arch=arch)
+    with pytest.raises(PackageRejected):
+        process_package_distributions(req, rooted_tmp_path, filters)
 
 
 class TestWheelsFilter:

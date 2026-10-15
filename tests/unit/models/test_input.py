@@ -530,6 +530,23 @@ class TestBinaryFilterValidation:
         with pytest.raises(ValueError, match=error_match):
             _validate_binary_filter_format(input_value)
 
+    @pytest.mark.parametrize(
+        "packages",
+        [
+            pytest.param("!", id="missing_package_name"),
+            pytest.param("!!foo", id="duplicate_exclusion_prefix"),
+            pytest.param("!:all:", id="all_keyword_exclusion"),
+            pytest.param("!bar*", id="wildcard_exclusion"),
+            pytest.param("!foo==1.0", id="version_specifier_exclusion"),
+            pytest.param("foo,!foo", id="exclusion_conflict"),
+            pytest.param("Foo_Bar, !foo-bar", id="normalize_exclusion_conflict"),
+            pytest.param(":all:,foo,!foo", id="all_with_exclusion_conflict"),
+        ],
+    )
+    def test_rejects_invalid_exclusions(self, packages: str) -> None:
+        with pytest.raises(pydantic.ValidationError):
+            PipBinaryFilters(packages=packages)
+
 
 class TestLegacyAllowBinary:
     """Test legacy allow_binary field migration functionality."""
