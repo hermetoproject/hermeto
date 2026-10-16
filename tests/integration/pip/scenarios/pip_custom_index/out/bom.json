@@ -7,8 +7,8 @@
         }
       },
       "subjects": [
-        "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
-        "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple"
+        "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple",
+        "pkg:pypi/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd"
       ],
       "text": "hermeto:backend:pip",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -16,18 +16,6 @@
   ],
   "bomFormat": "CycloneDX",
   "components": [
-    {
-      "bom-ref": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
-      "name": "hermeto",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:pypi/hermeto?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
-      "type": "library"
-    },
     {
       "bom-ref": "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple",
       "name": "requests",
@@ -44,6 +32,18 @@
       "purl": "pkg:pypi/requests@2.32.3?repository_url=https://127.0.0.1:8443/repository/pypi-proxy/simple",
       "type": "library",
       "version": "2.32.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
+      "name": "scenario",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40024b44e6158e7a34b8f12c3e9782086a90e01afd",
+      "type": "library"
     }
   ],
   "metadata": {

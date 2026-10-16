@@ -37,8 +37,7 @@ def test_generic_fetcher(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
@@ -83,8 +82,7 @@ def test_e2e_generic(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
@@ -155,8 +153,7 @@ def test_generic_auth(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
-    source_dir = SCENARIOS_DIR / test_case / "in"
-    repo_dir = utils.create_synthetic_repo(tmp_path, source_dir)
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     utils.fetch_deps_and_check_output(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
