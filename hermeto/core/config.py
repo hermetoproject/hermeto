@@ -418,3 +418,12 @@ def set_config(path: Path) -> Config:
     except SettingsError as e:
         raise InvalidInput(_present_settings_error(e)) from e
     return config
+
+
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:
+    """Merge *override* into *base* in-place, recursing into nested dicts."""
+    for key, value in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_merge(base[key], value)
+        else:
+            base[key] = value
