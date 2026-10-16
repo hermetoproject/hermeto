@@ -1,0 +1,74 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/packaging@24.0",
+        "pkg:pypi/pip-binary-exclusions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406c24f8c4db4fe59189007914c3bf32ff59840a5d",
+        "pkg:pypi/six@1.16.0"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/packaging@24.0",
+      "name": "packaging",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:pip:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/packaging@24.0",
+      "type": "library",
+      "version": "24.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/pip-binary-exclusions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406c24f8c4db4fe59189007914c3bf32ff59840a5d",
+      "name": "pip-binary-exclusions",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-binary-exclusions@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%406c24f8c4db4fe59189007914c3bf32ff59840a5d",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/six@1.16.0",
+      "name": "six",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/six@1.16.0",
+      "type": "library",
+      "version": "1.16.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

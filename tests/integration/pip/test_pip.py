@@ -137,6 +137,36 @@ def test_pip_packages(
     )
 
 
+def test_pip_binary_exclusions(
+    hermeto_image: utils.HermetoImage,
+    tmp_path: Path,
+) -> None:
+    test_case = "pip_binary_exclusions"
+    repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
+    test_params = utils.TestParameters(
+        packages=({"type": "pip", "binary": {"packages": "!six,!iniconfig"}},),
+        check_output=False,
+    )
+
+    utils.fetch_deps_and_check_output(
+        tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
+    )
+
+    deps_dir = tmp_path / utils.DEFAULT_OUTPUT / "deps" / "pip"
+    artifacts = set(artifact.name for artifact in deps_dir.iterdir())
+    artifact_types = set()
+    for artifact in artifacts:
+        extension = ".whl" if artifact.endswith(".whl") else ".tar.gz"
+        artifact_types.add((artifact.split("-", maxsplit=1)[0], extension))
+
+    assert artifact_types == {
+        ("six", ".tar.gz"),
+        ("iniconfig", ".tar.gz"),
+        ("editables", ".whl"),
+        ("editables", ".tar.gz"),
+    }
+
+
 @pytest.mark.parametrize(
     "test_params,check_cmd,expected_cmd_output",
     [
