@@ -5,6 +5,7 @@ import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from itertools import chain
 from pathlib import Path
 from typing import Literal, cast
@@ -189,24 +190,20 @@ def process_package_distributions(
     sdists = filter(lambda x: x.package_type == "sdist", packages)
     wheels = filter(lambda x: x.package_type == "wheel", packages)
 
-    # process only sdists if no binary filters are provided
-    if binary_filters is None:
-        allowed_distros = ["sdist"]
-        to_process = chain(sdists)
-    else:
+    policy = WheelsFilter.PackageFetchPolicy.NO_BINARY
+    to_process: Iterable[pypi_simple.DistributionPackage] = sdists
+
+    if binary_filters is not None:
         wheels_filter = WheelsFilter(binary_filters)
-        # process both sdists and wheels if no packages are provided in the binary filters
-        if wheels_filter.packages is None:
-            allowed_distros = ["sdist", "wheel"]
-            to_process = chain(sdists, wheels_filter.filter(wheels))
-        # process only wheels for packages in the binary filters
-        elif name in wheels_filter.packages:
-            allowed_distros = ["wheel"]
-            to_process = chain(wheels_filter.filter(wheels))
-        # process only sdists for packages NOT in the binary filters
-        else:
-            allowed_distros = ["sdist"]
-            to_process = chain(sdists)
+        policy = wheels_filter.package_policy(name)
+
+        match policy:
+            case WheelsFilter.PackageFetchPolicy.NO_BINARY:
+                pass
+            case WheelsFilter.PackageFetchPolicy.ONLY_BINARY:
+                to_process = wheels_filter.filter(wheels)
+            case WheelsFilter.PackageFetchPolicy.PREFER_BINARY:
+                to_process = chain(sdists, wheels_filter.filter(wheels))
 
     filtered_sdists: list[DistributionPackageInfo] = []
     filtered_wheels: list[DistributionPackageInfo] = []
@@ -235,10 +232,10 @@ def process_package_distributions(
         else:
             log.info("Filtering out %s due to checksum mismatch", package.filename)
 
-    if allowed_distros == ["sdist"]:
+    if policy is WheelsFilter.PackageFetchPolicy.NO_BINARY:
         return _process_no_binary_mode(filtered_sdists, name, version)
 
-    if allowed_distros == ["wheel"]:
+    if policy is WheelsFilter.PackageFetchPolicy.ONLY_BINARY:
         return _process_only_binary_mode(filtered_wheels, name, version)
 
     return _process_prefer_binary_mode(filtered_sdists, filtered_wheels, name, version)
@@ -303,6 +300,13 @@ def _process_only_binary_mode(
 
 class WheelsFilter(BinaryPackageFilter):
     """Filter PyPI wheels based on filter constraints."""
+
+    class PackageFetchPolicy(Enum):
+        """Distribution fetching policy for a registry dependency."""
+
+        NO_BINARY = auto()
+        ONLY_BINARY = auto()
+        PREFER_BINARY = auto()
 
     def __init__(self, filters: PipBinaryFilters) -> None:
         """Initialize the filter.
@@ -391,6 +395,14 @@ class WheelsFilter(BinaryPackageFilter):
         )
 
         return is_compatible_py_impl and some_candidate_is_compatible
+
+    def package_policy(self, package: str) -> PackageFetchPolicy:
+        """Wheel fetching policy."""
+        if self.packages is None:
+            return self.PackageFetchPolicy.PREFER_BINARY
+        if package in self.packages:
+            return self.PackageFetchPolicy.ONLY_BINARY
+        return self.PackageFetchPolicy.NO_BINARY
 
 
 def _parse_py_versions(interpreter: str) -> list[int]:
