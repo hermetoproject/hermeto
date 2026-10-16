@@ -76,6 +76,9 @@ files or ask. Do not assume.
 ## Testing
 
 - Unit tests must not require network access
+- Do not use error string matching when asserting error behavior - unit tests
+  assert the expected exception type; integration tests assert the defined
+  `ExitError` code, not CLI error output
 - Aim for near full coverage of new code
 - Add new test cases instead of modifying existing ones
 - Adding params to existing parametrize is OK if the test
