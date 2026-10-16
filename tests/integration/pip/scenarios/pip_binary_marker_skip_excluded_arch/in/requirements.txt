@@ -1,0 +1,6 @@
+# Reproducer for https://github.com/hermetoproject/hermeto/issues/1570
+# bcrypt has a wheel-only lock and a marker excluding ppc64le/s390x. Under a
+# binary filter targeting ppc64le, hermeto must skip it (pip would never install
+# it) instead of failing with PackageRejected trying to find a ppc64le wheel.
+bcrypt==5.0.0 ; implementation_name == "cpython" and platform_machine != "ppc64le" and platform_machine != "s390x" and sys_platform == "linux" \
+    --hash=sha256:81e5dab254e44e82bee49bca4e593b21b7e70a48bcf15725d6588df387098e54
