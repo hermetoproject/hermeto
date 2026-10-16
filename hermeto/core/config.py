@@ -17,6 +17,7 @@ from pydantic import (
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
+    EnvSettingsSource,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     SettingsError,
@@ -401,6 +402,48 @@ def set_config(path: Path) -> Config:
     except SettingsError as e:
         raise InvalidInput(_present_settings_error(e)) from e
     return config
+
+
+def get_source_data(cli_config_path: Path | None = None) -> dict[str, dict[str, Any]]:
+    """Return raw config values from each source without model validation.
+
+    Calls each pydantic-settings source directly so this works even when the
+    config as a whole would fail validation (e.g. proxy_login set without
+    proxy_password).  The returned dict has two keys:
+
+    - ``"env"``: values provided via environment variables (``HERMETO_*``)
+    - ``"file"``: values from any YAML config file (default paths + CLI path)
+
+    Both values are nested dicts mirroring the Config field structure.
+
+    :param cli_config_path: optional path passed via ``--config-file``; appended
+        after the default file search paths so it takes highest priority.
+    """
+    try:
+        env_data = dict(EnvSettingsSource(Config)())
+    except Exception as exc:
+        # Malformed complex env values (e.g. invalid JSON in HERMETO_HTTP)
+        # must not prevent the config command from showing diagnostics.
+        log.debug("Failed to parse environment settings: %s", exc)
+        env_data = {}
+
+    # Merge all file sources; later sources in the list have higher priority,
+    # mirroring the priority order in settings_customise_sources.
+    file_paths: list[Path | str] = list(CONFIG_FILE_PATHS)
+    if cli_config_path is not None:
+        file_paths.append(cli_config_path)
+
+    merged_file_data: dict[str, Any] = {}
+    for path in file_paths:
+        try:
+            source_data = dict(YamlConfigSettingsSource(Config, yaml_file=path)())
+        except Exception as exc:
+            # Non-existent or unreadable files are silently skipped.
+            log.debug("Skipping config file %s: %s", path, exc)
+            continue
+        _deep_merge(merged_file_data, source_data)
+
+    return {"env": env_data, "file": merged_file_data}
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:
