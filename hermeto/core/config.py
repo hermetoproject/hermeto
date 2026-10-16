@@ -17,6 +17,7 @@ from pydantic import (
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
+    EnvSettingsSource,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     SettingsError,
@@ -418,6 +419,132 @@ def set_config(path: Path) -> Config:
     except SettingsError as e:
         raise InvalidInput(_present_settings_error(e)) from e
     return config
+
+
+def get_source_data(
+    cli_config_path: Path | None = None,
+    defaults: dict[str, Any] | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Return config values from each source with secrets and unknown fields masked."""
+
+    try:
+        env_data = dict(EnvSettingsSource(Config)())
+    except Exception as exc:
+        # Malformed complex env values (e.g. invalid JSON in HERMETO_HTTP)
+        # must not prevent the config command from showing diagnostics.
+        log.debug("Failed to parse environment settings: %s", exc)
+        env_data = {}
+
+    # Merge all file sources; later sources in the list have higher priority,
+    # mirroring the priority order in settings_customise_sources.
+    file_paths: list[Path | str] = list(CONFIG_FILE_PATHS)
+    if cli_config_path is not None:
+        file_paths.append(cli_config_path)
+
+    merged_file_data: dict[str, Any] = {}
+    for path in file_paths:
+        try:
+            source_data = dict(YamlConfigSettingsSource(Config, yaml_file=path)())
+        except Exception as exc:
+            # Non-existent or unreadable files are silently skipped.
+            # Avoid logging the raw exception — YAML parser errors can
+            # include file content snippets that may contain secrets.
+            _, location = _extract_specific_from_yaml_error(exc)
+            at = f" ({location})" if location else ""
+            log.debug("Skipping config file %s%s: %s", path, at, type(exc).__name__)
+            continue
+        _deep_merge(merged_file_data, source_data)
+
+    _mask_secrets(env_data, _SECRET_FIELDS)
+    _mask_secrets(merged_file_data, _SECRET_FIELDS)
+
+    if defaults is not None:
+        _mask_unknown(env_data, defaults)
+        _mask_unknown(merged_file_data, defaults)
+
+    return {"env": env_data, "file": merged_file_data}
+
+
+def _is_secret_type(ann: Any) -> bool:
+    """Check whether a type annotation is or contains SecretStr."""
+    if ann is SecretStr:
+        return True
+    args = getattr(ann, "__args__", None)
+    if args:
+        return any(a is SecretStr for a in args)
+    return False
+
+
+def _get_secret_fields(model: type[BaseModel]) -> dict[str, Any]:
+    """Return a nested dict marking SecretStr fields as True."""
+    result: dict[str, Any] = {}
+    for name, field_info in model.model_fields.items():
+        ann = field_info.annotation
+        if _is_secret_type(ann):
+            result[name] = True
+        elif isinstance(ann, type) and issubclass(ann, BaseModel):
+            sub = _get_secret_fields(ann)
+            if sub:
+                result[name] = sub
+    return result
+
+
+_UNKNOWN_PLACEHOLDER = "<unrecognized field>"
+_SECRET_FIELDS = _get_secret_fields(Config)
+
+
+def _mask_secrets(data: dict[str, Any], secret_fields: dict[str, Any]) -> None:
+    """Replace SecretStr field values with a placeholder, in-place."""
+    for key in data:
+        if key not in secret_fields:
+            continue
+        if secret_fields[key] is True:
+            data[key] = "**********"
+        elif isinstance(data[key], dict) and isinstance(secret_fields[key], dict):
+            _mask_secrets(data[key], secret_fields[key])
+
+
+def _coerce_scalar_value(value: Any, default: Any) -> Any:
+    """Coerce supported string scalar values to their schema default type.
+
+    This keeps integer and Boolean environment values consistent with the schema
+    while leaving all other raw configuration values unchanged.
+
+    Ref: https://docs.pydantic.dev/latest/api/standard_library_types/#booleans
+    """
+    if not isinstance(value, str):
+        return value
+    if type(default) is bool:
+        lowered = value.lower()
+        if lowered in ("1", "true", "on", "yes", "y", "t"):
+            return True
+        if lowered in ("0", "false", "off", "no", "n", "f"):
+            return False
+        return value
+    if type(default) is not int:
+        return value
+    try:
+        return int(value)
+    except ValueError:
+        return value
+
+
+def _mask_unknown(data: dict[str, Any], defaults: dict[str, Any]) -> None:
+    """Mask unknown fields and coerce known fields to their schema type, in-place."""
+    for key in list(data):
+        if key not in defaults:
+            if isinstance(data[key], dict):
+                _mask_unknown(data[key], {})
+            else:
+                data[key] = _UNKNOWN_PLACEHOLDER
+        elif isinstance(data[key], dict) and isinstance(defaults.get(key), dict):
+            _mask_unknown(data[key], defaults[key])
+        elif isinstance(data[key], dict):
+            data[key] = _UNKNOWN_PLACEHOLDER
+        else:
+            # Env vars arrive as strings, coerce to the schema type so the output shows
+            # e.g. concurrency_limit: 5 instead of '5', enabled: true instead of 'true'.
+            data[key] = _coerce_scalar_value(data[key], defaults[key])
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:
