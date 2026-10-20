@@ -221,6 +221,12 @@ If your code was inspired by any third-party sources, consider adding a comment 
 
 When extending an existing feature, please add a new test case instead of modifying any existing ones. Large test scenarios with many branching paths are very hard to understand and to maintain. It is ok to copy and paste large parts of an existing test if needed for a new scenario. It is also fine to add a new parameter group to an existing test, as long as the test function remains unchanged.
 
+When contributing a new negative test please avoid string matching for
+exception or log messages unless absolutely necessary, that creates coupling
+between the code and tests. Use exception types in unit tests and exit codes in
+integration tests instead. Add new exception types when there is a need to
+differentiate between similar, but distinct failure modes.
+
 ### Unit tests
 
 Run all unit tests (but no other checks):
