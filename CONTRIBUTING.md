@@ -229,6 +229,14 @@ differentiate between similar, but distinct failure modes.
 
 ### Unit tests
 
+When implementing a unit test please avoid interactions with file system
+unless absolutely necessary. File system is an entity external to the
+written code and it should not matter where the data for a business
+logic unit come from; file system access in Python is robust and well-tested
+outside of the project's scope. Please consider restructuring your code first
+by separating data retrieval and processing and add file system-interacting
+tests only once it is clear it cannot be easily done some other way.
+
 Run all unit tests (but no other checks):
 
 ```shell
