@@ -98,6 +98,20 @@ def test_env_overrides_default(monkeypatch: pytest.MonkeyPatch) -> None:
     assert config.runtime.concurrency_limit == override_concurrency
 
 
+@pytest.mark.parametrize(
+    ("value", "default", "expected"),
+    [
+        ("5", 5, 5),
+        ("false", True, False),
+        ("true", False, True),
+        ("https://example.com", "", "https://example.com"),
+        ("invalid", True, "invalid"),
+    ],
+)
+def test_coerce_scalar_value(value: str, default: Any, expected: Any) -> None:
+    assert config_module._coerce_scalar_value(value, default) == expected
+
+
 @pytest.mark.parametrize("config_file_path", config_module.CONFIG_FILE_PATHS)
 def test_config_files_override_defaults(tmp_home_cwd: Path, config_file_path: str) -> None:
     """Test that each configured file path can override default values."""

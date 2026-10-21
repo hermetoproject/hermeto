@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from typing import Any
+
 import pytest
 import yaml
 
 from hermeto.core.config import Config
 from hermeto.core.extras.config_show import (
     ConfigDiff,
+    SourceMap,
     _get_env_var_name,
+    build_source_map,
     format_diff_output,
     format_yaml_output,
     get_config_diff,
@@ -254,3 +258,92 @@ class TestSecretStrRedaction:
         raw_output = get_effective_config(config, raw=True)
         assert default_output["gomod"]["proxy_login"] == raw_output["gomod"]["proxy_login"]
         assert default_output["gomod"]["proxy_url"] == raw_output["gomod"]["proxy_url"]
+
+
+class TestBuildSourceMap:
+    """Tests for source attribution map construction."""
+
+    def test_source_priority_and_labels(self) -> None:
+        """Env wins over file, file wins over default, absent keys get default."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"http": {"read_timeout": 600}},
+            "file": {"http": {"read_timeout": 900, "connect_timeout": 10}},
+        }
+        defaults = {"http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5}}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["http"]["read_timeout"] == "env"
+        assert sm["http"]["connect_timeout"] == "file"
+        assert sm["http"]["max_retries"] == "default"
+
+    def test_nested_section_mixed_sources(self) -> None:
+        """Env and file can each provide different fields within the same section."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"gomod": {"download_max_tries": 10}},
+            "file": {"gomod": {"proxy_url": "https://custom.proxy"}},
+        }
+        defaults = {
+            "gomod": {
+                "proxy_url": "https://proxy.golang.org,direct",
+                "download_max_tries": 5,
+            }
+        }
+
+        sm = build_source_map(sources, defaults)
+        gomod_sm = sm["gomod"]
+        assert isinstance(gomod_sm, dict)
+        assert gomod_sm["download_max_tries"] == "env"
+        assert gomod_sm["proxy_url"] == "file"
+
+    def test_scalar_overrides_dict_section_gets_source_label(self) -> None:
+        """A source providing a scalar where the schema expects a dict is labelled,
+        not silently dropped — the user needs to see which source is at fault."""
+        sources: dict[str, dict[str, Any]] = {
+            "env": {"http": "not-a-dict"},
+            "file": {},
+        }
+        defaults = {"http": {"read_timeout": 300}}
+
+        sm = build_source_map(sources, defaults)
+
+        assert sm["http"] == "env"
+
+
+class TestFormatOutputWithSources:
+    """Tests for source annotations in formatted output."""
+
+    def test_yaml_output_includes_all_source_labels(self) -> None:
+        """[env], [file], and [default] annotations appear on the correct fields."""
+        effective = {
+            "http": {"read_timeout": 600, "connect_timeout": 10, "max_retries": 5},
+        }
+        defaults = {
+            "http": {"read_timeout": 300, "connect_timeout": 30, "max_retries": 5},
+        }
+        sm: SourceMap = {
+            "http": {"read_timeout": "env", "connect_timeout": "file", "max_retries": "default"},
+        }
+
+        output = format_yaml_output(effective, defaults, source_map=sm)
+        lines = output.splitlines()
+
+        timeout_line = next(line for line in lines if "HERMETO_HTTP__READ_TIMEOUT" in line)
+        assert "[env]" in timeout_line
+
+        connect_line = next(line for line in lines if "HERMETO_HTTP__CONNECT_TIMEOUT" in line)
+        assert "[file]" in connect_line
+
+        retries_line = next(line for line in lines if "HERMETO_HTTP__MAX_RETRIES" in line)
+        assert "[default]" in retries_line
+
+    def test_diff_output_includes_source_annotation(self) -> None:
+        """[env] annotation appears on a changed line in diff output."""
+        diff: ConfigDiff = {"http": {"read_timeout": (600, 300)}}
+        sm: SourceMap = {"http": {"read_timeout": "env"}}
+
+        output = format_diff_output(diff, source_map=sm)
+
+        changed_line = next(line for line in output.splitlines() if "read_timeout" in line)
+        assert "# default: 300" in changed_line
+        assert "[env]" in changed_line
