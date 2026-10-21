@@ -477,8 +477,17 @@ Hermeto supports three binary fetching strategies, analogous to pip's
 
 The `binary` object accepts the following filter options:
 
-- **`packages`**: Comma-separated list of package names to limit the filtering scope.
-  Default: `:all:`.
+- **`packages`**: Comma-separated list of package names to limit the filtering
+  scope. Default: `:all:`. Prefix a name with `!` to fetch that package only as
+  an sdist. A list containing only exclusions (for example, `!numpy,!pandas`)
+  implicitly includes `:all:` for other packages, retaining the "Prefer binaries"
+  behavior described above. An explicit list of positive names retains the "Only
+  binaries for specific packages" behavior.
+
+  Names are matched case-insensitively, with `.`, `_`, and `-` normalized
+  according to Python package-name rules. Exclusions apply to registry
+  dependencies only. If an excluded package has no sdist matching the required
+  checksums, prefetching fails with an error.
 
 - **`arch`**: Architecture filter. Accepts comma-separated values. Default: `"x86_64"`.
 
@@ -539,6 +548,23 @@ Prefetch wheels for specific packages and platforms:
   }
 }
 ```
+
+Prefer wheels except for packages that must be built from source:
+
+```json
+{
+  "type": "pip",
+  "binary": {
+    "packages": "!numpy,!pandas",
+    "py_version": 312
+  }
+}
+```
+
+NumPy and pandas are fetched only as sdists. Other dependencies are fetched as
+compatible wheels plus an sdist when available, falling back to sdists if no
+wheel matches. Source-only dependencies also need their build requirements to
+be declared in `requirements-build.txt` for an offline build.
 
 ### Building from source
 
