@@ -75,7 +75,7 @@ Behavior: Hermeto operates in a source-only mode. No binary artifacts will be pr
 **Prefer Binaries (Analogous to pip install `--prefer-binary`)**
 Configuration: binary field specified with no packages list defined.
 
-Behavior: Hermeto will attempt to prefetch compatible binaries for all dependencies where possible. In this mode, it will also prefetch a corresponding source distribution **if there is no binary available** to serve as a fallback.
+Behavior: Hermeto will attempt to prefetch compatible binaries for all dependencies where possible. In this mode, it will also prefetch a corresponding source distribution when available, including when wheels are available, to serve as a fallback for targets without a matching wheel.
 
 **Only Binaries for Specific Packages (Analogous to pip install `--only-binary`)**
 Configuration: binary field specified and a packages list is provided.
