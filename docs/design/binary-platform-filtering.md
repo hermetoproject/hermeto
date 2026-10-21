@@ -86,6 +86,23 @@ For packages in the packages list: Hermeto will attempt to prefetch only binary 
 
 For packages NOT in the list: Hermeto reverts to the "No Binaries" behavior, fetching only their source distributions.
 
+**Source-only Exceptions (applicable backends)**
+
+Prefix a package name in `binary.packages` with `!` to require its source
+distribution, e.g. in Python, `!foo,!bar` enables the "Prefer Binaries"
+mode for all other dependencies, while `foo` and `bar` use "No Binaries". An
+explicit `:all:` has the same effect: `:all:,!foo` prefers binaries except for
+`foo`. Exclusions take precedence over `:all:`, regardless of order. Explicit
+inclusions and exclusions must not overlap (for example, `Foo_Bar,!foo-bar` is
+invalid).
+
+With an explicit allow-list, such as `foo,!bar`, only `foo` uses "Only Binaries";
+**all other packages use "No Binaries"**. The `!bar` exclusion is redundant in
+this example, so the behavior is the same as `foo`.
+
+**Note that an excluded package without an eligible source distribution must fail
+rather than silently falling back to a binary artifact!**
+
 ### CLI Usage
 
 Complex input is provided by an input JSON string. This is the only way to specify binary options.
