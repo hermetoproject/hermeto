@@ -63,7 +63,7 @@ def mock_fetch_deps(
         mock_resolve_packages.assert_called_once_with(expect_request)
 
 
-def invoke_expecting_sucess(app: typer.Typer, args: list[str]) -> typer.testing.Result:
+def invoke_expecting_success(app: typer.Typer, args: list[str]) -> typer.testing.Result:
     result = runner.invoke(app, args, catch_exceptions=False)
     assert result.exit_code == 0, result.output
     return result
@@ -79,6 +79,16 @@ def invoke_expecting_invalid_usage(
     return result
 
 
+def assert_line_contains(output: str, field: str, keyword: str) -> None:
+    """Assert that *keyword* appears on the output line containing *field*."""
+    line = next(
+        (line for line in output.splitlines() if field in line),
+        None,
+    )
+    assert line is not None, f"field {field!r} not found in output"
+    assert keyword in line, f"expected {keyword!r} on line: {line!r}"
+
+
 def assert_pattern_in_output(pattern: str | re.Pattern, output: str) -> None:
     if isinstance(pattern, re.Pattern):
         match = bool(pattern.search(output))
@@ -91,7 +101,7 @@ def assert_pattern_in_output(pattern: str | re.Pattern, output: str) -> None:
 class TestTopLevelOpts:
     def test_version_option(self) -> None:
         expect_version = importlib.metadata.version(f"{APP_NAME}")
-        result = invoke_expecting_sucess(app, ["--version"])
+        result = invoke_expecting_success(app, ["--version"])
         assert expect_version in result.output
 
     @mock.patch(
@@ -99,7 +109,7 @@ class TestTopLevelOpts:
         {"foo": mock.Mock(), "bar": mock.Mock(), "x-baz": mock.Mock()},
     )
     def test_list_backends_option(self) -> None:
-        result = invoke_expecting_sucess(app, ["list-backends"])
+        result = invoke_expecting_success(app, ["list-backends"])
         lines = result.output.splitlines()
         assert "bar, foo" in lines[0]
         assert "x-baz" in lines[1]
@@ -107,7 +117,7 @@ class TestTopLevelOpts:
     @pytest.mark.usefixtures("_clean_hermeto_env")
     def test_config_command(self) -> None:
         config_file.config = None
-        result = invoke_expecting_sucess(app, ["config"])
+        result = invoke_expecting_success(app, ["config"])
         config_file.config = None
         assert "gomod:" in result.output
         assert "# HERMETO_GOMOD__PROXY_URL" in result.output
@@ -117,7 +127,7 @@ class TestTopLevelOpts:
         monkeypatch.setenv("HERMETO_RUNTIME__CONCURRENCY_LIMIT", "6")
 
         config_file.config = None
-        result = invoke_expecting_sucess(app, ["config", "--diff"])
+        result = invoke_expecting_success(app, ["config", "--diff"])
         config_file.config = None
 
         parsed = yaml.safe_load(result.output)
@@ -134,7 +144,7 @@ class TestTopLevelOpts:
         }
         with mock.patch.dict(os.environ, env):
             config_file.config = None
-            result = invoke_expecting_sucess(app, ["config"])
+            result = invoke_expecting_success(app, ["config"])
         config_file.config = None
         assert "s3cret-value" not in result.output
         assert "**********" in result.output
@@ -148,7 +158,7 @@ class TestTopLevelOpts:
         }
         with mock.patch.dict(os.environ, env):
             config_file.config = None
-            result = invoke_expecting_sucess(app, ["config", "--raw"])
+            result = invoke_expecting_success(app, ["config", "--raw"])
         config_file.config = None
         assert "s3cret-value" in result.output
         assert "**********" not in result.output
@@ -197,7 +207,7 @@ class TestTopLevelOpts:
 
         with mock.patch("hermeto.interface.cli.resolve_packages") as mock_resolve_packages:
             mock_resolve_packages.side_effect = side_effect
-            invoke_expecting_sucess(app, args)
+            invoke_expecting_success(app, args)
 
     @pytest.mark.parametrize(
         "file_create, file, file_text, error_expectation, expected_error",
@@ -252,7 +262,7 @@ class TestTopLevelOpts:
 
         with mock.patch("hermeto.interface.cli.resolve_packages") as mock_resolve:
             mock_resolve.side_effect = side_effect
-            invoke_expecting_sucess(app, args)
+            invoke_expecting_success(app, args)
 
     def test_mode_option_is_not_valid(self) -> None:
         args = ["--mode", "invalid", "fetch-deps", "gomod"]
@@ -276,7 +286,7 @@ class TestTopLevelOpts:
         args = [*loglevel_args, "fetch-deps", "gomod"]
 
         with mock_fetch_deps():
-            invoke_expecting_sucess(app, args)
+            invoke_expecting_success(app, args)
 
         loglevel = logging.getLogger(f"{APP_NAME}").getEffectiveLevel()
         loglevel_name = logging.getLevelName(loglevel)
@@ -286,6 +296,94 @@ class TestTopLevelOpts:
         args = ["--log-level=unknown", "fetch-deps", "gomod"]
         result = invoke_expecting_invalid_usage(app, args, ExitError.ERR_USAGE)
         assert "Invalid value for '--log-level': 'unknown' is not one of" in result.output
+
+
+class TestConfig:
+    """Tests for the config subcommand: source annotations, validation leisure, masking."""
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_source_annotations(self, tmp_cwd: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Each field comment includes its source: [env], [file], or [default]."""
+        monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "foo")
+        monkeypatch.setenv("HERMETO_PIP__PROXY_PASSWORD", "test-password")
+        config_path = tmp_cwd / "hermeto.yaml"
+        config_path.write_text("pip:\n  proxy_url: https://pypi.example.com\n")
+        monkeypatch.setattr("hermeto.core.config.CONFIG_FILE_PATHS", [str(config_path)])
+
+        config_file.config = None
+        result = invoke_expecting_success(app, ["config"])
+        config_file.config = None
+
+        assert "configuration is invalid" not in result.output.lower()
+        assert_line_contains(result.output, "HERMETO_PIP__PROXY_LOGIN", "[env]")
+        assert_line_contains(result.output, "HERMETO_PIP__PROXY_URL", "[file]")
+        assert_line_contains(result.output, "HERMETO_PIP__PROXY_PASSWORD", "[env]")
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_invalid_config_shows_warning_and_masked_values(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Config command proceeds with invalid config, showing a warning and masking values."""
+        monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "foo")
+
+        config_file.config = None
+        result = runner.invoke(app, ["config"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        assert "configuration is invalid" in result.output.lower()
+        assert "proxy password must be set" in result.output.lower()
+        assert "proxy_login" in result.output
+        assert "<not shown>" in result.output
+        # Default values must remain visible, not masked.
+        assert "concurrency_limit: 5" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_diff_includes_source_annotation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """--diff output includes source annotation on changed lines."""
+        monkeypatch.setenv("HERMETO_PIP__PROXY_URL", "https://pypi.example.com")
+        monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "pip-user")
+        monkeypatch.setenv("HERMETO_PIP__PROXY_PASSWORD", "s3cret")
+
+        config_file.config = None
+        result = invoke_expecting_success(app, ["config", "--diff"])
+        config_file.config = None
+
+        assert_line_contains(result.output, "proxy_login", "[env]")
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_raw_still_masks_when_config_invalid(self) -> None:
+        """--raw must not reveal values when config is invalid.
+
+        The fallback path masks all user-provided values because we cannot
+        determine which fields are secret when validation fails.
+        """
+        env = {
+            "HERMETO_PIP__PROXY_LOGIN": "foo",
+            "HERMETO_PIP__PROXY_PASSWORD": "s3cret-value",
+        }
+        with mock.patch.dict(os.environ, env):
+            config_file.config = None
+            result = runner.invoke(app, ["config", "--raw"])
+        config_file.config = None
+
+        assert result.exit_code == 0, result.output
+        assert "s3cret-value" not in result.output
+        assert "<not shown>" in result.output
+
+    @pytest.mark.usefixtures("_clean_hermeto_env")
+    def test_non_config_command_shows_hint_on_invalid_config(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Non-config commands fail with a hint to run 'hermeto config' for diagnosis."""
+        monkeypatch.setenv("HERMETO_PIP__PROXY_LOGIN", "foo")
+
+        config_file.config = None
+        result = runner.invoke(app, ["fetch-deps", "gomod"])
+        config_file.config = None
+
+        assert result.exit_code != 0
+        assert "hermeto config" in result.output.lower()
 
 
 class TestFetchDeps:
@@ -329,7 +427,7 @@ class TestFetchDeps:
         path_args = [arg.format(cwd=tmp_cwd) for arg in path_args]
 
         with mock_fetch_deps(expect_request):
-            invoke_expecting_sucess(app, ["fetch-deps", *path_args, "gomod"])
+            invoke_expecting_success(app, ["fetch-deps", *path_args, "gomod"])
 
     @pytest.mark.parametrize(
         "path_args, expect_error",
@@ -453,7 +551,7 @@ class TestFetchDeps:
             packages=expect_packages,
         )
         with mock_fetch_deps(expect_request):
-            invoke_expecting_sucess(app, ["fetch-deps", package_arg])
+            invoke_expecting_success(app, ["fetch-deps", package_arg])
 
     @pytest.mark.parametrize(
         "package_arg, expect_packages",
@@ -502,7 +600,7 @@ class TestFetchDeps:
         )
 
         with mock_fetch_deps(expect_request):
-            invoke_expecting_sucess(app, ["fetch-deps", str(input_file)])
+            invoke_expecting_success(app, ["fetch-deps", str(input_file)])
 
     @pytest.mark.parametrize(
         "package_arg, expect_error_lines, expected_error",
@@ -748,7 +846,7 @@ class TestFetchDeps:
             flags=frozenset(expect_flags),
         )
         with mock_fetch_deps(expect_request):
-            invoke_expecting_sucess(app, ["fetch-deps", *cli_args])
+            invoke_expecting_success(app, ["fetch-deps", *cli_args])
 
     @pytest.mark.parametrize(
         "cli_args, expect_error, expected_error",
@@ -803,7 +901,7 @@ class TestFetchDeps:
         tmp_cwd: Path,
     ) -> None:
         with mock_fetch_deps(output=request_output):
-            invoke_expecting_sucess(app, ["fetch-deps", "gomod"])
+            invoke_expecting_success(app, ["fetch-deps", "gomod"])
 
         build_config_path = tmp_cwd / DEFAULT_OUTPUT / ".build-config.json"
         sbom_path = tmp_cwd / DEFAULT_OUTPUT / "bom.json"
@@ -842,7 +940,7 @@ class TestFetchDeps:
         tmp_cwd: Path,
     ) -> None:
         with mock_fetch_deps(output=request_output):
-            invoke_expecting_sucess(app, ["fetch-deps", "--sbom-output-type", "spdx", "gomod"])
+            invoke_expecting_success(app, ["fetch-deps", "--sbom-output-type", "spdx", "gomod"])
 
         build_config_path = tmp_cwd / DEFAULT_OUTPUT / ".build-config.json"
         sbom_path = tmp_cwd / DEFAULT_OUTPUT / "bom.json"
@@ -864,7 +962,7 @@ class TestFetchDeps:
         (pip_deps_dir / "some-pip-file.py").touch()
 
         with mock_fetch_deps(output=RequestOutput.empty()):
-            invoke_expecting_sucess(app, ["fetch-deps", "pip"])
+            invoke_expecting_success(app, ["fetch-deps", "pip"])
 
         assert pip_deps_dir.exists() is False
         assert unrelated_dir.exists() is True
@@ -925,7 +1023,7 @@ class TestGenerateEnv:
         else:
             from_output_dir = str(tmp_cwd_as_output_dir)
 
-        result = invoke_expecting_sucess(app, ["generate-env", from_output_dir, *extra_args])
+        result = invoke_expecting_success(app, ["generate-env", from_output_dir, *extra_args])
 
         expect_output = make_output(tmp_cwd_as_output_dir)
         if output_file is None:
@@ -949,7 +1047,7 @@ class TestGenerateEnv:
         expect_output_dir: str,
         tmp_cwd_as_output_dir: Path,
     ) -> None:
-        result = invoke_expecting_sucess(
+        result = invoke_expecting_success(
             app,
             [
                 "generate-env",
@@ -1022,9 +1120,9 @@ class TestInjectFiles:
         tmp_path = tmp_cwd_as_output_dir
 
         if not for_output_dir:
-            invoke_expecting_sucess(app, ["inject-files", str(tmp_path)])
+            invoke_expecting_success(app, ["inject-files", str(tmp_path)])
         else:
-            invoke_expecting_sucess(
+            invoke_expecting_success(
                 app, ["inject-files", str(tmp_path), "--for-output-dir", for_output_dir]
             )
 
@@ -1169,7 +1267,7 @@ class TestMergeSboms:
     ) -> None:
         prefix = f"{APP_NAME}-{Path(__file__).stem}-{request.node.callspec.id}-"
         with tempfile.NamedTemporaryFile(prefix=prefix) as fp:
-            invoke_expecting_sucess(
+            invoke_expecting_success(
                 app,
                 ["merge-sboms", "-o", fp.name, *extra_args, *sbom_files_to_merge],
             )
