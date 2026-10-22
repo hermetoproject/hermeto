@@ -33,9 +33,9 @@ ParseResult = list[BundlerDependency]
 def _ensure_bundler_files_exist(package_dir: RootedPath) -> None:
     lockfile_path = package_dir.join_within_root(GEMFILE_LOCK)
     gemfile_path = package_dir.join_within_root(GEMFILE)
-    if not lockfile_path.path.exists() or not gemfile_path.path.exists():
+    if not lockfile_path.exists() or not gemfile_path.exists():
         raise LockfileNotFound(
-            files=lockfile_path.path if not lockfile_path.path.exists() else gemfile_path.path,
+            files=lockfile_path.path if not lockfile_path.exists() else gemfile_path.path,
         )
 
 
@@ -87,7 +87,7 @@ def parse_lockfile(
     json_output = _run_lockfile_parser(package_dir.path)
 
     bundler_version: str = json_output["bundler_version"]
-    log.info("Package %s is bundled with version %s", package_dir.path.name, bundler_version)
+    log.info("Package %s is bundled with version %s", package_dir.name, bundler_version)
     dependencies: list[dict[str, Any]] = json_output["dependencies"]
 
     result: ParseResult = []

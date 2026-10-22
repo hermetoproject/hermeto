@@ -37,7 +37,7 @@ def _depends_on_rust(extracted_dir: Path) -> bool:
     }
 
     for file, get_build_deps_method in python_files_map.items():
-        if not root.join_within_root(file).path.exists():
+        if not root.join_within_root(file).exists():
             continue
 
         build_deps = get_build_deps_method()
