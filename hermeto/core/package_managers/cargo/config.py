@@ -141,7 +141,7 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
 
     for cfgname in all_possible_config_names:
         config = package_dir.join_within_root(cfgname)
-        if config.path.exists():
+        if config.exists():
             data = config.path.read_text()
             sanitized = _sanitize_cargo_config(data)
 
