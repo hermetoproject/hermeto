@@ -113,7 +113,7 @@ jobs:
 
     # TODO: Replace this with ubuntu-latest once GH completes the migration of the VM runners to
     # ubuntu 24.04 and respect the YAML tag (revert the commit that added this)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Free up disk space
         run: |
