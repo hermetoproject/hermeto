@@ -412,7 +412,7 @@ def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
 
         filename = project.yarn_rc.get("lockfileFilename", "yarn.lock")
         lockfile = project.source_dir.join_within_root(filename)
-        content = lockfile.path.read_text()
+        content = lockfile.read_text()
         try:
             run_yarn_cmd(["install", "--mode", "update-lockfile"], project.source_dir)
             yield
@@ -421,7 +421,7 @@ def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
                 package_json["devDependencies"] = deps
                 package_json.write()
 
-            lockfile.path.write_text(content)
+            lockfile.write_text(content)
             project.yarn_rc["globalFolder"] = global_folder
             project.yarn_rc.write()
 
@@ -536,7 +536,7 @@ def _parse_lockfile_git_deps(project: Project) -> list[GitDep]:
     :return: list of GitDep instances.
     :raises UnsupportedFeature: if a patched or workspace-selecting git dep is found.
     """
-    with project.lockfile_path.path.open("r") as f:
+    with project.lockfile_path.open("r") as f:
         lockfile_data: dict[str, Any] = yaml.safe_load(f) or {}
     return _git_deps_from_lockfile(lockfile_data)
 
