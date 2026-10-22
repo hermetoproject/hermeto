@@ -403,8 +403,8 @@ def fetch_deps(  # noqa: D103 -- docstring becomes part of --help message
 
     request_output = resolve_packages(request)
 
-    request.output_dir.path.mkdir(parents=True, exist_ok=True)
-    request.output_dir.join_within_root(".build-config.json").path.write_text(
+    request.output_dir.mkdir(parents=True, exist_ok=True)
+    request.output_dir.join_within_root(".build-config.json").write_text(
         request_output.build_config.model_dump_json(indent=2, exclude_none=True)
     )
 
@@ -412,7 +412,7 @@ def fetch_deps(  # noqa: D103 -- docstring becomes part of --help message
         sbom: Sbom | SPDXSbom = request_output.generate_sbom()
     else:
         sbom = request_output.generate_sbom().to_spdx(doc_namespace="NOASSERTION")
-    request.output_dir.join_within_root("bom.json").path.write_text(
+    request.output_dir.join_within_root("bom.json").write_text(
         # the Sbom model has camelCase aliases in some fields
         sbom.model_dump_json(indent=2, by_alias=True, exclude_none=True)
     )
