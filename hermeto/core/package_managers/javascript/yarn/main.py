@@ -656,7 +656,7 @@ def _clone_git_deps(
             cloned_sources[source_key] = tarball_rooted
             tarball_vcs_url_map[str(tarball_rooted.path)] = _build_vcs_url(dep)
 
-        rel_to_output = tarball_rooted.path.relative_to(output_dir.path)
+        rel_to_output = tarball_rooted.relative_to(output_dir.path)
         tarball_info[dep.name] = (tarball_rooted, rel_to_output)
 
     return tarball_info, tarball_vcs_url_map
