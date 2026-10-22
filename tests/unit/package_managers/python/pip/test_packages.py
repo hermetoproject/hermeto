@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
-from pathlib import Path
+
+import hashlib
 
 import pypi_simple
 import pytest
 
+from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import PROXY_COMMENT, PROXY_REF_TYPE
 from hermeto.core.package_managers.python.pip.packages import (
@@ -11,11 +13,11 @@ from hermeto.core.package_managers.python.pip.packages import (
     URLPackage,
     VCSPackage,
 )
+from hermeto.core.rooted_path import RootedPath
 
 CUSTOM_PYPI_ENDPOINT = "https://my-pypi.org/simple/"
 GIT_REF = "a" * 40
 
-_PATH = Path("/deps/pip/pkg.tar.gz")
 _REQ_FILE = "requirements.txt"
 
 
@@ -25,7 +27,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             PyPIPackage(
                 name="pypi_package",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -38,7 +39,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             PyPIPackage(
                 name="mypypi_package",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -51,7 +51,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             VCSPackage(
                 name="git_dependency",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -64,7 +63,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             VCSPackage(
                 name="Git_dependency",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -77,7 +75,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             VCSPackage(
                 name="git_dependency",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -90,7 +87,6 @@ _REQ_FILE = "requirements.txt"
         pytest.param(
             URLPackage(
                 name="https_dependency",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -110,7 +106,6 @@ def test_to_component_missing_checksum_populates_missing_hash_property() -> None
     """When the requirements file has no checksum, the component records which file is missing it."""
     pkg = PyPIPackage(
         name="foo",
-        path=_PATH,
         requirement_file=_REQ_FILE,
         missing_req_file_checksum=True,
         package_type="sdist",
@@ -128,7 +123,6 @@ def test_to_component_with_checksum_has_empty_missing_hash_property() -> None:
     """When the requirements file provides a checksum, missing_hash_in_file is empty."""
     pkg = PyPIPackage(
         name="foo",
-        path=_PATH,
         requirement_file=_REQ_FILE,
         missing_req_file_checksum=False,
         package_type="sdist",
@@ -146,7 +140,6 @@ def test_to_component_pypi_package_has_version() -> None:
     """PyPI packages carry their resolved version into the SBOM component."""
     pkg = PyPIPackage(
         name="foo",
-        path=_PATH,
         requirement_file=_REQ_FILE,
         missing_req_file_checksum=False,
         package_type="sdist",
@@ -165,7 +158,6 @@ def test_to_component_pypi_package_has_version() -> None:
         pytest.param(
             VCSPackage(
                 name="bar",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="",
@@ -177,7 +169,6 @@ def test_to_component_pypi_package_has_version() -> None:
         pytest.param(
             URLPackage(
                 name="baz",
-                path=_PATH,
                 requirement_file=_REQ_FILE,
                 missing_req_file_checksum=False,
                 package_type="sdist",
@@ -199,7 +190,6 @@ def test_to_component_without_proxy_has_no_external_refs() -> None:
     """A PyPI package fetched without a proxy has no external references."""
     pkg = PyPIPackage(
         name="foo",
-        path=_PATH,
         requirement_file=_REQ_FILE,
         missing_req_file_checksum=False,
         package_type="sdist",
@@ -217,7 +207,6 @@ def test_to_component_with_proxy_attaches_external_ref() -> None:
     proxy = "https://pypi-proxy.example.com/simple/"
     pkg = PyPIPackage(
         name="foo",
-        path=_PATH,
         requirement_file=_REQ_FILE,
         missing_req_file_checksum=False,
         package_type="sdist",
@@ -234,3 +223,43 @@ def test_to_component_with_proxy_attaches_external_ref() -> None:
     assert ref.url == proxy
     assert ref.type == PROXY_REF_TYPE
     assert ref.comment == PROXY_COMMENT
+
+
+def _url_package(**overrides: object) -> URLPackage:
+    kwargs: dict[str, object] = dict(
+        name="foo",
+        requirement_file=_REQ_FILE,
+        missing_req_file_checksum=False,
+        package_type="",
+        original_url="https://example.org/foo.tar.gz",
+        checksum="",
+    )
+    kwargs.update(overrides)
+    return URLPackage(**kwargs)  # type: ignore[arg-type]
+
+
+def test_url_package_verify_matches_any_recorded_hash(rooted_tmp_path: RootedPath) -> None:
+    """A URL package with multiple recorded hashes verifies if any algorithm matches."""
+    downloaded = rooted_tmp_path.join_within_root("foo.tar.gz")
+    downloaded.path.write_bytes(b"payload")
+    sha256 = hashlib.sha256(b"payload").hexdigest()
+
+    pkg = _url_package(
+        checksum="sha512:deadbeef",
+        checksums_to_match={ChecksumInfo("sha512", "deadbeef"), ChecksumInfo("sha256", sha256)},
+    )
+    pkg.path = downloaded.path
+
+    assert pkg.verify() is True
+
+
+def test_url_package_verify_falls_back_to_single_checksum(rooted_tmp_path: RootedPath) -> None:
+    """Without a hash set, verification falls back to the single ``checksum``."""
+    downloaded = rooted_tmp_path.join_within_root("foo.tar.gz")
+    downloaded.path.write_bytes(b"payload")
+    sha256 = hashlib.sha256(b"payload").hexdigest()
+
+    pkg = _url_package(checksum=f"sha256:{sha256}")
+    pkg.path = downloaded.path
+
+    assert pkg.verify() is True
