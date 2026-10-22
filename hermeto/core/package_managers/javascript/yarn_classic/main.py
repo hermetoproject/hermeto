@@ -61,7 +61,7 @@ def fetch_yarn_source(request: Request) -> RequestOutput:
     components: list[Component] = []
 
     def _ensure_mirror_dir_exists(output_dir: RootedPath) -> None:
-        output_dir.join_within_root(MIRROR_DIR).path.mkdir(parents=True, exist_ok=True)
+        output_dir.join_within_root(MIRROR_DIR).mkdir(parents=True, exist_ok=True)
 
     for package in request.yarn_packages:
         package_path = request.source_dir.join_within_root(package.path)
