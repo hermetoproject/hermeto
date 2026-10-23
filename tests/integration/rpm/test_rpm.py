@@ -92,6 +92,23 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
         pytest.param(
             utils.TestParameters(
                 packages=(
+                    {
+                        "path": ".",
+                        "type": "rpm",
+                        "options": {"ssl": {"ca_bundle": "/certificates/CA.crt", "ssl_verify": 0}},
+                    },
+                ),
+                check_output=False,
+            ),
+            id="rpm_user_agent",
+            marks=pytest.mark.skipif(
+                os.getenv("HERMETO_TEST_LOCAL_NEXUS") != "1",
+                reason="HERMETO_TEST_LOCAL_NEXUS!=1",
+            ),
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
                     {"path": "this-project", "type": "rpm", "include_summary_in_sbom": "true"},
                     {"path": "another-project", "type": "rpm"},
                 ),
