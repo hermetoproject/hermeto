@@ -14,6 +14,7 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     InvalidLockfileFormat,
     NotAGitRepo,
+    PackageRejected,
     UnexpectedFormat,
     UnsupportedFeature,
 )
@@ -26,6 +27,11 @@ from hermeto.core.package_managers.javascript.npm.utils import (
 )
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID, get_repo_id
+
+# npm does not install devDependencies of transitive deps — they are only
+# relevant for the packages being developed (root + selected workspaces).
+_TRANSITIVE_DEP_TYPES = ("dependencies", "optionalDependencies", "peerDependencies")
+_ALL_DEP_TYPES = (*_TRANSITIVE_DEP_TYPES, "devDependencies")
 
 
 class NpmComponentInfo(TypedDict):
@@ -140,12 +146,30 @@ class Package:
 class PackageLock:
     """A npm package-lock.json file."""
 
-    def __init__(self, lockfile_path: RootedPath, lockfile_data: dict[str, Any]) -> None:
+    def __init__(
+        self,
+        lockfile_path: RootedPath,
+        lockfile_data: dict[str, Any],
+        workspace_filter: list[str] | None = None,
+    ) -> None:
         """Initialize a PackageLock."""
         self._workspaces: list[str] = []
         self._lockfile_path = lockfile_path
         self._lockfile_data = lockfile_data
         self._main_package, self._packages = self._get_packages()
+
+        if workspace_filter is not None:
+            unknown = set(workspace_filter) - set(self._workspaces)
+            if unknown:
+                raise PackageRejected(
+                    f"Unknown npm workspaces: {', '.join(sorted(unknown))}",
+                    solution=(
+                        f"Use workspace paths from package-lock.json: {', '.join(self._workspaces)}"
+                    ),
+                )
+            reachable = self._get_reachable_packages(workspace_filter)
+            self._packages = [p for p in self._packages if p.path in reachable]
+            self._workspaces = [ws for ws in self._workspaces if ws in workspace_filter]
 
     @property
     def packages(self) -> list[Package]:
@@ -184,8 +208,16 @@ class PackageLock:
         return _Purlifier(pkg_path)
 
     @classmethod
-    def from_file(cls, lockfile_path: RootedPath) -> "PackageLock":
-        """Create a PackageLock from a package-lock.json file."""
+    def from_file(
+        cls,
+        lockfile_path: RootedPath,
+        workspace_filter: list[str] | None = None,
+    ) -> "PackageLock":
+        """Create a PackageLock from a package-lock.json file.
+
+        :param lockfile_path: path to the package-lock.json file
+        :param workspace_filter: optional list of workspace names to include
+        """
         lockfile_data = _load_json_file(lockfile_path.path)
 
         lockfile_version = lockfile_data.get("lockfileVersion")
@@ -195,7 +227,7 @@ class PackageLock:
                 solution="Please use a supported lockfileVersion, which are versions 2 and 3",
             )
 
-        return cls(lockfile_path, lockfile_data)
+        return cls(lockfile_path, lockfile_data, workspace_filter)
 
     def get_project_file(self) -> ProjectFile:
         """Return a ProjectFile for the npm package-lock.json data."""
@@ -236,6 +268,114 @@ class PackageLock:
             packages.append(Package(package_name, package_path, package_data))
 
         return main_package, packages
+
+    def _get_reachable_packages(self, workspace_filter: list[str]) -> set[str]:
+        """Get package paths reachable from selected workspaces and root deps.
+
+        Walks the dependency graph starting from root dependencies and each selected
+        workspace's declared dependencies. Follows npm's node_modules resolution
+        (closest ancestor first) and resolves workspace link entries to their targets.
+
+        :param workspace_filter: workspace directory names to include
+        :return: set of lockfile package paths that are reachable
+        """
+        packages_data = self._lockfile_data.get("packages", {})
+        lockfile_path = self._lockfile_path.path
+        pkg_dir = lockfile_path.parent if lockfile_path.is_file() else lockfile_path
+
+        # Each entry is (context_path, dep_name) where context_path determines
+        # the npm resolution search order for dep_name
+        pending: list[tuple[str, str]] = []
+
+        root_data = packages_data.get("", {})
+        for dep_type in _ALL_DEP_TYPES:
+            for dep_name in root_data.get(dep_type, {}).keys():
+                pending.append(("", dep_name))
+
+        reachable: set[str] = set()
+
+        for ws_name in workspace_filter:
+            reachable.add(ws_name)
+            self._enqueue_workspace_deps(pkg_dir, ws_name, pending)
+
+        visited: set[tuple[str, str]] = set()
+
+        while pending:
+            context_path, dep_name = pending.pop()
+            key = (context_path, dep_name)
+            if key in visited:
+                continue
+            visited.add(key)
+
+            resolved_path = self._resolve_dep_path(context_path, dep_name, packages_data)
+            if resolved_path is None or resolved_path in reachable:
+                continue
+
+            reachable.add(resolved_path)
+
+            pkg_data = packages_data.get(resolved_path, {})
+            if pkg_data.get("link") and (target := pkg_data.get("resolved")):
+                if target not in reachable:
+                    reachable.add(target)
+                    self._enqueue_workspace_deps(pkg_dir, target, pending)
+                    continue
+
+            for dep_type in _TRANSITIVE_DEP_TYPES:
+                for child_name in pkg_data.get(dep_type, {}).keys():
+                    pending.append((resolved_path, child_name))
+
+        return reachable
+
+    @staticmethod
+    def _enqueue_workspace_deps(
+        pkg_dir: Path, ws_name: str, pending: list[tuple[str, str]]
+    ) -> None:
+        """Read a workspace's package.json and add its deps to the pending queue.
+
+        :param pkg_dir: root directory containing workspace subdirectories
+        :param ws_name: workspace directory name
+        :param pending: queue of (context_path, dep_name) tuples to populate
+        """
+        ws_pkg_json_path = pkg_dir / ws_name / "package.json"
+        if ws_pkg_json_path.exists():
+            ws_pkg_json = _load_json_file(ws_pkg_json_path)
+            for dep_type in _ALL_DEP_TYPES:
+                for dep_name in ws_pkg_json.get(dep_type, {}).keys():
+                    pending.append((ws_name, dep_name))
+
+    @staticmethod
+    def _resolve_dep_path(
+        context_path: str, dep_name: str, packages_data: dict[str, Any]
+    ) -> str | None:
+        """Resolve a dependency name from a context path using npm resolution.
+
+        Walks up the node_modules hierarchy from context_path until the dependency
+        is found, mirroring Node.js module resolution.
+
+        :param context_path: lockfile package path to resolve from, e.g. ``""``,
+            ``"client"``, ``"node_modules/express"``, or
+            ``"node_modules/express/node_modules/qs"``
+        :param dep_name: package name to resolve
+        :param packages_data: the ``packages`` dict from the lockfile
+        :return: the resolved lockfile path, or None if not found
+        """
+        # current tracks the search context, walking up through ancestor
+        # node_modules directories: "node_modules/a/node_modules/b" -> "node_modules/a"
+        # -> "" (root). Workspace directories like "client" fall through to root.
+        current = context_path
+        while True:
+            candidate = (
+                f"{current}/node_modules/{dep_name}" if current else f"node_modules/{dep_name}"
+            )
+            if candidate in packages_data:
+                return candidate
+            if "/node_modules/" in current:
+                current = current.rsplit("/node_modules/", 1)[0]
+            elif current:
+                current = ""
+            else:
+                break
+        return None
 
     def get_main_package(self) -> NpmComponentInfo:
         """Return a dict with sbom component data for the main package."""
