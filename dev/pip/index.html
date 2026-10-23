@@ -2158,10 +2158,18 @@ the total download size and ensure compatibility with your target platform.</p>
 <h4 id="filter-options">Filter Options<a class="headerlink" href="#filter-options" title="Permanent link">&para;</a></h4>
 <p>The <code>binary</code> object accepts the following filter options:</p>
 <ul>
-<li>
-<p><strong><code>packages</code></strong>: Comma-separated list of package names to limit the filtering scope.
-  Default: <code>:all:</code>.</p>
-</li>
+<li><strong><code>packages</code></strong>: Comma-separated list of package names to limit the filtering
+  scope. Default: <code>:all:</code>. Prefix a name with <code>!</code> to fetch that package only as
+  an sdist. A list containing only exclusions (for example, <code>!numpy,!pandas</code>)
+  implicitly includes <code>:all:</code> for other packages, retaining the "Prefer binaries"
+  behavior described above. An explicit list of positive names retains the "Only
+  binaries for specific packages" behavior.</li>
+</ul>
+<p>Names are matched case-insensitively, with <code>.</code>, <code>_</code>, and <code>-</code> normalized
+  according to Python package-name rules. Exclusions apply to registry
+  dependencies only. If an excluded package has no sdist matching the required
+  checksums, prefetching fails with an error.</p>
+<ul>
 <li>
 <p><strong><code>arch</code></strong>: Architecture filter. Accepts comma-separated values. Default: <code>"x86_64"</code>.</p>
 </li>
@@ -2218,6 +2226,19 @@ the total download size and ensure compatibility with your target platform.</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>Prefer wheels except for packages that must be built from source:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pip"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"binary"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"packages"</span><span class="p">:</span><span class="w"> </span><span class="s2">"!numpy,!pandas"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"py_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">312</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>NumPy and pandas are fetched only as sdists. Other dependencies are fetched as
+compatible wheels plus an sdist when available, falling back to sdists if no
+wheel matches. Source-only dependencies also need their build requirements to
+be declared in <code>requirements-build.txt</code> for an offline build.</p>
 <h3 id="building-from-source">Building from source<a class="headerlink" href="#building-from-source" title="Permanent link">&para;</a></h3>
 <p>Building wheels from sdists takes a long time, but building from source gives
 you an important guarantee which using pre-built wheels does not: what you
