@@ -17,8 +17,10 @@ from pydantic import (
 from pydantic_core import ErrorDetails
 from pydantic_settings import (
     BaseSettings,
+    EnvSettingsSource,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
+    SettingsError,
     YamlConfigSettingsSource,
 )
 
@@ -351,6 +353,18 @@ def _present_config_error(validation_error: ValidationError) -> str:
     )
 
 
+def _present_settings_error(settings_error: SettingsError) -> str:
+    """Format pydantic-settings source errors into an actionable message."""
+    msg = str(settings_error)
+    # SettingsError format: 'error parsing value for field "http" from source "EnvSettingsSource"'
+    field = msg.split('"')[1] if '"' in msg else "unknown"
+
+    return (
+        f"Failed to parse environment variable for the '{field}' section. "
+        f"Nested sections must be valid JSON when set via environment variables."
+    )
+
+
 def get_config() -> Config:
     """Get the configuration singleton."""
     global config
@@ -360,6 +374,17 @@ def get_config() -> Config:
             config = Config()
         except ValidationError as e:
             raise InvalidInput(_present_config_error(e)) from e
+        except SettingsError as e:
+            raise InvalidInput(_present_settings_error(e)) from e
+        except yaml.YAMLError as e:
+            mark = getattr(e, "problem_mark", None)
+            location = (
+                f" at line {mark.line + 1}, column {mark.column + 1}" if mark is not None else ""
+            )
+            source = f" in {mark.name}" if mark and getattr(mark, "name", None) else ""
+            raise InvalidInput(
+                f"Invalid YAML{source}{location}. Check your configuration files for syntax errors."
+            ) from e
 
     return config
 
@@ -372,8 +397,74 @@ def set_config(path: Path) -> Config:
         Config.model_validate(yaml.safe_load(path.read_text()))
     except ValidationError as e:
         raise InvalidInput(_present_config_error(e)) from e
+    except yaml.YAMLError as e:
+        # Only report file path and location, never raw snippets — secrets
+        # in the file must not leak into error output (GHSA-w9qc-9m5h-qqmh).
+        mark = getattr(e, "problem_mark", None)
+        location = f" at line {mark.line + 1}, column {mark.column + 1}" if mark is not None else ""
+        raise InvalidInput(f"Invalid YAML in configuration file {path}{location}") from e
 
     # Workaround for https://github.com/pydantic/pydantic-settings/issues/259
     cli_config_class = create_cli_config_class(path)
-    config = cli_config_class()
+    try:
+        config = cli_config_class()
+    except SettingsError as e:
+        raise InvalidInput(_present_settings_error(e)) from e
     return config
+
+
+def get_source_data(cli_config_path: Path | None = None) -> dict[str, dict[str, Any]]:
+    """Return raw config values from each source without model validation.
+
+    Calls each pydantic-settings source directly so this works even when the
+    config as a whole would fail validation (e.g. proxy_login set without
+    proxy_password).  The returned dict has two keys:
+
+    - ``"env"``: values provided via environment variables (``HERMETO_*``)
+    - ``"file"``: values from any YAML config file (default paths + CLI path)
+
+    Both values are nested dicts mirroring the Config field structure.
+
+    :param cli_config_path: optional path passed via ``--config-file``; appended
+        after the default file search paths so it takes highest priority.
+    """
+    try:
+        env_data = dict(EnvSettingsSource(Config)())
+    except Exception as exc:
+        # Malformed complex env values (e.g. invalid JSON in HERMETO_HTTP)
+        # must not prevent the config command from showing diagnostics.
+        log.debug("Failed to parse environment settings: %s", exc)
+        env_data = {}
+
+    # Merge all file sources; later sources in the list have higher priority,
+    # mirroring the priority order in settings_customise_sources.
+    file_paths: list[Path | str] = list(CONFIG_FILE_PATHS)
+    if cli_config_path is not None:
+        file_paths.append(cli_config_path)
+
+    merged_file_data: dict[str, Any] = {}
+    for path in file_paths:
+        try:
+            source_data = dict(YamlConfigSettingsSource(Config, yaml_file=path)())
+        except Exception as exc:
+            # Non-existent or unreadable files are silently skipped.
+            # Avoid logging the raw exception — YAML parser errors can
+            # include file content snippets that may contain secrets.
+            mark = getattr(exc, "problem_mark", None)
+            location = (
+                f" (line {mark.line + 1}, column {mark.column + 1})" if mark is not None else ""
+            )
+            log.debug("Skipping config file %s%s: %s", path, location, type(exc).__name__)
+            continue
+        _deep_merge(merged_file_data, source_data)
+
+    return {"env": env_data, "file": merged_file_data}
+
+
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:
+    """Merge *override* into *base* in-place, recursing into nested dicts."""
+    for key, value in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_merge(base[key], value)
+        else:
+            base[key] = value
