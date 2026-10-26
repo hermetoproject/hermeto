@@ -20,6 +20,7 @@ services:
       - "8443:443"
       - "8444:444"
       - "8445:445"
+      - "8446:446"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
       - ./htpasswd:/etc/nginx/auth/htpasswd:ro,z
