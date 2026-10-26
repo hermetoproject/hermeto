@@ -205,4 +205,5 @@ jobs:
         run: >-
           /var/tmp/venv/bin/nox -s integration-tests --
           -n 0 -k 'test_fetch_without_yarn_shims_and_reuse_cached_release or
+          test_fetch_ignores_project_yarn_path or
           yarn_classic_e2e_multiple_packages or yarn_e2e_workspace_focus'
