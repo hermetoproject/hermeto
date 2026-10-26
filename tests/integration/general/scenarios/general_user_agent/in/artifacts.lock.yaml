@@ -1,0 +1,5 @@
+metadata:
+    version: "2.0"
+artifacts:
+    - download_url: http://127.0.0.1:8446/repository/user-agent/artifact.txt
+      checksum: "sha256:c4855d0fb11a54de4b349adccb12266c5be340192ec5b4b49d8716bde2abc9d2"

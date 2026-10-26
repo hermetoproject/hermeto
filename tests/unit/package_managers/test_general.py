@@ -197,7 +197,7 @@ async def test_async_download_binary_file(tmp_path: Path) -> None:
         timeout=aiohttp.ClientTimeout(total=None, connect=30, sock_read=300),
         raise_for_status=True,
         ssl=None,
-        headers=None,
+        headers={"User-Agent": general.USER_AGENT},
     )
 
 

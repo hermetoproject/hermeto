@@ -24,6 +24,7 @@ from urllib3.connectionpool import ConnectionPool
 from urllib3.response import BaseHTTPResponse
 from urllib3.util.retry import Retry
 
+from hermeto import APP_NAME, APP_VERSION
 from hermeto.core.config import ProxyUrl, get_config
 from hermeto.core.errors import FetchError
 from hermeto.core.scm import get_repo_id
@@ -35,6 +36,10 @@ SAFE_REQUEST_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 BACKOFF_FACTOR = 1.3
 STATUS_FORCELIST = (429, 500, 502, 503, 504)
 DEFAULT_CHUNK_SIZE = 65536  # 64KB
+# Library-default User-Agents (e.g. "python-requests/2.34.2") look like scraper traffic to
+# registries such as Maven Central, which then throttle or block the whole source IP, see
+# https://central.sonatype.org/faq/429-tooling-provider/
+USER_AGENT = f"{APP_NAME}/{APP_VERSION} (+https://github.com/hermetoproject/hermeto)"
 
 
 log = logging.getLogger(__name__)
@@ -151,6 +156,7 @@ def _get_pkg_requests_session() -> requests.Session:
     if _pkg_requests_session is None:
         max_retries = get_config().http.max_retries
         _pkg_requests_session = Session()
+        _pkg_requests_session.headers["User-Agent"] = USER_AGENT
         adapter = HTTPAdapter(
             max_retries=SyncLoggingRetry(
                 backoff_factor=BACKOFF_FACTOR,
@@ -293,7 +299,11 @@ async def _async_download_binary_file_with_retry(
 
     try:
         async with session.get(
-            url, timeout=timeout, raise_for_status=True, ssl=ssl_context, headers=headers
+            url,
+            timeout=timeout,
+            raise_for_status=True,
+            ssl=ssl_context,
+            headers=(headers or {}) | {"User-Agent": USER_AGENT},
         ) as response:
             async with aiofiles.open(download_path, "wb") as f:
                 async for chunk in response.content.iter_chunked(chunk_size):
@@ -405,6 +415,7 @@ async def async_download_files(
         trust_env=True,
         # preserve percent-encoding in redirect URLs (e.g. signed CloudFront URLs)
         requote_redirect_url=False,
+        headers={"User-Agent": USER_AGENT},
     )
 
     async with retry_client as session:
