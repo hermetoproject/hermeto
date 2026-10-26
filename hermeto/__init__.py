@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import importlib.metadata
 import importlib.util as imputil
 import sys
 from pathlib import Path
@@ -18,4 +19,16 @@ def _get_app_name() -> str:
     return name
 
 
+def _get_app_version() -> str:
+    """Get the version of the installed hermeto distribution."""
+    try:
+        return importlib.metadata.version("hermeto")
+    except importlib.metadata.PackageNotFoundError:
+        # Both CLI entry points only exist once hermeto is installed, so this can only happen when
+        # importing hermeto from a source tree that was never installed (e.g. via PYTHONPATH).
+        # Don't let missing metadata break every import of the package in that case.
+        return "unknown"
+
+
 APP_NAME = _get_app_name()
+APP_VERSION = _get_app_version()
