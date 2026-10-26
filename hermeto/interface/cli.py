@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import enum
 import functools
-import importlib.metadata
 import json
 import logging
 import shutil
@@ -13,7 +12,7 @@ from typing import Any
 import pydantic
 import typer
 
-from hermeto import APP_NAME
+from hermeto import APP_NAME, APP_VERSION
 from hermeto.core.config import get_config, set_config
 from hermeto.core.constants import Mode
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
@@ -159,7 +158,7 @@ def version_callback(value: bool) -> None:
     if not value:
         return
 
-    print(APP_NAME, importlib.metadata.version("hermeto"))
+    print(APP_NAME, APP_VERSION)
     raise typer.Exit()
 
 
