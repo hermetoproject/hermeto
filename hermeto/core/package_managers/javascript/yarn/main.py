@@ -61,6 +61,7 @@ from hermeto.core.package_managers.javascript.yarn.utils import (
     extract_yarn_version_from_env,
     run_yarn_cmd,
 )
+from hermeto.core.package_managers.javascript.yarn_installer import install_yarn
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID, canonicalize_origin_url
 
@@ -192,7 +193,7 @@ def _resolve_yarn_project(
 
     project.yarn_rc["plugins"] = _get_plugin_allowlist(project.yarn_rc)
     project.yarn_rc.write()
-    version = _configure_yarn_version(project)
+    version, yarn_bin = _configure_yarn_version(project)
 
     if workspaces and version < semver.Version.parse("4.0.0"):
         raise PackageRejected(
@@ -212,14 +213,18 @@ def _resolve_yarn_project(
     _set_yarnrc_configuration(project, output_dir, version)
 
     if not git_deps:
-        packages = resolve_packages(project.source_dir, workspaces)
+        packages = resolve_packages(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
-        _fetch_dependencies(project.source_dir, workspaces)
+        _fetch_dependencies(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
-        with _hide_dev_dependencies(project):
-            prod_packages = resolve_packages(project.source_dir, workspaces)
+        with _hide_dev_dependencies(project, yarn_bin=yarn_bin):
+            prod_packages = resolve_packages(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
-        return create_components(packages, prod_packages, project, output_dir), [], git_deps
+        return (
+            create_components(packages, prod_packages, project, output_dir, yarn_bin=yarn_bin),
+            [],
+            git_deps,
+        )
 
     # When git deps are present the processing order is intentionally inverted
     # compared to the normal path above: we must fetch first (to update the
@@ -228,29 +233,37 @@ def _resolve_yarn_project(
     project_files, tarball_vcs_url_map = _clone_and_resolve_git_deps(project, git_deps, output_dir)
 
     with _immutable_installs_disabled(project):
-        _fetch_dependencies(project.source_dir, workspaces)
+        _fetch_dependencies(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
     project_files.append(_build_lockfile_project_file(project, output_dir))
 
-    packages = resolve_packages(project.source_dir, workspaces)
+    packages = resolve_packages(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
-    _fetch_dependencies(project.source_dir, workspaces)
+    _fetch_dependencies(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
-    with _hide_dev_dependencies(project):
-        prod_packages = resolve_packages(project.source_dir, workspaces)
+    with _hide_dev_dependencies(project, yarn_bin=yarn_bin):
+        prod_packages = resolve_packages(project.source_dir, workspaces, yarn_bin=yarn_bin)
 
     log.debug("Resolved %d total locators", len(packages))
     log.debug("Resolved %d production locators", len(prod_packages))
     return (
-        create_components(packages, prod_packages, project, output_dir, tarball_vcs_url_map),
+        create_components(
+            packages,
+            prod_packages,
+            project,
+            output_dir,
+            tarball_vcs_url_map,
+            yarn_bin=yarn_bin,
+        ),
         project_files,
         git_deps,
     )
 
 
-def _configure_yarn_version(project: Project) -> semver.Version:
-    """Resolve the yarn version and set it in the package.json file if needed.
+def _configure_yarn_version(project: Project) -> tuple[semver.Version, Path]:
+    """Resolve the yarn version, install it, and set packageManager if needed.
 
+    :return: tuple of (resolved version, path to the yarn JS entry point).
     :raises PackageRejected:
         if the yarn version can't be determined from either yarnPath or packageManager
         if there is a mismatch between the yarn version specified by yarnPath and PackageManager
@@ -298,9 +311,11 @@ def _configure_yarn_version(project: Project) -> semver.Version:
         project.package_json["packageManager"] = f"yarn@{yarn_path_version}"
         project.package_json.write()
 
-    _verify_corepack_yarn_version(version, project.source_dir)
+    # packageManager may pin a checksum even when yarnPath specifies the same release.
+    yarn_bin = install_yarn(package_manager_version or version)
+    _verify_yarn_version(version, project.source_dir, yarn_bin)
 
-    return version
+    return version, yarn_bin
 
 
 def _get_plugin_allowlist(yarn_rc: YarnRc) -> list[Plugin]:
@@ -387,7 +402,7 @@ def _immutable_installs_disabled(project: Project) -> Generator[None, None, None
 
 
 @contextmanager
-def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
+def _hide_dev_dependencies(project: Project, *, yarn_bin: Path) -> Generator[None, None, None]:
     """Temporarily remove devDependencies from every package.json in the source directory."""
     global_folder = project.yarn_rc.get("globalFolder")
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -414,7 +429,11 @@ def _hide_dev_dependencies(project: Project) -> Generator[None, None, None]:
         lockfile = project.source_dir.join_within_root(filename)
         content = lockfile.path.read_text()
         try:
-            run_yarn_cmd(["install", "--mode", "update-lockfile"], project.source_dir)
+            run_yarn_cmd(
+                ["install", "--mode", "update-lockfile"],
+                project.source_dir,
+                yarn_bin=yarn_bin,
+            )
             yield
         finally:
             for package_json, deps in saved_deps:
@@ -470,7 +489,12 @@ def _strip_workspace_scripts(source_dir: RootedPath) -> None:
         _remove_scripts_field(PackageJson.from_dir(workspace_dir))
 
 
-def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = None) -> None:
+def _fetch_dependencies(
+    source_dir: RootedPath,
+    workspaces: list[str] | None = None,
+    *,
+    yarn_bin: Path,
+) -> None:
     """Fetch dependencies using 'yarn install' or 'yarn workspaces focus'.
 
     When workspaces are specified, only the dependencies of those workspaces (and their
@@ -478,6 +502,7 @@ def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = N
 
     :param source_dir: the directory in which the yarn command will be called.
     :param workspaces: optional list of workspace names to focus on (Yarn v4 only).
+    :param yarn_bin: path to the yarn JS entry point.
     :raises PackageManagerError: if the yarn command fails.
     """
     try:
@@ -487,9 +512,9 @@ def _fetch_dependencies(source_dir: RootedPath, workspaces: list[str] | None = N
             # https://github.com/yarnpkg/berry/blob/7744e6678de126a2ca2398d4123e3f7e009256b8/packages/docusaurus/static/configuration/yarnrc.json#L252
             _strip_workspace_scripts(source_dir)
 
-            run_yarn_cmd(["workspaces", "focus", *workspaces], source_dir)
+            run_yarn_cmd(["workspaces", "focus", *workspaces], source_dir, yarn_bin=yarn_bin)
         else:
-            run_yarn_cmd(["install", "--mode", "skip-build"], source_dir)
+            run_yarn_cmd(["install", "--mode", "skip-build"], source_dir, yarn_bin=yarn_bin)
     except PackageManagerError as e:
         # TODO: this follows a precedent set in resolver. Either a more robust way for
         # dealing with this must be found or a comment provided that such methods do not exist.
@@ -514,13 +539,15 @@ def _generate_environment_variables() -> list[EnvironmentVariable]:
     return [EnvironmentVariable(name=key, value=value) for key, value in env_vars.items()]
 
 
-def _verify_corepack_yarn_version(expected_version: semver.Version, source_dir: RootedPath) -> None:
-    """Verify that corepack installed the correct version of yarn by checking `yarn --version`."""
-    installed_yarn_version = extract_yarn_version_from_env(source_dir)
+def _verify_yarn_version(
+    expected_version: semver.Version, source_dir: RootedPath, yarn_bin: Path
+) -> None:
+    """Verify that the installed yarn reports the expected version."""
+    installed_yarn_version = extract_yarn_version_from_env(source_dir, yarn_bin=yarn_bin)
     if installed_yarn_version != expected_version:
         raise PackageManagerError(
-            f"{APP_NAME} expected corepack to install yarn@{expected_version} but instead "
-            f"found yarn@{installed_yarn_version}."
+            f"{APP_NAME} expected yarn@{expected_version} but the installed binary "
+            f"reports yarn@{installed_yarn_version}."
         )
 
     log.info("Processing the request using yarn@%s", installed_yarn_version)

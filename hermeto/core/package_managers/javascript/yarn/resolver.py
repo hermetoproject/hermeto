@@ -139,7 +139,12 @@ class _YarnInfoEntry(pydantic.BaseModel):
     children: _YarnInfoChildren
 
 
-def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None) -> list[Package]:
+def resolve_packages(
+    source_dir: RootedPath,
+    workspaces: list[str] | None = None,
+    *,
+    yarn_bin: Path,
+) -> list[Package]:
     """Fetch and parse package data from the 'yarn info' output.
 
     When *workspaces* is provided, runs ``yarn workspace $name info`` for each
@@ -151,13 +156,14 @@ def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None
 
     :param source_dir: the directory containing the yarn project.
     :param workspaces: optional list of workspace names to scope the query to.
+    :param yarn_bin: path to the yarn JS entry point.
     :raises UnsupportedFeature: if an unsupported locator type is found in 'yarn info' output
     :raises PackageManagerError: if the 'yarn info' command fails.
     """
     if workspaces:
-        packages = _resolve_workspace_packages(source_dir, workspaces)
+        packages = _resolve_workspace_packages(source_dir, workspaces, yarn_bin=yarn_bin)
     else:
-        packages = _resolve_all_packages(source_dir)
+        packages = _resolve_all_packages(source_dir, yarn_bin=yarn_bin)
 
     n_unsupported = 0
     for package in packages:
@@ -175,10 +181,12 @@ def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None
     return packages
 
 
-def _get_packages_from_yarn_info(args: list[str], source_dir: RootedPath) -> list[Package]:
+def _get_packages_from_yarn_info(
+    args: list[str], source_dir: RootedPath, *, yarn_bin: Path
+) -> list[Package]:
     """Run a ``yarn info`` variant and return the parsed packages."""
     try:
-        result = run_yarn_cmd(args, source_dir)
+        result = run_yarn_cmd(args, source_dir, yarn_bin=yarn_bin)
     except PackageManagerError as e:
         if e.stderr and "isn't supported by any available resolver" in e.stderr:
             raise UnsupportedFeature(
@@ -197,23 +205,30 @@ def _get_packages_from_yarn_info(args: list[str], source_dir: RootedPath) -> lis
     return [Package.from_info_string(info) for info in result.splitlines()]
 
 
-def _resolve_all_packages(source_dir: RootedPath) -> list[Package]:
+def _resolve_all_packages(source_dir: RootedPath, *, yarn_bin: Path) -> list[Package]:
     # --all: report dependencies of all workspaces, not just the active workspace
     # --recursive: report transitive dependencies, not just direct ones
     # --cache: include info about the cache entry for each dependency
     return _get_packages_from_yarn_info(
-        ["info", "--all", "--recursive", "--cache", "--json"], source_dir
+        ["info", "--all", "--recursive", "--cache", "--json"], source_dir, yarn_bin=yarn_bin
     )
 
 
-def _resolve_workspace_packages(source_dir: RootedPath, workspaces: list[str]) -> list[Package]:
+def _resolve_workspace_packages(
+    source_dir: RootedPath,
+    workspaces: list[str],
+    *,
+    yarn_bin: Path,
+) -> list[Package]:
     seen: dict[str, Package] = {}
 
     for ws_name in workspaces:
         # Run info scoped to a single workspace (without --all), so yarn only reports
         # the transitive dependencies of that workspace rather than the full project.
         packages = _get_packages_from_yarn_info(
-            ["workspace", ws_name, "info", "--recursive", "--cache", "--json"], source_dir
+            ["workspace", ws_name, "info", "--recursive", "--cache", "--json"],
+            source_dir,
+            yarn_bin=yarn_bin,
         )
         # Deduplicate across workspaces: overlapping deps appear only once
         for pkg in packages:
@@ -229,6 +244,8 @@ def create_components(
     project: Project,
     output_dir: RootedPath,
     tarball_vcs_url_map: TarballVcsUrlMap | None = None,
+    *,
+    yarn_bin: Path,
 ) -> list[Component]:
     """Create SBOM components for all the packages parsed from the 'yarn info' output.
 
@@ -251,7 +268,7 @@ def create_components(
             package_mapping[package.parsed_locator] = package
 
     component_resolver = _ComponentResolver(
-        dev_locators, patch_locators, project, output_dir, tarball_vcs_url_map
+        dev_locators, patch_locators, project, output_dir, tarball_vcs_url_map, yarn_bin=yarn_bin
     )
     return [component_resolver.get_component(package) for package in package_mapping.values()]
 
@@ -284,12 +301,15 @@ class _ComponentResolver:
         project: Project,
         output_dir: RootedPath,
         tarball_vcs_url_map: TarballVcsUrlMap | None = None,
+        *,
+        yarn_bin: Path,
     ) -> None:
         """Initialize the component resolver."""
         self._project = project
         self._output_dir = output_dir
         self._dev_raw_locators = dev_raw_locators
         self._tarball_vcs_url_map = tarball_vcs_url_map or {}
+        self._yarn_bin = yarn_bin
         self._pedigree_mapping = self._get_pedigree_mapping(patch_locators)
         self._proxy_url = get_config().yarn.proxy_url
 
@@ -299,7 +319,9 @@ class _ComponentResolver:
 
         if patch_locators:
             # Builtin patches are included with the version of yarn being used
-            yarn_version = extract_yarn_version_from_env(self._project.source_dir)
+            yarn_version = extract_yarn_version_from_env(
+                self._project.source_dir, yarn_bin=self._yarn_bin
+            )
 
         for patch_locator in patch_locators:
             # Patches can patch other patches, so find the true parent Component
