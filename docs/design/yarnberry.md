@@ -19,10 +19,11 @@ read.*
 
 ### Developer Workflow
 
-1. **Prerequisites**: A version of Node.js with [Corepack][corepack]
-   enabled, or a global Yarn installation. Projects typically commit the Yarnberry binary into the
-   repo via `yarn init -2`, which stores it in `.yarn/releases/` and configures it in `.yarnrc.yml`.
-   The version is also saved in `package.json` under the `packageManager` field.
+1. **Prerequisites**: Node.js and the project's Yarn version. Projects can
+   declare the version in the `packageManager` field of `package.json`, and
+   optionally commit the Yarnberry binary in `.yarn/releases/`, referenced by
+   `yarnPath` in `.yarnrc.yml`. Hermeto installs its own copy for prefetch, as
+   described in [Installing Yarnberry](#installing-yarnberry).
 
 2. **Adding dependencies**: Dependencies are declared in `package.json` and added via `yarn add`.
    The resolved dependency tree is recorded in `yarn.lock`.
@@ -363,9 +364,11 @@ Hermeto will rely on Yarnberry itself to populate the offline cache during prefe
 
 #### Prefetch Implementation
 
-Once you've [installed Yarnberry][yarn-install-guide],
-[dealt with plugins](#dealing-with-plugins) and the
-[user configuration](#dealing-with-user-configuration), prefetching is simple.
+After Hermeto [filters plugins](#dealing-with-plugins),
+[installs Yarnberry](#installing-yarnberry) and overrides the
+[user configuration](#dealing-with-user-configuration), it can prefetch
+dependencies. The `yarn` commands below are shorthand for
+`node <selected-yarn.js> <arguments>`.
 
 [Zero-installs][zero-installs] workflow will be rejected with a `PackageRejected` error.
 
@@ -437,58 +440,63 @@ directory (deps/yarn/cache/).
 
 ### Build Environment Config
 
-#### [Installing Yarnberry][yarn-install-guide]
+#### Installing Yarnberry
 
-As we've thoroughly established earlier, Hermeto will depend on Yarnberry to populate the offline cache. How can we install Yarnberry in the Hermeto container? Even better, how can we make sure we always have exactly the same version as the user? (And is that actually a good idea?)
+Hermeto requires Node.js and installs the selected Yarn release itself.
+A global `yarn` executable is not required for prefetch.
 
-When one runs `yarn init -2`, two things happen:
-1. Yarnberry
-   [commits itself into the repository](https://github.com/chmeliik/berryscary/tree/main/.yarn/releases)
-   and configures itself
-   [in .yarnrc.yml](https://github.com/chmeliik/berryscary/blob/3cad13a72a9367c806d3c8d7ee8c6107528ee184/.yarnrc.yml#L7)
-2. And saves its version
-   [in package.json](https://github.com/chmeliik/berryscary/blob/3cad13a72a9367c806d3c8d7ee8c6107528ee184/package.json#L3)
-
-If you have any version of Yarn (yes, even the latest v1) and the repo has `yarnPath` set, then any
-`yarn` command executed in the repo will automatically use the locally stored yarn executable.
-
-If the repo does not set `yarnPath` but does have `packageManager` in `package.json`, then
-[Corepack][corepack] comes into play. Corepack comes
-with a `yarn` "shim" which automatically downloads the right version of Yarn and uses it.
-
-```
-$ cat /usr/local/bin/yarn
-#!/usr/bin/env node
-require('./lib/corepack.cjs').runMain(['yarn', ...process.argv.slice(2)]);
-```
-
-When you have this shim installed and invoke `yarn` in a project that sets packageManager in package.json, Corepack will automatically download the right version of Yarn[berry] and use it to execute your command.
-
-Failing all the above (no `yarnPath`, no `packageManager` or no Corepack), the globally installed
-`yarn` will be used (if there is one).
+1. Hermeto reads the version from `packageManager` in `package.json` or from
+   the `yarn-<version>.cjs` filename in `yarnPath`. The version must be supported
+   (`>=3.0.0,<5.0.0`). If neither setting supplies a version, the request is
+   rejected. If both supply a version, they must agree. When `packageManager`
+   is unspecified, Hermeto writes the version inferred from `yarnPath` to it.
+2. Hermeto downloads the standalone Berry bundle from
+   `https://repo.yarnpkg.com/{version}/packages/yarnpkg-cli/bin/yarn.js`.
+   Optional checksum metadata in `packageManager`, in the form
+   `yarn@<version>+<algorithm>.<hex-digest>`, is validated before downloading.
+   The downloaded bundle must match that checksum before it is cached or run.
+   The download URL uses the release version without checksum metadata.
+3. The installer stages downloads in the cache directory and publishes the
+   completed installation with an atomic rename. The cache is located at
+   `$XDG_CACHE_HOME/hermeto/yarn/<version-spec>/`, defaulting to
+   `~/.cache/hermeto/yarn/<version-spec>/`. The full version specification,
+   including any checksum, identifies the cache entry. An existing entry is
+   reused without downloading or rechecking its checksum.
+4. Hermeto verifies the selected executable with
+   `node <selected-yarn.js> --version`. It sets `YARN_IGNORE_PATH=true` for
+   this check and `ignorePath: true` for subsequent prefetch commands, so Yarn
+   does not delegate to the project's `yarnPath` executable. The reported
+   version must match the selected release.
+5. All Yarn commands run as `node <selected-yarn.js> <arguments>` using the
+   same selected executable. This includes dependency queries, installs,
+   workspace focus, production dependency detection and version queries for
+   SBOM patch metadata. There is no fallback to a `yarn` command on `PATH`.
 
 #### Design Considerations
 
-Two key decisions arise from this architecture:
+The committed Yarnberry binary is untrusted for the same reasons as plugins
+and the exec protocol. Hermeto uses `yarnPath` only to infer a version from
+the filename; it executes the release obtained from Yarn's distribution
+endpoint. Project metadata selects a supported release, not an executable
+path or an arbitrary download URL.
 
-1. **Trusting the committed Yarnberry binary**: The binary in `.yarn/releases/` is untrusted for the same reasons as plugins and the exec protocol.
-2. **Trusting Corepack**: Corepack validates that the `packageManager` field follows the `<supported_pkg_manager>@<semver>` format. Users can specify expected checksums for additional protection, though this does not protect against a malicious user. Using a dynamically fetched version does not hurt reproducibility since the version is pinned in `package.json`.
-
-The chosen approach (**do not trust the binary, trust Corepack**):
-
-1. Install Corepack in the Hermeto container, enable the `yarn` shim
-2. Before processing a Yarnberry project, validate that it sets `packageManager`
-    - If the project doesn’t set `packageManager` but does set `yarnPath`, parse the version from the filename in `yarnPath` (and use Corepack to get that version)
-    - If the project sets both and `yarnPath` includes a version, validate that the versions match
-3. When running any `yarn` commands, set the `ignorePath` option (or the `YARN_IGNORE_PATH` variable) to use the global `yarn` rather than the local one
+This design trusts the upstream Yarn release and Hermeto's local executable
+cache. An optional user-provided checksum verifies the downloaded bytes; it
+does not establish that the code is safe. Hermeto still executes Yarn during
+prefetch, so the plugin, script and configuration restrictions described
+below remain necessary. Plugins are filtered before the version check runs.
 
 #### User Requirements
 
-Users should continue to check in the `.yarn/releases/yarn-{version}.cjs` binary. For most users, this is the way to make a version of Yarnberry available to the hermetic build, as official base images typically do not include Yarn Berry.
+The offline build environment must provide Node.js and the same Yarn release
+used for prefetch. Hermeto's cached executable is not included in the request
+output; it is separate from the dependencies under `deps/yarn/`.
 
-Hermeto ignores the committed binary and uses the one downloaded by Corepack instead. The version in `packageManager` must match the version in the binary filename to prevent accidental mismatches.
-
-The user, if they cannot get any `yarn` executable through other means, can replace calls to `yarn` with `node .yarn/releases/yarn-{version}.cjs`. Or create an equivalent shell script in $PATH/yarn.
+Users can provide Yarn in their build image or commit
+`.yarn/releases/yarn-{version}.cjs` and invoke it with
+`node .yarn/releases/yarn-{version}.cjs`. Hermeto ignores that file during
+prefetch. If `yarnPath` contains a version in its filename, that version must
+agree with `packageManager` when both are specified.
 
 #### Dealing with Plugins
 
@@ -564,7 +572,7 @@ Hermeto overrides the following options during prefetch:
 | [`npmRegistryServer`][v4-npmRegistryServer] | proxy URL | Redirect registry traffic through proxy (only when proxy is configured) |
 | [`npmAlwaysAuth`](https://yarnpkg.com/configuration/yarnrc#npmAlwaysAuth) | `true` | Force authentication (only when proxy credentials are provided) |
 | [`npmAuthIdent`](https://yarnpkg.com/configuration/yarnrc#npmAuthIdent) | `<login>:<password>` | Proxy credentials (only when proxy credentials are provided) |
-| [`ignorePath`](https://yarnpkg.com/configuration/yarnrc#ignorePath) | `true` | Use global `yarn` instead of local |
+| [`ignorePath`](https://yarnpkg.com/configuration/yarnrc#ignorePath) | `true` | Keep using Hermeto's selected executable instead of delegating to `yarnPath` |
 | [`unsafeHttpWhitelist`](https://yarnpkg.com/configuration/yarnrc#unsafeHttpWhitelist) | `[]` | Disallow HTTP |
 
 ##### Respect for Prefetch
@@ -574,7 +582,7 @@ Hermeto overrides the following options during prefetch:
 | [`cacheFolder`][cacheFolder] | To find out and reject if the user is using [zero-installs][zero-installs] |
 | [`lockfileFilename`](https://yarnpkg.com/configuration/yarnrc#lockfileFilename) | Parse the lockfile specified here (default yarn.lock); probably not needed if we base SBOM generation on `yarn info` output instead |
 | [`npmRegistryServer`][v4-npmRegistryServer] and [`npmScopes`](https://yarnpkg.com/configuration/yarnrc#npmScopes) | The user can configure multiple different registries; if we don't respect them we cause Dependency Confusion. `yarn install` will respect them automatically |
-| [`yarnPath`](https://yarnpkg.com/configuration/yarnrc#yarnPath) | Depending on how we [handle Yarnberry installs][yarn-install-guide] |
+| [`yarnPath`](https://yarnpkg.com/configuration/yarnrc#yarnPath) | Infer the release from the filename as described in [Installing Yarnberry](#installing-yarnberry); the file is not executed during prefetch |
 
 #### Environment Variables
 
@@ -597,6 +605,10 @@ These variables are set internally by Hermeto during the prefetch process:
 | Variable Name | Value | Purpose |
 |---------------|-------|---------|
 | `NODE_USE_SYSTEM_CA` | `1` | Allow Node.js to use the OS trust store (certificates added via `update-ca-trust`) |
+
+Version queries also set `YARN_IGNORE_PATH=true` to prevent delegation to
+`yarnPath`, including the initial check before the prefetch configuration is
+written.
 
 #### Configuration Files
 
@@ -624,7 +636,9 @@ Optional:
 
 1. Strip untrusted plugins from `.yarnrc.yml` (must happen before any `yarn` command, since Yarn
    Berry loads plugins at startup)
-2. Make sure we will use the right version of Yarnberry to process the project
+2. Select, install or reuse, and verify the Yarnberry release as described in
+   [Installing Yarnberry](#installing-yarnberry); pass its executable path to
+   every subsequent Yarn command
 3. If workspace focus is requested, validate that the project uses Yarn v4+
 4. Check and reject if the project uses zero-installs
 5. Prepare the configuration options relevant for prefetch (including proxy settings if configured)
@@ -654,8 +668,9 @@ wherever it wants, Hermeto wouldn't know about it. We should prevent arbitrary c
 
 - ~~preinstall, install and postinstall lifecycle scripts in package.json~~ — solved by
   `--mode=skip-build` (see [Prefetch Implementation](#prefetch-implementation))
-- The checked-in `.yarn/releases/yarn-{version}.cjs` binary — solved by ignoring said binary and
-  depending on Corepack (see [Installing Yarnberry][yarn-install-guide])
+- The checked-in `.yarn/releases/yarn-{version}.cjs` binary — ignored during
+  prefetch; Hermeto downloads and caches the selected upstream release and
+  invokes it through Node.js (see [Installing Yarnberry](#installing-yarnberry))
 - The checked-in `.yarn/plugins/*.cjs` binaries — solved by ignoring plugins while prefetching
   (see [Plugins][plugins], [Dealing with Plugins](#dealing-with-plugins))
 - The scripts used to generate `exec:` dependencies — ban the `exec:` protocol
@@ -878,10 +893,10 @@ workspace lifecycle scripts from executing, Hermeto strips the `scripts` field f
 
 #### Decision
 
-The changes needed to support Yarn v4 boil down to raising the maximum supported version, adding a
-few integration tests to cover v4 scenarios and updating the documentation. The Corepack shim is
-compatible with v4, so the project will still be processed with the exact Yarn version that is
-defined in its configuration files.
+Yarn v4 support uses the same installation and invocation flow as Yarn v3.
+Hermeto downloads the selected release's standalone bundle and invokes it
+through Node.js, preserving the version specified by the project. Integration
+tests cover both major versions, including cache reuse without network access.
 
 Enabling the newly introduced hardened mode during the prefetch might prove useful to further
 increase the security of the process, but is by no means necessary to introduce basic support for
@@ -899,7 +914,6 @@ Yarn v4 or later.
 - **Architecture**: [Yarnberry architecture overview][architecture]
 - **Protocols**: [Yarnberry protocols][protocols]
 - **Configuration**: [.yarnrc.yml reference][yarnrc-ref]
-- **Corepack**: [Node.js Corepack docs][corepack]
 - **CycloneDX pedigree patches**: [CycloneDX 1.4 spec][cyclonedx-pedigree]
 - **Test repo**: [berryscary](https://github.com/chmeliik/berryscary/)
 
@@ -908,7 +922,6 @@ Yarn v4 or later.
 [architecture]: https://v3.yarnpkg.com/advanced/architecture
 [cacheFolder]: https://yarnpkg.com/configuration/yarnrc#cacheFolder
 [checksumBehavior]: https://yarnpkg.com/configuration/yarnrc#checksumBehavior
-[corepack]: https://nodejs.org/dist/latest/docs/api/corepack.html
 [cyclonedx-pedigree]: https://cyclonedx.org/docs/1.4/json/#components_items_pedigree_patches
 [enableGlobalCache]: https://yarnpkg.com/configuration/yarnrc#enableGlobalCache
 [enableMirror]: https://yarnpkg.com/configuration/yarnrc#enableMirror
@@ -920,7 +933,6 @@ Yarn v4 or later.
 [v3-npmScopes]: https://v3.yarnpkg.com/configuration/yarnrc#npmScopes
 [plugins]: https://v3.yarnpkg.com/features/plugins
 [pnp]: https://v3.yarnpkg.com/features/pnp
-[yarn-install-guide]: https://v3.yarnpkg.com/getting-started/install
 [v4-npmRegistryServer]: https://yarnpkg.com/configuration/yarnrc#npmRegistryServer
 [yarnrc-ref]: https://v3.yarnpkg.com/configuration/yarnrc
 [zero-installs]: https://v3.yarnpkg.com/features/zero-installs

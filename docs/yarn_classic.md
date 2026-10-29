@@ -5,7 +5,7 @@
 - [Fetching dependencies for Yarn Classic projects](#fetching-dependencies-for-yarn-classic-projects)
 - [Prerequisites for an offline build](#prerequisites-for-an-offline-build)
 - [Limitations and caveats](#limitations-and-caveats)
-  - [Yarn version specified anywhere in the package will be ignored by prefetch](#yarn-version-specified-anywhere-in-the-package-will-be-ignored-by-prefetch)
+  - [Yarn version selection](#yarn-version-selection)
   - [Yarn Zero-Installs are not supported](#yarn-zero-installs-are-not-supported)
   - [Handling of yarn-specific config files](#handling-of-yarn-specific-config-files)
   - [Variables set during fetch phase](#variables-set-during-fetch-phase)
@@ -17,12 +17,11 @@ document, any other versions of Yarn will be explicitly mentioned.
 
 ## Overview
 
-Yarn Classic PM relies on Yarn Classic being installed on the system where
-Hermeto is run. If requested to process a package with Yarn Classic PM it will
-check for yarn version and will refuse to proceed if necessary version is
-missing. Yarn itself is used by Hermeto under the hood to organize package
-processing with some tweaks to ensure that the packages are prepared to be built
-in isolation.
+Hermeto requires Node.js to prefetch Yarn Classic dependencies. It downloads the
+[selected Yarn release](#yarn-version-selection) from the npm registry, caches
+it, and invokes its JavaScript entry point through `node`. Corepack and a
+globally installed Yarn are not required for prefetch. Yarn itself is used by
+Hermeto to prepare the dependencies for an offline build.
 
 Hermeto expects to find well-formed `package.json` and `yarn.lock` checked in
 into a repository and will not continue if any of the files are missing.
@@ -55,6 +54,10 @@ the logic is all conveniently hidden behind a single `yarn` CLI backend option.
 For complete example of how to pre-fetch dependencies for see [Yarn documentation][].
 
 ## Prerequisites for an offline build
+
+The offline build environment must provide Yarn Classic. Use the same version
+that Hermeto selected for prefetch. Hermeto's cached Yarn executable is not
+included in the request output.
 
 A project that is to be hermetically built must be configured to use an offline
 mirror. This means that Yarn will store compressed archives on the file system
@@ -91,12 +94,40 @@ into a file. Sourcing this file is enough to set them.
 
 ## Limitations and caveats
 
-### Yarn version specified anywhere in the package will be ignored by prefetch
+### Yarn version selection
 
-Unlike in the case of Yarn v3 Hermeto will used whichever version is available
-system-wide on a system where a package is prefetched. In most practical cases
-this will default to the latest stable version of Yarn Classic (which is not
-under active development anymore).
+For a project with a Yarn Classic `yarn.lock`, Hermeto reads `packageManager`
+from `package.json`. It must name `yarn` and specify an exact supported version:
+
+```json
+{
+  "packageManager": "yarn@1.22.19"
+}
+```
+
+Supported Classic versions are `>=1.22.0,<2.0.0`. Prereleases of those boundaries,
+such as `1.22.0-rc.1` and `2.0.0-rc.1`, are also rejected.
+
+| `packageManager` | Prefetch behavior |
+| --- | --- |
+| Absent | Uses the fixed default, Yarn `1.22.22`. |
+| `yarn@1.22.19` | Downloads and uses Yarn `1.22.19`. |
+| `yarn@1.21.0` | Rejects the unsupported Classic version. |
+| `yarn@3.6.2` | Rejects the mismatch with the Classic lockfile. |
+| `npm@10.0.0`, `yarn@latest`, or `yarn@^1.22.0` | Rejects the package manager or non-exact version. |
+
+An optional `+<algorithm>.<hex-digest>` suffix pins a checksum for the Yarn
+tarball. Hermeto verifies it against the downloaded tarball before extraction.
+Hermeto also checks that the executable reports the selected release version.
+
+The `yarn-path` setting in `.yarnrc` remains ignored during prefetch. It does not
+override `packageManager` or the default version.
+
+**Compatibility change:** Earlier versions of Hermeto ignored `packageManager`
+for Classic projects. A Classic project with `"packageManager": "yarn@3.6.2"`
+now fails prefetch. Set the field to a supported Classic version, remove it to
+use the default, or migrate the project and its lockfile to a supported Berry
+version.
 
 ### Yarn Zero-Installs are not supported
 
@@ -115,13 +146,8 @@ These settings will be applied during a build phase.
 
 The following variables are set for Yarn in the fetch phase
 
-- `COREPACK_ENABLE_DOWNLOAD_PROMPT` is set to "0" which prevents Corepack from
-  showing the URL when it needs to download software
-- `COREPACK_ENABLE_PROJECT_SPEC` is set to "0" which prevents Corepack from
-  checking if the package manager corresponds to the one defined for the current
-  project
-- `YARN_IGNORE_PATH` is set to "true" which ignores any Yarn version specified
-  by a user and uses Corepack's version instead
+- `YARN_IGNORE_PATH` is set to "true" so that `yarn-path` cannot replace the
+  executable selected by Hermeto
 - `YARN_IGNORE_SCRIPTS` is set to "true" which prevents execution of any scripts
   defined in `package.json` or in any dependency
 - `YARN_YARN_OFFLINE_MIRROR` is set to point to `deps/yarn-classic` which is

@@ -28,24 +28,25 @@ To enable the offline mirror, the following settings need to be applied either v
     YARN_YARN_OFFLINE_MIRROR=<absolute path to the request output directory>
     YARN_YARN_OFFLINE_MIRROR_PRUNING=false
 
-### Installing Yarn (via Corepack)
-Yarn commands will be executed in order to populate the offline mirror, so Yarn will need to be installed in the Hermeto image. Corepack is
-already being used to install Yarn in the Hermeto Yarn v2+ implementation, so a similar approach is suggested.
+### Selecting and Installing Yarn
 
-Corepack installs the latest known-good Yarn v1.x release by default if no other version is specified explicitly. It seems reasonable to always
-use the latest 1.x release for the prefetch, since 1.x is no longer under active development and we never previously allowed users to specify a specific
-Yarn version to process their request. We could add more flexibility with a later enhancement if needed.
+Hermeto reads `packageManager` from `package.json` and requires an exact Yarn
+version in the supported Classic range `>=1.22.0,<2.0.0`. Prereleases of the
+range boundaries are rejected. If the field is absent, Hermeto uses the fixed
+default `1.22.22`. A different package manager, a version range, or a Berry
+version paired with a Classic lockfile is rejected before downloading Yarn.
 
-Corepack could be configured to ignore user project configuration and use the global Yarn 1.x default by specifying the following
-[environment variable](https://github.com/nodejs/corepack#environment-variables):
+The shared Yarn installer downloads the selected release's tarball from the npm
+registry and caches the extracted tree. If `packageManager` includes a checksum
+suffix, the installer verifies the original tarball before extraction. It
+returns the path to `bin/yarn.js`, which is passed explicitly to every Yarn
+command and invoked through `node`. Before prefetch, the reported Yarn version
+must match the selected release, excluding checksum metadata.
 
-    COREPACK_ENABLE_PROJECT_SPEC=0
-
-Alternatively we could configure corepack explicitly using the packageManager field in package.json like is done in Hermeto's Yarn v2+ implementation.
-
-We will also need to set the following to prevent corepack from prompting for interactive user input when downloading Yarn:
-
-    COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+This replaces the previous policy of ignoring `packageManager` and using
+Corepack's default Classic release. The `yarn-path` setting remains ignored.
+See the [user-facing version selection rules](../yarn_classic.md#yarn-version-selection)
+for examples and migration guidance.
 
 ### Configuring Yarn (Using Environment Variables)
 The behavior of Yarn can be configured through the use of environment variables, configuration files, and CLI options for specific commands.
@@ -114,7 +115,7 @@ Used https://github.com/chmeliik/js-lifecycle-scripts/tree/yarn to verify.
 ### Prefetch
 The offline mirror in the request output directory will be populated by running the following Yarn command in the project root:
 
-    yarn install --non-interactive --frozen-lockfile --disable-pnp --no-default-rc --ignore-engines
+    node <cached-yarn.js> install --non-interactive --frozen-lockfile --disable-pnp --no-default-rc --ignore-engines
 
 Command: [yarn install](https://classic.yarnpkg.com/en/docs/cli/install)
 
@@ -127,11 +128,9 @@ Options:
 
  The behavior of Yarn can also be configured using select environment variables. The following ones should be set for the prefetch:
 
- - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
- - COREPACK_ENABLE_PROJECT_SPEC=0 (If we decide to use the global default)
  - YARN_YARN_OFFLINE_MIRROR=\<absolute path to the request output directory\>
  - YARN_YARN_OFFLINE_MIRROR_PRUNING=false
- - [YARN_IGNORE_PATH](https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/cli/index.js#L627)=true (Use the corepack yarn version, not any Yarn version specified by the user)
+ - [YARN_IGNORE_PATH](https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/cli/index.js#L627)=true (Keep the executable selected by Hermeto; ignore `yarn-path`)
  - [YARN_IGNORE_SCRIPTS](https://github.com/yarnpkg/yarn/blob/7cafa512a777048ce0b666080a24e80aae3d66a9/src/config.js#L415)=true
 
 ### Build Configuration
@@ -161,7 +160,7 @@ The user build can be configured to use the offline mirror by configuring the fo
    - Ensure offline mirror is used
    - Ensure offline mirror is not automatically pruned
    - Ensure package scripts are ignored
-   - Ensure Yarn 1.x is used via corepack
+   - Select and install a supported Classic version, then verify the executable reports that version
  - Do the prefetch
    - Run yarn install
  - Configure environment for the user build
@@ -173,7 +172,6 @@ The user build can be configured to use the offline mirror by configuring the fo
    - Document how to install yarn itself in the user repository
 
 ## Out of Scope
- - Allowing versions of yarn other than the latest 1.x release to be specified by the user
  - Allowing user-specified settings during the prefetch via .yarnrc/.npmrc
 
 ## References
