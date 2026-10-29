@@ -88,6 +88,10 @@ jobs:
           dockerfile: tests/integration/Containerfile.test
           ignore: DL3006
           failure-threshold: warning
+      - uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: tests/integration/Containerfile.node25
+          failure-threshold: warning
 
   markdownlint:
     name: Markdownlint
@@ -186,3 +190,16 @@ jobs:
         run: |
           git config --global --add safe.directory "*"
           /var/tmp/venv/bin/nox -s integration-tests -- -n auto
+
+      - name: Build Node.js 25 test image
+        run: |
+          podman build -f tests/integration/Containerfile.node25 \
+            --build-arg HERMETO_BASE_IMAGE=localhost/hermeto:${{ github.sha }} \
+            -t localhost/hermeto-node25:${{ github.sha }} .
+
+      - name: Test Yarn installation with Node.js 25
+        env:
+          HERMETO_TEST_IMAGE: localhost/hermeto-node25:${{ github.sha }}
+        run: |
+          /var/tmp/venv/bin/nox -s integration-tests -- \
+            -n 0 -k test_fetch_without_yarn_shims_and_reuse_cached_release
