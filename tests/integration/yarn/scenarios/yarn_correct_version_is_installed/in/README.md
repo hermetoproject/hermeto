@@ -1,4 +1,4 @@
-# Yarn (Berry) Instalation Integration Test
+# Yarn (Berry) Installation Integration Test
 
 This repository provides an extremely barebones yarn (berry) project which can
 be used to test if the version of yarn specified by
