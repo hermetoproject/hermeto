@@ -25,6 +25,7 @@ from hermeto.core.package_managers.generic.models import (
     BasicAuth,
     BearerAuth,
     LockfileArtifactAuth,
+    LockfileArtifactMaven,
 )
 from hermeto.core.rooted_path import RootedPath
 
@@ -690,3 +691,41 @@ def test_resolve_generic_lockfile_no_auth_headers(
     _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
     assert mock_download.call_args.kwargs["headers"] is None
+
+
+@pytest.mark.parametrize(
+    "maven_type, classifier, expected_filename",
+    [
+        pytest.param("java-source", "sources", "foo-1.0-sources.jar", id="java-source"),
+        pytest.param("javadoc", "javadoc", "foo-1.0-javadoc.jar", id="javadoc"),
+        pytest.param("test-jar", "tests", "foo-1.0-tests.jar", id="test-jar"),
+        pytest.param("ejb-client", "client", "foo-1.0-client.jar", id="ejb-client"),
+        pytest.param("maven-plugin", "", "foo-1.0.jar", id="maven-plugin"),
+    ],
+)
+def test_maven_artifact_type_with_jar_extension(
+    rooted_tmp_path: RootedPath,
+    maven_type: str,
+    classifier: str,
+    expected_filename: str,
+) -> None:
+    artifact = LockfileArtifactMaven.model_validate(
+        {
+            "type": "maven",
+            "attributes": {
+                "repository_url": "https://repo1.maven.org/maven2",
+                "group_id": "org.example",
+                "artifact_id": "foo",
+                "version": "1.0",
+                "type": maven_type,
+                "classifier": classifier,
+            },
+            "checksum": "sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5",
+        },
+        context={"output_dir": rooted_tmp_path},
+    )
+
+    assert artifact.download_url == (
+        f"https://repo1.maven.org/maven2/org/example/foo/1.0/{expected_filename}"
+    )
+    assert Path(artifact.filename).name == expected_filename
