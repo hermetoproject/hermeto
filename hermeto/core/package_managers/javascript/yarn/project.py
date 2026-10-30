@@ -9,8 +9,9 @@ should be implemented in other modules.
 import logging
 import re
 from collections import UserDict
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, NamedTuple, TypedDict
+from typing import Any, TypedDict
 
 import semver
 import yaml
@@ -72,12 +73,16 @@ class YarnRc(UserDict):
         return cls(file_path, yarnrc_data)
 
 
-class Project(NamedTuple):
+@dataclass
+class Project:
     """A directory containing yarn sources."""
 
     source_dir: RootedPath
     yarn_rc: YarnRc
     package_json: PackageJson
+    # Runtime configuration is assigned only after the selected release is verified.
+    yarn_bin: Path = field(init=False, repr=False, compare=False)
+    version: semver.Version = field(init=False, repr=False, compare=False)
 
     @property
     def is_zero_installs(self) -> bool:
@@ -221,15 +226,27 @@ def get_semver_from_yarn_path(yarn_path: str | None) -> semver.version.Version |
 
 
 def get_semver_from_package_manager(
-    package_manager: str | None,
+    package_manager: Any,
 ) -> semver.version.Version | None:
     """Parse packageManager from package.json and return a semver Version if possible.
 
+    >>> get_semver_from_package_manager(False)  # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+        ...
+    hermeto.core.errors.UnexpectedFormat: ...
+
     :raises UnexpectedFormat:
+        if packageManager is neither a string nor None
         if packageManager doesn't match the name@semver format
         if packageManager does not specify yarn
         if packageManager version is not a valid semver
     """
+    if package_manager is not None and not isinstance(package_manager, str):
+        raise UnexpectedFormat(
+            "packageManager in package.json must be a string",
+            solution='Use the format "yarn@<version>" with an exact supported Yarn version.',
+        )
+
     if not package_manager:
         return None
 

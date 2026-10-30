@@ -7,7 +7,7 @@
         }
       },
       "subjects": [
-        "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a1af048e18a026df68cc1c0093c4bba32fa6a160"
+        "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40cf2c74c3c4dbd58b96e4b36c2d06f3dd84a49f8c"
       ],
       "text": "hermeto:backend:yarn",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -16,7 +16,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a1af048e18a026df68cc1c0093c4bba32fa6a160",
+      "bom-ref": "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40cf2c74c3c4dbd58b96e4b36c2d06f3dd84a49f8c",
       "name": "yarn-packagemanager",
       "properties": [
         {
@@ -24,7 +24,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a1af048e18a026df68cc1c0093c4bba32fa6a160",
+      "purl": "pkg:npm/yarn-packagemanager?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40cf2c74c3c4dbd58b96e4b36c2d06f3dd84a49f8c",
       "type": "library"
     }
   ],
