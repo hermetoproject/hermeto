@@ -547,7 +547,8 @@ def _verify_yarn_version(
     if installed_yarn_version != expected_version:
         raise PackageManagerError(
             f"{APP_NAME} expected yarn@{expected_version} but the installed binary "
-            f"reports yarn@{installed_yarn_version}."
+            f"reports yarn@{installed_yarn_version}.",
+            solution="Remove the cached Yarn installation and retry the request.",
         )
 
     log.info("Processing the request using yarn@%s", installed_yarn_version)

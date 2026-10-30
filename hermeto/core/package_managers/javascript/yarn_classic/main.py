@@ -14,6 +14,7 @@ from hermeto.core.errors import (
     LockfileNotFound,
     PackageManagerError,
     PackageRejected,
+    UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
@@ -269,7 +270,16 @@ def _install_and_verify_yarn(project: Project) -> Path:
 
     :return: path to the installed yarn JS entry point.
     """
-    version = _resolve_classic_version(project.package_json.get("packageManager"))
+    package_manager = project.package_json.get("packageManager")
+    if "packageManager" in project.package_json and package_manager in (None, ""):
+        raise UnexpectedFormat(
+            "packageManager in package.json must be a non-empty string",
+            solution=(
+                "Set packageManager to yarn@<version> with a supported Classic version, "
+                "or remove the field to use the default version."
+            ),
+        )
+    version = _resolve_classic_version(package_manager)
     yarn_bin = install_yarn(version)
     env = _get_prefetch_environment_variables()
     installed_yarn_version = extract_yarn_version_from_env(

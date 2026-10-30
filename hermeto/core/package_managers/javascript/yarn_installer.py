@@ -23,7 +23,13 @@ from tempfile import TemporaryDirectory
 from semver import Version
 
 from hermeto.core.checksum import SUPPORTED_ALGORITHMS, ChecksumInfo, must_match_any_checksum
-from hermeto.core.errors import ChecksumVerificationFailed, InvalidChecksum, PackageManagerError
+from hermeto.core.errors import (
+    ChecksumVerificationFailed,
+    FetchError,
+    InvalidChecksum,
+    PackageManagerError,
+    PathOutsideRoot,
+)
 from hermeto.core.package_managers.general import download_binary_file
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.utils import get_cache_dir
@@ -68,7 +74,9 @@ def install_yarn(version: Version) -> Path:
     :return: absolute path to the cached `yarn.js` file.
     :raises InvalidChecksum: when the checksum in the version is malformed or unsupported.
     :raises ChecksumVerificationFailed: when the downloaded artifact does not match the checksum.
-    :raises PackageManagerError: when the download or extraction fails.
+    :raises FetchError: when the release download fails.
+    :raises PathOutsideRoot: when an archive member escapes the extraction directory.
+    :raises PackageManagerError: when the archive is invalid or installation fails.
     """
     checksum = _get_checksum(version)
     release = version.replace(build=None)
@@ -118,8 +126,16 @@ def install_yarn(version: Version) -> Path:
                         "Yarn installation at this path before retrying."
                     ),
                 ) from e
-    except (PackageManagerError, ChecksumVerificationFailed):
+    except (PackageManagerError, ChecksumVerificationFailed, FetchError, PathOutsideRoot):
         raise
+    except tarfile.ReadError as e:
+        raise PackageManagerError(
+            f"Failed to extract yarn@{version} from {url}",
+            solution=(
+                "Retry the request. If the archive is still invalid, report the affected "
+                "Yarn release to the Hermeto maintainers."
+            ),
+        ) from e
     except Exception as e:
         raise PackageManagerError(
             f"Failed to download yarn@{version} from {url}",

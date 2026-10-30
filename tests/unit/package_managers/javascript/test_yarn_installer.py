@@ -173,10 +173,9 @@ class TestStagedInstallation:
             installer, "download_binary_file", lambda url, path: path.write_bytes(content)
         )
 
-        with pytest.raises(PackageManagerError) as exc_info:
+        with pytest.raises(PathOutsideRoot):
             install_yarn(Version.parse("1.22.19"))
 
-        assert isinstance(exc_info.value.__cause__, PathOutsideRoot)
         assert list(yarn_cache.iterdir()) == []
 
     @pytest.mark.parametrize(
@@ -269,10 +268,9 @@ class TestStagedInstallation:
         monkeypatch.setattr(installer, "download_binary_file", download)
         version = Version.parse("1.22.22")
 
-        with pytest.raises(PackageManagerError) as exc_info:
+        with pytest.raises(PathOutsideRoot):
             install_yarn(version)
 
-        assert isinstance(exc_info.value.__cause__, PathOutsideRoot)
         assert list(yarn_cache.iterdir()) == []
 
         result = install_yarn(version)
@@ -352,10 +350,10 @@ class TestSharedInstallationLifecycle:
         download = mock.Mock(side_effect=interrupted_download)
         monkeypatch.setattr(installer, "download_binary_file", download)
 
-        with pytest.raises(PackageManagerError) as exc_info:
+        with pytest.raises(FetchError) as exc_info:
             install_yarn(version)
 
-        assert exc_info.value.__cause__ is error
+        assert exc_info.value is error
         assert list(yarn_cache.iterdir()) == []
 
         download.side_effect = lambda url, path: path.write_bytes(content)

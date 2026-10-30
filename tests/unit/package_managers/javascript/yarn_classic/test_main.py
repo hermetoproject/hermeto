@@ -41,7 +41,7 @@ def test_fetch_dependencies_uses_selected_yarn_for_both_installs(
     assert "--offline" in mock_run_cmd.call_args_list[1].kwargs["cmd"]
 
 
-@pytest.mark.parametrize("package_manager", ["npm@10.0.0", "yarn@^1.22.0"])
+@pytest.mark.parametrize("package_manager", ["npm@10.0.0", "yarn@^1.22.0", ""])
 @mock.patch("hermeto.core.package_managers.javascript.yarn_classic.main.install_yarn")
 @mock.patch("hermeto.core.package_managers.javascript.yarn.utils.run_cmd")
 def test_invalid_classic_spec_is_rejected_before_installation(
@@ -64,6 +64,7 @@ def test_invalid_classic_spec_is_rejected_before_installation(
 @pytest.mark.parametrize(
     "package_manager",
     [
+        pytest.param(None, id="null"),
         pytest.param(False, id="boolean"),
         pytest.param(0, id="zero"),
         pytest.param(123, id="integer"),
@@ -108,7 +109,8 @@ def test_classic_version_check_uses_selected_executable(
     version: str,
 ) -> None:
     project = mock.Mock(
-        source_dir=rooted_tmp_path, package_json={"packageManager": package_manager}
+        source_dir=rooted_tmp_path,
+        package_json={} if package_manager is None else {"packageManager": package_manager},
     )
     yarn_bin = rooted_tmp_path.path / "cache with spaces" / "bin" / "yarn.js"
     mock_install.return_value = yarn_bin
@@ -155,8 +157,7 @@ def test_install_and_verify_yarn_fail(
 
     project = mock.Mock()
     project.source_dir = RootedPath(tmp_path)
-    project.package_json = mock.MagicMock()
-    project.package_json.get.return_value = None
+    project.package_json = {}
 
     with pytest.raises(PackageManagerError):
         _install_and_verify_yarn(project)
@@ -203,7 +204,8 @@ def test_classic_version_must_match_selected_release(
     reported_version: str,
 ) -> None:
     project = mock.Mock(
-        source_dir=rooted_tmp_path, package_json={"packageManager": package_manager}
+        source_dir=rooted_tmp_path,
+        package_json={} if package_manager is None else {"packageManager": package_manager},
     )
     mock_install_yarn.return_value = Path("/fake/yarn.js")
     mock_run_yarn_cmd.return_value = reported_version
@@ -232,7 +234,8 @@ def test_classic_selected_release_is_accepted(
     reported_version: str,
 ) -> None:
     project = mock.Mock(
-        source_dir=rooted_tmp_path, package_json={"packageManager": package_manager}
+        source_dir=rooted_tmp_path,
+        package_json={} if package_manager is None else {"packageManager": package_manager},
     )
     yarn_bin = Path("/fake/yarn.js")
     mock_install_yarn.return_value = yarn_bin
