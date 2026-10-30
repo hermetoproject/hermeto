@@ -171,7 +171,7 @@ jobs:
 
       - name: Build container image
         run: |
-          podman build -t "hermeto:${{ github.sha }}" .
+          podman build --target production -t "hermeto:${{ github.sha }}" .
 
       - name: Check image created and application version
         run: |
