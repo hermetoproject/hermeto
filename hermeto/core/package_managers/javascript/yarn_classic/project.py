@@ -6,7 +6,8 @@ It also provides basic utility functions. The main logic to resolve and prefetch
 the dependencies should be implemented in other modules.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from pyarn import lockfile  # type: ignore
@@ -52,12 +53,14 @@ class YarnLock:
         return cls(yarn_lockfile.data, yarn_lockfile)
 
 
-@dataclass(frozen=True)
+@dataclass
 class Project:
     """Minimally, a directory containing yarn sources and parsed package.json."""
 
     source_dir: RootedPath
     package_json: PackageJson
+    # Runtime configuration is assigned only after the selected release is verified.
+    yarn_bin: Path = field(init=False, repr=False, compare=False)
 
     @property
     def is_pnp_install(self) -> bool:

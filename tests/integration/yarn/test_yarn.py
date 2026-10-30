@@ -36,7 +36,7 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 packages=({"path": ".", "type": "yarn"},),
                 expected_output="Processing the request using yarn@3.6.1",
             ),
-            id="yarn_correct_version_is_installed_by_corepack",
+            id="yarn_correct_version_is_installed",
         ),
         pytest.param(
             utils.TestParameters(
