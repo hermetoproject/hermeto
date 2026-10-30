@@ -302,6 +302,14 @@ class NpmPackageInput(_PackageInputBase):
     """Accepted input for a npm package."""
 
     type: Literal["npm"]
+    workspaces: list[str] | None = None
+
+    @pydantic.field_validator("workspaces")
+    @classmethod
+    def _workspaces_not_empty(cls, workspaces: list[str] | None) -> list[str] | None:
+        if workspaces is not None and len(workspaces) == 0:
+            raise ValueError("'workspaces' must not be an empty list, omit the field instead")
+        return workspaces
 
 
 class PipPackageInput(_PackageInputBase):
