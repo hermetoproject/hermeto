@@ -295,7 +295,7 @@ class PackageArtifact(pydantic.BaseModel, extra="ignore", frozen=True):
         return filename
 
 
-class ArtifactSdist(PackageArtifact):
+class ArtifactSdist(PackageArtifact, frozen=True):
     """The ``sdist`` of a uv.lock ``[[package]]``.
 
     An sdist is never named by a ``filename`` -- a package has at most one.
@@ -318,7 +318,7 @@ class ArtifactSdist(PackageArtifact):
         return self
 
 
-class ArtifactWheel(PackageArtifact):
+class ArtifactWheel(PackageArtifact, frozen=True):
     """One entry of the ``wheels`` array of a uv.lock ``[[package]]``.
 
     A wheel adds ``filename``, which uv writes when the package is pinned to a
