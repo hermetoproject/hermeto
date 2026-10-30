@@ -405,8 +405,8 @@ class TestRequest:
             "packages": [
                 {"type": "gomod", "path": Path(".")},
                 {"type": "gomod", "path": Path("subpath")},
-                {"type": "npm", "path": Path(".")},
-                {"type": "npm", "path": Path("subpath")},
+                {"type": "npm", "path": Path("."), "workspaces": None},
+                {"type": "npm", "path": Path("subpath"), "workspaces": None},
                 {
                     "type": "pip",
                     "path": Path("."),
