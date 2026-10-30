@@ -221,15 +221,22 @@ def get_semver_from_yarn_path(yarn_path: str | None) -> semver.version.Version |
 
 
 def get_semver_from_package_manager(
-    package_manager: str | None,
+    package_manager: object,
 ) -> semver.version.Version | None:
     """Parse packageManager from package.json and return a semver Version if possible.
 
     :raises UnexpectedFormat:
+        if packageManager is neither a string nor None
         if packageManager doesn't match the name@semver format
         if packageManager does not specify yarn
         if packageManager version is not a valid semver
     """
+    if package_manager is not None and not isinstance(package_manager, str):
+        raise UnexpectedFormat(
+            "packageManager in package.json must be a string",
+            solution='Use the format "yarn@<version>" with an exact supported Yarn version.',
+        )
+
     if not package_manager:
         return None
 
