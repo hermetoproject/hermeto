@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import copy
 import enum
 import functools
 import json
@@ -13,10 +14,16 @@ import pydantic
 import typer
 
 from hermeto import APP_NAME, APP_VERSION
-from hermeto.core.config import get_config, set_config
+from hermeto.core.config import (
+    _deep_merge,
+    get_config,
+    get_source_data,
+    set_config,
+)
 from hermeto.core.constants import Mode
 from hermeto.core.errors import BaseError, InvalidInput, UnexpectedFormat
 from hermeto.core.extras.config_show import (
+    build_source_map,
     format_diff_output,
     format_yaml_output,
     get_config_diff,
@@ -165,6 +172,7 @@ def version_callback(value: bool) -> None:
 @app.callback()
 @handle_errors
 def main(  # noqa: D103 -- docstring becomes part of --help message
+    ctx: typer.Context,
     version: bool = typer.Option(  # noqa: ARG001
         False,
         "--version",
@@ -199,12 +207,27 @@ def main(  # noqa: D103 -- docstring becomes part of --help message
     ),
 ) -> None:
     setup_logging(log_level, color=color)
-    if config_file:
-        config = set_config(config_file)
-    else:
-        config = get_config()
-    # Typer ensures `mode` is already a valid Mode enum value
-    config.mode = mode
+    # Pass the CLI config path to subcommands via ctx.obj so they can forward
+    # it to get_source_data() without relying on module-level global state.
+    ctx.ensure_object(dict)
+    ctx.obj["config_file"] = config_file
+    # For the `config` subcommand we deliberately defer validation errors so
+    # that the command can still display source annotations to help diagnose
+    # where the bad value originated.
+    is_config_cmd = ctx.invoked_subcommand == "config"
+    try:
+        if config_file:
+            loaded_config = set_config(config_file)
+        else:
+            loaded_config = get_config()
+        # Typer ensures `mode` is already a valid Mode enum value
+        loaded_config.mode = mode
+    except InvalidInput as e:
+        if not is_config_cmd:
+            e.solution = f"Run '{APP_NAME.lower()} config' to diagnose the issue."
+            raise
+        ctx.obj["config_error"] = str(e)
+        log.debug("Config validation failed, the config subcommand will display raw source data")
 
 
 def _if_json_then_validate(value: str) -> str:
@@ -256,6 +279,7 @@ def list_backends() -> None:
 @app.command()
 @handle_errors
 def config(
+    ctx: typer.Context,
     diff: bool = typer.Option(
         False,
         "--diff",
@@ -268,15 +292,63 @@ def config(
     ),
 ) -> None:
     """Show the current effective configuration."""
-    current_config = get_config()
-    effective = get_effective_config(current_config, raw=raw)
+    cli_path: Path | None = (ctx.obj or {}).get("config_file")
+    # Collect raw source data first, this never raises even with an invalid config.
     defaults = get_default_config()
+    sources = get_source_data(cli_config_path=cli_path, defaults=defaults)
+    sm = build_source_map(sources, defaults)
 
-    if diff:
-        config_diff = get_config_diff(effective, defaults)
-        print(format_diff_output(config_diff))
+    validation_error: str | None = (ctx.obj or {}).get("config_error")
+    if validation_error is None:
+        try:
+            current_config = get_config()
+            effective = get_effective_config(current_config, raw=raw)
+        except InvalidInput as e:
+            # Config is invalid — fall back to masked field names so the user
+            # can see where each setting originated and diagnose the problem.
+            validation_error = str(e)
+            effective = _merge_raw_sources(sources, defaults)
     else:
-        print(format_yaml_output(effective, defaults))
+        effective = _merge_raw_sources(sources, defaults)
+
+    if validation_error:
+        # Print the error first so the user sees what is wrong before
+        # scanning the annotated sources to find the culprit.
+        typer.echo(
+            typer.style(
+                f"Warning: configuration is invalid — values are hidden.\n"
+                f"{validation_error}\n"
+                f"Use the [env]/[file] annotations below to find the offending setting.\n",
+                fg=typer.colors.RED,
+                bold=True,
+            ),
+            err=True,
+        )
+
+    if diff and not validation_error:
+        config_diff = get_config_diff(effective, defaults)
+        print(format_diff_output(config_diff, source_map=sm))
+    else:
+        # When config is invalid, a diff against defaults is meaningless
+        # (all masked values would appear as changed); show the full annotated
+        # field list so the source annotations are still useful.
+        print(format_yaml_output(effective, defaults, source_map=sm))
+
+
+def _merge_raw_sources(
+    sources: dict[str, dict[str, Any]],
+    defaults: dict[str, Any],
+) -> dict[str, Any]:
+    """Build a best-effort effective dict from raw sources when validation fails.
+
+    Uses defaults as the base, then overlays file values, then env values,
+    matching the normal priority order.  Values are kept as raw strings
+    (no Pydantic validation) which is for display purposes.
+    """
+    result = copy.deepcopy(defaults)
+    for source_name in ("file", "env"):
+        _deep_merge(result, sources.get(source_name, {}))
+    return result
 
 
 @app.command(help=FETCH_DEPS_HELP)
