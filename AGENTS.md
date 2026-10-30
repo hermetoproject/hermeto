@@ -57,6 +57,9 @@ files or ask. Do not assume.
   other line of the message
 - `# SPDX-License-Identifier: GPL-3.0-only` header on new files
 - No gitmojis
+- No refactoring commits for changes introduced in the same PR: amend
+  commits that introduce code instead of adding a refactor commit after a
+  review
 
 ## Environment
 
