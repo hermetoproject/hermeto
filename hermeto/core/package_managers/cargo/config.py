@@ -141,8 +141,8 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
 
     for cfgname in all_possible_config_names:
         config = package_dir.join_within_root(cfgname)
-        if config.path.exists():
-            data = config.path.read_text()
+        if config.exists():
+            data = config.read_text()
             sanitized = _sanitize_cargo_config(data)
 
             if sanitized:
@@ -155,15 +155,15 @@ def _sanitized_cargo_config_file(package_dir: RootedPath) -> Generator[None, Non
                     continue
                 processed_paths.add(absolute_path)
                 configs_contents.append((config, data))
-                config.path.write_text(sanitized)
+                config.write_text(sanitized)
             else:
                 configs_contents.append((config, data))
-                config.path.unlink()
+                config.unlink()
     try:
         yield
     finally:
         for config, data in configs_contents:
-            config.path.write_text(data)
+            config.write_text(data)
 
 
 def _make_basic_token_from_proxy_credential(cargo_config: CargoSettings) -> str:

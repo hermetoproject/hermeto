@@ -54,7 +54,7 @@ def fetch_maven_source(request: Request) -> RequestOutput:
     components: list[Component] = []
 
     deps_dir = request.output_dir.join_within_root("deps", "maven")
-    deps_dir.path.mkdir(parents=True, exist_ok=True)
+    deps_dir.mkdir(parents=True, exist_ok=True)
 
     for package in request.maven_packages:
         project_dir = request.source_dir.join_within_root(package.path)
