@@ -52,6 +52,9 @@ files or ask. Do not assume.
 - Commit messages must reference GitHub/GitLab issues and PRs with full
   URLs (e.g., `https://github.com/hermetoproject/hermeto/issues/123`),
   never short references like `#123` or `org/repo#45`
+- Commit messages strive to follow 50/72 rule: about fifty symbols or less
+  on the first line of the message, about 72 symbols or less on every
+  other line of the message
 - `# SPDX-License-Identifier: GPL-3.0-only` header on new files
 - No gitmojis
 
