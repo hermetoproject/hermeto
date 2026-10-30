@@ -175,6 +175,7 @@ Observe the following guidelines when submitting a pull request for review
 **Do:**
 
 * Write clear and informative *commit messages*, explain the "WHY"
+* Strive to follow 50/72 rule for commit messages
 * Use PR description to provide further explanation or context about the PR topic
 * Sign off all your commits ([DCO](https://developercertificate.org))
 * Use your full name and a valid, deliverable email address for commit
