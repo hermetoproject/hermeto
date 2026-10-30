@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import os
 import subprocess
+from pathlib import Path
 from typing import TypeAlias
 
 from semver import Version
@@ -18,12 +19,19 @@ VcsUrl: TypeAlias = str
 TarballVcsUrlMap: TypeAlias = dict[TarballPath, VcsUrl]
 
 
-def run_yarn_cmd(cmd: list[str], source_dir: RootedPath, env: dict[str, str] | None = None) -> str:
+def run_yarn_cmd(
+    cmd: list[str],
+    source_dir: RootedPath,
+    env: dict[str, str] | None = None,
+    *,
+    yarn_bin: Path,
+) -> str:
     """Run a yarn command on a source directory.
 
     :param cmd: the command that will be executed, split in a list of strings in every space.
     :param source_dir: the directory in the repository containing the yarn source files.
     :param env: environment variables to be set during the command's execution
+    :param yarn_bin: path to the selected yarn JS entry point, invoked through `node`.
     :raises PackageManagerError: if the command fails.
     """
     env = env or {}
@@ -34,8 +42,9 @@ def run_yarn_cmd(cmd: list[str], source_dir: RootedPath, env: dict[str, str] | N
     # Node.js does not use the OS trust store by default; enable it so that
     # certificates added via update-ca-trust are respected.
     env.setdefault("NODE_USE_SYSTEM_CA", "1")
+
     try:
-        return run_cmd(cmd=["yarn", *cmd], params={"cwd": source_dir, "env": env})
+        return run_cmd(cmd=["node", str(yarn_bin), *cmd], params={"cwd": source_dir, "env": env})
     except subprocess.CalledProcessError as e:
         # the yarn command writes the errors to stdout
         raise PackageManagerError(f"Yarn command failed: {' '.join(cmd)}", stderr=e.stdout)
@@ -92,12 +101,17 @@ class VersionsRange:
             return other >= self.min_ver and other < self.max_ver
 
 
-def extract_yarn_version_from_env(source_dir: RootedPath, env: dict | None = None) -> Version:
+def extract_yarn_version_from_env(
+    source_dir: RootedPath,
+    env: dict | None = None,
+    *,
+    yarn_bin: Path,
+) -> Version:
     """Extract yarn version from environment."""
-    env = (
-        {"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0", "YARN_IGNORE_PATH": "true"} if env is None else env
-    )
-    yarn_version_output = run_yarn_cmd(["--version"], source_dir, env=env).strip()
+    env = {"YARN_IGNORE_PATH": "true"} if env is None else env
+    yarn_version_output = run_yarn_cmd(
+        ["--version"], source_dir, env=env, yarn_bin=yarn_bin
+    ).strip()
 
     try:
         installed_yarn_version = Version.parse(yarn_version_output)
