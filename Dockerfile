@@ -43,7 +43,7 @@ RUN /venv/bin/pip install --no-cache-dir .
 ##########################
 # ASSEMBLE THE FINAL IMAGE
 ##########################
-FROM base
+FROM base AS production
 LABEL maintainer="Red Hat"
 
 # copy Go SDK and Node.js installation from official images
@@ -62,3 +62,38 @@ RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /venv/bin/hermeto /usr/local/bin/hermeto
 
 ENTRYPOINT ["/usr/local/bin/hermeto"]
+
+#########
+# TOOLBOX
+#########
+FROM production AS toolbox
+LABEL maintainer="Hermeto project"
+LABEL org.opencontainers.image.title="hermeto-toolbox"
+LABEL org.opencontainers.image.description="Hermeto toolbox image"
+LABEL org.opencontainers.image.url="https://github.com/hermetoproject/hermeto"
+
+COPY .toolbox/host-runner.sh /usr/local/libexec/host-runner.sh
+
+# - flatpak-spawn backs the host tools delegation hack below
+# - git is needed for all interactive git actions inside a toolbox container
+RUN dnf -y install \
+    --setopt install_weak_deps=0 \
+    --nodocs \
+    flatpak-spawn \
+    git \
+    sudo && \
+    dnf clean all
+
+# - no need for the legacy cachi2 entrypoint here - drop it
+# - enable host tools delegation (official hack): https://github.com/containers/toolbox/issues/145#issuecomment-582040463
+RUN rm -f /usr/local/bin/cachi2 && \
+    ln -s /usr/local/libexec/host-runner.sh /usr/local/bin/podman && \
+    ln -s /usr/local/libexec/host-runner.sh /usr/local/bin/buildah
+
+ENTRYPOINT []
+CMD ["/usr/local/bin/hermeto"]
+
+##############################################################################
+# This is an explicit way of restoring 'production' as the default build target.
+##############################################################################
+FROM production
