@@ -23,7 +23,7 @@ release ends when the next stable release is published. Users should upgrade.
 
 https://github.com/hermetoproject/hermeto/releases/latest
 
-## Reporting a Vulnerability
+## Reporting a Vulnerability or Incident
 
 Report suspected vulnerabilities and security incidents privately:
 
@@ -51,7 +51,38 @@ informed of progress.
 Ongoing attacks and suspected compromise receive urgent attention as soon as
 maintainers become aware of them.
 
-Thank you for helping us maintain a secure project!
+## Vulnerability Management
+
+Maintainers handle reports as follows:
+
+1. **Assess:** Analyse the report, identify affected versions, and determine
+   how affected code or dependencies are used. Set priorities based on
+   potential harm, exposure to attacks, how easily the issue can be exploited,
+   and whether exploitation is already happening.
+2. **Fix:** Develop fixes privately for vulnerabilities that are not public.
+   Review and test fixes against the reported issue and check for regressions.
+   Work with other affected projects when needed. Release urgent fixes
+   outside the regular schedule.
+3. **Publish:** Coordinate disclosure timing with the reporter and the CRA
+   steward's security experts. Publish an advisory describing affected versions,
+   impact, fixes, and/or mitigations. Request a CVE where appropriate.
+4. **Follow up:** Explain the outcome to the reporter and track any remaining
+   non-critical work.
+
+We publish security advisories at:
+https://github.com/hermetoproject/hermeto/security/advisories
+
+Release notes link to the relevant advisories.
+
+## Incident Response
+
+Security incidents include suspected compromise of project accounts,
+repositories, build or release workflows, publishing credentials, or
+released artifacts.
+
+Maintainers work closely with the CRA steward to contain the incident,
+assess its impact, remediate the issue, verify affected systems and releases,
+communicate with users as appropriate, and review how to prevent recurrence.
 
 ## EU Cyber Resilience Act — Open Source Steward Statement
 
