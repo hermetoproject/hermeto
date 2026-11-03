@@ -302,14 +302,15 @@ def canonicalize_origin_url(url: str) -> str:
         )
 
 
-def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
+def clone_as_tarball(url: str, ref: str, to_path: Path, subpath: str | None = None) -> None:
     """Clone a git repository, check out the specified revision and create a compressed tarball.
 
-    The repository content will be under the app/ directory in the tarball.
+    The requested repository directory will be under the app/ directory in the tarball.
 
     :param url: the URL of the repository
     :param ref: the revision to check out
     :param to_path: create the tarball at this path
+    :param subpath: relative package directory to archive, or the repository root if omitted
     """
     list_url = [url]
     # Fallback to `https` if cloning source via ssh fails
@@ -340,8 +341,20 @@ def clone_as_tarball(url: str, ref: str, to_path: Path) -> None:
 
             _reset_git_head(repo, ref)
 
+            repo_root = Path(repo.working_dir).resolve()
+            try:
+                archive_root = (repo_root / subpath).resolve() if subpath is not None else repo_root
+            except RuntimeError as ex:
+                raise FetchError(
+                    f"Git repository subdirectory {subpath!r} does not exist at revision {ref}"
+                ) from ex
+            if not archive_root.is_relative_to(repo_root) or not archive_root.is_dir():
+                raise FetchError(
+                    f"Git repository subdirectory {subpath!r} does not exist at revision {ref}"
+                )
+
             with tarfile.open(to_path, mode="w:gz") as archive:
-                archive.add(repo.working_dir, "app")
+                archive.add(archive_root, "app")
 
             return
 
