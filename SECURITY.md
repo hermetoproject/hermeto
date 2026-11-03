@@ -2,13 +2,10 @@
 
 ## Supported Versions
 
- We actively maintain and support the latest version of the project. Security updates are only
- provided for the latest release.
+Only the latest stable release receives security fixes. Support for each
+release ends when the next stable release is published. Users should upgrade.
 
- | Version | Supported          |
- | ------- | ------------------ |
- | Latest  | :white_check_mark: |
- | Older   | :x:                |
+https://github.com/hermetoproject/hermeto/releases/latest
 
 ## Reporting a Vulnerability
 
