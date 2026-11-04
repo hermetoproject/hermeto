@@ -424,12 +424,12 @@ def _resolve_and_download_pypi_packages(
     """Resolve and download all PyPI packages."""
     config = get_config()
     proxy_url = str(config.pip.proxy_url) if config.pip.proxy_url is not None else None
-    if proxy_url is not None:
-        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     # A proxy must be used only if an index is the standard one, custom indices must
     # be preserved. A custom index would always override proxy.
     is_standard = lambda index_url: index_url and index_url == pypi_simple.PYPI_SIMPLE_ENDPOINT
     query_url = proxy_url if (proxy_url is not None and is_standard(index_url)) else index_url
+    if query_url == proxy_url:
+        log.info("Using registry proxy %s for registry dependencies", proxy_url)
     requests_auth = None
     aiohttp_auth = None
     # No attempt should be made at logging into custom indices, if query URL ends up pointing
