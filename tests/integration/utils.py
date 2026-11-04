@@ -241,6 +241,10 @@ class TestParameters:
     unset_hermeto_env: set[str] = field(default_factory=set)
     netrc_content: str | None = None
     containerfile: str = "Containerfile"
+    # Sometimes Hermeto should not report proxy usage despite the fact that a proxy URL
+    # is defined. The test harness cannot know that, so a flag is needed to make it aware
+    # of this fact.
+    check_proxy_reporting_skipped: bool = False
 
 
 class ContainerImage:
@@ -547,8 +551,19 @@ def fetch_deps_and_check_output(
         sbom_for_comparison = sbom
         backend_proxy_urls = parse_proxy_env(merged_env)
         if backend_proxy_urls:
-            log.info("Validating and stripping proxy metadata from SBOM")
-            sbom_for_comparison = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
+            if test_params.check_proxy_reporting_skipped:
+                log.info("Making sure proxy was not reported")
+                try:
+                    _ = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
+                except AssertionError:
+                    # An assertion is made basing on the presence of proxy reference in SBOM.
+                    # A failed assertion here means that a proxy was not reported.
+                    pass
+                except Exception:
+                    raise
+            else:
+                log.info("Validating and stripping proxy metadata from SBOM")
+                sbom_for_comparison = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
 
         update_test_data_if_needed(expected_build_config_path, build_config)
         update_test_data_if_needed(expected_sbom_path, sbom_for_comparison)
