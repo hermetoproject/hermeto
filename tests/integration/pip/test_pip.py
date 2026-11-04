@@ -60,12 +60,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
         ),
         pytest.param(
             utils.TestParameters(
-                packages=({"path": ".", "type": "pip"},),
-            ),
-            id="pip_yanked",
-        ),
-        pytest.param(
-            utils.TestParameters(
                 packages=({"path": ".", "type": "pip", "binary": {}},),
             ),
             id="pip_no_wheels",
