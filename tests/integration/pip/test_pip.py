@@ -1,14 +1,85 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import hashlib
+import logging
 import os
+import shutil
+import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
+import requests
+from packaging.utils import canonicalize_name, parse_sdist_filename
 
 from hermeto import APP_NAME
 from hermeto.core.errors import ExitError
 from tests.integration import utils
+from tests.nexusserver.configure import (
+    DEFAULT_NEXUS_ADMIN_PASSWORD,
+    DEFAULT_NEXUS_HOST,
+    DEFAULT_NEXUS_PORT,
+)
+
+log = logging.getLogger(__name__)
 
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
+
+
+def _build_and_publish_sdist(
+    tmp_path: Path,
+    source_dir: Path,
+    build_command: Sequence[str],
+) -> Path:
+    """Build an sdist from source, publish it to local Nexus, and verify it."""
+
+    # Build from a clean copy outside the main Git repository.
+    build_source_dir = tmp_path / "sdist-source"
+    shutil.copytree(
+        source_dir,
+        build_source_dir,
+        ignore=shutil.ignore_patterns(".git", "dist", "target", "__pycache__"),
+    )
+
+    dist_dir = tmp_path / "sdist-dist"
+    dist_dir.mkdir()
+
+    # The command uses {dist_dir} to specify where the sdist should be written.
+    command = [arg.replace("{dist_dir}", str(dist_dir)) for arg in build_command]
+    if not any("{dist_dir}" in arg for arg in build_command):
+        raise ValueError("build_command must contain a {dist_dir} placeholder")
+
+    subprocess.run(command, cwd=build_source_dir, check=True)
+    sdists = sorted([*dist_dir.glob("*.tar.gz"), *dist_dir.glob("*.zip")])
+    if len(sdists) != 1:
+        raise RuntimeError(f"Expected exactly one sdist, found: {sdists}")
+
+    sdist = sdists[0]
+    digest = hashlib.sha256(sdist.read_bytes()).hexdigest()
+    package_name, _ = parse_sdist_filename(sdist.name)
+    package_name = canonicalize_name(package_name)
+
+    # Publish directly to the PyPI hosted repository.
+    base_url = f"http://{DEFAULT_NEXUS_HOST}:{DEFAULT_NEXUS_PORT}"
+    with sdist.open("rb") as archive:
+        response = requests.post(
+            f"{base_url}/service/rest/v1/components",
+            params={"repository": "pypi-hosted"},
+            auth=("admin", DEFAULT_NEXUS_ADMIN_PASSWORD),
+            files={"pypi.asset": (sdist.name, archive)},
+            timeout=60,
+        )
+    response.raise_for_status()
+
+    # Confirm the generated artifact is visible through the PyPI group.
+    index_url = f"{base_url}/repository/pypi-group/simple/{package_name}/"
+    response = requests.get(index_url, timeout=30)
+    response.raise_for_status()
+    assert sdist.name in response.text, f"{sdist.name} is missing from the PyPI group index"
+    assert f"sha256={digest}" in response.text, (
+        "The checksum in the Nexus index differs from the generated sdist"
+    )
+
+    return sdist
 
 
 @pytest.mark.parametrize(
@@ -168,7 +239,7 @@ def test_pip_binary_exclusions(
 
 
 @pytest.mark.parametrize(
-    "test_params,check_cmd,expected_cmd_output",
+    "test_params,check_cmd,expected_cmd_output,sdist_source,sdist_build_command",
     [
         # Test case checks fetching pip dependencies, generating environment vars file,
         # building image with all prepared prerequisites and testing if pip packages are present
@@ -185,6 +256,8 @@ def test_pip_binary_exclusions(
             ),
             ["python3", "/app/src/test_package/main.py"],
             ["1.0.0"],
+            None,
+            None,
             id="pip_e2e",
         ),
         pytest.param(
@@ -200,6 +273,8 @@ def test_pip_binary_exclusions(
             ),
             ["python3", "/app/package/main.py"],
             ["Hello, world!"],
+            None,
+            None,
             id="pip_e2e_wheels",
         ),
         # The test relies on rpm and thus requires rpms.lock.yaml defined.
@@ -208,11 +283,29 @@ def test_pip_binary_exclusions(
         # (/etc/yum.repos.d/ubi.repo) and extracted to a local directory.
         pytest.param(
             utils.TestParameters(
-                packages=(({"type": "pip"}, {"type": "rpm"})),
+                packages=(
+                    (
+                        {
+                            "type": "pip",
+                            "binary": {
+                                "packages": "maturin",
+                                "py_impl": "py",
+                            },
+                        },
+                        {"type": "rpm"},
+                    )
+                ),
                 check_output=True,
+                hermeto_env={
+                    "HERMETO_PIP__PROXY_URL": (
+                        "https://127.0.0.1:8443/repository/pypi-group/simple/"
+                    ),
+                },
             ),
             ["python3", "/app/main.py"],
             [],
+            "fixtures/hello",
+            ["maturin", "sdist", "--out", "{dist_dir}"],
             id="pip_e2e_rust_extensions",
         ),
     ],
@@ -221,6 +314,8 @@ def test_e2e_pip(
     test_params: utils.TestParameters,
     check_cmd: list[str],
     expected_cmd_output: str,
+    sdist_source: str | None,
+    sdist_build_command: list[str] | None,
     hermeto_image: utils.HermetoImage,
     tmp_path: Path,
     request: pytest.FixtureRequest,
@@ -232,6 +327,12 @@ def test_e2e_pip(
     :param tmp_path: Temp directory for pytest
     """
     test_case = request.node.callspec.id
+    if sdist_source is not None and sdist_build_command is not None:
+        _build_and_publish_sdist(
+            tmp_path=tmp_path,
+            source_dir=SCENARIOS_DIR / test_case / sdist_source,
+            build_command=sdist_build_command,
+        )
     repo_dir = utils.create_synthetic_repo(tmp_path, SCENARIOS_DIR / test_case)
 
     actual_repo_dir = utils.fetch_deps_and_check_output(
