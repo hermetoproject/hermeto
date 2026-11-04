@@ -83,6 +83,7 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             utils.TestParameters(
                 packages=({"path": ".", "type": "pip", "binary": {}},),
                 netrc_content="machine 127.0.0.1 login hermeto-user password hermeto-pass",
+                check_proxy_reporting_skipped=True,
             ),
             id="pip_custom_index",
             marks=pytest.mark.skipif(

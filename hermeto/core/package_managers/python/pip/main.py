@@ -451,7 +451,7 @@ def _resolve_and_download_pypi_packages(
     pypi_artifacts = [_PyPIArtifact(req, dpi) for req, dpis in reqs_dpis_zipped for dpi in dpis]
     # If a standard PyPI index is used with proxy URL then proxy URL must be reported,
     # if a custom index is used then proxy URL must not be reported even if set.
-    proxy_to_report = proxy_url if (proxy_url is not None and (proxy_url != index_url)) else None
+    proxy_to_report = proxy_url if (proxy_url is not None and is_standard(index_url)) else None
     return _download_pypi_packages(
         requirements_file,
         pip_deps_dir,
