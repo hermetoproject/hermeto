@@ -248,10 +248,13 @@ def _sanitize_cargo_config(config_content: str) -> str:
     return ""
 
 
-def _swap_sources_directory_for_subsitution_slot(template: str) -> dict:
+def _swap_sources_directory_for_subsitution_slot(template: str, vendor_dir: Path) -> dict:
     toml_template = tomlkit.parse(template).value
     # Absolute path has to be replaced with relative path for sources relocation to work:
-    toml_template["source"]["vendored-sources"]["directory"] = "${output_dir}/deps/cargo"
+    escaped_vendor_dir = str(vendor_dir).replace("$", "$$")
+    toml_template["source"]["vendored-sources"]["directory"] = (
+        f"${{output_dir}}/{escaped_vendor_dir}"
+    )
     # A correct output_dir value will be supplied by the application during a later stage.
     return toml_template
 
