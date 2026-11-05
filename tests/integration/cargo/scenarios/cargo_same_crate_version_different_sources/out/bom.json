@@ -1,0 +1,140 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:cargo/cfg-if@1.0.0?checksum=baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd",
+        "pkg:cargo/getrandom@0.2.15?checksum=c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7",
+        "pkg:cargo/git-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#git-project",
+        "pkg:cargo/libc@0.2.169?checksum=b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a",
+        "pkg:cargo/registry-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#registry-project",
+        "pkg:cargo/uuid@1.12.1?checksum=b3758f5e68192bb96cc8f9b7e2c2cfdabb435499a28499a42f8f984092adad4b",
+        "pkg:cargo/uuid@1.12.1?vcs_url=git%2Bhttps://github.com/uuid-rs/uuid%4070831d21b373a06149885e8aec18c9084ac918c3",
+        "pkg:cargo/wasi@0.11.0%2Bwasi-snapshot-preview1?checksum=9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+      ],
+      "text": "hermeto:backend:cargo",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:cargo/cfg-if@1.0.0?checksum=baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd",
+      "name": "cfg-if",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/cfg-if@1.0.0?checksum=baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/getrandom@0.2.15?checksum=c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7",
+      "name": "getrandom",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/getrandom@0.2.15?checksum=c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7",
+      "type": "library",
+      "version": "0.2.15"
+    },
+    {
+      "bom-ref": "pkg:cargo/git-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#git-project",
+      "name": "git-project",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/git-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#git-project",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/libc@0.2.169?checksum=b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a",
+      "name": "libc",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/libc@0.2.169?checksum=b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a",
+      "type": "library",
+      "version": "0.2.169"
+    },
+    {
+      "bom-ref": "pkg:cargo/registry-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#registry-project",
+      "name": "registry-project",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/registry-project@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40ef32523e4ced6b50fa8ed63471fb69556cc85a92#registry-project",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/uuid@1.12.1?checksum=b3758f5e68192bb96cc8f9b7e2c2cfdabb435499a28499a42f8f984092adad4b",
+      "name": "uuid",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/uuid@1.12.1?checksum=b3758f5e68192bb96cc8f9b7e2c2cfdabb435499a28499a42f8f984092adad4b",
+      "type": "library",
+      "version": "1.12.1"
+    },
+    {
+      "bom-ref": "pkg:cargo/uuid@1.12.1?vcs_url=git%2Bhttps://github.com/uuid-rs/uuid%4070831d21b373a06149885e8aec18c9084ac918c3",
+      "name": "uuid",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/uuid@1.12.1?vcs_url=git%2Bhttps://github.com/uuid-rs/uuid%4070831d21b373a06149885e8aec18c9084ac918c3",
+      "type": "library",
+      "version": "1.12.1"
+    },
+    {
+      "bom-ref": "pkg:cargo/wasi@0.11.0%2Bwasi-snapshot-preview1?checksum=9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423",
+      "name": "wasi",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:cargo/wasi@0.11.0%2Bwasi-snapshot-preview1?checksum=9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423",
+      "type": "library",
+      "version": "0.11.0+wasi-snapshot-preview1"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
