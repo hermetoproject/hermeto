@@ -1,5 +1,21 @@
 # Security Policy
 
+**Maintainers work closely with security experts from [our CRA steward
+partner](#eu-cyber-resilience-act--open-source-steward-statement) to apply
+security best practices when handling vulnerabilities and responding to
+incidents.**
+
+Thank you for helping us maintain a secure project!
+
+## Secure Development Practices
+
+We use the following practices to help prevent security problems:
+
+- AI-assisted code review alongside human review of code changes.
+- Automated unit and integration tests, linting, and type checking.
+- CodeQL scans to identify potential security issues.
+- Renovate pull requests to keep dependencies and build tooling up to date.
+
 ## Supported Versions
 
 Only the latest stable release receives security fixes. Support for each
