@@ -115,6 +115,43 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="pip_rust_dependency_unusual_cargo_toml_location",
         ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {
+                        "path": ".",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock",
+            # pylock records explicit artifact URLs and is fetched directly, so
+            # the proxy is not applied and there is no proxy provenance to assert.
+            marks=pytest.mark.no_proxy_mode,
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {
+                        "path": "first",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                    {
+                        "path": "second",
+                        "type": "pip",
+                        "lockfile": "pylock.toml",
+                        "packaging_tool": "pylock",
+                    },
+                ),
+            ),
+            id="pip_pylock_multiple_packages",
+            # See pip_pylock: pylock is fetched directly, bypassing the proxy.
+            marks=pytest.mark.no_proxy_mode,
+        ),
     ],
 )
 def test_pip_packages(

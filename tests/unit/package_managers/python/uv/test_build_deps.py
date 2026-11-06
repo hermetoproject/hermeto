@@ -6,6 +6,7 @@ import pypi_simple
 
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.package_managers.python.pip.packages import PyPIPackage
+from hermeto.core.package_managers.python.pylock.models import RemoteSourceUrl
 from hermeto.core.package_managers.python.uv.build_deps import (
     download_build_dependencies,
     to_component,
@@ -13,6 +14,9 @@ from hermeto.core.package_managers.python.uv.build_deps import (
 from hermeto.core.rooted_path import RootedPath
 
 BUILD_REQ_FILE = "requirements-build.txt"
+SETUPTOOLS_URL = RemoteSourceUrl(
+    "https://files.pythonhosted.org/packages/xx/setuptools-80.9.0.tar.gz"
+)
 
 
 @mock.patch("hermeto.core.package_managers.python.uv.build_deps.download_from_requirement_files")
@@ -39,11 +43,11 @@ def test_download_build_dependencies(mock_download: mock.Mock, tmp_path: Path) -
 def build_dep(package_type: str = "sdist", missing_checksum: bool = False) -> PyPIPackage:
     return PyPIPackage(
         name="setuptools",
-        path=Path("deps/uv/setuptools-80.9.0.tar.gz"),
         requirement_file=BUILD_REQ_FILE,
         missing_req_file_checksum=missing_checksum,
         package_type=package_type,
         version="80.9.0",
+        url=SETUPTOOLS_URL,
         index_url=pypi_simple.PYPI_SIMPLE_ENDPOINT,
     )
 
