@@ -1,0 +1,17 @@
+environment_variables: []
+project_files:
+- abspath: ${test_case_tmp_path}/git-project/.cargo/config.toml
+  template: |
+    [source."git+https://github.com/uuid-rs/uuid"]
+    git = "https://github.com/uuid-rs/uuid"
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo/git-project"
+- abspath: ${test_case_tmp_path}/registry-project/.cargo/config.toml
+  template: |
+    [source.crates-io]
+    replace-with = "vendored-sources"
+
+    [source.vendored-sources]
+    directory = "${output_dir}/deps/cargo/registry-project"

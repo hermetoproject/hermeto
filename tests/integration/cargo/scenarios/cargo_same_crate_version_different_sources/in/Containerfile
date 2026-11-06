@@ -1,0 +1,12 @@
+FROM mirror.gcr.io/library/rust:1.97.1-slim-bookworm
+
+# The build must not fall back to downloading the dependency that Hermeto vendored.
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
+
+WORKDIR /src/registry-project
+RUN cargo install --frozen --path .
+
+WORKDIR /src/git-project
+RUN cargo install --frozen --path .
+
+CMD ["/bin/sh", "-c", "registry-project && git-project"]
