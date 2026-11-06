@@ -3,6 +3,7 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from functools import partial
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, NamedTuple, cast
 
@@ -230,14 +231,21 @@ def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
 
     Both the download and the lockfile rewrite go through this, so the
     rewritten source path always resolves to the tarball that was downloaded.
+    The subdirectory is part of the name: two entries can share a package name
+    and commit while selecting different roots, and an archive that already
+    exists is not cloned again.
     """
-    return f"{package.name}-gitcommit-{source.commit}.tar.gz"
+    name = f"{package.name}-gitcommit-{source.commit}"
+    if source.subdirectory:
+        subdirectory_digest = sha256(source.subdirectory.encode()).hexdigest()
+        name = f"{name}-{subdirectory_digest}"
+    return f"{name}.tar.gz"
 
 
 def _download_git_package(
     package: UvPackage, source: PackageSourceGit, deps_dir: RootedPath
 ) -> None:
-    """Clone a git package at its resolved commit and archive it as a tarball."""
+    """Clone a git package at its resolved commit and archive its package root."""
     commit = source.commit
     tarball = deps_dir.join_within_root(_git_tarball_filename(package, source))
     if tarball.path.exists():
@@ -245,7 +253,10 @@ def _download_git_package(
         return
 
     log.info("Cloning git repository for %s==%s", package.name, package.version)
-    clone_as_tarball(source.clone_url, commit, to_path=tarball.path)
+    kwargs: dict[str, str] = {}
+    if source.subdirectory is not None:
+        kwargs["subpath"] = source.subdirectory
+    clone_as_tarball(source.clone_url, commit, to_path=tarball.path, **kwargs)
 
 
 def _replace_source_with_path(raw_package: Any, filename: str) -> None:

@@ -81,6 +81,20 @@ def test_download_git_package_skips_existing_tarball(
 
 
 @mock.patch("hermeto.core.package_managers.python.uv.main.clone_as_tarball")
+def test_download_git_package_passes_subdirectory_to_clone(
+    mock_clone: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    subdirectory = "libs/example"
+    source = PackageSourceGit(
+        kind="git", location=f"https://github.com/org/repo?subdirectory={subdirectory}#0123abcd"
+    )
+
+    _download_git_package(make_package(source), source, rooted_tmp_path)
+
+    assert mock_clone.call_args.kwargs["subpath"] == subdirectory
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.clone_as_tarball")
 @mock.patch("hermeto.core.package_managers.python.uv.main.must_match_any_checksum")
 @mock.patch("hermeto.core.package_managers.python.uv.main.async_download_files")
 def test_download_dependencies(
