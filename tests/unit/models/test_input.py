@@ -238,6 +238,41 @@ class TestPackageInput:
                 },
                 id="rpm_with_binary_filters",
             ),
+            pytest.param(
+                {"type": "cargo"},
+                {"type": "cargo", "path": Path("."), "packages": None, "platforms": None},
+                id="cargo_without_selection",
+            ),
+            pytest.param(
+                {
+                    "type": "cargo",
+                    "packages": [
+                        {"name": " server ", "no_default_features": True, "features": ["openssl"]},
+                        {"name": "operator", "all_features": True},
+                    ],
+                    "platforms": ["x86_64-unknown-linux-gnu"],
+                },
+                {
+                    "type": "cargo",
+                    "path": Path("."),
+                    "packages": [
+                        {
+                            "name": "server",
+                            "features": ["openssl"],
+                            "no_default_features": True,
+                            "all_features": False,
+                        },
+                        {
+                            "name": "operator",
+                            "features": [],
+                            "no_default_features": False,
+                            "all_features": True,
+                        },
+                    ],
+                    "platforms": ["x86_64-unknown-linux-gnu"],
+                },
+                id="cargo_with_package_selection",
+            ),
         ],
     )
     def test_valid_packages(self, input_data: dict[str, Any], expect_data: dict[str, Any]) -> None:
@@ -322,6 +357,52 @@ class TestPackageInput:
                 {"type": "yarn", "workspaces": []},
                 r"'workspaces' must not be an empty list, omit the field instead",
                 id="yarn_empty_workspaces",
+            ),
+            pytest.param(
+                {"type": "cargo", "packages": []},
+                r"'packages' must not be an empty list, omit the field instead",
+                id="cargo_empty_packages",
+            ),
+            pytest.param(
+                {"type": "cargo", "packages": [{"name": "  "}]},
+                r"String should have at least 1 character",
+                id="cargo_blank_package_name",
+            ),
+            pytest.param(
+                {"type": "cargo", "packages": [{"name": "a"}, {"name": "a", "features": ["x"]}]},
+                r"package 'a' listed more than once, merge the entries into one",
+                id="cargo_duplicate_package",
+            ),
+            pytest.param(
+                {
+                    "type": "cargo",
+                    "packages": [{"name": "a", "all_features": True, "features": ["x"]}],
+                },
+                r"package 'a': 'all_features' already enables every feature",
+                id="cargo_all_features_with_features",
+            ),
+            pytest.param(
+                {
+                    "type": "cargo",
+                    "packages": [{"name": "a", "all_features": True, "no_default_features": True}],
+                },
+                r"package 'a': 'all_features' already enables every feature",
+                id="cargo_all_features_with_no_default_features",
+            ),
+            pytest.param(
+                {"type": "cargo", "packages": [{"name": "a", "optional": True}]},
+                r"Extra inputs are not permitted",
+                id="cargo_package_unknown_field",
+            ),
+            pytest.param(
+                {"type": "cargo", "packages": [{"name": "a"}], "platforms": []},
+                r"'platforms' must not be an empty list, omit the field instead",
+                id="cargo_empty_platforms",
+            ),
+            pytest.param(
+                {"type": "cargo", "platforms": ["x86_64-unknown-linux-gnu"]},
+                r"'platforms' only narrows a package selection",
+                id="cargo_platforms_without_packages",
             ),
         ],
     )
