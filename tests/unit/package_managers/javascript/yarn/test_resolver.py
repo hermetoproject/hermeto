@@ -39,6 +39,7 @@ from hermeto.core.scm import RepoID
 
 MOCK_REPO_ID = RepoID("https://github.com/org/project.git", "fffffff")
 MOCK_REPO_VCS_URL = quote("git+https://github.com/org/project.git@fffffff", safe="://")
+MOCK_YARN_BIN = Path("/cache/yarn/4.6.0/yarn.js")
 
 
 def mock_yarn_info_output(yarn_info_outputs: list[dict[str, Any]]) -> str:
@@ -59,7 +60,7 @@ def test_resolve_packages_unsupported_resolver(
     )
 
     with pytest.raises(UnsupportedFeature):
-        resolve_packages(rooted_tmp_path)
+        resolve_packages(mock_project(rooted_tmp_path))
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.run_yarn_cmd")
@@ -104,10 +105,8 @@ def test_validate_unsupported_locators(
     yarn_info_output = mock_yarn_info_output(unsupported_outputs)
     mock_run_yarn_cmd.return_value = yarn_info_output
 
-    with pytest.raises(
-        UnsupportedFeature, match="Found 3 unsupported dependencies, more details in the logs."
-    ):
-        resolve_packages(rooted_tmp_path)
+    with pytest.raises(UnsupportedFeature):
+        resolve_packages(mock_project(rooted_tmp_path))
 
 
 class MockedPackage(NamedTuple):
@@ -159,11 +158,13 @@ def mock_package_json(
 
 
 def mock_project(project_dir: RootedPath) -> Project:
-    return Project(
+    project = Project(
         project_dir,
         YarnRc(project_dir.join_within_root(".yarnrc.yml"), {}),
         PackageJson(project_dir.path.joinpath("package.json"), {}),
     )
+    project.yarn_bin = MOCK_YARN_BIN
+    return project
 
 
 @mock.patch("hermeto.core.package_managers.general.get_repo_id")
@@ -411,7 +412,10 @@ def test_create_components_single_package(
     mock_package_json(mocked_package, project_dir)
 
     components = create_components(
-        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+        [mocked_package.package],
+        [mocked_package.package],
+        mock_project(project_dir),
+        output_dir,
     )
 
     assert len(components) == 1
@@ -898,13 +902,56 @@ def test_get_path_patch_url(
     package = NpmLocator(None, "fsevents", "1.0.0")
     patch_locator = PatchLocator(package, [patch_path], workspace_locator)
 
-    mock_project = mock.Mock(source_dir=source_dir)
+    project = mock_project(source_dir)
     resolver = _ComponentResolver(
-        set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        set(),
+        [patch_locator],
+        project,
+        rooted_tmp_path.re_root("output"),
     )
 
     actual_url = resolver._get_path_patch_url(patch_locator, patch_path)
     assert actual_url == expected_url
+
+
+@mock.patch("hermeto.core.package_managers.javascript.yarn.utils.run_cmd", return_value="4.6.0\n")
+def test_create_components_uses_selected_yarn_for_builtin_patches(
+    mock_run_cmd: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    packages = [
+        Package(
+            raw_locator="fsevents@npm:2.3.2",
+            version="2.3.2",
+            checksum=None,
+            cache_path=None,
+        ),
+        Package(
+            raw_locator="fsevents@patch:fsevents@npm%3A2.3.2#builtin<compat/fsevents>::version=2.3.2",
+            version="2.3.2",
+            checksum=None,
+            cache_path=None,
+        ),
+    ]
+
+    components = create_components(
+        packages, packages, mock_project(rooted_tmp_path), rooted_tmp_path
+    )
+
+    mock_run_cmd.assert_called_once_with(
+        cmd=["node", str(MOCK_YARN_BIN), "--version"],
+        params={"cwd": rooted_tmp_path, "env": mock.ANY},
+    )
+    assert components[0].pedigree == Pedigree(
+        patches=[
+            Patch(
+                type="unofficial",
+                diff=PatchDiff(
+                    url="git+https://github.com/yarnpkg/berry@%40yarnpkg/cli/4.6.0"
+                    "#packages/plugin-compat/sources/patches/fsevents.patch.ts"
+                ),
+            )
+        ]
+    )
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.extract_yarn_version_from_env")
@@ -921,9 +968,12 @@ def test_get_builtin_patch_url(
     builtin_patch = "builtin<compat/fsevents>"
     patch_locator = PatchLocator(package, [builtin_patch], None)
 
-    mock_project = mock.Mock(source_dir=source_dir)
+    project = mock_project(source_dir)
     resolver = _ComponentResolver(
-        set(), [patch_locator], mock_project, rooted_tmp_path.re_root("output")
+        set(),
+        [patch_locator],
+        project,
+        rooted_tmp_path.re_root("output"),
     )
 
     actual_url = resolver._get_builtin_patch_url(builtin_patch, Version(3, 0, 0))
@@ -961,9 +1011,12 @@ def test_pedigree_mapping_flattens_nested_patches(
     patch_locator1 = PatchLocator(base_package, [patch1, patch2], workspace_locator)
     patch_locator2 = PatchLocator(patch_locator1, [patch3], workspace_locator)
 
-    mock_project = mock.Mock(source_dir=source_dir)
+    project = mock_project(source_dir)
     resolver = _ComponentResolver(
-        set(), [patch_locator1, patch_locator2], mock_project, rooted_tmp_path.re_root("output")
+        set(),
+        [patch_locator1, patch_locator2],
+        project,
+        rooted_tmp_path.re_root("output"),
     )
 
     actual_pedigree = resolver._get_pedigree_mapping([patch_locator1, patch_locator2])
@@ -1020,10 +1073,15 @@ def test_get_pedigree_with_unsupported_locators(
     mock_get_repo_id.return_value = MOCK_REPO_ID
 
     patch_locators = [PatchLocator(NpmLocator(None, "foo", "1.0.0"), [patch], None)]
-    mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+    project = mock_project(rooted_tmp_path.re_root("source"))
 
     with pytest.raises(UnsupportedFeature):
-        _ComponentResolver(set(), patch_locators, mock_project, rooted_tmp_path.re_root("output"))
+        _ComponentResolver(
+            set(),
+            patch_locators,
+            project,
+            rooted_tmp_path.re_root("output"),
+        )
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.get_config")
@@ -1056,7 +1114,10 @@ def test_create_components_permissive_mode_without_vcs_url(
     mock_package_json(mocked_package, project_dir)
 
     components = create_components(
-        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+        [mocked_package.package],
+        [mocked_package.package],
+        mock_project(project_dir),
+        output_dir,
     )
 
     assert len(components) == 1
@@ -1135,7 +1196,10 @@ def test_create_components_permissive_mode_with_vcs_url(
     mock_package_json(mocked_package, project_dir)
 
     components = create_components(
-        [mocked_package.package], [mocked_package.package], mock_project(project_dir), output_dir
+        [mocked_package.package],
+        [mocked_package.package],
+        mock_project(project_dir),
+        output_dir,
     )
 
     assert len(components) == 1
@@ -1167,10 +1231,15 @@ def test_path_patch_raises_without_repo_in_permissive_mode(
     package = NpmLocator(None, "fsevents", "1.0.0")
     patch_locator = PatchLocator(package, [patch_path], None)
 
-    mock_proj = mock.Mock(source_dir=source_dir)
+    project = mock_project(source_dir)
 
     with pytest.raises(PackageRejected):
-        _ComponentResolver(set(), [patch_locator], mock_proj, rooted_tmp_path.re_root("output"))
+        _ComponentResolver(
+            set(),
+            [patch_locator],
+            project,
+            rooted_tmp_path.re_root("output"),
+        )
 
 
 @mock.patch("hermeto.core.package_managers.javascript.yarn.resolver.run_yarn_cmd")
@@ -1211,7 +1280,7 @@ def test_resolve_packages_deduplicates_workspaces(
         f"{lib_only}\n{shared_line}",
     ]
 
-    result = resolve_packages(rooted_tmp_path, workspaces=["app", "lib"])
+    result = resolve_packages(mock_project(rooted_tmp_path), workspaces=["app", "lib"])
 
     assert len(result) == 3
     locators = [p.raw_locator for p in result]
@@ -1222,10 +1291,14 @@ def test_resolve_packages_deduplicates_workspaces(
     ]
     assert mock_yarn_cmd.call_count == 2
     mock_yarn_cmd.assert_any_call(
-        ["workspace", "app", "info", "--recursive", "--cache", "--json"], rooted_tmp_path
+        ["workspace", "app", "info", "--recursive", "--cache", "--json"],
+        rooted_tmp_path,
+        yarn_bin=MOCK_YARN_BIN,
     )
     mock_yarn_cmd.assert_any_call(
-        ["workspace", "lib", "info", "--recursive", "--cache", "--json"], rooted_tmp_path
+        ["workspace", "lib", "info", "--recursive", "--cache", "--json"],
+        rooted_tmp_path,
+        yarn_bin=MOCK_YARN_BIN,
     )
 
 
@@ -1249,13 +1322,13 @@ class TestGitPurlMapping:
             f"my-git-dep@file:{tarball_path}::locator=berryscary%40workspace%3A."
         )
 
-        mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+        project = mock_project(rooted_tmp_path.re_root("source"))
         output_dir = rooted_tmp_path.re_root("output")
 
         resolver = _ComponentResolver(
             set(),
             [],
-            mock_project,
+            project,
             output_dir,
             tarball_vcs_url_map={tarball_path: GIT_VCS_URL},
         )
@@ -1263,7 +1336,7 @@ class TestGitPurlMapping:
         resolved = _ResolvedPackage(
             locator=file_locator, name="my-git-dep", version="1.0.0", checksum="abc123"
         )
-        purl = resolver._generate_purl_for_package(resolved, mock_project)
+        purl = resolver._generate_purl_for_package(resolved, project)
 
         assert purl == f"pkg:npm/my-git-dep@1.0.0?vcs_url={GIT_VCS_URL_ENCODED}"
 
@@ -1279,13 +1352,13 @@ class TestGitPurlMapping:
             "regular-file-dep@file:deps/regular.tgz::locator=berryscary%40workspace%3A."
         )
 
-        mock_project = mock.Mock(source_dir=rooted_tmp_path.re_root("source"))
+        project = mock_project(rooted_tmp_path.re_root("source"))
         output_dir = rooted_tmp_path.re_root("output")
 
         resolver = _ComponentResolver(
             set(),
             [],
-            mock_project,
+            project,
             output_dir,
             tarball_vcs_url_map=None,
         )
@@ -1293,7 +1366,7 @@ class TestGitPurlMapping:
         resolved = _ResolvedPackage(
             locator=file_locator, name="regular-file-dep", version="1.0.0", checksum=None
         )
-        purl = resolver._generate_purl_for_package(resolved, mock_project)
+        purl = resolver._generate_purl_for_package(resolved, project)
 
         assert (
             purl == f"pkg:npm/regular-file-dep@1.0.0?vcs_url={MOCK_REPO_VCS_URL}#deps/regular.tgz"

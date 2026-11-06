@@ -69,17 +69,6 @@
       ],
       "enabled": false
     },
-    // Node v25 stopped shipping corepack which we need
-    {
-      "description": "Limit node to versions below 25 in production Dockerfile",
-      "matchManagers": [
-        "dockerfile"
-      ],
-      "matchPackageNames": [
-        "**/node"
-      ],
-      "allowedVersions": "<25"
-    },
     {
       "description": "Group production Dockerfile updates",
       "matchFileNames": [

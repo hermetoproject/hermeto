@@ -325,6 +325,26 @@ def test_get_semver_from_package_manager(
 
 
 @pytest.mark.parametrize(
+    "package_manager",
+    [
+        pytest.param(False, id="false"),
+        pytest.param(True, id="true"),
+        pytest.param(0, id="zero"),
+        pytest.param(123, id="integer"),
+        pytest.param(0.0, id="zero-float"),
+        pytest.param(1.22, id="float"),
+        pytest.param([], id="empty-array"),
+        pytest.param(["yarn@1.22.22"], id="array"),
+        pytest.param({}, id="empty-object"),
+        pytest.param({"version": "1.22.22"}, id="object"),
+    ],
+)
+def test_get_semver_from_package_manager_rejects_invalid_type(package_manager: object) -> None:
+    with pytest.raises(UnexpectedFormat):
+        get_semver_from_package_manager(package_manager)
+
+
+@pytest.mark.parametrize(
     "package_manager, expected_error",
     [
         (
