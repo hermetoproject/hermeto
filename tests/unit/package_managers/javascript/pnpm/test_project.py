@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,42 @@ class TestPnpmLock:
         lockfile.write_text(":")
         with pytest.raises(InvalidLockfileFormat):
             PnpmLock.from_file(lockfile)
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            # pnpm <= 11 writes a single-document lockfile.
+            pytest.param(
+                """
+                lockfileVersion: '9.0'
+                packages:
+                  foo@1.0.0: {}
+                """,
+                id="single_document",
+            ),
+            # Since pnpm 12 the lockfile may be a YAML stream whose leading "env"
+            # document must be skipped in favour of the project graph in the last one.
+            pytest.param(
+                """
+                lockfileVersion: '9.0'
+                packages:
+                  '@pnpm/exe@12.0.0': {}
+                ---
+                lockfileVersion: '9.0'
+                packages:
+                  foo@1.0.0: {}
+                """,
+                id="multi_document",
+            ),
+        ],
+    )
+    def test_from_file_reads_project_graph_from_last_document(
+        self, tmp_path: Path, content: str
+    ) -> None:
+        lockfile = tmp_path / "pnpm-lock.yaml"
+        lockfile.write_text(textwrap.dedent(content))
+        pnpm_lock = PnpmLock.from_file(lockfile)
+        assert pnpm_lock.packages == {"foo@1.0.0": {}}
 
     @pytest.mark.parametrize(
         ("data", "exc"),
