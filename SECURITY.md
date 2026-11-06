@@ -25,19 +25,31 @@ https://github.com/hermetoproject/hermeto/releases/latest
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability or even **think** you may have discovered one, we
-encourage you to report it to us. Please follow the GitHub Security
-Advisory feature's process described in the [docs](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability). 
+Report suspected vulnerabilities and security incidents privately:
 
-Once the report is submitted, it will only be visible to the advisory collaborators (you) and
-repository admins.
+https://github.com/hermetoproject/hermeto/security/advisories/new
 
-## What Happens Next
+**Please do NOT share sensitive details in public issues or pull requests.**
 
-- The admins will review your report and may reach out for further information.
-- If the vulnerability is confirmed, we will work on a fix in a private space (collaboration
-welcome). You'll be able to follow the whole process.
-- Once resolved, the issue will be disclosed responsibly and the fix released promptly.
+Report concerns even if you are unsure they are security issues.
+To help us assess and address the concern, include what you know:
+
+- A concise summary of the concern.
+- A technical description, including affected versions or systems.
+- Steps to reproduce the issue, or evidence of an incident or ongoing attack.
+- The possible impact or exploit scenarios, if known.
+- **DO NOT** include any suggested fixes for the reported issue in the report
+  text itself.
+
+Reports are handled privately through GitHub Security Advisories. Maintainers
+may invite more collaborators to help investigate and resolve the issue.
+
+We aim to acknowledge reports and provide an initial assessment or next steps
+within **10 business days**. Fixing an issue may take longer. We keep reporters
+informed of progress.
+
+Ongoing attacks and suspected compromise receive urgent attention as soon as
+maintainers become aware of them.
 
 Thank you for helping us maintain a secure project!
 
