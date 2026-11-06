@@ -48,7 +48,11 @@ def fetch_npm_source(request: Request) -> RequestOutput:
     npm_deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     for package in request.npm_packages:
-        info = _resolve_npm(request.source_dir.join_within_root(package.path), npm_deps_dir)
+        info = _resolve_npm(
+            request.source_dir.join_within_root(package.path),
+            npm_deps_dir,
+            workspaces=package.workspaces,
+        )
         component_info.append(info["package"])
 
         for dependency in info["dependencies"]:
