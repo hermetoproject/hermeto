@@ -198,8 +198,8 @@ class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
     packages: BinaryFilterStr = BINARY_FILTER_ALL
 
 
-class PipBinaryFilters(BinaryModeOptions):
-    """Binary filters specific to pip packages."""
+class PythonBinaryFilters(BinaryModeOptions):
+    """Binary filters shared by Python package managers."""
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
@@ -259,6 +259,10 @@ class PipBinaryFilters(BinaryModeOptions):
             raise ValueError(f"Invalid platform regex: {value}") from e
 
         return value
+
+
+class PipBinaryFilters(PythonBinaryFilters):
+    """Binary filters specific to pip packages."""
 
     @classmethod
     def with_allow_binary_behavior(cls) -> Self:
@@ -436,6 +440,7 @@ class UvPackageInput(_PackageInputBase):
     """Accepted input for a uv package."""
 
     type: Literal["x-uv"]
+    binary: PythonBinaryFilters | None = None
 
 
 class YarnPackageInput(_PackageInputBase):
