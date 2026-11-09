@@ -21,6 +21,8 @@ from hermeto.core.errors import (
     PathOutsideRoot,
     UnexpectedFormat,
 )
+from hermeto.core.models.input import PythonBinaryFilters
+from hermeto.core.package_managers.python.common import WheelsFilter
 from hermeto.core.rooted_path import RootedPath
 
 SUPPORTED_LOCKFILE_VERSION = 1
@@ -399,7 +401,7 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
             return self.sdist
         return self.wheels[0] if self.wheels else None
 
-    def _registry_artifacts(self) -> list[PackageArtifact]:
+    def _registry_sdist(self) -> list[PackageArtifact]:
         """Extract the sdist to fetch for a registry package."""
         # registry checksums are optional in uv.lock; a missing hash is
         # tolerated here and reported by the download phase
@@ -421,6 +423,57 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
             )
         return [self.sdist]
 
+    def _registry_artifacts(
+        self, binary_filter: PythonBinaryFilters | None = None
+    ) -> list[PackageArtifact]:
+        """Select registry artifacts according to the requested binary policy.
+
+        When binary filter is not configured, select the sdist only. When a binary
+        filter is configured, first keep only wheels compatible with the requested
+        Python and platform tags. The package policy then decides which artifacts
+        to return:
+
+        - `NO_BINARY`: the package sdist only.
+        - `ONLY_BINARY`: matching wheels only; reject the package if none match.
+        - `PREFER_BINARY`: matching wheels plus the sdist fallback, or only the sdist
+           when no compatible wheel exists.
+        """
+        if binary_filter is None:
+            return self._registry_sdist()
+        wheels_filter = WheelsFilter(binary_filter)
+        matching_wheels: list[PackageArtifact] = [
+            wheel
+            for wheel in self.wheels
+            if wheels_filter.matches_filename(wheel.get_target_filename(self.source))
+        ]
+        policy = wheels_filter.package_policy(self.name)
+
+        if policy is not WheelsFilter.PackageFetchPolicy.NO_BINARY and any(
+            wheel.url is None for wheel in matching_wheels
+        ):
+            raise PackageRejected(
+                reason=(
+                    f"{self.name}=={self.version} selects a wheel from a local index; "
+                    "x-uv supports only wheels with download URLs"
+                ),
+                solution="Use an HTTP(S) package index that records downloadable wheel URLs.",
+            )
+
+        if policy is WheelsFilter.PackageFetchPolicy.ONLY_BINARY:
+            if not matching_wheels:
+                raise PackageRejected(
+                    f"No wheels found for package {self.name}=={self.version}",
+                    solution="Please update the binary filters.",
+                )
+            return matching_wheels
+
+        if policy is WheelsFilter.PackageFetchPolicy.PREFER_BINARY and matching_wheels:
+            if self.sdist is None:
+                return matching_wheels
+            return [*matching_wheels, *self._registry_sdist()]
+
+        return self._registry_sdist()
+
     def _url_artifacts(self, source: PackageSourceUrl) -> list[PackageArtifact]:
         """Extract the artifact to fetch for a url package."""
         # a url source points at a single file, so uv records exactly one
@@ -439,17 +492,14 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
         # SBOM reads back to tell a source build from a binary one
         return [recorded.model_copy(update={"url": source.location})]
 
-    @cached_property
-    def artifacts_to_download(self) -> list[PackageArtifact]:
+    def artifacts_to_download(
+        self, binary_filter: PythonBinaryFilters | None = None
+    ) -> list[PackageArtifact]:
         """Extract the remote artifacts to fetch for a package.
 
-        Only sdists are fetched for now. Like pip's process_package_distributions,
-        this is the single place where binary filters will decide the sdist/wheel
-        split once they are supported. Local sources need no fetching and git
-        sources are cloned rather than downloaded, so both yield nothing here.
-
-        Cached so that the download phase and the SBOM both describe the same
-        artifacts rather than deriving them separately.
+        For registry packages, compatible wheels are selected according to the filter
+        policy. Prefer-binary packages also retain their sdist as a fallback. URL,
+        Git, and local packages keep their existing artifact behavior.
 
         :raises PackageRejected: if a registry package publishes no sdist.
         :raises UnexpectedFormat: if a registry sdist records no download URL.
@@ -457,7 +507,7 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
         """
         match self.source:
             case PackageSourceRegistry():
-                return self._registry_artifacts()
+                return self._registry_artifacts(binary_filter)
             case PackageSourceUrl() as source:
                 return self._url_artifacts(source)
             case PackageSourceGit() | PackageSourceLocal():
@@ -490,7 +540,7 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
 
         What is fetched differs per source kind, so each one answers for itself.
         """
-        return self.source.records_no_checksum(self.artifacts_to_download)
+        return self.source.records_no_checksum(self.artifacts_to_download())
 
 
 def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:

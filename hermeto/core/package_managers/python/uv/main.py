@@ -22,7 +22,7 @@ from hermeto.core.errors import (
     NotAGitRepo,
     PackageRejected,
 )
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import PythonBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
@@ -92,7 +92,7 @@ def fetch_uv_source(request: Request) -> RequestOutput:
 
     for package in request.uv_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        resolution_result = _resolve_uv(package_dir, request.output_dir)
+        resolution_result = _resolve_uv(package_dir, request.output_dir, package.binary)
         components.extend(resolution_result.components)
         if resolution_result.rewritten_lockfile is not None:
             project_files.append(resolution_result.rewritten_lockfile)
@@ -173,7 +173,11 @@ def partition(predicate: Callable, iterable: Iterable) -> list[list]:
     return [list(e) for e in more_itertools.partition(predicate, iterable)]
 
 
-def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolutionResult:
+def _resolve_uv(
+    package_dir: RootedPath,
+    output_dir: RootedPath,
+    binary_filter: PythonBinaryFilters | None = None,
+) -> UvResolutionResult:
     pyproject = package_dir.join_within_root("pyproject.toml")
     if not pyproject.path.exists():
         raise PackageRejected(
@@ -198,10 +202,14 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolution
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
 
     if packages_needing_proxy:
-        _download_dependencies(output_dir, packages_needing_proxy, get_aiohttp_auth())
+        _download_dependencies(
+            output_dir,
+            packages_needing_proxy,
+            get_aiohttp_auth(),
+            binary_filter=binary_filter,
+        )
     if other_packages:
-        _download_dependencies(output_dir, other_packages)
-
+        _download_dependencies(output_dir, other_packages, binary_filter=binary_filter)
     dependency_components = _generate_dependency_components(
         lock.packages, package_dir, project_vcs_qualifiers
     )
@@ -229,7 +237,10 @@ def make_auth_headers(files_to_download: dict[Url, Path], auth: str | None) -> d
 
 
 def _download_dependencies(
-    output_dir: RootedPath, packages: Iterable[UvPackage] | list, auth: str | None = None
+    output_dir: RootedPath,
+    packages: Iterable[UvPackage],
+    auth: str | None = None,
+    binary_filter: PythonBinaryFilters | None = None,
 ) -> None:
     """Fetch every remote artifact recorded in uv.lock into a flat deps/uv directory."""
     deps_dir = output_dir.join_within_root("deps", "uv")
@@ -242,7 +253,7 @@ def _download_dependencies(
             _download_git_package(package, package.source, deps_dir)
         else:
             # everything else lands here: registry, url and the four local kinds
-            for artifact in package.artifacts_to_download:
+            for artifact in package.artifacts_to_download(binary_filter):
                 if artifact.url is None:
                     # should not happen
                     raise RuntimeError(f"artifact for {package.name} has no download URL")
@@ -332,7 +343,7 @@ def _generate_dependency_components(
         project_vcs_qualifiers=project_vcs_qualifiers,
         lockfile_relpath=lockfile_relpath,
     )
-    return [gdc(p, p.artifacts_to_download) for p in packages if not _is_root_project_entry(p)]
+    return [gdc(p, p.artifacts_to_download()) for p in packages if not _is_root_project_entry(p)]
 
 
 def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
