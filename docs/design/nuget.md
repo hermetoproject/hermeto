@@ -366,7 +366,9 @@ NuGet merges the nodes of every `nuget.config` it finds on the way up, ending on
 `<clear />` is necessary to make NuGet stop at the current state of a node and to prevent it from traversing the directory structure up and merging in values from any other config file that it finds.
 If the same key is set in multiple configs, the closest one is used.
 Note that `<clear />` simply gets rid of all previous elements in the node, so it should only ever be used as the first element of the node.
-The `nuget.config` inheritance should be implemented in Hermeto as well with the path traversal ending early if `<clear />` is found for all wanted nodes.
+See [Appendix A](#appendix-a-nugetconfig-inheritance-examples) for examples.
+
+The `nuget.config` inheritance should be implemented in Hermeto as well, with the path traversal ending at the root directory of the repository, or earlier if `<clear />` is found for all wanted nodes.
 
 In original implementation, `nuget.config` can also inherit from global configs, but this will not be supported by Hermeto.
 
@@ -443,6 +445,159 @@ Otherwise, rewriting the config files should do most of the work.
 
 There might be some nice-to-have environment variables to set to avoid warnings associated with no network access,
 but setting them should be left to the implementation.
+
+## Appendix A. nuget.config inheritance examples
+
+The following examples use a repository `inheritance` with this structure:
+
+```text
+inheritance
+├── examples
+│   ├── add-source
+│   │   └── nuget.config
+│   └── clear-sources
+│       └── nuget.config
+└── nuget.config
+```
+
+`inheritance/nuget.config` clears inherited package sources and defines two of its own:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="shared" value="https://packages.example.com/shared/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+In the repository root, only these two sources are used:
+
+```shell
+$ dotnet nuget list source
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+  2.  shared [Enabled]
+      https://packages.example.com/shared/v3/index.json
+```
+
+### Merging without `<clear />`
+
+`inheritance/examples/add-source/nuget.config` adds a source without using `<clear />`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="app" value="https://packages.example.com/app/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+All sources get merged:
+
+```shell
+$ dotnet nuget list source
+Registered Sources:
+  1.  app [Enabled]
+      https://packages.example.com/app/v3/index.json
+  2.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+  3.  shared [Enabled]
+      https://packages.example.com/shared/v3/index.json
+```
+
+### Stopping with `<clear />`
+
+`inheritance/examples/clear-sources/nuget.config` uses `<clear />`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="app" value="https://packages.example.com/app/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+Only the sources defined in that file are used:
+
+```shell
+$ dotnet nuget list source
+Registered Sources:
+  1.  app [Enabled]
+      https://packages.example.com/app/v3/index.json
+```
+
+### Inheriting from the global config
+
+If the global config (`~/.nuget/NuGet/NuGet.Config` on macOS) defines an additional source:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+    <add key="global-config" value="https://packages.example.com/global/index.json" />
+  </packageSources>
+</configuration>
+```
+
+it is not used in the repository root, because `inheritance/nuget.config` uses `<clear />`.
+Removing `<clear />` from `inheritance/nuget.config` merges the global source in as well:
+
+```shell
+$ dotnet nuget list source
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+  2.  shared [Enabled]
+      https://packages.example.com/shared/v3/index.json
+  3.  global-config [Enabled]
+      https://packages.example.com/global/index.json
+```
+
+### Closest key wins
+
+If `inheritance/nuget.config` defines a source `foo`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="foo" value="https://foo.xyz/index.json" />
+  </packageSources>
+</configuration>
+```
+
+and `inheritance/examples/nuget.config` defines the same key with a different value:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="foo" value="https://bar.example.xyz/index.json" />
+  </packageSources>
+</configuration>
+```
+
+then in `inheritance/examples` the closer value is used:
+
+```shell
+$ dotnet nuget list source
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+  2.  foo [Enabled]
+      https://bar.example.xyz/index.json
+```
 
 ## References
 
