@@ -19,6 +19,23 @@ class TestPnpmLock:
         with pytest.raises(InvalidLockfileFormat):
             PnpmLock.from_file(lockfile)
 
+    def test_from_file_uses_last_document(self, tmp_path: Path) -> None:
+        # pnpm 11+ prepends an "env" document; the project graph is the last document.
+        lockfile = tmp_path / "pnpm-lock.yaml"
+        lockfile.write_text(
+            "lockfileVersion: '9.0'\n"
+            "packageManagerDependencies:\n"
+            "  pnpm: 12.11.2\n"
+            "---\n"
+            "lockfileVersion: '9.0'\n"
+            "packages:\n"
+            "  a@1.0.0:\n"
+            "    resolution: {integrity: sha512-abc}\n"
+        )
+        pnpm_lock = PnpmLock.from_file(lockfile)
+        assert "a@1.0.0" in pnpm_lock.packages
+        assert "packageManagerDependencies" not in pnpm_lock
+
     @pytest.mark.parametrize(
         ("data", "exc"),
         [
