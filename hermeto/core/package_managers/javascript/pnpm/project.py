@@ -33,7 +33,9 @@ class PnpmLock(UserDict):
 
         try:
             with path.open() as f:
-                data = yaml.safe_load(f)
+                # pnpm 11+ may prepend an "env" document; the project graph is the last one.
+                # https://pnpm.io/lockfile
+                documents = [doc for doc in yaml.safe_load_all(f) if doc is not None]
         except yaml.YAMLError as e:
             raise InvalidLockfileFormat(
                 path,
@@ -41,7 +43,7 @@ class PnpmLock(UserDict):
                 solution="The pnpm-lock.yaml file must contain valid YAML.",
             )
 
-        return cls(path, data)
+        return cls(path, documents[-1] if documents else {})
 
     @classmethod
     def from_dir(cls, path: Path) -> "PnpmLock":
