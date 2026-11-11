@@ -134,7 +134,12 @@ def _resolve_uv(
         name=name,
         version=version,
         components=components,
-        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock, selected_packages),
+        rewritten_lockfile=_rewrite_lockfile(
+            lockfile_doc,
+            package_dir,
+            lock,
+            selected_packages if binary_filter is not None else None,
+        ),
     )
 
 
@@ -288,7 +293,7 @@ def _rewrite_lockfile(
     doc: tomlkit.TOMLDocument,
     package_dir: RootedPath,
     lock: UvLock,
-    _selected_packages: list[_SelectedUvPackage] | None = None,
+    selected_packages: list[_SelectedUvPackage] | None = None,
 ) -> ProjectFile | None:
     """Redirect every remote artifact reference in uv.lock into deps/uv.
 
@@ -300,10 +305,17 @@ def _rewrite_lockfile(
 
     Returns None if the lockfile references no remote artifacts.
     """
-    if all(_is_local_package(package) for package in lock.packages):
+    packages = (
+        [selected.package for selected in selected_packages]
+        if selected_packages is not None
+        else lock.packages
+    )
+    if all(_is_local_package(package) for package in packages):
         return None
 
-    for raw_package, package in zip(doc.get("package", []), lock.packages, strict=True):
+    for package_index, (raw_package, package) in enumerate(
+        zip(doc.get("package", []), packages, strict=True)
+    ):
         if (raw_package["name"], raw_package.get("version")) != (package.name, package.version):
             # should not happen: both views parse the same file, in order
             raise RuntimeError(
@@ -312,9 +324,19 @@ def _rewrite_lockfile(
 
         match package.source:
             case PackageSourceRegistry():
-                if package.sdist is not None:
+                selected_artifact_ids = (
+                    {id(artifact) for artifact in selected_packages[package_index].artifacts}
+                    if selected_packages is not None
+                    else None
+                )
+                if package.sdist is not None and (
+                    selected_artifact_ids is None or id(package.sdist) in selected_artifact_ids
+                ):
                     filename = package.sdist.get_target_filename(package.source)
                     raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+                elif selected_artifact_ids is not None:
+                    raw_package.pop("sdist", None)
+
                 raw_wheels = raw_package.get("wheels", [])
                 for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
                     if any(raw_wheel.get(key) != getattr(wheel, key) for key in _WHEEL_LOCATIONS):
@@ -323,8 +345,17 @@ def _rewrite_lockfile(
                             f"uv.lock wheel for {package.name} does not match the parsed entry"
                         )
 
+                for wheel_index in reversed(range(len(raw_wheels))):
+                    wheel = package.wheels[wheel_index]
+                    if selected_artifact_ids is not None and id(wheel) not in selected_artifact_ids:
+                        del raw_wheels[wheel_index]
+                        continue
+
                     filename = wheel.get_target_filename(package.source)
-                    raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+                    raw_wheels[wheel_index]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+
+                if selected_artifact_ids is not None and not raw_wheels:
+                    raw_package.pop("wheels", None)
             case PackageSourceGit() as source:
                 _replace_source_with_path(raw_package, _git_tarball_filename(package, source))
             case PackageSourceUrl():

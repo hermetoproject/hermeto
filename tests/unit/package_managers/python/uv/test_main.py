@@ -7,10 +7,8 @@ import pytest
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
-from hermeto.core.errors import (
-    NotAGitRepo,
-    PackageRejected,
-)
+from hermeto.core.errors import NotAGitRepo, PackageRejected
+from hermeto.core.models.input import UvBinaryFilters
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.package_managers.python.uv.main import (
@@ -527,12 +525,19 @@ sdist = { hash = "sha256:cccc" }
 
 
 def rewrite_lockfile(
-    rooted_tmp_path: RootedPath, lockfile: str = REWRITE_LOCKFILE
+    rooted_tmp_path: RootedPath,
+    lockfile: str = REWRITE_LOCKFILE,
+    binary_filter: UvBinaryFilters | None = None,
 ) -> ProjectFile | None:
     rooted_tmp_path.join_within_root("uv.lock").path.write_text(lockfile)
     doc = load_lockfile_document(rooted_tmp_path)
     lock = UvLock.from_toml(doc, rooted_tmp_path.join_within_root("uv.lock").path)
-    return _rewrite_lockfile(doc, rooted_tmp_path, lock)
+    selected_packages = (
+        _select_package_artifacts(lock.packages, binary_filter)
+        if binary_filter is not None
+        else None
+    )
+    return _rewrite_lockfile(doc, rooted_tmp_path, lock, selected_packages)
 
 
 @pytest.mark.parametrize(
@@ -593,6 +598,38 @@ def test_rewrite_lockfile_template_drops(forbidden: str, rooted_tmp_path: Rooted
     project_file = rewrite_lockfile(rooted_tmp_path)
     assert project_file is not None
     assert forbidden not in project_file.template
+
+
+def test_rewrite_lockfile_removes_unselected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """An explicitly excluded package must not leave an unfetched wheel in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=UvBinaryFilters(packages="!anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0-py3-none-any.whl" not in project_file.template
+
+
+def test_rewrite_lockfile_keeps_selected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """Compatible preferred wheels remain available for the offline uv install."""
+    project_file = rewrite_lockfile(rooted_tmp_path, binary_filter=UvBinaryFilters())
+    assert project_file is not None
+    assert (
+        'url = "file://${output_dir}/deps/uv/anyio-4.13.0-py3-none-any.whl"'
+        in project_file.template
+    )
+
+
+def test_rewrite_lockfile_removes_sdist_for_only_binary_package(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Only-binary packages must not retain an unfetched sdist in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=UvBinaryFilters(packages="anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0.tar.gz" not in project_file.template
 
 
 def test_rewrite_lockfile_abspath(rooted_tmp_path: RootedPath) -> None:
