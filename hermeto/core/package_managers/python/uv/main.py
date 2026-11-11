@@ -74,6 +74,14 @@ class _DownloadItem(NamedTuple):
     target: Path
 
 
+@dataclass(frozen=True)
+class _SelectedUvPackage:
+    """A uv.lock package and the artifacts selected for it."""
+
+    package: UvPackage
+    artifacts: list[PackageArtifact]
+
+
 @dataclass
 class UvResolutionResult:
     """Everything fetch-deps produced for a single uv project."""
@@ -196,20 +204,18 @@ def _resolve_uv(
 
     of_default_location = lambda p: p.source.location.startswith("https://pypi.org/simple")
     from_default_registry = lambda p: p.source.kind == "registry" and of_default_location(p)
-    other_packages, packages_needing_proxy = partition(from_default_registry, lock.packages)
+    _, packages_needing_proxy = partition(from_default_registry, lock.packages)
     adjust_source_urls_to_proxy(packages_needing_proxy)
 
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
-
-    if packages_needing_proxy:
-        _download_dependencies(
-            output_dir,
-            packages_needing_proxy,
-            get_aiohttp_auth(),
-            binary_filter=binary_filter,
-        )
-    if other_packages:
-        _download_dependencies(output_dir, other_packages, binary_filter=binary_filter)
+    selected_packages = _select_package_artifacts(lock.packages, binary_filter)
+    other_selected_packages, selected_packages_needing_proxy = partition(
+        lambda selected: from_default_registry(selected.package), selected_packages
+    )
+    if selected_packages_needing_proxy:
+        _download_dependencies(output_dir, selected_packages_needing_proxy, get_aiohttp_auth())
+    if other_selected_packages:
+        _download_dependencies(output_dir, other_selected_packages)
     dependency_components = _generate_dependency_components(
         lock.packages, package_dir, project_vcs_qualifiers
     )
@@ -223,7 +229,7 @@ def _resolve_uv(
         name=name,
         version=version,
         components=components,
-        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock),
+        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock, selected_packages),
     )
 
 
@@ -238,22 +244,22 @@ def make_auth_headers(files_to_download: dict[Url, Path], auth: str | None) -> d
 
 def _download_dependencies(
     output_dir: RootedPath,
-    packages: Iterable[UvPackage],
+    selected_packages: list[_SelectedUvPackage],
     auth: str | None = None,
-    binary_filter: PythonBinaryFilters | None = None,
 ) -> None:
-    """Fetch every remote artifact recorded in uv.lock into a flat deps/uv directory."""
+    """Fetch every selected remote artifact into a flat deps/uv directory."""
     deps_dir = output_dir.join_within_root("deps", "uv")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     items: list[_DownloadItem] = []
     files_to_download: dict[Url, Path] = {}
-    for package in packages:
+    for selected_package in selected_packages:
+        package = selected_package.package
         if isinstance(package.source, PackageSourceGit):
             _download_git_package(package, package.source, deps_dir)
         else:
             # everything else lands here: registry, url and the four local kinds
-            for artifact in package.artifacts_to_download(binary_filter):
+            for artifact in selected_package.artifacts:
                 if artifact.url is None:
                     # should not happen
                     raise RuntimeError(f"artifact for {package.name} has no download URL")
@@ -275,6 +281,19 @@ def _download_dependencies(
             must_match_any_checksum(target, [artifact.checksum_info])
         else:
             log.warning("Missing checksum for %s==%s", package.name, package.version)
+
+
+def _select_package_artifacts(
+    packages: list[UvPackage], binary_filter: PythonBinaryFilters | None = None
+) -> list[_SelectedUvPackage]:
+    """Select the artifacts to fetch for every package in uv.lock."""
+    return [
+        _SelectedUvPackage(
+            package=package,
+            artifacts=package.artifacts_to_download(binary_filter),
+        )
+        for package in packages
+    ]
 
 
 def _is_local_package(package: UvPackage) -> bool:
@@ -486,7 +505,10 @@ def _rewrite_a_single_package(raw_package: dict, processed_package: UvPackage) -
 
 
 def _rewrite_lockfile(
-    doc: tomlkit.TOMLDocument, package_dir: RootedPath, lock: UvLock
+    doc: tomlkit.TOMLDocument,
+    package_dir: RootedPath,
+    lock: UvLock,
+    _selected_packages: list[_SelectedUvPackage] | None = None,
 ) -> ProjectFile | None:
     """Redirect every remote artifact reference in uv.lock into deps/uv.
 
