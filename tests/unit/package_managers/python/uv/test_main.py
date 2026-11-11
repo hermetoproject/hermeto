@@ -16,6 +16,7 @@ from hermeto.core.package_managers.python.uv.main import (
     _download_git_package,
     _generate_dependency_component,
     _generate_dependency_components,
+    _generate_environment_variables,
     _generate_purl_main_package,
     _get_project_vcs_qualifiers,
     _get_pyproject_metadata,
@@ -490,6 +491,20 @@ def test_generate_dependency_components_excludes_root_entry(
 
     assert len(components) == 1
     assert components[0].purl == "pkg:pypi/example@1.0.0"
+
+
+@pytest.mark.parametrize(
+    ("has_binary_filter", "expects_no_binary"),
+    [
+        pytest.param(False, True, id="source_only"),
+        pytest.param(True, False, id="binary_filter"),
+    ],
+)
+def test_generate_environment_variables(has_binary_filter: bool, expects_no_binary: bool) -> None:
+    environment_variables = _generate_environment_variables(has_binary_filter)
+    names = {environment_variable.name for environment_variable in environment_variables}
+
+    assert ("UV_NO_BINARY" in names) is expects_no_binary
 
 
 REWRITE_LOCKFILE = """\
