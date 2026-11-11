@@ -449,7 +449,7 @@ class TestUvPackage:
             sdist=SDIST,
             wheels=[WHEEL],
         )
-        assert package.artifacts_to_download == [SDIST]
+        assert package.artifacts_to_download() == [SDIST]
 
     @pytest.mark.parametrize(
         "package, expected_error",
@@ -486,7 +486,7 @@ class TestUvPackage:
         self, package: UvPackage, expected_error: type[Exception]
     ) -> None:
         with pytest.raises(expected_error):
-            _ = package.artifacts_to_download
+            package.artifacts_to_download()
 
     @pytest.mark.parametrize(
         "sdist, wheels, expected",
@@ -517,7 +517,7 @@ class TestUvPackage:
         package = make_package(
             PackageSourceUrl(kind="url", location=URL_SOURCE), sdist=sdist, wheels=wheels
         )
-        assert package.artifacts_to_download == [expected]
+        assert package.artifacts_to_download() == [expected]
 
     @pytest.mark.parametrize(
         "source",
@@ -530,7 +530,7 @@ class TestUvPackage:
     )
     def test_artifacts_to_download_skips_local_sources(self, source: PackageSource) -> None:
         """local sources should not be downloaded"""
-        assert make_package(source).artifacts_to_download == []
+        assert make_package(source).artifacts_to_download() == []
 
 
 class TestUvLock:

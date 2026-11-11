@@ -22,6 +22,8 @@ from hermeto.core.package_managers.python.uv.main import (
     _get_project_vcs_qualifiers,
     _get_pyproject_metadata,
     _rewrite_lockfile,
+    _select_package_artifacts,
+    _SelectedUvPackage,
 )
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
@@ -116,7 +118,9 @@ def test_download_dependencies(
     )
     _download_dependencies(
         rooted_tmp_path,
-        [hashed_registry_package, unhashed_registry_package, git_package, local_package],
+        _select_package_artifacts(
+            [hashed_registry_package, unhashed_registry_package, git_package, local_package]
+        ),
     )
 
     deps_dir = rooted_tmp_path.path / "deps" / "uv"
@@ -153,7 +157,7 @@ def test_download_dependencies_skips_existing_files(
             url="https://example.org/registry-pkg-1.0.0.tar.gz", hash="sha256:1234"
         ),
     )
-    _download_dependencies(rooted_tmp_path, [package])
+    _download_dependencies(rooted_tmp_path, _select_package_artifacts([package]))
 
     mock_download.assert_not_called()
     mock_checksum.assert_called_once_with(
@@ -161,19 +165,42 @@ def test_download_dependencies_skips_existing_files(
     )
 
 
-@mock.patch(
-    "hermeto.core.package_managers.python.uv.models.UvPackage.artifacts_to_download",
-    new_callable=mock.PropertyMock,
-)
+def test_select_package_artifacts_keeps_only_filter_selected_artifacts() -> None:
+    """Selected packages retain the original package and its filtered artifacts."""
+    sdist = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234")
+    linux_wheel = ArtifactWheel(
+        url=("https://example.org/example-1.0.0-cp312-cp312-manylinux_2_17_x86_64.whl"),
+        hash="sha256:5678",
+    )
+    macos_wheel = ArtifactWheel(
+        url="https://example.org/example-1.0.0-cp312-cp312-macosx_11_0_arm64.whl",
+        hash="sha256:abcd",
+    )
+    package = make_package(
+        PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+        sdist=sdist,
+        wheels=[linux_wheel, macos_wheel],
+    )
+
+    selected = _select_package_artifacts(
+        [package], UvBinaryFilters(os="linux", arch="x86_64", py_version=312)
+    )
+
+    assert selected == [_SelectedUvPackage(package=package, artifacts=[linux_wheel, sdist])]
+
+
 def test_download_dependencies_artifact_without_url_should_not_happen(
-    mock_artifacts: mock.Mock, rooted_tmp_path: RootedPath
+    rooted_tmp_path: RootedPath,
 ) -> None:
-    """artifacts_to_download always records a URL, so only a faked one reaches the guard."""
+    """Selected artifacts always record a URL, so only a faked one reaches the guard."""
     source = PackageSourceRegistry(kind="registry", location="https://pypi.org/simple")
-    mock_artifacts.return_value = [ArtifactSdist(hash="sha256:1234")]
+    selected_package = _SelectedUvPackage(
+        package=make_package(source, sdist=SDIST),
+        artifacts=[ArtifactSdist(hash="sha256:1234")],
+    )
 
     with pytest.raises(RuntimeError):
-        _download_dependencies(rooted_tmp_path, [make_package(source, sdist=SDIST)])
+        _download_dependencies(rooted_tmp_path, [selected_package])
 
 
 @pytest.mark.parametrize(
@@ -324,7 +351,7 @@ def test_generate_dependency_component_purl(
 ) -> None:
     """Every source kind has to reach its own PackageSource.purl implementation."""
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     assert component.purl == expected_purl
@@ -369,7 +396,7 @@ def test_generate_dependency_component_missing_hash_property(
     package: UvPackage, expected: frozenset[str], rooted_tmp_path: RootedPath
 ) -> None:
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     props = PropertySet.from_properties(component.properties)
@@ -384,7 +411,7 @@ def test_generate_dependency_component_local_has_no_missing_hash(
     package = make_package(PackageSourceLocal(kind=kind, location="libs/vendored-lib"))
 
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     props = PropertySet.from_properties(component.properties)
@@ -444,7 +471,7 @@ def test_generate_dependency_component_binary_property(
 ) -> None:
     """A dependency pinned to a wheel is marked binary, like pip marks its own."""
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     assert PropertySet.from_properties(component.properties).uv_package_binary is expected
