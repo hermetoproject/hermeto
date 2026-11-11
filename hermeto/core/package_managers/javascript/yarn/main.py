@@ -484,27 +484,6 @@ def _yarn_workspace_dirs(source_dir: RootedPath) -> list[Path]:
     return ret
 
 
-def _workspace_package_dirs(source_dir: RootedPath) -> list[Path]:
-    """Resolve workspace package directories from the root package.json workspaces field.
-
-    Supports both the array form (``["packages/*"]``) and the object form
-    (``{"packages": ["packages/*"]}``). Paths are constrained to ``source_dir``.
-    """
-    workspaces = PackageJson.from_dir(source_dir.path).data.get("workspaces", [])
-    if isinstance(workspaces, dict):
-        workspaces = workspaces.get("packages", [])
-
-    dirs: list[Path] = []
-    for pattern in workspaces:
-        for path in source_dir.path.glob(pattern):
-            if not path.is_dir() or not (path / "package.json").exists():
-                continue
-            # Reject workspace globs that escape the source tree.
-            source_dir.join_within_root(path.relative_to(source_dir.path))
-            dirs.append(path)
-    return dirs
-
-
 def _strip_workspace_scripts(source_dir: RootedPath) -> None:
     """Remove scripts from the root and all workspace package.json files.
 
