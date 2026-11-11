@@ -313,52 +313,53 @@ def test_verify_yarnrc_paths_fail(
         _verify_yarnrc_paths(project)
 
 
-@mock.patch("hermeto.core.package_managers.javascript.yarn.project.YarnRc.write")
-@mock.patch(
-    "hermeto.core.package_managers.javascript.yarn.main._get_plugin_allowlist", return_value=[]
-)
-@mock.patch("hermeto.core.package_managers.javascript.yarn.main._configure_yarn_version")
-def test_workspace_focus_rejected_for_yarn_v3(
-    mock_configure_version: mock.Mock,
-    mock_allowlist: mock.Mock,
-    mock_write: mock.Mock,
-    rooted_tmp_path: RootedPath,
-) -> None:
-    """Workspace focus is rejected when the project uses Yarn v3."""
-    mock_configure_version.return_value = semver.Version.parse("3.6.1")
-    project = mock.Mock(source_dir=rooted_tmp_path, yarn_rc=mock.MagicMock())
-
-    with pytest.raises(PackageRejected):
-        _resolve_yarn_project(project, rooted_tmp_path, Mode.STRICT, workspaces=["app"])
-
-
-def test_strip_workspace_scripts(rooted_tmp_path: RootedPath) -> None:
-    """Scripts are removed from workspace package.json files matched by workspaces globs."""
-    root_json = rooted_tmp_path.join_within_root("package.json")
-    root_json.path.write_text(json.dumps({"name": "root", "workspaces": ["packages/app"]}))
-
-    pkg_a_dir = rooted_tmp_path.join_within_root("packages", "app")
-    pkg_a_dir.path.mkdir(parents=True)
-    pkg_a_json = pkg_a_dir.join_within_root("package.json")
-    pkg_a_json.path.write_text(
-        json.dumps({"name": "app", "scripts": {"build": "tsc", "postinstall": "echo hi"}})
+class TestYarnWorkspaces:
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.project.YarnRc.write")
+    @mock.patch(
+        "hermeto.core.package_managers.javascript.yarn.main._get_plugin_allowlist", return_value=[]
     )
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main._configure_yarn_version")
+    def test_workspace_focus_rejected_for_yarn_v3(
+        self,
+        mock_configure_version: mock.Mock,
+        mock_allowlist: mock.Mock,
+        mock_write: mock.Mock,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """Workspace focus is rejected when the project uses Yarn v3."""
+        mock_configure_version.return_value = semver.Version.parse("3.6.1")
+        project = mock.Mock(source_dir=rooted_tmp_path, yarn_rc=mock.MagicMock())
 
-    pkg_b_dir = rooted_tmp_path.join_within_root("packages", "unrelated")
-    pkg_b_dir.path.mkdir(parents=True)
-    pkg_b_json = pkg_b_dir.join_within_root("package.json")
-    pkg_b_json.path.write_text(
-        json.dumps({"name": "unrelated", "scripts": {"postinstall": "echo bad"}})
-    )
+        with pytest.raises(PackageRejected):
+            _resolve_yarn_project(project, rooted_tmp_path, Mode.STRICT, workspaces=["app"])
 
-    _strip_workspace_scripts(rooted_tmp_path)
+    def test_strip_workspace_scripts(self, rooted_tmp_path: RootedPath) -> None:
+        """Scripts are removed from workspace package.json files matched by workspaces globs."""
+        root_json = rooted_tmp_path.join_within_root("package.json")
+        root_json.path.write_text(json.dumps({"name": "root", "workspaces": ["packages/app"]}))
 
-    data_a = json.loads(pkg_a_json.path.read_text())
-    assert "scripts" not in data_a
+        pkg_a_dir = rooted_tmp_path.join_within_root("packages", "app")
+        pkg_a_dir.path.mkdir(parents=True)
+        pkg_a_json = pkg_a_dir.join_within_root("package.json")
+        pkg_a_json.path.write_text(
+            json.dumps({"name": "app", "scripts": {"build": "tsc", "postinstall": "echo hi"}})
+        )
 
-    # Workspace not matched by the workspaces glob is left untouched
-    data_b = json.loads(pkg_b_json.path.read_text())
-    assert data_b["scripts"] == {"postinstall": "echo bad"}
+        pkg_b_dir = rooted_tmp_path.join_within_root("packages", "unrelated")
+        pkg_b_dir.path.mkdir(parents=True)
+        pkg_b_json = pkg_b_dir.join_within_root("package.json")
+        pkg_b_json.path.write_text(
+            json.dumps({"name": "unrelated", "scripts": {"postinstall": "echo bad"}})
+        )
+
+        _strip_workspace_scripts(rooted_tmp_path)
+
+        data_a = json.loads(pkg_a_json.path.read_text())
+        assert "scripts" not in data_a
+
+        # Workspace not matched by the workspaces glob is left untouched
+        data_b = json.loads(pkg_b_json.path.read_text())
+        assert data_b["scripts"] == {"postinstall": "echo bad"}
 
 
 # --- Tests for git dependency support ---
