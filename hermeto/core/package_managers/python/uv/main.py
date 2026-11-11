@@ -97,10 +97,15 @@ def fetch_uv_source(request: Request) -> RequestOutput:
     annotations: list[Annotation] = []
     components: list[Component] = []
     project_files: list[ProjectFile] = []
+    has_binary_filter = any(package.binary is not None for package in request.uv_packages)
 
     for package in request.uv_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        resolution_result = _resolve_uv(package_dir, request.output_dir, package.binary)
+        resolution_result = _resolve_uv(
+            package_dir,
+            request.output_dir,
+            package.binary,
+        )
         components.extend(resolution_result.components)
         if resolution_result.rewritten_lockfile is not None:
             project_files.append(resolution_result.rewritten_lockfile)
@@ -108,7 +113,7 @@ def fetch_uv_source(request: Request) -> RequestOutput:
     if backend_annotation := create_backend_annotation(components, "x-uv"):
         annotations.append(backend_annotation)
 
-    environment_variables = _generate_environment_variables()
+    environment_variables = _generate_environment_variables(has_binary_filter)
 
     return RequestOutput.from_obj_list(
         components, environment_variables, project_files, annotations=annotations
@@ -649,10 +654,12 @@ def _generate_purl_main_package(
     return purl.to_string()
 
 
-def _generate_environment_variables() -> list[EnvironmentVariable]:
-    return [
+def _generate_environment_variables(has_binary_filter: bool = False) -> list[EnvironmentVariable]:
+    environment_variables = [
         EnvironmentVariable(name="UV_OFFLINE", value="true"),
         EnvironmentVariable(name="UV_FIND_LINKS", value="${output_dir}/deps/uv"),
         EnvironmentVariable(name="UV_FROZEN", value="true"),
-        EnvironmentVariable(name="UV_NO_BINARY", value="true"),
     ]
+    if not has_binary_filter:
+        environment_variables.append(EnvironmentVariable(name="UV_NO_BINARY", value="true"))
+    return environment_variables
