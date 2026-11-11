@@ -59,6 +59,14 @@ class _DownloadItem(NamedTuple):
     target: Path
 
 
+@dataclass(frozen=True)
+class _SelectedUvPackage:
+    """A uv.lock package and the artifacts selected for it."""
+
+    package: UvPackage
+    artifacts: list[PackageArtifact]
+
+
 @dataclass
 class UvResolutionResult:
     """Everything fetch-deps produced for a single uv project."""
@@ -111,8 +119,8 @@ def _resolve_uv(
     lockfile_doc = load_lockfile_document(package_dir)
     lock = UvLock.from_toml(lockfile_doc, package_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path)
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
-
-    _download_dependencies(output_dir, lock.packages, binary_filter)
+    selected_packages = _select_package_artifacts(lock.packages, binary_filter)
+    _download_dependencies(output_dir, selected_packages)
     dependency_components = _generate_dependency_components(
         lock.packages, package_dir, project_vcs_qualifiers
     )
@@ -126,12 +134,25 @@ def _resolve_uv(
         name=name,
         version=version,
         components=components,
-        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock),
+        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock, selected_packages),
     )
 
 
+def _select_package_artifacts(
+    packages: list[UvPackage], binary_filter: UvBinaryFilters | None = None
+) -> list[_SelectedUvPackage]:
+    """Select the artifacts to fetch for every package in uv.lock."""
+    return [
+        _SelectedUvPackage(
+            package=package,
+            artifacts=package.artifacts_to_download(binary_filter),
+        )
+        for package in packages
+    ]
+
+
 def _download_dependencies(
-    output_dir: RootedPath, packages: list[UvPackage], binary_filter: UvBinaryFilters | None = None
+    output_dir: RootedPath, selected_packages: list[_SelectedUvPackage]
 ) -> None:
     """Fetch every remote artifact recorded in uv.lock into a flat deps/uv directory."""
     deps_dir = output_dir.join_within_root("deps", "uv")
@@ -139,12 +160,13 @@ def _download_dependencies(
 
     items: list[_DownloadItem] = []
     files_to_download: dict[Url, Path] = {}
-    for package in packages:
+    for selected_package in selected_packages:
+        package = selected_package.package
         if isinstance(package.source, PackageSourceGit):
             _download_git_package(package, package.source, deps_dir)
         else:
             # everything else lands here: registry, url and the four local kinds
-            for artifact in package.artifacts_to_download(binary_filter):
+            for artifact in selected_package.artifacts:
                 if artifact.url is None:
                     # should not happen
                     raise RuntimeError(f"artifact for {package.name} has no download URL")
@@ -263,7 +285,10 @@ def _replace_source_with_path(raw_package: Any, filename: str) -> None:
 
 
 def _rewrite_lockfile(
-    doc: tomlkit.TOMLDocument, package_dir: RootedPath, lock: UvLock
+    doc: tomlkit.TOMLDocument,
+    package_dir: RootedPath,
+    lock: UvLock,
+    _selected_packages: list[_SelectedUvPackage] | None = None,
 ) -> ProjectFile | None:
     """Redirect every remote artifact reference in uv.lock into deps/uv.
 
