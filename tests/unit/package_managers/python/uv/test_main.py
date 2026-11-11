@@ -8,6 +8,7 @@ import pytest
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import (
+    MissingChecksum,
     NotAGitRepo,
     PackageRejected,
 )
@@ -568,12 +569,15 @@ sdist = { hash = "sha256:cccc" }
 
 
 def rewrite_lockfile(
-    rooted_tmp_path: RootedPath, lockfile: str = REWRITE_LOCKFILE
+    rooted_tmp_path: RootedPath,
+    lockfile: str = REWRITE_LOCKFILE,
+    binary_filter: PythonBinaryFilters | None = None,
 ) -> ProjectFile | None:
     rooted_tmp_path.join_within_root("uv.lock").path.write_text(lockfile)
     doc = load_lockfile_document(rooted_tmp_path)
     lock = UvLock.from_toml(doc, rooted_tmp_path.join_within_root("uv.lock").path)
-    return _rewrite_lockfile(doc, rooted_tmp_path, lock)
+    selected_packages = _select_package_artifacts(lock.packages, binary_filter)
+    return _rewrite_lockfile(doc, rooted_tmp_path, selected_packages)
 
 
 @pytest.mark.parametrize(
@@ -582,10 +586,6 @@ def rewrite_lockfile(
         pytest.param(
             'url = "file://${output_dir}/deps/uv/anyio-4.13.0.tar.gz"',
             id="registry_sdist_url_points_at_the_deps_dir",
-        ),
-        pytest.param(
-            'url = "file://${output_dir}/deps/uv/anyio-4.13.0-py3-none-any.whl"',
-            id="registry_wheel_url_points_at_the_deps_dir",
         ),
         pytest.param('hash = "sha256:aaaa"', id="registry_hash_survives_the_rewrite"),
         pytest.param("size = 231622", id="registry_size_survives_the_rewrite"),
@@ -627,6 +627,7 @@ def test_rewrite_lockfile_template_contains(expected: str, rooted_tmp_path: Root
     [
         pytest.param("github.com/pallets/flask", id="git_remote_no_longer_reachable"),
         pytest.param("https://example.com", id="url_source_host_no_longer_reachable"),
+        pytest.param("anyio-4.13.0-py3-none-any.whl", id="source_only_prunes_wheels"),
     ],
 )
 def test_rewrite_lockfile_template_drops(forbidden: str, rooted_tmp_path: RootedPath) -> None:
@@ -634,6 +635,60 @@ def test_rewrite_lockfile_template_drops(forbidden: str, rooted_tmp_path: Rooted
     project_file = rewrite_lockfile(rooted_tmp_path)
     assert project_file is not None
     assert forbidden not in project_file.template
+
+
+def test_rewrite_lockfile_removes_unselected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """An explicitly excluded package must not leave an unfetched wheel in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=PythonBinaryFilters(packages="!anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0-py3-none-any.whl" not in project_file.template
+
+
+def test_rewrite_lockfile_keeps_selected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """Compatible preferred wheels remain available for the offline uv install."""
+    project_file = rewrite_lockfile(rooted_tmp_path, binary_filter=PythonBinaryFilters())
+    assert project_file is not None
+    assert (
+        'url = "file://${output_dir}/deps/uv/anyio-4.13.0-py3-none-any.whl"'
+        in project_file.template
+    )
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+def test_rewrite_lockfile_allows_proxy_replaced_wheel_url(
+    mock_get_config: mock.Mock, rooted_tmp_path: RootedPath
+) -> None:
+    """The parsed proxy URL differs from the original raw lockfile URL."""
+    rooted_tmp_path.join_within_root("uv.lock").path.write_text(REWRITE_LOCKFILE)
+    doc = load_lockfile_document(rooted_tmp_path)
+    lock = UvLock.from_toml(doc, rooted_tmp_path.join_within_root("uv.lock").path)
+    anyio = next(package for package in lock.packages if package.name == "anyio")
+    anyio.wheels[0].url = "https://proxy.example.org/anyio-4.13.0-py3-none-any.whl"
+    mock_get_config.return_value.uv.proxy_url = "https://proxy.example.org"
+
+    project_file = _rewrite_lockfile(
+        doc, rooted_tmp_path, _select_package_artifacts(lock.packages, PythonBinaryFilters())
+    )
+
+    assert project_file is not None
+    assert 'url = "file://${output_dir}/deps/uv/anyio-4.13.0-py3-none-any.whl"' in (
+        project_file.template
+    )
+
+
+def test_rewrite_lockfile_removes_sdist_for_only_binary_package(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Only-binary packages must not retain an unfetched sdist in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=PythonBinaryFilters(packages="anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0.tar.gz" not in project_file.template
 
 
 def test_rewrite_lockfile_abspath(rooted_tmp_path: RootedPath) -> None:
@@ -656,10 +711,10 @@ def test_rewrite_lockfile_all_local_returns_none(rooted_tmp_path: RootedPath) ->
     assert rewrite_lockfile(rooted_tmp_path, all_local) is None
 
 
-def test_rewrite_lockfile_url_source_without_distribution_should_not_happen(
+def test_rewrite_lockfile_url_source_without_distribution_is_rejected(
     rooted_tmp_path: RootedPath,
 ) -> None:
-    """artifacts_to_download rejects such a package during the download phase."""
+    """Artifact selection rejects this before lockfile rewriting."""
     no_distribution = textwrap.dedent(
         """\
         version = 1
@@ -670,7 +725,7 @@ def test_rewrite_lockfile_url_source_without_distribution_should_not_happen(
         source = { url = "https://example.com/httpx-0.28.1.tar.gz" }
         """
     )
-    with pytest.raises(RuntimeError):
+    with pytest.raises(MissingChecksum):
         rewrite_lockfile(rooted_tmp_path, no_distribution)
 
 
