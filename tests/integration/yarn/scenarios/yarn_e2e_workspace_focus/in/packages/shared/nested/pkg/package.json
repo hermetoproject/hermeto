@@ -1,0 +1,10 @@
+{
+  "name": "nested-pkg",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "preinstall": "touch \"$PROJECT_CWD/../.nested_lifecycle_script_output\" && exit 1",
+    "install": "touch \"$PROJECT_CWD/../.nested_lifecycle_script_output\" && exit 1",
+    "postinstall": "touch \"$PROJECT_CWD/../.nested_lifecycle_script_output\" && exit 1"
+  }
+}

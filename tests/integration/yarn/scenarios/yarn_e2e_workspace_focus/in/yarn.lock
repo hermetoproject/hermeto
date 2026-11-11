@@ -61,6 +61,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nested-pkg@workspace:*, nested-pkg@workspace:packages/shared/nested/pkg":
+  version: 0.0.0-use.local
+  resolution: "nested-pkg@workspace:packages/shared/nested/pkg"
+  languageName: unknown
+  linkType: soft
+
 "root@workspace:.":
   version: 0.0.0-use.local
   resolution: "root@workspace:."
@@ -74,6 +80,7 @@ __metadata:
   resolution: "shared@workspace:packages/shared"
   dependencies:
     is-odd: "npm:^3.0.1"
+    nested-pkg: "workspace:*"
   languageName: unknown
   linkType: soft
 

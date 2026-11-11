@@ -2,8 +2,12 @@
   "name": "shared",
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "nested/*"
+  ],
   "dependencies": {
-    "is-odd": "^3.0.1"
+    "is-odd": "^3.0.1",
+    "nested-pkg": "workspace:*"
   },
   "scripts": {
     "preinstall": "exit 1",

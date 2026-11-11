@@ -7,13 +7,14 @@
         }
       },
       "subjects": [
-        "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/app",
+        "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/app",
         "pkg:npm/is-number@6.0.0",
         "pkg:npm/is-number@7.0.0",
         "pkg:npm/is-odd@3.0.1",
         "pkg:npm/ms@2.1.3",
-        "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/shared",
-        "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/tooling"
+        "pkg:npm/nested-pkg@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared/nested/pkg",
+        "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared",
+        "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/tooling"
       ],
       "text": "hermeto:backend:yarn",
       "timestamp": "2025-01-01T00:00:00Z"
@@ -22,7 +23,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/app",
+      "bom-ref": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/app",
       "name": "app",
       "properties": [
         {
@@ -30,7 +31,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/app",
+      "purl": "pkg:npm/app@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/app",
       "type": "library",
       "version": "1.0.0"
     },
@@ -91,7 +92,20 @@
       "version": "2.1.3"
     },
     {
-      "bom-ref": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/shared",
+      "bom-ref": "pkg:npm/nested-pkg@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared/nested/pkg",
+      "name": "nested-pkg",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:npm/nested-pkg@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared/nested/pkg",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared",
       "name": "shared",
       "properties": [
         {
@@ -99,12 +113,12 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/shared",
+      "purl": "pkg:npm/shared@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/shared",
       "type": "library",
       "version": "1.0.0"
     },
     {
-      "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/tooling",
+      "bom-ref": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/tooling",
       "name": "tooling",
       "properties": [
         {
@@ -116,7 +130,7 @@
           "value": "hermeto"
         }
       ],
-      "purl": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40fafcbf79ad9b0ae992c5279a8500f3fee2004826#packages/tooling",
+      "purl": "pkg:npm/tooling@1.0.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%40a7ac38b10179e78ad1a91f6430ecf06b53371aba#packages/tooling",
       "type": "library",
       "version": "1.0.0"
     }

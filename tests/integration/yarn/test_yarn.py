@@ -168,6 +168,10 @@ def test_e2e_yarn(
         tmp_path, test_case, test_params, repo_dir, SCENARIOS_DIR, hermeto_image
     )
 
+    if test_case == "yarn_e2e_workspace_focus":
+        # This lifecycle script marker is outside Hermeto's source copy so cleanup cannot hide it.
+        assert not Path(actual_repo_dir, ".nested_lifecycle_script_output").exists()
+
     utils.build_image_and_check_cmd(
         tmp_path,
         actual_repo_dir,
