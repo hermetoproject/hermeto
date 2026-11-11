@@ -531,13 +531,12 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
             project_vcs_qualifiers=project_vcs_qualifiers,
         )
 
-    @property
-    def records_no_checksum(self) -> bool:
+    def records_no_checksum(self, artifacts: list[PackageArtifact]) -> bool:
         """Whether uv.lock gives no checksum to verify this package against.
 
         What is fetched differs per source kind, so each one answers for itself.
         """
-        return self.source.records_no_checksum(self.artifacts_to_download())
+        return self.source.records_no_checksum(artifacts)
 
 
 def load_lockfile_document(directory: RootedPath) -> tomlkit.TOMLDocument:

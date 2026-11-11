@@ -122,7 +122,7 @@ def _resolve_uv(
     selected_packages = _select_package_artifacts(lock.packages, binary_filter)
     _download_dependencies(output_dir, selected_packages)
     dependency_components = _generate_dependency_components(
-        lock.packages, package_dir, project_vcs_qualifiers
+        selected_packages, package_dir, project_vcs_qualifiers
     )
 
     build_deps = download_build_dependencies(package_dir, output_dir)
@@ -217,7 +217,7 @@ def _generate_dependency_component(
 ) -> Component:
     """Build the SBOM component for a single uv.lock package."""
     missing_hash: frozenset[str] = (
-        frozenset({lockfile_relpath}) if package.records_no_checksum else frozenset()
+        frozenset({lockfile_relpath}) if package.records_no_checksum(artifacts) else frozenset()
     )
 
     return Component(
@@ -241,7 +241,7 @@ def _is_root_project_entry(package: UvPackage) -> bool:
 
 
 def _generate_dependency_components(
-    packages: list[UvPackage],
+    selected_packages: list[_SelectedUvPackage],
     package_dir: RootedPath,
     project_vcs_qualifiers: dict[str, str] | None,
 ) -> list[Component]:
@@ -253,7 +253,11 @@ def _generate_dependency_components(
         project_vcs_qualifiers=project_vcs_qualifiers,
         lockfile_relpath=lockfile_relpath,
     )
-    return [gdc(p, p.artifacts_to_download()) for p in packages if not _is_root_project_entry(p)]
+    return [
+        gdc(selected.package, selected.artifacts)
+        for selected in selected_packages
+        if not _is_root_project_entry(selected.package)
+    ]
 
 
 def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
