@@ -133,7 +133,11 @@ When workspace focus is used:
 - **Fetching** uses `yarn workspaces focus <name> [<name>...]` instead of
   `yarn install --mode skip-build`.
 - **Lifecycle scripts**: Because `yarn workspaces focus` does not support `--mode skip-build` and
-  `enableScripts: false` does not apply to workspace scripts. Hermeto strips the `scripts`
+  `enableScripts: false` does not apply to workspace scripts.
+  Hermeto invokes `yarn workspaces list --json` to let Yarn recursively walk the
+  project directory tree, enumerate all workspace declarations and therefore,
+  provide a complete and authoritative picture of all workspaces (including nested
+  ones). Hermeto then walks all the returned locations and strips the `scripts`
   field from each workspace's `package.json` before running focus
   ([_strip_workspace_scripts()](https://github.com/hermetoproject/hermeto/blob/1ee314c4eb34f1a6a104719feb39a0df0ce4dd56/hermeto/core/package_managers/javascript/yarn/main.py)).
 - Workspace focus requires Yarn v4 or later; requesting it on an older version raises
