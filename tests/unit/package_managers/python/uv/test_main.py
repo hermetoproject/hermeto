@@ -484,7 +484,9 @@ def test_generate_dependency_components_excludes_root_entry(
     dep = make_package(
         PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"), sdist=SDIST
     )
-    components = _generate_dependency_components([root_entry, dep], rooted_tmp_path, None)
+    components = _generate_dependency_components(
+        _select_package_artifacts([root_entry, dep]), rooted_tmp_path, None
+    )
 
     assert len(components) == 1
     assert components[0].purl == "pkg:pypi/example@1.0.0"
