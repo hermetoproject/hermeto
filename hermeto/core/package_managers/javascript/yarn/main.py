@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from urllib.parse import parse_qs
 
+import pydantic
 import semver
 import yaml
 from packageurl import PackageURL
@@ -20,6 +21,7 @@ from hermeto.core.constants import Mode
 from hermeto.core.errors import (
     PackageManagerError,
     PackageRejected,
+    PathOutsideRoot,
     UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
@@ -431,6 +433,55 @@ def _remove_scripts_field(package_json: PackageJson) -> None:
     if "scripts" in package_json:
         del package_json["scripts"]
         package_json.write()
+
+
+class _YarnWorkspaceListItem(pydantic.BaseModel):
+    """Validate the workspace location consumed from Yarn's NDJSON output."""
+
+    # location accepts non-empty strings only
+    location: str = pydantic.Field(min_length=1, pattern=r"^[^\x00]+$")
+
+
+def _yarn_workspace_dirs(source_dir: RootedPath) -> list[Path]:
+    """Get Yarn's recursive workspace list, rejecting invalid or unconfined locations."""
+    # This command returns NDJSON (Newline Delimited JSON), e.g.
+    #   $ yarn workspaces list --json
+    #       {"location":".","name":"root"}
+    #       {"location":"packages/a","name":"a"}
+    #       {"location":"packages/a/nested1/a1","name":"a1"}
+    ret = []
+    cmd = ["workspaces", "list", "--json"]
+    yarn_workspaces = run_yarn_cmd(
+        cmd,
+        source_dir,
+        env={"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0", "YARN_IGNORE_PATH": "true"},
+    )
+
+    log.debug("Yarn reports the following workspaces:\n%s", yarn_workspaces)
+
+    for line in yarn_workspaces.splitlines():
+        if not line.strip():
+            continue
+
+        try:
+            entry = _YarnWorkspaceListItem.model_validate_json(line)
+        except pydantic.ValidationError as e:
+            raise RuntimeError(f"Unexpected output from `yarn {' '.join(cmd)}`: {line!r}") from e
+
+        try:
+            workspace_dir = source_dir.join_within_root(entry.location)
+
+            # FIXME: This should be done at the Package.from_file level, but it needs to consume
+            # RootedPath.
+            _ = source_dir.join_within_root(entry.location, "package.json")
+        except PathOutsideRoot as e:
+            raise PackageRejected(
+                f"Workspace location {entry.location} points outside the Yarn project directory.",
+            ) from e
+
+        ret.append(workspace_dir.path)
+
+    return ret
 
 
 def _workspace_package_dirs(source_dir: RootedPath) -> list[Path]:

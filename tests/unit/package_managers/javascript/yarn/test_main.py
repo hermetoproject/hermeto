@@ -36,6 +36,7 @@ from hermeto.core.package_managers.javascript.yarn.main import (
     _set_yarnrc_configuration,
     _strip_workspace_scripts,
     _verify_corepack_yarn_version,
+    _yarn_workspace_dirs,
 )
 from hermeto.core.package_managers.javascript.yarn.project import (
     PackageJson,
@@ -360,6 +361,128 @@ class TestYarnWorkspaces:
         # Workspace not matched by the workspaces glob is left untouched
         data_b = json.loads(pkg_b_json.path.read_text())
         assert data_b["scripts"] == {"postinstall": "echo bad"}
+
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_workspace_dirs(
+        self, mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
+    ) -> None:
+        locations = [".", "packages/shared", "packages/shared/nested/child"]
+        for location in locations:
+            workspace_dir = rooted_tmp_path.path / location
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+            Path(workspace_dir, "package.json").write_text("{}")
+
+        workspaces_ndjson = [
+            json.dumps({"location": loc, "name": f"wsp-{i}"}) for i, loc in enumerate(locations)
+        ]
+
+        # extra newlines in the NDJSON are intentional to test whitespace stripping
+        mock_run_yarn_cmd.return_value = "\n\n  \n".join(workspaces_ndjson) + "\n"
+
+        assert _yarn_workspace_dirs(rooted_tmp_path) == [
+            rooted_tmp_path.path / location for location in locations
+        ]
+
+    @pytest.mark.parametrize(
+        "output",
+        [
+            pytest.param('{"location": "."}\ninvalid json', id="malformed-json"),
+            pytest.param("{}", id="location-missing"),
+            pytest.param('{"location": ""}', id="location-empty"),
+        ],
+    )
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_invalid_cmd_output(
+        self, mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath, output: str
+    ) -> None:
+        rooted_tmp_path.join_within_root("package.json").write_text("{}")
+        mock_run_yarn_cmd.return_value = output
+
+        with pytest.raises(RuntimeError):
+            _yarn_workspace_dirs(rooted_tmp_path)
+
+    @mock.patch("hermeto.core.utils.shutil.which", return_value="/usr/bin/yarn")
+    @mock.patch("hermeto.core.utils.subprocess.run")
+    def test_execution_environment(
+        self,
+        mock_subprocess_run: mock.Mock,
+        mock_which: mock.Mock,
+        monkeypatch: pytest.MonkeyPatch,
+        rooted_tmp_path: RootedPath,
+    ) -> None:
+        """The listing must use the Yarn wrapper's minimal env, not the parent's."""
+        monkeypatch.setenv("PATH", "/usr/bin:/bin")
+        monkeypatch.setenv("FOO", "foo")
+        rooted_tmp_path.join_within_root("package.json").write_text("{}")
+        mock_subprocess_run.return_value.stdout = '{"location": "."}\n'
+
+        _yarn_workspace_dirs(rooted_tmp_path)
+
+        mock_which.assert_called_once_with("yarn")
+        mock_subprocess_run.assert_called_once()
+
+        args, kwargs = mock_subprocess_run.call_args
+        assert args == (["/usr/bin/yarn", "workspaces", "list", "--json"],)
+        assert "PATH" in kwargs["env"] and "FOO" not in kwargs["env"]
+        assert kwargs["env"]["YARN_IGNORE_PATH"] == "true"
+        assert kwargs["env"]["COREPACK_ENABLE_DOWNLOAD_PROMPT"] == "0"
+
+    @pytest.fixture
+    def _workspace_escape_dirs(self, rooted_tmp_path: RootedPath) -> tuple[RootedPath, RootedPath]:
+        project_dir = rooted_tmp_path.re_root("project")
+        outside_dir = rooted_tmp_path.join_within_root("outside")
+        project_dir.mkdir()
+        outside_dir.mkdir()
+        outside_dir.join_within_root("package.json").write_text("{}")
+        return project_dir, outside_dir
+
+    @pytest.mark.parametrize(
+        "is_absolute", [True, False], ids=["absolute-traversal", "relative-traversal"]
+    )
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_workspace_path_escape(
+        self,
+        mock_run_yarn_cmd: mock.Mock,
+        _workspace_escape_dirs: tuple[RootedPath, RootedPath],
+        rooted_tmp_path: RootedPath,
+        is_absolute: bool,
+    ) -> None:
+        project_dir, outside_dir = _workspace_escape_dirs
+        location = "../outside" if not is_absolute else str(rooted_tmp_path.path / "outside")
+        mock_run_yarn_cmd.return_value = json.dumps({"location": location})
+
+        with pytest.raises(PackageRejected):
+            _yarn_workspace_dirs(project_dir)
+
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_workspace_symlink_escape_workspace(
+        self,
+        mock_run_yarn_cmd: mock.Mock,
+        _workspace_escape_dirs: tuple[RootedPath, RootedPath],
+    ) -> None:
+        project_dir, outside_dir = _workspace_escape_dirs
+
+        Path(project_dir.path, "workspace").symlink_to(outside_dir.path, target_is_directory=True)
+        mock_run_yarn_cmd.return_value = '{"location": "workspace"}'
+
+        with pytest.raises(PackageRejected):
+            _yarn_workspace_dirs(project_dir)
+
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_workspace_symlink_escape_manifest(
+        self,
+        mock_run_yarn_cmd: mock.Mock,
+        _workspace_escape_dirs: tuple[RootedPath, RootedPath],
+    ) -> None:
+        project_dir, outside_dir = _workspace_escape_dirs
+        workspace_dir = Path(project_dir.path, "workspace")
+        workspace_dir.mkdir()
+
+        Path(workspace_dir, "package.json").symlink_to(Path(outside_dir.path, "package.json"))
+        mock_run_yarn_cmd.return_value = '{"location": "workspace"}'
+
+        with pytest.raises(PackageRejected):
+            _yarn_workspace_dirs(project_dir)
 
 
 # --- Tests for git dependency support ---
