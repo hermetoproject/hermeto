@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
+import re
 from pathlib import Path
 from typing import Annotated, Any, Self
 
@@ -104,6 +105,42 @@ ProxyUrl = Annotated[
     AfterValidator(_proxy_url_must_not_contain_credentials),
 ]
 
+# https://go.dev/ref/mod#environment-variables (GOPROXY)
+_GOPROXY_KEYWORDS = frozenset({"direct", "off"})
+
+
+def _with_implicit_https(entry: str) -> str:
+    # Go reads a GOPROXY entry without a scheme, e.g. "proxy.example.com",
+    # as an https:// URL, so validate it the way Go will use it. Mirrors
+    # https://github.com/golang/go/blob/master/src/cmd/go/internal/modfetch/proxy.go
+    if any(c in entry for c in ".:/") and ":/" not in entry and not entry.startswith("/"):
+        return f"https://{entry}"
+    return entry
+
+
+def _validate_goproxy_list(value: str) -> str:
+    # GOPROXY is a list, not a single URL, so HttpUrl cannot model it.
+    # Validate each URL entry on its own so it gets the same checks as
+    # ProxyUrl. Like Go, skip empty entries and accept file:// URLs,
+    # which point at a local module cache.
+    for entry in re.split(r"[,|]", value):
+        entry = entry.strip()
+        if not entry or entry in _GOPROXY_KEYWORDS or entry.startswith("file://"):
+            continue
+        try:
+            url = HttpUrl(_with_implicit_https(entry))
+        except ValidationError as e:
+            raise ValueError(
+                f"Invalid gomod proxy URL entry '{entry}'. Each entry must be an "
+                "http(s) or file:// URL, or one of 'direct' and 'off', separated "
+                "by ',' or '|'. See https://go.dev/ref/mod#goproxy-protocol"
+            ) from e
+        _proxy_url_must_not_contain_credentials(url)
+    return value
+
+
+GoProxyUrl = Annotated[str, AfterValidator(_validate_goproxy_list)]
+
 
 class ProxyMixin(BaseModel):
     """Proxy URL and authorization mixin.
@@ -167,9 +204,8 @@ class YarnSettings(ProxyMixin, extra="forbid"):
 class GomodSettings(ProxyMixin, extra="forbid"):
     """Settings for Go modules."""
 
-    # TODO: refactor typesystem to trivially include comma-separated lists of URLs.
-    # Ignore type error until that happens.
-    proxy_url: str = "https://proxy.golang.org,direct"  # type: ignore
+    # Overrides the single-URL ProxyUrl from ProxyMixin with a GOPROXY list.
+    proxy_url: GoProxyUrl = "https://proxy.golang.org,direct"  # type: ignore
     download_max_tries: int = 5
     environment_variables: dict[str, str] = {}
 

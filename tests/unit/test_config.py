@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 import hermeto.core.config as config_module
 
@@ -133,3 +134,41 @@ def test_cli_config_file_overrides_defaults(tmp_home_cwd: Path) -> None:
 
     config = config_module.get_config()
     assert config.runtime.concurrency_limit == cli_concurrency
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        "https://proxy.golang.org,direct",
+        "https://proxy.example.com|https://proxy.golang.org|direct",
+        "https://proxy.example.com/repository/go-proxy/",
+        "off",
+        "file:///tmp/hermeto-output/deps/gomod/pkg/mod/cache/download,direct",
+        "https://proxy.example.com,,direct",
+        " https://proxy.example.com , direct ",
+        "",
+        "proxy.example.com,direct",
+        "proxy.example.com/repository/go-proxy|direct",
+    ],
+)
+def test_gomod_proxy_url_accepts_goproxy_list(proxy_url: str) -> None:
+    """Test that gomod.proxy_url accepts the GOPROXY list syntax unchanged."""
+    config = config_module.Config.model_validate({"gomod": {"proxy_url": proxy_url}})
+    assert config.gomod.proxy_url == proxy_url
+
+
+@pytest.mark.parametrize(
+    "proxy_url",
+    [
+        "https://user:pass@proxy.example.com",
+        "https://user@proxy.example.com,direct",
+        "direct|https://user:pass@proxy.example.com",
+        "not-a-url",
+        "ftp://proxy.example.com,direct",
+        "user:pass@proxy.example.com,direct",
+    ],
+)
+def test_gomod_proxy_url_rejects_invalid_entries(proxy_url: str) -> None:
+    """Test that every gomod.proxy_url entry gets the same checks as other proxy URLs."""
+    with pytest.raises(ValidationError):
+        config_module.Config.model_validate({"gomod": {"proxy_url": proxy_url}})
