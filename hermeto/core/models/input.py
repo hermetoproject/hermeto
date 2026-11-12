@@ -198,8 +198,8 @@ class BinaryModeOptions(pydantic.BaseModel, extra="forbid"):
     packages: BinaryFilterStr = BINARY_FILTER_ALL
 
 
-class PipBinaryFilters(BinaryModeOptions):
-    """Binary filters specific to pip packages."""
+class PythonBinaryFilters(BinaryModeOptions):
+    """Binary filters shared by Python package managers."""
 
     arch: BinaryFilterStr = "x86_64"
     os: BinaryFilterStr = "linux"
@@ -260,6 +260,10 @@ class PipBinaryFilters(BinaryModeOptions):
 
         return value
 
+
+class PipBinaryFilters(PythonBinaryFilters):
+    """Binary filters specific to pip packages."""
+
     @classmethod
     def with_allow_binary_behavior(cls) -> Self:
         """Create filters that mimic the old allow_binary=True behavior."""
@@ -268,6 +272,10 @@ class PipBinaryFilters(BinaryModeOptions):
             os=BINARY_FILTER_ALL,
             py_impl=BINARY_FILTER_ALL,
         )
+
+
+class UvBinaryFilters(PythonBinaryFilters):
+    """Binary filters specific to uv packages."""
 
 
 class BundlerBinaryFilters(BinaryModeOptions):
@@ -436,6 +444,7 @@ class UvPackageInput(_PackageInputBase):
     """Accepted input for a uv package."""
 
     type: Literal["x-uv"]
+    binary: UvBinaryFilters | None = None
 
 
 class YarnPackageInput(_PackageInputBase):

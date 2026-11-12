@@ -7,10 +7,8 @@ import pytest
 
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
-from hermeto.core.errors import (
-    NotAGitRepo,
-    PackageRejected,
-)
+from hermeto.core.errors import NotAGitRepo, PackageRejected
+from hermeto.core.models.input import UvBinaryFilters
 from hermeto.core.models.output import ProjectFile
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.package_managers.python.uv.main import (
@@ -18,10 +16,13 @@ from hermeto.core.package_managers.python.uv.main import (
     _download_git_package,
     _generate_dependency_component,
     _generate_dependency_components,
+    _generate_environment_variables,
     _generate_purl_main_package,
     _get_project_vcs_qualifiers,
     _get_pyproject_metadata,
     _rewrite_lockfile,
+    _select_package_artifacts,
+    _SelectedUvPackage,
 )
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
@@ -116,7 +117,9 @@ def test_download_dependencies(
     )
     _download_dependencies(
         rooted_tmp_path,
-        [hashed_registry_package, unhashed_registry_package, git_package, local_package],
+        _select_package_artifacts(
+            [hashed_registry_package, unhashed_registry_package, git_package, local_package]
+        ),
     )
 
     deps_dir = rooted_tmp_path.path / "deps" / "uv"
@@ -153,7 +156,7 @@ def test_download_dependencies_skips_existing_files(
             url="https://example.org/registry-pkg-1.0.0.tar.gz", hash="sha256:1234"
         ),
     )
-    _download_dependencies(rooted_tmp_path, [package])
+    _download_dependencies(rooted_tmp_path, _select_package_artifacts([package]))
 
     mock_download.assert_not_called()
     mock_checksum.assert_called_once_with(
@@ -161,19 +164,42 @@ def test_download_dependencies_skips_existing_files(
     )
 
 
-@mock.patch(
-    "hermeto.core.package_managers.python.uv.models.UvPackage.artifacts_to_download",
-    new_callable=mock.PropertyMock,
-)
+def test_select_package_artifacts_keeps_only_filter_selected_artifacts() -> None:
+    """Selected packages retain the original package and its filtered artifacts."""
+    sdist = ArtifactSdist(url="https://example.org/example-1.0.0.tar.gz", hash="sha256:1234")
+    linux_wheel = ArtifactWheel(
+        url=("https://example.org/example-1.0.0-cp312-cp312-manylinux_2_17_x86_64.whl"),
+        hash="sha256:5678",
+    )
+    macos_wheel = ArtifactWheel(
+        url="https://example.org/example-1.0.0-cp312-cp312-macosx_11_0_arm64.whl",
+        hash="sha256:abcd",
+    )
+    package = make_package(
+        PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+        sdist=sdist,
+        wheels=[linux_wheel, macos_wheel],
+    )
+
+    selected = _select_package_artifacts(
+        [package], UvBinaryFilters(os="linux", arch="x86_64", py_version=312)
+    )
+
+    assert selected == [_SelectedUvPackage(package=package, artifacts=[linux_wheel, sdist])]
+
+
 def test_download_dependencies_artifact_without_url_should_not_happen(
-    mock_artifacts: mock.Mock, rooted_tmp_path: RootedPath
+    rooted_tmp_path: RootedPath,
 ) -> None:
-    """artifacts_to_download always records a URL, so only a faked one reaches the guard."""
+    """Selected artifacts always record a URL, so only a faked one reaches the guard."""
     source = PackageSourceRegistry(kind="registry", location="https://pypi.org/simple")
-    mock_artifacts.return_value = [ArtifactSdist(hash="sha256:1234")]
+    selected_package = _SelectedUvPackage(
+        package=make_package(source, sdist=SDIST),
+        artifacts=[ArtifactSdist(hash="sha256:1234")],
+    )
 
     with pytest.raises(RuntimeError):
-        _download_dependencies(rooted_tmp_path, [make_package(source, sdist=SDIST)])
+        _download_dependencies(rooted_tmp_path, [selected_package])
 
 
 @pytest.mark.parametrize(
@@ -324,7 +350,7 @@ def test_generate_dependency_component_purl(
 ) -> None:
     """Every source kind has to reach its own PackageSource.purl implementation."""
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     assert component.purl == expected_purl
@@ -369,7 +395,7 @@ def test_generate_dependency_component_missing_hash_property(
     package: UvPackage, expected: frozenset[str], rooted_tmp_path: RootedPath
 ) -> None:
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     props = PropertySet.from_properties(component.properties)
@@ -384,7 +410,7 @@ def test_generate_dependency_component_local_has_no_missing_hash(
     package = make_package(PackageSourceLocal(kind=kind, location="libs/vendored-lib"))
 
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     props = PropertySet.from_properties(component.properties)
@@ -444,7 +470,7 @@ def test_generate_dependency_component_binary_property(
 ) -> None:
     """A dependency pinned to a wheel is marked binary, like pip marks its own."""
     component = _generate_dependency_component(
-        package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
+        package, package.artifacts_to_download(), rooted_tmp_path, None, "uv.lock"
     )
 
     assert PropertySet.from_properties(component.properties).uv_package_binary is expected
@@ -459,10 +485,26 @@ def test_generate_dependency_components_excludes_root_entry(
     dep = make_package(
         PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"), sdist=SDIST
     )
-    components = _generate_dependency_components([root_entry, dep], rooted_tmp_path, None)
+    components = _generate_dependency_components(
+        _select_package_artifacts([root_entry, dep]), rooted_tmp_path, None
+    )
 
     assert len(components) == 1
     assert components[0].purl == "pkg:pypi/example@1.0.0"
+
+
+@pytest.mark.parametrize(
+    ("has_binary_filter", "expects_no_binary"),
+    [
+        pytest.param(False, True, id="source_only"),
+        pytest.param(True, False, id="binary_filter"),
+    ],
+)
+def test_generate_environment_variables(has_binary_filter: bool, expects_no_binary: bool) -> None:
+    environment_variables = _generate_environment_variables(has_binary_filter)
+    names = {environment_variable.name for environment_variable in environment_variables}
+
+    assert ("UV_NO_BINARY" in names) is expects_no_binary
 
 
 REWRITE_LOCKFILE = """\
@@ -500,12 +542,19 @@ sdist = { hash = "sha256:cccc" }
 
 
 def rewrite_lockfile(
-    rooted_tmp_path: RootedPath, lockfile: str = REWRITE_LOCKFILE
+    rooted_tmp_path: RootedPath,
+    lockfile: str = REWRITE_LOCKFILE,
+    binary_filter: UvBinaryFilters | None = None,
 ) -> ProjectFile | None:
     rooted_tmp_path.join_within_root("uv.lock").path.write_text(lockfile)
     doc = load_lockfile_document(rooted_tmp_path)
     lock = UvLock.from_toml(doc, rooted_tmp_path.join_within_root("uv.lock").path)
-    return _rewrite_lockfile(doc, rooted_tmp_path, lock)
+    selected_packages = (
+        _select_package_artifacts(lock.packages, binary_filter)
+        if binary_filter is not None
+        else None
+    )
+    return _rewrite_lockfile(doc, rooted_tmp_path, lock, selected_packages)
 
 
 @pytest.mark.parametrize(
@@ -566,6 +615,38 @@ def test_rewrite_lockfile_template_drops(forbidden: str, rooted_tmp_path: Rooted
     project_file = rewrite_lockfile(rooted_tmp_path)
     assert project_file is not None
     assert forbidden not in project_file.template
+
+
+def test_rewrite_lockfile_removes_unselected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """An explicitly excluded package must not leave an unfetched wheel in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=UvBinaryFilters(packages="!anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0-py3-none-any.whl" not in project_file.template
+
+
+def test_rewrite_lockfile_keeps_selected_registry_wheels(rooted_tmp_path: RootedPath) -> None:
+    """Compatible preferred wheels remain available for the offline uv install."""
+    project_file = rewrite_lockfile(rooted_tmp_path, binary_filter=UvBinaryFilters())
+    assert project_file is not None
+    assert (
+        'url = "file://${output_dir}/deps/uv/anyio-4.13.0-py3-none-any.whl"'
+        in project_file.template
+    )
+
+
+def test_rewrite_lockfile_removes_sdist_for_only_binary_package(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Only-binary packages must not retain an unfetched sdist in uv.lock."""
+    project_file = rewrite_lockfile(
+        rooted_tmp_path,
+        binary_filter=UvBinaryFilters(packages="anyio"),
+    )
+    assert project_file is not None
+    assert "anyio-4.13.0.tar.gz" not in project_file.template
 
 
 def test_rewrite_lockfile_abspath(rooted_tmp_path: RootedPath) -> None:

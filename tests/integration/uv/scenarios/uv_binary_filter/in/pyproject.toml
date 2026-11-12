@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-only
+[project]
+name = "uv-binary-filter"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anyio>=4.16.0",
+    "cffi>=2.1.1",
+    "charset-normalizer>=3.5.2",
+]

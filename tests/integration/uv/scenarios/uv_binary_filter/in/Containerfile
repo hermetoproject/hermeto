@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-only
+FROM ghcr.io/astral-sh/uv:0.12.1 AS uv
+
+FROM mirror.gcr.io/python:3.12-slim
+
+COPY --from=uv /uv /usr/local/bin/uv
+
+# Test disabled network access.
+RUN if getent hosts www.google.com; then echo "Has network access!"; exit 1; fi
+
+RUN cp -r /src /app
+WORKDIR /app
+
+RUN . /tmp/hermeto.env && uv sync --verbose
