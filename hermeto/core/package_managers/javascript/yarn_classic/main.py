@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from more_itertools import all_equal
+from semver import Version
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
@@ -13,11 +14,15 @@ from hermeto.core.errors import (
     LockfileNotFound,
     PackageManagerError,
     PackageRejected,
+    UnexpectedFormat,
 )
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import Component, EnvironmentVariable, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import create_backend_annotation
+from hermeto.core.package_managers.javascript.yarn.project import (
+    get_semver_from_package_manager,
+)
 from hermeto.core.package_managers.javascript.yarn.utils import (
     VersionsRange,
     extract_yarn_version_from_env,
@@ -35,6 +40,7 @@ from hermeto.core.package_managers.javascript.yarn_classic.utils import (
     get_git_tarball_mirror_name,
     get_tarball_mirror_name,
 )
+from hermeto.core.package_managers.javascript.yarn_installer import install_yarn
 from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
@@ -42,6 +48,8 @@ log = logging.getLogger(__name__)
 
 MIRROR_DIR = "deps/yarn-classic"
 YARN_NETWORK_TIMEOUT_MILLISECONDS = 600000
+DEFAULT_CLASSIC_VERSION = Version.parse("1.22.22")
+EXPECTED_VERSION_RANGE = VersionsRange("1.22.0", "2.0.0")
 _yarn_classic_pattern = "yarn lockfile v1"  # See [yarn_classic_trait].
 
 
@@ -86,8 +94,8 @@ def _resolve_yarn_project(project: Project, output_dir: RootedPath) -> list[Comp
     """Process a request for a single yarn source directory."""
     log.info(f"Fetching the yarn dependencies at the subpath {project.source_dir}")
 
-    _verify_corepack_yarn_version(project.source_dir, _get_prefetch_environment_variables())
-    _fetch_dependencies(project.source_dir, output_dir)
+    _install_and_verify_yarn(project)
+    _fetch_dependencies(project, output_dir)
     packages = resolve_packages(project, output_dir.join_within_root(MIRROR_DIR))
     _verify_no_offline_mirror_collisions(packages)
 
@@ -112,15 +120,15 @@ def _create_sbom_components(packages: Iterable[YarnClassicPackage]) -> list[Comp
 
 
 def _run_yarn_install(
-    source_dir: RootedPath,
+    project: Project,
     env: dict[str, str],
     frozen_lockfile: bool = False,
     skip_integrity: bool = False,
     offline: bool = False,
 ) -> None:
-    """Run `yarn install` in the given directory.
+    """Run `yarn install` for the given project.
 
-    :param source_dir: the directory in which the yarn command will be called.
+    :param project: the project configured with the selected Yarn executable.
     :param env: a mapping of environment variables to set for the `yarn` subprocess
     :param frozen_lockfile: don't generate a lockfile and fail if an update is needed
     :param skip_integrity: run install without checking if node_modules is installed
@@ -141,22 +149,22 @@ def _run_yarn_install(
     if offline:
         cmd.append("--offline")
 
-    run_yarn_cmd(cmd, source_dir, env)
+    run_yarn_cmd(cmd, project.source_dir, env, yarn_bin=project.yarn_bin)
 
 
-def _fetch_dependencies(source_dir: RootedPath, output_dir: RootedPath) -> None:
+def _fetch_dependencies(project: Project, output_dir: RootedPath) -> None:
     """Fetch dependencies for the project.
 
     Install the project dependencies via a two-step process to overcome concurrency
     issues with the offline mirror.
 
-    :param source_dir: the directory in which the yarn command will be called.
+    :param project: the project configured with the selected Yarn executable.
     :param output_dir: the output directory for the request.
     :raises PackageManagerError: if either install step fails
     """
     # Populate the local cache with the project dependencies
     env = _get_prefetch_environment_variables()
-    _run_yarn_install(source_dir, env, frozen_lockfile=True)
+    _run_yarn_install(project, env, frozen_lockfile=True)
 
     # Populate the offline mirror from the local cache
     # Since the node_modules directory is already populated, we need to force a
@@ -165,14 +173,12 @@ def _fetch_dependencies(source_dir: RootedPath, output_dir: RootedPath) -> None:
     # rely on the local cache which was already populated by the first install.
     env["YARN_YARN_OFFLINE_MIRROR"] = str(output_dir.join_within_root(MIRROR_DIR))
     env["YARN_YARN_OFFLINE_MIRROR_PRUNING"] = "false"
-    _run_yarn_install(source_dir, env, skip_integrity=True, offline=True)
+    _run_yarn_install(project, env, skip_integrity=True, offline=True)
 
 
 def _get_prefetch_environment_variables() -> dict[str, str]:
     """Get environment variables that will be used for the prefetch."""
     return {
-        "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
-        "COREPACK_ENABLE_PROJECT_SPEC": "0",
         "YARN_IGNORE_PATH": "true",
         "YARN_IGNORE_SCRIPTS": "true",
         "YARN_NETWORK_TIMEOUT": f"{YARN_NETWORK_TIMEOUT_MILLISECONDS}",
@@ -234,16 +240,52 @@ def _verify_repository(project: Project) -> None:
     _reject_if_pnp_install(project)
 
 
-def _verify_corepack_yarn_version(source_dir: RootedPath, env: dict[str, str]) -> None:
-    """Verify that corepack installed the correct version of yarn by checking `yarn --version`."""
-    installed_yarn_version = extract_yarn_version_from_env(source_dir, env)
+def _resolve_classic_version(package_manager: Any | None) -> Version:
+    version = get_semver_from_package_manager(package_manager) or DEFAULT_CLASSIC_VERSION
+    if version not in EXPECTED_VERSION_RANGE:
+        raise PackageRejected(
+            f"packageManager specifies yarn@{version}, but the project "
+            f"has a Yarn Classic (v1) lockfile. {APP_NAME} requires "
+            f"yarn >={EXPECTED_VERSION_RANGE.min_ver},<{EXPECTED_VERSION_RANGE.max_ver} "
+            "for Classic projects.",
+            solution=(
+                "Set packageManager in package.json to a supported Yarn Classic version, "
+                "or migrate your lockfile to Yarn Berry format."
+            ),
+        )
+    return version
 
-    if installed_yarn_version not in VersionsRange("1.22.0", "2.0.0"):
+
+def _install_and_verify_yarn(project: Project) -> None:
+    """Install and verify Yarn Classic, then store its executable on the project.
+
+    :param project: the project to configure with the verified Yarn release.
+    """
+    package_manager = project.package_json.get("packageManager")
+    if "packageManager" in project.package_json and package_manager in (None, ""):
+        raise UnexpectedFormat(
+            "packageManager in package.json must be a non-empty string",
+            solution=(
+                "Set packageManager to yarn@<version> with a supported Classic version, "
+                "or remove the field to use the default version."
+            ),
+        )
+    version = _resolve_classic_version(package_manager)
+    yarn_bin = install_yarn(version)
+    env = _get_prefetch_environment_variables()
+    installed_yarn_version = extract_yarn_version_from_env(
+        project.source_dir, env, yarn_bin=yarn_bin
+    )
+
+    expected_version = version.replace(build=None)
+    if installed_yarn_version != expected_version:
         raise PackageManagerError(
-            f"{APP_NAME} expected corepack to install yarn >=1.22.0,<2.0.0, but instead "
-            f"found yarn@{installed_yarn_version}."
+            f"{APP_NAME} expected yarn@{expected_version} but the installed binary "
+            f"reports yarn@{installed_yarn_version}.",
+            solution="Remove the cached Yarn installation and retry the request.",
         )
 
+    project.yarn_bin = yarn_bin
     log.info("Processing the request using yarn@%s", installed_yarn_version)
 
 
