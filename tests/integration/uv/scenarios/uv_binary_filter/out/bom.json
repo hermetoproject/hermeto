@@ -1,0 +1,150 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/anyio@4.16.0",
+        "pkg:pypi/cffi@2.1.1",
+        "pkg:pypi/charset-normalizer@3.5.2",
+        "pkg:pypi/idna@3.20",
+        "pkg:pypi/pycparser@3.12",
+        "pkg:pypi/typing-extensions@4.16.0",
+        "pkg:pypi/uv-binary-filter@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%403218041a00224d7f00d38c1ffaf42d45699cbf54"
+      ],
+      "text": "hermeto:backend:experimental:x-uv",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/anyio@4.16.0",
+      "name": "anyio",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/anyio@4.16.0",
+      "type": "library",
+      "version": "4.16.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/cffi@2.1.1",
+      "name": "cffi",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/cffi@2.1.1",
+      "type": "library",
+      "version": "2.1.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/charset-normalizer@3.5.2",
+      "name": "charset-normalizer",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/charset-normalizer@3.5.2",
+      "type": "library",
+      "version": "3.5.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/idna@3.20",
+      "name": "idna",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/idna@3.20",
+      "type": "library",
+      "version": "3.20"
+    },
+    {
+      "bom-ref": "pkg:pypi/pycparser@3.12",
+      "name": "pycparser",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/pycparser@3.12",
+      "type": "library",
+      "version": "3.12"
+    },
+    {
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "name": "typing-extensions",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:binary",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "type": "library",
+      "version": "4.16.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/uv-binary-filter@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%403218041a00224d7f00d38c1ffaf42d45699cbf54",
+      "name": "uv-binary-filter",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/uv-binary-filter@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%403218041a00224d7f00d38c1ffaf42d45699cbf54",
+      "type": "library",
+      "version": "0.1.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
