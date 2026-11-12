@@ -90,6 +90,20 @@ def test_cargo_packages(
         ),
         pytest.param(
             utils.TestParameters(
+                packages=(
+                    {"path": "registry-project", "type": "cargo"},
+                    {"path": "git-project", "type": "cargo"},
+                ),
+            ),
+            [],
+            [
+                "Registry-sourced uuid: 00000000-0000-0000-0000-000000000000",
+                "Git-sourced uuid: 00000000-0000-0000-0000-000000000000",
+            ],
+            id="cargo_same_crate_version_different_sources",
+        ),
+        pytest.param(
+            utils.TestParameters(
                 packages=({"path": ".", "type": "cargo"},),
                 check_output=True,
             ),

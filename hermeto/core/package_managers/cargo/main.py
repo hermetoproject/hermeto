@@ -69,13 +69,16 @@ def fetch_cargo_source(request: Request, invoked_through_pip: bool = False) -> R
     for package in request.cargo_packages:
         package_dir = request.source_dir.join_within_root(package.path)
         _verify_lockfile_is_present(package_dir)
-
-        vendor_result = _fetch_dependencies(package_dir, request)
+        vendor_dir_relative = Path("deps/cargo")
+        if not invoked_through_pip:
+            vendor_dir_relative /= package_dir.subpath_from_root
+        vendor_dir = request.output_dir.join_within_root(vendor_dir_relative)
+        vendor_result = _fetch_dependencies(package_dir, vendor_dir)
         # cargo allows to specify configuration per-package
         # https://doc.rust-lang.org/cargo/reference/config.html#hierarchical-structure
         if vendor_result.config_template:
             config_template = _swap_sources_directory_for_subsitution_slot(
-                vendor_result.config_template
+                vendor_result.config_template, vendor_dir_relative
             )
             project_files.append(_use_vendored_sources(package_dir, config_template))
         package_components = _generate_sbom_components(package_dir, request, invoked_through_pip)
@@ -110,15 +113,13 @@ def _verify_lockfile_is_present(package_dir: RootedPath) -> None:
         )
 
 
-def _fetch_dependencies(package_dir: RootedPath, request: Request) -> CargoVendorResult:
+def _fetch_dependencies(package_dir: RootedPath, vendor_dir: RootedPath) -> CargoVendorResult:
     """Fetch cargo dependencies and return a config template for hermetic build."""
-    vendor_dir = request.output_dir.join_within_root("deps/cargo")
     # --locked           Assert that `Cargo.lock` will remain unchanged.
     # --versioned-dirs   Always include version in subdir name.
-    # --no-delete        Don't delete older crates in the vendor directory.
-    #                    It is necessary to make Cargo keep dependencies that are already
-    #                    present in the vendored directory. This flag has no effect on standalone
-    #                    cargo operations however is crucial when it is invoked from pip.
+    # --no-delete        Keep dependencies already vendored for other Python packages.
+    #                    This only matters when the cargo backend is invoked through pip,
+    #                    where the generated configs are merged into one shared vendor directory.
     # --respect-source-config tells cargo to respect config in .cargo/config.toml in the repository.
     #                         Is necessary when working through a proxy or when custom registries
     #                         must be used.
