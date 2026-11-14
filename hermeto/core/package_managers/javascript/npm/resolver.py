@@ -242,10 +242,16 @@ def _update_package_json_files(
     return package_json_projectfiles
 
 
-def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmPackage:
+def _resolve_npm(
+    pkg_path: RootedPath,
+    npm_deps_dir: RootedPath,
+    workspaces: list[str] | None = None,
+) -> ResolvedNpmPackage:
     """Resolve and fetch npm dependencies for the given package.
 
     :param pkg_path: the path to the directory containing npm-shrinkwrap.json or package-lock.json
+    :param npm_deps_dir: destination directory for downloaded dependencies
+    :param workspaces: optional list of workspace names to filter the resolved packages
     :return: a dictionary that has the following keys:
         ``package`` which is the dict representing the main Package,
         ``dependencies`` which is a list of dicts representing the package Dependencies
@@ -275,7 +281,7 @@ def _resolve_npm(pkg_path: RootedPath, npm_deps_dir: RootedPath) -> ResolvedNpmP
             solution="Ensure that there are no 'node_modules' directories in your repo",
         )
 
-    original_package_lock = PackageLock.from_file(package_lock_path)
+    original_package_lock = PackageLock.from_file(package_lock_path, workspace_filter=workspaces)
     package_lock = copy.deepcopy(original_package_lock)
 
     # Download dependencies via resolved URLs and return download_paths for updating

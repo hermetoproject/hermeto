@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
+import json
 import urllib.parse
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 from unittest import mock
 
@@ -8,7 +10,7 @@ import pytest
 from packageurl import PackageURL
 
 from hermeto.core.constants import Mode
-from hermeto.core.errors import NotAGitRepo
+from hermeto.core.errors import NotAGitRepo, PackageRejected
 from hermeto.core.package_managers.javascript.npm.project import Package, PackageLock, _Purlifier
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import RepoID
@@ -408,6 +410,261 @@ class TestPackageLock:
         assert package_lock._packages == expected_packages
         assert package_lock.workspaces == expected_workspaces
         assert package_lock.main_package == expected_main_package
+
+    @pytest.mark.parametrize(
+        "context_path, dep_name, packages_data, expected_path",
+        [
+            pytest.param(
+                "node_modules/express",
+                "qs",
+                {"node_modules/qs": {"version": "1.0.0"}},
+                "node_modules/qs",
+                id="hoisted_dep",
+            ),
+            pytest.param(
+                "node_modules/express",
+                "qs",
+                {
+                    "node_modules/express/node_modules/qs": {"version": "2.0.0"},
+                    "node_modules/qs": {"version": "1.0.0"},
+                },
+                "node_modules/express/node_modules/qs",
+                id="nested_dep_preferred_over_hoisted",
+            ),
+            pytest.param(
+                "client",
+                "yup",
+                {"client/node_modules/yup": {"version": "1.0.0"}},
+                "client/node_modules/yup",
+                id="workspace_local_dep",
+            ),
+            pytest.param(
+                "client",
+                "react",
+                {"node_modules/react": {"version": "18.0.0"}},
+                "node_modules/react",
+                id="workspace_hoisted_dep",
+            ),
+            pytest.param(
+                "node_modules/foo",
+                "nonexistent",
+                {},
+                None,
+                id="not_found",
+            ),
+        ],
+    )
+    def test_resolve_dep_path(
+        self,
+        context_path: str,
+        dep_name: str,
+        packages_data: dict[str, Any],
+        expected_path: str | None,
+    ) -> None:
+        assert PackageLock._resolve_dep_path(context_path, dep_name, packages_data) == expected_path
+
+    def _make_workspace_lockfile_data(self) -> dict[str, Any]:
+        """Return lockfile data for workspace filter tests."""
+        return {
+            "packages": {
+                "": {
+                    "name": "my-app",
+                    "version": "1.0.0",
+                    "workspaces": ["client", "server"],
+                    "dependencies": {"shared-lib": "^1.0.0"},
+                },
+                "client": {"version": "1.0.0"},
+                "server": {"version": "1.0.0"},
+                "node_modules/client": {"link": True, "resolved": "client"},
+                "node_modules/server": {"link": True, "resolved": "server"},
+                "node_modules/shared-lib": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/shared-lib/-/shared-lib-1.0.0.tgz",
+                    "dependencies": {"shared-dep": "^1.0.0"},
+                },
+                "node_modules/shared-dep": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/shared-dep/-/shared-dep-1.0.0.tgz",
+                },
+                "node_modules/client-only": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/client-only/-/client-only-1.0.0.tgz",
+                    "dependencies": {"client-transitive": "^1.0.0"},
+                },
+                "node_modules/client-transitive": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/ct/-/ct-1.0.0.tgz",
+                },
+                "node_modules/server-only": {
+                    "version": "2.0.0",
+                    "resolved": "https://registry.npmjs.org/server-only/-/server-only-2.0.0.tgz",
+                    "dependencies": {"server-transitive": "^1.0.0"},
+                },
+                "node_modules/server-transitive": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/st/-/st-1.0.0.tgz",
+                },
+                "client/node_modules/client-local": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/cl/-/cl-1.0.0.tgz",
+                },
+            },
+        }
+
+    def _write_workspace_package_jsons(self, root: Path) -> None:
+        """Create workspace package.json files on disk for filter tests."""
+        client_dir = root / "client"
+        client_dir.mkdir(exist_ok=True)
+        (client_dir / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "client",
+                    "version": "1.0.0",
+                    "dependencies": {"client-only": "^1.0.0", "client-local": "^1.0.0"},
+                }
+            )
+        )
+        server_dir = root / "server"
+        server_dir.mkdir(exist_ok=True)
+        (server_dir / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "server",
+                    "version": "1.0.0",
+                    "dependencies": {"server-only": "^2.0.0"},
+                }
+            )
+        )
+
+    def test_workspace_filter_no_filter(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that without a filter all packages are present."""
+        lockfile_data = self._make_workspace_lockfile_data()
+        self._write_workspace_package_jsons(rooted_tmp_path.path)
+
+        pl = PackageLock(rooted_tmp_path, lockfile_data)
+        all_names = {p.name for p in pl.packages}
+        assert "client-only" in all_names
+        assert "server-only" in all_names
+        assert pl.workspaces == ["client", "server"]
+
+    def test_workspace_filter_selected(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that filtering keeps only packages reachable from selected workspaces."""
+        lockfile_data = self._make_workspace_lockfile_data()
+        self._write_workspace_package_jsons(rooted_tmp_path.path)
+
+        pl = PackageLock(rooted_tmp_path, lockfile_data, workspace_filter=["client"])
+        filtered_names = {p.name for p in pl.packages}
+
+        assert "shared-lib" in filtered_names
+        assert "shared-dep" in filtered_names
+        assert "client-only" in filtered_names
+        assert "client-transitive" in filtered_names
+        assert "client-local" in filtered_names
+        assert "server-only" not in filtered_names
+        assert "server-transitive" not in filtered_names
+        assert pl.workspaces == ["client"]
+
+    def test_workspace_filter_selected_paths(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that filtering excludes the unselected workspace entry."""
+        lockfile_data = self._make_workspace_lockfile_data()
+        self._write_workspace_package_jsons(rooted_tmp_path.path)
+
+        pl = PackageLock(rooted_tmp_path, lockfile_data, workspace_filter=["client"])
+
+        assert {p.path for p in pl.packages} == {
+            "client",
+            "node_modules/shared-lib",
+            "node_modules/shared-dep",
+            "node_modules/client-only",
+            "node_modules/client-transitive",
+            "client/node_modules/client-local",
+        }
+
+    def test_workspace_filter_from_file(self) -> None:
+        """Test that from_file passes workspace_filter through to the constructor."""
+        lockfile_data = {"lockfileVersion": 3, "packages": {}}
+        mock_load = mock.patch(
+            "hermeto.core.package_managers.javascript.npm.project._load_json_file",
+            return_value=lockfile_data,
+        )
+        mock_init = mock.patch.object(PackageLock, "__init__", return_value=None)
+        with mock_load, mock_init as init_mock:
+            mock_path = mock.Mock()
+            mock_path.path = Path("/fake/package-lock.json")
+            PackageLock.from_file(mock_path, workspace_filter=["ws-a"])
+            init_mock.assert_called_once_with(mock_path, lockfile_data, ["ws-a"])
+
+    def test_workspace_filter_unknown_name(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that unknown workspace names raise PackageRejected."""
+        lockfile_data: dict[str, Any] = {
+            "packages": {
+                "": {"name": "my-app", "version": "1.0.0", "workspaces": ["ws-a"]},
+                "ws-a": {"version": "1.0.0"},
+                "node_modules/ws-a": {"link": True, "resolved": "ws-a"},
+            },
+        }
+        with pytest.raises(PackageRejected):
+            PackageLock(rooted_tmp_path, lockfile_data, workspace_filter=["typo"])
+
+    def test_workspace_filter_includes_workspace_entry(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that the workspace package itself is kept in the filtered result."""
+        lockfile_data: dict[str, Any] = {
+            "packages": {
+                "": {"name": "my-app", "version": "1.0.0", "workspaces": ["client"]},
+                "client": {"version": "1.0.0", "name": "client"},
+                "node_modules/client": {"link": True, "resolved": "client"},
+                "node_modules/dep-a": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/dep-a/-/dep-a-1.0.0.tgz",
+                },
+            },
+        }
+        client_dir = rooted_tmp_path.path / "client"
+        client_dir.mkdir()
+        (client_dir / "package.json").write_text(
+            json.dumps({"name": "client", "version": "1.0.0", "dependencies": {"dep-a": "^1.0.0"}})
+        )
+
+        pl = PackageLock(rooted_tmp_path, lockfile_data, workspace_filter=["client"])
+        filtered_paths = {p.path for p in pl.packages}
+        assert "client" in filtered_paths
+
+    def test_workspace_filter_follows_links(self, rooted_tmp_path: RootedPath) -> None:
+        """Test that inter-workspace deps are followed through link entries."""
+        lockfile_data: dict[str, Any] = {
+            "packages": {
+                "": {
+                    "name": "my-app",
+                    "version": "1.0.0",
+                    "workspaces": ["client", "common"],
+                },
+                "client": {"version": "1.0.0"},
+                "common": {"version": "1.0.0"},
+                "node_modules/client": {"link": True, "resolved": "client"},
+                "node_modules/common": {"link": True, "resolved": "common"},
+                "node_modules/common-dep": {
+                    "version": "1.0.0",
+                    "resolved": "https://registry.npmjs.org/common-dep/-/common-dep-1.0.0.tgz",
+                },
+            },
+        }
+        client_dir = rooted_tmp_path.path / "client"
+        client_dir.mkdir()
+        (client_dir / "package.json").write_text(
+            json.dumps({"name": "client", "version": "1.0.0", "dependencies": {"common": "^1.0.0"}})
+        )
+        common_dir = rooted_tmp_path.path / "common"
+        common_dir.mkdir()
+        (common_dir / "package.json").write_text(
+            json.dumps(
+                {"name": "common", "version": "1.0.0", "dependencies": {"common-dep": "^1.0.0"}}
+            )
+        )
+
+        # Only select client — common's deps should still be followed via the link
+        pl = PackageLock(rooted_tmp_path, lockfile_data, workspace_filter=["client"])
+        filtered_names = {p.name for p in pl.packages}
+        assert filtered_names == {"client", "common", "common-dep"}
 
     def test_get_sbom_components(self) -> None:
         mock_package_lock = mock.Mock()
