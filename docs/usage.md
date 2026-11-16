@@ -92,6 +92,10 @@ Hermeto copies the source tree, including `.git`, before processing it, and a
 concurrent git operation (including a background `git gc`) can corrupt that copy
 and produce an inaccurate SBOM.*
 
+> [!WARNING]
+> Any file in the source repository may be a symlink, but it must not point
+> outside the source repository. Hermeto may refuse to process input that does.
+
 ### Generate environment variables
 
 Once the dependencies have been cached, the build process needs to be made aware
