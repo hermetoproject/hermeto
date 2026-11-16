@@ -26,6 +26,7 @@ from hermeto.core.package_managers.javascript.pnpm.project import (
     parse_packages,
 )
 from hermeto.core.package_managers.javascript.pnpm.resolver import generate_sbom_components
+from hermeto.core.rooted_path import RootedPath
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
         lockfile = PnpmLock.from_dir(project_dir.path)
         packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
         project_files.append(updated_lockfile)
-        project_files.append(_prepare_npmrc_for_hermetic_build(project_dir.path))
+        project_files.append(_prepare_npmrc_for_hermetic_build(project_dir))
         components.extend(generate_sbom_components(project_dir, packages, lockfile))
 
     if backend_annotation := create_backend_annotation(components, "pnpm"):
@@ -139,13 +140,13 @@ def _prepare_lockfile_for_hermetic_build(
     )
 
 
-def _prepare_npmrc_for_hermetic_build(project_dir: Path) -> ProjectFile:
+def _prepare_npmrc_for_hermetic_build(project_dir: RootedPath) -> ProjectFile:
     """
     Create a .npmrc file with registry configuration instead of using environment variables because
     of limitations with `npm_config_@jsr:registry` environment variable ("@" is not a valid POSIX
     export name when sourcing hermeto.env).
     """
-    npmrc_path = project_dir.joinpath(".npmrc")
+    npmrc_path = project_dir.join_within_root(".npmrc").path
     content = (npmrc_path.read_text() + "\n") if npmrc_path.is_file() else ""
 
     content += (

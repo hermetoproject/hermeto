@@ -8,6 +8,7 @@ import yaml
 from pydantic import SecretStr
 
 from hermeto.core.checksum import ChecksumInfo
+from hermeto.core.errors import PathOutsideRoot
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
 from hermeto.core.package_managers.javascript.pnpm.main import (
     _download_resolved_packages,
@@ -18,6 +19,7 @@ from hermeto.core.package_managers.javascript.pnpm.main import (
 )
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, PnpmPackage
 from hermeto.core.package_managers.javascript.pnpm.resolver import JSR_REGISTRY_URL
+from hermeto.core.rooted_path import RootedPath
 from tests.unit.test_checksum import SHA512_SRI
 
 FAKE_PROXY_URL = "http://proxy.com/npm/registry"
@@ -252,15 +254,45 @@ def test_mirror_tarball_path(tmp_path: Path, package: PnpmPackage, expected_path
     ],
 )
 def test_prepare_npmrc_for_hermetic_build(
-    tmp_path: Path,
+    rooted_tmp_path: RootedPath,
     existing_content: str | None,
     expected_template: str,
 ) -> None:
-    npmrc_path = tmp_path / ".npmrc"
+    npmrc_path = rooted_tmp_path.path / ".npmrc"
     if existing_content is not None:
         npmrc_path.write_text(existing_content)
 
-    project_file = _prepare_npmrc_for_hermetic_build(tmp_path)
+    project_file = _prepare_npmrc_for_hermetic_build(rooted_tmp_path)
 
     assert project_file.abspath == npmrc_path
     assert project_file.template == expected_template
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        pytest.param("/outside/secret", id="absolute"),
+        pytest.param("../secret", id="relative"),
+    ],
+)
+def test_prepare_npmrc_for_hermetic_build_rejects_symlink_outside_source(
+    rooted_tmp_path: RootedPath, target: str
+) -> None:
+    (rooted_tmp_path.path / ".npmrc").symlink_to(target)
+
+    with pytest.raises(PathOutsideRoot):
+        _prepare_npmrc_for_hermetic_build(rooted_tmp_path)
+
+
+def test_prepare_npmrc_for_hermetic_build_follows_symlink_inside_source(
+    rooted_tmp_path: RootedPath,
+) -> None:
+    target = rooted_tmp_path.path / "config" / "npmrc"
+    target.parent.mkdir()
+    target.write_text("strict-peer-dependencies=false")
+    (rooted_tmp_path.path / ".npmrc").symlink_to(Path("config", "npmrc"))
+
+    project_file = _prepare_npmrc_for_hermetic_build(rooted_tmp_path)
+
+    assert project_file.abspath == target
+    assert project_file.template.startswith("strict-peer-dependencies=false\n")
