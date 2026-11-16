@@ -4,14 +4,35 @@ from typing import Any
 
 import pytest
 
-from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
+from hermeto.core.errors import (
+    InvalidLockfileFormat,
+    LockfileNotFound,
+    PathOutsideRoot,
+    UnsupportedFeature,
+)
 from hermeto.core.package_managers.javascript.pnpm.project import PnpmLock, parse_packages
+from hermeto.core.rooted_path import RootedPath
 
 
 class TestPnpmLock:
-    def test_from_dir_fails_with_missing_pnpm_lock(self, tmp_path: Path) -> None:
+    def test_from_dir_fails_with_missing_pnpm_lock(self, rooted_tmp_path: RootedPath) -> None:
         with pytest.raises(LockfileNotFound):
-            PnpmLock.from_dir(tmp_path)
+            PnpmLock.from_dir(rooted_tmp_path)
+
+    @pytest.mark.parametrize(
+        "target",
+        [
+            pytest.param("/outside/pnpm-lock.yaml", id="absolute"),
+            pytest.param("../pnpm-lock.yaml", id="relative"),
+        ],
+    )
+    def test_from_dir_rejects_symlink_outside_source(
+        self, rooted_tmp_path: RootedPath, target: str
+    ) -> None:
+        (rooted_tmp_path.path / "pnpm-lock.yaml").symlink_to(target)
+
+        with pytest.raises(PathOutsideRoot):
+            PnpmLock.from_dir(rooted_tmp_path)
 
     def test_from_file_fails_with_invalid_yaml(self, tmp_path: Path) -> None:
         lockfile = tmp_path / "pnpm-lock.yaml"

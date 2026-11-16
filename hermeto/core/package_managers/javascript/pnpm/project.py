@@ -9,6 +9,7 @@ from semver import Version
 
 from hermeto.core.errors import InvalidLockfileFormat, LockfileNotFound, UnsupportedFeature
 from hermeto.core.package_managers.javascript.npm import NPM_REGISTRY_URL
+from hermeto.core.rooted_path import RootedPath
 
 JSR_REGISTRY_URL = "https://npm.jsr.io"
 JSR_REGISTRY_PREFIX = "@jsr/"
@@ -46,9 +47,9 @@ class PnpmLock(UserDict):
         return cls(path, documents[-1] if documents else {})
 
     @classmethod
-    def from_dir(cls, path: Path) -> "PnpmLock":
+    def from_dir(cls, path: RootedPath) -> "PnpmLock":
         """Create a PnpmLock object from a directory containing a pnpm-lock.yaml file."""
-        return cls.from_file(path.joinpath("pnpm-lock.yaml"))
+        return cls.from_file(path.join_within_root("pnpm-lock.yaml").path)
 
     @property
     def packages(self) -> dict[str, dict[str, Any]]:

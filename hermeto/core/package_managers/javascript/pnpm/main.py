@@ -44,7 +44,7 @@ def fetch_pnpm_source(request: Request) -> RequestOutput:
         project_dir = request.source_dir.join_within_root(package.path)
         log.info("Fetching pnpm dependencies at %s", project_dir)
 
-        lockfile = PnpmLock.from_dir(project_dir.path)
+        lockfile = PnpmLock.from_dir(project_dir)
         packages, updated_lockfile = _resolve_pnpm_project(deps_dir, lockfile)
         project_files.append(updated_lockfile)
         project_files.append(_prepare_npmrc_for_hermetic_build(project_dir))
