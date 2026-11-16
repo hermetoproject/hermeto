@@ -16,15 +16,14 @@ from packaging.tags import Tag
 from packaging.utils import (
     InvalidWheelFilename,
     canonicalize_name,
-    canonicalize_version,
     parse_wheel_filename,
 )
 
 from hermeto.core.binary_filters import BinaryPackageFilter
 from hermeto.core.checksum import ChecksumInfo
-from hermeto.core.config import get_config
-from hermeto.core.errors import FetchError, PackageRejected
+from hermeto.core.errors import PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
+from hermeto.core.package_managers.python.common import get_project_packages_from
 from hermeto.core.package_managers.python.pip.requirements import PipRequirement
 from hermeto.core.rooted_path import RootedPath
 
@@ -116,40 +115,6 @@ def _find_the_best_sdist(sdists: list[DistributionPackageInfo]) -> DistributionP
     return best
 
 
-def _get_project_packages_from(
-    index_url: str,
-    name: str,
-    version: str,
-    auth: requests.auth.HTTPBasicAuth | None = None,
-) -> Iterable[pypi_simple.DistributionPackage]:
-    """Get all the project packages from the given index URL."""
-    config = get_config()
-    timeout = (config.http.connect_timeout, config.http.read_timeout)
-    with pypi_simple.PyPISimple(index_url, auth=auth) as client:
-        try:
-            project_page = client.get_project_page(name, timeout)
-        except (requests.RequestException, pypi_simple.NoSuchProjectError) as e:
-            if (
-                config.pip.proxy_url is not None
-                and isinstance(e, requests.HTTPError)
-                and e.response is not None
-                and e.response.status_code == 401
-            ):
-                raise FetchError(
-                    "Proxy requires authentication. "
-                    "Verify that proxy URL, login and password are set correctly."
-                ) from e
-            raise FetchError(f"PyPI query failed: {e}") from e
-
-    return filter(
-        lambda p: (
-            p.version is not None
-            and canonicalize_version(p.version) == canonicalize_version(version)
-        ),
-        project_page.packages,
-    )
-
-
 def process_package_distributions(
     requirement: PipRequirement,
     pip_deps_dir: RootedPath,
@@ -186,7 +151,7 @@ def process_package_distributions(
     version = requirement.version_specs[0][1]
     req_file_checksums = set(map(ChecksumInfo.from_hash, requirement.hashes))
 
-    packages = list(_get_project_packages_from(index_url, name, version, auth=auth))
+    packages = list(get_project_packages_from(index_url, name, version, auth=auth))
     sdists = filter(lambda x: x.package_type == "sdist", packages)
     wheels = filter(lambda x: x.package_type == "wheel", packages)
 
