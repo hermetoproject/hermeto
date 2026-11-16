@@ -282,12 +282,12 @@ def test_create_workspace_components_without_package_json(
     assert _create_workspace_components(rooted_tmp_path, {}, {}) == []
 
 
-def test_load_pnpm_workspace_rejects_invalid_yaml(tmp_path: Path) -> None:
-    pnpm_workspace_path = tmp_path.joinpath("pnpm-workspace.yaml")
+def test_load_pnpm_workspace_rejects_invalid_yaml(rooted_tmp_path: RootedPath) -> None:
+    pnpm_workspace_path = rooted_tmp_path.path.joinpath("pnpm-workspace.yaml")
     pnpm_workspace_path.write_text(":")
 
     with pytest.raises(PackageRejected):
-        _load_pnpm_workspace(tmp_path)
+        _load_pnpm_workspace(rooted_tmp_path)
 
 
 def test_find_non_dev_dependencies(tmp_path: Path) -> None:

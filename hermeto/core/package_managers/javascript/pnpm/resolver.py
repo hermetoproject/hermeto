@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 import logging
 from collections import deque
-from pathlib import Path
 from typing import Any
 
 import yaml
@@ -49,7 +48,7 @@ def generate_sbom_components(
         else:
             raise
 
-    workspace_data = _load_pnpm_workspace(project_dir.path)
+    workspace_data = _load_pnpm_workspace(project_dir)
 
     return [
         _create_root_component(project_dir, vcs_qualifiers),
@@ -147,7 +146,7 @@ def _generate_pedigree_for(
 
 
 def _create_root_component(project_dir: RootedPath, vcs_qualifiers: dict[str, str]) -> Component:
-    package_json = PackageJson.from_dir(project_dir.path)
+    package_json = PackageJson.from_file(project_dir.join_within_root("package.json").path)
 
     name = package_json.get("name")
     version = package_json.get("version")
@@ -178,7 +177,9 @@ def _create_workspace_components(
 
     for workspace_path in workspace_paths:
         try:
-            package_json = PackageJson.from_dir(workspace_path)
+            package_json = PackageJson.from_file(
+                project_dir.join_within_root(workspace_path, "package.json").path
+            )
         except LockfileNotFound:
             log.warning(
                 "The workspace %s does not contain a package.json file and will be ignored",
@@ -204,8 +205,8 @@ def _create_workspace_components(
     return components
 
 
-def _load_pnpm_workspace(project_dir: Path) -> dict[str, Any]:
-    pnpm_workspace_path = project_dir / "pnpm-workspace.yaml"
+def _load_pnpm_workspace(project_dir: RootedPath) -> dict[str, Any]:
+    pnpm_workspace_path = project_dir.join_within_root("pnpm-workspace.yaml").path
     if not pnpm_workspace_path.exists():
         return {}
 
