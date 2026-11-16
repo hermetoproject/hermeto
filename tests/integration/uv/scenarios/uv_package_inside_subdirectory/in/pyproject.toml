@@ -1,0 +1,13 @@
+[project]
+name = "uv-package-inside-subdirectory"
+version = "0.1.0"
+description = "uv Git subdirectory dependency test project"
+requires-python = ">=3.12"
+dependencies = ["nested-example"]
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.uv.sources]
+nested-example = { git = "https://git.example.invalid/hermeto-tests/nested-example.git", rev = "ab3ddbf20f05ec98636c84c996934935541fc63e", subdirectory = "libs/example" }

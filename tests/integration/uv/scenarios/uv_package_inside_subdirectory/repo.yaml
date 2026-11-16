@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+source_dir: in
+submodules:
+  - source_dir: nested-repo
+    path_in_parent: vendor/nested-repo
+    canonical_origin_url: https://git.example.invalid/hermeto-tests/nested-example.git
