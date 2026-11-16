@@ -89,6 +89,13 @@ class CargoProxyConfig(ProxyRepositoryConfig):
         return result
 
 
+@dataclass
+class UvProxyConfig(ProxyRepositoryConfig):
+    """Configuration for a uv proxy repository."""
+
+    format: str = field(default="pypi", init=False)
+
+
 DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
     BundlerProxyConfig(name="rubygems-proxy", remote_url="https://rubygems.org"),
     NpmProxyConfig(name="npm-proxy", remote_url="https://registry.npmjs.org"),
@@ -99,4 +106,5 @@ DEFAULT_REPOSITORIES: list[ProxyRepositoryConfig] = [
         name="yum-proxy",
         remote_url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9",
     ),
+    UvProxyConfig(name="uv-proxy", remote_url="https://pypi.org"),
 ]
