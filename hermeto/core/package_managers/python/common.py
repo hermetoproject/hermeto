@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from typing import NamedTuple
 
 import pypi_simple
 import requests
@@ -6,6 +7,24 @@ from packaging.utils import canonicalize_version
 
 from hermeto.core.config import get_config
 from hermeto.core.errors import FetchError
+
+
+class ProxyOverride(NamedTuple):
+    """A simple container to hold resolved artifact proxy parameters."""
+
+    proxy_url: str | None
+    proxy_login: str | None
+    proxy_password: str | None
+
+    @property
+    def credentials_defined(self) -> bool:
+        """Checks if credentials are defined."""
+        return self.proxy_login is not None and self.proxy_password is not None
+
+    @property
+    def credentials(self) -> tuple[str | None, str | None]:
+        """Convenience method to access credentials as a tuple."""
+        return self.proxy_login, self.proxy_password
 
 
 def get_project_packages_from(
@@ -42,7 +61,7 @@ def get_project_packages_from(
     )
 
 
-def make_proxy_override(pm_name: str) -> tuple[str, str | None, str | None] | None:
+def make_proxy_override(pm_name: str) -> ProxyOverride | None:
     """Extract package manager related configuration from config if present."""
     config = get_config()
     pm = getattr(config, pm_name)
@@ -53,4 +72,4 @@ def make_proxy_override(pm_name: str) -> tuple[str, str | None, str | None] | No
     if pm.proxy_login and pm.proxy_password:
         proxy_password = pm.proxy_password.get_secret_value()
         proxy_login = pm.proxy_login
-    return proxy_url, proxy_login, proxy_password
+    return ProxyOverride(proxy_url, proxy_login, proxy_password)

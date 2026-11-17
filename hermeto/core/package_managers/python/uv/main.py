@@ -4,8 +4,12 @@ import logging
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Any, NamedTuple, cast
+from typing import Any, Callable, Iterable, NamedTuple, cast
 
+import aiohttp
+import more_itertools
+import pypi_simple
+import requests
 import tomlkit
 from packageurl import PackageURL
 from tomlkit.items import InlineTable
@@ -21,8 +25,19 @@ from hermeto.core.errors import (
 from hermeto.core.models.input import Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
-from hermeto.core.models.sbom import Annotation, Component, create_backend_annotation
+from hermeto.core.models.sbom import (
+    PROXY_COMMENT,
+    PROXY_REF_TYPE,
+    Annotation,
+    Component,
+    ExternalReference,
+    create_backend_annotation,
+)
 from hermeto.core.package_managers.general import async_download_files, get_vcs_qualifiers
+from hermeto.core.package_managers.python.common import (
+    get_project_packages_from,
+    make_proxy_override,
+)
 from hermeto.core.package_managers.python.pip.project_files import PyProjectTOML
 from hermeto.core.package_managers.python.uv.build_deps import (
     download_build_dependencies,
@@ -92,6 +107,72 @@ def fetch_uv_source(request: Request) -> RequestOutput:
     )
 
 
+# NOTE: it is assumed that this function is used only when authentication is necessary,
+#       it knows nothing about that and will always provide credentials when possible.
+def make_auth_object(maker: Callable) -> Any | None:
+    proxy_override = make_proxy_override("uv")
+    if proxy_override is None or proxy_override.proxy_login is None:
+        return None
+    return maker(proxy_override.proxy_login, proxy_override.proxy_password)
+
+
+def get_requests_auth() -> requests.auth.HTTPBasicAuth | None:
+    return make_auth_object(requests.auth.HTTPBasicAuth)
+
+
+def get_aiohttp_auth() -> str | None:
+    return make_auth_object(aiohttp.encode_basic_auth)
+
+
+def get_packages_available_on_proxy(
+    name: str, version: str | None
+) -> list[pypi_simple.DistributionPackage]:
+    config = get_config()
+    proxy_url = str(config.uv.proxy_url)
+    if config.uv.proxy_login:
+        return list(get_project_packages_from(proxy_url, name, version or "", get_requests_auth()))
+    return list(get_project_packages_from(proxy_url, name, version or ""))
+
+
+# NOTE: this function mutates external objects.
+def remove_artifact_from_package(artifact: PackageArtifact, package: UvPackage) -> None:
+    """Removes an artifact from a package."""
+
+    if artifact in package.wheels:
+        package.wheels.remove(artifact)
+    elif artifact == package.sdist:
+        package.sdist = None
+
+
+# NOTE: this function mutates external objects.
+def adjust_source_urls_to_proxy(packages_needing_proxy: Iterable[UvPackage]) -> None:
+    config = get_config()
+    if config.uv.proxy_url is None:  # nothing to adjust.
+        return
+    proxy_url = str(config.uv.proxy_url)
+    for package in packages_needing_proxy:
+        available_packages = get_packages_available_on_proxy(package.name, package.version)
+        uv_artifacts = [a for a in [package.sdist] + package.wheels if a is not None]
+        proxied_urls = {f"{k}:{v}": p.url for p in available_packages for k, v in p.digests.items()}
+
+        for art in uv_artifacts:
+            if art.hash in proxied_urls:
+                art.url = proxied_urls[art.hash]
+                package._proxy_url = proxy_url
+            else:
+                log.debug(f"Could not find {art} on proxy {proxy_url}")
+                # It is technically possible to set up a proxy in such a way that
+                # some artifacts won't be present. This could result in
+                # credentials being sent to a wrong server, thus it is
+                # necessary to remove artifacts which are missing on the
+                # configured proxy from the package.
+                remove_artifact_from_package(art, package)
+
+
+def partition(predicate: Callable, iterable: Iterable) -> list[list]:
+    return [list(e) for e in more_itertools.partition(predicate, iterable)]
+
+
 def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolutionResult:
     pyproject = package_dir.join_within_root("pyproject.toml")
     if not pyproject.path.exists():
@@ -108,9 +189,19 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolution
 
     lockfile_doc = load_lockfile_document(package_dir)
     lock = UvLock.from_toml(lockfile_doc, package_dir.join_within_root(DEFAULT_LOCKFILE_NAME).path)
+
+    of_default_location = lambda p: p.source.location.startswith("https://pypi.org/simple")
+    from_default_registry = lambda p: p.source.kind == "registry" and of_default_location(p)
+    other_packages, packages_needing_proxy = partition(from_default_registry, lock.packages)
+    adjust_source_urls_to_proxy(packages_needing_proxy)
+
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
 
-    _download_dependencies(output_dir, lock.packages)
+    if packages_needing_proxy:
+        _download_dependencies(output_dir, packages_needing_proxy, get_aiohttp_auth())
+    if other_packages:
+        _download_dependencies(output_dir, other_packages)
+
     dependency_components = _generate_dependency_components(
         lock.packages, package_dir, project_vcs_qualifiers
     )
@@ -128,7 +219,18 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolution
     )
 
 
-def _download_dependencies(output_dir: RootedPath, packages: list[UvPackage]) -> None:
+def make_auth_headers(files_to_download: dict[Url, Path], auth: str | None) -> dict | None:
+    if auth is not None:
+        headers = {}
+        for url, _ in files_to_download.items():
+            headers[url] = {"Authorization": auth}
+        return headers
+    return None
+
+
+def _download_dependencies(
+    output_dir: RootedPath, packages: Iterable[UvPackage] | list, auth: str | None = None
+) -> None:
     """Fetch every remote artifact recorded in uv.lock into a flat deps/uv directory."""
     deps_dir = output_dir.join_within_root("deps", "uv")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
@@ -153,7 +255,9 @@ def _download_dependencies(output_dir: RootedPath, packages: list[UvPackage]) ->
 
     if files_to_download:
         log.info("Downloading %d artifacts from %s", len(files_to_download), DEFAULT_LOCKFILE_NAME)
-        asyncio.run(async_download_files(files_to_download, get_config().runtime.concurrency_limit))
+        concurrency_limit = get_config().runtime.concurrency_limit
+        headers = make_auth_headers(files_to_download, auth)
+        asyncio.run(async_download_files(files_to_download, concurrency_limit, headers=headers))
 
     for package, artifact, target in items:
         if artifact.checksum_info is not None:
@@ -188,6 +292,11 @@ def _generate_dependency_component(
     missing_hash: frozenset[str] = (
         frozenset({lockfile_relpath}) if package.records_no_checksum else frozenset()
     )
+    if package._proxy_url is None:
+        external_references = None
+    else:
+        t = dict(type=PROXY_REF_TYPE, comment=PROXY_COMMENT)
+        external_references = [ExternalReference(url=str(package._proxy_url), **t)]
 
     return Component(
         name=package.name,
@@ -197,6 +306,7 @@ def _generate_dependency_component(
             missing_hash_in_file=missing_hash,
             uv_package_binary=_is_binary_package(package, artifacts),
         ).to_properties(),
+        external_references=external_references,
     )
 
 
@@ -258,6 +368,30 @@ def _replace_source_with_path(raw_package: Any, filename: str) -> None:
     raw_package["source"] = source
 
 
+def meets_proxied_environment_expectations(raw_wheel: dict, wheel: ArtifactWheel) -> bool:
+    must_match = set(_WHEEL_LOCATIONS) - set(("url",))
+    uv_proxy_is_defined = get_config().uv.proxy_url is not None
+    all_keys_except_url_match = all(raw_wheel.get(k) == getattr(wheel, k) for k in must_match)
+    return uv_proxy_is_defined and all_keys_except_url_match
+
+
+def reject_package_if_some_requested_wheels_were_missing_on_proxy(
+    raw_wheels: tomlkit.items.Array, package: UvPackage
+) -> None:
+    if len(raw_wheels) != len(package.wheels) and get_config().uv.proxy_url is not None:
+        hashes_of_present_wheels = [w.hash for w in package.wheels]
+        missing_wheels = []
+        for w in raw_wheels:
+            if w.get("hash", "") not in hashes_of_present_wheels:
+                missing_wheels.append(w.get("url", "/<unknown>").rsplit("/", 1)[1])
+        raise PackageRejected(
+            "Some of the requested wheels were not found on the proxy: "
+            f"{missing_wheels}. "
+            "Please make sure you use correct proxy and it is set up correctly.",
+            solution=None,
+        )
+
+
 def _rewrite_lockfile(
     doc: tomlkit.TOMLDocument, package_dir: RootedPath, lock: UvLock
 ) -> ProjectFile | None:
@@ -274,7 +408,9 @@ def _rewrite_lockfile(
     if all(_is_local_package(package) for package in lock.packages):
         return None
 
-    for raw_package, package in zip(doc.get("package", []), lock.packages, strict=True):
+    expected_packages = doc.get("package", [])
+    processed_packages = lock.packages
+    for raw_package, package in zip(expected_packages, processed_packages, strict=True):
         if (raw_package["name"], raw_package.get("version")) != (package.name, package.version):
             # should not happen: both views parse the same file, in order
             raise RuntimeError(
@@ -287,12 +423,17 @@ def _rewrite_lockfile(
                     filename = package.sdist.get_target_filename(package.source)
                     raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
                 raw_wheels = raw_package.get("wheels", [])
+                reject_package_if_some_requested_wheels_were_missing_on_proxy(raw_wheels, package)
                 for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
                     if any(raw_wheel.get(key) != getattr(wheel, key) for key in _WHEEL_LOCATIONS):
                         # should not happen: as above, one file parsed two ways
-                        raise RuntimeError(
-                            f"uv.lock wheel for {package.name} does not match the parsed entry"
-                        )
+                        # This could happen for proxied registries, in that case it is expected
+                        if meets_proxied_environment_expectations(raw_wheel, wheel):
+                            pass
+                        else:
+                            raise RuntimeError(
+                                f"uv.lock wheel for {package.name} does not match the parsed entry"
+                            )
 
                     filename = wheel.get_target_filename(package.source)
                     raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"

@@ -38,6 +38,7 @@ from hermeto.core.package_managers.general import (
     extract_git_info,
     get_vcs_qualifiers,
 )
+from hermeto.core.package_managers.python.common import ProxyOverride, make_proxy_override
 from hermeto.core.package_managers.python.pip.package_distributions import (
     DistributionPackageInfo,
     process_package_distributions,
@@ -420,24 +421,23 @@ def _resolve_and_download_pypi_packages(
     pip_deps_dir: RootedPath,
     binary_filters: PipBinaryFilters | None,
     index_url: str,
+    proxy_override: ProxyOverride | None = None,
 ) -> list[PyPIPackage]:
     """Resolve and download all PyPI packages."""
-    config = get_config()
-    proxy_url = str(config.pip.proxy_url) if config.pip.proxy_url is not None else None
+    proxy_url = proxy_override.proxy_url if proxy_override is not None else None
     # A proxy must be used only if an index is the standard one, custom indices must
     # be preserved. A custom index would always override proxy.
     is_standard = lambda index_url: index_url and index_url == pypi_simple.PYPI_SIMPLE_ENDPOINT
     query_url = proxy_url if (proxy_url is not None and is_standard(index_url)) else index_url
     if query_url == proxy_url:
         log.info("Using registry proxy %s for registry dependencies", proxy_url)
-    requests_auth = None
-    aiohttp_auth = None
+    requests_auth = aiohttp_auth = None
     # No attempt should be made at logging into custom indices, if query URL ends up pointing
     # to a custom index then authorization must be skipped.
-    if config.pip.proxy_login and config.pip.proxy_password and (query_url == proxy_url):
-        proxy_password = config.pip.proxy_password.get_secret_value()
-        requests_auth = requests.auth.HTTPBasicAuth(config.pip.proxy_login, proxy_password)
-        aiohttp_auth = aiohttp.encode_basic_auth(config.pip.proxy_login, proxy_password)
+    if proxy_override is not None and proxy_override.credentials_defined and query_url == proxy_url:
+        # mypy cannot figure out that this point is unreachable with unset credentials.
+        requests_auth = requests.auth.HTTPBasicAuth(*proxy_override.credentials)  # type: ignore
+        aiohttp_auth = aiohttp.encode_basic_auth(*proxy_override.credentials)  # type: ignore
 
     resolve_callback = functools.partial(
         process_package_distributions,
@@ -467,6 +467,7 @@ def _download_dependencies(
     requirements_file: PipRequirementsFile,
     binary_filters: PipBinaryFilters | None = None,
     deps_dir_name: str = "pip",
+    proxy_override: ProxyOverride | None = None,
 ) -> list[PipPackage]:
     """
     Download artifacts of all dependency packages in a requirements.txt file.
@@ -534,7 +535,12 @@ def _download_dependencies(
             index_url = pypi_simple.PYPI_SIMPLE_ENDPOINT
         processed.extend(
             _resolve_and_download_pypi_packages(
-                pypi_reqs, requirements_file, pip_deps_dir, binary_filters, index_url
+                pypi_reqs,
+                requirements_file,
+                pip_deps_dir,
+                binary_filters,
+                index_url,
+                proxy_override,
             )
         )
 
@@ -546,6 +552,7 @@ def download_from_requirement_files(
     files: list[RootedPath],
     binary_filters: PipBinaryFilters | None = None,
     deps_dir_name: str = "pip",
+    proxy_override: ProxyOverride | None = None,
 ) -> list[PipPackage]:
     """
     Download dependencies listed in the requirement files.
@@ -566,7 +573,11 @@ def download_from_requirement_files(
             )
         requirements.extend(
             _download_dependencies(
-                output_dir, PipRequirementsFile(req_file), binary_filters, deps_dir_name
+                output_dir,
+                PipRequirementsFile(req_file),
+                binary_filters,
+                deps_dir_name,
+                proxy_override,
             )
         )
 
@@ -628,9 +639,12 @@ def _resolve_pip(
             ", ".join(str(f.subpath_from_root) for f in resolved_build_req_files),
         )
 
-    requires = download_from_requirement_files(output_dir, resolved_req_files, binary_filters)
+    proxy_override = make_proxy_override("pip")
+    requires = download_from_requirement_files(
+        output_dir, resolved_req_files, binary_filters, proxy_override=proxy_override
+    )
     build_requires = download_from_requirement_files(
-        output_dir, resolved_build_req_files, binary_filters
+        output_dir, resolved_build_req_files, binary_filters, proxy_override=proxy_override
     )
 
     all_deps = requires + build_requires
