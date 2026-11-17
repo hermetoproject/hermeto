@@ -114,6 +114,7 @@ def test_download_dependencies(
         version="4.0.0",
         source=PackageSourceLocal(kind="editable", location="."),
     )
+
     _download_dependencies(
         rooted_tmp_path,
         [hashed_registry_package, unhashed_registry_package, git_package, local_package],
@@ -126,6 +127,7 @@ def test_download_dependencies(
             "https://example.org/unhashed-pkg-2.0.0.tar.gz": deps_dir / "unhashed-pkg-2.0.0.tar.gz",
         },
         mock.ANY,
+        headers=None,
     )
     mock_checksum.assert_called_once_with(
         deps_dir / "registry-pkg-1.0.0.tar.gz", [ChecksumInfo("sha256", "1234")]

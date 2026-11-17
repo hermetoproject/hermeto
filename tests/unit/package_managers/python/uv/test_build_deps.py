@@ -33,7 +33,9 @@ def test_download_build_dependencies(mock_download: mock.Mock, tmp_path: Path) -
     result = download_build_dependencies(package_dir, output_dir)
 
     assert result == mock_download.return_value
-    mock_download.assert_called_once_with(output_dir, [req_file], deps_dir_name="uv")
+    mock_download.assert_called_once_with(
+        output_dir, [req_file], deps_dir_name="uv", proxy_override=None
+    )
 
 
 def build_dep(package_type: str = "sdist", missing_checksum: bool = False) -> PyPIPackage:

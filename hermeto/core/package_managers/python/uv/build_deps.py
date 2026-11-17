@@ -3,6 +3,7 @@ import logging
 
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import Component
+from hermeto.core.package_managers.python.common import make_proxy_override
 from hermeto.core.package_managers.python.pip.main import (
     DEFAULT_BUILD_REQUIREMENTS_FILE,
     download_from_requirement_files,
@@ -14,7 +15,8 @@ log = logging.getLogger(__name__)
 
 
 def download_build_dependencies(
-    package_dir: RootedPath, output_dir: RootedPath
+    package_dir: RootedPath,
+    output_dir: RootedPath,
 ) -> list[PipPackage]:
     """Download build-time dependencies listed in requirements-build.txt, if present.
 
@@ -27,7 +29,10 @@ def download_build_dependencies(
         return []
 
     log.info("Using build requirements file: %s", req_file.subpath_from_root)
-    return download_from_requirement_files(output_dir, [req_file], deps_dir_name="uv")
+    proxy_override = make_proxy_override("uv")
+    return download_from_requirement_files(
+        output_dir, [req_file], deps_dir_name="uv", proxy_override=proxy_override
+    )
 
 
 def to_component(package: PipPackage) -> Component:
