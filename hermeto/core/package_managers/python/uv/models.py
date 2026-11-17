@@ -295,7 +295,7 @@ class PackageArtifact(pydantic.BaseModel, extra="ignore", frozen=True):
         return filename
 
 
-class ArtifactSdist(PackageArtifact, frozen=True):
+class ArtifactSdist(PackageArtifact, frozen=False):
     """The ``sdist`` of a uv.lock ``[[package]]``.
 
     An sdist is never named by a ``filename`` -- a package has at most one.
@@ -318,7 +318,7 @@ class ArtifactSdist(PackageArtifact, frozen=True):
         return self
 
 
-class ArtifactWheel(PackageArtifact, frozen=True):
+class ArtifactWheel(PackageArtifact, frozen=False):
     """One entry of the ``wheels`` array of a uv.lock ``[[package]]``.
 
     A wheel adds ``filename``, which uv writes when the package is pinned to a
@@ -367,6 +367,7 @@ class UvPackage(pydantic.BaseModel, extra="ignore"):
     source: PackageSource = pydantic.Field(discriminator="kind")
     sdist: ArtifactSdist | None = None
     wheels: list[ArtifactWheel] = pydantic.Field(default_factory=list)
+    _proxy_url: str | None = pydantic.PrivateAttr(default=None)
 
     @pydantic.field_validator("source", mode="before")
     @classmethod
