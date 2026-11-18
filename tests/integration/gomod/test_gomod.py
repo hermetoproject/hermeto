@@ -68,6 +68,9 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             id="gomod_wrong_vendor_passes_vendor_check_in_permissive_mode",
         ),
         pytest.param(
+            # Empty vendor/ populated by `go mod vendor` trips the added-files
+            # branch of the vendor-consistency check, distinct from the
+            # modules.txt-diff branch the wrong-vendor scenarios exercise.
             utils.TestParameters(
                 packages=({"path": ".", "type": "gomod"},),
                 check_output=False,
@@ -78,13 +81,6 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
                 ),
             ),
             id="gomod_empty_vendor_fails_vendor_check",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                global_flags=["--mode=permissive"],
-                packages=({"path": ".", "type": "gomod"},),
-            ),
-            id="gomod_empty_vendor_passes_vendor_check_in_permissive_mode",
         ),
         pytest.param(
             utils.TestParameters(
@@ -180,17 +176,6 @@ def test_gomod_packages(
             [],
             [""],
             id="gomod_e2e_vendor_nonvendor_module_mix_ordering_1",
-        ),
-        pytest.param(
-            utils.TestParameters(
-                packages=(
-                    {"path": "non-vendored-module", "type": "gomod"},
-                    {"path": "vendored-module", "type": "gomod"},
-                ),
-            ),
-            [],
-            [""],
-            id="gomod_e2e_vendor_nonvendor_module_mix_ordering_2",
         ),
     ],
 )

@@ -1,9 +1,0 @@
-{
-  "name": "foo",
-  "version": "1.0.0",
-  "devDependencies": {},
-  "license": "ISC",
-  "dependencies": {
-    "is-positive": "github:kevva/is-positive#75dd3a181375162eda014984f2decc663199b09e"
-  }
-}
