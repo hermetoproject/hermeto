@@ -1065,7 +1065,14 @@ class ModuleVersionResolver:
             # Do not run 'git fetch --tags' because that fetches pretty much everything from the
             # remote. Save bandwidth and storage with an explicit refspec instead.
             # See man 1 git-fetch for the authoritative answer.
-            repo.remote().fetch(refspec="+refs/tags/*:refs/tags/*", force=True)
+            #
+            # Don't recurse into submodules. The tags are all we need, but by default git also
+            # follows submodules referenced by the fetched tags, which aborts the whole fetch when
+            # a submodule path crosses a symlink in the working tree.
+            # https://github.com/hermetoproject/hermeto/issues/1503
+            repo.remote().fetch(
+                refspec="+refs/tags/*:refs/tags/*", force=True, no_recurse_submodules=True
+            )
         except GitError as ex:
             raise FetchError(
                 f"Failed to fetch the tags on the Git repository ({type(ex).__name__}) "
