@@ -59,6 +59,27 @@ SCENARIOS_DIR = Path(__file__).parent / "scenarios"
             ),
             id="cargo_missing_lockfile_permissive_mode",
         ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {"path": ".", "type": "cargo", "packages": [{"name": "stale-lockfile"}]},
+                ),
+                check_output=False,
+                expected_error=ExitError.ERR_PACKAGE_WITH_CORRUPT_LOCKFILE_REJECTED,
+                expected_output="contains a Cargo.lock that does not match the corresponding Cargo.toml",
+            ),
+            id="cargo_stale_lockfile_package_selection",
+        ),
+        pytest.param(
+            utils.TestParameters(
+                packages=(
+                    {"path": ".", "type": "cargo", "packages": [{"name": "stale-lockfile"}]},
+                ),
+                global_flags=["--mode", "permissive"],
+                check_output=False,
+            ),
+            id="cargo_stale_lockfile_package_selection_permissive_mode",
+        ),
     ],
 )
 def test_cargo_packages(
