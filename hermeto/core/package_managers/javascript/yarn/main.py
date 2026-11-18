@@ -512,12 +512,9 @@ def _strip_workspace_scripts(source_dir: RootedPath) -> None:
     ``enableScripts: false`` does not apply to workspace scripts
     (https://github.com/yarnpkg/berry/pull/4781). Stripping the scripts field
     prevents lifecycle scripts from executing during focus.
-
-    Discovers workspaces from the root package.json ``workspaces`` field so it
-    can also run on the git-deps path before ``resolve_packages``.
     """
     _remove_scripts_field(PackageJson.from_dir(source_dir.path))
-    for workspace_dir in _workspace_package_dirs(source_dir):
+    for workspace_dir in _yarn_workspace_dirs(source_dir):
         _remove_scripts_field(PackageJson.from_dir(workspace_dir))
 
 

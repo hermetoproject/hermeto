@@ -334,8 +334,11 @@ class TestYarnWorkspaces:
         with pytest.raises(PackageRejected):
             _resolve_yarn_project(project, rooted_tmp_path, Mode.STRICT, workspaces=["app"])
 
-    def test_strip_workspace_scripts(self, rooted_tmp_path: RootedPath) -> None:
-        """Scripts are removed from workspace package.json files matched by workspaces globs."""
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main._yarn_workspace_dirs")
+    def test_strip_workspace_scripts(
+        self, mock_yarn_workspace_dirs: mock.Mock, rooted_tmp_path: RootedPath
+    ) -> None:
+        """Scripts are removed from workspace package.json files reported by Yarn."""
         root_json = rooted_tmp_path.join_within_root("package.json")
         root_json.path.write_text(json.dumps({"name": "root", "workspaces": ["packages/app"]}))
 
@@ -353,12 +356,13 @@ class TestYarnWorkspaces:
             json.dumps({"name": "unrelated", "scripts": {"postinstall": "echo bad"}})
         )
 
+        mock_yarn_workspace_dirs.return_value = [pkg_a_dir.path]
         _strip_workspace_scripts(rooted_tmp_path)
 
         data_a = json.loads(pkg_a_json.path.read_text())
         assert "scripts" not in data_a
 
-        # Workspace not matched by the workspaces glob is left untouched
+        # Packages not known to Yarn must not be modified.
         data_b = json.loads(pkg_b_json.path.read_text())
         assert data_b["scripts"] == {"postinstall": "echo bad"}
 
@@ -483,6 +487,38 @@ class TestYarnWorkspaces:
 
         with pytest.raises(PackageRejected):
             _yarn_workspace_dirs(project_dir)
+
+    @mock.patch("hermeto.core.package_managers.javascript.yarn.main.run_yarn_cmd")
+    def test_strip_workspace_scripts_nested(
+        self, mock_run_yarn_cmd: mock.Mock, rooted_tmp_path: RootedPath
+    ) -> None:
+        # type annotation to prevent mypy from inferring ws_metadata as object and complain later
+        manifests: dict[str, dict[str, str | list[str]]] = {
+            ".": {"name": "root", "workspaces": ["packages/*"]},
+            "packages/shared": {"name": "shared", "workspaces": ["nested/*"]},
+            "packages/shared/nested/child": {"name": "child"},
+        }
+
+        for ws_location, ws_metadata in manifests.items():
+            workspace_dir = Path(rooted_tmp_path.path, ws_location)
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+
+            with open(Path(workspace_dir, "package.json"), "w") as fd:
+                manifest_str = json.dumps(ws_metadata | {"scripts": {"postinstall": "exit 1"}})
+                fd.write(manifest_str)
+
+        mock_run_yarn_cmd.return_value = "\n".join(
+            json.dumps({"location": ws_location}) for ws_location in manifests
+        )
+
+        _strip_workspace_scripts(rooted_tmp_path)
+
+        for ws_location, ws_metadata in manifests.items():
+            manifest_path = Path(rooted_tmp_path.path, ws_location, "package.json")
+            expected_metadata = ws_metadata
+            actual_metadata = json.loads(manifest_path.read_text())
+
+            assert expected_metadata == actual_metadata
 
 
 # --- Tests for git dependency support ---
