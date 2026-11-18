@@ -40,3 +40,17 @@ def get_project_packages_from(
         ),
         project_page.packages,
     )
+
+
+def make_proxy_override(pm_name: str) -> tuple[str, str | None, str | None] | None:
+    """Extract package manager related configuration from config if present."""
+    config = get_config()
+    pm = getattr(config, pm_name)
+    proxy_url = str(pm.proxy_url) if pm.proxy_url is not None else None
+    proxy_login = proxy_password = None
+    if proxy_url is None:
+        return None
+    if pm.proxy_login and pm.proxy_password:
+        proxy_password = pm.proxy_password.get_secret_value()
+        proxy_login = pm.proxy_login
+    return proxy_url, proxy_login, proxy_password
