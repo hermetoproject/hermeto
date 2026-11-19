@@ -111,8 +111,9 @@ embed credentials in the URL.
 ### `bundler`
 
 Supports the [proxy settings](#proxy-settings) above and has no additional
-keys. Only rubygems registry dependencies are proxied; git and path
-dependencies are unaffected.
+keys. Only gems from rubygems.org are proxied. Gems from other sources are
+fetched directly from those sources, without the proxy credentials. Git and
+path dependencies are unaffected.
 
 ### `gomod`
 

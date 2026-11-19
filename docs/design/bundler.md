@@ -85,8 +85,9 @@ There are four types of
 in the `Gemfile.lock` file:
 
 #### Gem dependencies
-Regular gem dependencies are located at the source URL, in our case, always <https://rubygems.org>. Each gem can be
-accessed by its name and version - rubygems.org/gems/`<name>`-`<version>`.gem
+Regular gem dependencies are located at the source URL, usually <https://rubygems.org>, but a `Gemfile.lock` may also
+declare custom sources, e.g. a private registry. Each gem can be accessed by its name and version -
+`<source>`/gems/`<name>`-`<version>`.gem
 
 Example of a gem dependency in the `Gemfile.lock` file:
 
@@ -250,6 +251,10 @@ A Gem can be fetched from its original location by using the following template:
 ```ruby
 "https://#{remote}/gems/#{name}-#{version}.gem"
 ```
+
+When a registry proxy is configured, only Gems from rubygems.org are fetched through it. Gems from any other remote
+are always fetched from that remote, otherwise a Gem with the same name and version on rubygems.org could replace the
+one declared in the `Gemfile.lock`. The proxy credentials are only sent to the proxy.
 
 We should also leverage the existing code used to perform parallel downloads based on `asyncio` to download the necessary
 Gems from the internet.
