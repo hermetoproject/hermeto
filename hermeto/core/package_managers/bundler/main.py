@@ -109,7 +109,7 @@ def _download_gems(
     gem_deps: list[GemDependency],
     deps_dir: RootedPath,
 ) -> None:
-    """Download rubygems registry dependencies, rewriting URLs through a proxy if configured."""
+    """Download gem dependencies, rewriting rubygems.org URLs through a proxy if configured."""
     config = get_config()
     proxy_url = config.bundler.proxy_url
     if proxy_url is not None:
@@ -124,12 +124,15 @@ def _download_gems(
     )
 
     files_to_download: dict[str, RootedPath] = {}
+    proxied_urls: list[str] = []
     for dep in gem_deps:
-        fetch_url = (
-            patch_url_to_point_to_proxy(dep.remote_location, proxy_url)
-            if proxy_url is not None
-            else dep.remote_location
-        )
+        # The proxy mirrors rubygems.org, gems declared from any other source
+        # must come from that source or a same-name public gem could replace them.
+        if proxy_url is None or not dep.is_from_rubygems:
+            fetch_url = dep.remote_location
+        else:
+            fetch_url = patch_url_to_point_to_proxy(dep.remote_location, proxy_url)
+            proxied_urls.append(fetch_url)
         files_to_download[fetch_url] = dep.download_location(deps_dir)
 
     if not files_to_download:
@@ -137,7 +140,7 @@ def _download_gems(
 
     headers = None
     if proxy_auth is not None:
-        headers = {url: {"Authorization": proxy_auth} for url in files_to_download}
+        headers = {url: {"Authorization": proxy_auth} for url in proxied_urls}
 
     asyncio.run(
         async_download_files(

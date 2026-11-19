@@ -80,12 +80,9 @@ class GemDependency(_GemMetadata):
     checksum: str | None = None
 
     @cached_property
-    def purl(self) -> str:
-        """Get PURL for this dependency."""
-        qualifiers: dict[str, str] | None = None
-        normalized_source: str = str(self.source).rstrip("/")
-
-        parsed: ParseResult = urlparse(normalized_source)
+    def normalized_source(self) -> str:
+        """Get the source URL without credentials, query, fragment and trailing slash."""
+        parsed: ParseResult = urlparse(str(self.source).rstrip("/"))
 
         host: str = parsed.hostname or ""
         if ":" in host:
@@ -93,10 +90,19 @@ class GemDependency(_GemMetadata):
         if parsed.port is not None:
             host += f":{parsed.port}"
 
-        normalized_source = parsed._replace(netloc=host, query="", fragment="").geturl()
+        return parsed._replace(netloc=host, query="", fragment="").geturl()
 
-        if normalized_source not in RUBYGEMS_URLS:
-            qualifiers = {"repository_url": normalized_source}
+    @cached_property
+    def is_from_rubygems(self) -> bool:
+        """Return True if the gem comes from the public rubygems.org registry."""
+        return self.normalized_source in RUBYGEMS_URLS
+
+    @cached_property
+    def purl(self) -> str:
+        """Get PURL for this dependency."""
+        qualifiers: dict[str, str] | None = None
+        if not self.is_from_rubygems:
+            qualifiers = {"repository_url": self.normalized_source}
 
         purl = PackageURL(type="gem", name=self.name, version=self.version, qualifiers=qualifiers)
         return purl.to_string()
@@ -111,7 +117,7 @@ class GemDependency(_GemMetadata):
         return deps_dir.join_within_root(Path(f"{self.name}-{self.version}.gem"))
 
     def _get_external_refs(self, proxy_url: HttpUrl | None) -> list[ExternalReference] | None:
-        if proxy_url is None:
+        if proxy_url is None or not self.is_from_rubygems:
             return None
         return [ExternalReference(url=str(proxy_url), comment=PROXY_COMMENT)]
 

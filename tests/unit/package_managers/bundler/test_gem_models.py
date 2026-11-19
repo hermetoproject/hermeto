@@ -57,6 +57,15 @@ def test_to_component_gem_with_proxy_attaches_external_ref() -> None:
     assert ref.comment == PROXY_COMMENT
 
 
+def test_to_component_custom_source_gem_ignores_proxy() -> None:
+    """Gems from a custom source are not fetched through the proxy, so it is not reported."""
+    dep = GemDependency(name="custom_gem", version="1.0.0", source="https://gems.example.com/")
+
+    component = dep.to_component(proxy_url=HttpUrl(FAKE_PROXY_URL))
+
+    assert component.external_references is None
+
+
 def test_to_component_non_registry_deps_ignore_proxy(rooted_tmp_path_repo: RootedPath) -> None:
     """Non-registry deps must not receive proxy external references."""
     Repo(rooted_tmp_path_repo.path).create_remote("origin", "git@github.com:user/repo.git")

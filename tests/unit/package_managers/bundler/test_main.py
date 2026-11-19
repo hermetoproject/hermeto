@@ -305,3 +305,29 @@ def test_download_gems_with_proxy_credentials_adds_auth_header(
         concurrency_limit=5,
         headers={expected_url: {"Authorization": aiohttp.encode_basic_auth("user", "password")}},
     )
+
+
+@mock.patch("hermeto.core.package_managers.bundler.main.async_download_files")
+@mock.patch("hermeto.core.package_managers.bundler.main.get_config")
+def test_download_gems_with_proxy_keeps_custom_source(
+    mock_get_config: mock.Mock,
+    mock_async_download_files: mock.Mock,
+    rooted_tmp_path: RootedPath,
+) -> None:
+    """Gems from a custom source bypass the proxy and never receive proxy credentials."""
+    mock_get_config.return_value = _mock_bundler_config(HttpUrl(FAKE_PROXY_URL), "user", "password")  # noqa: S106
+    public_dep = GemDependency(name="foo", version="1.0.0", source=FAKE_RUBYGEMS_SOURCE)
+    private_dep = GemDependency(name="bar", version="2.0.0", source="https://gems.example.com")
+    proxied_url = f"{FAKE_PROXY_URL}/downloads/foo-1.0.0.gem"
+    private_url = "https://gems.example.com/downloads/bar-2.0.0.gem"
+    public_path = public_dep.download_location(rooted_tmp_path)
+    private_path = private_dep.download_location(rooted_tmp_path)
+    auth_header = {"Authorization": aiohttp.encode_basic_auth("user", "password")}
+
+    _download_gems([public_dep, private_dep], rooted_tmp_path)
+
+    mock_async_download_files.assert_called_once_with(
+        files_to_download={proxied_url: public_path, private_url: private_path},
+        concurrency_limit=5,
+        headers={proxied_url: auth_header},
+    )
