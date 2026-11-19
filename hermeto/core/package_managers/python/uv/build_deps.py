@@ -27,7 +27,7 @@ def download_build_dependencies(
         return []
 
     log.info("Using build requirements file: %s", req_file.subpath_from_root)
-    return download_from_requirement_files(output_dir, [req_file], deps_dir_name="uv")
+    return download_from_requirement_files(output_dir, [req_file], package_dir, deps_dir_name="uv")
 
 
 def to_component(package: PipPackage) -> Component:

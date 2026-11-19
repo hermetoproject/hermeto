@@ -23,6 +23,7 @@ from hermeto.core.models.input import (
     _validate_binary_filter_format,
     parse_user_input,
 )
+from hermeto.core.package_managers.python.packaging_tool import PythonPackagingTool
 from hermeto.core.rooted_path import RootedPath
 
 
@@ -55,6 +56,9 @@ class TestPackageInput:
                     "requirements_build_files": None,
                     "allow_binary": False,
                     "binary": None,
+                    "lockfile": None,
+                    "lockfile_extras": None,
+                    "packaging_tool": None,
                 },
                 id="multiple_pip_packages",
             ),
@@ -175,6 +179,9 @@ class TestPackageInput:
                         "platform": None,
                         "packages": "numpy,pandas",
                     },
+                    "lockfile": None,
+                    "lockfile_extras": None,
+                    "packaging_tool": None,
                 },
                 id="pip_with_binary_filters",
             ),
@@ -200,8 +207,31 @@ class TestPackageInput:
                         "platform": None,
                         "packages": BINARY_FILTER_ALL,
                     },
+                    "lockfile": None,
+                    "lockfile_extras": None,
+                    "packaging_tool": None,
                 },
                 id="pip_with_binary_filter_all",
+            ),
+            pytest.param(
+                {
+                    "type": "pip",
+                    "lockfile": "pylock.toml",
+                    "lockfile_extras": ["pylock.build.toml"],
+                    "packaging_tool": "pylock",
+                },
+                {
+                    "type": "pip",
+                    "path": Path("."),
+                    "requirements_files": None,
+                    "requirements_build_files": None,
+                    "allow_binary": False,
+                    "binary": None,
+                    "lockfile": Path("pylock.toml"),
+                    "lockfile_extras": [Path("pylock.build.toml")],
+                    "packaging_tool": PythonPackagingTool.PYLOCK,
+                },
+                id="pip_with_lockfile",
             ),
             pytest.param(
                 {
@@ -292,6 +322,26 @@ class TestPackageInput:
                 {"type": "pip", "requirements_build_files": None},
                 r"none is not an allowed value",
                 id="pip_no_requirements_build_files",
+            ),
+            pytest.param(
+                {"type": "pip", "lockfile": "weird/../pylock.toml"},
+                r"pip.lockfile\n  Value error, path contains ..: weird/../pylock.toml",
+                id="pip_lockfile_references_parent_directory",
+            ),
+            pytest.param(
+                {"type": "pip", "lockfile_extras": ["weird/../pylock.build.toml"]},
+                r"pip.lockfile_extras\n  Value error, path contains ..: weird/../pylock.build.toml",
+                id="pip_lockfile_extras_references_parent_directory",
+            ),
+            pytest.param(
+                {"type": "pip", "requirements_files": ["reqs.txt"], "lockfile": "pylock.toml"},
+                r"cannot combine requirements files with a lockfile; provide only one",
+                id="pip_requirements_and_lockfile_conflict",
+            ),
+            pytest.param(
+                {"type": "pip", "requirements_files": ["reqs.txt"], "packaging_tool": "pylock"},
+                r"cannot combine requirements files with a lockfile; provide only one",
+                id="pip_requirements_and_lockfile_tool_conflict",
             ),
             pytest.param(
                 {"type": "rpm", "options": {"extra": "foo"}},
@@ -414,6 +464,9 @@ class TestRequest:
                     "requirements_build_files": [],
                     "allow_binary": False,
                     "binary": None,
+                    "lockfile": None,
+                    "lockfile_extras": None,
+                    "packaging_tool": None,
                 },
             ],
             "flags": frozenset(),
