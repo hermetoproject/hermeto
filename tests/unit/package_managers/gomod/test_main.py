@@ -1049,6 +1049,25 @@ def test_fetch_tags_fail(repo_remote_with_tag: tuple[RootedPath, RootedPath]) ->
         ModuleVersionResolver.from_repo_path(remote_repo_path)
 
 
+def test_fetch_tags_disables_submodule_recursion(
+    repo_remote_with_tag: tuple[RootedPath, RootedPath],
+) -> None:
+    # Tags must be fetched without recursing into submodules, otherwise git aborts on repos where
+    # a submodule path crosses a symlink.
+    # https://github.com/hermetoproject/hermeto/issues/1503
+    _, local_repo_path = repo_remote_with_tag
+
+    with mock.patch.object(
+        git.Remote, "fetch", autospec=True, side_effect=git.Remote.fetch
+    ) as mock_fetch:
+        version_resolver = ModuleVersionResolver.from_repo_path(local_repo_path)
+
+    mock_fetch.assert_called_once()
+    assert mock_fetch.call_args.kwargs.get("no_recurse_submodules") is True
+    # the tags themselves are still fetched
+    assert version_resolver._all_tags == ["v1.0.0", "v2.0.0"]
+
+
 @pytest.mark.parametrize(
     "GOTELEMETRY, telemetry_disable",
     [
