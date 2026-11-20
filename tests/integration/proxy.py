@@ -54,6 +54,9 @@ DEFAULT_LOCAL_NEXUS_PROXY_ENV: dict[str, str] = {
     f"{APP_NAME}_CARGO__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/cargo-proxy/",
     f"{APP_NAME}_CARGO__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
     f"{APP_NAME}_CARGO__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
+    f"{APP_NAME}_UV__PROXY_URL": f"{_NEXUS_BASE_URL}/repository/pypi-proxy/simple/",
+    f"{APP_NAME}_UV__PROXY_LOGIN": _DEFAULT_PROXY_LOGIN,
+    f"{APP_NAME}_UV__PROXY_PASSWORD": _DEFAULT_PROXY_PASSWORD,
 }
 
 _DIRECT_SOURCE_QUALIFIERS = frozenset({"vcs_url", "download_url"})

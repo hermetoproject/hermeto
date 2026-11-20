@@ -217,6 +217,10 @@ class CargoSettings(ProxyMixin, extra="forbid"):
         return self
 
 
+class UvSettings(ProxyMixin, extra="forbid"):
+    """Settings for Uv."""
+
+
 class Config(BaseSettings):
     """Singleton that provides default configuration for the application process."""
 
@@ -231,6 +235,7 @@ class Config(BaseSettings):
 
     cargo: CargoSettings = CargoSettings()
     pip: PipSettings = PipSettings()
+    uv: UvSettings = UvSettings()
     yarn: YarnSettings = YarnSettings()
     npm: NpmSettings = NpmSettings()
     pnpm: PnpmSettings = PnpmSettings()
