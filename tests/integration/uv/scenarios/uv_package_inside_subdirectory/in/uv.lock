@@ -1,0 +1,21 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "nested-example"
+version = "0.1.0"
+source = { git = "https://git.example.invalid/hermeto-tests/nested-example.git?subdirectory=libs%2Fexample&rev=ab3ddbf20f05ec98636c84c996934935541fc63e#ab3ddbf20f05ec98636c84c996934935541fc63e" }
+
+[[package]]
+name = "uv-package-inside-subdirectory"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "nested-example" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "nested-example", git = "https://git.example.invalid/hermeto-tests/nested-example.git?subdirectory=libs%2Fexample&rev=ab3ddbf20f05ec98636c84c996934935541fc63e" },
+]

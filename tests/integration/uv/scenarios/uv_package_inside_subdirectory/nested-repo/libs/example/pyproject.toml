@@ -1,0 +1,9 @@
+[project]
+name = "nested-example"
+version = "0.1.0"
+description = "Nested package for the uv integration test"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
