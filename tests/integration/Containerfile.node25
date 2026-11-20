@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-only
+ARG HERMETO_BASE_IMAGE
+FROM mirror.gcr.io/library/node:25-bookworm-slim AS node
+# hadolint ignore=DL3006
+FROM $HERMETO_BASE_IMAGE
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+RUN node -e 'if (Number(process.versions.node.split(".")[0]) < 25) process.exit(1)'

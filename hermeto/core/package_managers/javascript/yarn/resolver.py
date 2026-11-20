@@ -54,11 +54,7 @@ from hermeto.core.package_managers.javascript.yarn.locators import (
     parse_locator,
 )
 from hermeto.core.package_managers.javascript.yarn.project import Project
-from hermeto.core.package_managers.javascript.yarn.utils import (
-    TarballVcsUrlMap,
-    extract_yarn_version_from_env,
-    run_yarn_cmd,
-)
+from hermeto.core.package_managers.javascript.yarn.utils import TarballVcsUrlMap, run_yarn_cmd
 from hermeto.core.rooted_path import RootedPath
 from hermeto.core.scm import get_repo_id
 
@@ -139,7 +135,7 @@ class _YarnInfoEntry(pydantic.BaseModel):
     children: _YarnInfoChildren
 
 
-def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None) -> list[Package]:
+def resolve_packages(project: Project, workspaces: list[str] | None = None) -> list[Package]:
     """Fetch and parse package data from the 'yarn info' output.
 
     When *workspaces* is provided, runs ``yarn workspace $name info`` for each
@@ -149,15 +145,15 @@ def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None
     This function also performs validation to ensure that the current yarn project can be
     processed.
 
-    :param source_dir: the directory containing the yarn project.
+    :param project: the project configured with the selected Yarn executable.
     :param workspaces: optional list of workspace names to scope the query to.
     :raises UnsupportedFeature: if an unsupported locator type is found in 'yarn info' output
     :raises PackageManagerError: if the 'yarn info' command fails.
     """
     if workspaces:
-        packages = _resolve_workspace_packages(source_dir, workspaces)
+        packages = _resolve_workspace_packages(project, workspaces)
     else:
-        packages = _resolve_all_packages(source_dir)
+        packages = _resolve_all_packages(project)
 
     n_unsupported = 0
     for package in packages:
@@ -175,10 +171,10 @@ def resolve_packages(source_dir: RootedPath, workspaces: list[str] | None = None
     return packages
 
 
-def _get_packages_from_yarn_info(args: list[str], source_dir: RootedPath) -> list[Package]:
+def _get_packages_from_yarn_info(args: list[str], project: Project) -> list[Package]:
     """Run a ``yarn info`` variant and return the parsed packages."""
     try:
-        result = run_yarn_cmd(args, source_dir)
+        result = run_yarn_cmd(args, project.source_dir, yarn_bin=project.yarn_bin)
     except PackageManagerError as e:
         if e.stderr and "isn't supported by any available resolver" in e.stderr:
             raise UnsupportedFeature(
@@ -197,23 +193,23 @@ def _get_packages_from_yarn_info(args: list[str], source_dir: RootedPath) -> lis
     return [Package.from_info_string(info) for info in result.splitlines()]
 
 
-def _resolve_all_packages(source_dir: RootedPath) -> list[Package]:
+def _resolve_all_packages(project: Project) -> list[Package]:
     # --all: report dependencies of all workspaces, not just the active workspace
     # --recursive: report transitive dependencies, not just direct ones
     # --cache: include info about the cache entry for each dependency
     return _get_packages_from_yarn_info(
-        ["info", "--all", "--recursive", "--cache", "--json"], source_dir
+        ["info", "--all", "--recursive", "--cache", "--json"], project
     )
 
 
-def _resolve_workspace_packages(source_dir: RootedPath, workspaces: list[str]) -> list[Package]:
+def _resolve_workspace_packages(project: Project, workspaces: list[str]) -> list[Package]:
     seen: dict[str, Package] = {}
 
     for ws_name in workspaces:
         # Run info scoped to a single workspace (without --all), so yarn only reports
         # the transitive dependencies of that workspace rather than the full project.
         packages = _get_packages_from_yarn_info(
-            ["workspace", ws_name, "info", "--recursive", "--cache", "--json"], source_dir
+            ["workspace", ws_name, "info", "--recursive", "--cache", "--json"], project
         )
         # Deduplicate across workspaces: overlapping deps appear only once
         for pkg in packages:
@@ -298,8 +294,8 @@ class _ComponentResolver:
         pedigree_mapping: defaultdict[Locator, Pedigree] = defaultdict(lambda: Pedigree(patches=[]))
 
         if patch_locators:
-            # Builtin patches are included with the version of yarn being used
-            yarn_version = extract_yarn_version_from_env(self._project.source_dir)
+            # Yarn release tags exclude packageManager checksum metadata.
+            yarn_version = self._project.version.replace(build=None)
 
         for patch_locator in patch_locators:
             # Patches can patch other patches, so find the true parent Component
