@@ -13,6 +13,7 @@ from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.constants import Mode
 from hermeto.core.errors import NotAGitRepo, PackageRejected, UnexpectedFormat
 from hermeto.core.package_managers.javascript.package_json import PackageJson
+from hermeto.core.package_managers.javascript.yarn_classic.project import YarnLock
 from hermeto.core.package_managers.javascript.yarn_classic.resolver import (
     FilePackage,
     GitPackage,
@@ -22,6 +23,8 @@ from hermeto.core.package_managers.javascript.yarn_classic.resolver import (
     WorkspacePackage,
     YarnClassicPackage,
     _get_main_package,
+    _get_name_from_registry_url,
+    _get_packages_from_lockfile,
     _get_workspace_packages,
     _is_git_url,
     _is_tarball_url,
@@ -179,6 +182,64 @@ def test_create_package_from_pyarn_package(
 
         package_factory = _YarnClassicPackageFactory(rooted_tmp_path, rooted_tmp_path, runtime_deps)
         assert package_factory.create_package_from_pyarn_package(pyarn_package) == expected_package
+
+
+@pytest.mark.parametrize(
+    "url, expected_name",
+    [
+        pytest.param("https://registry.yarnpkg.com/foo/-/foo-1.0.0.tgz", "foo", id="unscoped"),
+        pytest.param(
+            "https://registry.yarnpkg.com/foo/-/foo-1.0.0.tgz#fffffff", "foo", id="with_fragment"
+        ),
+        pytest.param(
+            "https://registry.npmjs.org/@scope/foo/-/foo-1.0.0.tgz", "@scope/foo", id="scoped"
+        ),
+        pytest.param(
+            "https://registry.npmjs.org/@scope%2ffoo/-/foo-1.0.0.tgz",
+            "@scope/foo",
+            id="scoped_encoded_slash",
+        ),
+        pytest.param(
+            "https://registry.npmjs.org/@scope/-/-/--1.0.0.tgz",
+            "@scope/-",
+            id="scoped_dash_name",
+        ),
+        pytest.param(
+            "https://registry.npmjs.org/@scope%2f-/-/--1.0.0.tgz",
+            "@scope/-",
+            id="scoped_dash_name_encoded_slash",
+        ),
+        pytest.param("https://registry.yarnpkg.com", None, id="no_tarball_path"),
+    ],
+)
+def test_get_name_from_registry_url(url: str, expected_name: str | None) -> None:
+    assert _get_name_from_registry_url(url) == expected_name
+
+
+def test_get_packages_from_lockfile_resolution_to_npm_alias(rooted_tmp_path: RootedPath) -> None:
+    """A dependency resolved to an npm alias is reported as the package it was resolved to."""
+    url = "https://registry.yarnpkg.com/esbuild-wasm/-/esbuild-wasm-0.25.3.tgz#8c80"
+    # "dependencies": {"esbuild-wasm": "^0.25.3"}
+    # "resolutions": {"esbuild": "npm:esbuild-wasm@^0.25.3"}
+    yarn_lock = rooted_tmp_path.join_within_root("yarn.lock")
+    yarn_lock.path.write_text(
+        "# yarn lockfile v1\n"
+        "\n"
+        "esbuild-wasm@^0.25.3:\n"
+        '  version "0.25.3"\n'
+        f'  resolved "{url}"\n'
+        "\n"
+        'esbuild@^0.25.0, "esbuild@npm:esbuild-wasm@^0.25.3":\n'
+        '  version "0.25.3"\n'
+        f'  resolved "{url}"\n'
+    )
+
+    packages = _get_packages_from_lockfile(
+        rooted_tmp_path, rooted_tmp_path, YarnLock.from_file(yarn_lock), runtime_deps=set()
+    )
+
+    expected_package = RegistryPackage(name="esbuild-wasm", version="0.25.3", url=url, dev=True)
+    assert packages == [expected_package, expected_package]
 
 
 @pytest.mark.parametrize(
