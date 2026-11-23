@@ -17,7 +17,7 @@ import pydantic
 from more_itertools import first_true, flatten
 from packageurl import PackageURL
 
-from hermeto import APP_NAME
+from hermeto import APP_NAME, APP_VERSION
 from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.property_semantics import Property, PropertyEnum, PropertySet
 
@@ -220,12 +220,13 @@ class Tool(pydantic.BaseModel):
 
     vendor: str
     name: str
+    version: str | None = None
 
 
 class Metadata(pydantic.BaseModel):
     """Metadata field in a SBOM."""
 
-    tools: list[Tool] = [Tool(vendor="red hat", name=APP_NAME)]
+    tools: list[Tool] = [Tool(vendor="red hat", name=APP_NAME, version=APP_VERSION)]
 
 
 def spdx_now() -> datetime:
@@ -453,7 +454,9 @@ class Sbom(pydantic.BaseModel):
         # Main function body.
         packages = [create_document_root()] + libs_to_packages(self.components)
         relationships = [create_root_relationship()] + link_to_root(packages)
-        creator = lambda tool: [f"Tool: {tool.name}", f"Organization: {tool.vendor}"]
+        # SPDX expects tool creators in the "Tool: <name>-<version>" form
+        tool_id = lambda tool: f"{tool.name}-{tool.version}" if tool.version else tool.name
+        creator = lambda tool: [f"Tool: {tool_id(tool)}", f"Organization: {tool.vendor}"]
         return SPDXSbom(
             packages=packages,
             relationships=relationships,
@@ -968,18 +971,32 @@ def _partial_component(
 def convert_creators_to_tools(creators: Iterable[str]) -> list[Tool]:
     """Convert creators to tools."""
     tools = []
-    name, vendor = None, None
+    name: str | None = None
+    vendor: str | None = None
+    version: str | None = None
     # Following approach is used as position of "Organization" and "Tool" is not
     # guaranteed by the standard
     for creator in creators:
         if creator.startswith("Organization:"):
             vendor = creator.replace("Organization:", "").strip()
         elif creator.startswith("Tool:"):
-            name = creator.replace("Tool:", "").strip()
+            name, version = _split_spdx_tool_id(creator.replace("Tool:", "").strip())
         if name is not None and vendor is not None:
-            tools.append(Tool(vendor=vendor, name=name))
-            name, vendor = None, None
+            tools.append(Tool(vendor=vendor, name=name, version=version))
+            name, vendor, version = None, None, None
     return tools
+
+
+def _split_spdx_tool_id(tool_id: str) -> tuple[str, str | None]:
+    """Split an SPDX tool identifier into name and version.
+
+    SPDX formats tool creators as "<name>-<version>". Tool names may contain dashes too, so only
+    treat the part after the last dash as a version if it starts with a digit (e.g. "hermeto-0.64.0").
+    """
+    name, _, version = tool_id.rpartition("-")
+    if name and version[:1].isdigit():
+        return name, version
+    return tool_id, None
 
 
 def merge_component_annotations(annotations: Iterable[Annotation]) -> list[Annotation]:
