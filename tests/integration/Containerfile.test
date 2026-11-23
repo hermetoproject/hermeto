@@ -1,5 +1,13 @@
 ARG HERMETO_BASE_IMAGE
 FROM $HERMETO_BASE_IMAGE
+
+# Run explicitly as root. The Hermeto base image has a default user 1001,
+# but we need to run as root to update the CA bundle and because of host
+# bind mounts for running the integration tests.
+
+# hadolint ignore=DL3002
+USER 0
+
 COPY CA.crt /etc/pki/ca-trust/source/anchors/test-ca.crt
 ENV REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
 RUN update-ca-trust
