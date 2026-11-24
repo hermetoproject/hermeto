@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from io import StringIO
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -26,6 +27,8 @@ from hermeto.core.package_managers.generic.models import (
     LockfileArtifactMaven,
 )
 from hermeto.core.rooted_path import RootedPath
+
+generic_main = "hermeto.core.package_managers.generic.main"
 
 LOCKFILE_WRONG_VERSION = """
 metadata:
@@ -282,20 +285,18 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".async_download_files", new=mock.AsyncMock())
 def test_resolve_generic_lockfile_invalid(
-    mock_async_download_files: mock.Mock,
     lockfile: str,
     expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile)
 
-    with pytest.raises(expected_exception):
-        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile)):
+        with pytest.raises(expected_exception):
+            _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -366,24 +367,24 @@ def test_resolve_generic_lockfile_invalid(
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".async_download_files", new=mock.AsyncMock())
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_valid(
     mock_checksums: mock.Mock,
-    mock_async_download_files: mock.Mock,
     lockfile_content: str,
     expected_components: list[dict[str, Any]],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
-    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    assert [
-        c.model_dump(by_alias=True, exclude_none=True)
-        for c in _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
-    ] == expected_components
+    dump_pars = dict(by_alias=True, exclude_none=True)
+    lockfile_contents = StringIO(lockfile_content)
+    lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
+
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        result = _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    assert [r.model_dump(**dump_pars) for r in result] == expected_components  # type:ignore
     mock_checksums.assert_called()
 
 
@@ -403,21 +404,22 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
             },
         ],
     }
-
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_VALID)
+    lockfile_contents = StringIO(LOCKFILE_VALID)
 
-    assert _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump() == expected_lockfile
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        result = _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump()
+
+    assert result == expected_lockfile
 
 
 def test_load_generic_lockfile_v2_valid(rooted_tmp_path: RootedPath) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_WITH_BEARER_AUTH)
+    lockfile_contents = StringIO(LOCKFILE_WITH_BEARER_AUTH)
 
-    lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+
     assert lockfile.metadata.version == "2.0"
     assert lockfile.artifacts[0].auth is not None
     assert lockfile.artifacts[0].auth.bearer is not None
@@ -596,59 +598,53 @@ class TestLockfileArtifactAuth:
 
 
 @pytest.mark.parametrize(
-    ["lockfile_content", "expected_url", "expected_headers"],
+    ["lockfile_content", "expected_headers_map"],
     [
         pytest.param(
             LOCKFILE_WITH_BASIC_AUTH,
-            "https://example.com/artifact",
-            {"Authorization": "Basic dXNlcjpwYXNzd2Q="},
+            {"https://example.com/artifact": {"Authorization": "Basic dXNlcjpwYXNzd2Q="}},
             id="basic_auth",
         ),
         pytest.param(
             LOCKFILE_WITH_BEARER_AUTH,
-            "https://example.com/artifact",
-            {"Authorization": "Bearer secret123"},
+            {"https://example.com/artifact": {"Authorization": "Bearer secret123"}},
             id="bearer_auth_default_header",
         ),
         pytest.param(
             LOCKFILE_WITH_CUSTOM_HEADER_BEARER_AUTH,
-            "https://example.com/artifact",
-            {"X-Custom-Auth": "secret123"},
+            {"https://example.com/artifact": {"X-Custom-Auth": "secret123"}},
             id="bearer_auth_custom_header",
         ),
     ],
 )
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
     lockfile_content: str,
-    expected_url: str,
-    expected_headers: dict[str, str],
+    expected_headers_map: dict[str, dict[str, str]],
     rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile_content)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
-    assert mock_download.call_args.kwargs["headers"] == {expected_url: expected_headers}
+    assert mock_download.call_args.kwargs["headers"] == expected_headers_map
 
 
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_mixed_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_WITH_MIXED_AUTH)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(LOCKFILE_WITH_MIXED_AUTH)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
     headers = mock_download.call_args.kwargs["headers"]
     # Only the authed artifact should have headers
@@ -663,19 +659,18 @@ def test_resolve_generic_lockfile_mixed_auth_headers(
         pytest.param(LOCKFILE_V2_VALID, id="v2_no_auth"),
     ],
 )
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_no_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
-    rooted_tmp_path: RootedPath,
     lockfile_content: str,
+    rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile_content)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
     assert mock_download.call_args.kwargs["headers"] is None
 
