@@ -1,0 +1,87 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/gitdb@4.0.12",
+        "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%403c638d25420c19209e3730bafd49c89e43c54429",
+        "pkg:pypi/pip-pylock@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40380df55aa89077cbf2e75077709cd1f681335d2a",
+        "pkg:pypi/smmap@5.0.3"
+      ],
+      "text": "hermeto:backend:pip",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/gitdb@4.0.12",
+      "name": "gitdb",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/gitdb@4.0.12",
+      "type": "library",
+      "version": "4.0.12"
+    },
+    {
+      "bom-ref": "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%403c638d25420c19209e3730bafd49c89e43c54429",
+      "name": "gitpython",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "pylock.toml"
+        }
+      ],
+      "purl": "pkg:pypi/gitpython?vcs_url=git%2Bhttps://github.com/gitpython-developers/GitPython.git%403c638d25420c19209e3730bafd49c89e43c54429",
+      "type": "library"
+    },
+    {
+      "bom-ref": "pkg:pypi/pip-pylock@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40380df55aa89077cbf2e75077709cd1f681335d2a",
+      "name": "pip-pylock",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/pip-pylock@1.0.0?vcs_url=git%2Bhttps://github.com/hermetoproject/hermeto.git%40380df55aa89077cbf2e75077709cd1f681335d2a",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/smmap@5.0.3",
+      "name": "smmap",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/smmap@5.0.3",
+      "type": "library",
+      "version": "5.0.3"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
