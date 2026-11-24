@@ -179,8 +179,10 @@ def test_get_pip_metadata_from_remote_origin(
     origin_exists: bool,
     rooted_tmp_path_repo: RootedPath,
 ) -> None:
+    # The project file exists but doesn't define a name
     pyproject_toml = mock_pyproject_toml.return_value
-    pyproject_toml.exists.return_value = False
+    pyproject_toml.exists.return_value = True
+    pyproject_toml.get_name.return_value = None
 
     setup_py = mock_setup_py.return_value
     setup_py.exists.return_value = False
@@ -199,6 +201,15 @@ def test_get_pip_metadata_from_remote_origin(
     else:
         with pytest.raises(PackageRejected):
             pip._get_pip_metadata(rooted_tmp_path_repo)
+
+
+def test_get_pip_metadata_without_project_files(rooted_tmp_path_repo: RootedPath) -> None:
+    Repo(rooted_tmp_path_repo).create_remote("origin", "git@github.com:user/repo.git")
+    rooted_tmp_path_repo.path.joinpath("requirements.txt").write_text("pip==24.0\n")
+
+    name, version = pip._get_pip_metadata(rooted_tmp_path_repo)
+    assert name is None
+    assert version is None
 
 
 class TestDownload:
