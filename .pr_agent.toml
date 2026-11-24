@@ -1,0 +1,11 @@
+# Minimal Qodo baseline for the initial comparison period.
+# Leave review instructions and repository-context overrides unset so the
+# maintainers can observe Qodo's default behavior.
+
+[config]
+response_language = "en-US"
+
+[github_app]
+handle_pr_actions = ["opened", "reopened", "ready_for_review"]
+pr_commands = ["/agentic_review"]
+handle_push_trigger = false
