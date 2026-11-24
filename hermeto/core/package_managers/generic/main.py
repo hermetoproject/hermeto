@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
+from typing import TextIO
 
 import yaml
 from pydantic import ValidationError
@@ -70,6 +71,11 @@ def _resolve_lockfile_path(
     return lockfile
 
 
+def verify_lockfile_exists_or_raise(lockfile_path: Path) -> None:
+    if not lockfile_path.exists():
+        raise LockfileNotFound(files=lockfile_path)
+
+
 def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> list[Component]:
     """
     Resolve the generic lockfile and pre-fetch the dependencies.
@@ -77,8 +83,7 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     :param lockfile_path: absolute path to the lockfile
     :param output_dir: the output directory to store the dependencies
     """
-    if not lockfile_path.exists():
-        raise LockfileNotFound(files=lockfile_path)
+    verify_lockfile_exists_or_raise(lockfile_path)
 
     # output_dir is now the root and cannot be escaped
     output_dir = output_dir.re_root(DEFAULT_DEPS_DIR)
@@ -110,6 +115,45 @@ def _resolve_generic_lockfile(lockfile_path: Path, output_dir: RootedPath) -> li
     return [artifact.get_sbom_component() for artifact in lockfile.artifacts]
 
 
+def _load_lockfile_inner(f: TextIO, lockfile_path: Path, output_dir: RootedPath) -> GenericLockfile:
+    try:
+        lockfile_data = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        raise InvalidLockfileFormat(
+            lockfile_path=lockfile_path,
+            err_details=str(e),
+            solution="Check correct 'yaml' syntax in the lockfile.",
+        )
+
+    if lockfile_data is None:
+        raise InvalidLockfileFormat(
+            lockfile_path=lockfile_path,
+            err_details="Lockfile is empty",
+            solution=(
+                "Ensure the lockfile contains valid YAML with 'metadata' and 'artifacts' sections."
+            ),
+        )
+
+    try:
+        lockfile = GenericLockfileAdapter.validate_python(
+            lockfile_data, context={"output_dir": output_dir}
+        )
+    except ValidationError as e:
+        err = e.errors()[0]
+        if err["type"] == "union_tag_not_found":
+            err_details = "Missing required 'metadata.version' field"
+        elif err["type"] == "union_tag_invalid":
+            err_details = err["msg"]
+        else:
+            err_details = f"'{err['loc']}: {err['msg']}'"
+        raise InvalidLockfileFormat(
+            lockfile_path=lockfile_path,
+            err_details=err_details,
+            solution=("Check the correct format and whether any keys are missing in the lockfile."),
+        )
+    return lockfile
+
+
 def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfile:
     """
     Load the generic lockfile from the given path.
@@ -118,42 +162,4 @@ def _load_lockfile(lockfile_path: Path, output_dir: RootedPath) -> GenericLockfi
     :param output_dir: path to output directory
     """
     with open(lockfile_path) as f:
-        try:
-            lockfile_data = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise InvalidLockfileFormat(
-                lockfile_path=lockfile_path,
-                err_details=str(e),
-                solution="Check correct 'yaml' syntax in the lockfile.",
-            )
-
-        if lockfile_data is None:
-            raise InvalidLockfileFormat(
-                lockfile_path=lockfile_path,
-                err_details="Lockfile is empty",
-                solution=(
-                    "Ensure the lockfile contains valid YAML with "
-                    "'metadata' and 'artifacts' sections."
-                ),
-            )
-
-        try:
-            lockfile = GenericLockfileAdapter.validate_python(
-                lockfile_data, context={"output_dir": output_dir}
-            )
-        except ValidationError as e:
-            err = e.errors()[0]
-            if err["type"] == "union_tag_not_found":
-                err_details = "Missing required 'metadata.version' field"
-            elif err["type"] == "union_tag_invalid":
-                err_details = err["msg"]
-            else:
-                err_details = f"'{err['loc']}: {err['msg']}'"
-            raise InvalidLockfileFormat(
-                lockfile_path=lockfile_path,
-                err_details=err_details,
-                solution=(
-                    "Check the correct format and whether any keys are missing in the lockfile."
-                ),
-            )
-    return lockfile
+        return _load_lockfile_inner(f, lockfile_path, output_dir)
