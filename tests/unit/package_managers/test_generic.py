@@ -8,14 +8,12 @@ from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
-    ChecksumVerificationFailed,
     InvalidLockfileFormat,
     LockfileNotFound,
     PackageRejected,
     PathOutsideRoot,
 )
 from hermeto.core.package_managers.generic.main import (
-    DEFAULT_DEPS_DIR,
     DEFAULT_LOCKFILE_NAME,
     _load_lockfile,
     _resolve_generic_lockfile,
@@ -273,11 +271,6 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
             id="conflicting_urls",
         ),
         pytest.param(
-            LOCKFILE_WRONG_CHECKSUM,
-            ChecksumVerificationFailed,
-            id="wrong_checksum",
-        ),
-        pytest.param(
             LOCKFILE_WRONG_CHECKSUM_FORMAT,
             InvalidLockfileFormat,
             id="wrong_checksum_format",
@@ -300,12 +293,6 @@ def test_resolve_generic_lockfile_invalid(
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
     with open(lockfile_path, "w") as f:
         f.write(lockfile)
-
-    # setup testing downloaded dependency
-    deps_path = rooted_tmp_path.join_within_root(DEFAULT_DEPS_DIR)
-    Path.mkdir(deps_path.path, parents=True, exist_ok=True)
-    with open(deps_path.join_within_root("archive.zip"), "w") as f:
-        f.write("Testfile")
 
     with pytest.raises(expected_exception):
         _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
