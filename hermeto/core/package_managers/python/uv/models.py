@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, get_args
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult, unquote, urlparse
 
 import pydantic
 import pypi_simple
@@ -288,7 +288,7 @@ class PackageArtifact(pydantic.BaseModel, extra="ignore", frozen=True):
         :raises PackageRejected: if no file name can be found in either.
         """
         location = self.url or self.path or source.location
-        filename = Path(urlparse(location).path).name
+        filename = unquote(Path(urlparse(location).path).name)
         if not filename:
             raise PackageRejected(
                 reason=f"Cannot determine a file name for {location!r} in uv.lock",

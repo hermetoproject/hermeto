@@ -408,6 +408,12 @@ class TestArtifactWheel:
                 "pkg-1.0-py3-none-any.whl",
                 id="wheel_url_query_stripped",
             ),
+            pytest.param(
+                ArtifactWheel(url="https://example.org/downloads/pkg-1.0%2Bcpu-py3-none-any.whl"),
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                "pkg-1.0+cpu-py3-none-any.whl",
+                id="wheel_url_percent_encoded",
+            ),
         ],
     )
     def test_get_target_filename(
