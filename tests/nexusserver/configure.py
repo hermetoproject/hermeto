@@ -18,10 +18,21 @@ from tenacity import (
 )
 
 if __package__:
-    from .repositories import DEFAULT_REPOSITORIES, ProxyRepositoryConfig
+    from .repositories import (
+        DEFAULT_GROUP_REPOSITORIES,
+        DEFAULT_HOSTED_REPOSITORIES,
+        DEFAULT_PROXY_REPOSITORIES,
+        GroupRepositoryConfig,
+        HostedRepositoryConfig,
+        ProxyRepositoryConfig,
+    )
 else:
     from repositories import (  # type: ignore[import-not-found,no-redef]
-        DEFAULT_REPOSITORIES,
+        DEFAULT_GROUP_REPOSITORIES,
+        DEFAULT_HOSTED_REPOSITORIES,
+        DEFAULT_PROXY_REPOSITORIES,
+        GroupRepositoryConfig,
+        HostedRepositoryConfig,
         ProxyRepositoryConfig,
     )
 
@@ -191,6 +202,36 @@ class NexusClient:
         response.raise_for_status()
         log.info("%s proxy repository '%s' created", config.format, config.name)
 
+    def create_hosted_repository(self, config: HostedRepositoryConfig) -> None:
+        """Create a hosted repository."""
+        log.info("Creating %s hosted repository '%s'...", config.format, config.name)
+        url = f"{self.base_url}/service/rest/v1/repositories/{config.format}/hosted"
+        response = self.session.post(
+            url,
+            auth=self.auth,
+            json=config.to_api_payload(),
+            timeout=self.http_timeout,
+        )
+        response.raise_for_status()
+        log.info("%s hosted repository '%s' created", config.format, config.name)
+
+    def create_group_repository(self, config: GroupRepositoryConfig) -> None:
+        """Create a group repository."""
+        log.info("Creating %s group repository '%s'...", config.format, config.name)
+        url = f"{self.base_url}/service/rest/v1/repositories/{config.format}/group"
+        response = self.session.post(
+            url,
+            auth=self.auth,
+            json=config.to_api_payload(),
+            timeout=self.http_timeout,
+        )
+        response.raise_for_status()
+        log.info(
+            "%s group repository '%s' created",
+            config.format,
+            config.name,
+        )
+
 
 def get_initial_password(
     container_name: str = DEFAULT_NEXUS_CONTAINER_NAME,
@@ -232,7 +273,9 @@ def initialize_nexus(
     startup_timeout: int = DEFAULT_NEXUS_STARTUP_TIMEOUT,
     subprocess_timeout: int = DEFAULT_SUBPROCESS_TIMEOUT,
     http_timeout: int = DEFAULT_HTTP_TIMEOUT,
-    repositories: list[ProxyRepositoryConfig] | None = None,
+    proxy_repos: list[ProxyRepositoryConfig] | None = None,
+    hosted_repos: list[HostedRepositoryConfig] | None = None,
+    group_repos: list[GroupRepositoryConfig] | None = None,
 ) -> NexusClient:
     """Configure a running Nexus instance and create proxy repositories."""
     base_url = f"http://{host}:{port}"
@@ -250,9 +293,18 @@ def initialize_nexus(
     client.enable_anonymous_access()
     client.delete_all_repositories()
 
-    repos = repositories if repositories is not None else DEFAULT_REPOSITORIES
-    for repo_config in repos:
-        client.create_proxy_repository(repo_config)
+    proxies = DEFAULT_PROXY_REPOSITORIES if proxy_repos is None else proxy_repos
+    hosted = DEFAULT_HOSTED_REPOSITORIES if hosted_repos is None else hosted_repos
+    groups = DEFAULT_GROUP_REPOSITORIES if group_repos is None else group_repos
+
+    for prox_repo_config in proxies:
+        client.create_proxy_repository(prox_repo_config)
+
+    for host_repo_config in hosted:
+        client.create_hosted_repository(host_repo_config)
+
+    for group_repo_config in groups:
+        client.create_group_repository(group_repo_config)
 
     return client
 
@@ -325,8 +377,14 @@ def main(
     print("Nexus Repository Server is ready!")
     print(f"  URL: {client.base_url}")
     print(f"  Admin credentials: admin / {admin_password}")
-    for repo in DEFAULT_REPOSITORIES:
-        print(f"  {repo.format} proxy: {client.base_url}/repository/{repo.name}/")
+    for proxy_repo in DEFAULT_PROXY_REPOSITORIES:
+        print(f"  {proxy_repo.format} proxy: {client.base_url}/repository/{proxy_repo.name}/")
+
+    for hosted_repo in DEFAULT_HOSTED_REPOSITORIES:
+        print(f"  {hosted_repo.format} hosted: {client.base_url}/repository/{hosted_repo.name}/")
+
+    for group_repo in DEFAULT_GROUP_REPOSITORIES:
+        print(f"  {group_repo.format} group: {client.base_url}/repository/{group_repo.name}/")
     print("=" * 80)
 
     client.close()

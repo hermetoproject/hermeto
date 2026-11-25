@@ -44,6 +44,7 @@ dev = [
   "typing-extensions",
 ]
 test = [
+  "maturin>=1.13,<2.0",
   "filelock",
   "jsonschema",
   "podman-compose",
