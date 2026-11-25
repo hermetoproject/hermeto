@@ -375,9 +375,10 @@ def meets_proxied_environment_expectations(raw_wheel: dict, wheel: ArtifactWheel
     return uv_proxy_is_defined and all_keys_except_url_match
 
 
-def reject_package_if_some_requested_wheels_were_missing_on_proxy(
-    raw_wheels: tomlkit.items.Array, package: UvPackage
+def reject_package_if_requested_wheels_were_missing_on_proxy(
+    raw_package: dict, package: UvPackage
 ) -> None:
+    raw_wheels = raw_package.get("wheels", [])
     if len(raw_wheels) != len(package.wheels) and get_config().uv.proxy_url is not None:
         hashes_of_present_wheels = [w.hash for w in package.wheels]
         missing_wheels = []
@@ -390,6 +391,87 @@ def reject_package_if_some_requested_wheels_were_missing_on_proxy(
             "Please make sure you use correct proxy and it is set up correctly.",
             solution=None,
         )
+
+
+# This situation is very unlikely, but at the same time very grave, the only solution
+# is to fail immediately.
+def halt_if_collected_wheels_diverged_from_expectations(
+    raw_package: dict, package: UvPackage
+) -> None:
+    raw_wheels = raw_package.get("wheels", [])
+    for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
+        if any(raw_wheel.get(key) != getattr(wheel, key) for key in _WHEEL_LOCATIONS):
+            # should not happen: as above, one file parsed two ways
+            # This could happen for proxied registries, in that case it is expected
+            if meets_proxied_environment_expectations(raw_wheel, wheel):
+                pass
+            else:
+                raise RuntimeError(
+                    f"uv.lock wheel for {package.name} does not match the parsed entry"
+                )
+
+
+# This situation is very unlikely, but at the same time very grave, the only solution
+# is to fail immediately.
+def halt_if_packages_got_misaligned(raw_package: dict, processed_package: UvPackage) -> None:
+    expected_state = (raw_package["name"], raw_package.get("version"))
+    obtained_state = (processed_package.name, processed_package.version)
+    if expected_state != obtained_state:
+        # should not happen: both views parse the same file, in order
+        raise RuntimeError(
+            f"uv.lock entry {raw_package['name']} does not match "
+            f"the parsed {processed_package.name}"
+        )
+
+
+def adjust_sdist_entry_if_needed(raw_package: dict, processed_package: UvPackage) -> None:
+    """Adjust lock file to point to sdist on file system if sdist was downloaded."""
+    if processed_package.sdist is not None:
+        filename = processed_package.sdist.get_target_filename(processed_package.source)
+        raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+
+
+def adjust_wheels_entries(raw_package: dict, processed_package: UvPackage) -> None:
+    """Adjust lock file to point to wheels on file system if any were downloaded."""
+    raw_wheels = raw_package.get("wheels", [])
+    for raw_wheel, wheel in zip(raw_wheels, processed_package.wheels, strict=True):
+        filename = wheel.get_target_filename(processed_package.source)
+        raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+
+
+def extract_sole_artifact(processed_package: UvPackage) -> PackageArtifact:
+    result = processed_package.sole_artifact
+    if result is None:
+        # should not happen: artifacts_to_download rejects such a processed_package
+        raise RuntimeError(f"{processed_package.name} records no sdist and no wheels in uv.lock")
+    return result
+
+
+def _rewrite_a_single_package(raw_package: dict, processed_package: UvPackage) -> None:
+    """Modify a single entry into the raw document based on lockfile processing results.
+
+    Modifies `raw_package` in enclosing scope!"""
+    match processed_package.source:
+        case PackageSourceRegistry():
+            reject_package_if_requested_wheels_were_missing_on_proxy(raw_package, processed_package)
+            halt_if_collected_wheels_diverged_from_expectations(raw_package, processed_package)
+
+            adjust_sdist_entry_if_needed(raw_package, processed_package)
+            adjust_wheels_entries(raw_package, processed_package)
+
+        case PackageSourceGit() as source:
+            _replace_source_with_path(raw_package, _git_tarball_filename(processed_package, source))
+
+        case PackageSourceUrl():
+            recorded = extract_sole_artifact(processed_package)
+            _replace_source_with_path(
+                raw_package, recorded.get_target_filename(processed_package.source)
+            )
+        case PackageSourceLocal():
+            # nothing was fetched for these, so the entries already point at the files
+            pass
+        case _:
+            assert_never(processed_package.source)
 
 
 def _rewrite_lockfile(
@@ -408,48 +490,9 @@ def _rewrite_lockfile(
     if all(_is_local_package(package) for package in lock.packages):
         return None
 
-    expected_packages = doc.get("package", [])
-    processed_packages = lock.packages
-    for raw_package, package in zip(expected_packages, processed_packages, strict=True):
-        if (raw_package["name"], raw_package.get("version")) != (package.name, package.version):
-            # should not happen: both views parse the same file, in order
-            raise RuntimeError(
-                f"uv.lock entry {raw_package['name']} does not match the parsed {package.name}"
-            )
-
-        match package.source:
-            case PackageSourceRegistry():
-                if package.sdist is not None:
-                    filename = package.sdist.get_target_filename(package.source)
-                    raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
-                raw_wheels = raw_package.get("wheels", [])
-                reject_package_if_some_requested_wheels_were_missing_on_proxy(raw_wheels, package)
-                for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
-                    if any(raw_wheel.get(key) != getattr(wheel, key) for key in _WHEEL_LOCATIONS):
-                        # should not happen: as above, one file parsed two ways
-                        # This could happen for proxied registries, in that case it is expected
-                        if meets_proxied_environment_expectations(raw_wheel, wheel):
-                            pass
-                        else:
-                            raise RuntimeError(
-                                f"uv.lock wheel for {package.name} does not match the parsed entry"
-                            )
-
-                    filename = wheel.get_target_filename(package.source)
-                    raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
-            case PackageSourceGit() as source:
-                _replace_source_with_path(raw_package, _git_tarball_filename(package, source))
-            case PackageSourceUrl():
-                recorded = package.sole_artifact
-                if recorded is None:
-                    # should not happen: artifacts_to_download rejects such a package
-                    raise RuntimeError(f"{package.name} records no sdist and no wheels in uv.lock")
-                _replace_source_with_path(raw_package, recorded.get_target_filename(package.source))
-            case PackageSourceLocal():
-                # nothing was fetched for these, so the entries already point at the files
-                pass
-            case _:
-                assert_never(package.source)
+    for raw_package, processed_package in zip(doc.get("package", []), lock.packages, strict=True):
+        halt_if_packages_got_misaligned(raw_package, processed_package)
+        _rewrite_a_single_package(raw_package, processed_package)
 
     lockfile_path = package_dir.join_within_root(DEFAULT_LOCKFILE_NAME)
     return ProjectFile(abspath=lockfile_path.path, template=tomlkit.dumps(doc))
