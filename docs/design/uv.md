@@ -22,6 +22,7 @@
       - [1) Runtime dependencies (from `uv.lock`)](#1-runtime-dependencies-from-uvlock)
       - [2) Build-Time dependencies](#2-build-time-dependencies)
       - [Checksum handling by source kind](#checksum-handling-by-source-kind)
+      - [Proxy support](#proxy-support)
     - [Lockfile rewriting (inject-files)](#lockfile-rewriting-inject-files)
       - [Registry packages](#registry-packages)
       - [Git packages](#git-packages)
@@ -765,6 +766,12 @@ logic:
 | `git`                                      | Must not be present.           |
 | `path` (file artifact) |Required (uv errors if missing) |
 | `editable`, `directory`, `virtual` | None |
+
+#### Proxy support
+
+When proxy URL is configured uv package manager will use it only to fetch those
+artifacts which were supposed to be fetched from pypi. All other registries
+will not be affected by this setting.
 
 ### Lockfile rewriting (inject-files)
 
