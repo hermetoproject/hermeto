@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 from typing import Any, NamedTuple, cast
+from urllib.parse import quote
 
 import tomlkit
 from packageurl import PackageURL
@@ -230,14 +231,21 @@ def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
 
     Both the download and the lockfile rewrite go through this, so the
     rewritten source path always resolves to the tarball that was downloaded.
+    When a Git dependency's package root is in a repository subdirectory, for
+    example ``libs/example``, that package subdirectory is percent-encoded and
+    appended to the archive name. This gives packages in different
+    subdirectories unique archive names.
     """
-    return f"{package.name}-gitcommit-{source.commit}.tar.gz"
+    name = f"{package.name}-gitcommit-{source.commit}"
+    if source.subdirectory:
+        name = f"{name}-{quote(source.subdirectory, safe='')}"
+    return f"{name}.tar.gz"
 
 
 def _download_git_package(
     package: UvPackage, source: PackageSourceGit, deps_dir: RootedPath
 ) -> None:
-    """Clone a git package at its resolved commit and archive it as a tarball."""
+    """Clone a git package at its resolved commit and archive its package root."""
     commit = source.commit
     tarball = deps_dir.join_within_root(_git_tarball_filename(package, source))
     if tarball.path.exists():
@@ -245,7 +253,10 @@ def _download_git_package(
         return
 
     log.info("Cloning git repository for %s==%s", package.name, package.version)
-    clone_as_tarball(source.clone_url, commit, to_path=tarball.path)
+    kwargs: dict[str, str] = {}
+    if source.subdirectory is not None:
+        kwargs["subpath"] = source.subdirectory
+    clone_as_tarball(source.clone_url, commit, to_path=tarball.path, **kwargs)
 
 
 def _replace_source_with_path(raw_package: Any, filename: str) -> None:

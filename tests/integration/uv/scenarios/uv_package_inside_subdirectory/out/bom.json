@@ -1,0 +1,78 @@
+{
+  "annotations": [
+    {
+      "annotator": {
+        "organization": {
+          "name": "red hat"
+        }
+      },
+      "subjects": [
+        "pkg:pypi/flit-core@3.12.0",
+        "pkg:pypi/nested-example@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/nested-example.git%40ab3ddbf20f05ec98636c84c996934935541fc63e#libs/example",
+        "pkg:pypi/uv-package-inside-subdirectory@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4070fb8e0b0117c38df323da3a84d707775498f0c2"
+      ],
+      "text": "hermeto:backend:experimental:x-uv",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/flit-core@3.12.0",
+      "name": "flit-core",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:uv:package:build-dependency",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/flit-core@3.12.0",
+      "type": "library",
+      "version": "3.12.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/nested-example@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/nested-example.git%40ab3ddbf20f05ec98636c84c996934935541fc63e#libs/example",
+      "name": "nested-example",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        },
+        {
+          "name": "hermeto:missing_hash:in_file",
+          "value": "uv.lock"
+        }
+      ],
+      "purl": "pkg:pypi/nested-example@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/nested-example.git%40ab3ddbf20f05ec98636c84c996934935541fc63e#libs/example",
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/uv-package-inside-subdirectory@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4070fb8e0b0117c38df323da3a84d707775498f0c2",
+      "name": "uv-package-inside-subdirectory",
+      "properties": [
+        {
+          "name": "hermeto:found_by",
+          "value": "hermeto"
+        }
+      ],
+      "purl": "pkg:pypi/uv-package-inside-subdirectory@0.1.0?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4070fb8e0b0117c38df323da3a84d707775498f0c2",
+      "type": "library",
+      "version": "0.1.0"
+    }
+  ],
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermeto",
+        "vendor": "red hat"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

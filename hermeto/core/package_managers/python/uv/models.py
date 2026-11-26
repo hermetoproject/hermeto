@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, get_args
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult, parse_qs, urlparse
 
 import pydantic
 import pypi_simple
@@ -126,6 +126,12 @@ class PackageSourceGit(pydantic.BaseModel, frozen=True):
             )
         return commit
 
+    @cached_property
+    def subdirectory(self) -> str | None:
+        """The package directory selected by uv within the repository, if any."""
+        subdirectories = parse_qs(self._parsed_url.query).get("subdirectory")
+        return subdirectories[0] if subdirectories else None
+
     def purl(self, name: str, version: str | None, **_: Any) -> str:
         """Get the purl for a git-sourced package."""
         return PackageURL(
@@ -133,6 +139,7 @@ class PackageSourceGit(pydantic.BaseModel, frozen=True):
             name=name,
             version=version,
             qualifiers={"vcs_url": f"git+{self.clone_url}@{self.commit}"},
+            subpath=self.subdirectory,
         ).to_string()
 
     def records_no_checksum(self, artifacts: "list[PackageArtifact]") -> bool:  # noqa: ARG002
