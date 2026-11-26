@@ -1116,6 +1116,11 @@ tree then the tree has the possibility to become dirty.</em></p>
 Hermeto copies the source tree, including <code>.git</code>, before processing it, and a
 concurrent git operation (including a background <code>git gc</code>) can corrupt that copy
 and produce an inaccurate SBOM.</em></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Any file in the source repository may be a symlink, but it must not point
+outside the source repository. Hermeto may refuse to process input that does.</p>
+</div>
 <h3 id="generate-environment-variables">Generate environment variables<a class="headerlink" href="#generate-environment-variables" title="Permanent link">&para;</a></h3>
 <p>Once the dependencies have been cached, the build process needs to be made aware
 of the dependencies. Some package managers need to be informed of cache
