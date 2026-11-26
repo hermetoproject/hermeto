@@ -141,7 +141,7 @@ Go supports the [proxy settings](#proxy-settings) above. The default
 Yarn v3 and v4 also support the [proxy settings](#proxy-settings) above. Yarn
 Classic ignores this section.
 
-### `cargo`, `npm` and `pnpm`
+### `cargo`, `npm`, `pnpm` and `x-uv`
 
 These package managers support the [proxy settings](#proxy-settings) above and
 have no additional keys.
