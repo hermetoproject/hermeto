@@ -22,6 +22,9 @@ from hermeto.core.package_managers.python.uv.main import (
     _get_project_vcs_qualifiers,
     _get_pyproject_metadata,
     _rewrite_lockfile,
+    adjust_source_urls_to_proxy,
+    halt_if_collected_wheels_diverged_from_expectations,
+    reject_package_if_requested_wheels_were_missing_on_proxy,
 )
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
@@ -118,6 +121,7 @@ def test_download_dependencies(
     _download_dependencies(
         rooted_tmp_path,
         [hashed_registry_package, unhashed_registry_package, git_package, local_package],
+        "legit:auth",
     )
 
     deps_dir = rooted_tmp_path.path / "deps" / "uv"
@@ -127,7 +131,10 @@ def test_download_dependencies(
             "https://example.org/unhashed-pkg-2.0.0.tar.gz": deps_dir / "unhashed-pkg-2.0.0.tar.gz",
         },
         mock.ANY,
-        headers=None,
+        headers={
+            "https://example.org/registry-pkg-1.0.0.tar.gz": {"Authorization": "legit:auth"},
+            "https://example.org/unhashed-pkg-2.0.0.tar.gz": {"Authorization": "legit:auth"},
+        },
     )
     mock_checksum.assert_called_once_with(
         deps_dir / "registry-pkg-1.0.0.tar.gz", [ChecksumInfo("sha256", "1234")]
@@ -325,6 +332,7 @@ def test_generate_dependency_component_purl(
     package: UvPackage, expected_purl: str, rooted_tmp_path: RootedPath
 ) -> None:
     """Every source kind has to reach its own PackageSource.purl implementation."""
+    package._proxy_url = "https://legit.proxy.url"
     component = _generate_dependency_component(
         package, package.artifacts_to_download, rooted_tmp_path, None, "uv.lock"
     )
@@ -614,3 +622,138 @@ def test_rewrite_lockfile_resolves_output_dir(rooted_tmp_path: RootedPath) -> No
     resolved = project_file.resolve_content(Path("/hermeto-output"))
     assert "file:///hermeto-output/deps/uv/anyio-4.13.0.tar.gz" in resolved
     assert 'path = "/hermeto-output/deps/uv/httpx-0.28.1.tar.gz"' in resolved
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_packages_available_on_proxy")
+def test_sources_get_correctly_adjusted_when_proxy_is_configured(
+    mock_get_packages_from_proxy: mock.Mock,
+    mock_get_config: mock.Mock,
+) -> None:
+    expected_proxy = "https://fakeproxy.com"
+    available_package = mock.Mock()
+    available_package.url = expected_proxy
+    available_package.digests = {"sha256": "1234"}
+    mock_get_packages_from_proxy.return_value = [available_package]
+    mock_get_config.return_value.uv.proxy_url = expected_proxy
+    package = UvPackage(
+        name="registry-pkg",
+        version="1.0.0",
+        source=PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+        sdist=ArtifactSdist(
+            url="https://example.org/registry-pkg-1.0.0.tar.gz", hash="sha256:1234"
+        ),
+    )
+
+    adjust_source_urls_to_proxy([package])
+
+    assert package.sdist is not None, "Sdist was unexpectedly removed from package"
+    assert package.sdist.url == expected_proxy, "Sdist URL was not updated correctly"
+    assert len(package.wheels) == 0, "A stray wheel self-attached to package during URL adjustment"
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_packages_available_on_proxy")
+def test_package_wheels_get_removed_when_not_found_on_proxy(
+    mock_get_packages_from_proxy: mock.Mock,
+    mock_get_config: mock.Mock,
+) -> None:
+    present_sha = "5678"
+    absent_sha = "1234"
+    expected_proxy = "https://fakeproxy.com"
+    available_package = mock.Mock()
+    available_package.url = expected_proxy
+    available_package.digests = {"sha256": present_sha}
+    mock_get_packages_from_proxy.return_value = [available_package]
+    mock_get_config.return_value.uv.proxy_url = expected_proxy
+    package = UvPackage(
+        name="registry-pkg",
+        version="1.0.0",
+        source=PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+        sdist=ArtifactSdist(
+            url="https://example.org/registry-pkg-1.0.0.tar.gz", hash=f"sha256:{present_sha}"
+        ),
+        wheels=[
+            ArtifactWheel(filename="example-1.0.0-py3-none-any.whl", hash=f"sha256:{absent_sha}"),
+        ],
+    )
+
+    adjust_source_urls_to_proxy([package])
+
+    assert package.sdist is not None, "Sdist was unexpectedly removed from package"
+    assert package.sdist.url == expected_proxy, "Sdist URL was not updated correctly"
+    assert len(package.wheels) == 0, "A wheel was not removed during proxy URL adjustment"
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_packages_available_on_proxy")
+def test_package_sdist_get_removed_when_not_found_on_proxy(
+    mock_get_packages_from_proxy: mock.Mock,
+    mock_get_config: mock.Mock,
+) -> None:
+    present_sha = "5678"
+    absent_sha = "1234"
+    expected_proxy = "https://fakeproxy.com"
+    available_package = mock.Mock()
+    available_package.url = expected_proxy
+    available_package.digests = {"sha256": present_sha}
+    mock_get_packages_from_proxy.return_value = [available_package]
+    mock_get_config.return_value.uv.proxy_url = expected_proxy
+    package = UvPackage(
+        name="registry-pkg",
+        version="1.0.0",
+        source=PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+        sdist=ArtifactSdist(
+            url="https://example.org/registry-pkg-1.0.0.tar.gz", hash=f"sha256:{absent_sha}"
+        ),
+        wheels=[
+            ArtifactWheel(filename="example-1.0.0-py3-none-any.whl", hash=f"sha256:{present_sha}"),
+        ],
+    )
+
+    adjust_source_urls_to_proxy([package])
+
+    assert package.sdist is None, "Sdist was not removed from package"
+    assert len(package.wheels) == 1, "Unexpected number of wheels after proxy URL adjustment"
+
+
+def test_halt_on_divergence_halts_on_url_divergence_when_proxy_not_defined() -> None:
+    package = make_package(
+        PackageSourceUrl(kind="url", location=WHEEL_URL),
+        wheels=[ArtifactWheel(url=WHEEL_URL, hash="sha256:5678")],
+    )
+    raw_package = {"wheels": [{"url": "https://random.url", "hash": "sha256:5678"}]}
+    with pytest.raises(RuntimeError):
+        halt_if_collected_wheels_diverged_from_expectations(raw_package, package)
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+def test_halt_on_divergence_does_not_halt_on_url_divergence_when_proxy_defined(
+    mock_get_config: mock.Mock,
+) -> None:
+    expected_proxy = "https://expected.proxy.org"
+    mock_get_config.return_value.uv.proxy_url = expected_proxy
+    package = make_package(
+        PackageSourceUrl(kind="url", location=WHEEL_URL),
+        wheels=[ArtifactWheel(url=WHEEL_URL, hash="sha256:5678")],
+    )
+    raw_package = {"wheels": [{"url": "https://random.url", "hash": "sha256:5678"}]}
+
+    halt_if_collected_wheels_diverged_from_expectations(raw_package, package)
+
+    assert True, "This assertion cannot be reached if halt_... misbehaves"
+
+
+@mock.patch("hermeto.core.package_managers.python.uv.main.get_config")
+def test_package_with_artifacts_missing_on_proxy_rejected(
+    mock_get_config: mock.Mock,
+) -> None:
+    expected_proxy = "https://expected.proxy.org"
+    mock_get_config.return_value.uv.proxy_url = expected_proxy
+    package = make_package(
+        PackageSourceUrl(kind="url", location=WHEEL_URL),
+        wheels=[],
+    )
+    raw_package = {"wheels": [{"url": "https://random.url", "hash": "sha256:5678"}]}
+    with pytest.raises(PackageRejected):
+        reject_package_if_requested_wheels_were_missing_on_proxy(raw_package, package)
