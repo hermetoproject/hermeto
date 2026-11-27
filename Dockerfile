@@ -61,4 +61,8 @@ RUN ln -s /usr/local/lib/corepack/dist/corepack.js /usr/local/bin/corepack && \
     ln -s /venv/bin/cachi2 /usr/local/bin/cachi2 && \
     ln -s /venv/bin/hermeto /usr/local/bin/hermeto
 
+RUN useradd --uid 1001 --gid 0 --create-home appuser && chmod -R g=u /home/appuser
+WORKDIR /home/appuser
+USER 1001
+
 ENTRYPOINT ["/usr/local/bin/hermeto"]

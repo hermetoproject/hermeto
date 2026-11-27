@@ -86,8 +86,6 @@ jobs:
       - uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: tests/integration/Containerfile.test
-          ignore: DL3006
-          failure-threshold: warning
 
   markdownlint:
     name: Markdownlint
