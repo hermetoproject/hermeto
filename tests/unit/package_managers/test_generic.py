@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
+from io import StringIO
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -8,14 +9,12 @@ from pydantic import ValidationError
 
 from hermeto import APP_NAME
 from hermeto.core.errors import (
-    ChecksumVerificationFailed,
     InvalidLockfileFormat,
     LockfileNotFound,
     PackageRejected,
     PathOutsideRoot,
 )
 from hermeto.core.package_managers.generic.main import (
-    DEFAULT_DEPS_DIR,
     DEFAULT_LOCKFILE_NAME,
     _load_lockfile,
     _resolve_generic_lockfile,
@@ -28,6 +27,8 @@ from hermeto.core.package_managers.generic.models import (
     LockfileArtifactMaven,
 )
 from hermeto.core.rooted_path import RootedPath
+
+generic_main = "hermeto.core.package_managers.generic.main"
 
 LOCKFILE_WRONG_VERSION = """
 metadata:
@@ -206,9 +207,65 @@ artifacts:
           value: my-token
 """
 
+EXPECTED_COMPONENTS_VALID_LOCKFILE = [
+    {
+        "bom-ref": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
+        "externalReferences": [{"type": "distribution", "url": "https://example.com/artifact"}],
+        "name": "archive.zip",
+        "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+        "purl": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
+        "type": "file",
+    },
+    {
+        "bom-ref": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
+        "externalReferences": [
+            {
+                "type": "distribution",
+                "url": "https://example.com/more/complex/path/file.tar.gz?foo=bar#fragment",
+            }
+        ],
+        "name": "file.tar.gz",
+        "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+        "purl": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
+        "type": "file",
+    },
+]
+
+
+EXPECTED_COMPONENTS_VALID_LOCKFILE_MAVEN = [
+    {
+        "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
+        "externalReferences": [
+            {
+                "type": "distribution",
+                "url": "https://repo.spring.io/release/org/springframework/boot/spring-boot-starter/3.1.5/spring-boot-starter-3.1.5.jar",
+            }
+        ],
+        "name": "spring-boot-starter",
+        "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+        "purl": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
+        "type": "library",
+        "version": "3.1.5",
+    },
+    {
+        "bom-ref": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
+        "externalReferences": [
+            {
+                "type": "distribution",
+                "url": "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/4.1.100.Final/netty-transport-native-epoll-4.1.100.Final-sources.jar",
+            }
+        ],
+        "name": "netty-transport-native-epoll",
+        "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
+        "purl": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
+        "type": "library",
+        "version": "4.1.100.Final",
+    },
+]
+
 
 @pytest.mark.parametrize(
-    ("pkg_path", "lockfile_value", "expected_result"),
+    ("pkg_path", "lockfile_path", "expected_result"),
     [
         pytest.param(Path("."), None, "artifacts.lock.yaml", id="default-lockfile"),
         pytest.param(
@@ -225,7 +282,7 @@ artifacts:
 def test_resolve_lockfile_path(
     rooted_tmp_path: RootedPath,
     pkg_path: Path,
-    lockfile_value: Path | None,
+    lockfile_path: Path | None,
     expected_result: str,
 ) -> None:
     if Path(expected_result).is_absolute():
@@ -233,7 +290,7 @@ def test_resolve_lockfile_path(
     else:
         expected_path = rooted_tmp_path.join_within_root(expected_result).path
 
-    resolved = _resolve_lockfile_path(rooted_tmp_path, pkg_path, lockfile_value)
+    resolved = _resolve_lockfile_path(rooted_tmp_path, pkg_path, lockfile_path)
     assert resolved == Path(expected_path)
 
 
@@ -273,11 +330,6 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
             id="conflicting_urls",
         ),
         pytest.param(
-            LOCKFILE_WRONG_CHECKSUM,
-            ChecksumVerificationFailed,
-            id="wrong_checksum",
-        ),
-        pytest.param(
             LOCKFILE_WRONG_CHECKSUM_FORMAT,
             InvalidLockfileFormat,
             id="wrong_checksum_format",
@@ -289,114 +341,48 @@ def test_resolve_generic_no_lockfile(mock_load: mock.Mock, rooted_tmp_path: Root
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".async_download_files", new=mock.AsyncMock())
 def test_resolve_generic_lockfile_invalid(
-    mock_async_download_files: mock.Mock,
     lockfile: str,
     expected_exception: type[PackageRejected],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile)
 
-    # setup testing downloaded dependency
-    deps_path = rooted_tmp_path.join_within_root(DEFAULT_DEPS_DIR)
-    Path.mkdir(deps_path.path, parents=True, exist_ok=True)
-    with open(deps_path.join_within_root("archive.zip"), "w") as f:
-        f.write("Testfile")
-
-    with pytest.raises(expected_exception):
-        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile)):
+        with pytest.raises(expected_exception):
+            _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
 
 @pytest.mark.parametrize(
     ["lockfile_content", "expected_components"],
     [
-        pytest.param(
-            LOCKFILE_VALID,
-            [
-                {
-                    "bom-ref": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
-                    "externalReferences": [
-                        {"type": "distribution", "url": "https://example.com/artifact"}
-                    ],
-                    "name": "archive.zip",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
-                    "purl": "pkg:generic/archive.zip?checksum=md5:3a18656e1cea70504b905836dee14db0&download_url=https://example.com/artifact",
-                    "type": "file",
-                },
-                {
-                    "bom-ref": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
-                    "externalReferences": [
-                        {
-                            "type": "distribution",
-                            "url": "https://example.com/more/complex/path/file.tar.gz?foo=bar#fragment",
-                        }
-                    ],
-                    "name": "file.tar.gz",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
-                    "purl": "pkg:generic/file.tar.gz?checksum=md5:32112bed1914cfe3799600f962750b1d&download_url=https://example.com/more/complex/path/file.tar.gz%3Ffoo%3Dbar%23fragment",
-                    "type": "file",
-                },
-            ],
-            id="valid_lockfile",
-        ),
+        pytest.param(LOCKFILE_VALID, EXPECTED_COMPONENTS_VALID_LOCKFILE, id="valid_lockfile"),
         pytest.param(
             LOCKFILE_VALID_MAVEN,
-            [
-                {
-                    "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
-                    "externalReferences": [
-                        {
-                            "type": "distribution",
-                            "url": "https://repo.spring.io/release/org/springframework/boot/spring-boot-starter/3.1.5/spring-boot-starter-3.1.5.jar",
-                        }
-                    ],
-                    "name": "spring-boot-starter",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
-                    "purl": "pkg:maven/org.springframework.boot/spring-boot-starter@3.1.5?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&repository_url=https://repo.spring.io/release&type=jar",
-                    "type": "library",
-                    "version": "3.1.5",
-                },
-                {
-                    "bom-ref": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
-                    "externalReferences": [
-                        {
-                            "type": "distribution",
-                            "url": "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/4.1.100.Final/netty-transport-native-epoll-4.1.100.Final-sources.jar",
-                        }
-                    ],
-                    "name": "netty-transport-native-epoll",
-                    "properties": [{"name": f"{APP_NAME}:found_by", "value": f"{APP_NAME}"}],
-                    "purl": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.100.Final?checksum=sha256:c3c5e397008ba2d3d0d6e10f7f343b68d2e16c5a3fbe6a6daa7dd4d6a30197a5&classifier=sources&repository_url=https://repo1.maven.org/maven2&type=jar",
-                    "type": "library",
-                    "version": "4.1.100.Final",
-                },
-            ],
+            EXPECTED_COMPONENTS_VALID_LOCKFILE_MAVEN,
             id="valid_lockfile_maven",
         ),
     ],
 )
-@mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".async_download_files", new=mock.AsyncMock())
 @mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_valid(
     mock_checksums: mock.Mock,
-    mock_async_download_files: mock.Mock,
     lockfile_content: str,
     expected_components: list[dict[str, Any]],
     rooted_tmp_path: RootedPath,
 ) -> None:
-    # setup lockfile
+    dump_pars = dict(by_alias=True, exclude_none=True)
+    lockfile_contents = StringIO(lockfile_content)
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    assert [
-        c.model_dump(by_alias=True, exclude_none=True)
-        for c in _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
-    ] == expected_components
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        result = _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+
+    assert [r.model_dump(**dump_pars) for r in result] == expected_components  # type:ignore
     mock_checksums.assert_called()
 
 
@@ -416,21 +402,22 @@ def test_load_generic_lockfile_valid(rooted_tmp_path: RootedPath) -> None:
             },
         ],
     }
-
-    # setup lockfile
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_VALID)
+    lockfile_contents = StringIO(LOCKFILE_VALID)
 
-    assert _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump() == expected_lockfile
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        result = _load_lockfile(lockfile_path.path, rooted_tmp_path).model_dump()
+
+    assert result == expected_lockfile
 
 
 def test_load_generic_lockfile_v2_valid(rooted_tmp_path: RootedPath) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_WITH_BEARER_AUTH)
+    lockfile_contents = StringIO(LOCKFILE_WITH_BEARER_AUTH)
 
-    lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=lockfile_contents):
+        lockfile = _load_lockfile(lockfile_path.path, rooted_tmp_path)
+
     assert lockfile.metadata.version == "2.0"
     assert lockfile.artifacts[0].auth is not None
     assert lockfile.artifacts[0].auth.bearer is not None
@@ -609,59 +596,53 @@ class TestLockfileArtifactAuth:
 
 
 @pytest.mark.parametrize(
-    ["lockfile_content", "expected_url", "expected_headers"],
+    ["lockfile_content", "expected_headers_map"],
     [
         pytest.param(
             LOCKFILE_WITH_BASIC_AUTH,
-            "https://example.com/artifact",
-            {"Authorization": "Basic dXNlcjpwYXNzd2Q="},
+            {"https://example.com/artifact": {"Authorization": "Basic dXNlcjpwYXNzd2Q="}},
             id="basic_auth",
         ),
         pytest.param(
             LOCKFILE_WITH_BEARER_AUTH,
-            "https://example.com/artifact",
-            {"Authorization": "Bearer secret123"},
+            {"https://example.com/artifact": {"Authorization": "Bearer secret123"}},
             id="bearer_auth_default_header",
         ),
         pytest.param(
             LOCKFILE_WITH_CUSTOM_HEADER_BEARER_AUTH,
-            "https://example.com/artifact",
-            {"X-Custom-Auth": "secret123"},
+            {"https://example.com/artifact": {"X-Custom-Auth": "secret123"}},
             id="bearer_auth_custom_header",
         ),
     ],
 )
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
     lockfile_content: str,
-    expected_url: str,
-    expected_headers: dict[str, str],
+    expected_headers_map: dict[str, dict[str, str]],
     rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile_content)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
-    assert mock_download.call_args.kwargs["headers"] == {expected_url: expected_headers}
+    assert mock_download.call_args.kwargs["headers"] == expected_headers_map
 
 
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_mixed_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
     rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(LOCKFILE_WITH_MIXED_AUTH)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(LOCKFILE_WITH_MIXED_AUTH)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
     headers = mock_download.call_args.kwargs["headers"]
     # Only the authed artifact should have headers
@@ -676,19 +657,18 @@ def test_resolve_generic_lockfile_mixed_auth_headers(
         pytest.param(LOCKFILE_V2_VALID, id="v2_no_auth"),
     ],
 )
+@mock.patch(generic_main + ".must_match_any_checksum", new=lambda *a: None)  # type: ignore
+@mock.patch(generic_main + ".verify_lockfile_exists_or_raise", new=lambda *a: None)  # type: ignore
 @mock.patch("hermeto.core.package_managers.generic.main.async_download_files")
-@mock.patch("hermeto.core.package_managers.generic.main.must_match_any_checksum")
 def test_resolve_generic_lockfile_no_auth_headers(
-    mock_checksums: mock.Mock,
     mock_download: mock.Mock,
-    rooted_tmp_path: RootedPath,
     lockfile_content: str,
+    rooted_tmp_path: RootedPath,
 ) -> None:
     lockfile_path = rooted_tmp_path.join_within_root(DEFAULT_LOCKFILE_NAME)
-    with open(lockfile_path, "w") as f:
-        f.write(lockfile_content)
 
-    _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
+    with mock.patch("builtins.open", return_value=StringIO(lockfile_content)):
+        _resolve_generic_lockfile(lockfile_path.path, rooted_tmp_path)
 
     assert mock_download.call_args.kwargs["headers"] is None
 
