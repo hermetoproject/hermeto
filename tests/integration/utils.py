@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+import copy
 import functools
 import json
 import logging
@@ -565,6 +566,7 @@ def fetch_deps_and_check_output(
                 log.info("Validating and stripping proxy metadata from SBOM")
                 sbom_for_comparison = validate_and_strip_proxy_refs(sbom, backend_proxy_urls)
 
+        sbom_for_comparison = _strip_tool_versions(sbom_for_comparison)
         update_test_data_if_needed(expected_build_config_path, build_config)
         update_test_data_if_needed(expected_sbom_path, sbom_for_comparison)
 
@@ -702,6 +704,19 @@ def _replace_timestamps(json_obj: Any) -> Any:
         return [_replace_timestamps(item) for item in json_obj]
 
     return json_obj
+
+
+def _strip_tool_versions(sbom: dict[str, Any]) -> dict[str, Any]:
+    """
+    Drop the version of the tools that generated the SBOM.
+
+    The version depends on the hermeto build under test, so it can't be part of the test data.
+    Returns a copy, the original SBOM is left untouched so that it can still be validated.
+    """
+    sbom = copy.deepcopy(sbom)
+    for tool in sbom.get("metadata", {}).get("tools", []):
+        tool.pop("version", None)
+    return sbom
 
 
 def _validate_expected_dep_file_contents(dep_contents_file: Path, output_dir: Path) -> None:

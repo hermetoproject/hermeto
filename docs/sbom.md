@@ -191,7 +191,7 @@ translation used when SPDX output is requested (e.g. via
 | ExternalReference (`type=distribution`, `comment=proxy URL`) | `sourceInfo` (semicolon-separated if multiple) |
 | (no root in CycloneDX) | A synthetic root package `SPDXRef-DocumentRoot-File-` is created with `name=""` and `versionInfo=""`. The document describes the root; the root contains every package. |
 | `pedigree.patches` | `externalRefs`: one entry per patch with `referenceCategory=OTHER`, `referenceType=patch` (hermeto-defined custom type), `referenceLocator=<patch diff URL>` |
-| `metadata.tools` | `creationInfo.creators` (`Tool:` / `Organization:`) |
+| `metadata.tools` | `creationInfo.creators` (`Tool: <name>-<version>` / `Organization:`) |
 
 ## SPDX to CycloneDX
 
@@ -202,6 +202,10 @@ CycloneDX one), the following applies:
   allows only one PURL per component, an SPDX package with multiple PURLs in
   `externalRefs` becomes multiple components.
 - `versionInfo` is passed through as the component's `version`.
+- `Tool:` creators are read back into the tool's `name` and `version`. For
+  example, `Tool: hermeto-0.64.0` becomes name `hermeto` and version `0.64.0`.
+  A creator without a version, such as `Tool: hermeto`, keeps the whole value
+  as the name.
 - Annotations whose `annotator` ends with `:jsonencoded` are parsed as
   properties; others are stored as top-level annotations.
 - `sourceInfo` is converted back to ExternalReferences with `type=distribution`

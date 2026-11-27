@@ -6,7 +6,7 @@ from unittest import mock
 import pydantic
 import pytest
 
-from hermeto import APP_NAME
+from hermeto import APP_NAME, APP_VERSION
 from hermeto.core.errors import UnexpectedFormat
 from hermeto.core.models.property_semantics import PropertyEnum
 from hermeto.core.models.sbom import (
@@ -26,6 +26,7 @@ from hermeto.core.models.sbom import (
     SPDXRelation,
     SPDXSbom,
     Tool,
+    convert_creators_to_tools,
     create_backend_annotation,
     merge_component_annotations,
     merge_component_properties,
@@ -122,6 +123,35 @@ class TestComponent:
 
 @mock.patch("hermeto.core.models.sbom.spdx_now", return_value=SPDX_EPOCH_STRFTIME)
 class TestSbom:
+    def test_default_metadata_includes_app_version(self, mock_spdx_now: str) -> None:
+        sbom_dict = Sbom().model_dump(by_alias=True, exclude_none=True)
+
+        assert sbom_dict["metadata"]["tools"] == [
+            {"vendor": "red hat", "name": APP_NAME, "version": APP_VERSION}
+        ]
+
+    @pytest.mark.parametrize(
+        "tool, expected_creators",
+        [
+            pytest.param(
+                Tool(vendor="red hat", name=APP_NAME, version="1.2.3"),
+                [f"Tool: {APP_NAME}-1.2.3", "Organization: red hat"],
+                id="with_version",
+            ),
+            pytest.param(
+                Tool(vendor="red hat", name=APP_NAME),
+                [f"Tool: {APP_NAME}", "Organization: red hat"],
+                id="without_version",
+            ),
+        ],
+    )
+    def test_to_spdx_tool_creators(
+        self, mock_spdx_now: str, tool: Tool, expected_creators: list[str]
+    ) -> None:
+        sbom = Sbom(metadata=Metadata(tools=[tool]))
+
+        assert sbom.to_spdx("NOASSERTION").creationInfo.creators == expected_creators
+
     def test_sort_and_dedupe_components(self, mock_spdx_now: str) -> None:
         sbom = Sbom(
             components=[
@@ -1473,6 +1503,40 @@ class TestSPDXSbom:
         assert json.dumps(original_sbom.model_dump(), sort_keys=True, indent=4) == json.dumps(
             converted_sbom.model_dump(), sort_keys=True, indent=4
         )
+
+
+@pytest.mark.parametrize(
+    "creators, expected_tools",
+    [
+        pytest.param(
+            ["Organization: red hat", f"Tool: {APP_NAME}-0.64.0"],
+            [Tool(vendor="red hat", name=APP_NAME, version="0.64.0")],
+            id="name_and_version",
+        ),
+        pytest.param(
+            [f"Tool: {APP_NAME}", "Organization: red hat"],
+            [Tool(vendor="red hat", name=APP_NAME)],
+            id="name_only",
+        ),
+        pytest.param(
+            ["Tool: some-tool", "Organization: acme"],
+            [Tool(vendor="acme", name="some-tool")],
+            id="dashed_name_only",
+        ),
+        pytest.param(
+            ["Tool: some-tool-2.0.1rc1", "Organization: acme"],
+            [Tool(vendor="acme", name="some-tool", version="2.0.1rc1")],
+            id="dashed_name_and_version",
+        ),
+        pytest.param(
+            ["Tool: scanner-2-helper", "Organization: acme"],
+            [Tool(vendor="acme", name="scanner-2-helper")],
+            id="digit_in_name_only",
+        ),
+    ],
+)
+def test_convert_creators_to_tools(creators: list[str], expected_tools: list[Tool]) -> None:
+    assert convert_creators_to_tools(creators) == expected_tools
 
 
 def test_deduplicate_spdx_packages() -> None:
