@@ -13,6 +13,7 @@ from hermeto.core.errors import (
     PackageRejected,
     UnexpectedFormat,
 )
+from hermeto.core.models.input import PythonBinaryFilters
 from hermeto.core.package_managers.python.uv.models import (
     ArtifactSdist,
     ArtifactWheel,
@@ -407,6 +408,12 @@ class TestArtifactWheel:
                 "pkg-1.0-py3-none-any.whl",
                 id="wheel_url_query_stripped",
             ),
+            pytest.param(
+                ArtifactWheel(url="https://example.org/downloads/pkg-1.0%2Bcpu-py3-none-any.whl"),
+                PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+                "pkg-1.0+cpu-py3-none-any.whl",
+                id="wheel_url_percent_encoded",
+            ),
         ],
     )
     def test_get_target_filename(
@@ -449,7 +456,72 @@ class TestUvPackage:
             sdist=SDIST,
             wheels=[WHEEL],
         )
-        assert package.artifacts_to_download == [SDIST]
+        assert package.artifacts_to_download() == [SDIST]
+
+    @pytest.mark.parametrize(
+        "binary_filter, sdist, wheels, expected",
+        [
+            pytest.param(None, SDIST, [WHEEL], [SDIST], id="no_binary"),
+            pytest.param(PythonBinaryFilters(), SDIST, [WHEEL], [WHEEL, SDIST], id="prefer_binary"),
+            pytest.param(
+                PythonBinaryFilters(), None, [WHEEL], [WHEEL], id="prefer_binary_wheel_only"
+            ),
+            pytest.param(
+                PythonBinaryFilters(),
+                SDIST,
+                [
+                    ArtifactWheel(
+                        url=("https://example.org/example-1.0.0-cp312-cp312-macosx_11_0_arm64.whl"),
+                        hash="sha256:abcd",
+                    )
+                ],
+                [SDIST],
+                id="prefer_binary_without_match",
+            ),
+            pytest.param(
+                PythonBinaryFilters(packages="example"), None, [WHEEL], [WHEEL], id="only_binary"
+            ),
+        ],
+    )
+    def test_artifacts_to_download_registry_binary_policy(
+        self,
+        binary_filter: PythonBinaryFilters | None,
+        sdist: ArtifactSdist | None,
+        wheels: list[ArtifactWheel],
+        expected: list[PackageArtifact],
+    ) -> None:
+        package = make_package(
+            PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+            sdist=sdist,
+            wheels=wheels,
+        )
+
+        assert package.artifacts_to_download(binary_filter) == expected
+
+    def test_artifacts_to_download_rejects_only_binary_without_matching_wheel(self) -> None:
+        package = make_package(
+            PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+            sdist=SDIST,
+            wheels=[
+                ArtifactWheel(
+                    url=("https://example.org/example-1.0.0-cp312-cp312-macosx_11_0_arm64.whl"),
+                    hash="sha256:abcd",
+                )
+            ],
+        )
+
+        with pytest.raises(PackageRejected):
+            package.artifacts_to_download(PythonBinaryFilters(packages="example"))
+
+    def test_artifacts_to_download_rejects_matching_wheel_without_url(self) -> None:
+        package = make_package(
+            PackageSourceRegistry(kind="registry", location="https://pypi.org/simple"),
+            sdist=SDIST,
+            wheels=[ArtifactWheel(path="example-1.0.0-py3-none-any.whl", hash="sha256:abcd")],
+        )
+
+        with pytest.raises(PackageRejected):
+            package.artifacts_to_download(PythonBinaryFilters(packages="example"))
 
     @pytest.mark.parametrize(
         "package, expected_error",
@@ -486,7 +558,7 @@ class TestUvPackage:
         self, package: UvPackage, expected_error: type[Exception]
     ) -> None:
         with pytest.raises(expected_error):
-            _ = package.artifacts_to_download
+            package.artifacts_to_download()
 
     @pytest.mark.parametrize(
         "sdist, wheels, expected",
@@ -517,7 +589,7 @@ class TestUvPackage:
         package = make_package(
             PackageSourceUrl(kind="url", location=URL_SOURCE), sdist=sdist, wheels=wheels
         )
-        assert package.artifacts_to_download == [expected]
+        assert package.artifacts_to_download() == [expected]
 
     @pytest.mark.parametrize(
         "source",
@@ -530,7 +602,7 @@ class TestUvPackage:
     )
     def test_artifacts_to_download_skips_local_sources(self, source: PackageSource) -> None:
         """local sources should not be downloaded"""
-        assert make_package(source).artifacts_to_download == []
+        assert make_package(source).artifacts_to_download() == []
 
 
 class TestUvLock:

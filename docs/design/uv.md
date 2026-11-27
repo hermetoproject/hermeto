@@ -34,7 +34,6 @@
       - [`UV_FIND_LINKS`](#uv_find_links)
       - [`UV_FROZEN`](#uv_frozen)
       - [`UV_NO_BINARY`](#uv_no_binary)
-      - [`UV_NO_BINARY_PACKAGE`](#uv_no_binary_package)
     - [Example](#example)
     - [SBOM](#sbom)
       - [Sources](#sources)
@@ -580,13 +579,15 @@ Other dependencies  appear as `[[package]]` entries, workspaces don't change how
 
 ## Binary filters
 
-By default Hermeto fetches sdists only. The `binary` input field opts specific packages into wheels. Field shape matches Hermeto's existing pip binary filter.
+By default Hermeto fetches sdists only. The `binary` input field selects
+compatible wheel artifacts according to the same policy and field shape as
+Hermeto's pip binary filter.
  
 `packages` selects which packages may install as wheels. The other fields constrain which `wheels[].url` entries in `uv.lock` qualify, matched by filename tags the same way pip does.
  
  ```json
 {
-  "type": "uv",
+  "type": "x-uv",
   "binary": {
     "packages": "numpy,scipy",
     "arch": "x86_64",
@@ -601,21 +602,20 @@ By default Hermeto fetches sdists only. The `binary` input field opts specific p
 
 ### Cases
 
-Two environment variables control uv's binary/sdist split at build time:
+Hermeto selects artifacts once and uses that selection for download, SBOM
+generation, and lockfile rewriting. The rewritten `uv.lock` contains only
+the artifacts stored in `deps/uv/`; this prevents an offline build from
+choosing an artifact Hermeto did not prefetch.
 
-- `UV_NO_BINARY=true` — forces sdist for every package, including any listed in packages.
-- `UV_NO_BINARY_PACKAGE=<pkg1> <pkg2> ...` — forces sdist only for the named packages, leaving the rest free to use wheels. 
+| `binary` input | Selected and prefetched artifacts | Build-time environment |
+|---|---|---|
+| absent | sdist for every registry package | `UV_NO_BINARY=true` |
+| `packages = :all:` (or omitted) | matching wheels and an sdist fallback for every registry package; sdist alone when no wheel matches | `UV_NO_BINARY` unset |
+| `packages = <list>` | matching wheels only for listed packages (fail if none match); sdist only for all other registry packages | `UV_NO_BINARY` unset |
 
-| `binary` input                  | Prefetched                                                   | Build-time env                                  |
-|---------------------------------|--------------------------------------------------------------|-------------------------------------------------|
-| absent                          | sdist for every package                                      | `UV_NO_BINARY=true`                             |
-| `packages = :all:`              | sdist + matching wheels for every package                    | (neither set)                                   |
-| `packages = <list>`             | sdist for non-listed, matching wheels for listed             | `UV_NO_BINARY_PACKAGE = <non-listed deps>`      |
- 
- 
-- `UV_NO_BINARY=true` forces sdist for *every* package, including listed ones — ignoring the filter.
-- Setting neither lets uv pick wheels for any package with a `wheels[]` entry in `uv.lock`. Hermeto only prefetched sdists for non-listed packages, so the build fails on a missing wheel.
-[`UV_NO_BINARY_PACKAGE`](https://docs.astral.sh/uv/reference/environment/#uv_no_binary_package) forbids wheels per-package. Listing every non-filter package gives the intended split without rewriting `uv.lock`.
+When binary filtering selects a wheel from a registry package, that wheel
+must have a download URL. Wheels recorded only as a local `path` are rejected:
+Hermeto does not support local find-links indexes for binary filtering.
  
 
 ## Markers
@@ -699,11 +699,11 @@ space-separated list of file paths.
 
 For uv, Hermeto's three phases do the following:
 
-- **[fetch-deps](#prefetch-fetch-deps)** - download every artifact listed in `uv.lock`, plus the
+- **[fetch-deps](#prefetch-fetch-deps)** - select and download the required artifacts from `uv.lock`, plus the
  build dependencies `uv.lock` does not record, into
   `{output_dir}/deps/uv/`.
-- **[inject-files](#lockfile-rewriting-inject-files)** - rewrite every artifact URL in `uv.lock` to point into
-  `{output_dir}/deps/uv/` instead of the package origin
+- **[inject-files](#lockfile-rewriting-inject-files)** - rewrite selected artifact URLs in `uv.lock` to point into
+  `{output_dir}/deps/uv/` and remove unselected registry artifacts.
 - **[generate-env](#build-environment-generate-env)** - produce an environment file with the variables the
   user's build step needs to run offline against `{output_dir}/deps/uv/`.
 
@@ -785,8 +785,11 @@ rewriting sufficient.
 
 #### Registry packages
 
-Rewrite `sdist.url` and every entry in `wheels[].url` from
-`https://files.pythonhosted.org/...` to `file:///{output_dir}/deps/uv/<filename>`.
+Retain only the sdist and wheels selected during prefetch. Rewrite each
+retained `sdist.url` or `wheels[].url` from `https://files.pythonhosted.org/...`
+to `file:///{output_dir}/deps/uv/<filename>`, and remove all unselected
+`sdist` or `wheels` entries. This applies even when no binary filter is
+configured: source-only output contains only sdists.
 
 Before:
 
@@ -880,8 +883,7 @@ Hermeto should set the following environment variables for the user's build step
 UV_OFFLINE=true
 UV_FIND_LINKS={output_dir}/deps/uv
 UV_FROZEN=true
-UV_NO_BINARY=true            # unset when `binary` filter is configured
-UV_NO_BINARY_PACKAGE=...     # set when `binary.packages` is an explicit list
+UV_NO_BINARY=true            # unset when a `binary` filter is configured
 ```
 
 The build runs with:
@@ -914,10 +916,6 @@ With frozen mode:
 [`UV_NO_BINARY=1`](https://docs.astral.sh/uv/reference/environment/#uv_no_binary) tells uv to install from sdists, ignoring the `wheels[]` entries in `uv.lock`.
 > Set unless a `binary` filter is configured; see [Binary filters](#binary-filters) for the conditional logic.
  
-#### `UV_NO_BINARY_PACKAGE`
- 
-[`UV_NO_BINARY_PACKAGE=<pkg1> <pkg2> …`](https://docs.astral.sh/uv/reference/environment/#uv_no_binary_package) tells uv to install from sdist only for the listed packages. Set when `binary.packages` is an explicit list; see [Binary filters](#binary-filters) for the conditional logic.
-
 ### Example
 
 A typical user Dockerfile after changes:
@@ -990,7 +988,7 @@ All components use the `pypi` purl type. Build-time dependencies use the same pu
 |----------|-------|----------|
 | `hermeto:found_by` | `hermeto` | always |
 | `hermeto:uv:package:build-dependency` | `true` | build-time dependency (not in `uv.lock`; see [2) Build-Time dependencies](#2-build-time-dependencies) |
-| `hermeto:uv:package:binary` | `true` | the component is a wheel - only when a [binary filter](#binary-filters) opts the package into wheels |
+| `hermeto:uv:package:binary` | `true` | one or more selected artifacts for the component are wheels |
 | `hermeto:missing_hash:in_file` | path (relative to repo root) to the file lacking a hash | a `registry` package in `uv.lock` with no recorded hash, or a build-time dependency in `requirements-build.txt` with no `--hash` |
 
 #### Local sources: path, directory, editable, virtual

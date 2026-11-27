@@ -9,8 +9,8 @@ import pytest
 from hermeto.core.checksum import ChecksumInfo
 from hermeto.core.errors import FetchError, PackageRejected
 from hermeto.core.models.input import PipBinaryFilters
+from hermeto.core.package_managers.python.common import WheelsFilter
 from hermeto.core.package_managers.python.pip.package_distributions import (
-    WheelsFilter,
     _process_prefer_binary_mode,
     _sdist_preference,
     process_package_distributions,

@@ -12,7 +12,7 @@ import pypi_simple
 import requests
 import tomlkit
 from packageurl import PackageURL
-from tomlkit.items import InlineTable
+from tomlkit.items import Array, InlineTable
 from typing_extensions import assert_never
 
 from hermeto.core.checksum import must_match_any_checksum
@@ -22,7 +22,7 @@ from hermeto.core.errors import (
     NotAGitRepo,
     PackageRejected,
 )
-from hermeto.core.models.input import Request
+from hermeto.core.models.input import PythonBinaryFilters, Request
 from hermeto.core.models.output import EnvironmentVariable, ProjectFile, RequestOutput
 from hermeto.core.models.property_semantics import PropertySet
 from hermeto.core.models.sbom import (
@@ -74,6 +74,14 @@ class _DownloadItem(NamedTuple):
     target: Path
 
 
+@dataclass(frozen=True)
+class _SelectedUvPackage:
+    """A uv.lock package and the artifacts selected for it."""
+
+    package: UvPackage
+    artifacts: list[PackageArtifact]
+
+
 @dataclass
 class UvResolutionResult:
     """Everything fetch-deps produced for a single uv project."""
@@ -89,10 +97,15 @@ def fetch_uv_source(request: Request) -> RequestOutput:
     annotations: list[Annotation] = []
     components: list[Component] = []
     project_files: list[ProjectFile] = []
+    has_binary_filter = any(package.binary is not None for package in request.uv_packages)
 
     for package in request.uv_packages:
         package_dir = request.source_dir.join_within_root(package.path)
-        resolution_result = _resolve_uv(package_dir, request.output_dir)
+        resolution_result = _resolve_uv(
+            package_dir,
+            request.output_dir,
+            package.binary,
+        )
         components.extend(resolution_result.components)
         if resolution_result.rewritten_lockfile is not None:
             project_files.append(resolution_result.rewritten_lockfile)
@@ -100,7 +113,7 @@ def fetch_uv_source(request: Request) -> RequestOutput:
     if backend_annotation := create_backend_annotation(components, "x-uv"):
         annotations.append(backend_annotation)
 
-    environment_variables = _generate_environment_variables()
+    environment_variables = _generate_environment_variables(has_binary_filter)
 
     return RequestOutput.from_obj_list(
         components, environment_variables, project_files, annotations=annotations
@@ -173,7 +186,11 @@ def partition(predicate: Callable, iterable: Iterable) -> list[list]:
     return [list(e) for e in more_itertools.partition(predicate, iterable)]
 
 
-def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolutionResult:
+def _resolve_uv(
+    package_dir: RootedPath,
+    output_dir: RootedPath,
+    binary_filter: PythonBinaryFilters | None = None,
+) -> UvResolutionResult:
     pyproject = package_dir.join_within_root("pyproject.toml")
     if not pyproject.path.exists():
         raise PackageRejected(
@@ -192,18 +209,20 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolution
 
     of_default_location = lambda p: p.source.location.startswith("https://pypi.org/simple")
     from_default_registry = lambda p: p.source.kind == "registry" and of_default_location(p)
-    other_packages, packages_needing_proxy = partition(from_default_registry, lock.packages)
+    _, packages_needing_proxy = partition(from_default_registry, lock.packages)
     adjust_source_urls_to_proxy(packages_needing_proxy)
 
     log.debug("Parsed %d packages from %s", len(lock.packages), DEFAULT_LOCKFILE_NAME)
-
-    if packages_needing_proxy:
-        _download_dependencies(output_dir, packages_needing_proxy, get_aiohttp_auth())
-    if other_packages:
-        _download_dependencies(output_dir, other_packages)
-
+    selected_packages = _select_package_artifacts(lock.packages, binary_filter)
+    other_selected_packages, selected_packages_needing_proxy = partition(
+        lambda selected: from_default_registry(selected.package), selected_packages
+    )
+    if selected_packages_needing_proxy:
+        _download_dependencies(output_dir, selected_packages_needing_proxy, get_aiohttp_auth())
+    if other_selected_packages:
+        _download_dependencies(output_dir, other_selected_packages)
     dependency_components = _generate_dependency_components(
-        lock.packages, package_dir, project_vcs_qualifiers
+        selected_packages, package_dir, project_vcs_qualifiers
     )
 
     build_deps = download_build_dependencies(package_dir, output_dir)
@@ -215,7 +234,11 @@ def _resolve_uv(package_dir: RootedPath, output_dir: RootedPath) -> UvResolution
         name=name,
         version=version,
         components=components,
-        rewritten_lockfile=_rewrite_lockfile(lockfile_doc, package_dir, lock),
+        rewritten_lockfile=_rewrite_lockfile(
+            lockfile_doc,
+            package_dir,
+            selected_packages,
+        ),
     )
 
 
@@ -229,20 +252,23 @@ def make_auth_headers(files_to_download: dict[Url, Path], auth: str | None) -> d
 
 
 def _download_dependencies(
-    output_dir: RootedPath, packages: Iterable[UvPackage] | list, auth: str | None = None
+    output_dir: RootedPath,
+    selected_packages: list[_SelectedUvPackage],
+    auth: str | None = None,
 ) -> None:
-    """Fetch every remote artifact recorded in uv.lock into a flat deps/uv directory."""
+    """Fetch every selected remote artifact into a flat deps/uv directory."""
     deps_dir = output_dir.join_within_root("deps", "uv")
     deps_dir.path.mkdir(parents=True, exist_ok=True)
 
     items: list[_DownloadItem] = []
     files_to_download: dict[Url, Path] = {}
-    for package in packages:
+    for selected_package in selected_packages:
+        package = selected_package.package
         if isinstance(package.source, PackageSourceGit):
             _download_git_package(package, package.source, deps_dir)
         else:
             # everything else lands here: registry, url and the four local kinds
-            for artifact in package.artifacts_to_download:
+            for artifact in selected_package.artifacts:
                 if artifact.url is None:
                     # should not happen
                     raise RuntimeError(f"artifact for {package.name} has no download URL")
@@ -264,6 +290,19 @@ def _download_dependencies(
             must_match_any_checksum(target, [artifact.checksum_info])
         else:
             log.warning("Missing checksum for %s==%s", package.name, package.version)
+
+
+def _select_package_artifacts(
+    packages: list[UvPackage], binary_filter: PythonBinaryFilters | None = None
+) -> list[_SelectedUvPackage]:
+    """Select the artifacts to fetch for every package in uv.lock."""
+    return [
+        _SelectedUvPackage(
+            package=package,
+            artifacts=package.artifacts_to_download(binary_filter),
+        )
+        for package in packages
+    ]
 
 
 def _is_local_package(package: UvPackage) -> bool:
@@ -290,7 +329,7 @@ def _generate_dependency_component(
 ) -> Component:
     """Build the SBOM component for a single uv.lock package."""
     missing_hash: frozenset[str] = (
-        frozenset({lockfile_relpath}) if package.records_no_checksum else frozenset()
+        frozenset({lockfile_relpath}) if package.records_no_checksum(artifacts) else frozenset()
     )
     if package._proxy_url is None:
         external_references = None
@@ -320,7 +359,7 @@ def _is_root_project_entry(package: UvPackage) -> bool:
 
 
 def _generate_dependency_components(
-    packages: list[UvPackage],
+    selected_packages: list[_SelectedUvPackage],
     package_dir: RootedPath,
     project_vcs_qualifiers: dict[str, str] | None,
 ) -> list[Component]:
@@ -332,7 +371,8 @@ def _generate_dependency_components(
         project_vcs_qualifiers=project_vcs_qualifiers,
         lockfile_relpath=lockfile_relpath,
     )
-    return [gdc(p, p.artifacts_to_download) for p in packages if not _is_root_project_entry(p)]
+    u = lambda sp: (sp.package, sp.artifacts)
+    return [gdc(*u(sp)) for sp in selected_packages if not _is_root_project_entry(sp.package)]
 
 
 def _git_tarball_filename(package: UvPackage, source: PackageSourceGit) -> str:
@@ -474,8 +514,28 @@ def _rewrite_a_single_package(raw_package: dict, processed_package: UvPackage) -
             assert_never(processed_package.source)
 
 
+def _prune_and_rewrite_wheels(
+    raw_wheels: list[InlineTable],
+    package: UvPackage,
+    selected_artifacts: set[PackageArtifact],
+) -> Array:
+    """Return retained wheels in a multiline TOML array with local URLs."""
+    rewritten_wheels = tomlkit.array().multiline(True)
+    for raw_wheel, wheel in zip(raw_wheels, package.wheels, strict=True):
+        if wheel not in selected_artifacts:
+            continue
+
+        filename = wheel.get_target_filename(package.source)
+        raw_wheel["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+        rewritten_wheels.append(raw_wheel)
+
+    return rewritten_wheels
+
+
 def _rewrite_lockfile(
-    doc: tomlkit.TOMLDocument, package_dir: RootedPath, lock: UvLock
+    doc: tomlkit.TOMLDocument,
+    package_dir: RootedPath,
+    selected_packages: list[_SelectedUvPackage],
 ) -> ProjectFile | None:
     """Redirect every remote artifact reference in uv.lock into deps/uv.
 
@@ -487,12 +547,53 @@ def _rewrite_lockfile(
 
     Returns None if the lockfile references no remote artifacts.
     """
-    if all(_is_local_package(package) for package in lock.packages):
+    packages = [selected.package for selected in selected_packages]
+    if all(_is_local_package(package) for package in packages):
         return None
 
-    for raw_package, processed_package in zip(doc.get("package", []), lock.packages, strict=True):
-        halt_if_packages_got_misaligned(raw_package, processed_package)
-        _rewrite_a_single_package(raw_package, processed_package)
+    for package_index, (raw_package, package) in enumerate(
+        zip(doc.get("package", []), packages, strict=True)
+    ):
+        if (raw_package["name"], raw_package.get("version")) != (package.name, package.version):
+            # should not happen: both views parse the same file, in order
+            raise RuntimeError(
+                f"uv.lock entry {raw_package['name']} does not match the parsed {package.name}"
+            )
+
+        match package.source:
+            case PackageSourceRegistry():
+                reject_package_if_requested_wheels_were_missing_on_proxy(raw_package, package)
+                halt_if_collected_wheels_diverged_from_expectations(raw_package, package)
+
+                selected_artifacts = set(selected_packages[package_index].artifacts)
+                if package.sdist is not None and package.sdist in selected_artifacts:
+                    filename = package.sdist.get_target_filename(package.source)
+                    raw_package["sdist"]["url"] = f"file://{_TEMPLATED_DEPS_DIR}/{filename}"
+                else:
+                    raw_package.pop("sdist", None)
+
+                raw_wheels = raw_package.get("wheels", [])
+                rewritten_wheels = _prune_and_rewrite_wheels(
+                    raw_wheels, package, selected_artifacts
+                )
+
+                if rewritten_wheels:
+                    raw_package["wheels"] = rewritten_wheels
+                else:
+                    raw_package.pop("wheels", None)
+            case PackageSourceGit() as source:
+                _replace_source_with_path(raw_package, _git_tarball_filename(package, source))
+            case PackageSourceUrl():
+                recorded = package.sole_artifact
+                if recorded is None:
+                    # should not happen: artifacts_to_download rejects such a package
+                    raise RuntimeError(f"{package.name} records no sdist and no wheels in uv.lock")
+                _replace_source_with_path(raw_package, recorded.get_target_filename(package.source))
+            case PackageSourceLocal():
+                # nothing was fetched for these, so the entries already point at the files
+                pass
+            case _:
+                assert_never(package.source)
 
     lockfile_path = package_dir.join_within_root(DEFAULT_LOCKFILE_NAME)
     return ProjectFile(abspath=lockfile_path.path, template=tomlkit.dumps(doc))
@@ -553,10 +654,12 @@ def _generate_purl_main_package(
     return purl.to_string()
 
 
-def _generate_environment_variables() -> list[EnvironmentVariable]:
-    return [
+def _generate_environment_variables(has_binary_filter: bool = False) -> list[EnvironmentVariable]:
+    environment_variables = [
         EnvironmentVariable(name="UV_OFFLINE", value="true"),
         EnvironmentVariable(name="UV_FIND_LINKS", value="${output_dir}/deps/uv"),
         EnvironmentVariable(name="UV_FROZEN", value="true"),
-        EnvironmentVariable(name="UV_NO_BINARY", value="true"),
     ]
+    if not has_binary_filter:
+        environment_variables.append(EnvironmentVariable(name="UV_NO_BINARY", value="true"))
+    return environment_variables
