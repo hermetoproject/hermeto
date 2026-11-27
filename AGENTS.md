@@ -48,6 +48,16 @@ files or ask. Do not assume.
 - Every commit must pass `pytest tests/unit/` and
   `nox -s lint` independently
 - Changes split into standalone commits, not a single blob
+- Moving existing code from `main` between modules (e.g. from
+  a specialized module to a common one) must happen in a
+  standalone commit placed before any commit that modifies
+  the moved code. Besides moving the code unchanged, that
+  commit may contain only the import, call-site and
+  `mock.patch` target updates (source and test) needed to keep
+  tests and lint passing. Do not leave re-export shims in the
+  old module and do not move the related tests. For code
+  added in the same PR, amend the commit that introduced it
+  so the code starts out in the right module
 - Commit messages explain WHY, not what
 - Commit messages must reference GitHub/GitLab issues (and PRs when necessary)
   with full URLs (e.g., `https://github.com/hermetoproject/hermeto/issues/123`),
