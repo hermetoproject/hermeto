@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from packageurl import PackageURL
 from pyarn.lockfile import Package as PYarnPackage
@@ -196,9 +196,8 @@ class _YarnClassicPackageFactory:
         dev = package_id not in self._runtime_deps
 
         if is_from_npm_registry(package.url):
-            # registry packages should already have the correct name
             return RegistryPackage(
-                name=package.name,
+                name=_get_name_from_registry_url(package.url) or package.name,
                 version=package.version,
                 integrity=package.checksum,
                 url=package.url,
@@ -267,6 +266,24 @@ class _YarnClassicPackageFactory:
                     f"Ensure yarn.lock is well-formed and if so, report this error to the {APP_NAME} team"
                 ),
             )
+
+
+def _get_name_from_registry_url(url: str) -> str | None:
+    """Return the name of the package a registry tarball URL points to.
+
+    pyarn takes the package name from the first selector of a yarn.lock entry. That is wrong
+    when another selector of the same entry is an npm alias for a different package, which is
+    what a resolution to an alias produces, e.g. "resolutions": {"esbuild": "npm:esbuild-wasm@^0.25.3"}:
+
+        esbuild@^0.25.0, "esbuild@npm:esbuild-wasm@^0.25.3":
+          resolved "https://registry.yarnpkg.com/esbuild-wasm/-/esbuild-wasm-0.25.3.tgz#..."
+
+    The registry URL always carries the real name: <registry>/<name>/-/<tarball>, where <name>
+    may be scoped (@scope/name, with the slash possibly encoded as %2f).
+    """
+    path = unquote(urlparse(url).path).lstrip("/")
+    name, separator, _ = path.rpartition("/-/")
+    return name if separator and name else None
 
 
 def _is_tarball_url(url: str) -> bool:
