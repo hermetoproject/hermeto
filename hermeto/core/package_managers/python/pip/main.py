@@ -124,8 +124,9 @@ def fetch_pip_source(request: Request) -> RequestOutput:
             package.requirements_build_files,
             package.binary,
         )
-        purl = _generate_purl_main_package(info, package_path)
-        components.append(Component(name=info.name, version=info.version, purl=purl))
+        if info.name is not None:
+            purl = _generate_purl_main_package(info, package_path)
+            components.append(Component(name=info.name, version=info.version, purl=purl))
 
         for dep in info.requires:
             components.append(dep.to_component(build_dependency=False))
@@ -247,8 +248,20 @@ def _extract_metadata_from_config_files(
     return None, None
 
 
-def _get_pip_metadata(package_dir: RootedPath) -> tuple[str, str | None]:
-    """Attempt to retrieve name and version of a pip package."""
+def _get_pip_metadata(package_dir: RootedPath) -> tuple[str | None, str | None]:
+    """Attempt to retrieve name and version of a pip package.
+
+    A directory with none of the supported project files is not a Python project, it only
+    holds requirements files. Return no name for it, so that no component is reported for it.
+    """
+    if not any(cls(package_dir).exists() for cls in (PyProjectTOML, SetupPY, SetupCFG)):
+        log.info(
+            "No pyproject.toml, setup.py or setup.cfg found at %s, "
+            "not reporting it as a Python package",
+            package_dir,
+        )
+        return None, None
+
     name, version = _extract_metadata_from_config_files(package_dir)
 
     if not name:

@@ -3,6 +3,5 @@
 This integration test covers a scenario, when a Python project (or multiple projects)
 does not contain any supported setup files (setup.py, setup.cfg, pyproject.toml).
 
-In such cases, the project name will be resolved from the repository origin url.
-If the package is at a subpath, the normalized subpath will be appended
-to the resolved project name (the version will be omited).
+Such a directory only holds requirements files, so no component is reported for
+the directory itself, only for the packages listed in its requirements files.

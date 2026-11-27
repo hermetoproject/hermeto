@@ -131,7 +131,8 @@ class URLPackage(PipPackage):
 class PipPackageInfo:
     """Resolved pip package with all its dependencies."""
 
-    name: str
+    # None when the package directory has no project metadata files
+    name: str | None
     version: str | None
     requires: list[PipPackage]
     build_requires: list[PipPackage]

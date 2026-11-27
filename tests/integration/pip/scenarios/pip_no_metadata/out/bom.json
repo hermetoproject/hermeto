@@ -91,30 +91,6 @@
       "version": "2.31.0"
     },
     {
-      "bom-ref": "pkg:pypi/scenario-subpath1-subpath2?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4000742c2b79639956005900616fb1ea235f524aa8#subpath1/subpath2",
-      "name": "scenario-subpath1-subpath2",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:pypi/scenario-subpath1-subpath2?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4000742c2b79639956005900616fb1ea235f524aa8#subpath1/subpath2",
-      "type": "library"
-    },
-    {
-      "bom-ref": "pkg:pypi/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4000742c2b79639956005900616fb1ea235f524aa8",
-      "name": "scenario",
-      "properties": [
-        {
-          "name": "hermeto:found_by",
-          "value": "hermeto"
-        }
-      ],
-      "purl": "pkg:pypi/scenario?vcs_url=git%2Bhttps://git.example.invalid/hermeto-tests/scenario.git%4000742c2b79639956005900616fb1ea235f524aa8",
-      "type": "library"
-    },
-    {
       "bom-ref": "pkg:pypi/six@1.16.0",
       "name": "six",
       "properties": [

@@ -347,10 +347,14 @@ files
 - [setup.cfg](#setupcfg-declarative-config)
 - [setup.py](#setuppy)
 
-If Hermeto fails to resolve the project name, it will generate a name based on
-the git repository origin url (and package subpath if the package is not in the
-repository root). If Hermeto fails to resolve the version, it will omit the
-version.
+If none of these files exist, the directory is not treated as a Python project
+and Hermeto does not report a component for it in the SBOM, only for the
+dependencies listed in its requirements files.
+
+If the files exist but Hermeto fails to resolve the project name, it will
+generate a name based on the git repository origin url (and package subpath if
+the package is not in the repository root). If Hermeto fails to resolve the
+version, it will omit the version.
 
 ### pyproject.toml [PEP 621 metadata][]
 
